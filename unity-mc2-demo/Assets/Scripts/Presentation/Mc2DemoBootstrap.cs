@@ -3,6 +3,7 @@ using System.IO;
 using System;
 using MC2Demo.BattleCore;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace MC2Demo.Presentation
 {
@@ -24,6 +25,9 @@ namespace MC2Demo.Presentation
         private CombatProfileCatalog combatProfiles = CombatProfileCatalog.Empty;
         private string pendingDetachedUnitId;
         private bool pendingJumpOrder;
+        private bool showMissionMap;
+        private bool showSystemPanel;
+        private bool isPaused;
         private Camera mainCamera;
         private string statusText = "Loading";
 
@@ -41,15 +45,20 @@ namespace MC2Demo.Presentation
                 return;
             }
 
-            mission.Tick(Time.deltaTime);
-            CaptureCombatEvents();
-            CaptureObjectiveEvents();
-            HandleWorldClick();
+            if (!isPaused)
+            {
+                mission.Tick(Time.deltaTime);
+                CaptureCombatEvents();
+                CaptureObjectiveEvents();
+                HandleWorldClick();
+            }
+
             FollowCommander();
         }
 
         private void OnDestroy()
         {
+            Time.timeScale = 1f;
             foreach (Material material in ownedMaterials)
             {
                 Destroy(material);
@@ -685,7 +694,8 @@ namespace MC2Demo.Presentation
                 return;
             }
 
-            if (Input.mousePosition.x < 360f)
+            Vector2 guiPoint = new(Input.mousePosition.x, Screen.height - Input.mousePosition.y);
+            if (IsGuiPointBlocked(guiPoint))
             {
                 return;
             }
@@ -785,9 +795,9 @@ namespace MC2Demo.Presentation
             }
 
             DrawUnitPanel();
-            DrawObjectivePanel();
-            DrawStructurePanel();
             DrawCombatPanel();
+            DrawMissionMap();
+            DrawSystemPanel();
         }
 
         private void DrawUnitPanel()
@@ -796,14 +806,14 @@ namespace MC2Demo.Presentation
             GUI.Label(new Rect(18, y, 320, 22), "Lance");
             y += 24f;
 
-            if (GUI.Button(new Rect(18, y, 92, 28), "All"))
+            if (GUI.Button(new Rect(18, y, 70, 28), "All"))
             {
                 pendingDetachedUnitId = null;
                 pendingJumpOrder = false;
                 statusText = "Squad selected";
             }
 
-            if (GUI.Button(new Rect(116, y, 92, 28), pendingJumpOrder ? "Jet..." : "Jet"))
+            if (GUI.Button(new Rect(94, y, 70, 28), pendingJumpOrder ? "Jet..." : "Jet"))
             {
                 pendingJumpOrder = true;
                 statusText = string.IsNullOrEmpty(pendingDetachedUnitId)
@@ -811,7 +821,17 @@ namespace MC2Demo.Presentation
                     : "Select jet destination for " + pendingDetachedUnitId;
             }
 
-            GUI.Button(new Rect(214, y, 108, 28), "System");
+            if (GUI.Button(new Rect(170, y, 70, 28), showMissionMap ? "Map-" : "Map"))
+            {
+                showMissionMap = !showMissionMap;
+                statusText = showMissionMap ? "Mission map open" : "Mission map closed";
+            }
+
+            if (GUI.Button(new Rect(246, y, 76, 28), "System"))
+            {
+                OpenSystemPanel();
+            }
+
             y += 36f;
 
             foreach (UnitState unit in mission.PlayerUnits())
@@ -905,8 +925,9 @@ namespace MC2Demo.Presentation
 
         private void DrawCombatPanel()
         {
-            float x = Screen.width - 360f;
-            GUI.Box(new Rect(x, 12, 344, 178), "Combat");
+            Rect panel = CombatPanelRect();
+            float x = panel.x;
+            GUI.Box(panel, "Combat");
             GUI.Label(new Rect(x + 12, 38, 320, 22), "Active units: " + CountLiveUnits() + " / " + mission.Units.Count);
             float y = 64f;
             foreach (string line in combatLog)
@@ -914,6 +935,218 @@ namespace MC2Demo.Presentation
                 GUI.Label(new Rect(x + 12, y, 320, 20), line);
                 y += 20f;
             }
+        }
+
+        private void DrawMissionMap()
+        {
+            if (!showMissionMap)
+            {
+                return;
+            }
+
+            Rect panel = MissionMapRect();
+            GUI.Box(panel, "Mission Map");
+            Rect map = new(panel.x + 14f, panel.y + 34f, panel.width - 28f, panel.height - 58f);
+            DrawColorRect(map, new Color(0.035f, 0.045f, 0.048f, 0.92f));
+            DrawColorRect(new Rect(map.x, map.y, map.width, 1f), new Color(0.35f, 0.42f, 0.44f));
+            DrawColorRect(new Rect(map.x, map.yMax - 1f, map.width, 1f), new Color(0.35f, 0.42f, 0.44f));
+            DrawColorRect(new Rect(map.x, map.y, 1f, map.height), new Color(0.35f, 0.42f, 0.44f));
+            DrawColorRect(new Rect(map.xMax - 1f, map.y, 1f, map.height), new Color(0.35f, 0.42f, 0.44f));
+
+            foreach (ObjectiveState objective in mission.Objectives)
+            {
+                if (objective.Definition.hidden)
+                {
+                    continue;
+                }
+
+                DrawObjectiveMapMarker(map, objective);
+            }
+
+            foreach (StructureState structure in mission.Structures)
+            {
+                DrawMapMarker(map, structure.MissionPosition, structure.IsDestroyed ? Color.gray : new Color(0.95f, 0.55f, 0.16f), 8f);
+            }
+
+            foreach (UnitState unit in mission.Units)
+            {
+                Color color = unit.IsDestroyed
+                    ? Color.gray
+                    : unit.IsPlayerUnit ? new Color(0.2f, 0.78f, 1f) : new Color(0.94f, 0.22f, 0.18f);
+                DrawMapMarker(map, unit.MissionPosition, color, unit.IsPlayerUnit ? 7f : 5f);
+            }
+
+            if (GUI.Button(new Rect(panel.xMax - 66f, panel.y + 6f, 52f, 24f), "Close"))
+            {
+                showMissionMap = false;
+                statusText = "Mission map closed";
+            }
+        }
+
+        private void DrawObjectiveMapMarker(Rect map, ObjectiveState objective)
+        {
+            if (objective.Definition.conditions == null)
+            {
+                return;
+            }
+
+            foreach (ObjectiveCondition condition in objective.Definition.conditions)
+            {
+                if (condition == null)
+                {
+                    continue;
+                }
+
+                if (condition.targetArea != null)
+                {
+                    Vector2 center = new(condition.targetArea.x, condition.targetArea.y);
+                    DrawMapMarker(map, center, objective.IsComplete ? Color.green : Color.yellow, objective.IsActive ? 9f : 6f);
+                    continue;
+                }
+
+                if (condition.targetUnit?.position != null)
+                {
+                    DrawMapMarker(
+                        map,
+                        new Vector2(condition.targetUnit.position.x, condition.targetUnit.position.y),
+                        objective.IsComplete ? Color.green : Color.yellow,
+                        9f);
+                }
+
+                if (condition.targetStructure?.position != null)
+                {
+                    DrawMapMarker(
+                        map,
+                        new Vector2(condition.targetStructure.position.x, condition.targetStructure.position.y),
+                        objective.IsComplete ? Color.green : new Color(1f, 0.72f, 0.15f),
+                        10f);
+                }
+            }
+        }
+
+        private void DrawSystemPanel()
+        {
+            if (!showSystemPanel)
+            {
+                return;
+            }
+
+            Rect panel = SystemPanelRect();
+            GUI.Box(panel, "System");
+            GUI.Label(new Rect(panel.x + 18f, panel.y + 36f, panel.width - 36f, 24f), isPaused ? "Paused" : "Running");
+
+            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 70f, panel.width - 36f, 30f), isPaused ? "Resume" : "Pause"))
+            {
+                SetPaused(!isPaused);
+                statusText = isPaused ? "Paused" : "Resumed";
+            }
+
+            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 108f, panel.width - 36f, 30f), "Restart Mission"))
+            {
+                Time.timeScale = 1f;
+                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+            }
+
+            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 146f, panel.width - 36f, 30f), "End Demo"))
+            {
+                Application.Quit(0);
+            }
+
+            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 184f, panel.width - 36f, 30f), "Close"))
+            {
+                showSystemPanel = false;
+                SetPaused(false);
+                statusText = "System closed";
+            }
+        }
+
+        private void OpenSystemPanel()
+        {
+            showSystemPanel = true;
+            SetPaused(true);
+            pendingDetachedUnitId = null;
+            pendingJumpOrder = false;
+            statusText = "System open";
+        }
+
+        private void SetPaused(bool paused)
+        {
+            isPaused = paused;
+            Time.timeScale = paused ? 0f : 1f;
+        }
+
+        private bool IsGuiPointBlocked(Vector2 guiPoint)
+        {
+            if (guiPoint.x < 360f)
+            {
+                return true;
+            }
+
+            if (CombatPanelRect().Contains(guiPoint))
+            {
+                return true;
+            }
+
+            if (showMissionMap && MissionMapRect().Contains(guiPoint))
+            {
+                return true;
+            }
+
+            return showSystemPanel && SystemPanelRect().Contains(guiPoint);
+        }
+
+        private Rect MissionMapRect()
+        {
+            float width = Mathf.Clamp(Screen.width * 0.32f, 280f, 390f);
+            float height = Mathf.Clamp(Screen.height * 0.38f, 230f, 330f);
+            return new Rect(Screen.width - width - 16f, Screen.height - height - 16f, width, height);
+        }
+
+        private Rect SystemPanelRect()
+        {
+            float width = 260f;
+            float height = 232f;
+            return new Rect((Screen.width - width) * 0.5f, (Screen.height - height) * 0.5f, width, height);
+        }
+
+        private Rect CombatPanelRect()
+        {
+            return new Rect(Screen.width - 360f, 12f, 344f, 178f);
+        }
+
+        private void DrawMapMarker(Rect map, Vector2 missionPoint, Color color, float size)
+        {
+            Vector2 point = MissionToMapPoint(map, missionPoint);
+            float half = size * 0.5f;
+            DrawColorRect(new Rect(point.x - half, point.y - half, size, size), color);
+        }
+
+        private Vector2 MissionToMapPoint(Rect map, Vector2 missionPoint)
+        {
+            GetMissionBounds(out float minX, out float maxX, out float minY, out float maxY);
+            float x = map.x + Mathf.InverseLerp(minX, maxX, missionPoint.x) * map.width;
+            float y = map.y + (1f - Mathf.InverseLerp(minY, maxY, missionPoint.y)) * map.height;
+            return new Vector2(x, y);
+        }
+
+        private void GetMissionBounds(out float minX, out float maxX, out float minY, out float maxY)
+        {
+            TerrainMeshDefinition terrain = mission.Contract.terrainMesh;
+            if (terrain != null && terrain.samples != null && terrain.samples.Length > 0)
+            {
+                int side = Mathf.Max(1, terrain.sampleSide);
+                float spacing = Mathf.Max(1f, terrain.worldUnitsPerVertex * Mathf.Max(1, terrain.sampleStep));
+                minX = terrain.minX;
+                maxX = terrain.minX + spacing * (side - 1);
+                maxY = terrain.minY;
+                minY = terrain.minY - spacing * (side - 1);
+                return;
+            }
+
+            minX = mission.Contract.mission.terrain.minX;
+            maxY = mission.Contract.mission.terrain.minY;
+            maxX = -minX;
+            minY = -maxY;
         }
 
         private void DrawSectionLine(UnitState unit, float y)

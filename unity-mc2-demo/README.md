@@ -12,6 +12,7 @@ Current demo behavior:
 - follows the first player mech as commander
 - defaults to squad orders, with status-bar click for detached single-unit order
 - supports one-shot Jet orders with terrain-aware landing rejection
+- provides a toggleable mission map and a pause/restart/end system panel
 - auto-acquires hostile units in weapon range
 - resolves temporary weapon cooldown, damage, cockpit/torso/arms/legs sections,
   and destruction
