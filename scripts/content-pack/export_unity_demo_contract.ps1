@@ -12,6 +12,9 @@ param(
     [string]$TerrainObjectPacketPath = "",
 
     [Parameter(Mandatory = $false)]
+    [string]$TerrainVertexPacketPath = "",
+
+    [Parameter(Mandatory = $false)]
     [string]$BuildingCatalogPath = ""
 )
 
@@ -39,6 +42,19 @@ if ([string]::IsNullOrWhiteSpace($TerrainObjectPacketPath)) {
     foreach ($candidate in $packetCandidates) {
         if (Test-Path -LiteralPath $candidate -PathType Leaf) {
             $TerrainObjectPacketPath = $candidate
+            break
+        }
+    }
+}
+
+if ([string]::IsNullOrWhiteSpace($TerrainVertexPacketPath)) {
+    $vertexPacketCandidates = @(
+        (Join-Path $repoRoot "analysis-output\pak-unpack\mc2_01-fixed-safe\packet_0000.bin"),
+        (Join-Path $repoRoot "analysis-output\pak-unpack\mc2_01.pak-safe\packet_0000.bin")
+    )
+    foreach ($candidate in $vertexPacketCandidates) {
+        if (Test-Path -LiteralPath $candidate -PathType Leaf) {
+            $TerrainVertexPacketPath = $candidate
             break
         }
     }
@@ -252,11 +268,96 @@ function Read-TerrainObjects {
     return $objects
 }
 
+function Read-TerrainMesh {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$PacketPath,
+
+        [Parameter(Mandatory = $true)]
+        $Analysis
+    )
+
+    if ([string]::IsNullOrWhiteSpace($PacketPath) -or -not (Test-Path -LiteralPath $PacketPath -PathType Leaf)) {
+        return $null
+    }
+
+    $resolvedPacketPath = (Resolve-Path -LiteralPath $PacketPath).Path
+    $bytes = [IO.File]::ReadAllBytes($resolvedPacketPath)
+    $vertexSize = 32
+    if (($bytes.Length % $vertexSize) -ne 0) {
+        throw "Terrain vertex packet size is not divisible by $vertexSize`: $resolvedPacketPath"
+    }
+
+    $vertexCount = [int]($bytes.Length / $vertexSize)
+    $sourceSide = [int][Math]::Sqrt($vertexCount)
+    if (($sourceSide * $sourceSide) -ne $vertexCount) {
+        throw "Terrain vertex packet does not contain a square vertex grid: $vertexCount vertices"
+    }
+
+    $samples = @()
+    $elevationMin = [double]::PositiveInfinity
+    $elevationMax = [double]::NegativeInfinity
+    $terrainTypeCounts = @{}
+    $waterCounts = @{}
+
+    for ($index = 0; $index -lt $vertexCount; $index++) {
+        $offset = $index * $vertexSize
+        $elevation = Read-SingleLE -Bytes $bytes -Offset ($offset + 12)
+        $textureData = [BitConverter]::ToUInt32($bytes, $offset + 16)
+        $light = [BitConverter]::ToUInt32($bytes, $offset + 20)
+        $terrainType = [BitConverter]::ToUInt32($bytes, $offset + 24)
+        $water = [int]$bytes[$offset + 29]
+
+        if ($elevation -lt $elevationMin) {
+            $elevationMin = $elevation
+        }
+        if ($elevation -gt $elevationMax) {
+            $elevationMax = $elevation
+        }
+
+        $terrainKey = [string]$terrainType
+        if (-not $terrainTypeCounts.ContainsKey($terrainKey)) {
+            $terrainTypeCounts[$terrainKey] = 0
+        }
+        $terrainTypeCounts[$terrainKey]++
+
+        $waterKey = [string]$water
+        if (-not $waterCounts.ContainsKey($waterKey)) {
+            $waterCounts[$waterKey] = 0
+        }
+        $waterCounts[$waterKey]++
+
+        $samples += [ordered]@{
+            elevation = $elevation
+            terrainType = [int]$terrainType
+            water = $water
+            textureData = [int64]$textureData
+            light = [int64]$light
+        }
+    }
+
+    return [ordered]@{
+        sourcePacket = $resolvedPacketPath
+        sourceSide = $sourceSide
+        sampleSide = $sourceSide
+        sampleStep = 1
+        worldUnitsPerVertex = 128
+        minX = [float]$Analysis.terrain.minX
+        minY = [float]$Analysis.terrain.minY
+        elevationMin = [float]$elevationMin
+        elevationMax = [float]$elevationMax
+        terrainTypeCounts = $terrainTypeCounts
+        waterCounts = $waterCounts
+        samples = $samples
+    }
+}
+
 $analysisFile = (Resolve-Path -LiteralPath $MissionAnalysisPath).Path
 $analysis = Get-Content -LiteralPath $analysisFile -Raw | ConvertFrom-Json
 $packId = $analysis.pack.id
 $missionId = $analysis.missionId
 $buildingCatalog = Read-BuildingCatalog -Path $BuildingCatalogPath
+$terrainMesh = Read-TerrainMesh -PacketPath $TerrainVertexPacketPath -Analysis $analysis
 $terrainObjects = @(Read-TerrainObjects -PacketPath $TerrainObjectPacketPath -Catalog $buildingCatalog)
 
 $units = @($analysis.units | ForEach-Object {
@@ -341,6 +442,7 @@ $contract = [ordered]@{
         packId = $packId
         missionId = $missionId
         files = $analysis.files
+        terrainVertexPacket = if ([string]::IsNullOrWhiteSpace($TerrainVertexPacketPath)) { $null } else { $TerrainVertexPacketPath }
         terrainObjectPacket = if ([string]::IsNullOrWhiteSpace($TerrainObjectPacketPath)) { $null } else { $TerrainObjectPacketPath }
         buildingCatalog = if (Test-Path -LiteralPath $BuildingCatalogPath -PathType Leaf) { $BuildingCatalogPath } else { $null }
     }
@@ -363,6 +465,7 @@ $contract = [ordered]@{
     objectives = $objectives
     objectiveEdges = $analysis.objectiveEdges
     staticObjects = $staticObjects
+    terrainMesh = $terrainMesh
     terrainObjects = $terrainObjects
     navMarkers = $analysis.navMarkers
     forests = $analysis.forests
@@ -416,4 +519,5 @@ if ($unityContractPath) {
 Write-Output ("Units: {0}" -f $units.Count)
 Write-Output ("Objectives: {0}" -f $objectives.Count)
 Write-Output ("Static objects: {0}" -f $staticObjects.Count)
+Write-Output ("Terrain mesh samples: {0}" -f $(if ($terrainMesh) { $terrainMesh.samples.Count } else { 0 }))
 Write-Output ("Terrain objects: {0}" -f $terrainObjects.Count)

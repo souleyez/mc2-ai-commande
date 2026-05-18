@@ -33,11 +33,17 @@ _O_BINARY, ...)`, so `data/missions/mc2_01.pak` now matches the fast-file table:
 
 Packet 0 is the terrain payload, packet 1 is the terrain object payload used by
 `GameObjectManager::countTerrainObjects(...)`, and packet 4 onward contains
-movement/pathfinding data. Packet 1 decodes to 1000 original terrain object
-records, each matching the original 40-byte `ObjDataLoader` layout. The Unity
-demo contract now exports those objects as lightweight props: mostly trees plus
-44 building records. The objective hangar remains represented by the targetable
-`staticObjects` entry so combat logic can damage it cleanly.
+movement/pathfinding data. Packet 0 decodes to a 100 x 100 `PostcompVertex`
+grid, where each 32-byte record contains normal, elevation, texture, light,
+terrain type, and water flags. The Unity demo contract now exports all 10000
+height samples as `terrainMesh`, and the runtime builds a low-poly source-driven
+terrain mesh plus a water plane from that data.
+
+Packet 1 decodes to 1000 original terrain object records, each matching the
+original 40-byte `ObjDataLoader` layout. The Unity demo contract exports those
+objects as lightweight props: mostly trees plus 44 building records. The
+objective hangar remains represented by the targetable `staticObjects` entry so
+combat logic can damage it cleanly.
 
 One task-critical static object is now recovered without waiting on full packet
 decompression: objective `1` (`Destroy Hangar`) includes a

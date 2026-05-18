@@ -23,7 +23,7 @@ namespace MC2Demo.Presentation
                 liveColor = structureRenderer.sharedMaterial.color;
             }
 
-            transform.position = DemoUnitView.MissionToWorld(structure.MissionPosition) + new Vector3(0f, liveScale.y * 0.5f, 0f);
+            transform.position = GroundedPosition(structure.MissionPosition, liveScale.y);
         }
 
         private void Update()
@@ -41,7 +41,7 @@ namespace MC2Demo.Presentation
 
             SpawnDestructionEffects();
             transform.localScale = new Vector3(liveScale.x, liveScale.y * 0.28f, liveScale.z);
-            transform.position = DemoUnitView.MissionToWorld(Structure.MissionPosition) + new Vector3(0f, transform.localScale.y * 0.5f, 0f);
+            transform.position = GroundedPosition(Structure.MissionPosition, transform.localScale.y);
             destroyedPoseApplied = true;
         }
 
@@ -58,9 +58,16 @@ namespace MC2Demo.Presentation
 
         private void SpawnDestructionEffects()
         {
-            Vector3 center = DemoUnitView.MissionToWorld(Structure.MissionPosition) + new Vector3(0f, liveScale.y * 0.75f, 0f);
+            Vector3 center = GroundedPosition(Structure.MissionPosition, liveScale.y) + new Vector3(0f, liveScale.y * 0.25f, 0f);
             CreateEffect("Structure Blast", PrimitiveType.Sphere, center, new Color(1f, 0.42f, 0.08f, 0.72f), 0.55f, new Vector3(0.4f, 0.4f, 0.4f), new Vector3(4.6f, 1.6f, 4.6f));
             CreateEffect("Structure Smoke", PrimitiveType.Sphere, center + new Vector3(0f, 0.5f, 0f), new Color(0.12f, 0.12f, 0.12f, 0.52f), 1.8f, new Vector3(0.9f, 0.5f, 0.9f), new Vector3(3.8f, 3.2f, 3.8f));
+        }
+
+        private static Vector3 GroundedPosition(Vector2 missionPosition, float height)
+        {
+            Vector3 position = DemoUnitView.MissionToWorld(missionPosition);
+            position.y = DemoTerrainView.HeightAt(missionPosition) + height * 0.5f;
+            return position;
         }
 
         private void CreateEffect(string effectName, PrimitiveType primitive, Vector3 position, Color color, float duration, Vector3 fromScale, Vector3 toScale)

@@ -7,6 +7,8 @@ placeholder battlefield at runtime.
 Current demo behavior:
 
 - loads `mc2_01` unit spawns and objective graph
+- builds a source-driven 100 x 100 terrain mesh and water plane from packet data
+- places original terrain object records as lightweight trees and buildings
 - follows the first player mech as commander
 - defaults to squad orders, with status-bar click for detached single-unit order
 - auto-acquires hostile units in weapon range

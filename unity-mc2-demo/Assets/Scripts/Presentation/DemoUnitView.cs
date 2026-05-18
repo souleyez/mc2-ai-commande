@@ -5,8 +5,6 @@ namespace MC2Demo.Presentation
 {
     public sealed class DemoUnitView : MonoBehaviour
     {
-        private const float MissionScale = 100f;
-
         public UnitState Unit { get; private set; }
         private Vector3 liveScale;
         private bool destroyedPoseApplied;
@@ -32,7 +30,9 @@ namespace MC2Demo.Presentation
                 return;
             }
 
-            transform.position = MissionToWorld(Unit.MissionPosition);
+            Vector3 position = MissionToWorld(Unit.MissionPosition);
+            position.y = DemoTerrainView.HeightAt(Unit.MissionPosition) + Mathf.Max(0.2f, transform.localScale.y * 0.5f);
+            transform.position = position;
         }
 
         private void ApplyDamagePose()
@@ -49,12 +49,12 @@ namespace MC2Demo.Presentation
 
         public static Vector3 MissionToWorld(Vector2 missionPoint)
         {
-            return new Vector3(missionPoint.x / MissionScale, 0f, missionPoint.y / MissionScale);
+            return DemoTerrainView.MissionToWorld(missionPoint);
         }
 
         public static Vector2 WorldToMission(Vector3 worldPoint)
         {
-            return new Vector2(worldPoint.x * MissionScale, worldPoint.z * MissionScale);
+            return DemoTerrainView.WorldToMission(worldPoint);
         }
     }
 }

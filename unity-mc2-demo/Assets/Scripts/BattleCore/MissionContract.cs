@@ -12,6 +12,7 @@ namespace MC2Demo.BattleCore
         public ObjectiveDefinition[] objectives;
         public ObjectiveEdge[] objectiveEdges;
         public StaticObjectSpawn[] staticObjects;
+        public TerrainMeshDefinition terrainMesh;
         public TerrainObjectSpawn[] terrainObjects;
         public NavMarker[] navMarkers;
         public ForestRegion[] forests;
@@ -123,6 +124,30 @@ namespace MC2Demo.BattleCore
         public int parentId;
         public int damage;
         public TerrainObjectPose position;
+    }
+
+    [Serializable]
+    public sealed class TerrainMeshDefinition
+    {
+        public int sourceSide;
+        public int sampleSide;
+        public int sampleStep;
+        public float worldUnitsPerVertex;
+        public float minX;
+        public float minY;
+        public float elevationMin;
+        public float elevationMax;
+        public TerrainMeshSample[] samples;
+    }
+
+    [Serializable]
+    public sealed class TerrainMeshSample
+    {
+        public float elevation;
+        public int terrainType;
+        public int water;
+        public long textureData;
+        public long light;
     }
 
     [Serializable]

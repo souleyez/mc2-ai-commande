@@ -107,6 +107,8 @@ namespace MC2Demo.Presentation
                 + mission.Structures.Count
                 + ", objectives="
                 + mission.Objectives.Count
+                + ", terrainSamples="
+                + (mission.Contract.terrainMesh == null || mission.Contract.terrainMesh.samples == null ? 0 : mission.Contract.terrainMesh.samples.Length)
                 + ", terrainObjects="
                 + (mission.Contract.terrainObjects == null ? 0 : mission.Contract.terrainObjects.Length)
                 + ", forests="
@@ -188,10 +190,111 @@ namespace MC2Demo.Presentation
 
         private void CreateGround()
         {
-            GameObject ground = GameObject.CreatePrimitive(PrimitiveType.Plane);
-            ground.name = "Mission Ground";
-            ground.transform.localScale = new Vector3(140f, 1f, 140f);
-            AssignMaterial(ground, "Ground", new Color(0.16f, 0.20f, 0.16f));
+            if (mission.Contract.terrainMesh == null || mission.Contract.terrainMesh.samples == null)
+            {
+                GameObject fallbackGround = GameObject.CreatePrimitive(PrimitiveType.Plane);
+                fallbackGround.name = "Mission Ground";
+                fallbackGround.transform.localScale = new Vector3(140f, 1f, 140f);
+                AssignMaterial(fallbackGround, "Ground", new Color(0.16f, 0.20f, 0.16f));
+                return;
+            }
+
+            GameObject terrainObject = new("Mission Terrain");
+            MeshFilter meshFilter = terrainObject.AddComponent<MeshFilter>();
+            MeshRenderer meshRenderer = terrainObject.AddComponent<MeshRenderer>();
+            DemoTerrainView terrainView = terrainObject.AddComponent<DemoTerrainView>();
+            terrainView.Bind(mission.Contract.terrainMesh, mission.Contract.mission.terrain.waterElevation);
+
+            meshFilter.sharedMesh = BuildTerrainMesh(mission.Contract.terrainMesh);
+            meshRenderer.sharedMaterial = MakeMaterial("GroundMesh", new Color(0.16f, 0.22f, 0.15f));
+
+            CreateWaterPlane(mission.Contract.terrainMesh);
+        }
+
+        private Mesh BuildTerrainMesh(TerrainMeshDefinition terrain)
+        {
+            int side = terrain.sampleSide;
+            int sampleCount = terrain.samples.Length;
+            Vector3[] vertices = new Vector3[sampleCount];
+            Color[] colors = new Color[sampleCount];
+            Vector2[] uvs = new Vector2[sampleCount];
+            float spacing = Mathf.Max(1f, terrain.worldUnitsPerVertex * Mathf.Max(1, terrain.sampleStep));
+
+            for (int row = 0; row < side; row++)
+            {
+                for (int col = 0; col < side; col++)
+                {
+                    int index = row * side + col;
+                    TerrainMeshSample sample = terrain.samples[index];
+                    float missionX = terrain.minX + col * spacing;
+                    float missionY = terrain.minY - row * spacing;
+                    Vector3 worldPosition = DemoTerrainView.MissionToWorld(new Vector2(missionX, missionY));
+                    worldPosition.y = DemoTerrainView.ElevationToWorldHeight(sample.elevation, mission.Contract.mission.terrain.waterElevation);
+                    vertices[index] = worldPosition;
+                    colors[index] = TerrainVertexColor(sample);
+                    uvs[index] = new Vector2(col / (float)(side - 1), row / (float)(side - 1));
+                }
+            }
+
+            int[] triangles = new int[(side - 1) * (side - 1) * 6];
+            int triangleIndex = 0;
+            for (int row = 0; row < side - 1; row++)
+            {
+                for (int col = 0; col < side - 1; col++)
+                {
+                    int topLeft = row * side + col;
+                    int topRight = topLeft + 1;
+                    int bottomLeft = topLeft + side;
+                    int bottomRight = bottomLeft + 1;
+                    triangles[triangleIndex++] = topLeft;
+                    triangles[triangleIndex++] = bottomLeft;
+                    triangles[triangleIndex++] = topRight;
+                    triangles[triangleIndex++] = topRight;
+                    triangles[triangleIndex++] = bottomLeft;
+                    triangles[triangleIndex++] = bottomRight;
+                }
+            }
+
+            Mesh mesh = new()
+            {
+                name = "MC2 Source Terrain",
+                vertices = vertices,
+                triangles = triangles,
+                colors = colors,
+                uv = uvs
+            };
+            mesh.RecalculateNormals();
+            mesh.RecalculateBounds();
+            return mesh;
+        }
+
+        private void CreateWaterPlane(TerrainMeshDefinition terrain)
+        {
+            GameObject water = GameObject.CreatePrimitive(PrimitiveType.Plane);
+            water.name = "Mission Water";
+            float sourceSize = (terrain.sampleSide - 1) * terrain.worldUnitsPerVertex / 1000f;
+            water.transform.localScale = new Vector3(sourceSize, 1f, sourceSize);
+            Vector3 center = DemoTerrainView.MissionToWorld(new Vector2(0f, 0f));
+            center.y = DemoTerrainView.WaterHeight() + 0.015f;
+            water.transform.position = center;
+            AssignMaterial(water, "Water", new Color(0.08f, 0.24f, 0.34f, 0.52f));
+        }
+
+        private Color TerrainVertexColor(TerrainMeshSample sample)
+        {
+            float waterLevel = mission.Contract.mission.terrain.waterElevation;
+            if (sample.elevation <= waterLevel + 4f)
+            {
+                return new Color(0.10f, 0.28f, 0.22f);
+            }
+
+            if (sample.terrainType == 13 || sample.terrainType == 14 || sample.terrainType == 15 || sample.terrainType == 16)
+            {
+                return new Color(0.32f, 0.29f, 0.22f);
+            }
+
+            float heightT = Mathf.InverseLerp(mission.Contract.terrainMesh.elevationMin, mission.Contract.terrainMesh.elevationMax, sample.elevation);
+            return Color.Lerp(new Color(0.13f, 0.24f, 0.12f), new Color(0.36f, 0.36f, 0.25f), heightT);
         }
 
         private void CreateLights()
@@ -281,7 +384,8 @@ namespace MC2Demo.Presentation
                 prop.name = terrainObject.objectId + " " + terrainObject.fileName;
                 Vector3 scale = TerrainObjectScale(terrainObject);
                 Vector3 position = DemoUnitView.MissionToWorld(new Vector2(terrainObject.position.x, terrainObject.position.y));
-                position.y = Mathf.Max(0.03f, scale.y * 0.5f);
+                Vector2 missionPosition = new(terrainObject.position.x, terrainObject.position.y);
+                position.y = DemoTerrainView.HeightAt(missionPosition) + Mathf.Max(0.03f, scale.y * 0.5f);
                 prop.transform.position = position;
                 prop.transform.rotation = Quaternion.Euler(0f, -terrainObject.position.rotation, 0f);
                 prop.transform.localScale = scale;

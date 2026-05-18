@@ -68,6 +68,20 @@ namespace MC2Demo.EditorTools
                 throw new InvalidDataException("Expected 1000 terrain objects, got " + terrainObjectCount);
             }
 
+            if (mission.Contract.terrainMesh == null || mission.Contract.terrainMesh.samples == null)
+            {
+                throw new InvalidDataException("Expected source terrain mesh in mission contract.");
+            }
+
+            if (mission.Contract.terrainMesh.sampleSide != 100 || mission.Contract.terrainMesh.samples.Length != 10000)
+            {
+                throw new InvalidDataException(
+                    "Expected 100x100 terrain mesh samples, got side="
+                    + mission.Contract.terrainMesh.sampleSide
+                    + " samples="
+                    + mission.Contract.terrainMesh.samples.Length);
+            }
+
             int playerUnits = 0;
             foreach (UnitState unit in mission.Units)
             {
@@ -85,7 +99,7 @@ namespace MC2Demo.EditorTools
             ValidateCombatSimulation(mission);
             ValidateStructureObjective(mission);
 
-            Debug.Log("MC2 demo contract validation OK: 29 units, 3 player units, 9 objectives, 1 structure, 1000 terrain objects, combat simulation passed.");
+            Debug.Log("MC2 demo contract validation OK: 29 units, 3 player units, 9 objectives, 1 structure, 10000 terrain samples, 1000 terrain objects, combat simulation passed.");
         }
 
         private static void ValidateSourceDrivenProfiles(CombatProfileCatalog combatProfiles)
