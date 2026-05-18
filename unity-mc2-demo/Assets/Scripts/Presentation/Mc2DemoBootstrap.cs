@@ -28,6 +28,7 @@ namespace MC2Demo.Presentation
         private bool showMissionMap;
         private bool showSystemPanel;
         private bool isPaused;
+        private MissionResultState lastMissionResult = MissionResultState.InProgress;
         private Camera mainCamera;
         private string statusText = "Loading";
 
@@ -45,7 +46,7 @@ namespace MC2Demo.Presentation
                 return;
             }
 
-            if (!isPaused)
+            if (!isPaused && mission.Result == MissionResultState.InProgress)
             {
                 mission.Tick(Time.deltaTime);
                 CaptureCombatEvents();
@@ -53,6 +54,7 @@ namespace MC2Demo.Presentation
                 HandleWorldClick();
             }
 
+            CaptureMissionResult();
             FollowCommander();
         }
 
@@ -187,6 +189,30 @@ namespace MC2Demo.Presentation
                         Debug.Log("MC2 objective complete: " + objective.Definition.title);
                     }
                 }
+            }
+        }
+
+        private void CaptureMissionResult()
+        {
+            if (mission.Result == lastMissionResult)
+            {
+                return;
+            }
+
+            lastMissionResult = mission.Result;
+            if (mission.Result == MissionResultState.Victory)
+            {
+                statusText = "Mission complete";
+                AddCombatLogLine("Mission complete");
+                Debug.Log("MC2 mission complete: " + mission.ResultReason);
+                SetPaused(true);
+            }
+            else if (mission.Result == MissionResultState.Defeat)
+            {
+                statusText = "Mission failed";
+                AddCombatLogLine("Mission failed");
+                Debug.Log("MC2 mission failed: " + mission.ResultReason);
+                SetPaused(true);
             }
         }
 
@@ -798,6 +824,7 @@ namespace MC2Demo.Presentation
             DrawCombatPanel();
             DrawMissionMap();
             DrawSystemPanel();
+            DrawMissionResultPanel();
         }
 
         private void DrawUnitPanel()
@@ -1037,8 +1064,15 @@ namespace MC2Demo.Presentation
 
             if (GUI.Button(new Rect(panel.x + 18f, panel.y + 70f, panel.width - 36f, 30f), isPaused ? "Resume" : "Pause"))
             {
-                SetPaused(!isPaused);
-                statusText = isPaused ? "Paused" : "Resumed";
+                if (mission.Result == MissionResultState.InProgress)
+                {
+                    SetPaused(!isPaused);
+                    statusText = isPaused ? "Paused" : "Resumed";
+                }
+                else
+                {
+                    statusText = MissionResultText();
+                }
             }
 
             if (GUI.Button(new Rect(panel.x + 18f, panel.y + 108f, panel.width - 36f, 30f), "Restart Mission"))
@@ -1055,15 +1089,61 @@ namespace MC2Demo.Presentation
             if (GUI.Button(new Rect(panel.x + 18f, panel.y + 184f, panel.width - 36f, 30f), "Close"))
             {
                 showSystemPanel = false;
-                SetPaused(false);
+                if (mission.Result == MissionResultState.InProgress)
+                {
+                    SetPaused(false);
+                }
+
                 statusText = "System closed";
             }
+        }
+
+        private void DrawMissionResultPanel()
+        {
+            if (mission.Result == MissionResultState.InProgress)
+            {
+                return;
+            }
+
+            Rect panel = new((Screen.width - 320f) * 0.5f, 72f, 320f, 148f);
+            GUI.Box(panel, MissionResultText());
+            GUI.Label(new Rect(panel.x + 18f, panel.y + 36f, panel.width - 36f, 42f), mission.ResultReason);
+
+            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 88f, 132f, 30f), "Restart"))
+            {
+                Time.timeScale = 1f;
+                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+            }
+
+            if (GUI.Button(new Rect(panel.x + 170f, panel.y + 88f, 132f, 30f), "End Demo"))
+            {
+                Application.Quit(0);
+            }
+        }
+
+        private string MissionResultText()
+        {
+            if (mission.Result == MissionResultState.Victory)
+            {
+                return "Mission Complete";
+            }
+
+            if (mission.Result == MissionResultState.Defeat)
+            {
+                return "Mission Failed";
+            }
+
+            return isPaused ? "Paused" : "Running";
         }
 
         private void OpenSystemPanel()
         {
             showSystemPanel = true;
-            SetPaused(true);
+            if (mission.Result == MissionResultState.InProgress)
+            {
+                SetPaused(true);
+            }
+
             pendingDetachedUnitId = null;
             pendingJumpOrder = false;
             statusText = "System open";

@@ -11,6 +11,8 @@ namespace MC2Demo.BattleCore
         public IReadOnlyList<StructureState> Structures => structures;
         public IReadOnlyList<ObjectiveState> Objectives => objectives;
         public IReadOnlyList<CombatEvent> RecentCombatEvents => recentCombatEvents;
+        public MissionResultState Result { get; private set; } = MissionResultState.InProgress;
+        public string ResultReason { get; private set; } = "";
 
         private readonly List<UnitState> units = new();
         private readonly List<StructureState> structures = new();
@@ -48,6 +50,7 @@ namespace MC2Demo.BattleCore
             }
 
             EvaluateObjectives();
+            EvaluateMissionResult();
         }
 
         public static BattleMission FromJson(string json, CombatProfileCatalog combatProfiles = null)
@@ -87,6 +90,11 @@ namespace MC2Demo.BattleCore
 
         public void IssueSquadMove(Vector2 missionPoint)
         {
+            if (Result != MissionResultState.InProgress)
+            {
+                return;
+            }
+
             foreach (UnitState unit in PlayerUnits())
             {
                 if (!unit.IsDetached)
@@ -98,6 +106,11 @@ namespace MC2Demo.BattleCore
 
         public void IssueDetachedMove(string unitId, Vector2 missionPoint)
         {
+            if (Result != MissionResultState.InProgress)
+            {
+                return;
+            }
+
             UnitState unit = FindUnit(unitId);
             if (unit != null && unit.IsPlayerUnit)
             {
@@ -107,6 +120,11 @@ namespace MC2Demo.BattleCore
 
         public int IssueSquadJump(Vector2 missionPoint, float jumpDistance, Func<Vector2, bool> isLandingAllowed)
         {
+            if (Result != MissionResultState.InProgress)
+            {
+                return 0;
+            }
+
             int accepted = 0;
             foreach (UnitState unit in PlayerUnits())
             {
@@ -121,6 +139,11 @@ namespace MC2Demo.BattleCore
 
         public int IssueDetachedJump(string unitId, Vector2 missionPoint, float jumpDistance, Func<Vector2, bool> isLandingAllowed)
         {
+            if (Result != MissionResultState.InProgress)
+            {
+                return 0;
+            }
+
             UnitState unit = FindUnit(unitId);
             if (unit != null && unit.IsPlayerUnit && unit.TryStartJumpToward(missionPoint, jumpDistance, isLandingAllowed, detached: true))
             {
@@ -133,6 +156,10 @@ namespace MC2Demo.BattleCore
         public void Tick(float deltaTime)
         {
             recentCombatEvents.Clear();
+            if (Result != MissionResultState.InProgress)
+            {
+                return;
+            }
 
             foreach (UnitState unit in units)
             {
@@ -156,6 +183,7 @@ namespace MC2Demo.BattleCore
             }
 
             EvaluateObjectives();
+            EvaluateMissionResult();
         }
 
         private UnitState AcquireTarget(UnitState attacker)
@@ -234,6 +262,62 @@ namespace MC2Demo.BattleCore
                     ApplyActions(objective.actions);
                 }
             }
+        }
+
+        private void EvaluateMissionResult()
+        {
+            if (Result != MissionResultState.InProgress)
+            {
+                return;
+            }
+
+            if (AllVisibleObjectivesComplete())
+            {
+                Result = MissionResultState.Victory;
+                ResultReason = "All visible objectives complete.";
+                return;
+            }
+
+            if (AllPlayerUnitsDestroyed())
+            {
+                Result = MissionResultState.Defeat;
+                ResultReason = "All player units destroyed.";
+            }
+        }
+
+        private bool AllVisibleObjectivesComplete()
+        {
+            bool sawVisibleObjective = false;
+            foreach (ObjectiveState objective in objectives)
+            {
+                if (objective.Definition.hidden)
+                {
+                    continue;
+                }
+
+                sawVisibleObjective = true;
+                if (!objective.IsComplete)
+                {
+                    return false;
+                }
+            }
+
+            return sawVisibleObjective;
+        }
+
+        private bool AllPlayerUnitsDestroyed()
+        {
+            bool sawPlayerUnit = false;
+            foreach (UnitState unit in PlayerUnits())
+            {
+                sawPlayerUnit = true;
+                if (!unit.IsDestroyed)
+                {
+                    return false;
+                }
+            }
+
+            return sawPlayerUnit;
         }
 
         private bool AreConditionsMet(ObjectiveCondition[] conditions)
@@ -399,5 +483,12 @@ namespace MC2Demo.BattleCore
         {
             return !string.IsNullOrEmpty(id) && flags.TryGetValue(id, out bool value) && value;
         }
+    }
+
+    public enum MissionResultState
+    {
+        InProgress,
+        Victory,
+        Defeat
     }
 }

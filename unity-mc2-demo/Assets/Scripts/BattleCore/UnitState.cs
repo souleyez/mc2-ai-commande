@@ -211,11 +211,10 @@ namespace MC2Demo.BattleCore
             }
 
             DamageSection section = SelectDamageSection(attackerId);
-            float remaining = section.ApplyDamage(damage);
-            float applied = damage - remaining;
-            CurrentStructure = Mathf.Max(0f, CurrentStructure - applied);
-            LastHitSection = section.Name;
-            LastDamageTaken = applied;
+            DamageResult result = ApplyDamageWithOverflow(section, damage);
+            CurrentStructure = Mathf.Max(0f, CurrentStructure - result.DamageApplied);
+            LastHitSection = result.SectionName;
+            LastDamageTaken = result.DamageApplied;
 
             if (CurrentStructure <= 0f || HasDestroyedCriticalSection())
             {
@@ -226,7 +225,49 @@ namespace MC2Demo.BattleCore
                 CurrentStructure = 0f;
             }
 
-            return new DamageResult(section.Name, applied);
+            return result;
+        }
+
+        private DamageResult ApplyDamageWithOverflow(DamageSection firstSection, float damage)
+        {
+            float remaining = damage;
+            float applied = 0f;
+            string lastHitSectionName = firstSection.Name;
+
+            remaining = ApplyDamageToSection(firstSection, remaining, ref applied, ref lastHitSectionName);
+            if (remaining <= 0f)
+            {
+                return new DamageResult(lastHitSectionName, applied);
+            }
+
+            foreach (DamageSection section in Sections)
+            {
+                if (section == firstSection || section.IsDestroyed)
+                {
+                    continue;
+                }
+
+                remaining = ApplyDamageToSection(section, remaining, ref applied, ref lastHitSectionName);
+                if (remaining <= 0f)
+                {
+                    break;
+                }
+            }
+
+            return new DamageResult(lastHitSectionName, applied);
+        }
+
+        private static float ApplyDamageToSection(DamageSection section, float damage, ref float applied, ref string lastHitSectionName)
+        {
+            float remaining = section.ApplyDamage(damage);
+            float sectionApplied = damage - remaining;
+            if (sectionApplied > 0f)
+            {
+                applied += sectionApplied;
+                lastHitSectionName = section.Name;
+            }
+
+            return remaining;
         }
 
         private bool HasDestroyedCriticalSection()

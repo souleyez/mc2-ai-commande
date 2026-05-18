@@ -13,6 +13,7 @@ Current demo behavior:
 - defaults to squad orders, with status-bar click for detached single-unit order
 - supports one-shot Jet orders with terrain-aware landing rejection
 - provides a toggleable mission map and a pause/restart/end system panel
+- resolves mission victory or defeat through BattleCore result state
 - auto-acquires hostile units in weapon range
 - resolves temporary weapon cooldown, damage, cockpit/torso/arms/legs sections,
   and destruction

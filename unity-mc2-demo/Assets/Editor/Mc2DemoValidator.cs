@@ -97,6 +97,12 @@ namespace MC2Demo.EditorTools
                 throw new InvalidDataException("Expected 3 player units, got " + playerUnits);
             }
 
+            if (mission.Result != MissionResultState.InProgress)
+            {
+                throw new InvalidDataException("Expected reference mission to start in progress, got " + mission.Result);
+            }
+
+            ValidateMissionResults();
             ValidateJumpCommand(BattleMission.FromJson(contractJson, combatProfiles));
             ValidateCombatSimulation(mission);
             ValidateStructureObjective(mission);
@@ -174,6 +180,124 @@ namespace MC2Demo.EditorTools
             }
 
             return false;
+        }
+
+        private static void ValidateMissionResults()
+        {
+            CombatProfileCatalog resultProfiles = MakeResultProfiles();
+            BattleMission instantVictory = new(MakeResultContract(completeOnStart: true), resultProfiles);
+            if (instantVictory.Result != MissionResultState.Victory)
+            {
+                throw new InvalidDataException("Expected minimal completed mission to resolve victory, got " + instantVictory.Result);
+            }
+
+            BattleMission defeat = new(MakeResultContract(completeOnStart: false), resultProfiles);
+            for (int tick = 0; tick < 10 && defeat.Result == MissionResultState.InProgress; tick++)
+            {
+                defeat.Tick(1f);
+            }
+
+            if (defeat.Result != MissionResultState.Defeat)
+            {
+                throw new InvalidDataException("Expected minimal combat mission to resolve defeat, got " + defeat.Result);
+            }
+        }
+
+        private static CombatProfileCatalog MakeResultProfiles()
+        {
+            return new CombatProfileCatalog(new CombatDataContract
+            {
+                unitProfiles = new[]
+                {
+                    new CombatUnitProfile
+                    {
+                        unitType = "ValidatorPlayer",
+                        sourceKind = "validator",
+                        sections = new[]
+                        {
+                            new CombatSectionDefinition { name = "Cockpit", structure = 1f },
+                            new CombatSectionDefinition { name = "Torso", structure = 1f },
+                            new CombatSectionDefinition { name = "Left Arm", structure = 1f },
+                            new CombatSectionDefinition { name = "Right Arm", structure = 1f },
+                            new CombatSectionDefinition { name = "Legs", structure = 1f }
+                        },
+                        combatProfile = new CombatProfileFields
+                        {
+                            maxStructure = 5f,
+                            moveSpeed = 0f,
+                            weaponRange = 10f,
+                            weaponDamage = 0f,
+                            weaponCooldown = 1f
+                        }
+                    },
+                    new CombatUnitProfile
+                    {
+                        unitType = "ValidatorEnemy",
+                        sourceKind = "validator",
+                        combatProfile = new CombatProfileFields
+                        {
+                            maxStructure = 80f,
+                            moveSpeed = 0f,
+                            weaponRange = 100f,
+                            weaponDamage = 20f,
+                            weaponCooldown = 0.1f
+                        }
+                    }
+                }
+            });
+        }
+
+        private static MissionContract MakeResultContract(bool completeOnStart)
+        {
+            return new MissionContract
+            {
+                mission = new MissionDefinition
+                {
+                    id = completeOnStart ? "validator-victory" : "validator-defeat",
+                    terrain = new TerrainDefinition { minX = -1000f, minY = 1000f, waterElevation = 350f }
+                },
+                units = new[]
+                {
+                    new UnitSpawn
+                    {
+                        spawnId = "player-1",
+                        isPlayerUnit = true,
+                        teamId = 0,
+                        unitType = "ValidatorPlayer",
+                        position = new MissionPose { x = 0f, y = 0f, rotation = 0f }
+                    },
+                    new UnitSpawn
+                    {
+                        spawnId = "enemy-1",
+                        isPlayerUnit = false,
+                        teamId = 1,
+                        unitType = "ValidatorEnemy",
+                        position = new MissionPose { x = 0f, y = 0f, rotation = 0f }
+                    }
+                },
+                objectives = new[]
+                {
+                    new ObjectiveDefinition
+                    {
+                        id = "primary-1",
+                        index = 0,
+                        hidden = false,
+                        conditions = new[]
+                        {
+                            new ObjectiveCondition
+                            {
+                                type = "MoveAnyUnitToArea",
+                                targetArea = new TargetArea
+                                {
+                                    x = completeOnStart ? 0f : 5000f,
+                                    y = 0f,
+                                    radius = 40f
+                                }
+                            }
+                        }
+                    }
+                }
+            };
         }
 
         private static void ValidateJumpCommand(BattleMission mission)
