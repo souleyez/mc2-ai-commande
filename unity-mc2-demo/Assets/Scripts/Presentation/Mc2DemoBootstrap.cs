@@ -1180,6 +1180,11 @@ namespace MC2Demo.Presentation
                     label += "  FIRING";
                 }
 
+                if (!unit.IsDestroyed && (unit.MobilityRatio < 0.99f || unit.FirepowerRatio < 0.99f))
+                {
+                    label += "  M" + Mathf.RoundToInt(unit.MobilityRatio * 100f) + "/F" + Mathf.RoundToInt(unit.FirepowerRatio * 100f);
+                }
+
                 if (GUI.Button(new Rect(18, y, 304, 34), label))
                 {
                     pendingDetachedUnitId = unit.Id;

@@ -28,6 +28,9 @@ namespace MC2Demo.BattleCore
         public float JumpLift { get; private set; }
         public float CurrentStructure { get; private set; }
         public float Structure => Profile.MaxStructure <= 0f ? 0f : CurrentStructure / Profile.MaxStructure;
+        public float MobilityRatio => IsDestroyed ? 0f : IsSectionDestroyed("Legs") ? 0.45f : 1f;
+        public float FirepowerRatio => IsDestroyed ? 0f : CalculateFirepowerRatio();
+        public bool CanUseJumpJets => !IsDestroyed && !IsSectionDestroyed("Legs");
         public float WeaponCooldownRatio => Profile.WeaponCooldown <= 0f ? 0f : WeaponCooldownRemaining / Profile.WeaponCooldown;
         public Vector2 MissionPosition { get; private set; }
         public Vector2 MoveTarget { get; private set; }
@@ -97,7 +100,7 @@ namespace MC2Demo.BattleCore
 
         public bool TryStartJumpToward(Vector2 missionPoint, float jumpDistance, Func<Vector2, bool> isLandingAllowed, bool detached)
         {
-            if (IsDestroyed || IsJumping)
+            if (!CanUseJumpJets || IsJumping)
             {
                 return false;
             }
@@ -162,7 +165,7 @@ namespace MC2Demo.BattleCore
                 return;
             }
 
-            float step = Profile.MoveSpeed * deltaTime;
+            float step = EffectiveMoveSpeed() * deltaTime;
             MissionPosition += toTarget.normalized * Mathf.Min(step, distance);
         }
 
@@ -199,6 +202,7 @@ namespace MC2Demo.BattleCore
                 && !target.IsDestroyed
                 && target.TeamId != TeamId
                 && WeaponCooldownRemaining <= 0f
+                && EffectiveWeaponDamage() > 0.1f
                 && Vector2.Distance(MissionPosition, target.MissionPosition) <= Profile.WeaponRange;
         }
 
@@ -210,6 +214,7 @@ namespace MC2Demo.BattleCore
                 && !target.IsDestroyed
                 && target.TeamId != TeamId
                 && WeaponCooldownRemaining <= 0f
+                && EffectiveWeaponDamage() > 0.1f
                 && Vector2.Distance(MissionPosition, target.MissionPosition) <= Profile.WeaponRange + target.Radius;
         }
 
@@ -217,7 +222,7 @@ namespace MC2Demo.BattleCore
         {
             CurrentTargetId = target.Id;
             WeaponCooldownRemaining = Profile.WeaponCooldown;
-            DamageResult result = target.ApplyDamage(Profile.WeaponDamage, Id);
+            DamageResult result = target.ApplyDamage(EffectiveWeaponDamage(), Id);
             return new CombatEvent(Id, target.Id, result.SectionName, result.DamageApplied, target.IsDestroyed);
         }
 
@@ -225,7 +230,7 @@ namespace MC2Demo.BattleCore
         {
             CurrentTargetId = target.Id;
             WeaponCooldownRemaining = Profile.WeaponCooldown;
-            float damage = target.ApplyDamage(Profile.WeaponDamage);
+            float damage = target.ApplyDamage(EffectiveWeaponDamage());
             return new CombatEvent(Id, target.Id, "Structure", damage, target.IsDestroyed);
         }
 
@@ -256,7 +261,34 @@ namespace MC2Demo.BattleCore
             CurrentStructure = Mathf.Max(0f, CurrentStructure - result.DamageApplied);
             LastHitSection = result.SectionName;
             LastDamageTaken = result.DamageApplied;
+            EvaluateDestruction();
 
+            return result;
+        }
+
+        public float ApplyDirectSectionDamage(string sectionName, float damage)
+        {
+            if (IsDestroyed || damage <= 0f)
+            {
+                return 0f;
+            }
+
+            DamageSection section = FindSection(sectionName);
+            if (section == null)
+            {
+                return 0f;
+            }
+
+            DamageResult result = ApplyDamageWithOverflow(section, damage);
+            CurrentStructure = Mathf.Max(0f, CurrentStructure - result.DamageApplied);
+            LastHitSection = result.SectionName;
+            LastDamageTaken = result.DamageApplied;
+            EvaluateDestruction();
+            return result.DamageApplied;
+        }
+
+        private void EvaluateDestruction()
+        {
             if (CurrentStructure <= 0f || HasDestroyedCriticalSection())
             {
                 IsDestroyed = true;
@@ -266,8 +298,6 @@ namespace MC2Demo.BattleCore
                 CurrentTargetId = null;
                 CurrentStructure = 0f;
             }
-
-            return result;
         }
 
         private DamageResult ApplyDamageWithOverflow(DamageSection firstSection, float damage)
@@ -323,6 +353,56 @@ namespace MC2Demo.BattleCore
             }
 
             return false;
+        }
+
+        private DamageSection FindSection(string sectionName)
+        {
+            foreach (DamageSection section in Sections)
+            {
+                if (string.Equals(section.Name, sectionName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return section;
+                }
+            }
+
+            return null;
+        }
+
+        private bool IsSectionDestroyed(string sectionName)
+        {
+            DamageSection section = FindSection(sectionName);
+            return section != null && section.IsDestroyed;
+        }
+
+        private float CalculateFirepowerRatio()
+        {
+            float ratio = 1f;
+            if (IsSectionDestroyed("Left Arm"))
+            {
+                ratio -= 0.3f;
+            }
+
+            if (IsSectionDestroyed("Right Arm"))
+            {
+                ratio -= 0.3f;
+            }
+
+            if (IsSectionDestroyed("Torso"))
+            {
+                ratio -= 0.25f;
+            }
+
+            return Mathf.Clamp(ratio, 0.25f, 1f);
+        }
+
+        private float EffectiveMoveSpeed()
+        {
+            return Profile.MoveSpeed * MobilityRatio;
+        }
+
+        private float EffectiveWeaponDamage()
+        {
+            return Profile.WeaponDamage * FirepowerRatio;
         }
 
         private DamageSection SelectDamageSection(string attackerId)

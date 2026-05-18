@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using MC2Demo.BattleCore;
 using UnityEditor;
@@ -103,6 +104,7 @@ namespace MC2Demo.EditorTools
             }
 
             ValidateMissionResults();
+            ValidateSectionDamageModifiers();
             ValidateJumpCommand(BattleMission.FromJson(contractJson, combatProfiles));
             ValidateCombatSimulation(mission);
             ValidateStructureObjective(BattleMission.FromJson(contractJson, combatProfiles));
@@ -188,6 +190,59 @@ namespace MC2Demo.EditorTools
             }
 
             return false;
+        }
+
+        private static void ValidateSectionDamageModifiers()
+        {
+            BattleMission mission = new(MakeSectionModifierContract(), MakeSectionModifierProfiles());
+            UnitState player = mission.FindUnit("modifier-player");
+            UnitState target = mission.FindUnit("modifier-target");
+            if (player == null || target == null)
+            {
+                throw new InvalidDataException("Section modifier simulation requires player and target units.");
+            }
+
+            float structureBefore = target.CurrentStructure;
+            player.FireAt(target);
+            float fullDamage = structureBefore - target.CurrentStructure;
+            if (fullDamage < 99f)
+            {
+                throw new InvalidDataException("Expected undamaged player to apply full weapon damage, got " + fullDamage);
+            }
+
+            player.ApplyDirectSectionDamage("Left Arm", 10f);
+            player.ApplyDirectSectionDamage("Right Arm", 10f);
+            if (player.FirepowerRatio > 0.41f || player.FirepowerRatio < 0.39f)
+            {
+                throw new InvalidDataException("Expected destroyed arms to reduce firepower to 40%, got " + player.FirepowerRatio);
+            }
+
+            structureBefore = target.CurrentStructure;
+            player.FireAt(target);
+            float reducedDamage = structureBefore - target.CurrentStructure;
+            if (reducedDamage > 41f || reducedDamage < 39f)
+            {
+                throw new InvalidDataException("Expected damaged arms to reduce weapon damage to 40, got " + reducedDamage);
+            }
+
+            Vector2 start = player.MissionPosition;
+            player.SetMoveOrder(start + new Vector2(1000f, 0f), detached: false);
+            player.TickMovement(1f);
+            float normalMove = Vector2.Distance(start, player.MissionPosition);
+            player.ApplyDirectSectionDamage("Legs", 10f);
+            if (player.CanUseJumpJets)
+            {
+                throw new InvalidDataException("Expected destroyed legs to disable jump jets.");
+            }
+
+            start = player.MissionPosition;
+            player.SetMoveOrder(start + new Vector2(1000f, 0f), detached: false);
+            player.TickMovement(1f);
+            float damagedMove = Vector2.Distance(start, player.MissionPosition);
+            if (damagedMove >= normalMove * 0.6f || player.MobilityRatio > 0.46f || player.TryStartJumpToward(start + new Vector2(1000f, 0f), 520f, _ => true, detached: false))
+            {
+                throw new InvalidDataException("Expected destroyed legs to slow movement and reject jump commands.");
+            }
         }
 
         private static void ValidateMissionResults()
@@ -305,6 +360,82 @@ namespace MC2Demo.EditorTools
                         }
                     }
                 }
+            };
+        }
+
+        private static CombatProfileCatalog MakeSectionModifierProfiles()
+        {
+            return new CombatProfileCatalog(new CombatDataContract
+            {
+                unitProfiles = new[]
+                {
+                    new CombatUnitProfile
+                    {
+                        unitType = "ModifierPlayer",
+                        sourceKind = "validator",
+                        sections = new[]
+                        {
+                            new CombatSectionDefinition { name = "Cockpit", structure = 50f, critical = true },
+                            new CombatSectionDefinition { name = "Torso", structure = 50f },
+                            new CombatSectionDefinition { name = "Left Arm", structure = 10f },
+                            new CombatSectionDefinition { name = "Right Arm", structure = 10f },
+                            new CombatSectionDefinition { name = "Legs", structure = 10f }
+                        },
+                        combatProfile = new CombatProfileFields
+                        {
+                            maxStructure = 130f,
+                            moveSpeed = 100f,
+                            weaponRange = 1000f,
+                            weaponDamage = 100f,
+                            weaponCooldown = 0.1f
+                        }
+                    },
+                    new CombatUnitProfile
+                    {
+                        unitType = "ModifierTarget",
+                        sourceKind = "validator",
+                        combatProfile = new CombatProfileFields
+                        {
+                            maxStructure = 1000f,
+                            moveSpeed = 0f,
+                            weaponRange = 0f,
+                            weaponDamage = 0f,
+                            weaponCooldown = 1f
+                        }
+                    }
+                }
+            });
+        }
+
+        private static MissionContract MakeSectionModifierContract()
+        {
+            return new MissionContract
+            {
+                mission = new MissionDefinition
+                {
+                    id = "validator-section-modifiers",
+                    terrain = new TerrainDefinition { minX = -1000f, minY = 1000f, waterElevation = 350f }
+                },
+                units = new[]
+                {
+                    new UnitSpawn
+                    {
+                        spawnId = "modifier-player",
+                        isPlayerUnit = true,
+                        teamId = 0,
+                        unitType = "ModifierPlayer",
+                        position = new MissionPose { x = 0f, y = 0f, rotation = 0f }
+                    },
+                    new UnitSpawn
+                    {
+                        spawnId = "modifier-target",
+                        isPlayerUnit = false,
+                        teamId = 1,
+                        unitType = "ModifierTarget",
+                        position = new MissionPose { x = 20f, y = 0f, rotation = 0f }
+                    }
+                },
+                objectives = Array.Empty<ObjectiveDefinition>()
             };
         }
 
