@@ -10,6 +10,9 @@ namespace MC2Demo.Presentation
         private Vector3 liveScale;
         private Renderer structureRenderer;
         private Color liveColor;
+        private Color hitFlashColor = Color.white;
+        private float hitFlashRemaining;
+        private float hitFlashDuration = 0.18f;
         private bool destroyedPoseApplied;
 
         public void Bind(StructureState structure)
@@ -24,6 +27,19 @@ namespace MC2Demo.Presentation
             }
 
             transform.position = GroundedPosition(structure.MissionPosition, liveScale.y);
+        }
+
+        public void PulseHit(Color color, float duration = 0.18f)
+        {
+            if (Structure == null || Structure.IsDestroyed)
+            {
+                return;
+            }
+
+            hitFlashColor = color;
+            hitFlashDuration = Mathf.Max(0.05f, duration);
+            hitFlashRemaining = hitFlashDuration;
+            ApplyDamageColor();
         }
 
         private void Update()
@@ -53,7 +69,15 @@ namespace MC2Demo.Presentation
             }
 
             Color damaged = new(0.55f, 0.20f, 0.12f);
-            structureRenderer.sharedMaterial.color = Color.Lerp(damaged, liveColor, Structure.Structure);
+            Color color = Color.Lerp(damaged, liveColor, Structure.Structure);
+            if (hitFlashRemaining > 0f)
+            {
+                float t = Mathf.Clamp01(hitFlashRemaining / hitFlashDuration);
+                color = Color.Lerp(color, hitFlashColor, t);
+                hitFlashRemaining = Mathf.Max(0f, hitFlashRemaining - Time.deltaTime);
+            }
+
+            structureRenderer.sharedMaterial.color = color;
         }
 
         private void SpawnDestructionEffects()

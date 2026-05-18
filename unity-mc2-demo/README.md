@@ -13,6 +13,7 @@ Current demo behavior:
 - defaults to squad orders, with status-bar click for detached single-unit order
 - lets map clicks on hostile units or targetable buildings issue focused attack orders
 - renders command rings for selected units, order destinations, and focused targets
+- renders short weapon beams, hit flashes, and impact bursts for combat events
 - supports one-shot Jet orders with terrain-aware landing rejection
 - provides a toggleable mission map and a pause/restart/end system panel
 - resolves mission victory or defeat through BattleCore result state

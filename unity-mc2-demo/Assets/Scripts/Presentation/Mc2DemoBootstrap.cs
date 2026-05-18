@@ -17,6 +17,7 @@ namespace MC2Demo.Presentation
         private const float JumpDistance = 520f;
 
         private readonly Dictionary<string, DemoUnitView> unitViews = new();
+        private readonly Dictionary<string, DemoStructureView> structureViews = new();
         private readonly Dictionary<string, GameObject> unitSelectionMarkers = new();
         private readonly Dictionary<string, GameObject> unitOrderMarkers = new();
         private readonly Dictionary<string, GameObject> unitFocusMarkers = new();
@@ -170,8 +171,99 @@ namespace MC2Demo.Presentation
                 }
 
                 AddCombatLogLine(line);
+                SpawnCombatEffect(combatEvent);
                 Debug.Log("MC2 combat: " + line);
             }
+        }
+
+        private void SpawnCombatEffect(CombatEvent combatEvent)
+        {
+            if (combatEvent.Damage <= 0f
+                || !TryGetCombatPoint(combatEvent.AttackerId, out Vector3 attackerPoint)
+                || !TryGetCombatPoint(combatEvent.TargetId, out Vector3 targetPoint))
+            {
+                return;
+            }
+
+            Color weaponColor = combatEvent.DestroyedTarget
+                ? new Color(1f, 0.42f, 0.08f, 0.85f)
+                : new Color(1f, 0.82f, 0.28f, 0.78f);
+            CreateBeam(attackerPoint, targetPoint, weaponColor);
+            CreateImpact(targetPoint, weaponColor, combatEvent.DestroyedTarget);
+            PulseTarget(combatEvent.TargetId, new Color(1f, 0.9f, 0.52f), combatEvent.DestroyedTarget ? 0.28f : 0.18f);
+        }
+
+        private bool TryGetCombatPoint(string id, out Vector3 point)
+        {
+            if (unitViews.TryGetValue(id, out DemoUnitView unitView) && unitView != null && unitView.Unit != null)
+            {
+                point = unitView.transform.position + Vector3.up * 0.55f;
+                return true;
+            }
+
+            if (structureViews.TryGetValue(id, out DemoStructureView structureView) && structureView != null && structureView.Structure != null)
+            {
+                point = structureView.transform.position + Vector3.up * 0.65f;
+                return true;
+            }
+
+            point = Vector3.zero;
+            return false;
+        }
+
+        private void PulseTarget(string targetId, Color color, float duration)
+        {
+            if (unitViews.TryGetValue(targetId, out DemoUnitView unitView) && unitView != null)
+            {
+                unitView.PulseHit(color, duration);
+                return;
+            }
+
+            if (structureViews.TryGetValue(targetId, out DemoStructureView structureView) && structureView != null)
+            {
+                structureView.PulseHit(color, duration);
+            }
+        }
+
+        private void CreateBeam(Vector3 from, Vector3 to, Color color)
+        {
+            Vector3 direction = to - from;
+            float length = direction.magnitude;
+            if (length <= 0.01f)
+            {
+                return;
+            }
+
+            GameObject beam = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            beam.name = "Weapon Beam";
+            beam.transform.position = (from + to) * 0.5f;
+            beam.transform.rotation = Quaternion.FromToRotation(Vector3.up, direction.normalized);
+            Collider beamCollider = beam.GetComponent<Collider>();
+            if (beamCollider != null)
+            {
+                Destroy(beamCollider);
+            }
+
+            DemoTransientEffect transient = beam.AddComponent<DemoTransientEffect>();
+            transient.Begin(color, 0.16f, new Vector3(0.045f, length * 0.5f, 0.045f), new Vector3(0.012f, length * 0.5f, 0.012f));
+        }
+
+        private void CreateImpact(Vector3 position, Color color, bool destroyedTarget)
+        {
+            GameObject impact = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            impact.name = destroyedTarget ? "Kill Impact" : "Hit Impact";
+            impact.transform.position = position;
+            Collider impactCollider = impact.GetComponent<Collider>();
+            if (impactCollider != null)
+            {
+                Destroy(impactCollider);
+            }
+
+            float duration = destroyedTarget ? 0.36f : 0.22f;
+            Vector3 fromScale = Vector3.one * (destroyedTarget ? 0.24f : 0.14f);
+            Vector3 toScale = Vector3.one * (destroyedTarget ? 1.25f : 0.72f);
+            DemoTransientEffect transient = impact.AddComponent<DemoTransientEffect>();
+            transient.Begin(color, duration, fromScale, toScale);
         }
 
         private void CaptureObjectiveEvents()
@@ -393,6 +485,7 @@ namespace MC2Demo.Presentation
 
                 DemoStructureView view = structureObject.AddComponent<DemoStructureView>();
                 view.Bind(structure);
+                structureViews[structure.Id] = view;
             }
         }
 

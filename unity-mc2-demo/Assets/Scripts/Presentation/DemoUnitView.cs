@@ -7,6 +7,11 @@ namespace MC2Demo.Presentation
     {
         public UnitState Unit { get; private set; }
         private Vector3 liveScale;
+        private Renderer unitRenderer;
+        private Color liveColor = Color.white;
+        private Color hitFlashColor = Color.white;
+        private float hitFlashRemaining;
+        private float hitFlashDuration = 0.18f;
         private bool destroyedPoseApplied;
 
         public void Bind(UnitState unit)
@@ -14,13 +19,33 @@ namespace MC2Demo.Presentation
             Unit = unit;
             name = unit.Id + " " + unit.UnitType;
             liveScale = transform.localScale;
+            unitRenderer = GetComponent<Renderer>();
+            if (unitRenderer != null && unitRenderer.sharedMaterial != null)
+            {
+                liveColor = unitRenderer.sharedMaterial.color;
+            }
+
             ApplyPosition();
         }
 
         private void Update()
         {
             ApplyPosition();
+            ApplyHitFlash();
             ApplyDamagePose();
+        }
+
+        public void PulseHit(Color color, float duration = 0.18f)
+        {
+            if (Unit == null || Unit.IsDestroyed)
+            {
+                return;
+            }
+
+            hitFlashColor = color;
+            hitFlashDuration = Mathf.Max(0.05f, duration);
+            hitFlashRemaining = hitFlashDuration;
+            ApplyHitFlash();
         }
 
         private void ApplyPosition()
@@ -38,6 +63,24 @@ namespace MC2Demo.Presentation
             }
 
             transform.position = position;
+        }
+
+        private void ApplyHitFlash()
+        {
+            if (unitRenderer == null || unitRenderer.sharedMaterial == null || Unit == null || Unit.IsDestroyed)
+            {
+                return;
+            }
+
+            if (hitFlashRemaining <= 0f)
+            {
+                unitRenderer.sharedMaterial.color = liveColor;
+                return;
+            }
+
+            float t = Mathf.Clamp01(hitFlashRemaining / hitFlashDuration);
+            unitRenderer.sharedMaterial.color = Color.Lerp(liveColor, hitFlashColor, t);
+            hitFlashRemaining = Mathf.Max(0f, hitFlashRemaining - Time.deltaTime);
         }
 
         private void ApplyDamagePose()
