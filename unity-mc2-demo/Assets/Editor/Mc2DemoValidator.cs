@@ -105,7 +105,7 @@ namespace MC2Demo.EditorTools
             ValidateMissionResults();
             ValidateJumpCommand(BattleMission.FromJson(contractJson, combatProfiles));
             ValidateCombatSimulation(mission);
-            ValidateStructureObjective(mission);
+            ValidateStructureObjective(BattleMission.FromJson(contractJson, combatProfiles));
 
             Debug.Log("MC2 demo contract validation OK: 29 units, 3 player units, 9 objectives, 1 structure, 10000 terrain samples, 1000 terrain objects, combat simulation passed.");
         }
@@ -155,8 +155,16 @@ namespace MC2Demo.EditorTools
                 throw new InvalidDataException("Combat simulation requires one player unit and one enemy unit.");
             }
 
-            mission.IssueDetachedMove(player.Id, enemy.MissionPosition + new Vector2(120f, 0f));
-            mission.Tick(20f);
+            int accepted = mission.IssueDetachedAttackUnit(player.Id, enemy.Id);
+            if (accepted != 1 || !player.HasAttackOrder || player.AttackTargetId != enemy.Id)
+            {
+                throw new InvalidDataException("Expected detached attack order to lock the selected enemy target.");
+            }
+
+            for (int tick = 0; tick < 80 && enemy.Structure >= 1f; tick++)
+            {
+                mission.Tick(1f);
+            }
 
             if (mission.RecentCombatEvents.Count == 0)
             {
@@ -367,7 +375,12 @@ namespace MC2Demo.EditorTools
                 throw new InvalidDataException("Structure simulation requires one live player unit.");
             }
 
-            mission.IssueDetachedMove(player.Id, targetStructure.MissionPosition + new Vector2(80f, 0f));
+            int accepted = mission.IssueDetachedAttackStructure(player.Id, targetStructure.Id);
+            if (accepted != 1 || !player.HasAttackOrder || player.AttackTargetId != targetStructure.Id)
+            {
+                throw new InvalidDataException("Expected detached attack order to lock the target structure.");
+            }
+
             for (int tick = 0; tick < 240 && !targetStructure.IsDestroyed; tick++)
             {
                 mission.Tick(1f);

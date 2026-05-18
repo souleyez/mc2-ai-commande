@@ -729,10 +729,33 @@ namespace MC2Demo.Presentation
             Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out RaycastHit hit, 500f))
             {
+                DemoUnitView unitView = hit.collider.GetComponentInParent<DemoUnitView>();
+                if (unitView != null && unitView.Unit != null && !unitView.Unit.IsPlayerUnit && !unitView.Unit.IsDestroyed)
+                {
+                    if (pendingJumpOrder)
+                    {
+                        IssueMoveOrder(unitView.Unit.MissionPosition, "Jet toward " + unitView.Unit.UnitType);
+                    }
+                    else
+                    {
+                        IssueUnitAttackOrder(unitView.Unit);
+                    }
+
+                    return;
+                }
+
                 DemoStructureView structureView = hit.collider.GetComponentInParent<DemoStructureView>();
                 if (structureView != null && structureView.Structure != null && !structureView.Structure.IsDestroyed)
                 {
-                    IssueMoveOrder(structureView.Structure.MissionPosition, "Attack " + structureView.Structure.ObjectType);
+                    if (pendingJumpOrder)
+                    {
+                        IssueMoveOrder(structureView.Structure.MissionPosition, "Jet toward " + structureView.Structure.ObjectType);
+                    }
+                    else
+                    {
+                        IssueStructureAttackOrder(structureView.Structure);
+                    }
+
                     return;
                 }
             }
@@ -766,6 +789,42 @@ namespace MC2Demo.Presentation
                 mission.IssueSquadMove(target);
                 statusText = string.IsNullOrEmpty(label) ? "Squad move" : label;
             }
+        }
+
+        private void IssueUnitAttackOrder(UnitState target)
+        {
+            int accepted;
+            string detachedUnitId = pendingDetachedUnitId;
+            if (!string.IsNullOrEmpty(detachedUnitId))
+            {
+                accepted = mission.IssueDetachedAttackUnit(detachedUnitId, target.Id);
+                statusText = accepted > 0 ? "Focus " + target.UnitType + " with " + detachedUnitId : "Attack blocked";
+            }
+            else
+            {
+                accepted = mission.IssueSquadAttackUnit(target.Id);
+                statusText = accepted > 0 ? "Squad focus: " + target.UnitType : "Attack blocked";
+            }
+
+            pendingDetachedUnitId = null;
+        }
+
+        private void IssueStructureAttackOrder(StructureState target)
+        {
+            int accepted;
+            string detachedUnitId = pendingDetachedUnitId;
+            if (!string.IsNullOrEmpty(detachedUnitId))
+            {
+                accepted = mission.IssueDetachedAttackStructure(detachedUnitId, target.Id);
+                statusText = accepted > 0 ? "Attack " + target.ObjectType + " with " + detachedUnitId : "Attack blocked";
+            }
+            else
+            {
+                accepted = mission.IssueSquadAttackStructure(target.Id);
+                statusText = accepted > 0 ? "Squad attack: " + target.ObjectType : "Attack blocked";
+            }
+
+            pendingDetachedUnitId = null;
         }
 
         private void IssueJumpOrder(Vector2 target, string label)
@@ -875,6 +934,10 @@ namespace MC2Demo.Presentation
                 else if (unit.IsDetached)
                 {
                     label += "  DETACHED";
+                }
+                else if (unit.HasAttackOrder)
+                {
+                    label += "  TARGET";
                 }
                 else if (unit.HasMoveOrder)
                 {

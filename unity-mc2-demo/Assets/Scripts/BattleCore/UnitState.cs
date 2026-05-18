@@ -19,6 +19,8 @@ namespace MC2Demo.BattleCore
         public bool IsJumping { get; private set; }
         public bool IsDetached { get; private set; }
         public bool HasMoveOrder { get; private set; }
+        public bool HasAttackOrder => !string.IsNullOrEmpty(AttackTargetId);
+        public string AttackTargetId { get; private set; }
         public string CurrentTargetId { get; private set; }
         public string LastHitSection { get; private set; }
         public float WeaponCooldownRemaining { get; private set; }
@@ -57,6 +59,40 @@ namespace MC2Demo.BattleCore
             MoveTarget = missionPoint;
             HasMoveOrder = true;
             IsDetached = detached;
+            AttackTargetId = null;
+        }
+
+        public void SetAttackOrder(string targetId, Vector2 targetPosition, bool detached)
+        {
+            if (IsDestroyed || string.IsNullOrEmpty(targetId))
+            {
+                return;
+            }
+
+            AttackTargetId = targetId;
+            CurrentTargetId = targetId;
+            MoveTarget = targetPosition;
+            HasMoveOrder = true;
+            IsDetached = detached;
+        }
+
+        public void UpdateAttackOrder(Vector2 targetPosition, bool targetInRange)
+        {
+            if (!HasAttackOrder || IsDestroyed || IsJumping)
+            {
+                return;
+            }
+
+            MoveTarget = targetPosition;
+            HasMoveOrder = !targetInRange;
+        }
+
+        public void CompleteAttackOrder()
+        {
+            AttackTargetId = null;
+            CurrentTargetId = null;
+            HasMoveOrder = false;
+            IsDetached = false;
         }
 
         public bool TryStartJumpToward(Vector2 missionPoint, float jumpDistance, Func<Vector2, bool> isLandingAllowed, bool detached)
@@ -87,6 +123,7 @@ namespace MC2Demo.BattleCore
             IsDetached = detached;
             IsJumping = true;
             JumpLift = 0f;
+            AttackTargetId = null;
             CurrentTargetId = null;
             return true;
         }
@@ -117,7 +154,11 @@ namespace MC2Demo.BattleCore
             {
                 MissionPosition = MoveTarget;
                 HasMoveOrder = false;
-                IsDetached = false;
+                if (!HasAttackOrder)
+                {
+                    IsDetached = false;
+                }
+
                 return;
             }
 
@@ -221,6 +262,7 @@ namespace MC2Demo.BattleCore
                 IsDestroyed = true;
                 HasMoveOrder = false;
                 IsDetached = false;
+                AttackTargetId = null;
                 CurrentTargetId = null;
                 CurrentStructure = 0f;
             }

@@ -88,6 +88,19 @@ namespace MC2Demo.BattleCore
             return null;
         }
 
+        public StructureState FindStructure(string structureId)
+        {
+            foreach (StructureState structure in structures)
+            {
+                if (structure.Id == structureId)
+                {
+                    return structure;
+                }
+            }
+
+            return null;
+        }
+
         public void IssueSquadMove(Vector2 missionPoint)
         {
             if (Result != MissionResultState.InProgress)
@@ -116,6 +129,74 @@ namespace MC2Demo.BattleCore
             {
                 unit.SetMoveOrder(missionPoint, detached: true);
             }
+        }
+
+        public int IssueSquadAttackUnit(string targetUnitId)
+        {
+            UnitState target = FindAttackableUnit(targetUnitId, playerTeam: true);
+            if (Result != MissionResultState.InProgress || target == null)
+            {
+                return 0;
+            }
+
+            int accepted = 0;
+            foreach (UnitState unit in PlayerUnits())
+            {
+                if (!unit.IsDetached)
+                {
+                    unit.SetAttackOrder(target.Id, target.MissionPosition, detached: false);
+                    accepted++;
+                }
+            }
+
+            return accepted;
+        }
+
+        public int IssueDetachedAttackUnit(string unitId, string targetUnitId)
+        {
+            UnitState unit = FindUnit(unitId);
+            UnitState target = FindAttackableUnit(targetUnitId, playerTeam: true);
+            if (Result != MissionResultState.InProgress || unit == null || !unit.IsPlayerUnit || target == null)
+            {
+                return 0;
+            }
+
+            unit.SetAttackOrder(target.Id, target.MissionPosition, detached: true);
+            return 1;
+        }
+
+        public int IssueSquadAttackStructure(string structureId)
+        {
+            StructureState target = FindAttackableStructure(structureId, playerTeam: true);
+            if (Result != MissionResultState.InProgress || target == null)
+            {
+                return 0;
+            }
+
+            int accepted = 0;
+            foreach (UnitState unit in PlayerUnits())
+            {
+                if (!unit.IsDetached)
+                {
+                    unit.SetAttackOrder(target.Id, target.MissionPosition, detached: false);
+                    accepted++;
+                }
+            }
+
+            return accepted;
+        }
+
+        public int IssueDetachedAttackStructure(string unitId, string structureId)
+        {
+            UnitState unit = FindUnit(unitId);
+            StructureState target = FindAttackableStructure(structureId, playerTeam: true);
+            if (Result != MissionResultState.InProgress || unit == null || !unit.IsPlayerUnit || target == null)
+            {
+                return 0;
+            }
+
+            unit.SetAttackOrder(target.Id, target.MissionPosition, detached: true);
+            return 1;
         }
 
         public int IssueSquadJump(Vector2 missionPoint, float jumpDistance, Func<Vector2, bool> isLandingAllowed)
@@ -163,6 +244,7 @@ namespace MC2Demo.BattleCore
 
             foreach (UnitState unit in units)
             {
+                RefreshAttackOrder(unit);
                 unit.TickMovement(deltaTime);
                 unit.TickWeapon(deltaTime);
             }
@@ -191,6 +273,12 @@ namespace MC2Demo.BattleCore
             if (attacker.IsDestroyed)
             {
                 return null;
+            }
+
+            UnitState assignedTarget = FindAttackableUnit(attacker.AttackTargetId, playerTeam: attacker.IsPlayerUnit);
+            if (assignedTarget != null)
+            {
+                return assignedTarget;
             }
 
             UnitState bestTarget = null;
@@ -222,6 +310,12 @@ namespace MC2Demo.BattleCore
                 return null;
             }
 
+            StructureState assignedTarget = FindAttackableStructure(attacker.AttackTargetId, playerTeam: attacker.IsPlayerUnit);
+            if (assignedTarget != null)
+            {
+                return assignedTarget;
+            }
+
             StructureState bestTarget = null;
             float bestDistanceSqr = float.MaxValue;
             float range = attacker.Profile.WeaponRange;
@@ -243,6 +337,71 @@ namespace MC2Demo.BattleCore
             }
 
             return bestTarget;
+        }
+
+        private void RefreshAttackOrder(UnitState attacker)
+        {
+            if (!attacker.HasAttackOrder)
+            {
+                return;
+            }
+
+            UnitState unitTarget = FindAttackableUnit(attacker.AttackTargetId, playerTeam: attacker.IsPlayerUnit);
+            if (unitTarget != null)
+            {
+                bool inRange = Vector2.Distance(attacker.MissionPosition, unitTarget.MissionPosition) <= attacker.Profile.WeaponRange;
+                attacker.UpdateAttackOrder(unitTarget.MissionPosition, inRange);
+                return;
+            }
+
+            StructureState structureTarget = FindAttackableStructure(attacker.AttackTargetId, playerTeam: attacker.IsPlayerUnit);
+            if (structureTarget != null)
+            {
+                bool inRange = Vector2.Distance(attacker.MissionPosition, structureTarget.MissionPosition)
+                    <= attacker.Profile.WeaponRange + structureTarget.Radius;
+                attacker.UpdateAttackOrder(structureTarget.MissionPosition, inRange);
+                return;
+            }
+
+            attacker.CompleteAttackOrder();
+        }
+
+        private UnitState FindAttackableUnit(string targetUnitId, bool playerTeam)
+        {
+            UnitState target = FindUnit(targetUnitId);
+            if (target == null || target.IsDestroyed || target.IsPlayerUnit == playerTeam)
+            {
+                return null;
+            }
+
+            return target;
+        }
+
+        private StructureState FindAttackableStructure(string structureId, bool playerTeam)
+        {
+            StructureState target = FindStructure(structureId);
+            if (target == null || !target.IsTargetable || target.IsDestroyed)
+            {
+                return null;
+            }
+
+            int playerTeamId = FirstPlayerTeamId();
+            if (playerTeam && target.TeamId == playerTeamId)
+            {
+                return null;
+            }
+
+            return target;
+        }
+
+        private int FirstPlayerTeamId()
+        {
+            foreach (UnitState unit in PlayerUnits())
+            {
+                return unit.TeamId;
+            }
+
+            return 0;
         }
 
         private void EvaluateObjectives()
