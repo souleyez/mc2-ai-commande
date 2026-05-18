@@ -17,6 +17,9 @@ namespace MC2Demo.Presentation
         private const float JumpDistance = 520f;
 
         private readonly Dictionary<string, DemoUnitView> unitViews = new();
+        private readonly Dictionary<string, GameObject> unitSelectionMarkers = new();
+        private readonly Dictionary<string, GameObject> unitOrderMarkers = new();
+        private readonly Dictionary<string, GameObject> unitFocusMarkers = new();
         private readonly Dictionary<int, bool> objectiveCompletionState = new();
         private readonly Dictionary<string, Material> materialCache = new(StringComparer.Ordinal);
         private readonly List<Material> ownedMaterials = new();
@@ -55,6 +58,7 @@ namespace MC2Demo.Presentation
             }
 
             CaptureMissionResult();
+            UpdateCommandOverlays();
             FollowCommander();
         }
 
@@ -113,6 +117,7 @@ namespace MC2Demo.Presentation
             CreateMarkers();
             CreateForests();
             CreateObjectiveAreas();
+            CreateCommandOverlays();
             Debug.Log(
                 "MC2 demo world built: units="
                 + mission.Units.Count
@@ -659,6 +664,140 @@ namespace MC2Demo.Presentation
             float worldRadius = Mathf.Max(0.6f, missionRadius / 100f);
             disc.transform.localScale = new Vector3(worldRadius, 0.018f, worldRadius);
             AssignMaterial(disc, objectName, color);
+        }
+
+        private void CreateCommandOverlays()
+        {
+            foreach (UnitState unit in mission.PlayerUnits())
+            {
+                unitSelectionMarkers[unit.Id] = CreateMarkerDisc(
+                    unit.Id + " Selection Ring",
+                    "CommandSelection",
+                    new Color(0.22f, 0.92f, 1f, 0.32f),
+                    new Vector3(1.45f, 0.012f, 1.45f));
+                unitOrderMarkers[unit.Id] = CreateMarkerDisc(
+                    unit.Id + " Order Marker",
+                    "CommandMove",
+                    new Color(0.15f, 0.66f, 1f, 0.42f),
+                    new Vector3(0.88f, 0.014f, 0.88f));
+                unitFocusMarkers[unit.Id] = CreateMarkerDisc(
+                    unit.Id + " Focus Marker",
+                    "CommandFocus",
+                    new Color(1f, 0.58f, 0.12f, 0.48f),
+                    new Vector3(1.18f, 0.016f, 1.18f));
+            }
+        }
+
+        private GameObject CreateMarkerDisc(string objectName, string materialName, Color color, Vector3 scale)
+        {
+            GameObject marker = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            marker.name = objectName;
+            marker.transform.localScale = scale;
+            Collider markerCollider = marker.GetComponent<Collider>();
+            if (markerCollider != null)
+            {
+                markerCollider.enabled = false;
+            }
+
+            AssignMaterial(marker, materialName, color);
+            marker.SetActive(false);
+            return marker;
+        }
+
+        private void UpdateCommandOverlays()
+        {
+            if (mission == null)
+            {
+                return;
+            }
+
+            foreach (UnitState unit in mission.PlayerUnits())
+            {
+                UpdateSelectionMarker(unit);
+                UpdateOrderMarker(unit);
+                UpdateFocusMarker(unit);
+            }
+        }
+
+        private void UpdateSelectionMarker(UnitState unit)
+        {
+            if (!unitSelectionMarkers.TryGetValue(unit.Id, out GameObject marker))
+            {
+                return;
+            }
+
+            bool isVisible = !unit.IsDestroyed && (unit.IsDetached || pendingDetachedUnitId == unit.Id);
+            marker.SetActive(isVisible);
+            if (isVisible)
+            {
+                marker.transform.position = GroundMarkerPosition(unit.MissionPosition, 0.06f);
+            }
+        }
+
+        private void UpdateOrderMarker(UnitState unit)
+        {
+            if (!unitOrderMarkers.TryGetValue(unit.Id, out GameObject marker))
+            {
+                return;
+            }
+
+            bool isVisible = !unit.IsDestroyed && (unit.HasMoveOrder || unit.IsJumping || unit.HasAttackOrder);
+            marker.SetActive(isVisible);
+            if (isVisible)
+            {
+                marker.transform.position = GroundMarkerPosition(unit.MoveTarget, 0.08f);
+            }
+        }
+
+        private void UpdateFocusMarker(UnitState unit)
+        {
+            if (!unitFocusMarkers.TryGetValue(unit.Id, out GameObject marker))
+            {
+                return;
+            }
+
+            Vector2 position = default;
+            float radius = 0f;
+            bool isVisible = !unit.IsDestroyed
+                && unit.HasAttackOrder
+                && TryGetTargetMarker(unit.AttackTargetId, out position, out radius);
+            marker.SetActive(isVisible);
+            if (isVisible)
+            {
+                marker.transform.position = GroundMarkerPosition(position, 0.1f);
+                float scale = Mathf.Clamp(radius / 95f, 1.1f, 4.2f);
+                marker.transform.localScale = new Vector3(scale, 0.016f, scale);
+            }
+        }
+
+        private bool TryGetTargetMarker(string targetId, out Vector2 missionPosition, out float radius)
+        {
+            UnitState unit = mission.FindUnit(targetId);
+            if (unit != null && !unit.IsDestroyed)
+            {
+                missionPosition = unit.MissionPosition;
+                radius = 115f;
+                return true;
+            }
+
+            StructureState structure = mission.FindStructure(targetId);
+            if (structure != null && !structure.IsDestroyed)
+            {
+                missionPosition = structure.MissionPosition;
+                radius = structure.Radius;
+                return true;
+            }
+
+            missionPosition = default;
+            radius = 0f;
+            return false;
+        }
+
+        private static Vector3 GroundMarkerPosition(Vector2 missionPoint, float lift)
+        {
+            Vector3 position = DemoUnitView.MissionToWorld(missionPoint);
+            position.y = DemoTerrainView.HeightAt(missionPoint) + lift;
+            return position;
         }
 
         private void AssignMaterial(GameObject target, string materialName, Color color)
