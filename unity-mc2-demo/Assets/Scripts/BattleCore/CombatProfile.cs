@@ -1,3 +1,5 @@
+using UnityEngine;
+
 namespace MC2Demo.BattleCore
 {
     public sealed class CombatProfile
@@ -7,6 +9,9 @@ namespace MC2Demo.BattleCore
         public float WeaponRange { get; }
         public float WeaponDamage { get; }
         public float WeaponCooldown { get; }
+        public float HeatCapacity { get; }
+        public float HeatPerShot { get; }
+        public float HeatDissipationPerSecond { get; }
         public CombatSectionDefinition[] Sections { get; }
         public string SourceKind { get; }
 
@@ -16,6 +21,9 @@ namespace MC2Demo.BattleCore
             float weaponRange,
             float weaponDamage,
             float weaponCooldown,
+            float heatCapacity,
+            float heatPerShot,
+            float heatDissipationPerSecond,
             CombatSectionDefinition[] sections,
             string sourceKind)
         {
@@ -24,6 +32,9 @@ namespace MC2Demo.BattleCore
             WeaponRange = weaponRange;
             WeaponDamage = weaponDamage;
             WeaponCooldown = weaponCooldown;
+            HeatCapacity = heatCapacity;
+            HeatPerShot = heatPerShot;
+            HeatDissipationPerSecond = heatDissipationPerSecond;
             Sections = sections;
             SourceKind = sourceKind;
         }
@@ -42,6 +53,9 @@ namespace MC2Demo.BattleCore
                 fields.weaponRange,
                 fields.weaponDamage,
                 fields.weaponCooldown,
+                CalculateHeatCapacity(record, fields),
+                CalculateHeatPerShot(record),
+                CalculateHeatDissipationPerSecond(record, fields),
                 record.sections,
                 string.IsNullOrEmpty(record.sourceKind) ? "combat-data" : record.sourceKind);
         }
@@ -87,8 +101,53 @@ namespace MC2Demo.BattleCore
                 weaponRange,
                 weaponDamage,
                 weaponCooldown,
+                Mathf.Max(1f, maxStructure * 0.15f),
+                0f,
+                0f,
                 DefaultSections(maxStructure, isPlayerUnit),
                 "hardcoded-fallback");
+        }
+
+        private static float CalculateHeatCapacity(CombatUnitProfile record, CombatProfileFields fields)
+        {
+            if (record != null && record.heatIndex > 0f)
+            {
+                return record.heatIndex;
+            }
+
+            return Mathf.Max(1f, fields.maxStructure * 0.15f);
+        }
+
+        private static float CalculateHeatPerShot(CombatUnitProfile record)
+        {
+            if (record?.weapons == null || record.weapons.Length == 0)
+            {
+                return 0f;
+            }
+
+            float heat = 0f;
+            foreach (CombatWeaponDefinition weapon in record.weapons)
+            {
+                if (weapon != null && weapon.heat > 0f)
+                {
+                    heat += weapon.heat;
+                }
+            }
+
+            return heat;
+        }
+
+        private static float CalculateHeatDissipationPerSecond(CombatUnitProfile record, CombatProfileFields fields)
+        {
+            float heatCapacity = CalculateHeatCapacity(record, fields);
+            float heatPerShot = CalculateHeatPerShot(record);
+            if (heatPerShot <= 0f)
+            {
+                return 0f;
+            }
+
+            float cooldown = Mathf.Max(1f, fields.weaponCooldown);
+            return Mathf.Max(heatCapacity * 0.10f, heatPerShot / (cooldown * 1.35f));
         }
 
         private static CombatSectionDefinition[] DefaultSections(float maxStructure, bool isPlayerUnit)

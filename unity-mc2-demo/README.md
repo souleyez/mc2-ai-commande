@@ -16,6 +16,7 @@ Current demo behavior:
 - renders short weapon beams, hit flashes, and impact bursts for combat events
 - shows placeholder limb breakoff, section sparks, smoke, and cockpit ejection cues
 - applies simple section penalties: destroyed arms reduce firepower, destroyed legs slow movement and disable Jet
+- tracks source-derived weapon heat, cooling, and heat lockouts in combat
 - supports one-shot Jet orders with terrain-aware landing rejection
 - provides a toggleable mission map and a pause/restart/end system panel
 - resolves mission victory or defeat through BattleCore result state

@@ -105,6 +105,7 @@ namespace MC2Demo.EditorTools
 
             ValidateMissionResults();
             ValidateSectionDamageModifiers();
+            ValidateHeatManagement();
             ValidateJumpCommand(BattleMission.FromJson(contractJson, combatProfiles));
             ValidateCombatSimulation(mission);
             ValidateStructureObjective(BattleMission.FromJson(contractJson, combatProfiles));
@@ -242,6 +243,40 @@ namespace MC2Demo.EditorTools
             if (damagedMove >= normalMove * 0.6f || player.MobilityRatio > 0.46f || player.TryStartJumpToward(start + new Vector2(1000f, 0f), 520f, _ => true, detached: false))
             {
                 throw new InvalidDataException("Expected destroyed legs to slow movement and reject jump commands.");
+            }
+        }
+
+        private static void ValidateHeatManagement()
+        {
+            BattleMission mission = new(MakeHeatContract(), MakeHeatProfiles());
+            UnitState player = mission.FindUnit("heat-player");
+            UnitState target = mission.FindUnit("heat-target");
+            if (player == null || target == null)
+            {
+                throw new InvalidDataException("Heat simulation requires player and target units.");
+            }
+
+            if (!player.CanFireAt(target))
+            {
+                throw new InvalidDataException("Expected cool unit to be able to fire.");
+            }
+
+            player.FireAt(target);
+            if (player.CurrentHeat < 7.9f || player.HeatRatio < 0.79f)
+            {
+                throw new InvalidDataException("Expected firing to add weapon heat, got " + player.CurrentHeat);
+            }
+
+            player.TickWeapon(0.2f);
+            if (player.CanFireAt(target))
+            {
+                throw new InvalidDataException("Expected high heat to lock out the next shot.");
+            }
+
+            player.TickWeapon(10f);
+            if (player.IsHeatLocked || !player.CanFireAt(target))
+            {
+                throw new InvalidDataException("Expected cooling to restore firing.");
             }
         }
 
@@ -432,6 +467,85 @@ namespace MC2Demo.EditorTools
                         isPlayerUnit = false,
                         teamId = 1,
                         unitType = "ModifierTarget",
+                        position = new MissionPose { x = 20f, y = 0f, rotation = 0f }
+                    }
+                },
+                objectives = Array.Empty<ObjectiveDefinition>()
+            };
+        }
+
+        private static CombatProfileCatalog MakeHeatProfiles()
+        {
+            return new CombatProfileCatalog(new CombatDataContract
+            {
+                unitProfiles = new[]
+                {
+                    new CombatUnitProfile
+                    {
+                        unitType = "HeatPlayer",
+                        sourceKind = "validator",
+                        heatIndex = 10f,
+                        weapons = new[]
+                        {
+                            new CombatWeaponDefinition
+                            {
+                                name = "Validator Laser",
+                                heat = 8f,
+                                damage = 10f,
+                                recycleTime = 0.1f
+                            }
+                        },
+                        combatProfile = new CombatProfileFields
+                        {
+                            maxStructure = 100f,
+                            moveSpeed = 0f,
+                            weaponRange = 1000f,
+                            weaponDamage = 10f,
+                            weaponCooldown = 0.1f
+                        }
+                    },
+                    new CombatUnitProfile
+                    {
+                        unitType = "HeatTarget",
+                        sourceKind = "validator",
+                        combatProfile = new CombatProfileFields
+                        {
+                            maxStructure = 1000f,
+                            moveSpeed = 0f,
+                            weaponRange = 0f,
+                            weaponDamage = 0f,
+                            weaponCooldown = 1f
+                        }
+                    }
+                }
+            });
+        }
+
+        private static MissionContract MakeHeatContract()
+        {
+            return new MissionContract
+            {
+                mission = new MissionDefinition
+                {
+                    id = "validator-heat",
+                    terrain = new TerrainDefinition { minX = -1000f, minY = 1000f, waterElevation = 350f }
+                },
+                units = new[]
+                {
+                    new UnitSpawn
+                    {
+                        spawnId = "heat-player",
+                        isPlayerUnit = true,
+                        teamId = 0,
+                        unitType = "HeatPlayer",
+                        position = new MissionPose { x = 0f, y = 0f, rotation = 0f }
+                    },
+                    new UnitSpawn
+                    {
+                        spawnId = "heat-target",
+                        isPlayerUnit = false,
+                        teamId = 1,
+                        unitType = "HeatTarget",
                         position = new MissionPose { x = 20f, y = 0f, rotation = 0f }
                     }
                 },

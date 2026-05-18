@@ -31,6 +31,9 @@ namespace MC2Demo.BattleCore
         public float MobilityRatio => IsDestroyed ? 0f : IsSectionDestroyed("Legs") ? 0.45f : 1f;
         public float FirepowerRatio => IsDestroyed ? 0f : CalculateFirepowerRatio();
         public bool CanUseJumpJets => !IsDestroyed && !IsSectionDestroyed("Legs");
+        public bool IsHeatLocked => !IsDestroyed && EffectiveHeatPerShot() > 0f && CurrentHeat + EffectiveHeatPerShot() > Profile.HeatCapacity;
+        public float CurrentHeat { get; private set; }
+        public float HeatRatio => Profile.HeatCapacity <= 0f ? 0f : CurrentHeat / Profile.HeatCapacity;
         public float WeaponCooldownRatio => Profile.WeaponCooldown <= 0f ? 0f : WeaponCooldownRemaining / Profile.WeaponCooldown;
         public Vector2 MissionPosition { get; private set; }
         public Vector2 MoveTarget { get; private set; }
@@ -189,6 +192,11 @@ namespace MC2Demo.BattleCore
 
         public void TickWeapon(float deltaTime)
         {
+            if (CurrentHeat > 0f && Profile.HeatDissipationPerSecond > 0f)
+            {
+                CurrentHeat = Mathf.Max(0f, CurrentHeat - (Profile.HeatDissipationPerSecond * Mathf.Max(0f, deltaTime)));
+            }
+
             if (WeaponCooldownRemaining > 0f)
             {
                 WeaponCooldownRemaining = Mathf.Max(0f, WeaponCooldownRemaining - deltaTime);
@@ -203,6 +211,7 @@ namespace MC2Demo.BattleCore
                 && target.TeamId != TeamId
                 && WeaponCooldownRemaining <= 0f
                 && EffectiveWeaponDamage() > 0.1f
+                && !IsHeatLocked
                 && Vector2.Distance(MissionPosition, target.MissionPosition) <= Profile.WeaponRange;
         }
 
@@ -215,6 +224,7 @@ namespace MC2Demo.BattleCore
                 && target.TeamId != TeamId
                 && WeaponCooldownRemaining <= 0f
                 && EffectiveWeaponDamage() > 0.1f
+                && !IsHeatLocked
                 && Vector2.Distance(MissionPosition, target.MissionPosition) <= Profile.WeaponRange + target.Radius;
         }
 
@@ -222,6 +232,7 @@ namespace MC2Demo.BattleCore
         {
             CurrentTargetId = target.Id;
             WeaponCooldownRemaining = Profile.WeaponCooldown;
+            AddWeaponHeat();
             DamageResult result = target.ApplyDamage(EffectiveWeaponDamage(), Id);
             return new CombatEvent(Id, target.Id, result.SectionName, result.DamageApplied, target.IsDestroyed);
         }
@@ -230,6 +241,7 @@ namespace MC2Demo.BattleCore
         {
             CurrentTargetId = target.Id;
             WeaponCooldownRemaining = Profile.WeaponCooldown;
+            AddWeaponHeat();
             float damage = target.ApplyDamage(EffectiveWeaponDamage());
             return new CombatEvent(Id, target.Id, "Structure", damage, target.IsDestroyed);
         }
@@ -403,6 +415,22 @@ namespace MC2Demo.BattleCore
         private float EffectiveWeaponDamage()
         {
             return Profile.WeaponDamage * FirepowerRatio;
+        }
+
+        private float EffectiveHeatPerShot()
+        {
+            return Profile.HeatPerShot * FirepowerRatio;
+        }
+
+        private void AddWeaponHeat()
+        {
+            float heat = EffectiveHeatPerShot();
+            if (heat <= 0f || Profile.HeatCapacity <= 0f)
+            {
+                return;
+            }
+
+            CurrentHeat = Mathf.Min(Profile.HeatCapacity, CurrentHeat + heat);
         }
 
         private DamageSection SelectDamageSection(string attackerId)

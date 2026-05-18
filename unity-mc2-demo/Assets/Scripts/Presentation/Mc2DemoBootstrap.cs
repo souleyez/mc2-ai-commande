@@ -1180,6 +1180,11 @@ namespace MC2Demo.Presentation
                     label += "  FIRING";
                 }
 
+                if (unit.IsHeatLocked)
+                {
+                    label += "  HOT";
+                }
+
                 if (!unit.IsDestroyed && (unit.MobilityRatio < 0.99f || unit.FirepowerRatio < 0.99f))
                 {
                     label += "  M" + Mathf.RoundToInt(unit.MobilityRatio * 100f) + "/F" + Mathf.RoundToInt(unit.FirepowerRatio * 100f);
@@ -1198,8 +1203,16 @@ namespace MC2Demo.Presentation
                 Rect bar = new(barBack.x, barBack.y, barBack.width * unit.Structure, barBack.height);
                 DrawColorRect(bar, unit.IsDestroyed ? Color.red : Color.green);
 
-                DrawSectionLine(unit, y + 38);
-                y += 60f;
+                if (unit.Profile.HeatPerShot > 0f)
+                {
+                    Rect heatBack = new(24, y + 31, 292, 4);
+                    GUI.DrawTexture(heatBack, Texture2D.grayTexture);
+                    Rect heatBar = new(heatBack.x, heatBack.y, heatBack.width * Mathf.Clamp01(unit.HeatRatio), heatBack.height);
+                    DrawColorRect(heatBar, unit.IsHeatLocked ? Color.red : new Color(1f, 0.62f, 0.12f));
+                }
+
+                DrawSectionLine(unit, y + 42);
+                y += 64f;
             }
         }
 
