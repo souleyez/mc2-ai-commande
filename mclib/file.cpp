@@ -566,9 +566,8 @@ long File::createWithCase(const char* fName )
 		
 	strncpy(fileName,fName,fNameLength+1);
 	fileMode = CREATE;
-	//_fmode = _O_BINARY;
-
-	handle = _creat(fileName,_S_IWRITE);
+	// Match create() while preserving caller-provided filename case.
+	handle = _open(fileName, _O_CREAT | _O_TRUNC | _O_BINARY | _O_RDWR, _S_IREAD | _S_IWRITE);
 	if (handle == INVALID_HANDLE_VALUE)
 	{
 		lastError = errno;

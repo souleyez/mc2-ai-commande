@@ -1,0 +1,107 @@
+namespace MC2Demo.BattleCore
+{
+    public sealed class CombatProfile
+    {
+        public float MaxStructure { get; }
+        public float MoveSpeed { get; }
+        public float WeaponRange { get; }
+        public float WeaponDamage { get; }
+        public float WeaponCooldown { get; }
+        public CombatSectionDefinition[] Sections { get; }
+        public string SourceKind { get; }
+
+        private CombatProfile(
+            float maxStructure,
+            float moveSpeed,
+            float weaponRange,
+            float weaponDamage,
+            float weaponCooldown,
+            CombatSectionDefinition[] sections,
+            string sourceKind)
+        {
+            MaxStructure = maxStructure;
+            MoveSpeed = moveSpeed;
+            WeaponRange = weaponRange;
+            WeaponDamage = weaponDamage;
+            WeaponCooldown = weaponCooldown;
+            Sections = sections;
+            SourceKind = sourceKind;
+        }
+
+        public static CombatProfile FromData(CombatUnitProfile record, bool isPlayerUnit)
+        {
+            if (record?.combatProfile == null)
+            {
+                return Fallback(record?.unitType, isPlayerUnit);
+            }
+
+            CombatProfileFields fields = record.combatProfile;
+            return new CombatProfile(
+                fields.maxStructure,
+                fields.moveSpeed,
+                fields.weaponRange,
+                fields.weaponDamage,
+                fields.weaponCooldown,
+                record.sections,
+                string.IsNullOrEmpty(record.sourceKind) ? "combat-data" : record.sourceKind);
+        }
+
+        public static CombatProfile Fallback(string unitType, bool isPlayerUnit)
+        {
+            switch (unitType)
+            {
+                case "Werewolf":
+                    return MakeFallback(145f, 250f, 780f, 22f, 1.35f, isPlayerUnit);
+                case "Bushwacker":
+                    return MakeFallback(175f, 220f, 900f, 28f, 1.75f, isPlayerUnit);
+                case "Starslayer":
+                    return MakeFallback(190f, 210f, 860f, 30f, 1.7f, isPlayerUnit);
+                case "UrbanMech":
+                    return MakeFallback(125f, 145f, 780f, 24f, 2.05f, isPlayerUnit);
+                case "Centipede":
+                    return MakeFallback(95f, 230f, 520f, 14f, 1.25f, isPlayerUnit);
+                case "Harasser":
+                    return MakeFallback(70f, 315f, 480f, 11f, 1.05f, isPlayerUnit);
+                case "LRMC":
+                    return MakeFallback(80f, 185f, 1120f, 18f, 2.15f, isPlayerUnit);
+                case "Infantry":
+                    return MakeFallback(32f, 170f, 360f, 5f, 0.9f, isPlayerUnit);
+                default:
+                    return isPlayerUnit
+                        ? MakeFallback(140f, 220f, 760f, 20f, 1.6f, true)
+                        : MakeFallback(80f, 180f, 520f, 12f, 1.5f, false);
+            }
+        }
+
+        private static CombatProfile MakeFallback(
+            float maxStructure,
+            float moveSpeed,
+            float weaponRange,
+            float weaponDamage,
+            float weaponCooldown,
+            bool isPlayerUnit)
+        {
+            return new CombatProfile(
+                maxStructure,
+                moveSpeed,
+                weaponRange,
+                weaponDamage,
+                weaponCooldown,
+                DefaultSections(maxStructure, isPlayerUnit),
+                "hardcoded-fallback");
+        }
+
+        private static CombatSectionDefinition[] DefaultSections(float maxStructure, bool isPlayerUnit)
+        {
+            float cockpit = maxStructure * (isPlayerUnit ? 0.16f : 0.12f);
+            return new[]
+            {
+                new CombatSectionDefinition { name = "Cockpit", structure = cockpit, critical = true },
+                new CombatSectionDefinition { name = "Torso", structure = maxStructure * 0.34f },
+                new CombatSectionDefinition { name = "Left Arm", structure = maxStructure * 0.17f },
+                new CombatSectionDefinition { name = "Right Arm", structure = maxStructure * 0.17f },
+                new CombatSectionDefinition { name = "Legs", structure = maxStructure - cockpit - (maxStructure * 0.68f) }
+            };
+        }
+    }
+}

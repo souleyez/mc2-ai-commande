@@ -52,6 +52,36 @@ test_sound/
 # Source repository should not track built resources
 *.fst
 
+# Local runtime shells and real content packs
+runtime-shell-dev/
+content-packs/*
+!content-packs/*.example.json
+analysis-output/content-index/*.json
+analysis-output/fst-unpack/
+analysis-output/fst-unpack-fresh/
+analysis-output/pak-unpack/
+analysis-output/mission-extract/
+analysis-output/mission-analysis/
+analysis-output/mission-packet-audit/
+analysis-output/unity-demo-contract/
+analysis-output/unity-combat-data/
+
+# Unity demo generated state
+unity-mc2-demo/Library/
+unity-mc2-demo/Temp/
+unity-mc2-demo/Logs/
+unity-mc2-demo/UserSettings/
+unity-mc2-demo/obj/
+unity-mc2-demo/Build/
+unity-mc2-demo/Builds/
+unity-mc2-demo/MemoryCaptures/
+!unity-mc2-demo/Assets/
+!unity-mc2-demo/Assets/**
+unity-mc2-demo/Assets/StreamingAssets/Missions/*/mission-contract.json
+unity-mc2-demo/Assets/StreamingAssets/Missions/*/mission-contract.json.meta
+unity-mc2-demo/Assets/StreamingAssets/Data/combat-data.json
+unity-mc2-demo/Assets/StreamingAssets/Data/combat-data.json.meta
+
 *.h~
 *.hpp~
 *.c~

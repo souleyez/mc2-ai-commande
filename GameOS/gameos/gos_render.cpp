@@ -117,12 +117,11 @@ RenderWindow* create_window(
 	//SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, GL_CONTEXT_FLAG_DEBUG_BIT);
 
     // some defaults just to shut up static analyzer
-    SDL_DisplayMode preferred_mode = {
-        .format = SDL_PIXELFORMAT_RGB888,            /**< pixel format */
-        .w = 800,
-        .h = 600,                      /**< height, in screen coordinates */
-        .refresh_rate = 0           /**< refresh rate (or zero for unspecified) */
-    };
+    SDL_DisplayMode preferred_mode = {};
+    preferred_mode.format = SDL_PIXELFORMAT_RGB888;
+    preferred_mode.w = 800;
+    preferred_mode.h = 600;
+    preferred_mode.refresh_rate = 0;
 
     if (VERBOSE_MODES) {
         SDL_DisplayMode mode;

@@ -1,0 +1,21 @@
+{
+  "id": "project-owned-starter",
+  "title": "Project Owned Starter Pack",
+  "kind": "replacement",
+  "license": "project-owned-or-cleared",
+  "version": "0.1.0",
+  "engineContract": "mc2-content-pack-v1",
+  "product": {
+    "id": "project-owned-starter",
+    "title": "Project Owned Starter Pack",
+    "language": "zh-CN",
+    "audience": "development"
+  },
+  "sourcePath": ".",
+  "seedMode": "Empty",
+  "replacementStatus": "scaffold",
+  "notes": [
+    "Use this as the manifest shape for a future original or cleared content pack.",
+    "The pack must supply the full runtime contract before it can be mounted."
+  ]
+}

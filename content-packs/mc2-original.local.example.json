@@ -1,0 +1,20 @@
+{
+  "id": "mc2-original-local",
+  "title": "MC2 Original Local Reference Pack",
+  "kind": "reference",
+  "license": "local-reference-only",
+  "version": "0.1.0",
+  "engineContract": "mc2-content-pack-v1",
+  "product": {
+    "id": "mc2-reference",
+    "title": "MC2 Reference",
+    "language": "en",
+    "audience": "local-development"
+  },
+  "sourcePath": "C:\\Users\\soulzyn\\Desktop\\codex\\mechcommander2-mc2\\mc2-run64-dev",
+  "notes": [
+    "This is an example manifest for local development only.",
+    "Put a copy named pack.json in the pack root if tooling needs metadata.",
+    "Do not redistribute original art assets in public or commercial builds."
+  ]
+}
