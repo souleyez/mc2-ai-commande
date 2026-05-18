@@ -32,6 +32,11 @@ namespace MC2Demo.Presentation
 
             Vector3 position = MissionToWorld(Unit.MissionPosition);
             position.y = DemoTerrainView.HeightAt(Unit.MissionPosition) + Mathf.Max(0.2f, transform.localScale.y * 0.5f);
+            if (Unit.IsJumping)
+            {
+                position.y += Unit.JumpLift * 2.6f;
+            }
+
             transform.position = position;
         }
 

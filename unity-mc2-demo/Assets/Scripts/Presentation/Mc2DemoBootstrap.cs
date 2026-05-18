@@ -13,6 +13,7 @@ namespace MC2Demo.Presentation
         [SerializeField] private float cameraHeight = 62f;
         [SerializeField] private float cameraPitch = 58f;
         [SerializeField] private float cameraYaw = 45f;
+        private const float JumpDistance = 520f;
 
         private readonly Dictionary<string, DemoUnitView> unitViews = new();
         private readonly Dictionary<int, bool> objectiveCompletionState = new();
@@ -22,6 +23,7 @@ namespace MC2Demo.Presentation
         private BattleMission mission;
         private CombatProfileCatalog combatProfiles = CombatProfileCatalog.Empty;
         private string pendingDetachedUnitId;
+        private bool pendingJumpOrder;
         private Camera mainCamera;
         private string statusText = "Loading";
 
@@ -711,6 +713,12 @@ namespace MC2Demo.Presentation
 
         private void IssueMoveOrder(Vector2 target, string label)
         {
+            if (pendingJumpOrder)
+            {
+                IssueJumpOrder(target, label);
+                return;
+            }
+
             if (!string.IsNullOrEmpty(pendingDetachedUnitId))
             {
                 mission.IssueDetachedMove(pendingDetachedUnitId, target);
@@ -722,6 +730,29 @@ namespace MC2Demo.Presentation
                 mission.IssueSquadMove(target);
                 statusText = string.IsNullOrEmpty(label) ? "Squad move" : label;
             }
+        }
+
+        private void IssueJumpOrder(Vector2 target, string label)
+        {
+            int accepted;
+            string detachedUnitId = pendingDetachedUnitId;
+            if (!string.IsNullOrEmpty(detachedUnitId))
+            {
+                accepted = mission.IssueDetachedJump(detachedUnitId, target, JumpDistance, DemoTerrainView.IsUsableLandingPosition);
+                statusText = accepted > 0
+                    ? (string.IsNullOrEmpty(label) ? "Jet order: " + detachedUnitId : "Jet vector: " + detachedUnitId)
+                    : "Jet blocked: " + detachedUnitId;
+            }
+            else
+            {
+                accepted = mission.IssueSquadJump(target, JumpDistance, DemoTerrainView.IsUsableLandingPosition);
+                statusText = accepted > 0
+                    ? (string.IsNullOrEmpty(label) ? "Squad jet: " + accepted : "Squad jet vector: " + accepted)
+                    : "Jet blocked: no legal landing";
+            }
+
+            pendingDetachedUnitId = null;
+            pendingJumpOrder = false;
         }
 
         private void FollowCommander()
@@ -768,10 +799,18 @@ namespace MC2Demo.Presentation
             if (GUI.Button(new Rect(18, y, 92, 28), "All"))
             {
                 pendingDetachedUnitId = null;
+                pendingJumpOrder = false;
                 statusText = "Squad selected";
             }
 
-            GUI.Button(new Rect(116, y, 92, 28), "Jet");
+            if (GUI.Button(new Rect(116, y, 92, 28), pendingJumpOrder ? "Jet..." : "Jet"))
+            {
+                pendingJumpOrder = true;
+                statusText = string.IsNullOrEmpty(pendingDetachedUnitId)
+                    ? "Select squad jet destination"
+                    : "Select jet destination for " + pendingDetachedUnitId;
+            }
+
             GUI.Button(new Rect(214, y, 108, 28), "System");
             y += 36f;
 
@@ -781,6 +820,10 @@ namespace MC2Demo.Presentation
                 if (unit.IsDestroyed)
                 {
                     label += "  DESTROYED";
+                }
+                else if (unit.IsJumping)
+                {
+                    label += "  JET";
                 }
                 else if (unit.IsDetached)
                 {
@@ -798,7 +841,9 @@ namespace MC2Demo.Presentation
                 if (GUI.Button(new Rect(18, y, 304, 34), label))
                 {
                     pendingDetachedUnitId = unit.Id;
-                    statusText = "Select destination for " + unit.UnitType;
+                    statusText = pendingJumpOrder
+                        ? "Select jet destination for " + unit.UnitType
+                        : "Select destination for " + unit.UnitType;
                 }
 
                 Rect barBack = new(24, y + 24, 292, 4);

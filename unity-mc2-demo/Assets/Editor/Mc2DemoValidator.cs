@@ -46,7 +46,8 @@ namespace MC2Demo.EditorTools
 
             ValidateSourceDrivenProfiles(combatProfiles);
 
-            BattleMission mission = BattleMission.FromJson(File.ReadAllText(contractPath), combatProfiles);
+            string contractJson = File.ReadAllText(contractPath);
+            BattleMission mission = BattleMission.FromJson(contractJson, combatProfiles);
             if (mission.Units.Count != 29)
             {
                 throw new InvalidDataException("Expected 29 units, got " + mission.Units.Count);
@@ -96,6 +97,7 @@ namespace MC2Demo.EditorTools
                 throw new InvalidDataException("Expected 3 player units, got " + playerUnits);
             }
 
+            ValidateJumpCommand(BattleMission.FromJson(contractJson, combatProfiles));
             ValidateCombatSimulation(mission);
             ValidateStructureObjective(mission);
 
@@ -172,6 +174,55 @@ namespace MC2Demo.EditorTools
             }
 
             return false;
+        }
+
+        private static void ValidateJumpCommand(BattleMission mission)
+        {
+            UnitState player = null;
+            foreach (UnitState unit in mission.Units)
+            {
+                if (unit.IsPlayerUnit)
+                {
+                    player = unit;
+                    break;
+                }
+            }
+
+            if (player == null)
+            {
+                throw new InvalidDataException("Jump simulation requires one player unit.");
+            }
+
+            Vector2 start = player.MissionPosition;
+            int accepted = mission.IssueDetachedJump(player.Id, start + new Vector2(1000f, 0f), 520f, _ => true);
+            if (accepted != 1)
+            {
+                throw new InvalidDataException("Expected jump command to be accepted.");
+            }
+
+            mission.Tick(0.25f);
+            if (!player.IsJumping || player.JumpLift <= 0f)
+            {
+                throw new InvalidDataException("Expected jump command to produce active lift.");
+            }
+
+            mission.Tick(1f);
+            if (player.IsJumping || player.IsDetached || player.HasMoveOrder)
+            {
+                throw new InvalidDataException("Expected jump command to auto rejoin after landing.");
+            }
+
+            if (Vector2.Distance(start, player.MissionPosition) < 100f)
+            {
+                throw new InvalidDataException("Expected jump command to move the unit.");
+            }
+
+            Vector2 beforeBlockedJump = player.MissionPosition;
+            int blocked = mission.IssueDetachedJump(player.Id, beforeBlockedJump + new Vector2(1000f, 0f), 520f, _ => false);
+            if (blocked != 0 || Vector2.Distance(beforeBlockedJump, player.MissionPosition) > 0.01f)
+            {
+                throw new InvalidDataException("Expected invalid jump landing to keep the unit in place.");
+            }
         }
 
         private static void ValidateStructureObjective(BattleMission mission)

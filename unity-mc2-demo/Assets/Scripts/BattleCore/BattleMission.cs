@@ -105,6 +105,31 @@ namespace MC2Demo.BattleCore
             }
         }
 
+        public int IssueSquadJump(Vector2 missionPoint, float jumpDistance, Func<Vector2, bool> isLandingAllowed)
+        {
+            int accepted = 0;
+            foreach (UnitState unit in PlayerUnits())
+            {
+                if (!unit.IsDetached && unit.TryStartJumpToward(missionPoint, jumpDistance, isLandingAllowed, detached: false))
+                {
+                    accepted++;
+                }
+            }
+
+            return accepted;
+        }
+
+        public int IssueDetachedJump(string unitId, Vector2 missionPoint, float jumpDistance, Func<Vector2, bool> isLandingAllowed)
+        {
+            UnitState unit = FindUnit(unitId);
+            if (unit != null && unit.IsPlayerUnit && unit.TryStartJumpToward(missionPoint, jumpDistance, isLandingAllowed, detached: true))
+            {
+                return 1;
+            }
+
+            return 0;
+        }
+
         public void Tick(float deltaTime)
         {
             recentCombatEvents.Clear();

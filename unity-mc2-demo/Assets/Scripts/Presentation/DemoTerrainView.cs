@@ -57,6 +57,34 @@ namespace MC2Demo.Presentation
             return Mathf.Lerp(top, bottom, ty);
         }
 
+        public bool ContainsMissionPoint(Vector2 missionPoint)
+        {
+            if (terrainMesh == null || terrainMesh.samples == null || terrainMesh.samples.Length == 0)
+            {
+                return true;
+            }
+
+            int side = Mathf.Max(1, terrainMesh.sampleSide);
+            float spacing = Mathf.Max(1f, terrainMesh.worldUnitsPerVertex * Mathf.Max(1, terrainMesh.sampleStep));
+            float maxX = terrainMesh.minX + spacing * (side - 1);
+            float minY = terrainMesh.minY - spacing * (side - 1);
+            return missionPoint.x >= terrainMesh.minX
+                && missionPoint.x <= maxX
+                && missionPoint.y <= terrainMesh.minY
+                && missionPoint.y >= minY;
+        }
+
+        public bool CanLandAt(Vector2 missionPoint)
+        {
+            if (!ContainsMissionPoint(missionPoint))
+            {
+                return false;
+            }
+
+            TerrainMeshSample sample = NearestSample(missionPoint);
+            return sample == null || (sample.water == 0 && sample.elevation > waterElevation + 4f);
+        }
+
         public float WaterWorldHeight()
         {
             return ElevationToWorldHeight(waterElevation);
@@ -82,6 +110,11 @@ namespace MC2Demo.Presentation
             return Current == null ? 0f : Current.WaterWorldHeight();
         }
 
+        public static bool IsUsableLandingPosition(Vector2 missionPoint)
+        {
+            return Current == null || Current.CanLandAt(missionPoint);
+        }
+
         public static float ElevationToWorldHeight(float elevation, float waterLevel = 350f)
         {
             return (elevation - waterLevel) / ElevationScale;
@@ -96,6 +129,16 @@ namespace MC2Demo.Presentation
         {
             int index = Mathf.Clamp(row * side + col, 0, terrainMesh.samples.Length - 1);
             return terrainMesh.samples[index].elevation;
+        }
+
+        private TerrainMeshSample NearestSample(Vector2 missionPoint)
+        {
+            int side = Mathf.Max(1, terrainMesh.sampleSide);
+            float spacing = Mathf.Max(1f, terrainMesh.worldUnitsPerVertex * Mathf.Max(1, terrainMesh.sampleStep));
+            int col = Mathf.RoundToInt(Mathf.Clamp((missionPoint.x - terrainMesh.minX) / spacing, 0f, side - 1f));
+            int row = Mathf.RoundToInt(Mathf.Clamp((terrainMesh.minY - missionPoint.y) / spacing, 0f, side - 1f));
+            int index = Mathf.Clamp(row * side + col, 0, terrainMesh.samples.Length - 1);
+            return terrainMesh.samples[index];
         }
     }
 }

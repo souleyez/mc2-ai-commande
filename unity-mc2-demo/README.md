@@ -11,6 +11,7 @@ Current demo behavior:
 - places original terrain object records as lightweight trees and buildings
 - follows the first player mech as commander
 - defaults to squad orders, with status-bar click for detached single-unit order
+- supports one-shot Jet orders with terrain-aware landing rejection
 - auto-acquires hostile units in weapon range
 - resolves temporary weapon cooldown, damage, cockpit/torso/arms/legs sections,
   and destruction

@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace MC2Demo.BattleCore
@@ -5,6 +6,7 @@ namespace MC2Demo.BattleCore
     public sealed class UnitState
     {
         private const float ArriveDistance = 20f;
+        private const float JumpDuration = 0.45f;
 
         public string Id { get; }
         public string UnitType { get; }
@@ -14,17 +16,22 @@ namespace MC2Demo.BattleCore
         public CombatProfile Profile { get; }
         public DamageSection[] Sections { get; }
         public bool IsDestroyed { get; private set; }
+        public bool IsJumping { get; private set; }
         public bool IsDetached { get; private set; }
         public bool HasMoveOrder { get; private set; }
         public string CurrentTargetId { get; private set; }
         public string LastHitSection { get; private set; }
         public float WeaponCooldownRemaining { get; private set; }
         public float LastDamageTaken { get; private set; }
+        public float JumpLift { get; private set; }
         public float CurrentStructure { get; private set; }
         public float Structure => Profile.MaxStructure <= 0f ? 0f : CurrentStructure / Profile.MaxStructure;
         public float WeaponCooldownRatio => Profile.WeaponCooldown <= 0f ? 0f : WeaponCooldownRemaining / Profile.WeaponCooldown;
         public Vector2 MissionPosition { get; private set; }
         public Vector2 MoveTarget { get; private set; }
+        private Vector2 jumpStart;
+        private Vector2 jumpEnd;
+        private float jumpElapsed;
 
         public UnitState(UnitSpawn spawn, CombatProfileCatalog profiles)
         {
@@ -52,9 +59,54 @@ namespace MC2Demo.BattleCore
             IsDetached = detached;
         }
 
+        public bool TryStartJumpToward(Vector2 missionPoint, float jumpDistance, Func<Vector2, bool> isLandingAllowed, bool detached)
+        {
+            if (IsDestroyed || IsJumping)
+            {
+                return false;
+            }
+
+            Vector2 toTarget = missionPoint - MissionPosition;
+            float distance = toTarget.magnitude;
+            if (distance <= ArriveDistance)
+            {
+                return false;
+            }
+
+            Vector2 landingPoint = MissionPosition + toTarget.normalized * Mathf.Min(Mathf.Max(1f, jumpDistance), distance);
+            if (isLandingAllowed != null && !isLandingAllowed(landingPoint))
+            {
+                return false;
+            }
+
+            jumpStart = MissionPosition;
+            jumpEnd = landingPoint;
+            jumpElapsed = 0f;
+            MoveTarget = landingPoint;
+            HasMoveOrder = true;
+            IsDetached = detached;
+            IsJumping = true;
+            JumpLift = 0f;
+            CurrentTargetId = null;
+            return true;
+        }
+
         public void TickMovement(float deltaTime)
         {
-            if (!HasMoveOrder || IsDestroyed)
+            if (IsDestroyed)
+            {
+                IsJumping = false;
+                JumpLift = 0f;
+                return;
+            }
+
+            if (IsJumping)
+            {
+                TickJump(deltaTime);
+                return;
+            }
+
+            if (!HasMoveOrder)
             {
                 return;
             }
@@ -71,6 +123,24 @@ namespace MC2Demo.BattleCore
 
             float step = Profile.MoveSpeed * deltaTime;
             MissionPosition += toTarget.normalized * Mathf.Min(step, distance);
+        }
+
+        private void TickJump(float deltaTime)
+        {
+            jumpElapsed += Mathf.Max(0f, deltaTime);
+            float progress = Mathf.Clamp01(jumpElapsed / JumpDuration);
+            float eased = Mathf.SmoothStep(0f, 1f, progress);
+            MissionPosition = Vector2.Lerp(jumpStart, jumpEnd, eased);
+            JumpLift = Mathf.Sin(progress * Mathf.PI);
+
+            if (progress >= 1f)
+            {
+                MissionPosition = jumpEnd;
+                HasMoveOrder = false;
+                IsDetached = false;
+                IsJumping = false;
+                JumpLift = 0f;
+            }
         }
 
         public void TickWeapon(float deltaTime)
