@@ -20,6 +20,7 @@ namespace MC2Demo.BattleCore
         private readonly List<ObjectiveState> objectives = new();
         private readonly List<CombatEvent> recentCombatEvents = new();
         private readonly List<UnitActivationEvent> recentUnitActivationEvents = new();
+        private readonly Dictionary<string, int> enemyPatrolSteps = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, bool> flags = new(StringComparer.OrdinalIgnoreCase);
 
         public BattleMission(MissionContract contract, CombatProfileCatalog combatProfiles)
@@ -254,6 +255,7 @@ namespace MC2Demo.BattleCore
                 }
 
                 RefreshAttackOrder(unit);
+                ApplyEnemyBrainOrder(unit);
                 unit.TickMovement(deltaTime);
                 unit.TickWeapon(deltaTime);
             }
@@ -352,6 +354,141 @@ namespace MC2Demo.BattleCore
             }
 
             return bestTarget;
+        }
+
+        private void ApplyEnemyBrainOrder(UnitState unit)
+        {
+            if (unit.IsPlayerUnit || unit.IsDestroyed || unit.HasMoveOrder || unit.HasAttackOrder)
+            {
+                return;
+            }
+
+            UnitState playerTarget = FindNearestPlayerUnit(unit, EnemyAlertRange(unit));
+            if (playerTarget != null)
+            {
+                unit.SetAttackOrder(playerTarget.Id, playerTarget.MissionPosition, detached: false);
+                return;
+            }
+
+            if (TryGetMissionPatrolPoint(unit, out Vector2 patrolPoint))
+            {
+                unit.SetMoveOrder(patrolPoint, detached: false);
+            }
+        }
+
+        private UnitState FindNearestPlayerUnit(UnitState seeker, float maxDistance)
+        {
+            UnitState bestTarget = null;
+            float bestDistanceSqr = maxDistance * maxDistance;
+
+            foreach (UnitState candidate in units)
+            {
+                if (!candidate.IsActive || candidate.IsDestroyed || !candidate.IsPlayerUnit)
+                {
+                    continue;
+                }
+
+                float distanceSqr = (candidate.MissionPosition - seeker.MissionPosition).sqrMagnitude;
+                if (distanceSqr <= bestDistanceSqr)
+                {
+                    bestTarget = candidate;
+                    bestDistanceSqr = distanceSqr;
+                }
+            }
+
+            return bestTarget;
+        }
+
+        private static float EnemyAlertRange(UnitState unit)
+        {
+            return Mathf.Max(900f, unit.Profile.WeaponRange * 1.8f);
+        }
+
+        private bool TryGetMissionPatrolPoint(UnitState unit, out Vector2 patrolPoint)
+        {
+            patrolPoint = unit.MissionPosition;
+            if (!IsMission("mc2_01"))
+            {
+                return false;
+            }
+
+            if (BrainStartsWith(unit, "mc2_01_Pat1") || (BrainEquals(unit, "mc2_01_LRMs") && unit.MissionPosition.x > 0f))
+            {
+                patrolPoint = PatrolPoint(new Vector2(3136f, -789.333f), 360f, NextEnemyPatrolStep(unit.Id));
+                return true;
+            }
+
+            if (BrainEquals(unit, "mc2_01_infantry_ambush") || BrainEquals(unit, "mc2_01_infantry_ambush2"))
+            {
+                patrolPoint = PatrolPoint(new Vector2(3221.333f, -277.333f), 260f, NextEnemyPatrolStep(unit.Id));
+                return true;
+            }
+
+            if (BrainStartsWith(unit, "mc2_01_Pat2") || BrainEquals(unit, "mc2_01_Pat4"))
+            {
+                patrolPoint = PatrolPoint(new Vector2(832f, 2752f), 420f, NextEnemyPatrolStep(unit.Id));
+                return true;
+            }
+
+            if (BrainEquals(unit, "mc2_01_Starslayer")
+                || BrainEquals(unit, "mc2_01_Urbies")
+                || (BrainEquals(unit, "mc2_01_LRMs") && unit.MissionPosition.x < 0f))
+            {
+                patrolPoint = PatrolPoint(new Vector2(-2240f, 1600f), 520f, NextEnemyPatrolStep(unit.Id));
+                return true;
+            }
+
+            return false;
+        }
+
+        private int NextEnemyPatrolStep(string unitId)
+        {
+            if (string.IsNullOrEmpty(unitId))
+            {
+                unitId = "";
+            }
+
+            if (!enemyPatrolSteps.TryGetValue(unitId, out int step))
+            {
+                step = UnitIdNumber(unitId) % 4;
+            }
+
+            enemyPatrolSteps[unitId] = step + 1;
+            return step;
+        }
+
+        private static Vector2 PatrolPoint(Vector2 anchor, float radius, int step)
+        {
+            switch (Mathf.Abs(step) % 4)
+            {
+                case 0:
+                    return anchor + new Vector2(radius, 0f);
+                case 1:
+                    return anchor + new Vector2(0f, radius);
+                case 2:
+                    return anchor + new Vector2(-radius, 0f);
+                default:
+                    return anchor + new Vector2(0f, -radius);
+            }
+        }
+
+        private static int UnitIdNumber(string unitId)
+        {
+            int value = 0;
+            if (string.IsNullOrEmpty(unitId))
+            {
+                return value;
+            }
+
+            foreach (char c in unitId)
+            {
+                if (c >= '0' && c <= '9')
+                {
+                    value = (value * 10) + (c - '0');
+                }
+            }
+
+            return value;
         }
 
         private void RefreshAttackOrder(UnitState attacker)

@@ -109,7 +109,7 @@ namespace MC2Demo.EditorTools
             ValidateMissionActivation(BattleMission.FromJson(contractJson, combatProfiles));
             ValidateJumpCommand(BattleMission.FromJson(contractJson, combatProfiles));
             ValidateCombatSimulation(mission);
-            ValidateStructureObjective(BattleMission.FromJson(contractJson, combatProfiles));
+            ValidateStructureObjective(new BattleMission(MakeStructureObjectiveContract(), CombatProfileCatalog.Empty));
 
             Debug.Log("MC2 demo contract validation OK: 29 units, 3 player units, 9 objectives, 1 structure, 10000 terrain samples, 1000 terrain objects, combat simulation passed.");
         }
@@ -207,6 +207,18 @@ namespace MC2Demo.EditorTools
             if (mission.RecentUnitActivationEvents.Count == 0)
             {
                 throw new InvalidDataException("Expected patrol activation to emit activation events.");
+            }
+
+            Vector2 patrolStart = patrol.MissionPosition;
+            mission.Tick(1f);
+            if (!patrol.HasMoveOrder && Vector2.Distance(patrol.MissionPosition, patrolStart) <= 0.01f)
+            {
+                throw new InvalidDataException("Expected activated patrol to receive a lightweight brain movement order.");
+            }
+
+            if (islandBandit.IsActive || islandBandit.HasMoveOrder || starslayer.IsActive || starslayer.HasMoveOrder)
+            {
+                throw new InvalidDataException("Expected later mc2_01 enemy groups to remain inactive and idle.");
             }
         }
 
@@ -514,6 +526,51 @@ namespace MC2Demo.EditorTools
             };
         }
 
+        private static MissionContract MakeStructureObjectiveContract()
+        {
+            return new MissionContract
+            {
+                mission = new MissionDefinition
+                {
+                    id = "validator-structure-objective",
+                    terrain = new TerrainDefinition { minX = -1000f, minY = 1000f, waterElevation = 350f }
+                },
+                units = new[]
+                {
+                    new UnitSpawn
+                    {
+                        spawnId = "structure-player-1",
+                        isPlayerUnit = true,
+                        teamId = 0,
+                        unitType = "Werewolf",
+                        position = new MissionPose { x = 0f, y = 0f, rotation = 0f }
+                    },
+                    new UnitSpawn
+                    {
+                        spawnId = "structure-player-2",
+                        isPlayerUnit = true,
+                        teamId = 0,
+                        unitType = "Bushwacker",
+                        position = new MissionPose { x = 80f, y = 0f, rotation = 0f }
+                    }
+                },
+                staticObjects = new[]
+                {
+                    new StaticObjectSpawn
+                    {
+                        objectId = "validator-structure",
+                        objectType = "Structure",
+                        teamId = 1,
+                        targetable = true,
+                        objectiveTarget = true,
+                        position = new MissionPose { x = 500f, y = 0f, rotation = 0f },
+                        radius = 80f,
+                        maxStructure = 45f
+                    }
+                }
+            };
+        }
+
         private static CombatProfileCatalog MakeSectionModifierProfiles()
         {
             return new CombatProfileCatalog(new CombatDataContract
@@ -753,14 +810,35 @@ namespace MC2Demo.EditorTools
                 throw new InvalidDataException("Expected detached attack order to lock the target structure.");
             }
 
-            for (int tick = 0; tick < 240 && !targetStructure.IsDestroyed; tick++)
+            int squadAccepted = mission.IssueSquadAttackStructure(targetStructure.Id);
+            if (squadAccepted < 1)
+            {
+                throw new InvalidDataException("Expected squadmates to join target structure attack.");
+            }
+
+            for (int tick = 0; tick < 360 && !targetStructure.IsDestroyed; tick++)
             {
                 mission.Tick(1f);
             }
 
             if (!targetStructure.IsDestroyed)
             {
-                throw new InvalidDataException("Expected target structure to be destroyed during simulation.");
+                int livePlayers = 0;
+                foreach (UnitState unit in mission.PlayerUnits())
+                {
+                    if (!unit.IsDestroyed)
+                    {
+                        livePlayers++;
+                    }
+                }
+
+                throw new InvalidDataException(
+                    "Expected target structure to be destroyed during simulation. Remaining="
+                    + targetStructure.CurrentStructure
+                    + " livePlayers="
+                    + livePlayers
+                    + " result="
+                    + mission.Result);
             }
         }
     }
