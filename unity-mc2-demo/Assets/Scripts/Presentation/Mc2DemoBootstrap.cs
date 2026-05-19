@@ -27,7 +27,6 @@ namespace MC2Demo.Presentation
         private readonly Dictionary<string, GameObject> unitHealthBarFills = new();
         private readonly Dictionary<string, GameObject> structureHealthBarBacks = new();
         private readonly Dictionary<string, GameObject> structureHealthBarFills = new();
-        private readonly Dictionary<int, bool> objectiveCompletionState = new();
         private readonly Dictionary<string, Material> materialCache = new(StringComparer.Ordinal);
         private readonly List<Material> ownedMaterials = new();
         private readonly List<string> combatLog = new();
@@ -356,23 +355,22 @@ namespace MC2Demo.Presentation
 
         private void CaptureObjectiveEvents()
         {
-            foreach (ObjectiveState objective in mission.Objectives)
+            foreach (ObjectiveEvent objectiveEvent in mission.RecentObjectiveEvents)
             {
-                int objectiveIndex = objective.Definition.index;
-                if (!objectiveCompletionState.TryGetValue(objectiveIndex, out bool wasComplete))
+                if (objectiveEvent.IsHidden)
                 {
-                    objectiveCompletionState[objectiveIndex] = objective.IsComplete;
                     continue;
                 }
 
-                if (!wasComplete && objective.IsComplete)
+                if (objectiveEvent.Kind == ObjectiveEventKind.Activated)
                 {
-                    objectiveCompletionState[objectiveIndex] = true;
-                    if (!objective.Definition.hidden)
-                    {
-                        AddCombatLogLine("Objective done: " + objective.Definition.title);
-                        Debug.Log("MC2 objective complete: " + objective.Definition.title);
-                    }
+                    AddCombatLogLine("Objective active: " + objectiveEvent.Title);
+                    Debug.Log("MC2 objective active: " + objectiveEvent.Title);
+                }
+                else if (objectiveEvent.Kind == ObjectiveEventKind.Completed)
+                {
+                    AddCombatLogLine("Objective done: " + objectiveEvent.Title);
+                    Debug.Log("MC2 objective complete: " + objectiveEvent.Title);
                 }
             }
         }

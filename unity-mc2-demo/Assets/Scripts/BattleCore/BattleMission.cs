@@ -12,6 +12,7 @@ namespace MC2Demo.BattleCore
         public IReadOnlyList<ObjectiveState> Objectives => objectives;
         public IReadOnlyList<CombatEvent> RecentCombatEvents => recentCombatEvents;
         public IReadOnlyList<UnitActivationEvent> RecentUnitActivationEvents => recentUnitActivationEvents;
+        public IReadOnlyList<ObjectiveEvent> RecentObjectiveEvents => recentObjectiveEvents;
         public MissionResultState Result { get; private set; } = MissionResultState.InProgress;
         public string ResultReason { get; private set; } = "";
 
@@ -20,6 +21,7 @@ namespace MC2Demo.BattleCore
         private readonly List<ObjectiveState> objectives = new();
         private readonly List<CombatEvent> recentCombatEvents = new();
         private readonly List<UnitActivationEvent> recentUnitActivationEvents = new();
+        private readonly List<ObjectiveEvent> recentObjectiveEvents = new();
         private readonly Dictionary<string, int> enemyPatrolSteps = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, bool> flags = new(StringComparer.OrdinalIgnoreCase);
 
@@ -52,7 +54,7 @@ namespace MC2Demo.BattleCore
                 }
             }
 
-            EvaluateObjectives();
+            EvaluateObjectives(reportEvents: false);
             RefreshUnitActivation(reportEvents: false);
             EvaluateMissionResult();
         }
@@ -242,6 +244,7 @@ namespace MC2Demo.BattleCore
         {
             recentCombatEvents.Clear();
             recentUnitActivationEvents.Clear();
+            recentObjectiveEvents.Clear();
             if (Result != MissionResultState.InProgress)
             {
                 return;
@@ -280,7 +283,7 @@ namespace MC2Demo.BattleCore
                 }
             }
 
-            EvaluateObjectives();
+            EvaluateObjectives(reportEvents: true);
             RefreshUnitActivation(reportEvents: true);
             EvaluateMissionResult();
         }
@@ -587,12 +590,19 @@ namespace MC2Demo.BattleCore
             return 0;
         }
 
-        private void EvaluateObjectives()
+        private void EvaluateObjectives(bool reportEvents)
         {
             foreach (ObjectiveState state in objectives)
             {
                 ObjectiveDefinition objective = state.Definition;
+                bool wasActive = state.IsActive;
+                bool wasComplete = state.IsComplete;
                 state.IsActive = IsObjectiveActive(objective);
+                if (reportEvents && !wasActive && state.IsActive)
+                {
+                    recentObjectiveEvents.Add(new ObjectiveEvent(objective.index, objective.title, objective.hidden, ObjectiveEventKind.Activated));
+                }
+
                 if (!state.IsActive || state.IsComplete)
                 {
                     continue;
@@ -602,6 +612,10 @@ namespace MC2Demo.BattleCore
                 {
                     state.IsComplete = true;
                     ApplyActions(objective.actions);
+                    if (reportEvents && !wasComplete)
+                    {
+                        recentObjectiveEvents.Add(new ObjectiveEvent(objective.index, objective.title, objective.hidden, ObjectiveEventKind.Completed));
+                    }
                 }
             }
         }
@@ -983,6 +997,28 @@ namespace MC2Demo.BattleCore
             UnitType = unitType;
             Brain = brain;
         }
+    }
+
+    public sealed class ObjectiveEvent
+    {
+        public int ObjectiveIndex { get; }
+        public string Title { get; }
+        public bool IsHidden { get; }
+        public ObjectiveEventKind Kind { get; }
+
+        public ObjectiveEvent(int objectiveIndex, string title, bool isHidden, ObjectiveEventKind kind)
+        {
+            ObjectiveIndex = objectiveIndex;
+            Title = title;
+            IsHidden = isHidden;
+            Kind = kind;
+        }
+    }
+
+    public enum ObjectiveEventKind
+    {
+        Activated,
+        Completed
     }
 
     public enum MissionResultState

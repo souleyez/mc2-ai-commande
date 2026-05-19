@@ -211,6 +211,11 @@ namespace MC2Demo.EditorTools
                 throw new InvalidDataException("Expected patrol activation to emit activation events.");
             }
 
+            if (!HasObjectiveEvent(mission, 0, ObjectiveEventKind.Completed) || !HasObjectiveEvent(mission, 1, ObjectiveEventKind.Activated))
+            {
+                throw new InvalidDataException("Expected airfield completion to emit objective completion and unlock events.");
+            }
+
             Vector2 patrolStart = patrol.MissionPosition;
             mission.Tick(1f);
             if (!patrol.HasMoveOrder && Vector2.Distance(patrol.MissionPosition, patrolStart) <= 0.01f)
@@ -484,6 +489,19 @@ namespace MC2Demo.EditorTools
             }
 
             return null;
+        }
+
+        private static bool HasObjectiveEvent(BattleMission mission, int objectiveIndex, ObjectiveEventKind kind)
+        {
+            foreach (ObjectiveEvent objectiveEvent in mission.RecentObjectiveEvents)
+            {
+                if (objectiveEvent.ObjectiveIndex == objectiveIndex && objectiveEvent.Kind == kind)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private static CombatProfileCatalog MakeResultProfiles()
