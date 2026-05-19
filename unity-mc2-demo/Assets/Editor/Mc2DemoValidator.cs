@@ -107,6 +107,7 @@ namespace MC2Demo.EditorTools
             ValidateSectionDamageModifiers();
             ValidateHeatManagement();
             ValidateMissionActivation(BattleMission.FromJson(contractJson, combatProfiles));
+            ValidateNavMarkerPatrolOrders();
             ValidateJumpCommand(BattleMission.FromJson(contractJson, combatProfiles));
             ValidateCombatSimulation(mission);
             ValidateStructureObjective(new BattleMission(MakeStructureObjectiveContract(), CombatProfileCatalog.Empty));
@@ -233,6 +234,25 @@ namespace MC2Demo.EditorTools
             if (!enemy.IsActive)
             {
                 throw new InvalidDataException("Expected first enemy target to activate after airfield objective.");
+            }
+        }
+
+        private static void ValidateNavMarkerPatrolOrders()
+        {
+            BattleMission mission = new(MakeNavMarkerPatrolContract(), CombatProfileCatalog.Empty);
+            UnitState patrol = mission.FindUnit("unit-4");
+            if (patrol == null || !patrol.IsActive)
+            {
+                throw new InvalidDataException("Nav marker patrol validation requires an active patrol unit.");
+            }
+
+            mission.Tick(0.1f);
+            Vector2 expected = new(1240f, 1000f);
+            if (!patrol.HasMoveOrder || Vector2.Distance(patrol.MoveTarget, expected) > 0.01f)
+            {
+                throw new InvalidDataException(
+                    "Expected mc2_01 patrol to use nav marker 0 as its patrol anchor, got "
+                    + patrol.MoveTarget);
             }
         }
 
@@ -522,6 +542,67 @@ namespace MC2Demo.EditorTools
                             }
                         }
                     }
+                }
+            };
+        }
+
+        private static MissionContract MakeNavMarkerPatrolContract()
+        {
+            return new MissionContract
+            {
+                mission = new MissionDefinition
+                {
+                    id = "mc2_01",
+                    terrain = new TerrainDefinition { minX = -4000f, minY = 4000f, waterElevation = 350f }
+                },
+                units = new[]
+                {
+                    new UnitSpawn
+                    {
+                        spawnId = "player-1",
+                        isPlayerUnit = true,
+                        teamId = 0,
+                        unitType = "Werewolf",
+                        position = new MissionPose { x = -3000f, y = -3000f, rotation = 0f }
+                    },
+                    new UnitSpawn
+                    {
+                        spawnId = "unit-4",
+                        isPlayerUnit = false,
+                        teamId = 1,
+                        unitType = "Centipede",
+                        brain = "mc2_01_Pat1",
+                        position = new MissionPose { x = 0f, y = 0f, rotation = 0f }
+                    }
+                },
+                objectives = new[]
+                {
+                    new ObjectiveDefinition
+                    {
+                        id = "hidden-activate-airfield",
+                        index = 0,
+                        hidden = true,
+                        conditions = new[]
+                        {
+                            new ObjectiveCondition
+                            {
+                                type = "MoveAnyUnitToArea",
+                                targetArea = new TargetArea { x = -3000f, y = -3000f, radius = 40f }
+                            }
+                        },
+                        actions = new[]
+                        {
+                            new ObjectiveAction
+                            {
+                                type = "SetBooleanFlag",
+                                flag = new FlagAction { id = "0", value = true }
+                            }
+                        }
+                    }
+                },
+                navMarkers = new[]
+                {
+                    new NavMarker { index = 0, x = 1000f, y = 1000f, radius = 240f }
                 }
             };
         }

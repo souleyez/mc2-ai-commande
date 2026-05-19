@@ -414,7 +414,7 @@ namespace MC2Demo.BattleCore
 
             if (BrainStartsWith(unit, "mc2_01_Pat1") || (BrainEquals(unit, "mc2_01_LRMs") && unit.MissionPosition.x > 0f))
             {
-                patrolPoint = PatrolPoint(new Vector2(3136f, -789.333f), 360f, NextEnemyPatrolStep(unit.Id));
+                patrolPoint = NavPatrolPoint(0, new Vector2(3136f, -789.333f), 360f, NextEnemyPatrolStep(unit.Id));
                 return true;
             }
 
@@ -426,7 +426,7 @@ namespace MC2Demo.BattleCore
 
             if (BrainStartsWith(unit, "mc2_01_Pat2") || BrainEquals(unit, "mc2_01_Pat4"))
             {
-                patrolPoint = PatrolPoint(new Vector2(832f, 2752f), 420f, NextEnemyPatrolStep(unit.Id));
+                patrolPoint = NavPatrolPoint(1, new Vector2(832f, 2752f), 420f, NextEnemyPatrolStep(unit.Id));
                 return true;
             }
 
@@ -439,6 +439,37 @@ namespace MC2Demo.BattleCore
             }
 
             return false;
+        }
+
+        private Vector2 NavPatrolPoint(int markerIndex, Vector2 fallbackAnchor, float fallbackRadius, int step)
+        {
+            NavMarker marker = FindNavMarker(markerIndex);
+            if (marker == null)
+            {
+                return PatrolPoint(fallbackAnchor, fallbackRadius, step);
+            }
+
+            Vector2 anchor = new(marker.x, marker.y);
+            float radius = Mathf.Max(160f, marker.radius);
+            return PatrolPoint(anchor, radius, step);
+        }
+
+        private NavMarker FindNavMarker(int markerIndex)
+        {
+            if (Contract.navMarkers == null)
+            {
+                return null;
+            }
+
+            foreach (NavMarker marker in Contract.navMarkers)
+            {
+                if (marker != null && marker.index == markerIndex)
+                {
+                    return marker;
+                }
+            }
+
+            return null;
         }
 
         private int NextEnemyPatrolStep(string unitId)
