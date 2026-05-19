@@ -592,7 +592,7 @@ namespace MC2Demo.BattleCore
             foreach (ObjectiveState state in objectives)
             {
                 ObjectiveDefinition objective = state.Definition;
-                state.IsActive = !objective.activateOnFlag || GetFlag(objective.activateFlagId);
+                state.IsActive = IsObjectiveActive(objective);
                 if (!state.IsActive || state.IsComplete)
                 {
                     continue;
@@ -604,6 +604,34 @@ namespace MC2Demo.BattleCore
                     ApplyActions(objective.actions);
                 }
             }
+        }
+
+        private bool IsObjectiveActive(ObjectiveDefinition objective)
+        {
+            if (objective.activateOnFlag && !GetFlag(objective.activateFlagId))
+            {
+                return false;
+            }
+
+            return !objective.requiresAllPreviousPrimary || ArePreviousPrimaryObjectivesComplete(objective.index);
+        }
+
+        private bool ArePreviousPrimaryObjectivesComplete(int objectiveIndex)
+        {
+            foreach (ObjectiveState objective in objectives)
+            {
+                if (objective.Definition.hidden || objective.Definition.index >= objectiveIndex)
+                {
+                    continue;
+                }
+
+                if (!objective.IsComplete)
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         private void EvaluateMissionResult()

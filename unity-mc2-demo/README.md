@@ -7,6 +7,7 @@ placeholder battlefield at runtime.
 Current demo behavior:
 
 - loads `mc2_01` unit spawns and objective graph
+- gates objectives with source flag and previous-primary prerequisites
 - builds a source-driven 100 x 100 terrain mesh and water plane from packet data
 - places original terrain object records as lightweight trees and buildings
 - activates enemy groups from source mission brain names and objective progress

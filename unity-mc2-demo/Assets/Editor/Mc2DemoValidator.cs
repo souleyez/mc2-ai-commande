@@ -104,6 +104,7 @@ namespace MC2Demo.EditorTools
             }
 
             ValidateMissionResults();
+            ValidateObjectivePrerequisites();
             ValidateSectionDamageModifiers();
             ValidateHeatManagement();
             ValidateMissionActivation(BattleMission.FromJson(contractJson, combatProfiles));
@@ -449,6 +450,42 @@ namespace MC2Demo.EditorTools
             }
         }
 
+        private static void ValidateObjectivePrerequisites()
+        {
+            BattleMission mission = new(MakePrerequisiteObjectiveContract(), CombatProfileCatalog.Empty);
+            ObjectiveState first = ObjectiveByIndex(mission, 0);
+            ObjectiveState second = ObjectiveByIndex(mission, 1);
+            UnitState player = FirstPlayerUnit(mission);
+            if (first == null || second == null || player == null)
+            {
+                throw new InvalidDataException("Prerequisite objective validation requires two objectives and one player unit.");
+            }
+
+            if (!first.IsActive || first.IsComplete || second.IsActive || second.IsComplete)
+            {
+                throw new InvalidDataException("Expected prerequisite objective to stay locked until previous primary objective is complete.");
+            }
+
+            MovePlayerIntoObjectiveArea(mission, player, 0);
+            if (!first.IsComplete || !second.IsActive || !second.IsComplete)
+            {
+                throw new InvalidDataException("Expected prerequisite objective to activate after previous primary objective completion.");
+            }
+        }
+
+        private static ObjectiveState ObjectiveByIndex(BattleMission mission, int index)
+        {
+            foreach (ObjectiveState objective in mission.Objectives)
+            {
+                if (objective.Definition.index == index)
+                {
+                    return objective;
+                }
+            }
+
+            return null;
+        }
+
         private static CombatProfileCatalog MakeResultProfiles()
         {
             return new CombatProfileCatalog(new CombatDataContract
@@ -647,6 +684,63 @@ namespace MC2Demo.EditorTools
                         position = new MissionPose { x = 500f, y = 0f, rotation = 0f },
                         radius = 80f,
                         maxStructure = 45f
+                    }
+                }
+            };
+        }
+
+        private static MissionContract MakePrerequisiteObjectiveContract()
+        {
+            return new MissionContract
+            {
+                mission = new MissionDefinition
+                {
+                    id = "validator-objective-prerequisites",
+                    terrain = new TerrainDefinition { minX = -1000f, minY = 1000f, waterElevation = 350f }
+                },
+                units = new[]
+                {
+                    new UnitSpawn
+                    {
+                        spawnId = "player-1",
+                        isPlayerUnit = true,
+                        teamId = 0,
+                        unitType = "Werewolf",
+                        position = new MissionPose { x = 0f, y = 0f, rotation = 0f }
+                    }
+                },
+                objectives = new[]
+                {
+                    new ObjectiveDefinition
+                    {
+                        id = "primary-1",
+                        index = 0,
+                        title = "First primary",
+                        hidden = false,
+                        conditions = new[]
+                        {
+                            new ObjectiveCondition
+                            {
+                                type = "MoveAnyUnitToArea",
+                                targetArea = new TargetArea { x = 500f, y = 0f, radius = 60f }
+                            }
+                        }
+                    },
+                    new ObjectiveDefinition
+                    {
+                        id = "primary-2",
+                        index = 1,
+                        title = "Second primary",
+                        hidden = false,
+                        requiresAllPreviousPrimary = true,
+                        conditions = new[]
+                        {
+                            new ObjectiveCondition
+                            {
+                                type = "MoveAnyUnitToArea",
+                                targetArea = new TargetArea { x = 500f, y = 0f, radius = 60f }
+                            }
+                        }
                     }
                 }
             };
