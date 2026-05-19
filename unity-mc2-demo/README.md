@@ -13,6 +13,7 @@ Current demo behavior:
 - defaults to squad orders, with status-bar click for detached single-unit order
 - lets map clicks on hostile units or targetable buildings issue focused attack orders
 - renders command rings for selected units, order destinations, and focused targets
+- shows a subtle weapon range ring for selected, detached, attacking, or firing units
 - renders short weapon beams, hit flashes, and impact bursts for combat events
 - shows placeholder limb breakoff, section sparks, smoke, and cockpit ejection cues
 - applies simple section penalties: destroyed arms reduce firepower, destroyed legs slow movement and disable Jet

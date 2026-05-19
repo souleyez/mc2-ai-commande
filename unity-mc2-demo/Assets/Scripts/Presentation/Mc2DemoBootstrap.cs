@@ -21,6 +21,7 @@ namespace MC2Demo.Presentation
         private readonly Dictionary<string, GameObject> unitSelectionMarkers = new();
         private readonly Dictionary<string, GameObject> unitOrderMarkers = new();
         private readonly Dictionary<string, GameObject> unitFocusMarkers = new();
+        private readonly Dictionary<string, GameObject> unitRangeMarkers = new();
         private readonly Dictionary<int, bool> objectiveCompletionState = new();
         private readonly Dictionary<string, Material> materialCache = new(StringComparer.Ordinal);
         private readonly List<Material> ownedMaterials = new();
@@ -858,6 +859,11 @@ namespace MC2Demo.Presentation
                     "CommandFocus",
                     new Color(1f, 0.58f, 0.12f, 0.48f),
                     new Vector3(1.18f, 0.016f, 1.18f));
+                unitRangeMarkers[unit.Id] = CreateMarkerDisc(
+                    unit.Id + " Weapon Range",
+                    "CommandWeaponRange",
+                    new Color(0.25f, 0.82f, 1f, 0.12f),
+                    Vector3.one);
             }
         }
 
@@ -889,6 +895,7 @@ namespace MC2Demo.Presentation
                 UpdateSelectionMarker(unit);
                 UpdateOrderMarker(unit);
                 UpdateFocusMarker(unit);
+                UpdateRangeMarker(unit);
             }
         }
 
@@ -940,6 +947,28 @@ namespace MC2Demo.Presentation
                 marker.transform.position = GroundMarkerPosition(position, 0.1f);
                 float scale = Mathf.Clamp(radius / 95f, 1.1f, 4.2f);
                 marker.transform.localScale = new Vector3(scale, 0.016f, scale);
+            }
+        }
+
+        private void UpdateRangeMarker(UnitState unit)
+        {
+            if (!unitRangeMarkers.TryGetValue(unit.Id, out GameObject marker))
+            {
+                return;
+            }
+
+            bool isVisible = !unit.IsDestroyed
+                && unit.Profile.WeaponRange > 0f
+                && (pendingDetachedUnitId == unit.Id
+                    || unit.IsDetached
+                    || unit.HasAttackOrder
+                    || !string.IsNullOrEmpty(unit.CurrentTargetId));
+            marker.SetActive(isVisible);
+            if (isVisible)
+            {
+                marker.transform.position = GroundMarkerPosition(unit.MissionPosition, 0.045f);
+                float worldDiameter = Mathf.Clamp((unit.Profile.WeaponRange / 100f) * 2f, 1.2f, 8f);
+                marker.transform.localScale = new Vector3(worldDiameter, 0.01f, worldDiameter);
             }
         }
 
