@@ -1507,6 +1507,7 @@ namespace MC2Demo.Presentation
 
             DrawUnitPanel();
             DrawCombatPanel();
+            DrawMissionBriefPanel();
             DrawMissionMap();
             DrawSystemPanel();
             DrawMissionResultPanel();
@@ -1712,6 +1713,142 @@ namespace MC2Demo.Presentation
                 DrawColorRect(bar, structure.IsDestroyed ? Color.red : new Color(0.95f, 0.62f, 0.18f));
                 y += 34f;
             }
+        }
+
+        private void DrawMissionBriefPanel()
+        {
+            if (!ShouldDrawMissionBriefPanel())
+            {
+                return;
+            }
+
+            Rect panel = MissionBriefPanelRect();
+            GUI.Box(panel, "Mission");
+            float x = panel.x + 12f;
+            float y = panel.y + 32f;
+            float width = panel.width - 24f;
+            int visibleObjectives = CountVisibleObjectives();
+            int completedObjectives = CountCompletedVisibleObjectives();
+            int liveStructures = CountLiveStructures();
+            GUI.Label(
+                new Rect(x, y, width, 20f),
+                "Objectives " + completedObjectives + "/" + visibleObjectives + "    Targets " + liveStructures + "/" + mission.Structures.Count);
+            y += 24f;
+
+            foreach (ObjectiveState objective in mission.Objectives)
+            {
+                if (objective.Definition.hidden)
+                {
+                    continue;
+                }
+
+                if (y > panel.yMax - 54f)
+                {
+                    GUI.Label(new Rect(x, y, width, 20f), "...");
+                    y += 20f;
+                    break;
+                }
+
+                Color previous = GUI.color;
+                GUI.color = objective.IsComplete
+                    ? new Color(0.55f, 1f, 0.55f)
+                    : objective.IsActive ? new Color(1f, 0.88f, 0.42f) : new Color(0.62f, 0.68f, 0.72f);
+                GUI.Label(new Rect(x, y, width, 20f), ObjectiveStateLabel(objective) + TruncateText(objective.Definition.title, 36));
+                GUI.color = previous;
+                y += 20f;
+            }
+
+            if (mission.Structures.Count == 0 || y > panel.yMax - 42f)
+            {
+                return;
+            }
+
+            y += 4f;
+            GUI.Label(new Rect(x, y, width, 18f), "Target structures");
+            y += 20f;
+            foreach (StructureState structure in mission.Structures)
+            {
+                if (y > panel.yMax - 22f)
+                {
+                    break;
+                }
+
+                DrawStructureBrief(structure, x, y, width);
+                y += 28f;
+            }
+        }
+
+        private bool ShouldDrawMissionBriefPanel()
+        {
+            return !showMissionMap && mission.Result == MissionResultState.InProgress;
+        }
+
+        private static string ObjectiveStateLabel(ObjectiveState objective)
+        {
+            if (objective.IsComplete)
+            {
+                return "[done] ";
+            }
+
+            return objective.IsActive ? "[active] " : "[locked] ";
+        }
+
+        private void DrawStructureBrief(StructureState structure, float x, float y, float width)
+        {
+            string label = TruncateText(structure.ObjectType, 32);
+            if (structure.IsDestroyed)
+            {
+                label += " destroyed";
+            }
+
+            GUI.Label(new Rect(x, y, width, 18f), label);
+            Rect back = new(x, y + 18f, width, 5f);
+            GUI.DrawTexture(back, Texture2D.grayTexture);
+            DrawColorRect(
+                new Rect(back.x, back.y, back.width * Mathf.Clamp01(structure.Structure), back.height),
+                structure.IsDestroyed ? Color.red : new Color(0.95f, 0.62f, 0.18f));
+        }
+
+        private int CountVisibleObjectives()
+        {
+            int count = 0;
+            foreach (ObjectiveState objective in mission.Objectives)
+            {
+                if (!objective.Definition.hidden)
+                {
+                    count++;
+                }
+            }
+
+            return count;
+        }
+
+        private int CountCompletedVisibleObjectives()
+        {
+            int count = 0;
+            foreach (ObjectiveState objective in mission.Objectives)
+            {
+                if (!objective.Definition.hidden && objective.IsComplete)
+                {
+                    count++;
+                }
+            }
+
+            return count;
+        }
+
+        private int CountLiveStructures()
+        {
+            int count = 0;
+            foreach (StructureState structure in mission.Structures)
+            {
+                if (!structure.IsDestroyed)
+                {
+                    count++;
+                }
+            }
+
+            return count;
         }
 
         private void DrawCombatPanel()
@@ -1931,6 +2068,11 @@ namespace MC2Demo.Presentation
                 return true;
             }
 
+            if (ShouldDrawMissionBriefPanel() && MissionBriefPanelRect().Contains(guiPoint))
+            {
+                return true;
+            }
+
             if (showMissionMap && MissionMapRect().Contains(guiPoint))
             {
                 return true;
@@ -1956,6 +2098,14 @@ namespace MC2Demo.Presentation
         private Rect CombatPanelRect()
         {
             return new Rect(Screen.width - 360f, 12f, 344f, 178f);
+        }
+
+        private Rect MissionBriefPanelRect()
+        {
+            Rect combatPanel = CombatPanelRect();
+            float y = combatPanel.yMax + 8f;
+            float height = Mathf.Min(Mathf.Clamp(Screen.height * 0.28f, 150f, 230f), Mathf.Max(120f, Screen.height - y - 16f));
+            return new Rect(combatPanel.x, y, combatPanel.width, height);
         }
 
         private void DrawMapMarker(Rect map, Vector2 missionPoint, Color color, float size)
@@ -2049,6 +2199,16 @@ namespace MC2Demo.Presentation
             }
 
             return count;
+        }
+
+        private static string TruncateText(string text, int maxLength)
+        {
+            if (string.IsNullOrEmpty(text) || text.Length <= maxLength)
+            {
+                return text;
+            }
+
+            return text.Substring(0, Mathf.Max(0, maxLength - 3)) + "...";
         }
 
         private void DrawColorRect(Rect rect, Color color)
