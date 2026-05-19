@@ -83,6 +83,9 @@ namespace MC2Demo.BattleCore
         public int variantNumber;
         public string brain;
         public int squadId;
+        public string activationFlagId;
+        public bool activateOnObjective;
+        public int activationObjectiveIndex;
         public MissionPose position;
     }
 

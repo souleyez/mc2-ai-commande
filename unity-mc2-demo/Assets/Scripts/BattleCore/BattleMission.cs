@@ -11,6 +11,7 @@ namespace MC2Demo.BattleCore
         public IReadOnlyList<StructureState> Structures => structures;
         public IReadOnlyList<ObjectiveState> Objectives => objectives;
         public IReadOnlyList<CombatEvent> RecentCombatEvents => recentCombatEvents;
+        public IReadOnlyList<UnitActivationEvent> RecentUnitActivationEvents => recentUnitActivationEvents;
         public MissionResultState Result { get; private set; } = MissionResultState.InProgress;
         public string ResultReason { get; private set; } = "";
 
@@ -18,6 +19,7 @@ namespace MC2Demo.BattleCore
         private readonly List<StructureState> structures = new();
         private readonly List<ObjectiveState> objectives = new();
         private readonly List<CombatEvent> recentCombatEvents = new();
+        private readonly List<UnitActivationEvent> recentUnitActivationEvents = new();
         private readonly Dictionary<string, bool> flags = new(StringComparer.OrdinalIgnoreCase);
 
         public BattleMission(MissionContract contract, CombatProfileCatalog combatProfiles)
@@ -50,6 +52,7 @@ namespace MC2Demo.BattleCore
             }
 
             EvaluateObjectives();
+            RefreshUnitActivation(reportEvents: false);
             EvaluateMissionResult();
         }
 
@@ -237,6 +240,7 @@ namespace MC2Demo.BattleCore
         public void Tick(float deltaTime)
         {
             recentCombatEvents.Clear();
+            recentUnitActivationEvents.Clear();
             if (Result != MissionResultState.InProgress)
             {
                 return;
@@ -244,6 +248,11 @@ namespace MC2Demo.BattleCore
 
             foreach (UnitState unit in units)
             {
+                if (!unit.IsActive)
+                {
+                    continue;
+                }
+
                 RefreshAttackOrder(unit);
                 unit.TickMovement(deltaTime);
                 unit.TickWeapon(deltaTime);
@@ -251,6 +260,11 @@ namespace MC2Demo.BattleCore
 
             foreach (UnitState unit in units)
             {
+                if (!unit.IsActive)
+                {
+                    continue;
+                }
+
                 UnitState target = AcquireTarget(unit);
                 StructureState structureTarget = target == null ? AcquireStructureTarget(unit) : null;
                 unit.SetCurrentTargetId(target == null ? structureTarget?.Id : target.Id);
@@ -265,12 +279,13 @@ namespace MC2Demo.BattleCore
             }
 
             EvaluateObjectives();
+            RefreshUnitActivation(reportEvents: true);
             EvaluateMissionResult();
         }
 
         private UnitState AcquireTarget(UnitState attacker)
         {
-            if (attacker.IsDestroyed)
+            if (!attacker.IsActive || attacker.IsDestroyed)
             {
                 return null;
             }
@@ -287,7 +302,7 @@ namespace MC2Demo.BattleCore
 
             foreach (UnitState candidate in units)
             {
-                if (candidate.IsDestroyed || candidate.TeamId == attacker.TeamId)
+                if (!candidate.IsActive || candidate.IsDestroyed || candidate.TeamId == attacker.TeamId)
                 {
                     continue;
                 }
@@ -305,7 +320,7 @@ namespace MC2Demo.BattleCore
 
         private StructureState AcquireStructureTarget(UnitState attacker)
         {
-            if (attacker.IsDestroyed)
+            if (!attacker.IsActive || attacker.IsDestroyed)
             {
                 return null;
             }
@@ -369,7 +384,7 @@ namespace MC2Demo.BattleCore
         private UnitState FindAttackableUnit(string targetUnitId, bool playerTeam)
         {
             UnitState target = FindUnit(targetUnitId);
-            if (target == null || target.IsDestroyed || target.IsPlayerUnit == playerTeam)
+            if (target == null || !target.IsActive || target.IsDestroyed || target.IsPlayerUnit == playerTeam)
             {
                 return null;
             }
@@ -641,6 +656,136 @@ namespace MC2Demo.BattleCore
         private bool GetFlag(string id)
         {
             return !string.IsNullOrEmpty(id) && flags.TryGetValue(id, out bool value) && value;
+        }
+
+        private void RefreshUnitActivation(bool reportEvents)
+        {
+            foreach (UnitState unit in units)
+            {
+                bool wasActive = unit.IsActive;
+                bool shouldBeActive = ShouldUnitBeActive(unit);
+                unit.SetActive(shouldBeActive);
+                if (reportEvents && !wasActive && unit.IsActive)
+                {
+                    recentUnitActivationEvents.Add(new UnitActivationEvent(unit.Id, unit.UnitType, unit.Brain));
+                }
+            }
+        }
+
+        private bool ShouldUnitBeActive(UnitState unit)
+        {
+            if (unit.IsPlayerUnit || unit.IsDestroyed)
+            {
+                return true;
+            }
+
+            if (!string.IsNullOrEmpty(unit.ActivationFlagId))
+            {
+                return GetFlag(unit.ActivationFlagId);
+            }
+
+            if (unit.ActivatesOnObjective)
+            {
+                return IsObjectiveComplete(unit.ActivationObjectiveIndex);
+            }
+
+            int missionObjective = MissionSpecificActivationObjective(unit);
+            if (missionObjective >= 0)
+            {
+                return IsObjectiveComplete(missionObjective);
+            }
+
+            string missionFlag = MissionSpecificActivationFlag(unit);
+            return string.IsNullOrEmpty(missionFlag) || GetFlag(missionFlag);
+        }
+
+        private bool IsObjectiveComplete(int objectiveIndex)
+        {
+            foreach (ObjectiveState objective in objectives)
+            {
+                if (objective.Definition.index == objectiveIndex)
+                {
+                    return objective.IsComplete;
+                }
+            }
+
+            return false;
+        }
+
+        private int MissionSpecificActivationObjective(UnitState unit)
+        {
+            if (!IsMission("mc2_01"))
+            {
+                return -1;
+            }
+
+            if (BrainEquals(unit, "mc2_01_Starslayer") || BrainEquals(unit, "mc2_01_Urbies"))
+            {
+                return 7;
+            }
+
+            if (BrainEquals(unit, "mc2_01_LRMs") && unit.MissionPosition.x < 0f)
+            {
+                return 7;
+            }
+
+            return -1;
+        }
+
+        private string MissionSpecificActivationFlag(UnitState unit)
+        {
+            if (!IsMission("mc2_01"))
+            {
+                return null;
+            }
+
+            if (BrainStartsWith(unit, "mc2_01_Pat1") || BrainEquals(unit, "mc2_01_infantry_ambush") || BrainEquals(unit, "mc2_01_infantry_ambush2"))
+            {
+                return "0";
+            }
+
+            if (BrainEquals(unit, "mc2_01_LRMs") && unit.MissionPosition.x > 0f)
+            {
+                return "0";
+            }
+
+            if (BrainStartsWith(unit, "mc2_01_Pat2") || BrainEquals(unit, "mc2_01_Pat4"))
+            {
+                return "4";
+            }
+
+            return null;
+        }
+
+        private bool IsMission(string missionId)
+        {
+            return Contract?.mission != null
+                && string.Equals(Contract.mission.id, missionId, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static bool BrainEquals(UnitState unit, string brain)
+        {
+            return string.Equals(unit.Brain, brain, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static bool BrainStartsWith(UnitState unit, string prefix)
+        {
+            return !string.IsNullOrEmpty(unit.Brain)
+                && unit.Brain.StartsWith(prefix, StringComparison.OrdinalIgnoreCase);
+        }
+    }
+
+    public sealed class UnitActivationEvent
+    {
+        public string UnitId { get; }
+        public string UnitType { get; }
+        public string Brain { get; }
+
+        public UnitActivationEvent(string unitId, string unitType, string brain)
+        {
+            UnitId = unitId;
+            UnitType = unitType;
+            Brain = brain;
         }
     }
 

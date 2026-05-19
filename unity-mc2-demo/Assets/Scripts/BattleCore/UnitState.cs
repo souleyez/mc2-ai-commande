@@ -13,8 +13,12 @@ namespace MC2Demo.BattleCore
         public string Brain { get; }
         public int TeamId { get; }
         public bool IsPlayerUnit { get; }
+        public string ActivationFlagId { get; }
+        public bool ActivatesOnObjective { get; }
+        public int ActivationObjectiveIndex { get; }
         public CombatProfile Profile { get; }
         public DamageSection[] Sections { get; }
+        public bool IsActive { get; private set; }
         public bool IsDestroyed { get; private set; }
         public bool IsJumping { get; private set; }
         public bool IsDetached { get; private set; }
@@ -50,16 +54,40 @@ namespace MC2Demo.BattleCore
             Brain = spawn.brain;
             TeamId = spawn.teamId;
             IsPlayerUnit = spawn.isPlayerUnit;
+            ActivationFlagId = spawn.activationFlagId;
+            ActivatesOnObjective = spawn.activateOnObjective;
+            ActivationObjectiveIndex = spawn.activationObjectiveIndex;
             Profile = (profiles ?? CombatProfileCatalog.Empty).ForUnitType(spawn.unitType, spawn.isPlayerUnit);
             Sections = CreateSections(Profile);
+            IsActive = true;
             CurrentStructure = Profile.MaxStructure;
             MissionPosition = new Vector2(spawn.position.x, spawn.position.y);
             MoveTarget = MissionPosition;
         }
 
+        public void SetActive(bool active)
+        {
+            if (IsDestroyed || IsActive == active)
+            {
+                return;
+            }
+
+            IsActive = active;
+            if (!active)
+            {
+                HasMoveOrder = false;
+                IsDetached = false;
+                IsJumping = false;
+                JumpLift = 0f;
+                AttackTargetId = null;
+                CurrentTargetId = null;
+                MoveTarget = MissionPosition;
+            }
+        }
+
         public void SetMoveOrder(Vector2 missionPoint, bool detached)
         {
-            if (IsDestroyed)
+            if (!IsActive || IsDestroyed)
             {
                 return;
             }
@@ -72,7 +100,7 @@ namespace MC2Demo.BattleCore
 
         public void SetAttackOrder(string targetId, Vector2 targetPosition, bool detached)
         {
-            if (IsDestroyed || string.IsNullOrEmpty(targetId))
+            if (!IsActive || IsDestroyed || string.IsNullOrEmpty(targetId))
             {
                 return;
             }
@@ -105,7 +133,7 @@ namespace MC2Demo.BattleCore
 
         public bool TryStartJumpToward(Vector2 missionPoint, float jumpDistance, Func<Vector2, bool> isLandingAllowed, bool detached)
         {
-            if (!CanUseJumpJets || IsJumping)
+            if (!IsActive || !CanUseJumpJets || IsJumping)
             {
                 return false;
             }
@@ -138,6 +166,11 @@ namespace MC2Demo.BattleCore
 
         public void TickMovement(float deltaTime)
         {
+            if (!IsActive)
+            {
+                return;
+            }
+
             if (IsDestroyed)
             {
                 IsJumping = false;
@@ -207,8 +240,10 @@ namespace MC2Demo.BattleCore
 
         public bool CanFireAt(UnitState target)
         {
-            return !IsDestroyed
+            return IsActive
+                && !IsDestroyed
                 && target != null
+                && target.IsActive
                 && !target.IsDestroyed
                 && target.TeamId != TeamId
                 && WeaponCooldownRemaining <= 0f
@@ -219,7 +254,8 @@ namespace MC2Demo.BattleCore
 
         public bool CanFireAt(StructureState target)
         {
-            return !IsDestroyed
+            return IsActive
+                && !IsDestroyed
                 && target != null
                 && target.IsTargetable
                 && !target.IsDestroyed
@@ -291,7 +327,7 @@ namespace MC2Demo.BattleCore
 
         private DamageResult ApplyDamage(float damage, string attackerId)
         {
-            if (IsDestroyed)
+            if (!IsActive || IsDestroyed)
             {
                 return new DamageResult("", 0f);
             }
@@ -308,7 +344,7 @@ namespace MC2Demo.BattleCore
 
         public float ApplyDirectSectionDamage(string sectionName, float damage)
         {
-            if (IsDestroyed || damage <= 0f)
+            if (!IsActive || IsDestroyed || damage <= 0f)
             {
                 return 0f;
             }

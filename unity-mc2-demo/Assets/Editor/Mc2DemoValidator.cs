@@ -106,6 +106,7 @@ namespace MC2Demo.EditorTools
             ValidateMissionResults();
             ValidateSectionDamageModifiers();
             ValidateHeatManagement();
+            ValidateMissionActivation(BattleMission.FromJson(contractJson, combatProfiles));
             ValidateJumpCommand(BattleMission.FromJson(contractJson, combatProfiles));
             ValidateCombatSimulation(mission);
             ValidateStructureObjective(BattleMission.FromJson(contractJson, combatProfiles));
@@ -158,6 +159,7 @@ namespace MC2Demo.EditorTools
                 throw new InvalidDataException("Combat simulation requires one player unit and one enemy unit.");
             }
 
+            ActivateAirfieldPatrolsIfNeeded(mission, player, enemy);
             int accepted = mission.IssueDetachedAttackUnit(player.Id, enemy.Id);
             if (accepted != 1 || !player.HasAttackOrder || player.AttackTargetId != enemy.Id)
             {
@@ -178,6 +180,104 @@ namespace MC2Demo.EditorTools
             {
                 throw new InvalidDataException("Expected enemy to take damage during simulation.");
             }
+        }
+
+        private static void ValidateMissionActivation(BattleMission mission)
+        {
+            UnitState player = FirstPlayerUnit(mission);
+            UnitState patrol = mission.FindUnit("unit-4");
+            UnitState islandBandit = mission.FindUnit("unit-6");
+            UnitState starslayer = mission.FindUnit("unit-9");
+            if (player == null || patrol == null || islandBandit == null || starslayer == null)
+            {
+                throw new InvalidDataException("Mission activation validation requires known mc2_01 units.");
+            }
+
+            if (patrol.IsActive || islandBandit.IsActive || starslayer.IsActive)
+            {
+                throw new InvalidDataException("Expected mc2_01 scripted enemies to start inactive.");
+            }
+
+            MovePlayerIntoObjectiveArea(mission, player, 0);
+            if (!patrol.IsActive || islandBandit.IsActive || starslayer.IsActive)
+            {
+                throw new InvalidDataException("Expected airfield completion to activate patrols only.");
+            }
+
+            if (mission.RecentUnitActivationEvents.Count == 0)
+            {
+                throw new InvalidDataException("Expected patrol activation to emit activation events.");
+            }
+        }
+
+        private static void ActivateAirfieldPatrolsIfNeeded(BattleMission mission, UnitState player, UnitState enemy)
+        {
+            if (enemy.IsActive)
+            {
+                return;
+            }
+
+            MovePlayerIntoObjectiveArea(mission, player, 0);
+            if (!enemy.IsActive)
+            {
+                throw new InvalidDataException("Expected first enemy target to activate after airfield objective.");
+            }
+        }
+
+        private static UnitState FirstPlayerUnit(BattleMission mission)
+        {
+            foreach (UnitState unit in mission.Units)
+            {
+                if (unit.IsPlayerUnit)
+                {
+                    return unit;
+                }
+            }
+
+            return null;
+        }
+
+        private static void MovePlayerIntoObjectiveArea(BattleMission mission, UnitState player, int objectiveIndex)
+        {
+            TargetArea area = FirstObjectiveArea(mission, objectiveIndex);
+            if (area == null)
+            {
+                throw new InvalidDataException("Expected objective " + objectiveIndex + " to have a target area.");
+            }
+
+            Vector2 center = new(area.x, area.y);
+            player.SetMoveOrder(center, detached: false);
+            for (int tick = 0; tick < 120; tick++)
+            {
+                mission.Tick(1f);
+                if (Vector2.Distance(player.MissionPosition, center) <= area.radius)
+                {
+                    return;
+                }
+            }
+
+            throw new InvalidDataException("Expected player to reach objective " + objectiveIndex + " area.");
+        }
+
+        private static TargetArea FirstObjectiveArea(BattleMission mission, int objectiveIndex)
+        {
+            foreach (ObjectiveState objective in mission.Objectives)
+            {
+                if (objective.Definition.index != objectiveIndex || objective.Definition.conditions == null)
+                {
+                    continue;
+                }
+
+                foreach (ObjectiveCondition condition in objective.Definition.conditions)
+                {
+                    if (condition.targetArea != null)
+                    {
+                        return condition.targetArea;
+                    }
+                }
+            }
+
+            return null;
         }
 
         private static bool AnyEnemyDamaged(BattleMission mission)

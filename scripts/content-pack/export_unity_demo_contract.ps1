@@ -170,6 +170,42 @@ function Convert-Action {
     return $result
 }
 
+function Get-MissionUnitActivation {
+    param(
+        [Parameter(Mandatory = $true)]
+        $Unit,
+
+        [Parameter(Mandatory = $true)]
+        [string]$MissionId
+    )
+
+    $rule = [ordered]@{
+        activationFlagId = ""
+        activationObjectiveIndex = -1
+    }
+
+    if ($MissionId -ne "mc2_01" -or $Unit.playerPart) {
+        return $rule
+    }
+
+    $brain = [string]$Unit.brain
+    $x = [double]$Unit.position.x
+    if ($brain -like "mc2_01_Pat1*" -or $brain -eq "mc2_01_infantry_ambush" -or $brain -eq "mc2_01_infantry_ambush2") {
+        $rule.activationFlagId = "0"
+    }
+    elseif ($brain -eq "mc2_01_LRMs" -and $x -gt 0) {
+        $rule.activationFlagId = "0"
+    }
+    elseif ($brain -like "mc2_01_Pat2*" -or $brain -eq "mc2_01_Pat4") {
+        $rule.activationFlagId = "4"
+    }
+    elseif ($brain -eq "mc2_01_Starslayer" -or $brain -eq "mc2_01_Urbies" -or ($brain -eq "mc2_01_LRMs" -and $x -lt 0)) {
+        $rule.activationObjectiveIndex = 7
+    }
+
+    return $rule
+}
+
 function Read-BuildingCatalog {
     param(
         [Parameter(Mandatory = $true)]
@@ -361,6 +397,7 @@ $terrainMesh = Read-TerrainMesh -PacketPath $TerrainVertexPacketPath -Analysis $
 $terrainObjects = @(Read-TerrainObjects -PacketPath $TerrainObjectPacketPath -Catalog $buildingCatalog)
 
 $units = @($analysis.units | ForEach-Object {
+    $activation = Get-MissionUnitActivation -Unit $_ -MissionId $MissionId
     [ordered]@{
         spawnId = "unit-$($_.index)"
         sourceIndex = $_.index
@@ -374,6 +411,9 @@ $units = @($analysis.units | ForEach-Object {
         variantNumber = $_.variantNumber
         brain = $_.brain
         squadId = $_.squadNum
+        activationFlagId = $activation.activationFlagId
+        activateOnObjective = $activation.activationObjectiveIndex -ge 0
+        activationObjectiveIndex = $activation.activationObjectiveIndex
         position = [ordered]@{
             x = $_.position.x
             y = $_.position.y

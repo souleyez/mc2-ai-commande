@@ -61,10 +61,12 @@ namespace MC2Demo.Presentation
                 mission.Tick(Time.deltaTime);
                 CaptureCombatEvents();
                 CaptureObjectiveEvents();
+                CaptureUnitActivationEvents();
                 HandleWorldClick();
             }
 
             CaptureMissionResult();
+            UpdateUnitVisibility();
             UpdateCommandOverlays();
             FollowCommander();
         }
@@ -375,6 +377,16 @@ namespace MC2Demo.Presentation
             }
         }
 
+        private void CaptureUnitActivationEvents()
+        {
+            foreach (UnitActivationEvent activationEvent in mission.RecentUnitActivationEvents)
+            {
+                string line = "Contact: " + activationEvent.UnitType;
+                AddCombatLogLine(line);
+                Debug.Log("MC2 enemy activated: " + activationEvent.UnitId + " " + activationEvent.UnitType + " " + activationEvent.Brain);
+            }
+        }
+
         private void CaptureMissionResult()
         {
             if (mission.Result == lastMissionResult)
@@ -553,6 +565,7 @@ namespace MC2Demo.Presentation
 
                 DemoUnitView view = unitObject.AddComponent<DemoUnitView>();
                 view.Bind(unit);
+                unitObject.SetActive(unit.IsActive || unit.IsPlayerUnit || unit.IsDestroyed);
                 unitViews[unit.Id] = view;
             }
         }
@@ -908,6 +921,19 @@ namespace MC2Demo.Presentation
             UpdateTargetHealthBars();
         }
 
+        private void UpdateUnitVisibility()
+        {
+            foreach (UnitState unit in mission.Units)
+            {
+                if (!unitViews.TryGetValue(unit.Id, out DemoUnitView view) || view == null)
+                {
+                    continue;
+                }
+
+                view.gameObject.SetActive(unit.IsActive || unit.IsPlayerUnit || unit.IsDestroyed);
+            }
+        }
+
         private void UpdateSelectionMarker(UnitState unit)
         {
             if (!unitSelectionMarkers.TryGetValue(unit.Id, out GameObject marker))
@@ -1041,7 +1067,11 @@ namespace MC2Demo.Presentation
 
         private bool TryGetTargetWorldPoint(string targetId, out Vector3 point)
         {
-            if (unitViews.TryGetValue(targetId, out DemoUnitView unitView) && unitView != null && unitView.Unit != null && !unitView.Unit.IsDestroyed)
+            if (unitViews.TryGetValue(targetId, out DemoUnitView unitView)
+                && unitView != null
+                && unitView.Unit != null
+                && unitView.Unit.IsActive
+                && !unitView.Unit.IsDestroyed)
             {
                 point = unitView.transform.position;
                 return true;
@@ -1109,7 +1139,7 @@ namespace MC2Demo.Presentation
                 }
 
                 EnsureUnitHealthBar(unit);
-                bool isVisible = !unit.IsDestroyed && (unit.Structure < 0.995f || IsPlayerTargeting(unit.Id));
+                bool isVisible = unit.IsActive && !unit.IsDestroyed && (unit.Structure < 0.995f || IsPlayerTargeting(unit.Id));
                 UpdateHealthBar(
                     unitHealthBarBacks[unit.Id],
                     unitHealthBarFills[unit.Id],
@@ -1356,7 +1386,7 @@ namespace MC2Demo.Presentation
             if (Physics.Raycast(ray, out RaycastHit hit, 500f))
             {
                 DemoUnitView unitView = hit.collider.GetComponentInParent<DemoUnitView>();
-                if (unitView != null && unitView.Unit != null && !unitView.Unit.IsPlayerUnit && !unitView.Unit.IsDestroyed)
+                if (unitView != null && unitView.Unit != null && unitView.Unit.IsActive && !unitView.Unit.IsPlayerUnit && !unitView.Unit.IsDestroyed)
                 {
                     if (pendingJumpOrder)
                     {
@@ -1898,6 +1928,11 @@ namespace MC2Demo.Presentation
 
             foreach (UnitState unit in mission.Units)
             {
+                if (!unit.IsActive && !unit.IsPlayerUnit)
+                {
+                    continue;
+                }
+
                 Color color = unit.IsDestroyed
                     ? Color.gray
                     : unit.IsPlayerUnit ? new Color(0.2f, 0.78f, 1f) : new Color(0.94f, 0.22f, 0.18f);
@@ -2192,7 +2227,7 @@ namespace MC2Demo.Presentation
             int count = 0;
             foreach (UnitState unit in mission.Units)
             {
-                if (!unit.IsDestroyed)
+                if (unit.IsActive && !unit.IsDestroyed)
                 {
                     count++;
                 }

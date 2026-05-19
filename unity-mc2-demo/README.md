@@ -9,6 +9,7 @@ Current demo behavior:
 - loads `mc2_01` unit spawns and objective graph
 - builds a source-driven 100 x 100 terrain mesh and water plane from packet data
 - places original terrain object records as lightweight trees and buildings
+- activates enemy groups from source mission brain names and objective progress
 - follows the first player mech as commander
 - defaults to squad orders, with status-bar click for detached single-unit order
 - lets map clicks on hostile units or targetable buildings issue focused attack orders
