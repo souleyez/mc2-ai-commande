@@ -18,6 +18,7 @@ Current demo behavior:
 - applies simple section penalties: destroyed arms reduce firepower, destroyed legs slow movement and disable Jet
 - tracks source-derived weapon heat, cooling, and heat lockouts in combat
 - carries source weapon type and special-effect metadata into combat visuals
+- shows weapon name, range, cooldown, heat lock, and range readiness in the unit panel
 - supports one-shot Jet orders with terrain-aware landing rejection
 - provides a toggleable mission map and a pause/restart/end system panel
 - resolves mission victory or defeat through BattleCore result state

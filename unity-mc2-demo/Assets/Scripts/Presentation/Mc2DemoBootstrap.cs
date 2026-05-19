@@ -1291,14 +1291,71 @@ namespace MC2Demo.Presentation
                     DrawColorRect(heatBar, unit.IsHeatLocked ? Color.red : new Color(1f, 0.62f, 0.12f));
                 }
 
-                DrawSectionLine(unit, y + 42);
-                y += 64f;
+                Rect readyBack = new(24, y + 38, 292, 3);
+                GUI.DrawTexture(readyBack, Texture2D.grayTexture);
+                Rect readyBar = new(readyBack.x, readyBack.y, readyBack.width * unit.WeaponReadinessRatio, readyBack.height);
+                DrawColorRect(readyBar, unit.IsHeatLocked ? Color.red : new Color(0.24f, 0.72f, 1f));
+
+                GUI.Label(new Rect(24, y + 42, 300, 16), WeaponStatusText(unit));
+                DrawSectionLine(unit, y + 58);
+                y += 78f;
             }
+        }
+
+        private string WeaponStatusText(UnitState unit)
+        {
+            string weapon = ShortWeaponName(unit.Profile.PrimaryWeaponName);
+            string state = "Ready";
+            if (unit.IsDestroyed)
+            {
+                state = "Offline";
+            }
+            else if (unit.IsHeatLocked)
+            {
+                state = "Hot";
+            }
+            else if (unit.IsWeaponCoolingDown)
+            {
+                state = "CD " + Mathf.RoundToInt(unit.WeaponReadinessRatio * 100f) + "%";
+            }
+            else if (HasAttackTargetOutOfRange(unit))
+            {
+                state = "Out of range";
+            }
+
+            return weapon + "  R" + Mathf.RoundToInt(unit.Profile.WeaponRange) + "  " + state;
+        }
+
+        private string ShortWeaponName(string weaponName)
+        {
+            if (string.IsNullOrWhiteSpace(weaponName))
+            {
+                return "Weapon";
+            }
+
+            return weaponName.Length <= 20 ? weaponName : weaponName.Substring(0, 20);
+        }
+
+        private bool HasAttackTargetOutOfRange(UnitState unit)
+        {
+            if (unit == null || string.IsNullOrEmpty(unit.AttackTargetId))
+            {
+                return false;
+            }
+
+            UnitState targetUnit = mission.FindUnit(unit.AttackTargetId);
+            if (targetUnit != null)
+            {
+                return !unit.IsInWeaponRange(targetUnit);
+            }
+
+            StructureState targetStructure = mission.FindStructure(unit.AttackTargetId);
+            return targetStructure != null && !unit.IsInWeaponRange(targetStructure);
         }
 
         private void DrawObjectivePanel()
         {
-            float y = 306f;
+            float y = 350f;
             GUI.Label(new Rect(18, y, 320, 22), "Objectives");
             y += 24f;
 
@@ -1322,7 +1379,7 @@ namespace MC2Demo.Presentation
                 return;
             }
 
-            float y = 478f;
+            float y = 522f;
             GUI.Label(new Rect(18, y, 320, 22), "Targets");
             y += 24f;
 

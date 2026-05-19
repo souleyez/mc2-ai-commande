@@ -32,9 +32,11 @@ namespace MC2Demo.BattleCore
         public float FirepowerRatio => IsDestroyed ? 0f : CalculateFirepowerRatio();
         public bool CanUseJumpJets => !IsDestroyed && !IsSectionDestroyed("Legs");
         public bool IsHeatLocked => !IsDestroyed && EffectiveHeatPerShot() > 0f && CurrentHeat + EffectiveHeatPerShot() > Profile.HeatCapacity;
+        public bool IsWeaponCoolingDown => WeaponCooldownRemaining > 0f;
         public float CurrentHeat { get; private set; }
         public float HeatRatio => Profile.HeatCapacity <= 0f ? 0f : CurrentHeat / Profile.HeatCapacity;
         public float WeaponCooldownRatio => Profile.WeaponCooldown <= 0f ? 0f : WeaponCooldownRemaining / Profile.WeaponCooldown;
+        public float WeaponReadinessRatio => Mathf.Clamp01(1f - WeaponCooldownRatio);
         public Vector2 MissionPosition { get; private set; }
         public Vector2 MoveTarget { get; private set; }
         private Vector2 jumpStart;
@@ -212,7 +214,7 @@ namespace MC2Demo.BattleCore
                 && WeaponCooldownRemaining <= 0f
                 && EffectiveWeaponDamage() > 0.1f
                 && !IsHeatLocked
-                && Vector2.Distance(MissionPosition, target.MissionPosition) <= Profile.WeaponRange;
+                && IsInWeaponRange(target);
         }
 
         public bool CanFireAt(StructureState target)
@@ -225,6 +227,18 @@ namespace MC2Demo.BattleCore
                 && WeaponCooldownRemaining <= 0f
                 && EffectiveWeaponDamage() > 0.1f
                 && !IsHeatLocked
+                && IsInWeaponRange(target);
+        }
+
+        public bool IsInWeaponRange(UnitState target)
+        {
+            return target != null
+                && Vector2.Distance(MissionPosition, target.MissionPosition) <= Profile.WeaponRange;
+        }
+
+        public bool IsInWeaponRange(StructureState target)
+        {
+            return target != null
                 && Vector2.Distance(MissionPosition, target.MissionPosition) <= Profile.WeaponRange + target.Radius;
         }
 

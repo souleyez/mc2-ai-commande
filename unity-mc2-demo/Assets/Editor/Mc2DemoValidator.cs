@@ -251,7 +251,8 @@ namespace MC2Demo.EditorTools
             BattleMission mission = new(MakeHeatContract(), MakeHeatProfiles());
             UnitState player = mission.FindUnit("heat-player");
             UnitState target = mission.FindUnit("heat-target");
-            if (player == null || target == null)
+            UnitState farTarget = mission.FindUnit("heat-far-target");
+            if (player == null || target == null || farTarget == null)
             {
                 throw new InvalidDataException("Heat simulation requires player and target units.");
             }
@@ -272,6 +273,11 @@ namespace MC2Demo.EditorTools
                 throw new InvalidDataException("Expected combat event to carry source weapon visual metadata.");
             }
 
+            if (player.WeaponReadinessRatio >= 1f || !player.IsWeaponCoolingDown || !player.IsInWeaponRange(target))
+            {
+                throw new InvalidDataException("Expected firing to expose cooldown and range readiness state.");
+            }
+
             player.TickWeapon(0.2f);
             if (player.CanFireAt(target))
             {
@@ -282,6 +288,11 @@ namespace MC2Demo.EditorTools
             if (player.IsHeatLocked || !player.CanFireAt(target))
             {
                 throw new InvalidDataException("Expected cooling to restore firing.");
+            }
+
+            if (player.IsInWeaponRange(farTarget))
+            {
+                throw new InvalidDataException("Expected weapon range helper to report distant target out of range.");
             }
         }
 
@@ -437,7 +448,7 @@ namespace MC2Demo.EditorTools
                         combatProfile = new CombatProfileFields
                         {
                             maxStructure = 1000f,
-                            moveSpeed = 0f,
+                            moveSpeed = 3000f,
                             weaponRange = 0f,
                             weaponDamage = 0f,
                             weaponCooldown = 1f
@@ -555,6 +566,14 @@ namespace MC2Demo.EditorTools
                         teamId = 1,
                         unitType = "HeatTarget",
                         position = new MissionPose { x = 20f, y = 0f, rotation = 0f }
+                    },
+                    new UnitSpawn
+                    {
+                        spawnId = "heat-far-target",
+                        isPlayerUnit = false,
+                        teamId = 1,
+                        unitType = "HeatTarget",
+                        position = new MissionPose { x = 2500f, y = 0f, rotation = 0f }
                     }
                 },
                 objectives = Array.Empty<ObjectiveDefinition>()
