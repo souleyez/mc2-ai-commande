@@ -22,6 +22,10 @@ namespace MC2Demo.Presentation
         private readonly Dictionary<string, GameObject> unitOrderMarkers = new();
         private readonly Dictionary<string, GameObject> unitFocusMarkers = new();
         private readonly Dictionary<string, GameObject> unitRangeMarkers = new();
+        private readonly Dictionary<string, GameObject> unitHealthBarBacks = new();
+        private readonly Dictionary<string, GameObject> unitHealthBarFills = new();
+        private readonly Dictionary<string, GameObject> structureHealthBarBacks = new();
+        private readonly Dictionary<string, GameObject> structureHealthBarFills = new();
         private readonly Dictionary<int, bool> objectiveCompletionState = new();
         private readonly Dictionary<string, Material> materialCache = new(StringComparer.Ordinal);
         private readonly List<Material> ownedMaterials = new();
@@ -897,6 +901,8 @@ namespace MC2Demo.Presentation
                 UpdateFocusMarker(unit);
                 UpdateRangeMarker(unit);
             }
+
+            UpdateTargetHealthBars();
         }
 
         private void UpdateSelectionMarker(UnitState unit)
@@ -970,6 +976,164 @@ namespace MC2Demo.Presentation
                 float worldDiameter = Mathf.Clamp((unit.Profile.WeaponRange / 100f) * 2f, 1.2f, 8f);
                 marker.transform.localScale = new Vector3(worldDiameter, 0.01f, worldDiameter);
             }
+        }
+
+        private void UpdateTargetHealthBars()
+        {
+            foreach (UnitState unit in mission.Units)
+            {
+                if (unit.IsPlayerUnit)
+                {
+                    continue;
+                }
+
+                EnsureUnitHealthBar(unit);
+                bool isVisible = !unit.IsDestroyed && (unit.Structure < 0.995f || IsPlayerTargeting(unit.Id));
+                UpdateHealthBar(
+                    unitHealthBarBacks[unit.Id],
+                    unitHealthBarFills[unit.Id],
+                    isVisible,
+                    UnitHealthBarPosition(unit),
+                    1.35f,
+                    unit.Structure);
+            }
+
+            foreach (StructureState structure in mission.Structures)
+            {
+                if (!structure.IsTargetable)
+                {
+                    continue;
+                }
+
+                EnsureStructureHealthBar(structure);
+                bool isVisible = !structure.IsDestroyed && (structure.Structure < 0.995f || IsPlayerTargeting(structure.Id));
+                UpdateHealthBar(
+                    structureHealthBarBacks[structure.Id],
+                    structureHealthBarFills[structure.Id],
+                    isVisible,
+                    StructureHealthBarPosition(structure),
+                    Mathf.Clamp(structure.Radius / 70f, 1.65f, 3.3f),
+                    structure.Structure);
+            }
+        }
+
+        private void EnsureUnitHealthBar(UnitState unit)
+        {
+            if (unitHealthBarBacks.ContainsKey(unit.Id))
+            {
+                return;
+            }
+
+            unitHealthBarBacks[unit.Id] = CreateHealthBarPart(unit.Id + " Health Back", "TargetHealthBack", new Color(0.06f, 0.06f, 0.06f, 0.82f));
+            unitHealthBarFills[unit.Id] = CreateHealthBarPart(unit.Id + " Health Fill", "TargetHealthFill", new Color(0.24f, 0.88f, 0.28f, 0.92f));
+        }
+
+        private void EnsureStructureHealthBar(StructureState structure)
+        {
+            if (structureHealthBarBacks.ContainsKey(structure.Id))
+            {
+                return;
+            }
+
+            structureHealthBarBacks[structure.Id] = CreateHealthBarPart(structure.Id + " Health Back", "TargetHealthBack", new Color(0.06f, 0.06f, 0.06f, 0.82f));
+            structureHealthBarFills[structure.Id] = CreateHealthBarPart(structure.Id + " Health Fill", "TargetHealthFill", new Color(0.24f, 0.88f, 0.28f, 0.92f));
+        }
+
+        private GameObject CreateHealthBarPart(string objectName, string materialName, Color color)
+        {
+            GameObject part = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            part.name = objectName;
+            Collider partCollider = part.GetComponent<Collider>();
+            if (partCollider != null)
+            {
+                partCollider.enabled = false;
+            }
+
+            AssignMaterial(part, materialName, color);
+            part.SetActive(false);
+            return part;
+        }
+
+        private void UpdateHealthBar(GameObject back, GameObject fill, bool isVisible, Vector3 center, float width, float ratio)
+        {
+            back.SetActive(isVisible);
+            fill.SetActive(isVisible);
+            if (!isVisible)
+            {
+                return;
+            }
+
+            float clampedRatio = Mathf.Clamp01(ratio);
+            back.transform.position = center;
+            back.transform.localScale = new Vector3(width, 0.055f, 0.12f);
+
+            float fillWidth = Mathf.Max(0.03f, width * clampedRatio);
+            fill.transform.position = center + Vector3.right * ((fillWidth - width) * 0.5f);
+            fill.transform.localScale = new Vector3(fillWidth, 0.062f, 0.13f);
+            AssignMaterial(fill, HealthFillMaterialName(clampedRatio), HealthFillColor(clampedRatio));
+        }
+
+        private Vector3 UnitHealthBarPosition(UnitState unit)
+        {
+            if (unitViews.TryGetValue(unit.Id, out DemoUnitView view) && view != null)
+            {
+                return view.transform.position + Vector3.up * 1.15f;
+            }
+
+            return GroundMarkerPosition(unit.MissionPosition, 1.15f);
+        }
+
+        private Vector3 StructureHealthBarPosition(StructureState structure)
+        {
+            if (structureViews.TryGetValue(structure.Id, out DemoStructureView view) && view != null)
+            {
+                return view.transform.position + Vector3.up * 1.05f;
+            }
+
+            return GroundMarkerPosition(structure.MissionPosition, 1.05f);
+        }
+
+        private bool IsPlayerTargeting(string targetId)
+        {
+            foreach (UnitState unit in mission.PlayerUnits())
+            {
+                if (unit.AttackTargetId == targetId || unit.CurrentTargetId == targetId)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static string HealthFillMaterialName(float ratio)
+        {
+            if (ratio <= 0.33f)
+            {
+                return "TargetHealthCritical";
+            }
+
+            if (ratio <= 0.66f)
+            {
+                return "TargetHealthDamaged";
+            }
+
+            return "TargetHealthFill";
+        }
+
+        private static Color HealthFillColor(float ratio)
+        {
+            if (ratio <= 0.33f)
+            {
+                return new Color(0.95f, 0.16f, 0.12f, 0.94f);
+            }
+
+            if (ratio <= 0.66f)
+            {
+                return new Color(1f, 0.72f, 0.14f, 0.94f);
+            }
+
+            return new Color(0.24f, 0.88f, 0.28f, 0.92f);
         }
 
         private bool TryGetTargetMarker(string targetId, out Vector2 missionPosition, out float radius)
