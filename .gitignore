@@ -56,6 +56,11 @@ test_sound/
 runtime-shell-dev/
 content-packs/*
 !content-packs/*.example.json
+mc2-run64-dev/
+release-run/
+thirdparty-vs-zip/
+mc2-running*.png
+mc2-win64-v*.zip
 analysis-output/content-index/*.json
 analysis-output/fst-unpack/
 analysis-output/fst-unpack-fresh/
