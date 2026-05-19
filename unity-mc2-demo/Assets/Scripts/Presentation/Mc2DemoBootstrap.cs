@@ -158,7 +158,9 @@ namespace MC2Demo.Presentation
         {
             foreach (CombatEvent combatEvent in mission.RecentCombatEvents)
             {
-                string line = combatEvent.AttackerId
+                string line = WeaponLabel(combatEvent.WeaponType)
+                    + " "
+                    + combatEvent.AttackerId
                     + " hit "
                     + combatEvent.TargetId
                     + " "
@@ -187,9 +189,9 @@ namespace MC2Demo.Presentation
 
             Color weaponColor = combatEvent.DestroyedTarget
                 ? new Color(1f, 0.42f, 0.08f, 0.85f)
-                : new Color(1f, 0.82f, 0.28f, 0.78f);
-            CreateBeam(attackerPoint, targetPoint, weaponColor);
-            CreateImpact(targetPoint, weaponColor, combatEvent.DestroyedTarget);
+                : WeaponColor(combatEvent.WeaponType);
+            CreateWeaponTrace(attackerPoint, targetPoint, combatEvent, weaponColor);
+            CreateImpact(targetPoint, weaponColor, combatEvent.DestroyedTarget, ImpactScale(combatEvent.WeaponType));
             PulseTarget(combatEvent.TargetId, new Color(1f, 0.9f, 0.52f), combatEvent.DestroyedTarget ? 0.28f : 0.18f);
         }
 
@@ -225,7 +227,85 @@ namespace MC2Demo.Presentation
             }
         }
 
-        private void CreateBeam(Vector3 from, Vector3 to, Color color)
+        private static Color WeaponColor(string weaponType)
+        {
+            if (ContainsWeaponType(weaponType, "Energy"))
+            {
+                return new Color(0.32f, 0.88f, 1f, 0.82f);
+            }
+
+            if (ContainsWeaponType(weaponType, "Missile"))
+            {
+                return new Color(1f, 0.56f, 0.14f, 0.80f);
+            }
+
+            if (ContainsWeaponType(weaponType, "Ballistic"))
+            {
+                return new Color(1f, 0.92f, 0.68f, 0.76f);
+            }
+
+            return new Color(1f, 0.82f, 0.28f, 0.78f);
+        }
+
+        private static string WeaponLabel(string weaponType)
+        {
+            if (ContainsWeaponType(weaponType, "Energy"))
+            {
+                return "Energy";
+            }
+
+            if (ContainsWeaponType(weaponType, "Missile"))
+            {
+                return "Missile";
+            }
+
+            if (ContainsWeaponType(weaponType, "Ballistic"))
+            {
+                return "Ballistic";
+            }
+
+            return "Weapon";
+        }
+
+        private static float ImpactScale(string weaponType)
+        {
+            return ContainsWeaponType(weaponType, "Missile") ? 1.35f : 1f;
+        }
+
+        private static bool ContainsWeaponType(string weaponType, string value)
+        {
+            return !string.IsNullOrEmpty(weaponType)
+                && weaponType.IndexOf(value, StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        private void CreateWeaponTrace(Vector3 from, Vector3 to, CombatEvent combatEvent, Color color)
+        {
+            if (ContainsWeaponType(combatEvent.WeaponType, "Missile"))
+            {
+                Vector3 lift = Vector3.up * 0.35f;
+                CreateBeam(from + lift, to + lift * 0.35f, color, 0.28f, 0.07f);
+                CreateImpact(to + Vector3.up * 0.08f, new Color(0.12f, 0.12f, 0.12f, 0.42f), false, 0.65f);
+                return;
+            }
+
+            if (ContainsWeaponType(combatEvent.WeaponType, "Ballistic"))
+            {
+                Vector3 side = Vector3.Cross((to - from).normalized, Vector3.up) * 0.08f;
+                CreateBeam(from + side, to + side, color, 0.09f, 0.024f);
+                CreateBeam(from - side, to - side, color, 0.09f, 0.018f);
+                return;
+            }
+
+            if (ContainsWeaponType(combatEvent.WeaponType, "Energy"))
+            {
+                CreateBeam(from, to, color, 0.20f, 0.034f);
+                return;
+            }
+
+            CreateBeam(from, to, color, 0.16f, 0.045f);
+        }
+
+        private void CreateBeam(Vector3 from, Vector3 to, Color color, float duration, float radius)
         {
             Vector3 direction = to - from;
             float length = direction.magnitude;
@@ -245,10 +325,10 @@ namespace MC2Demo.Presentation
             }
 
             DemoTransientEffect transient = beam.AddComponent<DemoTransientEffect>();
-            transient.Begin(color, 0.16f, new Vector3(0.045f, length * 0.5f, 0.045f), new Vector3(0.012f, length * 0.5f, 0.012f));
+            transient.Begin(color, duration, new Vector3(radius, length * 0.5f, radius), new Vector3(radius * 0.28f, length * 0.5f, radius * 0.28f));
         }
 
-        private void CreateImpact(Vector3 position, Color color, bool destroyedTarget)
+        private void CreateImpact(Vector3 position, Color color, bool destroyedTarget, float scale)
         {
             GameObject impact = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             impact.name = destroyedTarget ? "Kill Impact" : "Hit Impact";
@@ -260,8 +340,8 @@ namespace MC2Demo.Presentation
             }
 
             float duration = destroyedTarget ? 0.36f : 0.22f;
-            Vector3 fromScale = Vector3.one * (destroyedTarget ? 0.24f : 0.14f);
-            Vector3 toScale = Vector3.one * (destroyedTarget ? 1.25f : 0.72f);
+            Vector3 fromScale = Vector3.one * (destroyedTarget ? 0.24f : 0.14f) * scale;
+            Vector3 toScale = Vector3.one * (destroyedTarget ? 1.25f : 0.72f) * scale;
             DemoTransientEffect transient = impact.AddComponent<DemoTransientEffect>();
             transient.Begin(color, duration, fromScale, toScale);
         }

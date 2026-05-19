@@ -234,7 +234,14 @@ namespace MC2Demo.BattleCore
             WeaponCooldownRemaining = Profile.WeaponCooldown;
             AddWeaponHeat();
             DamageResult result = target.ApplyDamage(EffectiveWeaponDamage(), Id);
-            return new CombatEvent(Id, target.Id, result.SectionName, result.DamageApplied, target.IsDestroyed);
+            return new CombatEvent(
+                Id,
+                target.Id,
+                result.SectionName,
+                result.DamageApplied,
+                target.IsDestroyed,
+                Profile.PrimaryWeaponType,
+                Profile.PrimarySpecialEffect);
         }
 
         public CombatEvent FireAt(StructureState target)
@@ -243,7 +250,14 @@ namespace MC2Demo.BattleCore
             WeaponCooldownRemaining = Profile.WeaponCooldown;
             AddWeaponHeat();
             float damage = target.ApplyDamage(EffectiveWeaponDamage());
-            return new CombatEvent(Id, target.Id, "Structure", damage, target.IsDestroyed);
+            return new CombatEvent(
+                Id,
+                target.Id,
+                "Structure",
+                damage,
+                target.IsDestroyed,
+                Profile.PrimaryWeaponType,
+                Profile.PrimarySpecialEffect);
         }
 
         public void SetCurrentTarget(UnitState target)

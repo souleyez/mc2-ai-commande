@@ -12,6 +12,9 @@ namespace MC2Demo.BattleCore
         public float HeatCapacity { get; }
         public float HeatPerShot { get; }
         public float HeatDissipationPerSecond { get; }
+        public string PrimaryWeaponName { get; }
+        public string PrimaryWeaponType { get; }
+        public int PrimarySpecialEffect { get; }
         public CombatSectionDefinition[] Sections { get; }
         public string SourceKind { get; }
 
@@ -24,6 +27,9 @@ namespace MC2Demo.BattleCore
             float heatCapacity,
             float heatPerShot,
             float heatDissipationPerSecond,
+            string primaryWeaponName,
+            string primaryWeaponType,
+            int primarySpecialEffect,
             CombatSectionDefinition[] sections,
             string sourceKind)
         {
@@ -35,6 +41,9 @@ namespace MC2Demo.BattleCore
             HeatCapacity = heatCapacity;
             HeatPerShot = heatPerShot;
             HeatDissipationPerSecond = heatDissipationPerSecond;
+            PrimaryWeaponName = primaryWeaponName;
+            PrimaryWeaponType = primaryWeaponType;
+            PrimarySpecialEffect = primarySpecialEffect;
             Sections = sections;
             SourceKind = sourceKind;
         }
@@ -47,6 +56,7 @@ namespace MC2Demo.BattleCore
             }
 
             CombatProfileFields fields = record.combatProfile;
+            CombatWeaponDefinition primaryWeapon = SelectPrimaryWeapon(record);
             return new CombatProfile(
                 fields.maxStructure,
                 fields.moveSpeed,
@@ -56,6 +66,9 @@ namespace MC2Demo.BattleCore
                 CalculateHeatCapacity(record, fields),
                 CalculateHeatPerShot(record),
                 CalculateHeatDissipationPerSecond(record, fields),
+                string.IsNullOrEmpty(primaryWeapon?.name) ? "Aggregate Weapons" : primaryWeapon.name,
+                string.IsNullOrEmpty(primaryWeapon?.type) ? "Generic" : primaryWeapon.type,
+                primaryWeapon?.specialEffect ?? 0,
                 record.sections,
                 string.IsNullOrEmpty(record.sourceKind) ? "combat-data" : record.sourceKind);
         }
@@ -104,6 +117,9 @@ namespace MC2Demo.BattleCore
                 Mathf.Max(1f, maxStructure * 0.15f),
                 0f,
                 0f,
+                "Fallback Weapon",
+                "Generic",
+                0,
                 DefaultSections(maxStructure, isPlayerUnit),
                 "hardcoded-fallback");
         }
@@ -148,6 +164,36 @@ namespace MC2Demo.BattleCore
 
             float cooldown = Mathf.Max(1f, fields.weaponCooldown);
             return Mathf.Max(heatCapacity * 0.10f, heatPerShot / (cooldown * 1.35f));
+        }
+
+        private static CombatWeaponDefinition SelectPrimaryWeapon(CombatUnitProfile record)
+        {
+            if (record?.weapons == null || record.weapons.Length == 0)
+            {
+                return null;
+            }
+
+            CombatWeaponDefinition primary = null;
+            float bestScore = float.MinValue;
+            foreach (CombatWeaponDefinition weapon in record.weapons)
+            {
+                if (weapon == null)
+                {
+                    continue;
+                }
+
+                float score = weapon.damagePerTenSeconds > 0f
+                    ? weapon.damagePerTenSeconds
+                    : weapon.damage;
+                score += Mathf.Max(0f, weapon.rangeMax) * 0.001f;
+                if (score > bestScore)
+                {
+                    bestScore = score;
+                    primary = weapon;
+                }
+            }
+
+            return primary;
         }
 
         private static CombatSectionDefinition[] DefaultSections(float maxStructure, bool isPlayerUnit)

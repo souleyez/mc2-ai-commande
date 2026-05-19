@@ -261,10 +261,15 @@ namespace MC2Demo.EditorTools
                 throw new InvalidDataException("Expected cool unit to be able to fire.");
             }
 
-            player.FireAt(target);
+            CombatEvent heatShot = player.FireAt(target);
             if (player.CurrentHeat < 7.9f || player.HeatRatio < 0.79f)
             {
                 throw new InvalidDataException("Expected firing to add weapon heat, got " + player.CurrentHeat);
+            }
+
+            if (heatShot.WeaponType != "EnergyWeapon" || heatShot.SpecialEffect != 15)
+            {
+                throw new InvalidDataException("Expected combat event to carry source weapon visual metadata.");
             }
 
             player.TickWeapon(0.2f);
@@ -490,9 +495,12 @@ namespace MC2Demo.EditorTools
                             new CombatWeaponDefinition
                             {
                                 name = "Validator Laser",
+                                type = "EnergyWeapon",
                                 heat = 8f,
                                 damage = 10f,
-                                recycleTime = 0.1f
+                                damagePerTenSeconds = 100f,
+                                recycleTime = 0.1f,
+                                specialEffect = 15
                             }
                         },
                         combatProfile = new CombatProfileFields

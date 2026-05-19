@@ -7,14 +7,25 @@ namespace MC2Demo.BattleCore
         public string SectionName { get; }
         public float Damage { get; }
         public bool DestroyedTarget { get; }
+        public string WeaponType { get; }
+        public int SpecialEffect { get; }
 
-        public CombatEvent(string attackerId, string targetId, string sectionName, float damage, bool destroyedTarget)
+        public CombatEvent(
+            string attackerId,
+            string targetId,
+            string sectionName,
+            float damage,
+            bool destroyedTarget,
+            string weaponType = "Generic",
+            int specialEffect = 0)
         {
             AttackerId = attackerId;
             TargetId = targetId;
             SectionName = sectionName;
             Damage = damage;
             DestroyedTarget = destroyedTarget;
+            WeaponType = weaponType;
+            SpecialEffect = specialEffect;
         }
     }
 }
