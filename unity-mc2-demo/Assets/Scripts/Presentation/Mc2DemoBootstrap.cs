@@ -22,6 +22,7 @@ namespace MC2Demo.Presentation
         private readonly Dictionary<string, GameObject> unitOrderMarkers = new();
         private readonly Dictionary<string, GameObject> unitFocusMarkers = new();
         private readonly Dictionary<string, GameObject> unitRangeMarkers = new();
+        private readonly Dictionary<string, GameObject> unitTargetLines = new();
         private readonly Dictionary<string, GameObject> unitHealthBarBacks = new();
         private readonly Dictionary<string, GameObject> unitHealthBarFills = new();
         private readonly Dictionary<string, GameObject> structureHealthBarBacks = new();
@@ -868,6 +869,7 @@ namespace MC2Demo.Presentation
                     "CommandWeaponRange",
                     new Color(0.25f, 0.82f, 1f, 0.12f),
                     Vector3.one);
+                unitTargetLines[unit.Id] = CreateTargetLine(unit.Id + " Target Line");
             }
         }
 
@@ -900,6 +902,7 @@ namespace MC2Demo.Presentation
                 UpdateOrderMarker(unit);
                 UpdateFocusMarker(unit);
                 UpdateRangeMarker(unit);
+                UpdateTargetLine(unit);
             }
 
             UpdateTargetHealthBars();
@@ -976,6 +979,124 @@ namespace MC2Demo.Presentation
                 float worldDiameter = Mathf.Clamp((unit.Profile.WeaponRange / 100f) * 2f, 1.2f, 8f);
                 marker.transform.localScale = new Vector3(worldDiameter, 0.01f, worldDiameter);
             }
+        }
+
+        private void UpdateTargetLine(UnitState unit)
+        {
+            if (!unitTargetLines.TryGetValue(unit.Id, out GameObject line))
+            {
+                return;
+            }
+
+            string targetId = string.IsNullOrEmpty(unit.AttackTargetId) ? unit.CurrentTargetId : unit.AttackTargetId;
+            bool hasTargetId = !string.IsNullOrEmpty(targetId);
+            Vector3 targetPoint = Vector3.zero;
+            bool hasTargetPoint = hasTargetId && TryGetTargetWorldPoint(targetId, out targetPoint);
+            bool hasUnitView = unitViews.TryGetValue(unit.Id, out DemoUnitView unitView) && unitView != null;
+            bool isVisible = !unit.IsDestroyed
+                && hasTargetId
+                && hasTargetPoint
+                && hasUnitView;
+            line.SetActive(isVisible);
+            if (!isVisible)
+            {
+                return;
+            }
+
+            Vector3 unitPoint = unitView.transform.position + Vector3.up * 0.18f;
+            targetPoint += Vector3.up * 0.18f;
+            PositionLine(line, unitPoint, targetPoint, 0.028f);
+            AssignMaterial(line, TargetLineMaterialName(unit, targetId), TargetLineColor(unit, targetId));
+        }
+
+        private GameObject CreateTargetLine(string objectName)
+        {
+            GameObject line = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            line.name = objectName;
+            Collider lineCollider = line.GetComponent<Collider>();
+            if (lineCollider != null)
+            {
+                lineCollider.enabled = false;
+            }
+
+            AssignMaterial(line, "TargetLineReady", new Color(0.28f, 0.78f, 1f, 0.48f));
+            line.SetActive(false);
+            return line;
+        }
+
+        private void PositionLine(GameObject line, Vector3 from, Vector3 to, float radius)
+        {
+            Vector3 direction = to - from;
+            float length = direction.magnitude;
+            if (length <= 0.01f)
+            {
+                line.SetActive(false);
+                return;
+            }
+
+            line.transform.position = (from + to) * 0.5f;
+            line.transform.rotation = Quaternion.FromToRotation(Vector3.up, direction.normalized);
+            line.transform.localScale = new Vector3(radius, length * 0.5f, radius);
+        }
+
+        private bool TryGetTargetWorldPoint(string targetId, out Vector3 point)
+        {
+            if (unitViews.TryGetValue(targetId, out DemoUnitView unitView) && unitView != null && unitView.Unit != null && !unitView.Unit.IsDestroyed)
+            {
+                point = unitView.transform.position;
+                return true;
+            }
+
+            if (structureViews.TryGetValue(targetId, out DemoStructureView structureView) && structureView != null && structureView.Structure != null && !structureView.Structure.IsDestroyed)
+            {
+                point = structureView.transform.position;
+                return true;
+            }
+
+            point = Vector3.zero;
+            return false;
+        }
+
+        private string TargetLineMaterialName(UnitState unit, string targetId)
+        {
+            if (unit.IsHeatLocked || !IsTargetInWeaponRange(unit, targetId))
+            {
+                return "TargetLineBlocked";
+            }
+
+            if (unit.IsWeaponCoolingDown)
+            {
+                return "TargetLineCooling";
+            }
+
+            return "TargetLineReady";
+        }
+
+        private Color TargetLineColor(UnitState unit, string targetId)
+        {
+            if (unit.IsHeatLocked || !IsTargetInWeaponRange(unit, targetId))
+            {
+                return new Color(1f, 0.18f, 0.12f, 0.50f);
+            }
+
+            if (unit.IsWeaponCoolingDown)
+            {
+                return new Color(1f, 0.62f, 0.14f, 0.46f);
+            }
+
+            return new Color(0.28f, 0.78f, 1f, 0.48f);
+        }
+
+        private bool IsTargetInWeaponRange(UnitState unit, string targetId)
+        {
+            UnitState targetUnit = mission.FindUnit(targetId);
+            if (targetUnit != null)
+            {
+                return unit.IsInWeaponRange(targetUnit);
+            }
+
+            StructureState targetStructure = mission.FindStructure(targetId);
+            return targetStructure != null && unit.IsInWeaponRange(targetStructure);
         }
 
         private void UpdateTargetHealthBars()
