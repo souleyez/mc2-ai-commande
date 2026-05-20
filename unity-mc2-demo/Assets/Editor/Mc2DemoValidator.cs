@@ -111,6 +111,7 @@ namespace MC2Demo.EditorTools
             ValidateCommanderCommandPort();
             ValidateCommanderCommandFilePlayback();
             ValidateCommanderObservationPort();
+            ValidateCommanderObjectiveTargets(BattleMission.FromJson(contractJson, combatProfiles));
             ValidateMissionActivation(BattleMission.FromJson(contractJson, combatProfiles));
             ValidateAirfieldToHangarObjectiveFlow(BattleMission.FromJson(contractJson, combatProfiles));
             ValidateScriptBridgeSignals(BattleMission.FromJson(contractJson, combatProfiles));
@@ -297,28 +298,7 @@ namespace MC2Demo.EditorTools
                 throw new InvalidDataException("Expected hangar to remain targetable before structure attack.");
             }
 
-            int accepted = mission.IssueSquadAttackStructure(hangar.Id);
-            if (accepted != 3)
-            {
-                throw new InvalidDataException("Expected full player squad to accept hangar attack order, got " + accepted);
-            }
-
-            for (int tick = 0; tick < 240 && !hangar.IsDestroyed && mission.Result == MissionResultState.InProgress; tick++)
-            {
-                mission.Tick(1f);
-            }
-
-            if (!hangar.IsDestroyed)
-            {
-                throw new InvalidDataException(
-                    "Expected hangar to be destroyed during mc2_01 flow. Remaining="
-                    + hangar.CurrentStructure
-                    + " missionTime="
-                    + mission.MissionTimeSeconds
-                    + " result="
-                    + mission.Result);
-            }
-
+            DestroyStructureWithSquad(mission, hangar.Id, expectedAccepted: 3, maxTicks: 240);
             if (!hangarObjective.IsComplete || !patrolObjective.IsActive)
             {
                 throw new InvalidDataException("Expected hangar destruction to complete objective 1 and activate objective 2.");
@@ -327,6 +307,106 @@ namespace MC2Demo.EditorTools
             if (mission.Result != MissionResultState.InProgress)
             {
                 throw new InvalidDataException("Expected mission to continue after hangar destruction, got " + mission.Result);
+            }
+        }
+
+        private static void ValidateCommanderObjectiveTargets(BattleMission mission)
+        {
+            CommanderObservationPort observationPort = new(mission);
+            CommanderObservation initial = observationPort.Observe();
+            CommanderObjectiveObservation airfield = FindObservedObjective(initial, 0);
+            if (airfield == null || airfield.targetPoints.Length != 1 || airfield.targetPoints[0].kind != "area")
+            {
+                throw new InvalidDataException("Expected initial commander observation to expose airfield area target.");
+            }
+
+            if (airfield.targetUnitIds.Length != 0 || airfield.targetStructureIds.Length != 0 || FindObservedObjective(initial, 2) != null)
+            {
+                throw new InvalidDataException("Expected initial commander observation to hide future unit targets.");
+            }
+
+            MovePlayerForceIntoObjectiveArea(mission, 0);
+            CommanderObservation afterAirfield = observationPort.Observe();
+            CommanderObjectiveObservation hangar = FindObservedObjective(afterAirfield, 1);
+            if (hangar == null
+                || hangar.targetStructureIds.Length != 1
+                || hangar.targetStructureIds[0] != "structure-1-0"
+                || hangar.targetPoints.Length != 1
+                || hangar.targetPoints[0].kind != "structure"
+                || hangar.targetPoints[0].id != "structure-1-0")
+            {
+                throw new InvalidDataException("Expected commander observation to expose active hangar structure target: " + DescribeObservedObjective(hangar));
+            }
+
+            if (FindObservedObjective(afterAirfield, 2) != null)
+            {
+                throw new InvalidDataException("Expected commander observation to keep patrol objective hidden until hangar is destroyed.");
+            }
+
+            DestroyStructureWithSquad(mission, "structure-1-0", expectedAccepted: 3, maxTicks: 240);
+            CommanderObservation afterHangar = observationPort.Observe();
+            CommanderObjectiveObservation patrol = FindObservedObjective(afterHangar, 2);
+            if (patrol == null || patrol.targetUnitIds.Length != 8 || patrol.targetPoints.Length != 8)
+            {
+                throw new InvalidDataException("Expected commander observation to expose active patrol unit targets after hangar destruction.");
+            }
+
+            string[] expectedUnits =
+            {
+                "unit-4",
+                "unit-5",
+                "unit-10",
+                "unit-11",
+                "unit-12",
+                "unit-27",
+                "unit-28",
+                "unit-29"
+            };
+
+            foreach (string unitId in expectedUnits)
+            {
+                if (!ContainsString(patrol.targetUnitIds, unitId))
+                {
+                    throw new InvalidDataException("Expected patrol objective target ids to include " + unitId);
+                }
+            }
+
+            if (FindObservedObjective(afterHangar, 0) != null || FindObservedObjective(afterHangar, 1) != null)
+            {
+                throw new InvalidDataException("Expected completed objectives to disappear from commander current objective observation.");
+            }
+        }
+
+        private static void DestroyStructureWithSquad(BattleMission mission, string structureId, int expectedAccepted, int maxTicks)
+        {
+            StructureState structure = mission.FindStructure(structureId);
+            if (structure == null)
+            {
+                throw new InvalidDataException("Expected structure to exist: " + structureId);
+            }
+
+            int accepted = mission.IssueSquadAttackStructure(structure.Id);
+            if (accepted != expectedAccepted)
+            {
+                throw new InvalidDataException("Expected squad structure attack accepted count " + expectedAccepted + ", got " + accepted);
+            }
+
+            for (int tick = 0; tick < maxTicks && !structure.IsDestroyed && mission.Result == MissionResultState.InProgress; tick++)
+            {
+                mission.Tick(1f);
+            }
+
+            if (!structure.IsDestroyed)
+            {
+                throw new InvalidDataException(
+                    "Expected structure to be destroyed during simulation. id="
+                    + structure.Id
+                    + " remaining="
+                    + structure.CurrentStructure
+                    + " missionTime="
+                    + mission.MissionTimeSeconds
+                    + " result="
+                    + mission.Result);
             }
         }
 
@@ -489,6 +569,67 @@ namespace MC2Demo.EditorTools
                     && !unit.IsDestroyed
                     && !string.IsNullOrEmpty(unit.Brain)
                     && unit.Brain.StartsWith(brainPrefix, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static CommanderObjectiveObservation FindObservedObjective(CommanderObservation observation, int objectiveIndex)
+        {
+            if (observation.currentObjectives == null)
+            {
+                return null;
+            }
+
+            foreach (CommanderObjectiveObservation objective in observation.currentObjectives)
+            {
+                if (objective.index == objectiveIndex)
+                {
+                    return objective;
+                }
+            }
+
+            return null;
+        }
+
+        private static string DescribeObservedObjective(CommanderObjectiveObservation objective)
+        {
+            if (objective == null)
+            {
+                return "<missing>";
+            }
+
+            string pointDescription = "<none>";
+            if (objective.targetPoints != null && objective.targetPoints.Length > 0)
+            {
+                pointDescription = objective.targetPoints[0].kind + ":" + objective.targetPoints[0].id;
+            }
+
+            return "index="
+                + objective.index
+                + " structureIds="
+                + (objective.targetStructureIds == null ? -1 : objective.targetStructureIds.Length)
+                + " firstStructure="
+                + (objective.targetStructureIds == null || objective.targetStructureIds.Length == 0 ? "<none>" : objective.targetStructureIds[0])
+                + " points="
+                + (objective.targetPoints == null ? -1 : objective.targetPoints.Length)
+                + " firstPoint="
+                + pointDescription;
+        }
+
+        private static bool ContainsString(string[] values, string value)
+        {
+            if (values == null)
+            {
+                return false;
+            }
+
+            foreach (string item in values)
+            {
+                if (item == value)
                 {
                     return true;
                 }

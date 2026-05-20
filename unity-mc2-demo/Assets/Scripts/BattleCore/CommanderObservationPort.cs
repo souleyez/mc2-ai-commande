@@ -106,11 +106,170 @@ namespace MC2Demo.BattleCore
                     index = objective.Definition.index,
                     title = objective.Definition.title,
                     markerX = objective.Definition.marker == null ? 0f : objective.Definition.marker.x,
-                    markerY = objective.Definition.marker == null ? 0f : objective.Definition.marker.y
+                    markerY = objective.Definition.marker == null ? 0f : objective.Definition.marker.y,
+                    targetUnitIds = ObjectiveTargetUnitIds(objective.Definition),
+                    targetStructureIds = ObjectiveTargetStructureIds(objective.Definition),
+                    targetPoints = ObjectiveTargetPoints(objective.Definition)
                 });
             }
 
             return observations.ToArray();
+        }
+
+        private string[] ObjectiveTargetUnitIds(ObjectiveDefinition objective)
+        {
+            List<string> ids = new();
+            if (objective.conditions == null)
+            {
+                return ids.ToArray();
+            }
+
+            foreach (ObjectiveCondition condition in objective.conditions)
+            {
+                if (condition?.type != "DestroySpecificEnemyUnit" || condition.targetUnit?.position == null)
+                {
+                    continue;
+                }
+
+                UnitState unit = FindUnitNearSpawnPosition(new Vector2(condition.targetUnit.position.x, condition.targetUnit.position.y), 75f);
+                if (unit != null && !ContainsString(ids, unit.Id))
+                {
+                    ids.Add(unit.Id);
+                }
+            }
+
+            return ids.ToArray();
+        }
+
+        private string[] ObjectiveTargetStructureIds(ObjectiveDefinition objective)
+        {
+            List<string> ids = new();
+            if (objective.conditions == null)
+            {
+                return ids.ToArray();
+            }
+
+            foreach (ObjectiveCondition condition in objective.conditions)
+            {
+                if (condition?.type != "DestroySpecificStructure" || condition.targetStructure?.position == null)
+                {
+                    continue;
+                }
+
+                StructureState structure = FindStructureNearPosition(new Vector2(condition.targetStructure.position.x, condition.targetStructure.position.y), 220f);
+                if (structure != null && !ContainsString(ids, structure.Id))
+                {
+                    ids.Add(structure.Id);
+                }
+            }
+
+            return ids.ToArray();
+        }
+
+        private CommanderTargetPointObservation[] ObjectiveTargetPoints(ObjectiveDefinition objective)
+        {
+            List<CommanderTargetPointObservation> points = new();
+            if (objective.conditions == null)
+            {
+                return points.ToArray();
+            }
+
+            foreach (ObjectiveCondition condition in objective.conditions)
+            {
+                if (condition == null)
+                {
+                    continue;
+                }
+
+                if (condition.type == "MoveAnyUnitToArea" || condition.type == "MoveAllSurvivingMechsToArea")
+                {
+                    points.Add(new CommanderTargetPointObservation
+                    {
+                        kind = "area",
+                        id = "",
+                        x = condition.targetArea.x,
+                        y = condition.targetArea.y,
+                        radius = condition.targetArea.radius
+                    });
+                    continue;
+                }
+
+                if (condition.type == "DestroySpecificStructure" && condition.targetStructure?.position != null)
+                {
+                    StructureState structure = FindStructureNearPosition(new Vector2(condition.targetStructure.position.x, condition.targetStructure.position.y), 220f);
+                    points.Add(new CommanderTargetPointObservation
+                    {
+                        kind = "structure",
+                        id = structure == null ? "" : structure.Id,
+                        x = condition.targetStructure.position.x,
+                        y = condition.targetStructure.position.y,
+                        radius = structure == null ? 0f : structure.Radius
+                    });
+                    continue;
+                }
+
+                if (condition.type == "DestroySpecificEnemyUnit" && condition.targetUnit?.position != null)
+                {
+                    UnitState unit = FindUnitNearSpawnPosition(new Vector2(condition.targetUnit.position.x, condition.targetUnit.position.y), 75f);
+                    points.Add(new CommanderTargetPointObservation
+                    {
+                        kind = "unit",
+                        id = unit == null ? "" : unit.Id,
+                        x = condition.targetUnit.position.x,
+                        y = condition.targetUnit.position.y,
+                        radius = 0f
+                    });
+                }
+            }
+
+            return points.ToArray();
+        }
+
+        private UnitState FindUnitNearSpawnPosition(Vector2 missionPoint, float tolerance)
+        {
+            UnitState best = null;
+            float bestDistanceSqr = tolerance * tolerance;
+            foreach (UnitState unit in mission.Units)
+            {
+                float distanceSqr = (unit.SpawnPosition - missionPoint).sqrMagnitude;
+                if (distanceSqr <= bestDistanceSqr)
+                {
+                    best = unit;
+                    bestDistanceSqr = distanceSqr;
+                }
+            }
+
+            return best;
+        }
+
+        private StructureState FindStructureNearPosition(Vector2 missionPoint, float tolerance)
+        {
+            StructureState best = null;
+            float bestDistanceSqr = tolerance * tolerance;
+            foreach (StructureState structure in mission.Structures)
+            {
+                float distanceSqr = (structure.MissionPosition - missionPoint).sqrMagnitude;
+                if (distanceSqr <= bestDistanceSqr)
+                {
+                    best = structure;
+                    bestDistanceSqr = distanceSqr;
+                }
+            }
+
+            return best;
+        }
+
+        private static bool ContainsString(List<string> values, string value)
+        {
+            foreach (string item in values)
+            {
+                if (string.Equals(item, value, StringComparison.Ordinal))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private static CommanderUnitObservation UnitObservation(UnitState unit)
@@ -228,5 +387,18 @@ namespace MC2Demo.BattleCore
         public string title;
         public float markerX;
         public float markerY;
+        public string[] targetUnitIds;
+        public string[] targetStructureIds;
+        public CommanderTargetPointObservation[] targetPoints;
+    }
+
+    [Serializable]
+    public sealed class CommanderTargetPointObservation
+    {
+        public string kind;
+        public string id;
+        public float x;
+        public float y;
+        public float radius;
     }
 }
