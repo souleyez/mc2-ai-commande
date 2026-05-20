@@ -17,6 +17,7 @@ Current demo behavior:
 - defaults to squad orders, with status-bar click for detached single-unit order
 - lets map clicks on hostile units or targetable buildings issue focused attack orders
 - renders command rings for selected units, order destinations, and focused targets
+- shows world objective area hints only for the current active objective
 - draws tactical target lines from player units to active targets, colored by weapon readiness
 - shows a compact mission brief with objective progress and target structure integrity
 - shows compact world health bars for damaged or player-targeted enemies and structures

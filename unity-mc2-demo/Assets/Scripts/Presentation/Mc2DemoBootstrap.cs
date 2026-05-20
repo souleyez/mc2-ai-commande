@@ -25,6 +25,7 @@ namespace MC2Demo.Presentation
         private readonly Dictionary<string, GameObject> unitTargetLines = new();
         private readonly Dictionary<string, GameObject> unitHealthBarBacks = new();
         private readonly Dictionary<string, GameObject> unitHealthBarFills = new();
+        private readonly Dictionary<int, List<GameObject>> objectiveAreaMarkers = new();
         private readonly Dictionary<string, GameObject> structureHealthBarBacks = new();
         private readonly Dictionary<string, GameObject> structureHealthBarFills = new();
         private readonly Dictionary<string, Material> materialCache = new(StringComparer.Ordinal);
@@ -66,6 +67,7 @@ namespace MC2Demo.Presentation
 
             CaptureMissionResult();
             UpdateUnitVisibility();
+            UpdateObjectiveAreaVisibility();
             UpdateCommandOverlays();
             FollowCommander();
         }
@@ -821,6 +823,16 @@ namespace MC2Demo.Presentation
             HashSet<string> renderedAreas = new();
             foreach (ObjectiveState objective in mission.Objectives)
             {
+                if (objective.Definition.hidden)
+                {
+                    continue;
+                }
+
+                if (objective.Definition.conditions == null)
+                {
+                    continue;
+                }
+
                 foreach (ObjectiveCondition condition in objective.Definition.conditions)
                 {
                     TargetArea area = condition.targetArea;
@@ -829,22 +841,34 @@ namespace MC2Demo.Presentation
                         continue;
                     }
 
-                    string key = Mathf.RoundToInt(area.x) + ":" + Mathf.RoundToInt(area.y) + ":" + Mathf.RoundToInt(area.radius);
+                    string key = objective.Definition.index + ":"
+                        + Mathf.RoundToInt(area.x) + ":"
+                        + Mathf.RoundToInt(area.y) + ":"
+                        + Mathf.RoundToInt(area.radius);
                     if (!renderedAreas.Add(key))
                     {
                         continue;
                     }
 
-                    CreateAreaDisc(
+                    GameObject disc = CreateAreaDisc(
                         "Objective Area " + objective.Definition.index,
                         new Vector2(area.x, area.y),
                         area.radius,
-                        objective.Definition.hidden ? new Color(0.34f, 0.42f, 0.52f, 0.32f) : new Color(0.15f, 0.55f, 0.78f, 0.34f));
+                        new Color(0.15f, 0.55f, 0.78f, 0.34f));
+                    if (!objectiveAreaMarkers.TryGetValue(objective.Definition.index, out List<GameObject> markers))
+                    {
+                        markers = new List<GameObject>();
+                        objectiveAreaMarkers[objective.Definition.index] = markers;
+                    }
+
+                    markers.Add(disc);
                 }
             }
+
+            UpdateObjectiveAreaVisibility();
         }
 
-        private void CreateAreaDisc(string objectName, Vector2 missionCenter, float missionRadius, Color color)
+        private GameObject CreateAreaDisc(string objectName, Vector2 missionCenter, float missionRadius, Color color)
         {
             GameObject disc = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             disc.name = objectName;
@@ -854,6 +878,27 @@ namespace MC2Demo.Presentation
             float worldRadius = Mathf.Max(0.6f, missionRadius / 100f);
             disc.transform.localScale = new Vector3(worldRadius, 0.018f, worldRadius);
             AssignMaterial(disc, objectName, color);
+            return disc;
+        }
+
+        private void UpdateObjectiveAreaVisibility()
+        {
+            foreach (ObjectiveState objective in mission.Objectives)
+            {
+                if (!objectiveAreaMarkers.TryGetValue(objective.Definition.index, out List<GameObject> markers))
+                {
+                    continue;
+                }
+
+                bool visible = ShouldShowCurrentObjectiveHint(objective);
+                foreach (GameObject marker in markers)
+                {
+                    if (marker != null)
+                    {
+                        marker.SetActive(visible);
+                    }
+                }
+            }
         }
 
         private void CreateCommandOverlays()
@@ -1911,7 +1956,7 @@ namespace MC2Demo.Presentation
 
             foreach (ObjectiveState objective in mission.Objectives)
             {
-                if (!ShouldDrawObjectiveOnMissionMap(objective))
+                if (!ShouldShowCurrentObjectiveHint(objective))
                 {
                     continue;
                 }
@@ -1926,7 +1971,7 @@ namespace MC2Demo.Presentation
             }
         }
 
-        private static bool ShouldDrawObjectiveOnMissionMap(ObjectiveState objective)
+        private static bool ShouldShowCurrentObjectiveHint(ObjectiveState objective)
         {
             return objective != null
                 && !objective.Definition.hidden
