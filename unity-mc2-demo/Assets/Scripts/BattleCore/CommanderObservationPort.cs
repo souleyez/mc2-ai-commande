@@ -7,6 +7,7 @@ namespace MC2Demo.BattleCore
     public sealed class CommanderObservationPort
     {
         private readonly BattleMission mission;
+        private int reportIndex;
 
         public CommanderObservationPort(BattleMission mission)
         {
@@ -15,9 +16,12 @@ namespace MC2Demo.BattleCore
 
         public CommanderObservation Observe()
         {
+            reportIndex++;
             return new CommanderObservation
             {
                 missionId = mission.Contract?.mission?.id ?? "",
+                reportIndex = reportIndex,
+                missionTimeSeconds = mission.MissionTimeSeconds,
                 result = mission.Result.ToString(),
                 resultReason = mission.ResultReason,
                 playerUnits = PlayerUnitObservations(),
@@ -159,6 +163,8 @@ namespace MC2Demo.BattleCore
     public sealed class CommanderObservation
     {
         public string missionId;
+        public int reportIndex;
+        public float missionTimeSeconds;
         public string result;
         public string resultReason;
         public CommanderUnitObservation[] playerUnits;

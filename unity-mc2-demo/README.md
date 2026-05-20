@@ -92,6 +92,28 @@ Run the player with a startup command and a commander state report:
   -logFile "$PWD\..\analysis-output\unity-player-report.log"
 ```
 
+Run the player with a startup commander command file:
+
+```powershell
+& .\Builds\Windows\MC2UnityDemo.exe `
+  -batchmode -nographics -mc2SmokeTest `
+  -mc2CommandFile ".\Assets\StreamingAssets\CommanderScripts\mc2_01-demo.txt" `
+  -logFile "$PWD\..\analysis-output\unity-player-command-file.log"
+```
+
+Command files run in order and support blank lines plus `#` comments:
+
+```text
+command squad move 3136 -789
+advance 2
+report
+command unit unit-1 move 3221 -277
+```
+
+Relative command-file paths are checked from the current working directory first, then from the player `StreamingAssets` folder.
+
+Commander observation reports include `reportIndex` and `missionTimeSeconds` so future AI adapters can correlate decisions with elapsed battle time.
+
 Interactive build output:
 
 ```text

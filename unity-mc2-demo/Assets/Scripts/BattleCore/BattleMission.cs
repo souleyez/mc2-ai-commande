@@ -15,6 +15,7 @@ namespace MC2Demo.BattleCore
         public IReadOnlyList<ObjectiveEvent> RecentObjectiveEvents => recentObjectiveEvents;
         public MissionResultState Result { get; private set; } = MissionResultState.InProgress;
         public string ResultReason { get; private set; } = "";
+        public float MissionTimeSeconds { get; private set; }
 
         private readonly List<UnitState> units = new();
         private readonly List<StructureState> structures = new();
@@ -257,6 +258,8 @@ namespace MC2Demo.BattleCore
                 return;
             }
 
+            float clampedDeltaTime = Mathf.Max(0f, deltaTime);
+            MissionTimeSeconds += clampedDeltaTime;
             foreach (UnitState unit in units)
             {
                 if (!unit.IsActive)
@@ -266,8 +269,8 @@ namespace MC2Demo.BattleCore
 
                 RefreshAttackOrder(unit);
                 ApplyEnemyBrainOrder(unit);
-                unit.TickMovement(deltaTime);
-                unit.TickWeapon(deltaTime);
+                unit.TickMovement(clampedDeltaTime);
+                unit.TickWeapon(clampedDeltaTime);
             }
 
             foreach (UnitState unit in units)

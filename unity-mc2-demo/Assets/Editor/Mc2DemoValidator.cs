@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using MC2Demo.BattleCore;
+using MC2Demo.Presentation;
 using UnityEditor;
 using UnityEngine;
 
@@ -108,6 +109,7 @@ namespace MC2Demo.EditorTools
             ValidateSectionDamageModifiers();
             ValidateHeatManagement();
             ValidateCommanderCommandPort();
+            ValidateCommanderCommandFilePlayback();
             ValidateCommanderObservationPort();
             ValidateMissionActivation(BattleMission.FromJson(contractJson, combatProfiles));
             ValidateScriptBridgeSignals(BattleMission.FromJson(contractJson, combatProfiles));
@@ -505,6 +507,80 @@ namespace MC2Demo.EditorTools
             }
         }
 
+        private static void ValidateCommanderCommandFilePlayback()
+        {
+            StartupCommanderScriptAction[] actions = StartupCommanderScript.ParseLines(
+                new[]
+                {
+                    "# validator command file",
+                    "",
+                    "command squad move 500 0",
+                    "advance 0.5",
+                    "report",
+                    "command unit player-1 attack structure structure-1"
+                },
+                "validator-command-file");
+
+            if (actions.Length != 4
+                || actions[0].Kind != StartupCommanderScriptActionKind.Command
+                || actions[1].Kind != StartupCommanderScriptActionKind.Advance
+                || actions[2].Kind != StartupCommanderScriptActionKind.Report
+                || actions[3].CommandText != "unit player-1 attack structure structure-1")
+            {
+                throw new InvalidDataException("Expected command file parser to preserve command, advance, and report actions.");
+            }
+
+            if (Math.Abs(actions[1].AdvanceSeconds - 0.5f) > 0.001f)
+            {
+                throw new InvalidDataException("Expected command file parser to read advance seconds.");
+            }
+
+            BattleMission mission = new(MakeCommandPortContract(), CombatProfileCatalog.Empty);
+            CommanderCommandPort port = new(mission, 520f, _ => true);
+            foreach (StartupCommanderScriptAction action in actions)
+            {
+                switch (action.Kind)
+                {
+                    case StartupCommanderScriptActionKind.Command:
+                        CommanderCommandResult result = port.IssueText(action.CommandText);
+                        if (!result.Accepted)
+                        {
+                            throw new InvalidDataException("Expected command file command to be accepted: " + action.CommandText);
+                        }
+                        break;
+                    case StartupCommanderScriptActionKind.Advance:
+                        mission.Tick(action.AdvanceSeconds);
+                        break;
+                    case StartupCommanderScriptActionKind.Report:
+                        string json = new CommanderObservationPort(mission).ToJson();
+                        if (string.IsNullOrEmpty(json) || !json.Contains("validator-command-port"))
+                        {
+                            throw new InvalidDataException("Expected command file report action to produce commander observation JSON.");
+                        }
+                        break;
+                }
+            }
+
+            UnitState playerOne = mission.FindUnit("player-1");
+            UnitState playerTwo = mission.FindUnit("player-2");
+            if (playerOne.AttackTargetId != "structure-1" || playerTwo.MoveTarget.x != 500f)
+            {
+                throw new InvalidDataException("Expected command file playback to affect the battle mission.");
+            }
+
+            if (Math.Abs(mission.MissionTimeSeconds - 0.5f) > 0.001f)
+            {
+                throw new InvalidDataException("Expected command file advance action to progress mission time.");
+            }
+
+            if (StartupCommanderScript.TryParseLine("advance nope", 1, out _, out _)
+                || StartupCommanderScript.TryParseLine("command", 1, out _, out _)
+                || StartupCommanderScript.TryParseLine("report now", 1, out _, out _))
+            {
+                throw new InvalidDataException("Expected malformed command file lines to be rejected.");
+            }
+        }
+
         private static void ValidateCommanderObservationPort()
         {
             BattleMission mission = new(MakeCommandPortContract(), CombatProfileCatalog.Empty);
@@ -512,10 +588,16 @@ namespace MC2Demo.EditorTools
             commandPort.IssueText("unit player-1 move 100 100");
             commandPort.IssueText("squad attack unit enemy-1");
 
-            CommanderObservation observation = new CommanderObservationPort(mission).Observe();
+            CommanderObservationPort observationPort = new(mission);
+            CommanderObservation observation = observationPort.Observe();
             if (observation.missionId != "validator-command-port" || observation.result != "InProgress")
             {
                 throw new InvalidDataException("Expected commander observation to include mission identity and result state.");
+            }
+
+            if (observation.reportIndex != 1 || Math.Abs(observation.missionTimeSeconds) > 0.001f)
+            {
+                throw new InvalidDataException("Expected first commander observation to include report index and zero mission time.");
             }
 
             if (observation.playerUnits.Length != 2 || observation.activeHostiles.Length != 1 || observation.targetableStructures.Length != 1)
@@ -535,8 +617,19 @@ namespace MC2Demo.EditorTools
                 throw new InvalidDataException("Expected observation to expose attack targets, weapon range, and section state.");
             }
 
-            string json = new CommanderObservationPort(mission).ToJson();
-            if (string.IsNullOrEmpty(json) || !json.Contains("validator-command-port") || !json.Contains("playerUnits"))
+            mission.Tick(1.25f);
+            CommanderObservation timedObservation = observationPort.Observe();
+            if (timedObservation.reportIndex != 2 || Math.Abs(timedObservation.missionTimeSeconds - 1.25f) > 0.001f)
+            {
+                throw new InvalidDataException("Expected commander observation to expose advancing mission time and report index.");
+            }
+
+            string json = observationPort.ToJson();
+            if (string.IsNullOrEmpty(json)
+                || !json.Contains("validator-command-port")
+                || !json.Contains("playerUnits")
+                || !json.Contains("missionTimeSeconds")
+                || !json.Contains("reportIndex"))
             {
                 throw new InvalidDataException("Expected commander observation JSON to include mission and unit fields.");
             }

@@ -1,0 +1,7 @@
+# Short mc2_01 startup commander script for smoke tests and AI-adapter demos.
+command squad move 3136 -789
+advance 2
+report
+command unit unit-1 move 3221 -277
+advance 1
+report

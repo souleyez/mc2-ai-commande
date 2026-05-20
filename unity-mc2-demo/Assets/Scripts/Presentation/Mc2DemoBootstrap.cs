@@ -181,6 +181,9 @@ namespace MC2Demo.Presentation
                     case "-mc2Command":
                         index = RunStartupCommanderCommand(args, index);
                         break;
+                    case "-mc2CommandFile":
+                        index = RunStartupCommanderCommandFile(args, index);
+                        break;
                     case "-mc2AdvanceSeconds":
                         index = RunStartupSimulationAdvance(args, index);
                         break;
@@ -205,8 +208,84 @@ namespace MC2Demo.Presentation
             }
 
             string commandLine = args[index + 1];
-            LogStartupCommanderCommand(commandLine, commandPort.IssueText(commandLine));
+            RunStartupCommanderCommand(commandLine);
             return index + 1;
+        }
+
+        private void RunStartupCommanderCommand(string commandLine)
+        {
+            if (commandPort == null)
+            {
+                return;
+            }
+
+            LogStartupCommanderCommand(commandLine, commandPort.IssueText(commandLine));
+        }
+
+        private int RunStartupCommanderCommandFile(string[] args, int index)
+        {
+            if (index + 1 >= args.Length)
+            {
+                Debug.LogWarning("MC2 commander command file blocked: missing path after -mc2CommandFile.");
+                return index;
+            }
+
+            string requestedPath = args[index + 1];
+            string resolvedPath = ResolveStartupCommanderCommandFilePath(requestedPath);
+            try
+            {
+                StartupCommanderScriptAction[] actions = StartupCommanderScript.LoadFile(resolvedPath);
+                Debug.Log("MC2 commander command file: path=" + resolvedPath + " actions=" + actions.Length);
+                RunStartupCommanderActions(actions);
+            }
+            catch (Exception exception)
+            {
+                AddCombatLogLine("CLI command file blocked: " + requestedPath);
+                statusText = "Command file blocked";
+                Debug.LogError("MC2 commander command file blocked: path=" + resolvedPath + " error=" + exception.Message);
+            }
+
+            return index + 1;
+        }
+
+        private void RunStartupCommanderActions(IEnumerable<StartupCommanderScriptAction> actions)
+        {
+            foreach (StartupCommanderScriptAction action in actions)
+            {
+                switch (action.Kind)
+                {
+                    case StartupCommanderScriptActionKind.Command:
+                        RunStartupCommanderCommand(action.CommandText);
+                        break;
+                    case StartupCommanderScriptActionKind.Advance:
+                        AdvanceStartupSimulation(action.AdvanceSeconds);
+                        break;
+                    case StartupCommanderScriptActionKind.Report:
+                        ReportStartupCommanderState();
+                        break;
+                }
+            }
+        }
+
+        private static string ResolveStartupCommanderCommandFilePath(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path) || Path.IsPathRooted(path))
+            {
+                return path;
+            }
+
+            if (File.Exists(path))
+            {
+                return Path.GetFullPath(path);
+            }
+
+            string streamingAssetPath = Path.Combine(Application.streamingAssetsPath, path);
+            if (File.Exists(streamingAssetPath))
+            {
+                return streamingAssetPath;
+            }
+
+            return Path.GetFullPath(path);
         }
 
         private void LogStartupCommanderCommand(string commandLine, CommanderCommandResult result)
@@ -268,9 +347,10 @@ namespace MC2Demo.Presentation
                 return;
             }
 
-            string json = observationPort.ToJson();
-            AddCombatLogLine("CLI report: state");
-            Debug.Log("MC2 commander observation: " + json);
+            CommanderObservation observation = observationPort.Observe();
+            string json = JsonUtility.ToJson(observation);
+            AddCombatLogLine("CLI report: state #" + observation.reportIndex);
+            Debug.Log("MC2 commander observation #" + observation.reportIndex + ": " + json);
         }
 
         private void QuitSmokeTest()
@@ -2432,4 +2512,5 @@ namespace MC2Demo.Presentation
             GUI.color = previous;
         }
     }
+
 }
