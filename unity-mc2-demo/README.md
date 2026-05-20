@@ -16,8 +16,8 @@ Current demo behavior:
 - moves activated enemy groups with lightweight source-brain patrol orders backed by source nav markers
 - follows the first player mech as commander
 - defaults to squad orders, with status-bar click for detached single-unit order
-- routes player commands through a CLI-ready commander command port for future AI control
-- exposes a CLI-ready commander observation JSON for future AI state reads
+- routes player commands through a CLI-ready commander command port for AI draft/directive tests
+- exposes a CLI-ready commander observation JSON for compact AI planning summaries
 - lets map clicks on hostile units or targetable buildings issue focused attack orders
 - renders command rings for selected units, order destinations, and focused targets
 - shows world objective area hints only for the current active objective
@@ -113,7 +113,7 @@ $env:MINIMAX_MODEL = "MiniMax-M2.5"
   -logFile "$PWD\..\analysis-output\unity-player-minimax-commander.log"
 ```
 
-The MiniMax adapter reads only environment variables, logs the selected endpoint/model without printing the key, and asks the model only for a high-level directive. The local `RuleCommander` converts that directive into concrete movement or attack commands so battle execution remains deterministic and responsive.
+The MiniMax adapter reads only environment variables, logs the selected endpoint/model without printing the key, and asks the model only for a high-level directive. The local `RuleCommander` converts that directive into concrete movement or attack commands so battle execution remains deterministic and responsive. AI scope is intentionally limited to opening drafts, a future capability window, and broad directive refreshes.
 
 Command files run in order and support blank lines plus `#` comments:
 

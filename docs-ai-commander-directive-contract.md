@@ -1,8 +1,16 @@
 # AI Commander Directive Contract
 
-Goal: keep model latency and uncertainty out of the frame-by-frame battle loop.
+Goal: keep model latency and uncertainty out of the frame-by-frame battle loop, and keep development focused on the game itself.
 
-The AI commander is a strategic planner, not a direct unit controller. It chooses one high-level directive for the next short phase of the mission. BattleCore then converts that directive into deterministic local commands such as squad movement, target focus, regrouping, heat handling, and future avoidance behavior.
+The AI commander is a strategic draft assistant, not a direct unit controller. It may propose an opening plan, expose a small capability window, and choose one high-level directive for a short phase of the mission. BattleCore then converts that directive into deterministic local commands such as squad movement, target focus, regrouping, heat handling, and future avoidance behavior.
+
+## Product Boundary
+
+- AI is optional flavor and planning support, not the core combat engine.
+- AI can draft an opening plan before or at mission start.
+- AI can show a capability window: current directive, available broad options, confidence, and why a plan is suggested.
+- AI should not be used for continuous steering, exact coordinates, exact target IDs, weapon timing, or per-mech micro.
+- After this prototype boundary is proven, development priority returns to the game: map flow, combat feel, damage feedback, mech fitting, mission UI, rewards, and progression.
 
 ## Runtime Boundary
 
@@ -31,6 +39,7 @@ hold
 - Do not ask the model to choose coordinates or target IDs.
 - Treat one model call as a phase decision for roughly 10-30 seconds of simulated mission time.
 - Cache the latest directive in future interactive builds; the battle must keep running if a new directive is pending.
+- Prefer pre-mission or paused/system-panel calls over live-combat calls.
 
 ## First Demo Scope
 
@@ -43,3 +52,13 @@ The current startup path uses `-mc2MinimaxCommanderSteps <n>` for smoke testing.
 5. Advances the local simulation.
 
 The next production pass should make the model call asynchronous and let the current directive remain active until a new directive arrives.
+
+## Near-Term Stop Line
+
+Do not expand AI integration beyond:
+
+1. Opening plan draft.
+2. Small capability window.
+3. Optional high-level directive refresh.
+
+Everything below this line belongs to local game development until the playable loop is strong.
