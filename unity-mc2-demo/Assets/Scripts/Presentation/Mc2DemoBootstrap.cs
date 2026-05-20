@@ -2184,6 +2184,11 @@ namespace MC2Demo.Presentation
                 new Rect(x, y, width, 20f),
                 "Objectives " + completedObjectives + "/" + visibleObjectives + "    Targets " + liveStructures + "/" + mission.Structures.Count);
             y += 24f;
+            MissionResultSummary summary = mission.ResultSummary;
+            GUI.Label(
+                new Rect(x, y, width, 20f),
+                "Bounty " + FormatTokens(summary.completedRewardResourcePoints) + " / " + FormatTokens(summary.visibleRewardResourcePoints));
+            y += 22f;
 
             foreach (ObjectiveState objective in mission.Objectives)
             {
@@ -2451,18 +2456,18 @@ namespace MC2Demo.Presentation
                 return;
             }
 
-            Rect panel = new((Screen.width - 340f) * 0.5f, 72f, 340f, 222f);
+            Rect panel = new((Screen.width - 380f) * 0.5f, 72f, 380f, 264f);
             GUI.Box(panel, MissionResultText());
             GUI.Label(new Rect(panel.x + 18f, panel.y + 36f, panel.width - 36f, 42f), mission.ResultReason);
             DrawMissionResultSummary(panel, mission.ResultSummary);
 
-            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 162f, 142f, 30f), "Restart"))
+            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 204f, 162f, 30f), "Restart"))
             {
                 Time.timeScale = 1f;
                 SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
             }
 
-            if (GUI.Button(new Rect(panel.x + 180f, panel.y + 162f, 142f, 30f), "End Demo"))
+            if (GUI.Button(new Rect(panel.x + 200f, panel.y + 204f, 162f, 30f), "End Demo"))
             {
                 Application.Quit(0);
             }
@@ -2488,6 +2493,19 @@ namespace MC2Demo.Presentation
                 + "    Player damage " + summary.damagedPlayerUnits);
             y += 22f;
 
+            GUI.Label(
+                new Rect(panel.x + 18f, y, panel.width - 36f, 20f),
+                "Token " + SignedTokens(summary.completedRewardResourcePoints)
+                + "    Repair " + SignedTokens(-summary.repairCostResourcePoints)
+                + "    Net " + SignedTokens(summary.netResourcePoints));
+            y += 22f;
+
+            GUI.Label(
+                new Rect(panel.x + 18f, y, panel.width - 36f, 20f),
+                "Salvage claims " + summary.salvageClaimCount
+                + "    Total bounty " + FormatTokens(summary.visibleRewardResourcePoints));
+            y += 22f;
+
             string completed = FirstSummaryItem(summary.completedVisibleObjectiveTitles);
             if (!string.IsNullOrEmpty(completed))
             {
@@ -2505,6 +2523,16 @@ namespace MC2Demo.Presentation
         private static string FirstSummaryItem(string[] values)
         {
             return values == null || values.Length == 0 ? "" : values[0];
+        }
+
+        private static string FormatTokens(int value)
+        {
+            return value.ToString("N0", CultureInfo.InvariantCulture);
+        }
+
+        private static string SignedTokens(int value)
+        {
+            return (value >= 0 ? "+" : "") + FormatTokens(value);
         }
 
         private string MissionResultText()

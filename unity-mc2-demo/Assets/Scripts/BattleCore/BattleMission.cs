@@ -735,6 +735,9 @@ namespace MC2Demo.BattleCore
             List<string> destroyedStructures = new();
             List<string> completedObjectives = new();
             int visibleObjectives = 0;
+            int completedRewardResourcePoints = 0;
+            int visibleRewardResourcePoints = 0;
+            int repairCostResourcePoints = 0;
 
             foreach (UnitState unit in units)
             {
@@ -745,6 +748,7 @@ namespace MC2Demo.BattleCore
                         damagedPlayers.Add(UnitSummaryLabel(unit));
                     }
 
+                    repairCostResourcePoints += EstimateRepairCostResourcePoints(unit);
                     continue;
                 }
 
@@ -770,9 +774,12 @@ namespace MC2Demo.BattleCore
                 }
 
                 visibleObjectives++;
+                int reward = Math.Max(0, objective.Definition.rewardResourcePoints);
+                visibleRewardResourcePoints += reward;
                 if (objective.IsComplete)
                 {
                     completedObjectives.Add(objective.Definition.title);
+                    completedRewardResourcePoints += reward;
                 }
             }
 
@@ -783,11 +790,33 @@ namespace MC2Demo.BattleCore
                 destroyedStructures = destroyedStructures.Count,
                 completedVisibleObjectives = completedObjectives.Count,
                 visibleObjectives = visibleObjectives,
+                completedRewardResourcePoints = completedRewardResourcePoints,
+                visibleRewardResourcePoints = visibleRewardResourcePoints,
+                repairCostResourcePoints = repairCostResourcePoints,
+                netResourcePoints = completedRewardResourcePoints - repairCostResourcePoints,
+                salvageClaimCount = destroyedEnemies.Count,
                 destroyedEnemyUnitLabels = destroyedEnemies.ToArray(),
                 damagedPlayerUnitLabels = damagedPlayers.ToArray(),
                 destroyedStructureLabels = destroyedStructures.ToArray(),
                 completedVisibleObjectiveTitles = completedObjectives.ToArray()
             };
+        }
+
+        private static int EstimateRepairCostResourcePoints(UnitState unit)
+        {
+            if (unit == null)
+            {
+                return 0;
+            }
+
+            float missingStructure = Mathf.Max(0f, unit.Profile.MaxStructure - unit.CurrentStructure);
+            float missingSectionStructure = 0f;
+            foreach (DamageSection section in unit.Sections)
+            {
+                missingSectionStructure += Mathf.Max(0f, section.MaxHitPoints - section.HitPoints);
+            }
+
+            return Mathf.CeilToInt((missingStructure * 30f) + (missingSectionStructure * 12f));
         }
 
         private static bool IsPlayerUnitDamaged(UnitState unit)
@@ -1170,6 +1199,11 @@ namespace MC2Demo.BattleCore
         public int destroyedStructures;
         public int completedVisibleObjectives;
         public int visibleObjectives;
+        public int completedRewardResourcePoints;
+        public int visibleRewardResourcePoints;
+        public int repairCostResourcePoints;
+        public int netResourcePoints;
+        public int salvageClaimCount;
         public string[] destroyedEnemyUnitLabels;
         public string[] damagedPlayerUnitLabels;
         public string[] destroyedStructureLabels;

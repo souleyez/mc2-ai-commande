@@ -34,6 +34,7 @@ Current demo behavior:
 - supports one-shot Jet orders with terrain-aware landing rejection
 - provides a toggleable current-objective mission map and a pause/restart/end system panel
 - resolves mission victory or defeat through BattleCore result state
+- estimates contract bounty, repair cost, net token result, and salvage claims in mission debriefs
 - auto-acquires hostile units in weapon range
 - resolves temporary weapon cooldown, damage, cockpit/torso/arms/legs sections,
   and destruction

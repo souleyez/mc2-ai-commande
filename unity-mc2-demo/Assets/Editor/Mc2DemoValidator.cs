@@ -1294,9 +1294,13 @@ namespace MC2Demo.EditorTools
             if (victorySummary.completedVisibleObjectives != 1
                 || victorySummary.visibleObjectives != 1
                 || victorySummary.damagedPlayerUnits != 0
-                || victorySummary.destroyedEnemyUnits != 0)
+                || victorySummary.destroyedEnemyUnits != 0
+                || victorySummary.completedRewardResourcePoints != 1000
+                || victorySummary.visibleRewardResourcePoints != 1000
+                || victorySummary.repairCostResourcePoints != 0
+                || victorySummary.netResourcePoints != 1000)
             {
-                throw new InvalidDataException("Expected victory result summary to count completed visible objectives without combat losses.");
+                throw new InvalidDataException("Expected victory result summary to count objectives, bounty, and repair.");
             }
 
             CommanderObservation victoryObservation = new CommanderObservationPort(instantVictory).Observe();
@@ -1319,9 +1323,14 @@ namespace MC2Demo.EditorTools
             }
 
             MissionResultSummary defeatSummary = defeat.ResultSummary;
-            if (defeatSummary.damagedPlayerUnits != 1 || defeatSummary.completedVisibleObjectives != 0)
+            if (defeatSummary.damagedPlayerUnits != 1
+                || defeatSummary.completedVisibleObjectives != 0
+                || defeatSummary.completedRewardResourcePoints != 0
+                || defeatSummary.visibleRewardResourcePoints != 1000
+                || defeatSummary.repairCostResourcePoints <= 0
+                || defeatSummary.netResourcePoints >= 0)
             {
-                throw new InvalidDataException("Expected defeat result summary to count the destroyed player unit.");
+                throw new InvalidDataException("Expected defeat result summary to count the destroyed player unit, unpaid bounty, and repair debt.");
             }
 
             CommanderObservation defeatObservation = new CommanderObservationPort(defeat).Observe();
@@ -1487,6 +1496,7 @@ namespace MC2Demo.EditorTools
                         id = "primary-1",
                         index = 0,
                         hidden = false,
+                        rewardResourcePoints = 1000,
                         conditions = new[]
                         {
                             new ObjectiveCondition
