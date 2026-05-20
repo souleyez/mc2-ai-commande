@@ -280,8 +280,9 @@ namespace MC2Demo.BattleCore
                     continue;
                 }
 
-                UnitState target = AcquireTarget(unit);
-                StructureState structureTarget = target == null ? AcquireStructureTarget(unit) : null;
+                StructureState assignedStructureTarget = AcquireAssignedStructureTarget(unit);
+                UnitState target = assignedStructureTarget == null ? AcquireTarget(unit) : null;
+                StructureState structureTarget = assignedStructureTarget ?? (target == null ? AcquireStructureTarget(unit) : null);
                 unit.SetCurrentTargetId(target == null ? structureTarget?.Id : target.Id);
                 if (unit.CanFireAt(target))
                 {
@@ -331,6 +332,16 @@ namespace MC2Demo.BattleCore
             }
 
             return bestTarget;
+        }
+
+        private StructureState AcquireAssignedStructureTarget(UnitState attacker)
+        {
+            if (!attacker.IsActive || attacker.IsDestroyed || string.IsNullOrEmpty(attacker.AttackTargetId))
+            {
+                return null;
+            }
+
+            return FindAttackableStructure(attacker.AttackTargetId, playerTeam: attacker.IsPlayerUnit);
         }
 
         private StructureState AcquireStructureTarget(UnitState attacker)

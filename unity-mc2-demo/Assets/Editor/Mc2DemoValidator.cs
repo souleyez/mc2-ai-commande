@@ -112,6 +112,7 @@ namespace MC2Demo.EditorTools
             ValidateCommanderCommandFilePlayback();
             ValidateCommanderObservationPort();
             ValidateMissionActivation(BattleMission.FromJson(contractJson, combatProfiles));
+            ValidateAirfieldToHangarObjectiveFlow(BattleMission.FromJson(contractJson, combatProfiles));
             ValidateScriptBridgeSignals(BattleMission.FromJson(contractJson, combatProfiles));
             ValidateNavMarkerPatrolOrders();
             ValidateJumpCommand(BattleMission.FromJson(contractJson, combatProfiles));
@@ -258,6 +259,77 @@ namespace MC2Demo.EditorTools
             }
         }
 
+        private static void ValidateAirfieldToHangarObjectiveFlow(BattleMission mission)
+        {
+            UnitState player = FirstPlayerUnit(mission);
+            if (player == null)
+            {
+                throw new InvalidDataException("Airfield to hangar flow requires one player unit.");
+            }
+
+            ObjectiveState airfield = FindObjective(mission, 0);
+            ObjectiveState hangarObjective = FindObjective(mission, 1);
+            ObjectiveState patrolObjective = FindObjective(mission, 2);
+            StructureState hangar = mission.FindStructure("structure-1-0");
+            if (airfield == null || hangarObjective == null || patrolObjective == null || hangar == null)
+            {
+                throw new InvalidDataException("Airfield to hangar flow requires objective 0, 1, 2, and structure-1-0.");
+            }
+
+            if (!airfield.IsActive || airfield.IsComplete || hangarObjective.IsActive || patrolObjective.IsActive)
+            {
+                throw new InvalidDataException("Expected only airfield objective to be active at mission start.");
+            }
+
+            MovePlayerForceIntoObjectiveArea(mission, 0);
+            if (!airfield.IsComplete || !hangarObjective.IsActive || patrolObjective.IsActive)
+            {
+                throw new InvalidDataException("Expected airfield completion to unlock hangar objective only.");
+            }
+
+            if (!HasActiveBrainPrefix(mission, "mc2_01_Pat1"))
+            {
+                throw new InvalidDataException("Expected airfield completion to activate the first patrol group.");
+            }
+
+            if (!hangar.IsTargetable || hangar.IsDestroyed || hangar.Structure <= 0f)
+            {
+                throw new InvalidDataException("Expected hangar to remain targetable before structure attack.");
+            }
+
+            int accepted = mission.IssueSquadAttackStructure(hangar.Id);
+            if (accepted != 3)
+            {
+                throw new InvalidDataException("Expected full player squad to accept hangar attack order, got " + accepted);
+            }
+
+            for (int tick = 0; tick < 240 && !hangar.IsDestroyed && mission.Result == MissionResultState.InProgress; tick++)
+            {
+                mission.Tick(1f);
+            }
+
+            if (!hangar.IsDestroyed)
+            {
+                throw new InvalidDataException(
+                    "Expected hangar to be destroyed during mc2_01 flow. Remaining="
+                    + hangar.CurrentStructure
+                    + " missionTime="
+                    + mission.MissionTimeSeconds
+                    + " result="
+                    + mission.Result);
+            }
+
+            if (!hangarObjective.IsComplete || !patrolObjective.IsActive)
+            {
+                throw new InvalidDataException("Expected hangar destruction to complete objective 1 and activate objective 2.");
+            }
+
+            if (mission.Result != MissionResultState.InProgress)
+            {
+                throw new InvalidDataException("Expected mission to continue after hangar destruction, got " + mission.Result);
+            }
+        }
+
         private static void ActivateAirfieldPatrolsIfNeeded(BattleMission mission, UnitState player, UnitState enemy)
         {
             if (enemy.IsActive)
@@ -326,6 +398,54 @@ namespace MC2Demo.EditorTools
             throw new InvalidDataException("Expected player to reach objective " + objectiveIndex + " area.");
         }
 
+        private static void MovePlayerForceIntoObjectiveArea(BattleMission mission, int objectiveIndex)
+        {
+            TargetArea area = FirstObjectiveArea(mission, objectiveIndex);
+            if (area == null)
+            {
+                throw new InvalidDataException("Expected objective " + objectiveIndex + " to have a target area.");
+            }
+
+            Vector2 center = new(area.x, area.y);
+            int accepted = mission.IssueSquadMove(center);
+            if (accepted < 1)
+            {
+                throw new InvalidDataException("Expected player force to accept move order for objective " + objectiveIndex + ".");
+            }
+
+            for (int tick = 0; tick < 120; tick++)
+            {
+                mission.Tick(1f);
+                if (AllLivePlayerUnitsInArea(mission, center, area.radius))
+                {
+                    return;
+                }
+            }
+
+            throw new InvalidDataException("Expected player force to reach objective " + objectiveIndex + " area.");
+        }
+
+        private static bool AllLivePlayerUnitsInArea(BattleMission mission, Vector2 center, float radius)
+        {
+            bool sawLivePlayer = false;
+            float radiusSqr = radius * radius;
+            foreach (UnitState unit in mission.PlayerUnits())
+            {
+                if (unit.IsDestroyed)
+                {
+                    continue;
+                }
+
+                sawLivePlayer = true;
+                if ((unit.MissionPosition - center).sqrMagnitude > radiusSqr)
+                {
+                    return false;
+                }
+            }
+
+            return sawLivePlayer;
+        }
+
         private static TargetArea FirstObjectiveArea(BattleMission mission, int objectiveIndex)
         {
             foreach (ObjectiveState objective in mission.Objectives)
@@ -345,6 +465,36 @@ namespace MC2Demo.EditorTools
             }
 
             return null;
+        }
+
+        private static ObjectiveState FindObjective(BattleMission mission, int objectiveIndex)
+        {
+            foreach (ObjectiveState objective in mission.Objectives)
+            {
+                if (objective.Definition.index == objectiveIndex)
+                {
+                    return objective;
+                }
+            }
+
+            return null;
+        }
+
+        private static bool HasActiveBrainPrefix(BattleMission mission, string brainPrefix)
+        {
+            foreach (UnitState unit in mission.Units)
+            {
+                if (!unit.IsPlayerUnit
+                    && unit.IsActive
+                    && !unit.IsDestroyed
+                    && !string.IsNullOrEmpty(unit.Brain)
+                    && unit.Brain.StartsWith(brainPrefix, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private static bool AnyEnemyDamaged(BattleMission mission)
