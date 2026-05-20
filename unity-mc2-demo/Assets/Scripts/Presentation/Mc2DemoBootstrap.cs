@@ -475,7 +475,22 @@ namespace MC2Demo.Presentation
 
         private static float ImpactScale(string weaponType)
         {
-            return ContainsWeaponType(weaponType, "Missile") ? 1.35f : 1f;
+            if (ContainsWeaponType(weaponType, "Missile"))
+            {
+                return 1.45f;
+            }
+
+            if (ContainsWeaponType(weaponType, "Ballistic"))
+            {
+                return 0.78f;
+            }
+
+            if (ContainsWeaponType(weaponType, "Energy"))
+            {
+                return 0.86f;
+            }
+
+            return 1f;
         }
 
         private static bool ContainsWeaponType(string weaponType, string value)
@@ -488,27 +503,90 @@ namespace MC2Demo.Presentation
         {
             if (ContainsWeaponType(combatEvent.WeaponType, "Missile"))
             {
-                Vector3 lift = Vector3.up * 0.35f;
-                CreateBeam(from + lift, to + lift * 0.35f, color, 0.28f, 0.07f);
-                CreateImpact(to + Vector3.up * 0.08f, new Color(0.12f, 0.12f, 0.12f, 0.42f), false, 0.65f);
+                CreateMissileTrace(from, to, color);
                 return;
             }
 
             if (ContainsWeaponType(combatEvent.WeaponType, "Ballistic"))
             {
-                Vector3 side = Vector3.Cross((to - from).normalized, Vector3.up) * 0.08f;
-                CreateBeam(from + side, to + side, color, 0.09f, 0.024f);
-                CreateBeam(from - side, to - side, color, 0.09f, 0.018f);
+                CreateBallisticTrace(from, to, color);
                 return;
             }
 
             if (ContainsWeaponType(combatEvent.WeaponType, "Energy"))
             {
-                CreateBeam(from, to, color, 0.20f, 0.034f);
+                CreateEnergyTrace(from, to, color);
                 return;
             }
 
             CreateBeam(from, to, color, 0.16f, 0.045f);
+        }
+
+        private void CreateMissileTrace(Vector3 from, Vector3 to, Color color)
+        {
+            Vector3 direction = to - from;
+            float distance = direction.magnitude;
+            if (distance <= 0.01f)
+            {
+                return;
+            }
+
+            Vector3 side = LateralVector(direction) * 0.12f;
+            float arcHeight = Mathf.Clamp(distance * 0.16f, 0.45f, 2.2f);
+            for (int index = 0; index < 3; index++)
+            {
+                float startT = 0.10f + index * 0.21f;
+                float endT = Mathf.Min(0.95f, startT + 0.18f);
+                Vector3 offset = side * (index - 1);
+                Vector3 segmentStart = ArcPoint(from, to, startT, arcHeight) + offset;
+                Vector3 segmentEnd = ArcPoint(from, to, endT, arcHeight) + offset * 0.45f;
+                CreateBeam(segmentStart, segmentEnd, color, 0.34f, 0.055f);
+                CreateImpact(segmentStart - direction.normalized * 0.08f, new Color(0.20f, 0.20f, 0.18f, 0.34f), false, 0.28f + index * 0.08f);
+            }
+
+            CreateImpact(to + Vector3.up * 0.10f, new Color(0.15f, 0.14f, 0.12f, 0.48f), false, 0.80f);
+        }
+
+        private void CreateBallisticTrace(Vector3 from, Vector3 to, Color color)
+        {
+            Vector3 direction = to - from;
+            float distance = direction.magnitude;
+            if (distance <= 0.01f)
+            {
+                return;
+            }
+
+            Vector3 normalized = direction.normalized;
+            Vector3 side = LateralVector(direction) * 0.07f;
+            Vector3 tracerStart = Vector3.Lerp(from, to, 0.58f);
+            Vector3 tracerEnd = Vector3.Lerp(from, to, 0.96f);
+            CreateBeam(tracerStart, tracerEnd, color, 0.075f, 0.018f);
+            CreateBeam(from + side, from + normalized * Mathf.Min(distance * 0.18f, 1.25f) + side * 0.35f, new Color(1f, 0.64f, 0.22f, 0.72f), 0.08f, 0.026f);
+
+            Vector3 sparkBase = to - normalized * 0.22f;
+            CreateBeam(sparkBase, to + side * 0.80f + Vector3.up * 0.12f, new Color(1f, 0.86f, 0.36f, 0.68f), 0.07f, 0.012f);
+            CreateBeam(sparkBase, to - side * 0.68f + Vector3.up * 0.07f, new Color(1f, 0.70f, 0.20f, 0.56f), 0.06f, 0.010f);
+        }
+
+        private void CreateEnergyTrace(Vector3 from, Vector3 to, Color color)
+        {
+            Color halo = new(color.r, color.g, color.b, 0.26f);
+            Color core = new(0.72f, 1f, 1f, 0.92f);
+            CreateBeam(from, to, halo, 0.16f, 0.070f);
+            CreateBeam(from, to, color, 0.13f, 0.038f);
+            CreateBeam(from + Vector3.up * 0.04f, to + Vector3.up * 0.04f, core, 0.08f, 0.016f);
+            CreateImpact(to + Vector3.up * 0.05f, new Color(0.50f, 0.95f, 1f, 0.50f), false, 0.48f);
+        }
+
+        private static Vector3 ArcPoint(Vector3 from, Vector3 to, float t, float arcHeight)
+        {
+            return Vector3.Lerp(from, to, t) + Vector3.up * Mathf.Sin(t * Mathf.PI) * arcHeight;
+        }
+
+        private static Vector3 LateralVector(Vector3 direction)
+        {
+            Vector3 side = Vector3.Cross(direction.normalized, Vector3.up);
+            return side.sqrMagnitude <= 0.0001f ? Vector3.right : side.normalized;
         }
 
         private void CreateBeam(Vector3 from, Vector3 to, Color color, float duration, float radius)
