@@ -68,6 +68,15 @@ Run the player smoke test:
   -logFile "$PWD\..\analysis-output\unity-player-smoke.log"
 ```
 
+Run the player with a startup commander command:
+
+```powershell
+& .\Builds\Windows\MC2UnityDemo.exe `
+  -batchmode -nographics -mc2SmokeTest `
+  -mc2Command "squad move 3136 -789" `
+  -logFile "$PWD\..\analysis-output\unity-player-command.log"
+```
+
 Interactive build output:
 
 ```text

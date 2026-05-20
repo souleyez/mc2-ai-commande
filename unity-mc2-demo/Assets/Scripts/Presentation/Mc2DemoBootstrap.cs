@@ -48,6 +48,7 @@ namespace MC2Demo.Presentation
         {
             LoadMission();
             BuildWorld();
+            RunStartupCommanderCommands();
             ScheduleSmokeTestQuitIfRequested();
         }
 
@@ -160,6 +161,41 @@ namespace MC2Demo.Presentation
                     return;
                 }
             }
+        }
+
+        private void RunStartupCommanderCommands()
+        {
+            if (commandPort == null)
+            {
+                return;
+            }
+
+            string[] args = Environment.GetCommandLineArgs();
+            for (int index = 0; index < args.Length; index++)
+            {
+                if (args[index] != "-mc2Command")
+                {
+                    continue;
+                }
+
+                if (index + 1 >= args.Length)
+                {
+                    LogStartupCommanderCommand("", CommanderCommandResult.Blocked("Missing command text after -mc2Command."));
+                    continue;
+                }
+
+                string commandLine = args[++index];
+                LogStartupCommanderCommand(commandLine, commandPort.IssueText(commandLine));
+            }
+        }
+
+        private void LogStartupCommanderCommand(string commandLine, CommanderCommandResult result)
+        {
+            string line = "CLI command: " + (string.IsNullOrWhiteSpace(commandLine) ? "<empty>" : commandLine);
+            line += result.Accepted ? " accepted=" + result.AcceptedCount : " blocked";
+            AddCombatLogLine(line);
+            statusText = result.Message;
+            Debug.Log("MC2 commander command: " + line + " message=" + result.Message);
         }
 
         private void QuitSmokeTest()
