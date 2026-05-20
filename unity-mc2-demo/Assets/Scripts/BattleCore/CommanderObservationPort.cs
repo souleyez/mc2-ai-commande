@@ -24,6 +24,8 @@ namespace MC2Demo.BattleCore
                 missionTimeSeconds = mission.MissionTimeSeconds,
                 result = mission.Result.ToString(),
                 resultReason = mission.ResultReason,
+                missionEnded = mission.Result != MissionResultState.InProgress,
+                resultSummary = mission.ResultSummary,
                 playerUnits = PlayerUnitObservations(),
                 activeHostiles = ActiveHostileObservations(),
                 targetableStructures = StructureObservations(),
@@ -326,6 +328,8 @@ namespace MC2Demo.BattleCore
         public float missionTimeSeconds;
         public string result;
         public string resultReason;
+        public bool missionEnded;
+        public MissionResultSummary resultSummary;
         public CommanderUnitObservation[] playerUnits;
         public CommanderUnitObservation[] activeHostiles;
         public CommanderStructureObservation[] targetableStructures;

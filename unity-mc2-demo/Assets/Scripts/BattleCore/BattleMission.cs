@@ -15,6 +15,7 @@ namespace MC2Demo.BattleCore
         public IReadOnlyList<ObjectiveEvent> RecentObjectiveEvents => recentObjectiveEvents;
         public MissionResultState Result { get; private set; } = MissionResultState.InProgress;
         public string ResultReason { get; private set; } = "";
+        public MissionResultSummary ResultSummary => BuildResultSummary();
         public float MissionTimeSeconds { get; private set; }
 
         private readonly List<UnitState> units = new();
@@ -727,6 +728,96 @@ namespace MC2Demo.BattleCore
             return sawPlayerUnit;
         }
 
+        private MissionResultSummary BuildResultSummary()
+        {
+            List<string> destroyedEnemies = new();
+            List<string> damagedPlayers = new();
+            List<string> destroyedStructures = new();
+            List<string> completedObjectives = new();
+            int visibleObjectives = 0;
+
+            foreach (UnitState unit in units)
+            {
+                if (unit.IsPlayerUnit)
+                {
+                    if (IsPlayerUnitDamaged(unit))
+                    {
+                        damagedPlayers.Add(UnitSummaryLabel(unit));
+                    }
+
+                    continue;
+                }
+
+                if (unit.IsDestroyed)
+                {
+                    destroyedEnemies.Add(UnitSummaryLabel(unit));
+                }
+            }
+
+            foreach (StructureState structure in structures)
+            {
+                if (structure.IsDestroyed)
+                {
+                    destroyedStructures.Add(StructureSummaryLabel(structure));
+                }
+            }
+
+            foreach (ObjectiveState objective in objectives)
+            {
+                if (objective.Definition.hidden)
+                {
+                    continue;
+                }
+
+                visibleObjectives++;
+                if (objective.IsComplete)
+                {
+                    completedObjectives.Add(objective.Definition.title);
+                }
+            }
+
+            return new MissionResultSummary
+            {
+                destroyedEnemyUnits = destroyedEnemies.Count,
+                damagedPlayerUnits = damagedPlayers.Count,
+                destroyedStructures = destroyedStructures.Count,
+                completedVisibleObjectives = completedObjectives.Count,
+                visibleObjectives = visibleObjectives,
+                destroyedEnemyUnitLabels = destroyedEnemies.ToArray(),
+                damagedPlayerUnitLabels = damagedPlayers.ToArray(),
+                destroyedStructureLabels = destroyedStructures.ToArray(),
+                completedVisibleObjectiveTitles = completedObjectives.ToArray()
+            };
+        }
+
+        private static bool IsPlayerUnitDamaged(UnitState unit)
+        {
+            if (unit.IsDestroyed || unit.Structure < 0.995f)
+            {
+                return true;
+            }
+
+            foreach (DamageSection section in unit.Sections)
+            {
+                if (section.Ratio < 0.995f)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static string UnitSummaryLabel(UnitState unit)
+        {
+            return unit.Id + " " + unit.UnitType;
+        }
+
+        private static string StructureSummaryLabel(StructureState structure)
+        {
+            return structure.Id + " " + structure.ObjectType;
+        }
+
         private bool AreConditionsMet(ObjectiveCondition[] conditions)
         {
             if (conditions == null || conditions.Length == 0)
@@ -1069,6 +1160,20 @@ namespace MC2Demo.BattleCore
     {
         Activated,
         Completed
+    }
+
+    [Serializable]
+    public sealed class MissionResultSummary
+    {
+        public int destroyedEnemyUnits;
+        public int damagedPlayerUnits;
+        public int destroyedStructures;
+        public int completedVisibleObjectives;
+        public int visibleObjectives;
+        public string[] destroyedEnemyUnitLabels;
+        public string[] damagedPlayerUnitLabels;
+        public string[] destroyedStructureLabels;
+        public string[] completedVisibleObjectiveTitles;
     }
 
     public enum MissionResultState

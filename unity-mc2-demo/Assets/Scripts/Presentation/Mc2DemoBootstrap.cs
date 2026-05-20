@@ -2377,20 +2377,60 @@ namespace MC2Demo.Presentation
                 return;
             }
 
-            Rect panel = new((Screen.width - 320f) * 0.5f, 72f, 320f, 148f);
+            Rect panel = new((Screen.width - 340f) * 0.5f, 72f, 340f, 222f);
             GUI.Box(panel, MissionResultText());
             GUI.Label(new Rect(panel.x + 18f, panel.y + 36f, panel.width - 36f, 42f), mission.ResultReason);
+            DrawMissionResultSummary(panel, mission.ResultSummary);
 
-            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 88f, 132f, 30f), "Restart"))
+            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 162f, 142f, 30f), "Restart"))
             {
                 Time.timeScale = 1f;
                 SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
             }
 
-            if (GUI.Button(new Rect(panel.x + 170f, panel.y + 88f, 132f, 30f), "End Demo"))
+            if (GUI.Button(new Rect(panel.x + 180f, panel.y + 162f, 142f, 30f), "End Demo"))
             {
                 Application.Quit(0);
             }
+        }
+
+        private void DrawMissionResultSummary(Rect panel, MissionResultSummary summary)
+        {
+            if (summary == null)
+            {
+                return;
+            }
+
+            float y = panel.y + 82f;
+            GUI.Label(
+                new Rect(panel.x + 18f, y, panel.width - 36f, 20f),
+                "Objectives " + summary.completedVisibleObjectives + "/" + summary.visibleObjectives
+                + "    Structures " + summary.destroyedStructures);
+            y += 22f;
+
+            GUI.Label(
+                new Rect(panel.x + 18f, y, panel.width - 36f, 20f),
+                "Enemy kills " + summary.destroyedEnemyUnits
+                + "    Player damage " + summary.damagedPlayerUnits);
+            y += 22f;
+
+            string completed = FirstSummaryItem(summary.completedVisibleObjectiveTitles);
+            if (!string.IsNullOrEmpty(completed))
+            {
+                GUI.Label(new Rect(panel.x + 18f, y, panel.width - 36f, 20f), "Done: " + TruncateText(completed, 42));
+                y += 20f;
+            }
+
+            string damaged = FirstSummaryItem(summary.damagedPlayerUnitLabels);
+            if (!string.IsNullOrEmpty(damaged))
+            {
+                GUI.Label(new Rect(panel.x + 18f, y, panel.width - 36f, 20f), "Damage: " + TruncateText(damaged, 40));
+            }
+        }
+
+        private static string FirstSummaryItem(string[] values)
+        {
+            return values == null || values.Length == 0 ? "" : values[0];
         }
 
         private string MissionResultText()

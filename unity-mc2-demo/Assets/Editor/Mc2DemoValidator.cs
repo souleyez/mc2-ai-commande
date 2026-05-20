@@ -1073,6 +1073,11 @@ namespace MC2Demo.EditorTools
                 throw new InvalidDataException("Expected commander observation to include mission identity and result state.");
             }
 
+            if (observation.missionEnded || observation.resultSummary == null)
+            {
+                throw new InvalidDataException("Expected in-progress commander observation to include a live result summary without marking mission ended.");
+            }
+
             if (observation.reportIndex != 1 || Math.Abs(observation.missionTimeSeconds) > 0.001f)
             {
                 throw new InvalidDataException("Expected first commander observation to include report index and zero mission time.");
@@ -1122,6 +1127,23 @@ namespace MC2Demo.EditorTools
                 throw new InvalidDataException("Expected minimal completed mission to resolve victory, got " + instantVictory.Result);
             }
 
+            MissionResultSummary victorySummary = instantVictory.ResultSummary;
+            if (victorySummary.completedVisibleObjectives != 1
+                || victorySummary.visibleObjectives != 1
+                || victorySummary.damagedPlayerUnits != 0
+                || victorySummary.destroyedEnemyUnits != 0)
+            {
+                throw new InvalidDataException("Expected victory result summary to count completed visible objectives without combat losses.");
+            }
+
+            CommanderObservation victoryObservation = new CommanderObservationPort(instantVictory).Observe();
+            if (!victoryObservation.missionEnded
+                || victoryObservation.resultSummary == null
+                || victoryObservation.resultSummary.completedVisibleObjectives != 1)
+            {
+                throw new InvalidDataException("Expected ended commander observation to include victory result summary.");
+            }
+
             BattleMission defeat = new(MakeResultContract(completeOnStart: false), resultProfiles);
             for (int tick = 0; tick < 10 && defeat.Result == MissionResultState.InProgress; tick++)
             {
@@ -1131,6 +1153,20 @@ namespace MC2Demo.EditorTools
             if (defeat.Result != MissionResultState.Defeat)
             {
                 throw new InvalidDataException("Expected minimal combat mission to resolve defeat, got " + defeat.Result);
+            }
+
+            MissionResultSummary defeatSummary = defeat.ResultSummary;
+            if (defeatSummary.damagedPlayerUnits != 1 || defeatSummary.completedVisibleObjectives != 0)
+            {
+                throw new InvalidDataException("Expected defeat result summary to count the destroyed player unit.");
+            }
+
+            CommanderObservation defeatObservation = new CommanderObservationPort(defeat).Observe();
+            if (!defeatObservation.missionEnded
+                || defeatObservation.resultSummary == null
+                || defeatObservation.resultSummary.damagedPlayerUnitLabels.Length != 1)
+            {
+                throw new InvalidDataException("Expected ended commander observation to include defeat result summary.");
             }
         }
 
