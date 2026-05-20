@@ -11,7 +11,7 @@ namespace MC2Demo.BattleCore
     {
         private const string DefaultBaseUrl = "https://api.minimaxi.com/v1";
         private const string DefaultModel = "MiniMax-M2.5";
-        private const int DefaultTimeoutMilliseconds = 12000;
+        private const int DefaultTimeoutMilliseconds = 45000;
 
         private readonly MiniMaxCommanderConfig config;
 
@@ -104,7 +104,7 @@ namespace MC2Demo.BattleCore
             {
                 model = config.Model,
                 temperature = 0.2f,
-                max_completion_tokens = 80,
+                max_completion_tokens = 512,
                 stream = false,
                 messages = new[]
                 {
