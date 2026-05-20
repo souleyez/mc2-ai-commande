@@ -6,6 +6,11 @@ namespace MC2Demo.BattleCore
 {
     public sealed class RuleCommander
     {
+        public const string DirectiveAssaultObjective = "assault-objective";
+        public const string DirectiveEngageHostiles = "engage-hostiles";
+        public const string DirectiveRegroup = "regroup";
+        public const string DirectiveHold = "hold";
+
         public string ChooseCommand(CommanderObservation observation)
         {
             if (observation == null || observation.missionEnded)
@@ -35,6 +40,45 @@ namespace MC2Demo.BattleCore
 
             CommanderObjectiveObservation objective = FirstCurrentObjective(observation);
             return objective == null ? "" : MoveCommand(objective.markerX, objective.markerY);
+        }
+
+        public string ChooseCommandForDirective(CommanderObservation observation, string directive)
+        {
+            if (observation == null || observation.missionEnded)
+            {
+                return "";
+            }
+
+            switch (NormalizeDirective(directive))
+            {
+                case DirectiveHold:
+                    return "";
+                case DirectiveRegroup:
+                    return RegroupCommand(observation);
+                case DirectiveEngageHostiles:
+                    CommanderUnitObservation hostile = ClosestHostileInRange(observation);
+                    return hostile == null ? ChooseCommand(observation) : "squad attack unit " + hostile.id;
+                case DirectiveAssaultObjective:
+                default:
+                    return ChooseCommand(observation);
+            }
+        }
+
+        public static string NormalizeDirective(string directive)
+        {
+            if (string.IsNullOrWhiteSpace(directive))
+            {
+                return DirectiveAssaultObjective;
+            }
+
+            string normalized = directive.Trim().ToLowerInvariant().Replace('_', '-').Replace(' ', '-');
+            return normalized switch
+            {
+                DirectiveEngageHostiles => DirectiveEngageHostiles,
+                DirectiveRegroup => DirectiveRegroup,
+                DirectiveHold => DirectiveHold,
+                _ => DirectiveAssaultObjective
+            };
         }
 
         private static CommanderUnitObservation ClosestHostileInRange(CommanderObservation observation)
@@ -209,6 +253,39 @@ namespace MC2Demo.BattleCore
             }
 
             return bestDistanceSqr;
+        }
+
+        private static string RegroupCommand(CommanderObservation observation)
+        {
+            CommanderUnitObservation[] players = observation.playerUnits ?? Array.Empty<CommanderUnitObservation>();
+            for (int index = 0; index < players.Length; index++)
+            {
+                CommanderUnitObservation player = players[index];
+                if (player != null && player.active && !player.destroyed)
+                {
+                    return MoveCommand(player.x, player.y);
+                }
+            }
+
+            return ChooseObjectiveCommand(observation);
+        }
+
+        private static string ChooseObjectiveCommand(CommanderObservation observation)
+        {
+            CommanderStructureObservation structure = CurrentStructureTarget(observation);
+            if (structure != null)
+            {
+                return MoveCommand(structure.x, structure.y);
+            }
+
+            CommanderTargetPointObservation targetPoint = CurrentObjectiveTargetPoint(observation);
+            if (targetPoint != null)
+            {
+                return MoveCommand(targetPoint.x, targetPoint.y);
+            }
+
+            CommanderObjectiveObservation objective = FirstCurrentObjective(observation);
+            return objective == null ? "" : MoveCommand(objective.markerX, objective.markerY);
         }
 
         private static string MoveCommand(float x, float y)

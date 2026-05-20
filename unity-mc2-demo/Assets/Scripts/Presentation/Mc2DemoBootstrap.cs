@@ -392,19 +392,20 @@ namespace MC2Demo.Presentation
             for (int step = 0; step < steps && mission.Result == MissionResultState.InProgress; step++)
             {
                 CommanderObservation observation = observationPort.Observe();
-                MiniMaxCommanderResult result = commander.ChooseCommand(observation);
-                string commandLine = result.Command;
+                MiniMaxCommanderResult result = commander.ChooseDirective(observation);
+                string directive = result.Directive;
                 string source = "minimax";
 
-                if (!result.Success || string.IsNullOrWhiteSpace(commandLine))
+                if (!result.Success || string.IsNullOrWhiteSpace(directive))
                 {
-                    commandLine = fallbackCommander.ChooseCommand(observation);
+                    directive = RuleCommander.DirectiveAssaultObjective;
                     source = "rule_fallback";
                 }
 
+                string commandLine = fallbackCommander.ChooseCommandForDirective(observation, directive);
                 if (string.IsNullOrWhiteSpace(commandLine))
                 {
-                    Debug.LogWarning("MC2 MiniMax commander stopped: no command available. message=" + result.Message);
+                    Debug.LogWarning("MC2 MiniMax commander stopped: directive=" + directive + " no local command available. message=" + result.Message);
                     break;
                 }
 
@@ -412,6 +413,8 @@ namespace MC2Demo.Presentation
                     + (step + 1)
                     + " source="
                     + source
+                    + " directive="
+                    + directive
                     + " command="
                     + commandLine
                     + " message="

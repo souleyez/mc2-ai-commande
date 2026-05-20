@@ -101,7 +101,7 @@ Run the player with a startup commander command file:
   -logFile "$PWD\..\analysis-output\unity-player-command-file.log"
 ```
 
-Run the player with MiniMax driving startup commander steps:
+Run the player with MiniMax driving startup commander directives:
 
 ```powershell
 $env:MINIMAX_API_KEY = "<your-api-key>"
@@ -113,7 +113,7 @@ $env:MINIMAX_MODEL = "MiniMax-M2.5"
   -logFile "$PWD\..\analysis-output\unity-player-minimax-commander.log"
 ```
 
-The MiniMax adapter reads only environment variables, logs the selected endpoint/model without printing the key, and falls back to the local `RuleCommander` if the model response is not a legal commander command.
+The MiniMax adapter reads only environment variables, logs the selected endpoint/model without printing the key, and asks the model only for a high-level directive. The local `RuleCommander` converts that directive into concrete movement or attack commands so battle execution remains deterministic and responsive.
 
 Command files run in order and support blank lines plus `#` comments:
 

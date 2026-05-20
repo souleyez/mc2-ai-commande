@@ -20,7 +20,7 @@ namespace MC2Demo.BattleCore
             this.config = config ?? throw new ArgumentNullException(nameof(config));
         }
 
-        public MiniMaxCommanderResult ChooseCommand(CommanderObservation observation)
+        public MiniMaxCommanderResult ChooseDirective(CommanderObservation observation)
         {
             if (observation == null)
             {
@@ -40,13 +40,13 @@ namespace MC2Demo.BattleCore
                 string content = response?.choices == null || response.choices.Length == 0
                     ? ""
                     : response.choices[0]?.message?.content ?? "";
-                string command = ExtractCommandFromText(content);
-                if (string.IsNullOrWhiteSpace(command))
+                string directive = ExtractDirectiveFromText(content);
+                if (string.IsNullOrWhiteSpace(directive))
                 {
-                    return MiniMaxCommanderResult.Failed("MiniMax returned no legal commander command.");
+                    return MiniMaxCommanderResult.Failed("MiniMax returned no legal commander directive.");
                 }
 
-                return MiniMaxCommanderResult.Succeeded(command, "MiniMax command accepted.");
+                return MiniMaxCommanderResult.Succeeded(directive, "MiniMax directive accepted.");
             }
             catch (WebException exception)
             {
@@ -58,7 +58,7 @@ namespace MC2Demo.BattleCore
             }
         }
 
-        public static string ExtractCommandFromText(string content)
+        public static string ExtractDirectiveFromText(string content)
         {
             if (string.IsNullOrWhiteSpace(content))
             {
@@ -66,10 +66,10 @@ namespace MC2Demo.BattleCore
             }
 
             string normalized = StripThinking(content).Replace("\r", "\n");
-            string commandField = TryExtractJsonCommandField(normalized);
-            if (TryNormalizeCommand(commandField, out string jsonCommand))
+            string directiveField = TryExtractJsonField(normalized, "directive");
+            if (TryNormalizeDirective(directiveField, out string jsonDirective))
             {
-                return jsonCommand;
+                return jsonDirective;
             }
 
             string[] lines = normalized
@@ -77,13 +77,13 @@ namespace MC2Demo.BattleCore
                 .Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
             for (int index = 0; index < lines.Length; index++)
             {
-                if (TryNormalizeCommand(lines[index], out string command))
+                if (TryNormalizeDirective(lines[index], out string directive))
                 {
-                    return command;
+                    return directive;
                 }
             }
 
-            return TryNormalizeCommand(normalized, out string fallbackCommand) ? fallbackCommand : "";
+            return TryNormalizeDirective(normalized, out string fallbackDirective) ? fallbackDirective : "";
         }
 
         public static MiniMaxCommanderConfig ConfigFromEnvironment()
@@ -99,7 +99,6 @@ namespace MC2Demo.BattleCore
 
         private MiniMaxChatRequest MakeRequest(CommanderObservation observation)
         {
-            string observationJson = JsonUtility.ToJson(observation);
             return new MiniMaxChatRequest
             {
                 model = config.Model,
@@ -116,7 +115,7 @@ namespace MC2Demo.BattleCore
                     new MiniMaxChatMessage
                     {
                         role = "user",
-                        content = "Battle observation JSON:\n" + observationJson
+                        content = BuildStrategicSummary(observation)
                     }
                 }
             };
@@ -127,12 +126,113 @@ namespace MC2Demo.BattleCore
             return string.Join(
                 " ",
                 "You are the tactical commander for a MechCommander-style prototype.",
-                "Return exactly one command line and nothing else.",
-                "Never return markdown, JSON, commentary, or examples.",
-                "Valid commands are: squad move x y, squad jump x y, squad attack unit id, squad attack structure id, unit id move x y, unit id jump x y, unit id attack unit targetId, unit id attack structure targetId.",
-                "Use only unit ids, structure ids, target ids, and coordinates present in the observation.",
-                "Prefer attacking active hostiles in range, then attacking current objective structures, then moving toward current objective target points or markers.",
-                "If missionEnded is true, return an empty string.");
+                "You make slow, high-level decisions only; local battle code handles movement, target choice, firing, heat, and avoidance.",
+                "Return exactly one directive token and nothing else.",
+                "Valid directive tokens: assault-objective, engage-hostiles, regroup, hold.",
+                "Use assault-objective when unsure.",
+                "Never return coordinates, unit ids, markdown, JSON, commentary, or examples.",
+                "If missionEnded is true, return hold.");
+        }
+
+        private static string BuildStrategicSummary(CommanderObservation observation)
+        {
+            StringBuilder builder = new();
+            builder.Append("Battle strategic summary. missionEnded=")
+                .Append(observation.missionEnded)
+                .Append(" result=")
+                .Append(observation.result)
+                .Append(" time=")
+                .Append(Mathf.RoundToInt(observation.missionTimeSeconds))
+                .AppendLine();
+
+            builder.Append("Player units: ");
+            AppendUnits(builder, observation.playerUnits, includeDetached: true);
+            builder.AppendLine();
+
+            builder.Append("Active hostiles: ");
+            AppendUnits(builder, observation.activeHostiles, includeDetached: false);
+            builder.AppendLine();
+
+            builder.Append("Current objectives: ");
+            CommanderObjectiveObservation[] objectives = observation.currentObjectives ?? Array.Empty<CommanderObjectiveObservation>();
+            if (objectives.Length == 0)
+            {
+                builder.Append("none");
+            }
+
+            for (int index = 0; index < objectives.Length; index++)
+            {
+                CommanderObjectiveObservation objective = objectives[index];
+                if (objective == null)
+                {
+                    continue;
+                }
+
+                if (index > 0)
+                {
+                    builder.Append(" | ");
+                }
+
+                builder.Append(objective.title)
+                    .Append(" marker=(")
+                    .Append(Mathf.RoundToInt(objective.markerX))
+                    .Append(",")
+                    .Append(Mathf.RoundToInt(objective.markerY))
+                    .Append(")");
+            }
+
+            builder.AppendLine();
+            builder.Append("Choose one directive token for the next 10-30 seconds.");
+            return builder.ToString();
+        }
+
+        private static void AppendUnits(StringBuilder builder, CommanderUnitObservation[] units, bool includeDetached)
+        {
+            units ??= Array.Empty<CommanderUnitObservation>();
+            if (units.Length == 0)
+            {
+                builder.Append("none");
+                return;
+            }
+
+            int emitted = 0;
+            for (int index = 0; index < units.Length && emitted < 8; index++)
+            {
+                CommanderUnitObservation unit = units[index];
+                if (unit == null)
+                {
+                    continue;
+                }
+
+                if (emitted > 0)
+                {
+                    builder.Append(" | ");
+                }
+
+                builder.Append(unit.id)
+                    .Append(" active=")
+                    .Append(unit.active)
+                    .Append(" destroyed=")
+                    .Append(unit.destroyed)
+                    .Append(" hp=")
+                    .Append(Mathf.RoundToInt(unit.structureRatio * 100f))
+                    .Append("% heat=")
+                    .Append(Mathf.RoundToInt(unit.heatRatio * 100f))
+                    .Append("% range=")
+                    .Append(Mathf.RoundToInt(unit.weaponRange))
+                    .Append(" pos=(")
+                    .Append(Mathf.RoundToInt(unit.x))
+                    .Append(",")
+                    .Append(Mathf.RoundToInt(unit.y))
+                    .Append(")");
+
+                if (includeDetached)
+                {
+                    builder.Append(" detached=").Append(unit.detached);
+                }
+
+                emitted++;
+            }
         }
 
         private string PostJson(string url, string json)
@@ -165,17 +265,17 @@ namespace MC2Demo.BattleCore
             return Regex.Replace(content, "<think>[\\s\\S]*?</think>", " ", RegexOptions.IgnoreCase).Trim();
         }
 
-        private static string TryExtractJsonCommandField(string text)
+        private static string TryExtractJsonField(string text, string fieldName)
         {
             if (string.IsNullOrWhiteSpace(text))
             {
                 return "";
             }
 
-            int keyIndex = text.IndexOf("\"command\"", StringComparison.OrdinalIgnoreCase);
+            int keyIndex = text.IndexOf("\"" + fieldName + "\"", StringComparison.OrdinalIgnoreCase);
             if (keyIndex < 0)
             {
-                keyIndex = text.IndexOf("'command'", StringComparison.OrdinalIgnoreCase);
+                keyIndex = text.IndexOf("'" + fieldName + "'", StringComparison.OrdinalIgnoreCase);
             }
 
             if (keyIndex < 0)
@@ -238,49 +338,33 @@ namespace MC2Demo.BattleCore
             return -1;
         }
 
-        private static bool TryNormalizeCommand(string candidate, out string command)
+        private static bool TryNormalizeDirective(string candidate, out string directive)
         {
-            command = "";
+            directive = "";
             if (string.IsNullOrWhiteSpace(candidate))
             {
                 return false;
             }
 
-            string normalized = candidate.Trim();
-            int commandStart = FindCommandStart(normalized);
-            if (commandStart < 0)
+            string normalized = candidate.Trim().ToLowerInvariant().Replace('_', '-');
+            string[] directives =
             {
-                return false;
+                RuleCommander.DirectiveAssaultObjective,
+                RuleCommander.DirectiveEngageHostiles,
+                RuleCommander.DirectiveRegroup,
+                RuleCommander.DirectiveHold
+            };
+            for (int index = 0; index < directives.Length; index++)
+            {
+                if (normalized.IndexOf(directives[index], StringComparison.Ordinal) >= 0)
+                {
+                    directive = directives[index];
+                    return true;
+                }
+
             }
 
-            normalized = normalized.Substring(commandStart)
-                .Trim()
-                .Trim('"', '\'', '`', '.', '。', ';', '；', ',', '，');
-
-            if (!CommanderCommandPort.TryParse(normalized, out _, out _))
-            {
-                return false;
-            }
-
-            command = normalized;
-            return true;
-        }
-
-        private static int FindCommandStart(string text)
-        {
-            int squadIndex = text.IndexOf("squad ", StringComparison.OrdinalIgnoreCase);
-            int unitIndex = text.IndexOf("unit ", StringComparison.OrdinalIgnoreCase);
-            if (squadIndex < 0)
-            {
-                return unitIndex;
-            }
-
-            if (unitIndex < 0)
-            {
-                return squadIndex;
-            }
-
-            return Math.Min(squadIndex, unitIndex);
+            return false;
         }
 
         private static string DescribeWebException(WebException exception)
@@ -373,19 +457,19 @@ namespace MC2Demo.BattleCore
     public sealed class MiniMaxCommanderResult
     {
         public bool Success { get; private set; }
-        public string Command { get; private set; }
+        public string Directive { get; private set; }
         public string Message { get; private set; }
 
         private MiniMaxCommanderResult()
         {
         }
 
-        public static MiniMaxCommanderResult Succeeded(string command, string message)
+        public static MiniMaxCommanderResult Succeeded(string directive, string message)
         {
             return new MiniMaxCommanderResult
             {
                 Success = true,
-                Command = command ?? "",
+                Directive = directive ?? "",
                 Message = message ?? ""
             };
         }
@@ -395,7 +479,7 @@ namespace MC2Demo.BattleCore
             return new MiniMaxCommanderResult
             {
                 Success = false,
-                Command = "",
+                Directive = "",
                 Message = message ?? ""
             };
         }

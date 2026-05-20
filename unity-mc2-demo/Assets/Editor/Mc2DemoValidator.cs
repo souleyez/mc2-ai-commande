@@ -112,7 +112,7 @@ namespace MC2Demo.EditorTools
             ValidateCommanderCommandFilePlayback();
             ValidateCommanderObservationPort();
             ValidateRuleCommander(BattleMission.FromJson(contractJson, combatProfiles));
-            ValidateMiniMaxCommanderExtraction();
+            ValidateMiniMaxCommanderDirectiveExtraction();
             ValidateCommanderObjectiveTargets(BattleMission.FromJson(contractJson, combatProfiles));
             ValidateMissionActivation(BattleMission.FromJson(contractJson, combatProfiles));
             ValidateEncounterActivationTiming(
@@ -1247,26 +1247,37 @@ namespace MC2Demo.EditorTools
             {
                 throw new InvalidDataException("Expected rule commander structure command to parse: " + structureError);
             }
+
+            if (commander.ChooseCommandForDirective(structureObservation, RuleCommander.DirectiveHold) != "")
+            {
+                throw new InvalidDataException("Expected hold directive to produce no immediate local command.");
+            }
+
+            string directiveCommand = commander.ChooseCommandForDirective(attackObservation, RuleCommander.DirectiveEngageHostiles);
+            if (directiveCommand != "squad attack unit enemy-near")
+            {
+                throw new InvalidDataException("Expected engage-hostiles directive to use local target selection: " + directiveCommand);
+            }
         }
 
-        private static void ValidateMiniMaxCommanderExtraction()
+        private static void ValidateMiniMaxCommanderDirectiveExtraction()
         {
-            string command = MiniMaxCommander.ExtractCommandFromText("<think>choose target</think>\n\nsquad attack unit enemy-near");
-            if (command != "squad attack unit enemy-near")
+            string directive = MiniMaxCommander.ExtractDirectiveFromText("<think>choose target</think>\n\nassault-objective");
+            if (directive != RuleCommander.DirectiveAssaultObjective)
             {
-                throw new InvalidDataException("Expected MiniMax commander to strip thinking text, got: " + command);
+                throw new InvalidDataException("Expected MiniMax commander to strip thinking text, got: " + directive);
             }
 
-            command = MiniMaxCommander.ExtractCommandFromText("{\"command\":\"squad attack structure structure-1\"}");
-            if (command != "squad attack structure structure-1")
+            directive = MiniMaxCommander.ExtractDirectiveFromText("{\"directive\":\"engage-hostiles\"}");
+            if (directive != RuleCommander.DirectiveEngageHostiles)
             {
-                throw new InvalidDataException("Expected MiniMax commander to extract JSON command, got: " + command);
+                throw new InvalidDataException("Expected MiniMax commander to extract JSON directive, got: " + directive);
             }
 
-            command = MiniMaxCommander.ExtractCommandFromText("```text\nunit player-1 jump 3200 -775\n```");
-            if (command != "unit player-1 jump 3200 -775")
+            directive = MiniMaxCommander.ExtractDirectiveFromText("```text\nregroup\n```");
+            if (directive != RuleCommander.DirectiveRegroup)
             {
-                throw new InvalidDataException("Expected MiniMax commander to extract fenced command, got: " + command);
+                throw new InvalidDataException("Expected MiniMax commander to extract fenced directive, got: " + directive);
             }
         }
 
