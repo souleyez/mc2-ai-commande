@@ -108,6 +108,7 @@ namespace MC2Demo.EditorTools
             ValidateSectionDamageModifiers();
             ValidateHeatManagement();
             ValidateCommanderCommandPort();
+            ValidateCommanderObservationPort();
             ValidateMissionActivation(BattleMission.FromJson(contractJson, combatProfiles));
             ValidateScriptBridgeSignals(BattleMission.FromJson(contractJson, combatProfiles));
             ValidateNavMarkerPatrolOrders();
@@ -504,6 +505,43 @@ namespace MC2Demo.EditorTools
             }
         }
 
+        private static void ValidateCommanderObservationPort()
+        {
+            BattleMission mission = new(MakeCommandPortContract(), CombatProfileCatalog.Empty);
+            CommanderCommandPort commandPort = new(mission, 520f, _ => true);
+            commandPort.IssueText("unit player-1 move 100 100");
+            commandPort.IssueText("squad attack unit enemy-1");
+
+            CommanderObservation observation = new CommanderObservationPort(mission).Observe();
+            if (observation.missionId != "validator-command-port" || observation.result != "InProgress")
+            {
+                throw new InvalidDataException("Expected commander observation to include mission identity and result state.");
+            }
+
+            if (observation.playerUnits.Length != 2 || observation.activeHostiles.Length != 1 || observation.targetableStructures.Length != 1)
+            {
+                throw new InvalidDataException("Expected commander observation to include player units, active hostiles, and targetable structures.");
+            }
+
+            CommanderUnitObservation playerOne = FindObservedUnit(observation.playerUnits, "player-1");
+            CommanderUnitObservation playerTwo = FindObservedUnit(observation.playerUnits, "player-2");
+            if (playerOne == null || playerTwo == null || !playerOne.detached || playerOne.moveTargetX != 100f)
+            {
+                throw new InvalidDataException("Expected observation to expose detached unit move state.");
+            }
+
+            if (playerTwo.attackTargetId != "enemy-1" || playerTwo.weaponRange <= 0f || playerTwo.sections.Length == 0)
+            {
+                throw new InvalidDataException("Expected observation to expose attack targets, weapon range, and section state.");
+            }
+
+            string json = new CommanderObservationPort(mission).ToJson();
+            if (string.IsNullOrEmpty(json) || !json.Contains("validator-command-port") || !json.Contains("playerUnits"))
+            {
+                throw new InvalidDataException("Expected commander observation JSON to include mission and unit fields.");
+            }
+        }
+
         private static void ValidateMissionResults()
         {
             CombatProfileCatalog resultProfiles = MakeResultProfiles();
@@ -585,6 +623,19 @@ namespace MC2Demo.EditorTools
             }
 
             return false;
+        }
+
+        private static CommanderUnitObservation FindObservedUnit(CommanderUnitObservation[] units, string unitId)
+        {
+            foreach (CommanderUnitObservation unit in units)
+            {
+                if (unit.id == unitId)
+                {
+                    return unit;
+                }
+            }
+
+            return null;
         }
 
         private static CombatProfileCatalog MakeResultProfiles()

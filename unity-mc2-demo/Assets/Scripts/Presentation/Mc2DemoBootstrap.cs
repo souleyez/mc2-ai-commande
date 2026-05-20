@@ -34,6 +34,7 @@ namespace MC2Demo.Presentation
         private BattleMission mission;
         private MissionScriptBridge scriptBridge;
         private CommanderCommandPort commandPort;
+        private CommanderObservationPort observationPort;
         private CombatProfileCatalog combatProfiles = CombatProfileCatalog.Empty;
         private string pendingDetachedUnitId;
         private bool pendingJumpOrder;
@@ -49,6 +50,7 @@ namespace MC2Demo.Presentation
             LoadMission();
             BuildWorld();
             RunStartupCommanderCommands();
+            RunStartupCommanderReports();
             ScheduleSmokeTestQuitIfRequested();
         }
 
@@ -100,6 +102,7 @@ namespace MC2Demo.Presentation
             mission = BattleMission.FromJson(File.ReadAllText(path), combatProfiles);
             scriptBridge = new MissionScriptBridge(mission);
             commandPort = new CommanderCommandPort(mission, JumpDistance, DemoTerrainView.IsUsableLandingPosition);
+            observationPort = new CommanderObservationPort(mission);
             statusText = "Loaded " + mission.Contract.mission.id;
             Debug.Log("MC2 demo loaded mission contract: " + mission.Contract.mission.id);
         }
@@ -196,6 +199,25 @@ namespace MC2Demo.Presentation
             AddCombatLogLine(line);
             statusText = result.Message;
             Debug.Log("MC2 commander command: " + line + " message=" + result.Message);
+        }
+
+        private void RunStartupCommanderReports()
+        {
+            if (observationPort == null)
+            {
+                return;
+            }
+
+            string[] args = Environment.GetCommandLineArgs();
+            for (int index = 0; index < args.Length; index++)
+            {
+                if (args[index] == "-mc2ReportState")
+                {
+                    string json = observationPort.ToJson();
+                    AddCombatLogLine("CLI report: state");
+                    Debug.Log("MC2 commander observation: " + json);
+                }
+            }
         }
 
         private void QuitSmokeTest()

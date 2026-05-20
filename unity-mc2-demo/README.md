@@ -17,6 +17,7 @@ Current demo behavior:
 - follows the first player mech as commander
 - defaults to squad orders, with status-bar click for detached single-unit order
 - routes player commands through a CLI-ready commander command port for future AI control
+- exposes a CLI-ready commander observation JSON for future AI state reads
 - lets map clicks on hostile units or targetable buildings issue focused attack orders
 - renders command rings for selected units, order destinations, and focused targets
 - shows world objective area hints only for the current active objective
@@ -75,6 +76,16 @@ Run the player with a startup commander command:
   -batchmode -nographics -mc2SmokeTest `
   -mc2Command "squad move 3136 -789" `
   -logFile "$PWD\..\analysis-output\unity-player-command.log"
+```
+
+Run the player with a startup command and a commander state report:
+
+```powershell
+& .\Builds\Windows\MC2UnityDemo.exe `
+  -batchmode -nographics -mc2SmokeTest `
+  -mc2Command "squad move 3136 -789" `
+  -mc2ReportState `
+  -logFile "$PWD\..\analysis-output\unity-player-report.log"
 ```
 
 Interactive build output:
