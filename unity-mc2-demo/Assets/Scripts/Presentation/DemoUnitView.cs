@@ -15,9 +15,11 @@ namespace MC2Demo.Presentation
         private float hitFlashRemaining;
         private float hitFlashDuration = 0.18f;
         private bool destroyedPoseApplied;
+        private bool legFailurePoseApplied;
         private bool ejectionEffectSpawned;
         private readonly Dictionary<string, GameObject> sectionParts = new(StringComparer.OrdinalIgnoreCase);
         private readonly HashSet<string> destroyedSections = new(StringComparer.OrdinalIgnoreCase);
+        private readonly List<Material> ownedMaterials = new();
 
         public void Bind(UnitState unit)
         {
@@ -38,6 +40,7 @@ namespace MC2Demo.Presentation
         {
             ApplyPosition();
             ApplyHitFlash();
+            ApplySectionPartDamageColors();
             ApplySectionDamageVisuals();
             ApplyDamagePose();
         }
@@ -91,6 +94,20 @@ namespace MC2Demo.Presentation
             }
         }
 
+        private void ApplySectionPartDamageColors()
+        {
+            if (Unit == null || Unit.Sections == null)
+            {
+                return;
+            }
+
+            for (int index = 0; index < Unit.Sections.Length; index++)
+            {
+                DamageSection section = Unit.Sections[index];
+                ApplySectionPartDamageColor(section.Name, SectionDamageColor(section));
+            }
+        }
+
         private void ApplyHitFlash()
         {
             if (unitRenderer == null || unitRenderer.sharedMaterial == null || Unit == null || Unit.IsDestroyed)
@@ -111,7 +128,19 @@ namespace MC2Demo.Presentation
 
         private void ApplyDamagePose()
         {
-            if (Unit == null || !Unit.IsDestroyed || destroyedPoseApplied)
+            if (Unit == null)
+            {
+                return;
+            }
+
+            if (!Unit.IsDestroyed && !legFailurePoseApplied && HasDestroyedSection("Legs"))
+            {
+                transform.localScale = new Vector3(liveScale.x, liveScale.y * 0.62f, liveScale.z);
+                transform.rotation = Quaternion.Euler(0f, 0f, Unit.IsPlayerUnit ? -7f : 7f);
+                legFailurePoseApplied = true;
+            }
+
+            if (!Unit.IsDestroyed || destroyedPoseApplied)
             {
                 return;
             }
@@ -145,7 +174,7 @@ namespace MC2Demo.Presentation
             Renderer partRenderer = part.GetComponent<Renderer>();
             if (partRenderer != null)
             {
-                partRenderer.sharedMaterial = unitRenderer.sharedMaterial;
+                partRenderer.sharedMaterial = CreateOwnedMaterial(liveColor);
             }
 
             sectionParts[sectionName] = part;
@@ -155,6 +184,7 @@ namespace MC2Demo.Presentation
         {
             if (string.Equals(sectionName, "Cockpit", StringComparison.OrdinalIgnoreCase))
             {
+                CreateDamageScar("Cockpit Breach", new Vector3(0f, 0.45f, 0.34f), new Vector3(0.32f, 0.08f, 0.24f), new Color(0.02f, 0.02f, 0.02f, 1f));
                 DetachPart("Cockpit", new Vector3(0f, 0.8f, 0.45f), new Color(1f, 0.65f, 0.18f, 0.72f));
                 SpawnCockpitEjection();
                 return;
@@ -162,6 +192,7 @@ namespace MC2Demo.Presentation
 
             if (string.Equals(sectionName, "Left Arm", StringComparison.OrdinalIgnoreCase))
             {
+                CreateDamageScar("Left Shoulder Breach", new Vector3(-0.44f, 0.10f, 0.02f), new Vector3(0.16f, 0.34f, 0.20f), new Color(0.06f, 0.04f, 0.02f, 1f));
                 DetachPart("Left Arm", new Vector3(-0.9f, 0.25f, 0.15f), new Color(1f, 0.42f, 0.08f, 0.68f));
                 SpawnDamageBurst(SectionWorldPoint(new Vector3(-0.62f, 0.08f, 0f)), 0.8f);
                 return;
@@ -169,6 +200,7 @@ namespace MC2Demo.Presentation
 
             if (string.Equals(sectionName, "Right Arm", StringComparison.OrdinalIgnoreCase))
             {
+                CreateDamageScar("Right Shoulder Breach", new Vector3(0.44f, 0.10f, 0.02f), new Vector3(0.16f, 0.34f, 0.20f), new Color(0.06f, 0.04f, 0.02f, 1f));
                 DetachPart("Right Arm", new Vector3(0.9f, 0.25f, 0.15f), new Color(1f, 0.42f, 0.08f, 0.68f));
                 SpawnDamageBurst(SectionWorldPoint(new Vector3(0.62f, 0.08f, 0f)), 0.8f);
                 return;
@@ -176,12 +208,14 @@ namespace MC2Demo.Presentation
 
             if (string.Equals(sectionName, "Legs", StringComparison.OrdinalIgnoreCase))
             {
+                CreateDamageScar("Leg Failure Scorch", new Vector3(0f, -0.36f, 0.05f), new Vector3(0.52f, 0.12f, 0.26f), new Color(0.05f, 0.04f, 0.03f, 1f));
                 DetachPart("Left Leg", new Vector3(-0.38f, 0.12f, -0.25f), new Color(0.82f, 0.32f, 0.12f, 0.66f));
                 DetachPart("Right Leg", new Vector3(0.38f, 0.12f, -0.25f), new Color(0.82f, 0.32f, 0.12f, 0.66f));
                 SpawnDamageBurst(SectionWorldPoint(new Vector3(0f, -0.45f, 0f)), 1.0f);
                 return;
             }
 
+            CreateDamageScar("Core Damage Scorch", new Vector3(0f, 0.10f, 0.16f), new Vector3(0.40f, 0.12f, 0.26f), new Color(0.05f, 0.04f, 0.03f, 1f));
             SpawnDamageBurst(SectionWorldPoint(new Vector3(0f, 0.08f, 0f)), 1.15f);
         }
 
@@ -205,7 +239,7 @@ namespace MC2Demo.Presentation
             }
 
             DemoTransientEffect transient = part.AddComponent<DemoTransientEffect>();
-            transient.Begin(color, 1.25f, startScale, startScale * 0.42f);
+            transient.Begin(color, 2.85f, startScale, startScale * 0.62f);
         }
 
         private void SpawnDamageBurst(Vector3 position, float scale)
@@ -223,10 +257,139 @@ namespace MC2Demo.Presentation
 
             ejectionEffectSpawned = true;
             Vector3 start = SectionWorldPoint(new Vector3(0f, 0.7f, 0.34f));
-            Vector3 end = start + Vector3.up * 1.9f + transform.TransformDirection(new Vector3(0.35f, 0f, 0.28f));
-            CreateBeam("Ejection Trail", start, end, new Color(0.72f, 0.9f, 1f, 0.58f), 0.9f, 0.035f);
-            CreateTransient("Pilot Ejection Pod", PrimitiveType.Sphere, end, new Color(0.88f, 0.95f, 1f, 0.82f), 1.35f, Vector3.one * 0.16f, Vector3.one * 0.32f);
-            SpawnDamageBurst(start, 0.9f);
+            Vector3 end = start + Vector3.up * 2.65f + transform.TransformDirection(new Vector3(0.45f, 0f, 0.36f));
+            CreateBeam("Ejection Trail", start, end, new Color(0.72f, 0.9f, 1f, 0.68f), 1.2f, 0.045f);
+            CreateBeam("Ejection Smoke Trail", start + Vector3.down * 0.08f, end + Vector3.down * 0.35f, new Color(0.08f, 0.10f, 0.12f, 0.36f), 1.6f, 0.075f);
+            CreateTransient("Ejection Flash", PrimitiveType.Sphere, start, new Color(1f, 0.75f, 0.28f, 0.78f), 0.48f, Vector3.one * 0.18f, Vector3.one * 0.95f);
+            CreateTransient("Pilot Ejection Pod", PrimitiveType.Sphere, end, new Color(0.88f, 0.95f, 1f, 0.92f), 1.75f, Vector3.one * 0.18f, Vector3.one * 0.38f);
+            SpawnDamageBurst(start, 1.05f);
+        }
+
+        private bool HasDestroyedSection(string sectionName)
+        {
+            if (Unit == null || Unit.Sections == null)
+            {
+                return false;
+            }
+
+            for (int index = 0; index < Unit.Sections.Length; index++)
+            {
+                DamageSection section = Unit.Sections[index];
+                if (section.IsDestroyed && string.Equals(section.Name, sectionName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private void ApplySectionPartDamageColor(string sectionName, Color color)
+        {
+            if (IsSectionName(sectionName, "Cockpit") || IsSectionName(sectionName, "Turret"))
+            {
+                SetSectionPartColor("Cockpit", color);
+                return;
+            }
+
+            if (IsSectionName(sectionName, "Left Arm") || IsSectionName(sectionName, "Left"))
+            {
+                SetSectionPartColor("Left Arm", color);
+                return;
+            }
+
+            if (IsSectionName(sectionName, "Right Arm") || IsSectionName(sectionName, "Right"))
+            {
+                SetSectionPartColor("Right Arm", color);
+                return;
+            }
+
+            if (IsSectionName(sectionName, "Legs"))
+            {
+                SetSectionPartColor("Left Leg", color);
+                SetSectionPartColor("Right Leg", color);
+            }
+        }
+
+        private void SetSectionPartColor(string partName, Color color)
+        {
+            if (!sectionParts.TryGetValue(partName, out GameObject part) || part == null)
+            {
+                return;
+            }
+
+            Renderer partRenderer = part.GetComponent<Renderer>();
+            if (partRenderer != null && partRenderer.sharedMaterial != null)
+            {
+                partRenderer.sharedMaterial.color = color;
+            }
+        }
+
+        private static bool IsSectionName(string sectionName, string expected)
+        {
+            return string.Equals(sectionName, expected, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private Color SectionDamageColor(DamageSection section)
+        {
+            if (section.IsDestroyed)
+            {
+                return new Color(0.10f, 0.08f, 0.06f, 1f);
+            }
+
+            if (section.Ratio < 0.35f)
+            {
+                return Color.Lerp(liveColor, new Color(1f, 0.16f, 0.08f, 1f), 0.82f);
+            }
+
+            if (section.Ratio < 0.70f)
+            {
+                return Color.Lerp(liveColor, new Color(1f, 0.72f, 0.12f, 1f), 0.62f);
+            }
+
+            return liveColor;
+        }
+
+        private void CreateDamageScar(string scarName, Vector3 localPosition, Vector3 localScale, Color color)
+        {
+            GameObject scar = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            scar.name = Unit.Id + " " + scarName;
+            scar.transform.SetParent(transform, false);
+            scar.transform.localPosition = localPosition;
+            scar.transform.localScale = localScale;
+            Renderer scarRenderer = scar.GetComponent<Renderer>();
+            if (scarRenderer != null)
+            {
+                scarRenderer.sharedMaterial = CreateOwnedMaterial(color);
+            }
+
+            Collider scarCollider = scar.GetComponent<Collider>();
+            if (scarCollider != null)
+            {
+                Destroy(scarCollider);
+            }
+        }
+
+        private Material CreateOwnedMaterial(Color color)
+        {
+            Shader shader = Shader.Find("Standard") ?? Shader.Find("Hidden/Internal-Colored");
+            Material material = new(shader)
+            {
+                color = color
+            };
+            ownedMaterials.Add(material);
+            return material;
+        }
+
+        private void OnDestroy()
+        {
+            for (int index = 0; index < ownedMaterials.Count; index++)
+            {
+                if (ownedMaterials[index] != null)
+                {
+                    Destroy(ownedMaterials[index]);
+                }
+            }
         }
 
         private Vector3 SectionWorldPoint(Vector3 localPoint)

@@ -2520,13 +2520,34 @@ namespace MC2Demo.Presentation
             for (int index = 0; index < unit.Sections.Length; index++)
             {
                 DamageSection section = unit.Sections[index];
-                float width = 54f;
-                Rect back = new(x, y, width, 4);
-                GUI.DrawTexture(back, Texture2D.grayTexture);
-                DrawColorRect(new Rect(x, y, width * section.Ratio, 4), section.IsDestroyed ? Color.red : Color.cyan);
-                GUI.Label(new Rect(x, y + 4, width + 8, 16), ShortSectionName(section.Name));
+                float width = 52f;
+                Rect back = new(x, y, width, 7);
+                DrawColorRect(back, new Color(0.08f, 0.09f, 0.10f, 1f));
+                DrawColorRect(new Rect(x, y, width * section.Ratio, 7), SectionHealthColor(section));
+                string value = section.IsDestroyed ? "X" : Mathf.RoundToInt(section.Ratio * 100f).ToString();
+                GUI.Label(new Rect(x, y + 8, width + 8, 16), ShortSectionName(section.Name) + " " + value);
                 x += 58f;
             }
+        }
+
+        private Color SectionHealthColor(DamageSection section)
+        {
+            if (section.IsDestroyed)
+            {
+                return new Color(0.95f, 0.08f, 0.05f, 1f);
+            }
+
+            if (section.Ratio < 0.35f)
+            {
+                return new Color(1f, 0.24f, 0.08f, 1f);
+            }
+
+            if (section.Ratio < 0.70f)
+            {
+                return new Color(1f, 0.74f, 0.16f, 1f);
+            }
+
+            return new Color(0.20f, 0.88f, 0.92f, 1f);
         }
 
         private string ShortSectionName(string sectionName)
