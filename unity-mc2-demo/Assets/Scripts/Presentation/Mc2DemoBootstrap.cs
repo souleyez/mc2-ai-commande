@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System;
+using System.Globalization;
 using MC2Demo.BattleCore;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -50,6 +51,7 @@ namespace MC2Demo.Presentation
             LoadMission();
             BuildWorld();
             RunStartupCommanderCommands();
+            RunStartupSimulationAdvance();
             RunStartupCommanderReports();
             ScheduleSmokeTestQuitIfRequested();
         }
@@ -199,6 +201,62 @@ namespace MC2Demo.Presentation
             AddCombatLogLine(line);
             statusText = result.Message;
             Debug.Log("MC2 commander command: " + line + " message=" + result.Message);
+        }
+
+        private void RunStartupSimulationAdvance()
+        {
+            if (mission == null)
+            {
+                return;
+            }
+
+            string[] args = Environment.GetCommandLineArgs();
+            for (int index = 0; index < args.Length; index++)
+            {
+                if (args[index] != "-mc2AdvanceSeconds")
+                {
+                    continue;
+                }
+
+                if (index + 1 >= args.Length)
+                {
+                    Debug.LogWarning("MC2 commander advance blocked: missing seconds after -mc2AdvanceSeconds.");
+                    continue;
+                }
+
+                string value = args[++index];
+                if (!float.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out float seconds))
+                {
+                    Debug.LogWarning("MC2 commander advance blocked: invalid seconds '" + value + "'.");
+                    continue;
+                }
+
+                AdvanceStartupSimulation(seconds);
+            }
+        }
+
+        private void AdvanceStartupSimulation(float seconds)
+        {
+            float clampedSeconds = Mathf.Clamp(seconds, 0f, 60f);
+            if (clampedSeconds <= 0f)
+            {
+                Debug.Log("MC2 commander advance: seconds=0 steps=0 result=" + mission.Result);
+                return;
+            }
+
+            const float StepSeconds = 0.25f;
+            int steps = Mathf.CeilToInt(clampedSeconds / StepSeconds);
+            for (int step = 0; step < steps && mission.Result == MissionResultState.InProgress; step++)
+            {
+                float delta = Mathf.Min(StepSeconds, clampedSeconds - step * StepSeconds);
+                mission.Tick(delta);
+                scriptBridge?.CaptureFrame();
+            }
+
+            AddCombatLogLine("CLI advance: " + clampedSeconds.ToString("0.##", CultureInfo.InvariantCulture) + "s");
+            Debug.Log("MC2 commander advance: seconds=" + clampedSeconds.ToString("0.###", CultureInfo.InvariantCulture)
+                + " steps=" + steps
+                + " result=" + mission.Result);
         }
 
         private void RunStartupCommanderReports()

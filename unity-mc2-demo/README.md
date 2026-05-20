@@ -84,6 +84,7 @@ Run the player with a startup command and a commander state report:
 & .\Builds\Windows\MC2UnityDemo.exe `
   -batchmode -nographics -mc2SmokeTest `
   -mc2Command "squad move 3136 -789" `
+  -mc2AdvanceSeconds 2 `
   -mc2ReportState `
   -logFile "$PWD\..\analysis-output\unity-player-report.log"
 ```
