@@ -32,6 +32,7 @@ namespace MC2Demo.Presentation
         private readonly List<Material> ownedMaterials = new();
         private readonly List<string> combatLog = new();
         private BattleMission mission;
+        private MissionScriptBridge scriptBridge;
         private CombatProfileCatalog combatProfiles = CombatProfileCatalog.Empty;
         private string pendingDetachedUnitId;
         private bool pendingJumpOrder;
@@ -59,9 +60,11 @@ namespace MC2Demo.Presentation
             if (!isPaused && mission.Result == MissionResultState.InProgress)
             {
                 mission.Tick(Time.deltaTime);
+                scriptBridge?.CaptureFrame();
                 CaptureCombatEvents();
                 CaptureObjectiveEvents();
                 CaptureUnitActivationEvents();
+                CaptureScriptEvents();
                 HandleWorldClick();
             }
 
@@ -93,6 +96,7 @@ namespace MC2Demo.Presentation
             }
 
             mission = BattleMission.FromJson(File.ReadAllText(path), combatProfiles);
+            scriptBridge = new MissionScriptBridge(mission);
             statusText = "Loaded " + mission.Contract.mission.id;
             Debug.Log("MC2 demo loaded mission contract: " + mission.Contract.mission.id);
         }
@@ -384,6 +388,30 @@ namespace MC2Demo.Presentation
                 string line = "Contact: " + activationEvent.UnitType;
                 AddCombatLogLine(line);
                 Debug.Log("MC2 enemy activated: " + activationEvent.UnitId + " " + activationEvent.UnitType + " " + activationEvent.Brain);
+            }
+        }
+
+        private void CaptureScriptEvents()
+        {
+            if (scriptBridge == null)
+            {
+                return;
+            }
+
+            foreach (MissionScriptEvent scriptEvent in scriptBridge.RecentEvents)
+            {
+                string line = "Script: " + scriptEvent.Signal;
+                AddCombatLogLine(line);
+                statusText = scriptEvent.Message;
+                Debug.Log(
+                    "MC2 script signal: "
+                    + scriptEvent.Signal
+                    + " kind="
+                    + scriptEvent.Kind
+                    + " source="
+                    + scriptEvent.SourceId
+                    + " message="
+                    + scriptEvent.Message);
             }
         }
 

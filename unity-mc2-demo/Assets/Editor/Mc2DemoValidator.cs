@@ -108,6 +108,7 @@ namespace MC2Demo.EditorTools
             ValidateSectionDamageModifiers();
             ValidateHeatManagement();
             ValidateMissionActivation(BattleMission.FromJson(contractJson, combatProfiles));
+            ValidateScriptBridgeSignals(BattleMission.FromJson(contractJson, combatProfiles));
             ValidateNavMarkerPatrolOrders();
             ValidateJumpCommand(BattleMission.FromJson(contractJson, combatProfiles));
             ValidateCombatSimulation(mission);
@@ -226,6 +227,30 @@ namespace MC2Demo.EditorTools
             if (islandBandit.IsActive || islandBandit.HasMoveOrder || starslayer.IsActive || starslayer.HasMoveOrder)
             {
                 throw new InvalidDataException("Expected later mc2_01 enemy groups to remain inactive and idle.");
+            }
+        }
+
+        private static void ValidateScriptBridgeSignals(BattleMission mission)
+        {
+            UnitState player = FirstPlayerUnit(mission);
+            if (player == null)
+            {
+                throw new InvalidDataException("Script bridge validation requires one player unit.");
+            }
+
+            MissionScriptBridge bridge = new(mission);
+            MovePlayerIntoObjectiveArea(mission, player, 0);
+            bridge.CaptureFrame();
+
+            if (!HasScriptSignal(bridge, "Objective_0_Decided") || !HasScriptSignal(bridge, "patrol1_triggered"))
+            {
+                throw new InvalidDataException("Expected script bridge to emit airfield objective and first patrol signals.");
+            }
+
+            bridge.CaptureFrame();
+            if (bridge.RecentEvents.Count != 0)
+            {
+                throw new InvalidDataException("Expected script bridge signals to be emitted once per mission beat.");
             }
         }
 
@@ -496,6 +521,19 @@ namespace MC2Demo.EditorTools
             foreach (ObjectiveEvent objectiveEvent in mission.RecentObjectiveEvents)
             {
                 if (objectiveEvent.ObjectiveIndex == objectiveIndex && objectiveEvent.Kind == kind)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool HasScriptSignal(MissionScriptBridge bridge, string signal)
+        {
+            foreach (MissionScriptEvent scriptEvent in bridge.RecentEvents)
+            {
+                if (scriptEvent.Signal == signal)
                 {
                     return true;
                 }
