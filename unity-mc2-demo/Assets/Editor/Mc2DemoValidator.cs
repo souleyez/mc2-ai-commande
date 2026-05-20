@@ -107,6 +107,7 @@ namespace MC2Demo.EditorTools
             ValidateObjectivePrerequisites();
             ValidateSectionDamageModifiers();
             ValidateHeatManagement();
+            ValidateCommanderCommandPort();
             ValidateMissionActivation(BattleMission.FromJson(contractJson, combatProfiles));
             ValidateScriptBridgeSignals(BattleMission.FromJson(contractJson, combatProfiles));
             ValidateNavMarkerPatrolOrders();
@@ -456,6 +457,50 @@ namespace MC2Demo.EditorTools
             if (player.IsInWeaponRange(farTarget))
             {
                 throw new InvalidDataException("Expected weapon range helper to report distant target out of range.");
+            }
+        }
+
+        private static void ValidateCommanderCommandPort()
+        {
+            BattleMission mission = new(MakeCommandPortContract(), CombatProfileCatalog.Empty);
+            CommanderCommandPort port = new(mission, 520f, _ => true);
+            UnitState playerOne = mission.FindUnit("player-1");
+            UnitState playerTwo = mission.FindUnit("player-2");
+
+            CommanderCommandResult squadMove = port.IssueText("squad move 500 0");
+            if (!squadMove.Accepted || squadMove.AcceptedCount != 2 || playerOne.MoveTarget.x != 500f || playerTwo.MoveTarget.x != 500f)
+            {
+                throw new InvalidDataException("Expected command port to issue squad move commands.");
+            }
+
+            CommanderCommandResult detachedMove = port.IssueText("unit player-1 move 100 100");
+            if (!detachedMove.Accepted || detachedMove.AcceptedCount != 1 || !playerOne.IsDetached)
+            {
+                throw new InvalidDataException("Expected command port to issue detached unit move commands.");
+            }
+
+            CommanderCommandResult squadAttack = port.IssueText("squad attack unit enemy-1");
+            if (!squadAttack.Accepted || squadAttack.AcceptedCount != 1 || playerTwo.AttackTargetId != "enemy-1" || playerOne.AttackTargetId == "enemy-1")
+            {
+                throw new InvalidDataException("Expected squad attack to skip detached units and target enemy-1.");
+            }
+
+            CommanderCommandResult structureAttack = port.IssueText("unit player-1 attack structure structure-1");
+            if (!structureAttack.Accepted || playerOne.AttackTargetId != "structure-1")
+            {
+                throw new InvalidDataException("Expected detached structure attack command to lock structure-1.");
+            }
+
+            CommanderCommandResult jump = port.IssueText("unit player-1 jump 1000 0");
+            if (!jump.Accepted || !playerOne.IsJumping)
+            {
+                throw new InvalidDataException("Expected command port to issue unit jump commands.");
+            }
+
+            CommanderCommandResult blocked = port.IssueText("squad dance 1 2");
+            if (blocked.Accepted)
+            {
+                throw new InvalidDataException("Expected malformed command text to be rejected.");
             }
         }
 
@@ -962,6 +1007,60 @@ namespace MC2Demo.EditorTools
                         teamId = 1,
                         unitType = "HeatTarget",
                         position = new MissionPose { x = 2500f, y = 0f, rotation = 0f }
+                    }
+                },
+                objectives = Array.Empty<ObjectiveDefinition>()
+            };
+        }
+
+        private static MissionContract MakeCommandPortContract()
+        {
+            return new MissionContract
+            {
+                mission = new MissionDefinition
+                {
+                    id = "validator-command-port",
+                    terrain = new TerrainDefinition { minX = -1000f, minY = 1000f, waterElevation = 350f }
+                },
+                units = new[]
+                {
+                    new UnitSpawn
+                    {
+                        spawnId = "player-1",
+                        isPlayerUnit = true,
+                        teamId = 0,
+                        unitType = "Werewolf",
+                        position = new MissionPose { x = 0f, y = 0f, rotation = 0f }
+                    },
+                    new UnitSpawn
+                    {
+                        spawnId = "player-2",
+                        isPlayerUnit = true,
+                        teamId = 0,
+                        unitType = "Bushwacker",
+                        position = new MissionPose { x = 80f, y = 0f, rotation = 0f }
+                    },
+                    new UnitSpawn
+                    {
+                        spawnId = "enemy-1",
+                        isPlayerUnit = false,
+                        teamId = 1,
+                        unitType = "Centipede",
+                        position = new MissionPose { x = 600f, y = 0f, rotation = 0f }
+                    }
+                },
+                staticObjects = new[]
+                {
+                    new StaticObjectSpawn
+                    {
+                        objectId = "structure-1",
+                        objectType = "Structure",
+                        teamId = 1,
+                        targetable = true,
+                        objectiveTarget = true,
+                        position = new MissionPose { x = 700f, y = 0f, rotation = 0f },
+                        radius = 80f,
+                        maxStructure = 45f
                     }
                 },
                 objectives = Array.Empty<ObjectiveDefinition>()

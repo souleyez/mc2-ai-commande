@@ -107,34 +107,41 @@ namespace MC2Demo.BattleCore
             return null;
         }
 
-        public void IssueSquadMove(Vector2 missionPoint)
+        public int IssueSquadMove(Vector2 missionPoint)
         {
             if (Result != MissionResultState.InProgress)
             {
-                return;
+                return 0;
             }
 
+            int accepted = 0;
             foreach (UnitState unit in PlayerUnits())
             {
                 if (!unit.IsDetached)
                 {
                     unit.SetMoveOrder(missionPoint, detached: false);
+                    accepted++;
                 }
             }
+
+            return accepted;
         }
 
-        public void IssueDetachedMove(string unitId, Vector2 missionPoint)
+        public int IssueDetachedMove(string unitId, Vector2 missionPoint)
         {
             if (Result != MissionResultState.InProgress)
             {
-                return;
+                return 0;
             }
 
             UnitState unit = FindUnit(unitId);
             if (unit != null && unit.IsPlayerUnit)
             {
                 unit.SetMoveOrder(missionPoint, detached: true);
+                return 1;
             }
+
+            return 0;
         }
 
         public int IssueSquadAttackUnit(string targetUnitId)

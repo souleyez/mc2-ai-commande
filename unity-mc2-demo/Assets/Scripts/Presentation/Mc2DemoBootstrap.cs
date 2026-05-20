@@ -33,6 +33,7 @@ namespace MC2Demo.Presentation
         private readonly List<string> combatLog = new();
         private BattleMission mission;
         private MissionScriptBridge scriptBridge;
+        private CommanderCommandPort commandPort;
         private CombatProfileCatalog combatProfiles = CombatProfileCatalog.Empty;
         private string pendingDetachedUnitId;
         private bool pendingJumpOrder;
@@ -97,6 +98,7 @@ namespace MC2Demo.Presentation
 
             mission = BattleMission.FromJson(File.ReadAllText(path), combatProfiles);
             scriptBridge = new MissionScriptBridge(mission);
+            commandPort = new CommanderCommandPort(mission, JumpDistance, DemoTerrainView.IsUsableLandingPosition);
             statusText = "Loaded " + mission.Contract.mission.id;
             Debug.Log("MC2 demo loaded mission contract: " + mission.Contract.mission.id);
         }
@@ -1507,30 +1509,34 @@ namespace MC2Demo.Presentation
 
             if (!string.IsNullOrEmpty(pendingDetachedUnitId))
             {
-                mission.IssueDetachedMove(pendingDetachedUnitId, target);
-                statusText = string.IsNullOrEmpty(label) ? "Detached order: " + pendingDetachedUnitId : label + " with " + pendingDetachedUnitId;
+                CommanderCommandResult result = commandPort.MoveUnit(pendingDetachedUnitId, target);
+                statusText = result.Accepted
+                    ? (string.IsNullOrEmpty(label) ? "Detached order: " + pendingDetachedUnitId : label + " with " + pendingDetachedUnitId)
+                    : result.Message;
                 pendingDetachedUnitId = null;
             }
             else
             {
-                mission.IssueSquadMove(target);
-                statusText = string.IsNullOrEmpty(label) ? "Squad move" : label;
+                CommanderCommandResult result = commandPort.MoveSquad(target);
+                statusText = result.Accepted
+                    ? (string.IsNullOrEmpty(label) ? "Squad move" : label)
+                    : result.Message;
             }
         }
 
         private void IssueUnitAttackOrder(UnitState target)
         {
-            int accepted;
+            CommanderCommandResult result;
             string detachedUnitId = pendingDetachedUnitId;
             if (!string.IsNullOrEmpty(detachedUnitId))
             {
-                accepted = mission.IssueDetachedAttackUnit(detachedUnitId, target.Id);
-                statusText = accepted > 0 ? "Focus " + target.UnitType + " with " + detachedUnitId : "Attack blocked";
+                result = commandPort.AttackUnit(detachedUnitId, target.Id);
+                statusText = result.Accepted ? "Focus " + target.UnitType + " with " + detachedUnitId : result.Message;
             }
             else
             {
-                accepted = mission.IssueSquadAttackUnit(target.Id);
-                statusText = accepted > 0 ? "Squad focus: " + target.UnitType : "Attack blocked";
+                result = commandPort.AttackUnit(null, target.Id);
+                statusText = result.Accepted ? "Squad focus: " + target.UnitType : result.Message;
             }
 
             pendingDetachedUnitId = null;
@@ -1538,17 +1544,17 @@ namespace MC2Demo.Presentation
 
         private void IssueStructureAttackOrder(StructureState target)
         {
-            int accepted;
+            CommanderCommandResult result;
             string detachedUnitId = pendingDetachedUnitId;
             if (!string.IsNullOrEmpty(detachedUnitId))
             {
-                accepted = mission.IssueDetachedAttackStructure(detachedUnitId, target.Id);
-                statusText = accepted > 0 ? "Attack " + target.ObjectType + " with " + detachedUnitId : "Attack blocked";
+                result = commandPort.AttackStructure(detachedUnitId, target.Id);
+                statusText = result.Accepted ? "Attack " + target.ObjectType + " with " + detachedUnitId : result.Message;
             }
             else
             {
-                accepted = mission.IssueSquadAttackStructure(target.Id);
-                statusText = accepted > 0 ? "Squad attack: " + target.ObjectType : "Attack blocked";
+                result = commandPort.AttackStructure(null, target.Id);
+                statusText = result.Accepted ? "Squad attack: " + target.ObjectType : result.Message;
             }
 
             pendingDetachedUnitId = null;
@@ -1556,21 +1562,21 @@ namespace MC2Demo.Presentation
 
         private void IssueJumpOrder(Vector2 target, string label)
         {
-            int accepted;
+            CommanderCommandResult result;
             string detachedUnitId = pendingDetachedUnitId;
             if (!string.IsNullOrEmpty(detachedUnitId))
             {
-                accepted = mission.IssueDetachedJump(detachedUnitId, target, JumpDistance, DemoTerrainView.IsUsableLandingPosition);
-                statusText = accepted > 0
+                result = commandPort.JumpUnit(detachedUnitId, target);
+                statusText = result.Accepted
                     ? (string.IsNullOrEmpty(label) ? "Jet order: " + detachedUnitId : "Jet vector: " + detachedUnitId)
-                    : "Jet blocked: " + detachedUnitId;
+                    : result.Message;
             }
             else
             {
-                accepted = mission.IssueSquadJump(target, JumpDistance, DemoTerrainView.IsUsableLandingPosition);
-                statusText = accepted > 0
-                    ? (string.IsNullOrEmpty(label) ? "Squad jet: " + accepted : "Squad jet vector: " + accepted)
-                    : "Jet blocked: no legal landing";
+                result = commandPort.JumpSquad(target);
+                statusText = result.Accepted
+                    ? (string.IsNullOrEmpty(label) ? "Squad jet: " + result.AcceptedCount : "Squad jet vector: " + result.AcceptedCount)
+                    : result.Message;
             }
 
             pendingDetachedUnitId = null;

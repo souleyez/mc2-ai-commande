@@ -16,6 +16,7 @@ Current demo behavior:
 - moves activated enemy groups with lightweight source-brain patrol orders backed by source nav markers
 - follows the first player mech as commander
 - defaults to squad orders, with status-bar click for detached single-unit order
+- routes player commands through a CLI-ready commander command port for future AI control
 - lets map clicks on hostile units or targetable buildings issue focused attack orders
 - renders command rings for selected units, order destinations, and focused targets
 - shows world objective area hints only for the current active objective
