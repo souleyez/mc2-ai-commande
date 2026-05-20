@@ -50,9 +50,7 @@ namespace MC2Demo.Presentation
         {
             LoadMission();
             BuildWorld();
-            RunStartupCommanderCommands();
-            RunStartupSimulationAdvance();
-            RunStartupCommanderReports();
+            RunStartupCommanderSequence();
             ScheduleSmokeTestQuitIfRequested();
         }
 
@@ -168,9 +166,9 @@ namespace MC2Demo.Presentation
             }
         }
 
-        private void RunStartupCommanderCommands()
+        private void RunStartupCommanderSequence()
         {
-            if (commandPort == null)
+            if (mission == null)
             {
                 return;
             }
@@ -178,20 +176,37 @@ namespace MC2Demo.Presentation
             string[] args = Environment.GetCommandLineArgs();
             for (int index = 0; index < args.Length; index++)
             {
-                if (args[index] != "-mc2Command")
+                switch (args[index])
                 {
-                    continue;
+                    case "-mc2Command":
+                        index = RunStartupCommanderCommand(args, index);
+                        break;
+                    case "-mc2AdvanceSeconds":
+                        index = RunStartupSimulationAdvance(args, index);
+                        break;
+                    case "-mc2ReportState":
+                        ReportStartupCommanderState();
+                        break;
                 }
-
-                if (index + 1 >= args.Length)
-                {
-                    LogStartupCommanderCommand("", CommanderCommandResult.Blocked("Missing command text after -mc2Command."));
-                    continue;
-                }
-
-                string commandLine = args[++index];
-                LogStartupCommanderCommand(commandLine, commandPort.IssueText(commandLine));
             }
+        }
+
+        private int RunStartupCommanderCommand(string[] args, int index)
+        {
+            if (commandPort == null)
+            {
+                return index;
+            }
+
+            if (index + 1 >= args.Length)
+            {
+                LogStartupCommanderCommand("", CommanderCommandResult.Blocked("Missing command text after -mc2Command."));
+                return index;
+            }
+
+            string commandLine = args[index + 1];
+            LogStartupCommanderCommand(commandLine, commandPort.IssueText(commandLine));
+            return index + 1;
         }
 
         private void LogStartupCommanderCommand(string commandLine, CommanderCommandResult result)
@@ -203,36 +218,23 @@ namespace MC2Demo.Presentation
             Debug.Log("MC2 commander command: " + line + " message=" + result.Message);
         }
 
-        private void RunStartupSimulationAdvance()
+        private int RunStartupSimulationAdvance(string[] args, int index)
         {
-            if (mission == null)
+            if (index + 1 >= args.Length)
             {
-                return;
+                Debug.LogWarning("MC2 commander advance blocked: missing seconds after -mc2AdvanceSeconds.");
+                return index;
             }
 
-            string[] args = Environment.GetCommandLineArgs();
-            for (int index = 0; index < args.Length; index++)
+            string value = args[index + 1];
+            if (!float.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out float seconds))
             {
-                if (args[index] != "-mc2AdvanceSeconds")
-                {
-                    continue;
-                }
-
-                if (index + 1 >= args.Length)
-                {
-                    Debug.LogWarning("MC2 commander advance blocked: missing seconds after -mc2AdvanceSeconds.");
-                    continue;
-                }
-
-                string value = args[++index];
-                if (!float.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out float seconds))
-                {
-                    Debug.LogWarning("MC2 commander advance blocked: invalid seconds '" + value + "'.");
-                    continue;
-                }
-
-                AdvanceStartupSimulation(seconds);
+                Debug.LogWarning("MC2 commander advance blocked: invalid seconds '" + value + "'.");
+                return index + 1;
             }
+
+            AdvanceStartupSimulation(seconds);
+            return index + 1;
         }
 
         private void AdvanceStartupSimulation(float seconds)
@@ -259,23 +261,16 @@ namespace MC2Demo.Presentation
                 + " result=" + mission.Result);
         }
 
-        private void RunStartupCommanderReports()
+        private void ReportStartupCommanderState()
         {
             if (observationPort == null)
             {
                 return;
             }
 
-            string[] args = Environment.GetCommandLineArgs();
-            for (int index = 0; index < args.Length; index++)
-            {
-                if (args[index] == "-mc2ReportState")
-                {
-                    string json = observationPort.ToJson();
-                    AddCombatLogLine("CLI report: state");
-                    Debug.Log("MC2 commander observation: " + json);
-                }
-            }
+            string json = observationPort.ToJson();
+            AddCombatLogLine("CLI report: state");
+            Debug.Log("MC2 commander observation: " + json);
         }
 
         private void QuitSmokeTest()

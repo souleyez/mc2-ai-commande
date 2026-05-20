@@ -86,6 +86,9 @@ Run the player with a startup command and a commander state report:
   -mc2Command "squad move 3136 -789" `
   -mc2AdvanceSeconds 2 `
   -mc2ReportState `
+  -mc2Command "unit unit-1 move 3221 -277" `
+  -mc2AdvanceSeconds 1 `
+  -mc2ReportState `
   -logFile "$PWD\..\analysis-output\unity-player-report.log"
 ```
 
