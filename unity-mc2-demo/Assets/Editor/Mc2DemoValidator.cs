@@ -111,6 +111,7 @@ namespace MC2Demo.EditorTools
             ValidateCommanderCommandPort();
             ValidateCommanderCommandFilePlayback();
             ValidateCommanderObservationPort();
+            ValidateRuleCommander(BattleMission.FromJson(contractJson, combatProfiles));
             ValidateCommanderObjectiveTargets(BattleMission.FromJson(contractJson, combatProfiles));
             ValidateMissionActivation(BattleMission.FromJson(contractJson, combatProfiles));
             ValidateEncounterActivationTiming(
@@ -1115,6 +1116,135 @@ namespace MC2Demo.EditorTools
                 || !json.Contains("reportIndex"))
             {
                 throw new InvalidDataException("Expected commander observation JSON to include mission and unit fields.");
+            }
+        }
+
+        private static void ValidateRuleCommander(BattleMission initialMission)
+        {
+            RuleCommander commander = new();
+            CommanderObservation initial = new CommanderObservationPort(initialMission).Observe();
+            string initialCommand = commander.ChooseCommand(initial);
+            if (string.IsNullOrWhiteSpace(initialCommand) || !initialCommand.StartsWith("squad move ", StringComparison.Ordinal))
+            {
+                throw new InvalidDataException("Expected rule commander to move toward the initial mc2_01 objective, got: " + initialCommand);
+            }
+
+            if (!CommanderCommandPort.TryParse(initialCommand, out CommanderCommand parsedInitial, out string initialError)
+                || parsedInitial.Kind != CommanderCommandKind.Move
+                || parsedInitial.Scope != CommanderCommandScope.Squad)
+            {
+                throw new InvalidDataException("Expected rule commander initial command to parse as squad move: " + initialError);
+            }
+
+            CommanderCommandResult initialResult = new CommanderCommandPort(initialMission, 520f, _ => true).IssueText(initialCommand);
+            if (!initialResult.Accepted || initialResult.AcceptedCount != 3)
+            {
+                throw new InvalidDataException("Expected initial rule commander move to be accepted by all three player units.");
+            }
+
+            CommanderObservation attackObservation = new()
+            {
+                missionId = "validator-rule-attack",
+                result = MissionResultState.InProgress.ToString(),
+                missionEnded = false,
+                playerUnits = new[]
+                {
+                    new CommanderUnitObservation
+                    {
+                        id = "player-1",
+                        active = true,
+                        destroyed = false,
+                        weaponRange = 250f,
+                        x = 0f,
+                        y = 0f
+                    }
+                },
+                activeHostiles = new[]
+                {
+                    new CommanderUnitObservation
+                    {
+                        id = "enemy-far",
+                        active = true,
+                        destroyed = false,
+                        x = 220f,
+                        y = 0f
+                    },
+                    new CommanderUnitObservation
+                    {
+                        id = "enemy-near",
+                        active = true,
+                        destroyed = false,
+                        x = 120f,
+                        y = 0f
+                    }
+                },
+                targetableStructures = Array.Empty<CommanderStructureObservation>(),
+                currentObjectives = Array.Empty<CommanderObjectiveObservation>()
+            };
+
+            string attackCommand = commander.ChooseCommand(attackObservation);
+            if (attackCommand != "squad attack unit enemy-near")
+            {
+                throw new InvalidDataException("Expected rule commander to attack the closest hostile in range: " + attackCommand);
+            }
+
+            if (!CommanderCommandPort.TryParse(attackCommand, out CommanderCommand parsedAttack, out string attackError)
+                || parsedAttack.Kind != CommanderCommandKind.AttackUnit)
+            {
+                throw new InvalidDataException("Expected rule commander attack command to parse: " + attackError);
+            }
+
+            CommanderObservation structureObservation = new()
+            {
+                missionId = "validator-rule-structure",
+                result = MissionResultState.InProgress.ToString(),
+                missionEnded = false,
+                playerUnits = new[]
+                {
+                    new CommanderUnitObservation
+                    {
+                        id = "player-1",
+                        active = true,
+                        destroyed = false,
+                        weaponRange = 100f,
+                        x = 0f,
+                        y = 0f
+                    }
+                },
+                activeHostiles = Array.Empty<CommanderUnitObservation>(),
+                targetableStructures = new[]
+                {
+                    new CommanderStructureObservation
+                    {
+                        id = "structure-1",
+                        destroyed = false,
+                        x = 80f,
+                        y = 0f,
+                        radius = 40f
+                    }
+                },
+                currentObjectives = new[]
+                {
+                    new CommanderObjectiveObservation
+                    {
+                        index = 1,
+                        title = "Destroy structure",
+                        targetStructureIds = new[] { "structure-1" },
+                        targetPoints = Array.Empty<CommanderTargetPointObservation>()
+                    }
+                }
+            };
+
+            string structureCommand = commander.ChooseCommand(structureObservation);
+            if (structureCommand != "squad attack structure structure-1")
+            {
+                throw new InvalidDataException("Expected rule commander to attack current structure target in range: " + structureCommand);
+            }
+
+            if (!CommanderCommandPort.TryParse(structureCommand, out CommanderCommand parsedStructure, out string structureError)
+                || parsedStructure.Kind != CommanderCommandKind.AttackStructure)
+            {
+                throw new InvalidDataException("Expected rule commander structure command to parse: " + structureError);
             }
         }
 
