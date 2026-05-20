@@ -113,6 +113,9 @@ namespace MC2Demo.EditorTools
             ValidateCommanderObservationPort();
             ValidateCommanderObjectiveTargets(BattleMission.FromJson(contractJson, combatProfiles));
             ValidateMissionActivation(BattleMission.FromJson(contractJson, combatProfiles));
+            ValidateEncounterActivationTiming(
+                BattleMission.FromJson(contractJson, combatProfiles),
+                BattleMission.FromJson(contractJson, combatProfiles));
             ValidateAirfieldToHangarObjectiveFlow(BattleMission.FromJson(contractJson, combatProfiles));
             ValidateScriptBridgeSignals(BattleMission.FromJson(contractJson, combatProfiles));
             ValidateNavMarkerPatrolOrders();
@@ -208,9 +211,9 @@ namespace MC2Demo.EditorTools
             }
 
             MovePlayerIntoObjectiveArea(mission, player, 0);
-            if (!patrol.IsActive || islandBandit.IsActive || starslayer.IsActive)
+            if (!patrol.IsActive || !islandBandit.IsActive || starslayer.IsActive)
             {
-                throw new InvalidDataException("Expected airfield completion to activate patrols only.");
+                throw new InvalidDataException("Expected airfield completion to activate patrol groups without Starslayer.");
             }
 
             if (mission.RecentUnitActivationEvents.Count == 0)
@@ -230,10 +233,101 @@ namespace MC2Demo.EditorTools
                 throw new InvalidDataException("Expected activated patrol to receive a lightweight brain movement order.");
             }
 
-            if (islandBandit.IsActive || islandBandit.HasMoveOrder || starslayer.IsActive || starslayer.HasMoveOrder)
+            if (!islandBandit.IsActive || !islandBandit.HasMoveOrder || starslayer.IsActive || starslayer.HasMoveOrder)
             {
-                throw new InvalidDataException("Expected later mc2_01 enemy groups to remain inactive and idle.");
+                throw new InvalidDataException("Expected north island patrols to start after airfield while Starslayer remains inactive.");
             }
+        }
+
+        private static void ValidateEncounterActivationTiming(BattleMission patrolMission, BattleMission starslayerMission)
+        {
+            string[] firstPatrol =
+            {
+                "unit-4",
+                "unit-5",
+                "unit-10",
+                "unit-11",
+                "unit-12",
+                "unit-27",
+                "unit-28",
+                "unit-29"
+            };
+
+            string[] northIsland =
+            {
+                "unit-6",
+                "unit-7",
+                "unit-8",
+                "unit-13"
+            };
+
+            string[] infantryAmbush =
+            {
+                "unit-15",
+                "unit-16",
+                "unit-17",
+                "unit-18",
+                "unit-19",
+                "unit-20",
+                "unit-21",
+                "unit-22"
+            };
+
+            string[] starslayerLance =
+            {
+                "unit-9",
+                "unit-14",
+                "unit-23",
+                "unit-24",
+                "unit-25",
+                "unit-26"
+            };
+
+            AssertUnitsActive(patrolMission, firstPatrol, false, "first patrol should start inactive");
+            AssertUnitsActive(patrolMission, northIsland, false, "north island patrol should start inactive");
+            AssertUnitsActive(patrolMission, infantryAmbush, false, "infantry ambush should start inactive");
+            AssertUnitsActive(patrolMission, starslayerLance, false, "Starslayer lance should start inactive");
+
+            UnitState player = FirstPlayerUnit(patrolMission);
+            if (player == null)
+            {
+                throw new InvalidDataException("Encounter timing validation requires one player unit.");
+            }
+
+            MovePlayerIntoObjectiveArea(patrolMission, player, 0);
+            AssertUnitsActive(patrolMission, firstPatrol, true, "first patrol should activate after airfield investigation");
+            AssertUnitsActive(patrolMission, northIsland, true, "north island patrol should activate after airfield investigation");
+            AssertUnitsActive(patrolMission, infantryAmbush, false, "infantry ambush should wait for hangar damage");
+            AssertUnitsActive(patrolMission, starslayerLance, false, "Starslayer lance should wait for hidden Starslayer area");
+
+            patrolMission.Tick(1f);
+            AssertAnyUnitHasBrainOrder(patrolMission, firstPatrol, "first patrol should receive a lightweight patrol order");
+            AssertAnyUnitHasBrainOrder(patrolMission, northIsland, "north island patrol should receive a lightweight patrol order");
+
+            DamageStructureUntilChanged(patrolMission, "structure-1-0", maxTicks: 160);
+            AssertUnitsActive(patrolMission, infantryAmbush, true, "infantry ambush should activate after hangar damage");
+            if (!HasActivationEventForBrain(patrolMission, "mc2_01_infantry_ambush"))
+            {
+                throw new InvalidDataException("Expected hangar damage to emit infantry ambush activation events.");
+            }
+
+            patrolMission.Tick(1f);
+            AssertAnyUnitHasBrainOrder(patrolMission, infantryAmbush, "infantry ambush should receive an ambush move or attack order");
+
+            UnitState starslayerPlayer = FirstPlayerUnit(starslayerMission);
+            if (starslayerPlayer == null)
+            {
+                throw new InvalidDataException("Starslayer timing validation requires one player unit.");
+            }
+
+            MovePlayerIntoObjectiveArea(starslayerMission, starslayerPlayer, 7);
+            AssertUnitsActive(starslayerMission, starslayerLance, true, "Starslayer lance should activate from hidden objective 7 area");
+            AssertUnitsActive(starslayerMission, firstPatrol, false, "first patrol should not activate from Starslayer area alone");
+            AssertUnitsActive(starslayerMission, northIsland, false, "north island patrol should not activate from Starslayer area alone");
+            AssertUnitsActive(starslayerMission, infantryAmbush, false, "infantry ambush should not activate from Starslayer area alone");
+
+            starslayerMission.Tick(1f);
+            AssertAnyUnitHasBrainOrder(starslayerMission, starslayerLance, "Starslayer lance should receive a lightweight patrol or attack order");
         }
 
         private static void ValidateScriptBridgeSignals(BattleMission mission)
@@ -248,9 +342,12 @@ namespace MC2Demo.EditorTools
             MovePlayerIntoObjectiveArea(mission, player, 0);
             bridge.CaptureFrame();
 
-            if (!HasScriptSignal(bridge, "Objective_0_Decided") || !HasScriptSignal(bridge, "patrol1_triggered"))
+            if (!HasScriptSignal(bridge, "Objective_0_Decided")
+                || !HasScriptSignal(bridge, "patrol1_triggered")
+                || !HasScriptSignal(bridge, "patrol2_triggered")
+                || !HasScriptSignal(bridge, "patrol3_triggered"))
             {
-                throw new InvalidDataException("Expected script bridge to emit airfield objective and first patrol signals.");
+                throw new InvalidDataException("Expected script bridge to emit airfield objective and patrol group signals.");
             }
 
             bridge.CaptureFrame();
@@ -410,6 +507,42 @@ namespace MC2Demo.EditorTools
             }
         }
 
+        private static void DamageStructureUntilChanged(BattleMission mission, string structureId, int maxTicks)
+        {
+            StructureState structure = mission.FindStructure(structureId);
+            if (structure == null)
+            {
+                throw new InvalidDataException("Expected structure to exist: " + structureId);
+            }
+
+            float before = structure.CurrentStructure;
+            int accepted = mission.IssueSquadAttackStructure(structure.Id);
+            if (accepted < 1)
+            {
+                throw new InvalidDataException("Expected at least one squad unit to accept structure attack on " + structure.Id);
+            }
+
+            for (int tick = 0; tick < maxTicks && structure.CurrentStructure >= before && mission.Result == MissionResultState.InProgress; tick++)
+            {
+                mission.Tick(1f);
+            }
+
+            if (structure.CurrentStructure >= before)
+            {
+                throw new InvalidDataException(
+                    "Expected structure to take damage during simulation. id="
+                    + structure.Id
+                    + " current="
+                    + structure.CurrentStructure
+                    + " before="
+                    + before
+                    + " missionTime="
+                    + mission.MissionTimeSeconds
+                    + " result="
+                    + mission.Result);
+            }
+        }
+
         private static void ActivateAirfieldPatrolsIfNeeded(BattleMission mission, UnitState player, UnitState enemy)
         {
             if (enemy.IsActive)
@@ -537,7 +670,7 @@ namespace MC2Demo.EditorTools
 
                 foreach (ObjectiveCondition condition in objective.Definition.conditions)
                 {
-                    if (condition.targetArea != null)
+                    if (condition.type == "MoveAnyUnitToArea" || condition.type == "MoveAllSurvivingMechsToArea")
                     {
                         return condition.targetArea;
                     }
@@ -569,6 +702,60 @@ namespace MC2Demo.EditorTools
                     && !unit.IsDestroyed
                     && !string.IsNullOrEmpty(unit.Brain)
                     && unit.Brain.StartsWith(brainPrefix, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static void AssertUnitsActive(BattleMission mission, string[] unitIds, bool expectedActive, string context)
+        {
+            foreach (string unitId in unitIds)
+            {
+                UnitState unit = mission.FindUnit(unitId);
+                if (unit == null)
+                {
+                    throw new InvalidDataException("Expected unit to exist for encounter timing validation: " + unitId);
+                }
+
+                if (unit.IsActive != expectedActive)
+                {
+                    throw new InvalidDataException(
+                        "Expected "
+                        + unitId
+                        + " active="
+                        + expectedActive
+                        + " because "
+                        + context
+                        + ", got active="
+                        + unit.IsActive
+                        + " brain="
+                        + unit.Brain);
+                }
+            }
+        }
+
+        private static void AssertAnyUnitHasBrainOrder(BattleMission mission, string[] unitIds, string context)
+        {
+            foreach (string unitId in unitIds)
+            {
+                UnitState unit = mission.FindUnit(unitId);
+                if (unit != null && unit.IsActive && (unit.HasMoveOrder || unit.HasAttackOrder))
+                {
+                    return;
+                }
+            }
+
+            throw new InvalidDataException("Expected at least one unit to have a brain order because " + context);
+        }
+
+        private static bool HasActivationEventForBrain(BattleMission mission, string brain)
+        {
+            foreach (UnitActivationEvent activationEvent in mission.RecentUnitActivationEvents)
+            {
+                if (string.Equals(activationEvent.Brain, brain, StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }

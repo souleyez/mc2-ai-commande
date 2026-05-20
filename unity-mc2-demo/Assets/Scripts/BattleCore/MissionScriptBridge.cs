@@ -89,7 +89,8 @@ namespace MC2Demo.BattleCore
         {
             foreach (UnitActivationEvent activationEvent in mission.RecentUnitActivationEvents)
             {
-                string signal = SignalForBrain(activationEvent.Brain);
+                UnitState unit = mission.FindUnit(activationEvent.UnitId);
+                string signal = SignalForBrain(activationEvent.Brain, unit);
                 if (signal == null)
                 {
                     continue;
@@ -159,7 +160,7 @@ namespace MC2Demo.BattleCore
             recentEvents.Add(new MissionScriptEvent(signal, kind, sourceId, message));
         }
 
-        private static string SignalForBrain(string brain)
+        private static string SignalForBrain(string brain, UnitState unit)
         {
             if (string.IsNullOrEmpty(brain))
             {
@@ -171,17 +172,24 @@ namespace MC2Demo.BattleCore
                 return "infantry1_triggered";
             }
 
-            if (StartsWith(brain, "mc2_01_Pat1") || EqualsBrain(brain, "mc2_01_LRMs"))
+            if (StartsWith(brain, "mc2_01_Pat1") || (EqualsBrain(brain, "mc2_01_LRMs") && unit != null && unit.SpawnPosition.x > 0f))
             {
                 return "patrol1_triggered";
             }
 
-            if (StartsWith(brain, "mc2_01_Pat2") || EqualsBrain(brain, "mc2_01_Pat4"))
+            if (StartsWith(brain, "mc2_01_Pat2"))
             {
                 return "patrol2_triggered";
             }
 
-            if (EqualsBrain(brain, "mc2_01_Starslayer") || EqualsBrain(brain, "mc2_01_Urbies"))
+            if (EqualsBrain(brain, "mc2_01_Pat4"))
+            {
+                return "patrol3_triggered";
+            }
+
+            if (EqualsBrain(brain, "mc2_01_Starslayer")
+                || EqualsBrain(brain, "mc2_01_Urbies")
+                || (EqualsBrain(brain, "mc2_01_LRMs") && unit != null && unit.SpawnPosition.x < 0f))
             {
                 return "Starslayer_Trigger";
             }

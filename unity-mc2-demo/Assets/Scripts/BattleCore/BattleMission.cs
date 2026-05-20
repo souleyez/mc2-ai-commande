@@ -436,7 +436,7 @@ namespace MC2Demo.BattleCore
                 return false;
             }
 
-            if (BrainStartsWith(unit, "mc2_01_Pat1") || (BrainEquals(unit, "mc2_01_LRMs") && unit.MissionPosition.x > 0f))
+            if (BrainStartsWith(unit, "mc2_01_Pat1") || IsEastLrmGroup(unit))
             {
                 patrolPoint = NavPatrolPoint(0, new Vector2(3136f, -789.333f), 360f, NextEnemyPatrolStep(unit.Id));
                 return true;
@@ -444,7 +444,9 @@ namespace MC2Demo.BattleCore
 
             if (BrainEquals(unit, "mc2_01_infantry_ambush") || BrainEquals(unit, "mc2_01_infantry_ambush2"))
             {
-                patrolPoint = PatrolPoint(new Vector2(3221.333f, -277.333f), 260f, NextEnemyPatrolStep(unit.Id));
+                patrolPoint = BrainEquals(unit, "mc2_01_infantry_ambush2")
+                    ? new Vector2(3520f, -448f)
+                    : new Vector2(3392f, -448f);
                 return true;
             }
 
@@ -456,7 +458,7 @@ namespace MC2Demo.BattleCore
 
             if (BrainEquals(unit, "mc2_01_Starslayer")
                 || BrainEquals(unit, "mc2_01_Urbies")
-                || (BrainEquals(unit, "mc2_01_LRMs") && unit.MissionPosition.x < 0f))
+                || IsWestLrmGroup(unit))
             {
                 patrolPoint = PatrolPoint(new Vector2(-2240f, 1600f), 520f, NextEnemyPatrolStep(unit.Id));
                 return true;
@@ -926,6 +928,11 @@ namespace MC2Demo.BattleCore
                 return IsObjectiveComplete(missionObjective);
             }
 
+            if (MissionSpecificRequiresHangarDamage(unit))
+            {
+                return IsHangarAmbushTriggered();
+            }
+
             string missionFlag = MissionSpecificActivationFlag(unit);
             return string.IsNullOrEmpty(missionFlag) || GetFlag(missionFlag);
         }
@@ -955,7 +962,7 @@ namespace MC2Demo.BattleCore
                 return 7;
             }
 
-            if (BrainEquals(unit, "mc2_01_LRMs") && unit.MissionPosition.x < 0f)
+            if (IsWestLrmGroup(unit))
             {
                 return 7;
             }
@@ -970,22 +977,34 @@ namespace MC2Demo.BattleCore
                 return null;
             }
 
-            if (BrainStartsWith(unit, "mc2_01_Pat1") || BrainEquals(unit, "mc2_01_infantry_ambush") || BrainEquals(unit, "mc2_01_infantry_ambush2"))
+            if (BrainStartsWith(unit, "mc2_01_Pat1"))
             {
                 return "0";
             }
 
-            if (BrainEquals(unit, "mc2_01_LRMs") && unit.MissionPosition.x > 0f)
+            if (IsEastLrmGroup(unit))
             {
                 return "0";
             }
 
             if (BrainStartsWith(unit, "mc2_01_Pat2") || BrainEquals(unit, "mc2_01_Pat4"))
             {
-                return "4";
+                return "0";
             }
 
             return null;
+        }
+
+        private bool MissionSpecificRequiresHangarDamage(UnitState unit)
+        {
+            return IsMission("mc2_01")
+                && (BrainEquals(unit, "mc2_01_infantry_ambush") || BrainEquals(unit, "mc2_01_infantry_ambush2"));
+        }
+
+        private bool IsHangarAmbushTriggered()
+        {
+            StructureState hangar = FindStructure("structure-1-0");
+            return hangar != null && hangar.CurrentStructure < hangar.MaxStructure;
         }
 
         private bool IsMission(string missionId)
@@ -1003,6 +1022,16 @@ namespace MC2Demo.BattleCore
         {
             return !string.IsNullOrEmpty(unit.Brain)
                 && unit.Brain.StartsWith(prefix, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static bool IsEastLrmGroup(UnitState unit)
+        {
+            return BrainEquals(unit, "mc2_01_LRMs") && unit.SpawnPosition.x > 0f;
+        }
+
+        private static bool IsWestLrmGroup(UnitState unit)
+        {
+            return BrainEquals(unit, "mc2_01_LRMs") && unit.SpawnPosition.x < 0f;
         }
     }
 

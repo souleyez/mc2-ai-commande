@@ -126,6 +126,27 @@ Other hidden triggers:
 - Objective `7`: moving into a large area powers up the `Starslayer` encounter.
 - Objective `8`: killing the Starslayer lance triggers voice-over logic.
 
+## Encounter Timing Notes
+
+The first playable Unity slice now mirrors the key trigger timing rather than
+trying to run the full ABL warrior scripts:
+
+- The mission ABL sets `patrol1_triggered`, `patrol2_triggered`, and
+  `patrol3_triggered` together when objective `0` completes. The Unity demo
+  follows that timing for the first patrol and north island patrol groups, while
+  keeping their objective targets hidden until the visible objective chain
+  reaches them.
+- The infantry ambush warrior scripts do not simply wake on the airfield
+  trigger. They watch the hangar object damage and switch to ambush behavior
+  when `HangarAttacked` becomes true. The Unity demo activates the infantry
+  ambush only after `structure-1-0` takes damage.
+- The `Starslayer`, `Urbies`, and west-side `LRMs` group remains tied to hidden
+  objective `7`, which completes when a player unit enters the large Starslayer
+  area. Their voice-over hook remains represented by hidden objective `8`.
+- East and west `mc2_01_LRMs` are classified by spawn position, not current
+  position, so patrol movement cannot accidentally move a unit across the
+  activation rule boundary.
+
 ## Script Role
 
 The ABL script is mostly glue around the declarative objective graph:
