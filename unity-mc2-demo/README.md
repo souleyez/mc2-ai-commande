@@ -101,6 +101,20 @@ Run the player with a startup commander command file:
   -logFile "$PWD\..\analysis-output\unity-player-command-file.log"
 ```
 
+Run the player with MiniMax driving startup commander steps:
+
+```powershell
+$env:MINIMAX_API_KEY = "<your-api-key>"
+$env:MINIMAX_BASE_URL = "https://api.minimaxi.com/v1"
+$env:MINIMAX_MODEL = "MiniMax-M2.5"
+& .\Builds\Windows\MC2UnityDemo.exe `
+  -batchmode -nographics -mc2SmokeTest `
+  -mc2MinimaxCommanderSteps 1 `
+  -logFile "$PWD\..\analysis-output\unity-player-minimax-commander.log"
+```
+
+The MiniMax adapter reads only environment variables, logs the selected endpoint/model without printing the key, and falls back to the local `RuleCommander` if the model response is not a legal commander command.
+
 Command files run in order and support blank lines plus `#` comments:
 
 ```text

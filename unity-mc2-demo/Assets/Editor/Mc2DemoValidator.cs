@@ -112,6 +112,7 @@ namespace MC2Demo.EditorTools
             ValidateCommanderCommandFilePlayback();
             ValidateCommanderObservationPort();
             ValidateRuleCommander(BattleMission.FromJson(contractJson, combatProfiles));
+            ValidateMiniMaxCommanderExtraction();
             ValidateCommanderObjectiveTargets(BattleMission.FromJson(contractJson, combatProfiles));
             ValidateMissionActivation(BattleMission.FromJson(contractJson, combatProfiles));
             ValidateEncounterActivationTiming(
@@ -1245,6 +1246,27 @@ namespace MC2Demo.EditorTools
                 || parsedStructure.Kind != CommanderCommandKind.AttackStructure)
             {
                 throw new InvalidDataException("Expected rule commander structure command to parse: " + structureError);
+            }
+        }
+
+        private static void ValidateMiniMaxCommanderExtraction()
+        {
+            string command = MiniMaxCommander.ExtractCommandFromText("<think>choose target</think>\n\nsquad attack unit enemy-near");
+            if (command != "squad attack unit enemy-near")
+            {
+                throw new InvalidDataException("Expected MiniMax commander to strip thinking text, got: " + command);
+            }
+
+            command = MiniMaxCommander.ExtractCommandFromText("{\"command\":\"squad attack structure structure-1\"}");
+            if (command != "squad attack structure structure-1")
+            {
+                throw new InvalidDataException("Expected MiniMax commander to extract JSON command, got: " + command);
+            }
+
+            command = MiniMaxCommander.ExtractCommandFromText("```text\nunit player-1 jump 3200 -775\n```");
+            if (command != "unit player-1 jump 3200 -775")
+            {
+                throw new InvalidDataException("Expected MiniMax commander to extract fenced command, got: " + command);
             }
         }
 

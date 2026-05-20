@@ -16,6 +16,7 @@ namespace MC2Demo.Presentation
         [SerializeField] private float cameraPitch = 58f;
         [SerializeField] private float cameraYaw = 45f;
         private const float JumpDistance = 520f;
+        private const float MiniMaxCommanderAdvanceSeconds = 8f;
 
         private readonly Dictionary<string, DemoUnitView> unitViews = new();
         private readonly Dictionary<string, DemoStructureView> structureViews = new();
@@ -190,6 +191,9 @@ namespace MC2Demo.Presentation
                     case "-mc2ReportState":
                         ReportStartupCommanderState();
                         break;
+                    case "-mc2MinimaxCommanderSteps":
+                        index = RunStartupMiniMaxCommander(args, index);
+                        break;
                 }
             }
         }
@@ -351,6 +355,73 @@ namespace MC2Demo.Presentation
             string json = JsonUtility.ToJson(observation);
             AddCombatLogLine("CLI report: state #" + observation.reportIndex);
             Debug.Log("MC2 commander observation #" + observation.reportIndex + ": " + json);
+        }
+
+        private int RunStartupMiniMaxCommander(string[] args, int index)
+        {
+            if (index + 1 >= args.Length)
+            {
+                Debug.LogWarning("MC2 MiniMax commander blocked: missing step count after -mc2MinimaxCommanderSteps.");
+                return index;
+            }
+
+            string value = args[index + 1];
+            if (!int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out int requestedSteps))
+            {
+                Debug.LogWarning("MC2 MiniMax commander blocked: invalid step count '" + value + "'.");
+                return index + 1;
+            }
+
+            int steps = Mathf.Clamp(requestedSteps, 0, 8);
+            if (steps <= 0)
+            {
+                Debug.Log("MC2 MiniMax commander skipped: steps=0.");
+                return index + 1;
+            }
+
+            MiniMaxCommanderConfig config = MiniMaxCommander.ConfigFromEnvironment();
+            Debug.Log("MC2 MiniMax commander config: " + config.DescribeWithoutSecrets());
+            if (!config.IsConfigured)
+            {
+                Debug.LogWarning("MC2 MiniMax commander blocked: set MINIMAX_API_KEY in the process environment.");
+                return index + 1;
+            }
+
+            MiniMaxCommander commander = new(config);
+            RuleCommander fallbackCommander = new();
+            for (int step = 0; step < steps && mission.Result == MissionResultState.InProgress; step++)
+            {
+                CommanderObservation observation = observationPort.Observe();
+                MiniMaxCommanderResult result = commander.ChooseCommand(observation);
+                string commandLine = result.Command;
+                string source = "minimax";
+
+                if (!result.Success || string.IsNullOrWhiteSpace(commandLine))
+                {
+                    commandLine = fallbackCommander.ChooseCommand(observation);
+                    source = "rule_fallback";
+                }
+
+                if (string.IsNullOrWhiteSpace(commandLine))
+                {
+                    Debug.LogWarning("MC2 MiniMax commander stopped: no command available. message=" + result.Message);
+                    break;
+                }
+
+                Debug.Log("MC2 MiniMax commander step="
+                    + (step + 1)
+                    + " source="
+                    + source
+                    + " command="
+                    + commandLine
+                    + " message="
+                    + result.Message);
+                RunStartupCommanderCommand(commandLine);
+                AdvanceStartupSimulation(MiniMaxCommanderAdvanceSeconds);
+            }
+
+            ReportStartupCommanderState();
+            return index + 1;
         }
 
         private void QuitSmokeTest()
