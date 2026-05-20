@@ -1911,7 +1911,7 @@ namespace MC2Demo.Presentation
 
             foreach (ObjectiveState objective in mission.Objectives)
             {
-                if (objective.Definition.hidden)
+                if (!ShouldDrawObjectiveOnMissionMap(objective))
                 {
                     continue;
                 }
@@ -1919,29 +1919,19 @@ namespace MC2Demo.Presentation
                 DrawObjectiveMapMarker(map, objective);
             }
 
-            foreach (StructureState structure in mission.Structures)
-            {
-                DrawMapMarker(map, structure.MissionPosition, structure.IsDestroyed ? Color.gray : new Color(0.95f, 0.55f, 0.16f), 8f);
-            }
-
-            foreach (UnitState unit in mission.Units)
-            {
-                if (!unit.IsActive && !unit.IsPlayerUnit)
-                {
-                    continue;
-                }
-
-                Color color = unit.IsDestroyed
-                    ? Color.gray
-                    : unit.IsPlayerUnit ? new Color(0.2f, 0.78f, 1f) : new Color(0.94f, 0.22f, 0.18f);
-                DrawMapMarker(map, unit.MissionPosition, color, unit.IsPlayerUnit ? 7f : 5f);
-            }
-
             if (GUI.Button(new Rect(panel.xMax - 66f, panel.y + 6f, 52f, 24f), "Close"))
             {
                 showMissionMap = false;
                 statusText = "Mission map closed";
             }
+        }
+
+        private static bool ShouldDrawObjectiveOnMissionMap(ObjectiveState objective)
+        {
+            return objective != null
+                && !objective.Definition.hidden
+                && objective.IsActive
+                && !objective.IsComplete;
         }
 
         private void DrawObjectiveMapMarker(Rect map, ObjectiveState objective)

@@ -28,7 +28,7 @@ Current demo behavior:
 - carries source weapon type and special-effect metadata into combat visuals
 - shows weapon name, range, cooldown, heat lock, and range readiness in the unit panel
 - supports one-shot Jet orders with terrain-aware landing rejection
-- provides a toggleable mission map and a pause/restart/end system panel
+- provides a toggleable current-objective mission map and a pause/restart/end system panel
 - resolves mission victory or defeat through BattleCore result state
 - auto-acquires hostile units in weapon range
 - resolves temporary weapon cooldown, damage, cockpit/torso/arms/legs sections,
