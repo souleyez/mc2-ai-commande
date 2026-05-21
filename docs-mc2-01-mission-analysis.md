@@ -205,4 +205,6 @@ placement overlap, blocked cells, rotation, bounds, heat caps, weight caps, and
 special-slot compatibility before the mech bay becomes editable. The current
 mech bay UI projects each source weapon loadout into a simple validator-backed
 preview so the player can see heat, load, grid occupancy, and fitting status
-before direct editing is added.
+before direct editing is added. It now also supports temporary weapon on/off
+toggles, proving that fitting edits can immediately recompute heat, load, grid
+occupancy, and validator status without touching live battle damage yet.

@@ -31,7 +31,7 @@ namespace MC2Demo.Presentation
         private readonly Dictionary<string, GameObject> structureHealthBarBacks = new();
         private readonly Dictionary<string, GameObject> structureHealthBarFills = new();
         private readonly Dictionary<string, Material> materialCache = new(StringComparer.Ordinal);
-        private readonly Dictionary<string, CombatLoadoutPreview> loadoutPreviewCache = new(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, bool[]> loadoutWeaponEnabledByUnit = new(StringComparer.OrdinalIgnoreCase);
         private readonly List<Material> ownedMaterials = new();
         private readonly List<string> combatLog = new();
         private BattleMission mission;
@@ -2459,13 +2459,13 @@ namespace MC2Demo.Presentation
             y += 30f;
             int unitCount = CountPlayerUnits();
             Rect viewport = new(x, y, width, panel.yMax - y - 12f);
-            Rect content = new(0f, 0f, width - 20f, Mathf.Max(viewport.height, unitCount * 156f));
+            Rect content = new(0f, 0f, width - 20f, Mathf.Max(viewport.height, unitCount * 184f));
             loadoutScroll = GUI.BeginScrollView(viewport, loadoutScroll, content);
             float itemY = 0f;
             foreach (UnitState unit in mission.PlayerUnits())
             {
                 DrawLoadoutUnit(unit, 0f, itemY, content.width);
-                itemY += 156f;
+                itemY += 184f;
             }
 
             GUI.EndScrollView();
@@ -2473,7 +2473,7 @@ namespace MC2Demo.Presentation
 
         private void DrawLoadoutUnit(UnitState unit, float x, float y, float width)
         {
-            Rect card = new(x, y, width, 148f);
+            Rect card = new(x, y, width, 176f);
             GUI.Box(card, unit.UnitType + "  " + unit.Id);
 
             float left = x + 12f;
@@ -2506,7 +2506,7 @@ namespace MC2Demo.Presentation
             DrawLoadoutSectionLine(unit, left, lineY, width - 24f);
 
             lineY += 34f;
-            DrawWeaponLoadoutLines(unit.Profile.Weapons, left, lineY, width - 24f);
+            DrawWeaponLoadoutLines(unit, left, lineY, width - 24f);
         }
 
         private void DrawProjectedLoadoutStatus(CombatLoadoutPreview preview, float left, float right, float y, float width)
@@ -2529,14 +2529,7 @@ namespace MC2Demo.Presentation
         private CombatLoadoutPreview LoadoutPreviewFor(UnitState unit)
         {
             string key = unit?.UnitType ?? "";
-            if (loadoutPreviewCache.TryGetValue(key, out CombatLoadoutPreview preview))
-            {
-                return preview;
-            }
-
-            preview = CombatLoadoutPreviewBuilder.Build(key, unit?.Profile);
-            loadoutPreviewCache[key] = preview;
-            return preview;
+            return CombatLoadoutPreviewBuilder.Build(key, unit?.Profile, WeaponEnabledStateFor(unit));
         }
 
         private static string FirstLoadoutError(LoadoutValidationResult result)
@@ -2562,8 +2555,9 @@ namespace MC2Demo.Presentation
             }
         }
 
-        private void DrawWeaponLoadoutLines(CombatWeaponDefinition[] weapons, float x, float y, float width)
+        private void DrawWeaponLoadoutLines(UnitState unit, float x, float y, float width)
         {
+            CombatWeaponDefinition[] weapons = unit?.Profile?.Weapons;
             if (weapons == null || weapons.Length == 0)
             {
                 GUI.Label(new Rect(x, y, width, 18f), "Weapons: aggregate profile");
@@ -2572,6 +2566,7 @@ namespace MC2Demo.Presentation
 
             int count = Mathf.Min(3, weapons.Length);
             float columnWidth = width / count;
+            bool[] enabledWeapons = WeaponEnabledStateFor(unit);
             for (int index = 0; index < count; index++)
             {
                 CombatWeaponDefinition weapon = weapons[index];
@@ -2580,13 +2575,37 @@ namespace MC2Demo.Presentation
                     continue;
                 }
 
-                string label = TruncateText(weapon.name, 18)
+                float columnX = x + index * columnWidth;
+                string label = TruncateText(weapon.name, 16)
                     + "  R" + Mathf.RoundToInt(weapon.rangeMax)
                     + " D" + FormatDecimal(weapon.damage)
                     + " H" + FormatDecimal(weapon.heat)
                     + " W" + FormatDecimal(weapon.weight);
-                GUI.Label(new Rect(x + index * columnWidth, y, columnWidth - 8f, 18f), label);
+                GUI.Label(new Rect(columnX, y, columnWidth - 52f, 18f), label);
+                if (GUI.Button(new Rect(columnX + columnWidth - 46f, y - 2f, 42f, 22f), enabledWeapons[index] ? "On" : "Off"))
+                {
+                    enabledWeapons[index] = !enabledWeapons[index];
+                    statusText = (enabledWeapons[index] ? "Enabled " : "Disabled ") + TruncateText(weapon.name, 20);
+                }
             }
+        }
+
+        private bool[] WeaponEnabledStateFor(UnitState unit)
+        {
+            string key = unit?.Id ?? "";
+            int weaponCount = unit?.Profile?.Weapons?.Length ?? 0;
+            if (!loadoutWeaponEnabledByUnit.TryGetValue(key, out bool[] enabledWeapons) || enabledWeapons.Length != weaponCount)
+            {
+                enabledWeapons = new bool[weaponCount];
+                for (int index = 0; index < enabledWeapons.Length; index++)
+                {
+                    enabledWeapons[index] = true;
+                }
+
+                loadoutWeaponEnabledByUnit[key] = enabledWeapons;
+            }
+
+            return enabledWeapons;
         }
 
         private void DrawSystemPanel()

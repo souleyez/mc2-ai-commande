@@ -321,6 +321,25 @@ namespace MC2Demo.EditorTools
                 {
                     throw new InvalidDataException("Projected loadout limits do not match source limits for " + unitType);
                 }
+
+                bool[] enabledWeapons = new bool[profile.Weapons.Length];
+                for (int index = 0; index < enabledWeapons.Length; index++)
+                {
+                    enabledWeapons[index] = true;
+                }
+
+                enabledWeapons[0] = false;
+                CombatLoadoutPreview disabledPreview = CombatLoadoutPreviewBuilder.Build(unitType, profile, enabledWeapons);
+                if (disabledPreview.Validation.OccupiedGridCells != profile.Weapons.Length - 1)
+                {
+                    throw new InvalidDataException("Projected disabled loadout did not remove one occupied cell for " + unitType);
+                }
+
+                if (disabledPreview.Validation.TotalHeat >= preview.Validation.TotalHeat
+                    || disabledPreview.Validation.TotalWeight >= preview.Validation.TotalWeight)
+                {
+                    throw new InvalidDataException("Projected disabled loadout did not reduce heat and weight for " + unitType);
+                }
             }
         }
 

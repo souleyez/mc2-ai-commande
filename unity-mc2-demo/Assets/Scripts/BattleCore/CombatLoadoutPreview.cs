@@ -28,6 +28,11 @@ namespace MC2Demo.BattleCore
 
         public static CombatLoadoutPreview Build(string chassisId, CombatProfile profile)
         {
+            return Build(chassisId, profile, null);
+        }
+
+        public static CombatLoadoutPreview Build(string chassisId, CombatProfile profile, bool[] enabledWeapons)
+        {
             CombatWeaponDefinition[] weapons = profile?.Weapons ?? Array.Empty<CombatWeaponDefinition>();
             int gridHeight = Math.Max(1, (weapons.Length + ProjectedGridWidth - 1) / ProjectedGridWidth);
             int gridCapacity = ProjectedGridWidth * gridHeight;
@@ -39,13 +44,20 @@ namespace MC2Demo.BattleCore
             float weightLimit = loadLimit > 0f ? loadLimit : Math.Max(1f, totalWeaponWeight);
             string safeChassisId = string.IsNullOrEmpty(chassisId) ? "source-profile" : chassisId;
 
-            LoadoutItemDefinition[] items = new LoadoutItemDefinition[weapons.Length];
-            LoadoutPlacedItemDefinition[] placedItems = new LoadoutPlacedItemDefinition[weapons.Length];
+            int enabledCount = CountEnabledWeapons(weapons.Length, enabledWeapons);
+            LoadoutItemDefinition[] items = new LoadoutItemDefinition[enabledCount];
+            LoadoutPlacedItemDefinition[] placedItems = new LoadoutPlacedItemDefinition[enabledCount];
+            int placedIndex = 0;
             for (int index = 0; index < weapons.Length; index++)
             {
+                if (!IsWeaponEnabled(enabledWeapons, index))
+                {
+                    continue;
+                }
+
                 CombatWeaponDefinition weapon = weapons[index];
                 string itemId = "source-weapon-" + index;
-                items[index] = new LoadoutItemDefinition
+                items[placedIndex] = new LoadoutItemDefinition
                 {
                     itemId = itemId,
                     displayName = string.IsNullOrEmpty(weapon?.name) ? itemId : weapon.name,
@@ -63,12 +75,13 @@ namespace MC2Demo.BattleCore
                     }
                 };
 
-                placedItems[index] = new LoadoutPlacedItemDefinition
+                placedItems[placedIndex] = new LoadoutPlacedItemDefinition
                 {
                     itemId = itemId,
                     gridX = index % ProjectedGridWidth,
                     gridY = index / ProjectedGridWidth
                 };
+                placedIndex++;
             }
 
             LoadoutContract contract = new()
@@ -104,6 +117,30 @@ namespace MC2Demo.BattleCore
 
             LoadoutValidationResult validation = LoadoutValidator.Validate(contract, contract.loadouts[0]);
             return new CombatLoadoutPreview(validation, gridCapacity, heatLimit, weightLimit);
+        }
+
+        private static int CountEnabledWeapons(int weaponCount, bool[] enabledWeapons)
+        {
+            if (enabledWeapons == null)
+            {
+                return weaponCount;
+            }
+
+            int count = 0;
+            for (int index = 0; index < weaponCount; index++)
+            {
+                if (IsWeaponEnabled(enabledWeapons, index))
+                {
+                    count++;
+                }
+            }
+
+            return count;
+        }
+
+        private static bool IsWeaponEnabled(bool[] enabledWeapons, int index)
+        {
+            return enabledWeapons == null || index >= enabledWeapons.Length || enabledWeapons[index];
         }
     }
 }
