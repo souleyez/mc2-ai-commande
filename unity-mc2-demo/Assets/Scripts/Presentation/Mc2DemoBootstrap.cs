@@ -2526,7 +2526,7 @@ namespace MC2Demo.Presentation
 
             y += 30f;
             DrawMechBayInventorySummary(x, y, width);
-            y += 214f;
+            y += 236f;
 
             int unitCount = CountPlayerUnits();
             Rect viewport = new(x, y, width, panel.yMax - y - 12f);
@@ -2575,12 +2575,15 @@ namespace MC2Demo.Presentation
             GUI.Label(
                 new Rect(x, y + 40f, width, 18f),
                 "Assembly " + AssemblyPreviewText(MechBayAssemblyPreviewService.BestAssemblyProgress(demoInventory)));
+            GUI.Label(
+                new Rect(x, y + 60f, width, 18f),
+                "Shop " + WeaponShopPreviewText(MechBayWeaponShopPreviewService.BuildPreview(demoInventory)));
             MechBayOwnedRosterEntry[] roster = MechBayOwnedRosterService.BuildRosterPreview(demoInventory);
             ClampSelectedRosterIndex(roster);
             GUI.Label(
-                new Rect(x, y + 60f, width, 18f),
+                new Rect(x, y + 80f, width, 18f),
                 "Roster " + TruncateText(OwnedRosterText(roster), 62));
-            DrawOwnedRosterDetail(x, y + 82f, width, roster);
+            DrawOwnedRosterDetail(x, y + 102f, width, roster);
         }
 
         private void DrawLoadoutUnit(UnitState unit, float x, float y, float width)
@@ -2776,6 +2779,40 @@ namespace MC2Demo.Presentation
             }
 
             return text;
+        }
+
+        private static string WeaponShopPreviewText(MechBayWeaponShopPreview preview)
+        {
+            MechBayWeaponShopEntry[] entries = preview?.Entries ?? Array.Empty<MechBayWeaponShopEntry>();
+            if (entries.Length == 0)
+            {
+                return "No ordinary weapons";
+            }
+
+            int cheapestCost = int.MaxValue;
+            int affordableCount = 0;
+            for (int index = 0; index < entries.Length; index++)
+            {
+                MechBayWeaponShopEntry entry = entries[index];
+                if (entry == null)
+                {
+                    continue;
+                }
+
+                cheapestCost = Mathf.Min(cheapestCost, Mathf.Max(0, entry.tokenCost));
+                if (entry.canAfford)
+                {
+                    affordableCount++;
+                }
+            }
+
+            string cost = cheapestCost == int.MaxValue ? "unknown" : FormatTokens(cheapestCost) + " token";
+            return entries.Length.ToString(CultureInfo.InvariantCulture)
+                + " ordinary weapons from "
+                + cost
+                + "  afford "
+                + affordableCount.ToString(CultureInfo.InvariantCulture)
+                + "  preview only";
         }
 
         private void DrawOwnedRosterDetail(float x, float y, float width, MechBayOwnedRosterEntry[] roster)

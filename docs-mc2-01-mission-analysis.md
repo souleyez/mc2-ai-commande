@@ -254,3 +254,6 @@ or assignment yet.
 It now exposes spare weapon stock counts too, making it clear when all starter
 weapons are mounted on the active squad and no depot fitting weapon stock is
 available yet.
+The mech bay also exposes a read-only ordinary weapon shop preview, establishing
+where future spare depot weapons will come from before purchase or fitting
+actions are enabled.

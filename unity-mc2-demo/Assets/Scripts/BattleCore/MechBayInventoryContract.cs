@@ -164,6 +164,24 @@ namespace MC2Demo.BattleCore
         public MechBayReceiptItemDefinition[] ItemStacks { get; internal set; }
     }
 
+    public sealed class MechBayWeaponShopPreview
+    {
+        public int TokenBalance { get; internal set; }
+        public string Status { get; internal set; }
+        public MechBayWeaponShopEntry[] Entries { get; internal set; }
+    }
+
+    public sealed class MechBayWeaponShopEntry
+    {
+        public string itemId { get; internal set; }
+        public string displayName { get; internal set; }
+        public string weaponFamily { get; internal set; }
+        public int tokenCost { get; internal set; }
+        public bool canAfford { get; internal set; }
+        public bool purchaseEnabled { get; internal set; }
+        public string purchaseStatus { get; internal set; }
+    }
+
     public sealed class MechBayReceiptItemDefinition
     {
         public string itemId;
@@ -700,6 +718,60 @@ namespace MC2Demo.BattleCore
         {
             return !string.IsNullOrWhiteSpace(value)
                 && value.StartsWith(prefix, StringComparison.OrdinalIgnoreCase);
+        }
+    }
+
+    public static class MechBayWeaponShopPreviewService
+    {
+        private static readonly MechBayWeaponShopEntry[] StarterCatalog =
+        {
+            CatalogEntry("shop-basic-laser", "Ordinary Laser", "Energy", 900),
+            CatalogEntry("shop-srm-rack", "Ordinary SRM Rack", "Missile", 1250),
+            CatalogEntry("shop-autocannon", "Ordinary Autocannon", "Ballistic", 1600)
+        };
+
+        public static MechBayWeaponShopPreview BuildPreview(MechBayInventoryContract inventory)
+        {
+            int tokenBalance = Math.Max(0, inventory?.tokenBalance ?? 0);
+            MechBayWeaponShopEntry[] entries = new MechBayWeaponShopEntry[StarterCatalog.Length];
+            for (int index = 0; index < StarterCatalog.Length; index++)
+            {
+                MechBayWeaponShopEntry source = StarterCatalog[index];
+                entries[index] = new MechBayWeaponShopEntry
+                {
+                    itemId = source.itemId,
+                    displayName = source.displayName,
+                    weaponFamily = source.weaponFamily,
+                    tokenCost = source.tokenCost,
+                    canAfford = tokenBalance >= source.tokenCost,
+                    purchaseEnabled = false,
+                    purchaseStatus = "Preview only"
+                };
+            }
+
+            return new MechBayWeaponShopPreview
+            {
+                TokenBalance = tokenBalance,
+                Status = "Ordinary weapon shop preview",
+                Entries = entries
+            };
+        }
+
+        private static MechBayWeaponShopEntry CatalogEntry(
+            string itemId,
+            string displayName,
+            string weaponFamily,
+            int tokenCost)
+        {
+            return new MechBayWeaponShopEntry
+            {
+                itemId = itemId,
+                displayName = displayName,
+                weaponFamily = weaponFamily,
+                tokenCost = Math.Max(0, tokenCost),
+                purchaseEnabled = false,
+                purchaseStatus = "Preview only"
+            };
         }
     }
 

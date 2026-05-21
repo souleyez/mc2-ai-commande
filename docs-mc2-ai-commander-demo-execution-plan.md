@@ -59,6 +59,7 @@ The Unity demo currently supports:
 - depot fit stub previews missing spare weapon stock and pilot assignment requirements
 - depot roster detail shows a read-only pilot placeholder for the future pilot/social system
 - depot roster detail previews spare weapon stock counts before the shop or fitting flow exists
+- mech bay summary previews a read-only ordinary weapon shop as the future source of spare depot weapons
 - starter inventory availability feedback warns on armor plate or heat sink shortages and blocks applying invalid drafts
 - starter mech condition and one-click demo repair spend local token balance and restore damaged mechs
 - starter mission receipt applies completed bounty tokens and salvaged mech fragments to local inventory
@@ -376,7 +377,7 @@ Tasks:
 
 ## Current Recommended Next Task
 
-Start with **starter weapon shop preview**.
+Start with **starter weapon purchase stub**.
 
 Reason:
 
@@ -387,5 +388,6 @@ Reason:
 - The depot fit stub now previews missing spare weapon stock and pilot assignment requirements.
 - The roster detail now shows a read-only pilot placeholder, so the future pilot/social system has a clear UI slot.
 - The roster detail now previews spare weapon stock counts, confirming that starter source weapons are all mounted and no depot fitting weapon stock is free yet.
-- The next low-risk step is to show a read-only ordinary weapon shop preview, so the future source of spare weapon stock is visible before purchases or real fitting actions are enabled.
+- The mech bay summary now shows a read-only ordinary weapon shop preview, so the future source of spare weapon stock is visible.
+- The next low-risk step is to add a disabled or demo-only purchase affordance that previews how ordinary weapons will enter inventory without enabling full shop balancing yet.
 - Keep it read-only first; selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.

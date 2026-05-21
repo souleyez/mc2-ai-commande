@@ -328,6 +328,20 @@ namespace MC2Demo.EditorTools
                 throw new InvalidDataException("Expected starter inventory to expose demo token balance.");
             }
 
+            MechBayWeaponShopPreview shopPreview = MechBayWeaponShopPreviewService.BuildPreview(inventory);
+            if (shopPreview == null
+                || shopPreview.TokenBalance != inventory.tokenBalance
+                || shopPreview.Status != "Ordinary weapon shop preview"
+                || shopPreview.Entries == null
+                || shopPreview.Entries.Length != 3
+                || shopPreview.Entries[0].purchaseEnabled
+                || !shopPreview.Entries[0].canAfford
+                || shopPreview.Entries[0].tokenCost <= 0
+                || string.IsNullOrWhiteSpace(shopPreview.Entries[0].displayName))
+            {
+                throw new InvalidDataException("Expected starter weapon shop preview to expose read-only ordinary weapons.");
+            }
+
             if (result.Summary.WeaponCount <= 0)
             {
                 throw new InvalidDataException("Expected starter inventory to expose source weapon stacks.");
