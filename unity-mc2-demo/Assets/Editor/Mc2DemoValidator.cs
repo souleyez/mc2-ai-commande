@@ -309,6 +309,8 @@ namespace MC2Demo.EditorTools
                 || starterRoster[0].loadoutStatus != "Ready fit"
                 || starterRoster[0].hasDraftFitStub
                 || starterRoster[0].draftFitStatus != "Use squad fit cards below"
+                || starterRoster[0].draftFitRequirements != "Current fit active"
+                || !starterRoster[0].hasPilotAssignment
                 || starterRoster[0].conditionPercent <= 0)
             {
                 throw new InvalidDataException("Expected starter owned-mech roster entries to include detail preview fields.");
@@ -2324,6 +2326,9 @@ namespace MC2Demo.EditorTools
                 || assembledRaven.loadoutStatus != "Needs loadout"
                 || !assembledRaven.hasDraftFitStub
                 || assembledRaven.draftFitStatus != "Draft fitting locked for this demo"
+                || assembledRaven.draftFitRequirements != "Need stock weapons + pilot"
+                || assembledRaven.hasSpareWeaponStock
+                || assembledRaven.hasPilotAssignment
                 || string.IsNullOrWhiteSpace(assembledRaven.ownedMechId))
             {
                 throw new InvalidDataException("Expected assembled warehouse Raven to stay held with a pending loadout placeholder.");

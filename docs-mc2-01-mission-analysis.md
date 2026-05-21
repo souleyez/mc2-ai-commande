@@ -246,3 +246,5 @@ Assembled depot mechs are intentionally held with a pending-loadout placeholder,
 so they are visible as assets but not treated as deployable squad mechs yet.
 The roster detail now includes a disabled Draft Fit control, reserving UI space
 for the later depot fitting flow without changing mission deployment rules.
+That stub now previews two future requirements: spare weapon stock and a pilot
+assignment, both missing for newly assembled depot mechs in the current demo.

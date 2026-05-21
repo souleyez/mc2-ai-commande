@@ -73,6 +73,9 @@ namespace MC2Demo.BattleCore
         public string loadoutStatus { get; internal set; }
         public bool hasDraftFitStub { get; internal set; }
         public string draftFitStatus { get; internal set; }
+        public string draftFitRequirements { get; internal set; }
+        public bool hasSpareWeaponStock { get; internal set; }
+        public bool hasPilotAssignment { get; internal set; }
         public bool availableForMission { get; internal set; }
         public int conditionPercent { get; internal set; }
         public bool isWarehouseMech { get; internal set; }
@@ -522,6 +525,7 @@ namespace MC2Demo.BattleCore
         public static MechBayOwnedRosterEntry[] BuildRosterPreview(MechBayInventoryContract inventory)
         {
             MechBayOwnedMechDefinition[] ownedMechs = inventory?.ownedMechs ?? Array.Empty<MechBayOwnedMechDefinition>();
+            bool hasSpareWeaponStock = CountAvailableItems(inventory, LoadoutItemCategory.Weapon) > 0;
             List<MechBayOwnedRosterEntry> entries = new();
             for (int index = 0; index < ownedMechs.Length; index++)
             {
@@ -542,6 +546,9 @@ namespace MC2Demo.BattleCore
                     loadoutStatus = LoadoutStatus(mech),
                     hasDraftFitStub = IsPendingDepotFit(mech),
                     draftFitStatus = DraftFitStatus(mech),
+                    draftFitRequirements = DraftFitRequirements(mech, hasSpareWeaponStock),
+                    hasSpareWeaponStock = hasSpareWeaponStock,
+                    hasPilotAssignment = HasPilotAssignment(mech),
                     availableForMission = mech.availableForMission,
                     conditionPercent = Math.Max(0, Math.Min(100, mech.conditionPercent)),
                     isWarehouseMech = IsWarehouseMech(mech)
@@ -576,10 +583,52 @@ namespace MC2Demo.BattleCore
             return IsWarehouseMech(mech) ? "Depot fit read-only" : "Use squad fit cards below";
         }
 
+        private static string DraftFitRequirements(MechBayOwnedMechDefinition mech, bool hasSpareWeaponStock)
+        {
+            if (!IsPendingDepotFit(mech))
+            {
+                return "Current fit active";
+            }
+
+            bool hasPilotAssignment = HasPilotAssignment(mech);
+            if (hasSpareWeaponStock && hasPilotAssignment)
+            {
+                return "Ready for future fitting";
+            }
+
+            if (hasSpareWeaponStock)
+            {
+                return "Need pilot";
+            }
+
+            return hasPilotAssignment ? "Need stock weapons" : "Need stock weapons + pilot";
+        }
+
+        private static bool HasPilotAssignment(MechBayOwnedMechDefinition mech)
+        {
+            return !IsWarehouseMech(mech);
+        }
+
         private static bool IsPendingDepotFit(MechBayOwnedMechDefinition mech)
         {
             return IsWarehouseMech(mech)
                 && string.Equals(mech?.activeLoadoutId, "pending-loadout", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static int CountAvailableItems(MechBayInventoryContract inventory, string category)
+        {
+            int count = 0;
+            MechBayItemStackDefinition[] itemStacks = inventory?.itemStacks ?? Array.Empty<MechBayItemStackDefinition>();
+            for (int index = 0; index < itemStacks.Length; index++)
+            {
+                MechBayItemStackDefinition stack = itemStacks[index];
+                if (stack != null && string.Equals(stack.category, category, StringComparison.Ordinal))
+                {
+                    count += Math.Max(0, stack.quantity - stack.equippedQuantity);
+                }
+            }
+
+            return count;
         }
 
         private static bool StartsWith(string value, string prefix)

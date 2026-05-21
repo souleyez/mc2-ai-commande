@@ -48,6 +48,7 @@ Current demo behavior:
 - shows a compact owned-mech roster and read-only roster detail preview in the mech bay, including assembled depot mechs
 - marks assembled depot mechs as held with a pending-loadout placeholder before any future deployment flow
 - shows a disabled Draft Fit affordance for depot mechs so the future fitting path is visible but inactive
+- previews depot fitting requirements such as spare weapon stock and pilot assignment
 - warns when draft armor plate or heat sink usage exceeds starter inventory and blocks applying that fit
 - shows starter mech condition and one-click demo repair that spends local token balance
 - applies a local mission receipt for completed bounty tokens and salvaged mech fragments at mission end

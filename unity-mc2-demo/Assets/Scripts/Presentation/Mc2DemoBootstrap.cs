@@ -2526,7 +2526,7 @@ namespace MC2Demo.Presentation
 
             y += 30f;
             DrawMechBayInventorySummary(x, y, width);
-            y += 148f;
+            y += 170f;
 
             int unitCount = CountPlayerUnits();
             Rect viewport = new(x, y, width, panel.yMax - y - 12f);
@@ -2872,6 +2872,11 @@ namespace MC2Demo.Presentation
                 ? "Fit draft unavailable"
                 : entry.draftFitStatus;
             GUI.Label(new Rect(x + 80f, y, width - 80f, 18f), TruncateText(status, 44));
+
+            string requirements = entry == null || string.IsNullOrWhiteSpace(entry.draftFitRequirements)
+                ? "Requirements unknown"
+                : "Requires " + entry.draftFitRequirements;
+            GUI.Label(new Rect(x + 80f, y + 22f, width - 80f, 18f), TruncateText(requirements, 44));
         }
 
         private static string ReceiptAssemblyLogText(MechBayMissionReceipt receipt)
