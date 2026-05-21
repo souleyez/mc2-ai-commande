@@ -2530,7 +2530,7 @@ namespace MC2Demo.Presentation
 
             y += 30f;
             DrawMechBayInventorySummary(x, y, width);
-            y += 346f;
+            y += 368f;
             if (showWarehouseDraftFitPreview)
             {
                 DrawWarehouseDraftFitPreview(x, y, width);
@@ -2972,6 +2972,7 @@ namespace MC2Demo.Presentation
                 new Rect(x + 70f, y + 108f, width - 70f, 18f),
                 TruncateText(OwnedRosterWeaponStockText(entry), 62));
             DrawOwnedRosterDraftFitStub(x + 70f, y + 130f, width - 70f, entry);
+            DrawOwnedRosterSquadSelectionStub(x + 70f, y + 174f, width - 70f, entry);
         }
 
         private void ClampSelectedRosterIndex(MechBayOwnedRosterEntry[] roster)
@@ -3157,6 +3158,35 @@ namespace MC2Demo.Presentation
                 ? "Requirements unknown"
                 : "Requires " + entry.draftFitRequirements;
             GUI.Label(new Rect(x + 80f, y + 22f, width - 80f, 18f), TruncateText(requirements, 44));
+        }
+
+        private void DrawOwnedRosterSquadSelectionStub(float x, float y, float width, MechBayOwnedRosterEntry entry)
+        {
+            bool previousEnabled = GUI.enabled;
+            GUI.enabled = false;
+            if (GUI.Button(new Rect(x, y - 2f, 72f, 22f), "Squad"))
+            {
+                statusText = "Squad selection unavailable";
+            }
+
+            GUI.enabled = previousEnabled;
+            GUI.Label(new Rect(x + 80f, y, width - 80f, 18f), TruncateText(OwnedRosterSquadSelectionText(entry), 44));
+        }
+
+        private static string OwnedRosterSquadSelectionText(MechBayOwnedRosterEntry entry)
+        {
+            if (entry == null)
+            {
+                return "Selection unavailable";
+            }
+
+            string status = string.IsNullOrWhiteSpace(entry.squadSelectionStatus)
+                ? "Selection unavailable"
+                : entry.squadSelectionStatus;
+            string requirements = string.IsNullOrWhiteSpace(entry.squadSelectionRequirements)
+                ? "Requirements unknown"
+                : entry.squadSelectionRequirements;
+            return status + "  " + requirements;
         }
 
         private void DrawWarehouseDraftFitPreview(float x, float y, float width)

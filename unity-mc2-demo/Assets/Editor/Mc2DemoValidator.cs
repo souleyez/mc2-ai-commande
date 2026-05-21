@@ -322,6 +322,10 @@ namespace MC2Demo.EditorTools
                 || !starterRoster[0].deployableForMission
                 || starterRoster[0].deploymentStatus != "Deployable now"
                 || starterRoster[0].deploymentRequirements != "Current mission squad"
+                || starterRoster[0].hasSquadSelectionStub
+                || starterRoster[0].squadSelectionCandidate
+                || starterRoster[0].squadSelectionStatus != "Already in mission squad"
+                || starterRoster[0].squadSelectionRequirements != "Current mission slot"
                 || starterRoster[0].conditionPercent <= 0)
             {
                 throw new InvalidDataException("Expected starter owned-mech roster entries to include detail preview fields.");
@@ -2425,6 +2429,10 @@ namespace MC2Demo.EditorTools
                 || assembledRaven.deployableForMission
                 || assembledRaven.deploymentStatus != "Held: needs depot fit"
                 || assembledRaven.deploymentRequirements != "Need stock weapons + pilot"
+                || !assembledRaven.hasSquadSelectionStub
+                || assembledRaven.squadSelectionCandidate
+                || assembledRaven.squadSelectionStatus != "Locked: needs depot fit"
+                || assembledRaven.squadSelectionRequirements != "Need stock weapons + pilot"
                 || string.IsNullOrWhiteSpace(assembledRaven.ownedMechId))
             {
                 throw new InvalidDataException("Expected assembled warehouse Raven to stay held with a pending loadout placeholder.");
@@ -2555,7 +2563,11 @@ namespace MC2Demo.EditorTools
                 || !assembledRaven.hasPilotAssignment
                 || assembledRaven.deployableForMission
                 || assembledRaven.deploymentStatus != "Held: future squad selection"
-                || assembledRaven.deploymentRequirements != "Future squad-selection flow")
+                || assembledRaven.deploymentRequirements != "Future squad-selection flow"
+                || !assembledRaven.hasSquadSelectionStub
+                || !assembledRaven.squadSelectionCandidate
+                || assembledRaven.squadSelectionStatus != "Ready for future squad selection"
+                || assembledRaven.squadSelectionRequirements != "Future squad-selection screen")
             {
                 throw new InvalidDataException("Expected warehouse draft-fit apply stub to consume one spare weapon and keep the mech non-deployable.");
             }
