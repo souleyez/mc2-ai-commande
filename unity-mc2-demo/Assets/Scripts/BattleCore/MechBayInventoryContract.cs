@@ -24,6 +24,9 @@ namespace MC2Demo.BattleCore
         public string activeLoadoutId;
         public bool availableForMission;
         public int conditionPercent;
+        public string pilotId;
+        public string pilotDisplayName;
+        public string pilotType;
     }
 
     [Serializable]
@@ -213,6 +216,20 @@ namespace MC2Demo.BattleCore
         public string riskProfile { get; internal set; }
     }
 
+    public sealed class MechBayPilotHireResult
+    {
+        public bool Accepted { get; internal set; }
+        public string ownedMechId { get; internal set; }
+        public string pilotId { get; internal set; }
+        public string displayName { get; internal set; }
+        public int TokenCost { get; internal set; }
+        public int TokenBalance { get; internal set; }
+        public bool CanAfford { get; internal set; }
+        public bool InventoryChanged { get; internal set; }
+        public string RiskProfile { get; internal set; }
+        public string Message { get; internal set; }
+    }
+
     public sealed class MechBayReceiptItemDefinition
     {
         public string itemId;
@@ -336,6 +353,15 @@ namespace MC2Demo.BattleCore
                 if (mech.conditionPercent < 0 || mech.conditionPercent > 100)
                 {
                     result.AddError("Owned mech condition is out of range: " + mech.ownedMechId);
+                }
+
+                bool hasPilotId = !string.IsNullOrWhiteSpace(mech.pilotId);
+                bool hasPilotDisplayName = !string.IsNullOrWhiteSpace(mech.pilotDisplayName);
+                bool hasPilotType = !string.IsNullOrWhiteSpace(mech.pilotType);
+                if ((hasPilotId || hasPilotDisplayName || hasPilotType)
+                    && (!hasPilotId || !hasPilotDisplayName || !hasPilotType))
+                {
+                    result.AddError("Owned mech pilot assignment is incomplete: " + mech.ownedMechId);
                 }
             }
         }
@@ -671,21 +697,32 @@ namespace MC2Demo.BattleCore
 
         private static bool HasPilotAssignment(MechBayOwnedMechDefinition mech)
         {
-            return !IsWarehouseMech(mech);
+            return !IsWarehouseMech(mech) || !string.IsNullOrWhiteSpace(mech?.pilotId);
         }
 
         private static bool HasPilotPlaceholder(MechBayOwnedMechDefinition mech)
         {
-            return IsWarehouseMech(mech);
+            return IsWarehouseMech(mech) && !HasPilotAssignment(mech);
         }
 
         private static string PilotStatus(MechBayOwnedMechDefinition mech)
         {
-            return IsWarehouseMech(mech) ? "Pilot required" : "Assigned";
+            if (!HasPilotAssignment(mech))
+            {
+                return "Pilot required";
+            }
+
+            string pilotType = string.IsNullOrWhiteSpace(mech?.pilotType) ? "" : mech.pilotType;
+            return string.Equals(pilotType, "NPC", StringComparison.OrdinalIgnoreCase) ? "Assigned NPC" : "Assigned";
         }
 
         private static string PilotDisplayName(MechBayOwnedMechDefinition mech)
         {
+            if (!string.IsNullOrWhiteSpace(mech?.pilotDisplayName))
+            {
+                return mech.pilotDisplayName;
+            }
+
             return IsWarehouseMech(mech) ? "No pilot assigned" : "Mission pilot";
         }
 
@@ -965,8 +1002,8 @@ namespace MC2Demo.BattleCore
                     pilotType = source.pilotType,
                     hireCost = source.hireCost,
                     canAfford = tokenBalance >= source.hireCost,
-                    hireEnabled = false,
-                    hireStatus = "Preview only",
+                    hireEnabled = tokenBalance >= source.hireCost,
+                    hireStatus = tokenBalance >= source.hireCost ? "Demo hire" : "Need token",
                     riskProfile = source.riskProfile
                 };
             }
@@ -977,6 +1014,109 @@ namespace MC2Demo.BattleCore
                 Status = "NPC pilot hire preview",
                 Candidates = candidates
             };
+        }
+
+        public static MechBayPilotHireResult PreviewHire(
+            MechBayInventoryContract inventory,
+            string ownedMechId,
+            string pilotId)
+        {
+            int tokenBalance = Math.Max(0, inventory?.tokenBalance ?? 0);
+            MechBayPilotHireCandidate candidate = FindCandidate(pilotId);
+            if (candidate == null)
+            {
+                return new MechBayPilotHireResult
+                {
+                    Accepted = false,
+                    ownedMechId = ownedMechId,
+                    pilotId = pilotId,
+                    TokenBalance = tokenBalance,
+                    CanAfford = false,
+                    InventoryChanged = false,
+                    Message = "Pilot unavailable"
+                };
+            }
+
+            MechBayOwnedMechDefinition target = FindOwnedMech(inventory, ownedMechId);
+            if (target == null)
+            {
+                return new MechBayPilotHireResult
+                {
+                    Accepted = false,
+                    ownedMechId = ownedMechId,
+                    pilotId = candidate.pilotId,
+                    displayName = candidate.displayName,
+                    TokenCost = candidate.hireCost,
+                    TokenBalance = tokenBalance,
+                    CanAfford = tokenBalance >= candidate.hireCost,
+                    InventoryChanged = false,
+                    RiskProfile = candidate.riskProfile,
+                    Message = "Mech unavailable"
+                };
+            }
+
+            bool canAfford = tokenBalance >= candidate.hireCost;
+            string message = HirePreviewMessage(target, canAfford, candidate.hireCost);
+            return new MechBayPilotHireResult
+            {
+                Accepted = false,
+                ownedMechId = target.ownedMechId,
+                pilotId = candidate.pilotId,
+                displayName = candidate.displayName,
+                TokenCost = candidate.hireCost,
+                TokenBalance = tokenBalance,
+                CanAfford = canAfford,
+                InventoryChanged = false,
+                RiskProfile = candidate.riskProfile,
+                Message = message
+            };
+        }
+
+        public static MechBayPilotHireResult TryApplyDemoHire(
+            MechBayInventoryContract inventory,
+            string ownedMechId,
+            string pilotId)
+        {
+            MechBayPilotHireResult preview = PreviewHire(inventory, ownedMechId, pilotId);
+            if (preview == null)
+            {
+                return preview;
+            }
+
+            if (inventory == null)
+            {
+                preview.Message = "Inventory missing";
+                return preview;
+            }
+
+            MechBayPilotHireCandidate candidate = FindCandidate(pilotId);
+            MechBayOwnedMechDefinition target = FindOwnedMech(inventory, ownedMechId);
+            if (candidate == null || target == null)
+            {
+                return preview;
+            }
+
+            if (!CanHirePilotFor(target))
+            {
+                preview.Message = "Pilot already assigned";
+                return preview;
+            }
+
+            if (inventory.tokenBalance < candidate.hireCost)
+            {
+                preview.Message = "Need " + candidate.hireCost.ToString(CultureInfo.InvariantCulture) + " token";
+                return preview;
+            }
+
+            inventory.tokenBalance -= candidate.hireCost;
+            target.pilotId = candidate.pilotId;
+            target.pilotDisplayName = candidate.displayName;
+            target.pilotType = candidate.pilotType;
+            preview.Accepted = true;
+            preview.TokenBalance = inventory.tokenBalance;
+            preview.InventoryChanged = true;
+            preview.Message = "Hired " + candidate.displayName;
+            return preview;
         }
 
         private static MechBayPilotHireCandidate Candidate(
@@ -996,6 +1136,73 @@ namespace MC2Demo.BattleCore
                 hireStatus = "Preview only",
                 riskProfile = riskProfile
             };
+        }
+
+        private static string HirePreviewMessage(MechBayOwnedMechDefinition target, bool canAfford, int hireCost)
+        {
+            if (!CanHirePilotFor(target))
+            {
+                return "Pilot already assigned";
+            }
+
+            return canAfford
+                ? "Ready demo hire"
+                : "Need " + hireCost.ToString(CultureInfo.InvariantCulture) + " token";
+        }
+
+        private static bool CanHirePilotFor(MechBayOwnedMechDefinition target)
+        {
+            return IsWarehouseMech(target) && string.IsNullOrWhiteSpace(target?.pilotId);
+        }
+
+        private static MechBayOwnedMechDefinition FindOwnedMech(MechBayInventoryContract inventory, string ownedMechId)
+        {
+            if (string.IsNullOrWhiteSpace(ownedMechId))
+            {
+                return null;
+            }
+
+            MechBayOwnedMechDefinition[] ownedMechs = inventory?.ownedMechs ?? Array.Empty<MechBayOwnedMechDefinition>();
+            for (int index = 0; index < ownedMechs.Length; index++)
+            {
+                MechBayOwnedMechDefinition mech = ownedMechs[index];
+                if (mech != null && string.Equals(mech.ownedMechId, ownedMechId, StringComparison.OrdinalIgnoreCase))
+                {
+                    return mech;
+                }
+            }
+
+            return null;
+        }
+
+        private static MechBayPilotHireCandidate FindCandidate(string pilotId)
+        {
+            if (string.IsNullOrWhiteSpace(pilotId))
+            {
+                return null;
+            }
+
+            for (int index = 0; index < StarterCandidates.Length; index++)
+            {
+                MechBayPilotHireCandidate candidate = StarterCandidates[index];
+                if (candidate != null && string.Equals(candidate.pilotId, pilotId, StringComparison.OrdinalIgnoreCase))
+                {
+                    return candidate;
+                }
+            }
+
+            return null;
+        }
+
+        private static bool IsWarehouseMech(MechBayOwnedMechDefinition mech)
+        {
+            return StartsWith(mech?.unitId, "warehouse-") || StartsWith(mech?.ownedMechId, "assembled-");
+        }
+
+        private static bool StartsWith(string value, string prefix)
+        {
+            return !string.IsNullOrWhiteSpace(value)
+                && value.StartsWith(prefix, StringComparison.OrdinalIgnoreCase);
         }
     }
 

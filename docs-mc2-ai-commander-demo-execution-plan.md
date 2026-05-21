@@ -61,7 +61,7 @@ The Unity demo currently supports:
 - depot roster detail previews spare weapon stock counts before the shop or fitting flow exists
 - mech bay summary previews an ordinary weapon shop as the future source of spare depot weapons
 - mech bay summary supports a demo ordinary weapon purchase that spends local tokens and adds one spare weapon
-- mech bay summary and roster detail preview NPC pilot hire candidates without assigning pilots yet
+- mech bay summary and roster detail support demo NPC pilot hiring that spends local tokens and assigns a warehouse pilot
 - starter inventory availability feedback warns on armor plate or heat sink shortages and blocks applying invalid drafts
 - starter mech condition and one-click demo repair spend local token balance and restore damaged mechs
 - starter mission receipt applies completed bounty tokens and salvaged mech fragments to local inventory
@@ -379,7 +379,7 @@ Tasks:
 
 ## Current Recommended Next Task
 
-Start with **starter depot pilot hire apply stub**.
+Start with **starter depot draft-fit readiness gate**.
 
 Reason:
 
@@ -392,6 +392,6 @@ Reason:
 - The roster detail now previews spare weapon stock counts, confirming that starter source weapons are all mounted and no depot fitting weapon stock is free yet.
 - The mech bay summary now shows an ordinary weapon shop preview, so the future source of spare weapon stock is visible.
 - The mech bay summary now supports a tightly scoped demo-only ordinary weapon purchase that deducts tokens and adds one spare weapon stack.
-- The mech bay now previews read-only NPC pilot hire candidates with token cost and death-risk status.
-- The remaining visible blocker for depot fitting is pilot assignment, so the next low-risk step is a demo-only NPC pilot hire apply stub before enabling friend pilots, wages, or real pilot death.
+- The mech bay now supports demo-only NPC pilot hiring that deducts tokens and assigns a pilot to a warehouse mech.
+- The remaining visible blocker is that Draft Fit stays disabled even when spare stock and a pilot are both present, so the next low-risk step is a readiness gate before building the real warehouse fitting screen.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.

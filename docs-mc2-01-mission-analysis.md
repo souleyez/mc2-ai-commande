@@ -261,5 +261,6 @@ That shop now has a tightly scoped demo purchase path: buying the first ordinary
 weapon spends local tokens and adds one unequipped weapon stack, making the
 depot spare-weapon requirement visibly resolvable without full shop balancing.
 The same panel now previews starter NPC pilot hire candidates with token cost
-and death-risk status, keeping pilot assignment read-only until the later
-social/NPC pilot rules are implemented.
+and death-risk status. The demo hire path can now spend local tokens and assign
+one NPC pilot to a warehouse mech, resolving the pilot side of the future depot
+fitting gate while leaving friend pilots, wages, and real pilot death for later.

@@ -2911,7 +2911,7 @@ namespace MC2Demo.Presentation
                 + cost
                 + "  afford "
                 + affordableCount.ToString(CultureInfo.InvariantCulture)
-                + "  preview";
+                + "  demo hire";
         }
 
         private void DrawOwnedRosterDetail(
@@ -2954,9 +2954,7 @@ namespace MC2Demo.Presentation
             GUI.Label(
                 new Rect(x + 70f, y + 42f, width - 70f, 18f),
                 TruncateText(OwnedRosterPilotText(entry), 62));
-            GUI.Label(
-                new Rect(x + 70f, y + 64f, width - 70f, 18f),
-                TruncateText(OwnedRosterPilotHireText(entry, pilotHirePreview), 62));
+            DrawOwnedRosterPilotHireStub(x + 70f, y + 64f, width - 70f, entry, pilotHirePreview);
             GUI.Label(
                 new Rect(x + 70f, y + 86f, width - 70f, 18f),
                 TruncateText(OwnedRosterWeaponStockText(entry), 62));
@@ -3023,7 +3021,44 @@ namespace MC2Demo.Presentation
             return "Pilot " + status + " (" + pilot + ")";
         }
 
-        private static string OwnedRosterPilotHireText(MechBayOwnedRosterEntry entry, MechBayPilotHirePreview preview)
+        private void DrawOwnedRosterPilotHireStub(
+            float x,
+            float y,
+            float width,
+            MechBayOwnedRosterEntry entry,
+            MechBayPilotHirePreview preview)
+        {
+            MechBayPilotHireCandidate candidate = FirstPilotHireCandidate(preview);
+            MechBayPilotHireResult hirePreview = entry != null && entry.hasPilotPlaceholder
+                ? MechBayPilotHirePreviewService.PreviewHire(demoInventory, entry.ownedMechId, candidate?.pilotId)
+                : null;
+            bool canHire = entry != null
+                && entry.hasPilotPlaceholder
+                && candidate != null
+                && hirePreview != null
+                && hirePreview.CanAfford
+                && string.Equals(hirePreview.Message, "Ready demo hire", StringComparison.Ordinal);
+
+            bool previousEnabled = GUI.enabled;
+            GUI.enabled = previousEnabled && canHire;
+            if (GUI.Button(new Rect(x, y - 2f, 46f, 22f), "Hire"))
+            {
+                MechBayPilotHireResult result =
+                    MechBayPilotHirePreviewService.TryApplyDemoHire(demoInventory, entry.ownedMechId, candidate.pilotId);
+                statusText = result?.Message ?? "Pilot hire unavailable";
+                if (result != null && result.Accepted)
+                {
+                    AddCombatLogLine("Pilot " + result.Message);
+                    RefreshDemoInventoryValidation();
+                    hirePreview = MechBayPilotHirePreviewService.PreviewHire(demoInventory, entry.ownedMechId, candidate.pilotId);
+                }
+            }
+
+            GUI.enabled = previousEnabled;
+            GUI.Label(new Rect(x + 54f, y, width - 54f, 18f), TruncateText(OwnedRosterPilotHireText(entry, hirePreview), 52));
+        }
+
+        private static string OwnedRosterPilotHireText(MechBayOwnedRosterEntry entry, MechBayPilotHireResult hirePreview)
         {
             if (entry == null)
             {
@@ -3035,14 +3070,14 @@ namespace MC2Demo.Presentation
                 return "Hire Pilot already assigned";
             }
 
-            MechBayPilotHireCandidate candidate = FirstPilotHireCandidate(preview);
-            if (candidate == null)
+            if (hirePreview == null || string.IsNullOrWhiteSpace(hirePreview.displayName))
             {
                 return "Hire Pilot unavailable";
             }
 
-            string cost = FormatTokens(candidate.hireCost) + " token";
-            return "Hire Pilot " + candidate.displayName + " " + cost + "  " + candidate.hireStatus;
+            string cost = FormatTokens(hirePreview.TokenCost) + " token";
+            string risk = string.IsNullOrWhiteSpace(hirePreview.RiskProfile) ? "" : "  " + hirePreview.RiskProfile;
+            return hirePreview.displayName + " " + cost + "  " + hirePreview.Message + risk;
         }
 
         private static MechBayPilotHireCandidate FirstPilotHireCandidate(MechBayPilotHirePreview preview)

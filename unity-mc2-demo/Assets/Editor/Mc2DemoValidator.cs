@@ -339,11 +339,11 @@ namespace MC2Demo.EditorTools
                 || pilotHirePreview.Candidates[0].pilotType != "NPC"
                 || pilotHirePreview.Candidates[0].hireCost <= 0
                 || !pilotHirePreview.Candidates[0].canAfford
-                || pilotHirePreview.Candidates[0].hireEnabled
-                || pilotHirePreview.Candidates[0].hireStatus != "Preview only"
+                || !pilotHirePreview.Candidates[0].hireEnabled
+                || pilotHirePreview.Candidates[0].hireStatus != "Demo hire"
                 || pilotHirePreview.Candidates[0].riskProfile != "NPC death risk")
             {
-                throw new InvalidDataException("Expected starter pilot hire preview to expose read-only NPC candidates.");
+                throw new InvalidDataException("Expected starter pilot hire preview to expose demo-hirable NPC candidates.");
             }
 
             MechBayWeaponShopPreview shopPreview = MechBayWeaponShopPreviewService.BuildPreview(inventory);
@@ -2420,6 +2420,55 @@ namespace MC2Demo.EditorTools
                 || string.IsNullOrWhiteSpace(assembledRaven.ownedMechId))
             {
                 throw new InvalidDataException("Expected assembled warehouse Raven to stay held with a pending loadout placeholder.");
+            }
+
+            MechBayPilotHirePreview warehousePilotHirePreview = MechBayPilotHirePreviewService.BuildPreview(receiptInventory);
+            MechBayPilotHireCandidate hireCandidate = warehousePilotHirePreview.Candidates[0];
+            int tokenBeforePilotHirePreview = receiptInventory.tokenBalance;
+            MechBayPilotHireResult hirePreview = MechBayPilotHirePreviewService.PreviewHire(
+                receiptInventory,
+                assembledRaven.ownedMechId,
+                hireCandidate.pilotId);
+            MechBayOwnedRosterEntry[] pilotPreviewRoster = MechBayOwnedRosterService.BuildRosterPreview(receiptInventory);
+            assembledRaven = FindWarehouseRosterEntry(pilotPreviewRoster, "Raven");
+            if (hirePreview == null
+                || hirePreview.Accepted
+                || hirePreview.InventoryChanged
+                || hirePreview.TokenBalance != tokenBeforePilotHirePreview
+                || hirePreview.TokenCost != hireCandidate.hireCost
+                || !hirePreview.CanAfford
+                || hirePreview.Message != "Ready demo hire"
+                || hirePreview.RiskProfile != "NPC death risk"
+                || receiptInventory.tokenBalance != tokenBeforePilotHirePreview
+                || assembledRaven == null
+                || assembledRaven.hasPilotAssignment
+                || !assembledRaven.hasPilotPlaceholder)
+            {
+                throw new InvalidDataException("Expected starter pilot hire stub to preview without changing inventory.");
+            }
+
+            MechBayPilotHireResult hireResult = MechBayPilotHirePreviewService.TryApplyDemoHire(
+                receiptInventory,
+                assembledRaven.ownedMechId,
+                hireCandidate.pilotId);
+            receiptInventoryResult = MechBayInventoryValidator.Validate(receiptInventory);
+            MechBayOwnedRosterEntry[] hiredRoster = MechBayOwnedRosterService.BuildRosterPreview(receiptInventory);
+            assembledRaven = FindWarehouseRosterEntry(hiredRoster, "Raven");
+            if (hireResult == null
+                || !hireResult.Accepted
+                || !hireResult.InventoryChanged
+                || hireResult.TokenBalance != tokenBeforePilotHirePreview - hireCandidate.hireCost
+                || receiptInventory.tokenBalance != hireResult.TokenBalance
+                || !receiptInventoryResult.IsValid
+                || assembledRaven == null
+                || !assembledRaven.hasPilotAssignment
+                || assembledRaven.hasPilotPlaceholder
+                || assembledRaven.pilotStatus != "Assigned NPC"
+                || assembledRaven.pilotDisplayName != hireCandidate.displayName
+                || assembledRaven.draftFitRequirements != "Need stock weapons"
+                || assembledRaven.availableForMission)
+            {
+                throw new InvalidDataException("Expected demo pilot hire to spend tokens and assign one NPC pilot to the warehouse mech.");
             }
 
             BattleMission defeat = new(MakeResultContract(completeOnStart: false), resultProfiles);
