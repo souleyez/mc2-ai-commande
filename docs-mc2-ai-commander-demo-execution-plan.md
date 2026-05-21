@@ -72,6 +72,7 @@ The Unity demo currently supports:
 - squad-selection preview shows a dry-run replacement summary without applying roster changes
 - squad-selection preview shows a pending swap confirmation stub without applying roster changes
 - squad-selection confirmation returns a rejected no-op result without changing roster, inventory, or token state
+- squad-selection confirmation now reads from a local draft state that stages outgoing and incoming mech IDs without mutating deployment
 - starter inventory availability feedback warns on armor plate or heat sink shortages and blocks applying invalid drafts
 - starter mech condition and one-click demo repair spend local token balance and restore damaged mechs
 - starter mission receipt applies completed bounty tokens and salvaged mech fragments to local inventory
@@ -389,7 +390,7 @@ Tasks:
 
 ## Current Recommended Next Task
 
-Start with **starter squad-selection draft state container**.
+Start with **starter squad-selection draft selection controls**.
 
 Reason:
 
@@ -413,5 +414,6 @@ Reason:
 - The squad-selection preview now shows a dry-run replacement summary that selects one current slot and one depot candidate without applying it.
 - The squad-selection preview now shows a pending swap confirmation stub, so the UI can show a staged replacement before any inventory or mission roster mutation exists.
 - The squad-selection confirmation path now returns a rejected apply-result contract, so pressing into the future confirmation path is a safe no-op before real roster mutation exists.
-- The next low-risk step is a local draft state container that can hold a selected outgoing slot and incoming depot mech before any mission roster mutation is allowed.
+- The squad-selection confirmation path now reads from a local draft state container that holds selected outgoing and incoming mech IDs without mutating mission deployment.
+- The next low-risk step is draft selection controls, so the UI can cycle mission slots and depot candidates before real roster mutation is allowed.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.

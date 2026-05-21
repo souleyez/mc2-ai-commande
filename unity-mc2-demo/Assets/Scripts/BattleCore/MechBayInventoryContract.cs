@@ -314,6 +314,19 @@ namespace MC2Demo.BattleCore
         public string IncomingOwnedMechId { get; internal set; }
     }
 
+    public sealed class MechBaySquadSelectionDraftState
+    {
+        public bool InventoryChanged { get; internal set; }
+        public bool Ready { get; internal set; }
+        public string Status { get; internal set; }
+        public string Requirements { get; internal set; }
+        public string Summary { get; internal set; }
+        public string OutgoingOwnedMechId { get; internal set; }
+        public string IncomingOwnedMechId { get; internal set; }
+        public string OutgoingDisplayName { get; internal set; }
+        public string IncomingDisplayName { get; internal set; }
+    }
+
     public sealed class MechBayReceiptItemDefinition
     {
         public string itemId;
@@ -1040,33 +1053,77 @@ namespace MC2Demo.BattleCore
             };
         }
 
-        public static MechBaySquadSelectionApplyResult TryApplyPendingSwap(MechBayInventoryContract inventory)
+        public static MechBaySquadSelectionDraftState BuildDraftState(
+            MechBayInventoryContract inventory,
+            string outgoingOwnedMechId,
+            string incomingOwnedMechId)
         {
             MechBaySquadSelectionPreview preview = BuildPreview(inventory);
+            MechBaySquadSelectionSlot outgoing = SelectSlot(preview.MissionSlots, outgoingOwnedMechId);
+            MechBaySquadSelectionSlot incoming = SelectSlot(preview.DepotCandidates, incomingOwnedMechId);
+            bool ready = outgoing != null && incoming != null;
+            return new MechBaySquadSelectionDraftState
+            {
+                InventoryChanged = false,
+                Ready = ready,
+                Status = ready ? "Draft swap staged" : "Draft swap unavailable",
+                Requirements = ready
+                    ? "Future replace-slot action"
+                    : DryRunSummary(outgoing, incoming),
+                Summary = ready
+                    ? "Draft " + SlotName(incoming) + " over " + SlotName(outgoing)
+                    : DryRunSummary(outgoing, incoming),
+                OutgoingOwnedMechId = outgoing?.ownedMechId,
+                IncomingOwnedMechId = incoming?.ownedMechId,
+                OutgoingDisplayName = SlotName(outgoing),
+                IncomingDisplayName = SlotName(incoming)
+            };
+        }
+
+        public static MechBaySquadSelectionApplyResult TryApplyPendingSwap(MechBayInventoryContract inventory)
+        {
+            return TryApplyPendingSwap(inventory, null, null);
+        }
+
+        public static MechBaySquadSelectionApplyResult TryApplyPendingSwap(
+            MechBayInventoryContract inventory,
+            MechBaySquadSelectionDraftState draft)
+        {
+            return TryApplyPendingSwap(inventory, draft?.OutgoingOwnedMechId, draft?.IncomingOwnedMechId);
+        }
+
+        public static MechBaySquadSelectionApplyResult TryApplyPendingSwap(
+            MechBayInventoryContract inventory,
+            string outgoingOwnedMechId,
+            string incomingOwnedMechId)
+        {
+            MechBaySquadSelectionPreview preview = BuildPreview(inventory);
+            MechBaySquadSelectionDraftState draft =
+                BuildDraftState(inventory, outgoingOwnedMechId, incomingOwnedMechId);
             MechBaySquadSelectionApplyResult result = new()
             {
                 Accepted = false,
                 InventoryChanged = false,
-                Summary = string.IsNullOrWhiteSpace(preview?.PendingSwapSummary)
+                Summary = string.IsNullOrWhiteSpace(draft?.Summary)
                     ? "No pending swap"
-                    : preview.PendingSwapSummary,
-                OutgoingOwnedMechId = preview?.DryRunOutgoingOwnedMechId,
-                IncomingOwnedMechId = preview?.DryRunIncomingOwnedMechId
+                    : draft.Summary,
+                OutgoingOwnedMechId = draft?.OutgoingOwnedMechId,
+                IncomingOwnedMechId = draft?.IncomingOwnedMechId
             };
 
-            if (preview == null || !preview.PendingSwapAvailable)
+            if (preview == null || draft == null || !draft.Ready)
             {
                 result.Message = "No pending squad swap";
-                result.Reason = string.IsNullOrWhiteSpace(preview?.PendingSwapSummary)
+                result.Reason = string.IsNullOrWhiteSpace(draft?.Requirements)
                     ? "Need mission slot + fitted depot candidate"
-                    : preview.PendingSwapSummary;
+                    : draft.Requirements;
                 return result;
             }
 
             result.Message = "Squad swap disabled for this demo";
-            result.Reason = string.IsNullOrWhiteSpace(preview.SwapRequirements)
+            result.Reason = string.IsNullOrWhiteSpace(draft.Requirements)
                 ? "Future replace-slot action"
-                : preview.SwapRequirements;
+                : draft.Requirements;
             return result;
         }
 
@@ -1133,6 +1190,25 @@ namespace MC2Demo.BattleCore
         private static string SlotName(MechBaySquadSelectionSlot slot)
         {
             return string.IsNullOrWhiteSpace(slot?.displayName) ? slot?.unitType ?? "mech" : slot.displayName;
+        }
+
+        private static MechBaySquadSelectionSlot SelectSlot(MechBaySquadSelectionSlot[] slots, string ownedMechId)
+        {
+            MechBaySquadSelectionSlot[] safeSlots = slots ?? Array.Empty<MechBaySquadSelectionSlot>();
+            if (!string.IsNullOrWhiteSpace(ownedMechId))
+            {
+                for (int index = 0; index < safeSlots.Length; index++)
+                {
+                    MechBaySquadSelectionSlot slot = safeSlots[index];
+                    if (slot != null
+                        && string.Equals(slot.ownedMechId, ownedMechId, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return slot;
+                    }
+                }
+            }
+
+            return safeSlots.Length > 0 ? safeSlots[0] : null;
         }
 
         private static string PendingSwapStatus(MechBaySquadSelectionSlot outgoing, MechBaySquadSelectionSlot incoming)

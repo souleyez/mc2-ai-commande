@@ -64,6 +64,8 @@ namespace MC2Demo.Presentation
         private bool showWarehouseDraftFitPreview;
         private bool showSquadSelectionPreview;
         private string warehouseDraftFitPreviewMechId;
+        private string squadSelectionDraftOutgoingOwnedMechId;
+        private string squadSelectionDraftIncomingOwnedMechId;
         private string statusText = "Loading";
 
         private void Start()
@@ -2044,6 +2046,7 @@ namespace MC2Demo.Presentation
                 showWarehouseDraftFitPreview = false;
                 showSquadSelectionPreview = false;
                 warehouseDraftFitPreviewMechId = null;
+                ClearSquadSelectionDraft();
                 showSystemPanel = false;
                 if (mission.Result == MissionResultState.InProgress)
                 {
@@ -2061,6 +2064,7 @@ namespace MC2Demo.Presentation
                     showWarehouseDraftFitPreview = false;
                     showSquadSelectionPreview = false;
                     warehouseDraftFitPreviewMechId = null;
+                    ClearSquadSelectionDraft();
                     if (mission.Result == MissionResultState.InProgress)
                     {
                         SetPaused(false);
@@ -2528,6 +2532,7 @@ namespace MC2Demo.Presentation
                 showWarehouseDraftFitPreview = false;
                 showSquadSelectionPreview = false;
                 warehouseDraftFitPreviewMechId = null;
+                ClearSquadSelectionDraft();
                 if (mission.Result == MissionResultState.InProgress)
                 {
                     SetPaused(false);
@@ -2547,7 +2552,7 @@ namespace MC2Demo.Presentation
             else if (showSquadSelectionPreview)
             {
                 DrawSquadSelectionPreview(x, y, width);
-                y += 204f;
+                y += 226f;
             }
 
             int unitCount = CountPlayerUnits();
@@ -3157,6 +3162,7 @@ namespace MC2Demo.Presentation
                 showWarehouseDraftFitPreview = true;
                 showSquadSelectionPreview = false;
                 warehouseDraftFitPreviewMechId = entry?.ownedMechId;
+                ClearSquadSelectionDraft();
                 statusText = "Draft fit ready: " + TruncateText(name, 24);
                 AddCombatLogLine("Mech bay draft fit gate ready for " + name);
             }
@@ -3185,6 +3191,7 @@ namespace MC2Demo.Presentation
                 showSquadSelectionPreview = true;
                 showWarehouseDraftFitPreview = false;
                 warehouseDraftFitPreviewMechId = null;
+                ClearSquadSelectionDraft();
                 statusText = "Squad preview: " + TruncateText(name, 24);
                 AddCombatLogLine("Mech bay squad selection preview opened");
             }
@@ -3212,10 +3219,19 @@ namespace MC2Demo.Presentation
         private void DrawSquadSelectionPreview(float x, float y, float width)
         {
             MechBaySquadSelectionPreview preview = MechBaySquadSelectionPreviewService.BuildPreview(demoInventory);
-            GUI.Box(new Rect(x, y, width, 192f), "Squad Selection Preview");
+            MechBaySquadSelectionDraftState draft =
+                MechBaySquadSelectionPreviewService.BuildDraftState(
+                    demoInventory,
+                    squadSelectionDraftOutgoingOwnedMechId,
+                    squadSelectionDraftIncomingOwnedMechId);
+            squadSelectionDraftOutgoingOwnedMechId = draft?.OutgoingOwnedMechId;
+            squadSelectionDraftIncomingOwnedMechId = draft?.IncomingOwnedMechId;
+
+            GUI.Box(new Rect(x, y, width, 214f), "Squad Selection Preview");
             if (GUI.Button(new Rect(x + width - 58f, y + 4f, 48f, 22f), "Hide"))
             {
                 showSquadSelectionPreview = false;
+                ClearSquadSelectionDraft();
                 statusText = "Squad preview closed";
             }
 
@@ -3233,11 +3249,25 @@ namespace MC2Demo.Presentation
             GUI.Label(
                 new Rect(x + 12f, y + 84f, width - 24f, 18f),
                 TruncateText("Candidates " + SquadSelectionSlotSummary(preview?.DepotCandidates, "none ready"), 76));
-            DrawSquadSelectionSwapGuard(x + 12f, y + 106f, width - 24f, preview);
-            DrawSquadSelectionDryRun(x + 12f, y + 128f, width - 24f, preview);
-            DrawSquadSelectionPendingSwap(x + 12f, y + 150f, width - 24f, preview);
+            DrawSquadSelectionDraftState(x + 12f, y + 106f, width - 24f, draft);
+            DrawSquadSelectionSwapGuard(x + 12f, y + 128f, width - 24f, preview);
+            DrawSquadSelectionDryRun(x + 12f, y + 150f, width - 24f, preview);
+            DrawSquadSelectionPendingSwap(x + 12f, y + 172f, width - 24f, preview, draft);
             string note = string.IsNullOrWhiteSpace(preview?.PreviewNote) ? "Preview only" : preview.PreviewNote;
-            GUI.Label(new Rect(x + 12f, y + 170f, width - 24f, 18f), TruncateText(note, 76));
+            GUI.Label(new Rect(x + 12f, y + 192f, width - 24f, 18f), TruncateText(note, 76));
+        }
+
+        private static void DrawSquadSelectionDraftState(
+            float x,
+            float y,
+            float width,
+            MechBaySquadSelectionDraftState draft)
+        {
+            string status = string.IsNullOrWhiteSpace(draft?.Status) ? "Draft swap unavailable" : draft.Status;
+            string summary = string.IsNullOrWhiteSpace(draft?.Summary)
+                ? "Need mission slot + fitted depot candidate"
+                : draft.Summary;
+            GUI.Label(new Rect(x, y, width, 18f), TruncateText("Draft State  " + status + "  " + summary, 76));
         }
 
         private void DrawSquadSelectionSwapGuard(float x, float y, float width, MechBaySquadSelectionPreview preview)
@@ -3274,15 +3304,20 @@ namespace MC2Demo.Presentation
             GUI.Label(new Rect(x + 80f, y, width - 80f, 18f), TruncateText(status + "  " + summary, 64));
         }
 
-        private void DrawSquadSelectionPendingSwap(float x, float y, float width, MechBaySquadSelectionPreview preview)
+        private void DrawSquadSelectionPendingSwap(
+            float x,
+            float y,
+            float width,
+            MechBaySquadSelectionPreview preview,
+            MechBaySquadSelectionDraftState draft)
         {
             bool previousEnabled = GUI.enabled;
-            bool canConfirm = preview?.PendingSwapAvailable == true;
+            bool canConfirm = draft?.Ready == true;
             GUI.enabled = previousEnabled && canConfirm;
             if (GUI.Button(new Rect(x, y - 2f, 72f, 22f), "Confirm"))
             {
                 MechBaySquadSelectionApplyResult result =
-                    MechBaySquadSelectionPreviewService.TryApplyPendingSwap(demoInventory);
+                    MechBaySquadSelectionPreviewService.TryApplyPendingSwap(demoInventory, draft);
                 statusText = result?.Message ?? "Squad swap unavailable";
                 AddCombatLogLine("Squad selection " + statusText);
                 RefreshDemoInventoryValidation();
@@ -4564,6 +4599,7 @@ namespace MC2Demo.Presentation
             showWarehouseDraftFitPreview = false;
             showSquadSelectionPreview = false;
             warehouseDraftFitPreviewMechId = null;
+            ClearSquadSelectionDraft();
             showMissionMap = false;
             if (mission.Result == MissionResultState.InProgress)
             {
@@ -4581,6 +4617,7 @@ namespace MC2Demo.Presentation
             showWarehouseDraftFitPreview = false;
             showSquadSelectionPreview = false;
             warehouseDraftFitPreviewMechId = null;
+            ClearSquadSelectionDraft();
             showMissionMap = false;
             showSystemPanel = false;
             if (mission.Result == MissionResultState.InProgress)
@@ -4592,6 +4629,12 @@ namespace MC2Demo.Presentation
             pendingJumpOrder = false;
             RefreshDemoInventoryValidation();
             statusText = "Mech bay open";
+        }
+
+        private void ClearSquadSelectionDraft()
+        {
+            squadSelectionDraftOutgoingOwnedMechId = null;
+            squadSelectionDraftIncomingOwnedMechId = null;
         }
 
         private void SetPaused(bool paused)
