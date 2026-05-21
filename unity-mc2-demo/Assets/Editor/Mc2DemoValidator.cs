@@ -1044,6 +1044,12 @@ namespace MC2Demo.EditorTools
                 + preview.CandidateCount
                 + "/"
                 + (preview.DepotCandidates?.Length ?? -1)
+                + ", swap="
+                + preview.SwapEnabled
+                + "/"
+                + (preview.SwapStatus ?? "null")
+                + "/"
+                + (preview.SwapRequirements ?? "null")
                 + ", changed="
                 + preview.InventoryChanged;
         }
@@ -2472,7 +2478,10 @@ namespace MC2Demo.EditorTools
                 || lockedSquadPreview.MissionSlots == null
                 || lockedSquadPreview.MissionSlots.Length != lockedSquadPreview.MissionSlotCount
                 || lockedSquadPreview.DepotCandidates == null
-                || lockedSquadPreview.DepotCandidates.Length != 0)
+                || lockedSquadPreview.DepotCandidates.Length != 0
+                || lockedSquadPreview.SwapEnabled
+                || lockedSquadPreview.SwapStatus != "Swap unavailable"
+                || lockedSquadPreview.SwapRequirements != "Need fitted depot candidate")
             {
                 throw new InvalidDataException(
                     "Expected starter squad-selection preview to list mission slots and hide locked depot mechs. Got "
@@ -2638,7 +2647,10 @@ namespace MC2Demo.EditorTools
                 || !squadPreviewInventoryResult.IsValid
                 || squadPreviewInventoryResult.Summary.MechCount != draftFitApplyInventoryResult.Summary.MechCount
                 || squadPreviewInventoryResult.Summary.WeaponCount != draftFitApplyInventoryResult.Summary.WeaponCount
-                || receiptInventory.tokenBalance != tokenBeforeDraftFitPreview)
+                || receiptInventory.tokenBalance != tokenBeforeDraftFitPreview
+                || squadPreview.SwapEnabled
+                || squadPreview.SwapStatus != "Swap locked: preview only"
+                || squadPreview.SwapRequirements != "Future replace-slot action")
             {
                 throw new InvalidDataException(
                     "Expected read-only squad-selection preview to show current slots and one fitted depot candidate without changing inventory. Got "

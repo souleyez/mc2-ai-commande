@@ -282,3 +282,5 @@ does not change the current mission roster or deployment flags.
 That placeholder now opens a read-only squad-selection preview, listing the
 current mission slots and any fitted depot candidates while keeping inventory
 and mission deployment unchanged.
+The preview also includes a disabled Swap guard that reports why replacement is
+locked today and what future replace-slot action is required.

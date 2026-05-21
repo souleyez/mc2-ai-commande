@@ -2547,7 +2547,7 @@ namespace MC2Demo.Presentation
             else if (showSquadSelectionPreview)
             {
                 DrawSquadSelectionPreview(x, y, width);
-                y += 138f;
+                y += 160f;
             }
 
             int unitCount = CountPlayerUnits();
@@ -3212,7 +3212,7 @@ namespace MC2Demo.Presentation
         private void DrawSquadSelectionPreview(float x, float y, float width)
         {
             MechBaySquadSelectionPreview preview = MechBaySquadSelectionPreviewService.BuildPreview(demoInventory);
-            GUI.Box(new Rect(x, y, width, 126f), "Squad Selection Preview");
+            GUI.Box(new Rect(x, y, width, 148f), "Squad Selection Preview");
             if (GUI.Button(new Rect(x + width - 58f, y + 4f, 48f, 22f), "Hide"))
             {
                 showSquadSelectionPreview = false;
@@ -3233,8 +3233,26 @@ namespace MC2Demo.Presentation
             GUI.Label(
                 new Rect(x + 12f, y + 84f, width - 24f, 18f),
                 TruncateText("Candidates " + SquadSelectionSlotSummary(preview?.DepotCandidates, "none ready"), 76));
+            DrawSquadSelectionSwapGuard(x + 12f, y + 106f, width - 24f, preview);
             string note = string.IsNullOrWhiteSpace(preview?.PreviewNote) ? "Preview only" : preview.PreviewNote;
-            GUI.Label(new Rect(x + 12f, y + 104f, width - 24f, 18f), TruncateText(note, 76));
+            GUI.Label(new Rect(x + 12f, y + 126f, width - 24f, 18f), TruncateText(note, 76));
+        }
+
+        private void DrawSquadSelectionSwapGuard(float x, float y, float width, MechBaySquadSelectionPreview preview)
+        {
+            bool previousEnabled = GUI.enabled;
+            GUI.enabled = false;
+            if (GUI.Button(new Rect(x, y - 2f, 72f, 22f), "Swap"))
+            {
+                statusText = "Squad swap unavailable";
+            }
+
+            GUI.enabled = previousEnabled;
+            string status = string.IsNullOrWhiteSpace(preview?.SwapStatus) ? "Swap unavailable" : preview.SwapStatus;
+            string requirements = string.IsNullOrWhiteSpace(preview?.SwapRequirements)
+                ? "Requirements unknown"
+                : preview.SwapRequirements;
+            GUI.Label(new Rect(x + 80f, y, width - 80f, 18f), TruncateText(status + "  " + requirements, 64));
         }
 
         private static string SquadSelectionSlotSummary(MechBaySquadSelectionSlot[] slots, string emptyText)

@@ -276,6 +276,9 @@ namespace MC2Demo.BattleCore
         public string PreviewNote { get; internal set; }
         public int MissionSlotCount { get; internal set; }
         public int CandidateCount { get; internal set; }
+        public bool SwapEnabled { get; internal set; }
+        public string SwapStatus { get; internal set; }
+        public string SwapRequirements { get; internal set; }
         public MechBaySquadSelectionSlot[] MissionSlots { get; internal set; }
         public MechBaySquadSelectionSlot[] DepotCandidates { get; internal set; }
     }
@@ -999,6 +1002,9 @@ namespace MC2Demo.BattleCore
                 PreviewNote = "Preview only: mission squad unchanged",
                 MissionSlotCount = missionSlots.Count,
                 CandidateCount = depotCandidates.Count,
+                SwapEnabled = false,
+                SwapStatus = SwapStatus(missionSlots.Count, depotCandidates.Count),
+                SwapRequirements = SwapRequirements(missionSlots.Count, depotCandidates.Count),
                 MissionSlots = missionSlots.ToArray(),
                 DepotCandidates = depotCandidates.ToArray()
             };
@@ -1017,6 +1023,26 @@ namespace MC2Demo.BattleCore
                 conditionPercent = entry.conditionPercent,
                 selectionStatus = entry.squadSelectionStatus
             };
+        }
+
+        private static string SwapStatus(int missionSlotCount, int candidateCount)
+        {
+            return missionSlotCount > 0 && candidateCount > 0 ? "Swap locked: preview only" : "Swap unavailable";
+        }
+
+        private static string SwapRequirements(int missionSlotCount, int candidateCount)
+        {
+            if (missionSlotCount <= 0 && candidateCount <= 0)
+            {
+                return "Need mission slot + fitted depot candidate";
+            }
+
+            if (missionSlotCount <= 0)
+            {
+                return "Need mission slot";
+            }
+
+            return candidateCount <= 0 ? "Need fitted depot candidate" : "Future replace-slot action";
         }
     }
 
