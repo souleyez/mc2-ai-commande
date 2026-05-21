@@ -70,6 +70,7 @@ namespace MC2Demo.BattleCore
         public string chassisId { get; internal set; }
         public string displayName { get; internal set; }
         public string activeLoadoutId { get; internal set; }
+        public string loadoutStatus { get; internal set; }
         public bool availableForMission { get; internal set; }
         public int conditionPercent { get; internal set; }
         public bool isWarehouseMech { get; internal set; }
@@ -536,6 +537,7 @@ namespace MC2Demo.BattleCore
                     chassisId = mech.chassisId,
                     displayName = string.IsNullOrWhiteSpace(mech.displayName) ? mech.unitType : mech.displayName,
                     activeLoadoutId = mech.activeLoadoutId,
+                    loadoutStatus = LoadoutStatus(mech),
                     availableForMission = mech.availableForMission,
                     conditionPercent = Math.Max(0, Math.Min(100, mech.conditionPercent)),
                     isWarehouseMech = IsWarehouseMech(mech)
@@ -548,6 +550,16 @@ namespace MC2Demo.BattleCore
         private static bool IsWarehouseMech(MechBayOwnedMechDefinition mech)
         {
             return StartsWith(mech?.unitId, "warehouse-") || StartsWith(mech?.ownedMechId, "assembled-");
+        }
+
+        private static string LoadoutStatus(MechBayOwnedMechDefinition mech)
+        {
+            if (IsWarehouseMech(mech) && string.Equals(mech?.activeLoadoutId, "pending-loadout", StringComparison.OrdinalIgnoreCase))
+            {
+                return "Needs loadout";
+            }
+
+            return string.IsNullOrWhiteSpace(mech?.activeLoadoutId) ? "No loadout" : "Ready fit";
         }
 
         private static bool StartsWith(string value, string prefix)
@@ -887,8 +899,8 @@ namespace MC2Demo.BattleCore
                         unitType = unitType,
                         chassisId = unitType,
                         displayName = unitType + " Assembled",
-                        activeLoadoutId = unitType + "-assembled",
-                        availableForMission = true,
+                        activeLoadoutId = "pending-loadout",
+                        availableForMission = false,
                         conditionPercent = 100
                     });
                     assembledNames.Add(unitType);

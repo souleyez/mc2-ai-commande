@@ -2758,7 +2758,7 @@ namespace MC2Demo.Presentation
                 label += " " + entry.conditionPercent.ToString(CultureInfo.InvariantCulture) + "%";
                 if (!entry.availableForMission)
                 {
-                    label += " hold";
+                    label += " " + UnavailableRosterText(entry);
                 }
 
                 entries.Add(label);
@@ -2832,11 +2832,18 @@ namespace MC2Demo.Presentation
             }
 
             string source = entry.isWarehouseMech ? "Depot" : "Squad";
-            string state = entry.availableForMission ? "Ready" : "Hold";
+            string state = entry.availableForMission ? "Ready" : UnavailableRosterText(entry);
             string name = string.IsNullOrWhiteSpace(entry.displayName) ? entry.unitType : entry.displayName;
             return source + " " + name
                 + "  " + entry.conditionPercent.ToString(CultureInfo.InvariantCulture) + "%"
                 + "  " + state;
+        }
+
+        private static string UnavailableRosterText(MechBayOwnedRosterEntry entry)
+        {
+            return entry != null && string.Equals(entry.loadoutStatus, "Needs loadout", StringComparison.OrdinalIgnoreCase)
+                ? "needs fit"
+                : "hold";
         }
 
         private static string OwnedRosterFitText(MechBayOwnedRosterEntry entry)
@@ -2847,9 +2854,10 @@ namespace MC2Demo.Presentation
             }
 
             string chassis = string.IsNullOrWhiteSpace(entry.chassisId) ? entry.unitType : entry.chassisId;
+            string loadoutStatus = string.IsNullOrWhiteSpace(entry.loadoutStatus) ? "Unknown" : entry.loadoutStatus;
             string loadout = string.IsNullOrWhiteSpace(entry.activeLoadoutId) ? "none" : entry.activeLoadoutId;
             string id = string.IsNullOrWhiteSpace(entry.ownedMechId) ? "unknown" : entry.ownedMechId;
-            return "Chassis " + chassis + "  Fit " + loadout + "  Id " + id;
+            return "Chassis " + chassis + "  Fit " + loadoutStatus + " (" + loadout + ")  Id " + id;
         }
 
         private static string ReceiptAssemblyLogText(MechBayMissionReceipt receipt)

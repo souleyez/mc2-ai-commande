@@ -306,6 +306,7 @@ namespace MC2Demo.EditorTools
 
             if (string.IsNullOrWhiteSpace(starterRoster[0].ownedMechId)
                 || string.IsNullOrWhiteSpace(starterRoster[0].activeLoadoutId)
+                || starterRoster[0].loadoutStatus != "Ready fit"
                 || starterRoster[0].conditionPercent <= 0)
             {
                 throw new InvalidDataException("Expected starter owned-mech roster entries to include detail preview fields.");
@@ -2316,11 +2317,12 @@ namespace MC2Demo.EditorTools
             MechBayOwnedRosterEntry assembledRaven = FindWarehouseRosterEntry(assembledRoster, "Raven");
             if (assembledRaven == null
                 || assembledRaven.conditionPercent != 100
-                || !assembledRaven.availableForMission
-                || string.IsNullOrWhiteSpace(assembledRaven.activeLoadoutId)
+                || assembledRaven.availableForMission
+                || assembledRaven.activeLoadoutId != "pending-loadout"
+                || assembledRaven.loadoutStatus != "Needs loadout"
                 || string.IsNullOrWhiteSpace(assembledRaven.ownedMechId))
             {
-                throw new InvalidDataException("Expected owned-mech roster to expose detail fields for the newly assembled warehouse Raven.");
+                throw new InvalidDataException("Expected assembled warehouse Raven to stay held with a pending loadout placeholder.");
             }
 
             BattleMission defeat = new(MakeResultContract(completeOnStart: false), resultProfiles);
