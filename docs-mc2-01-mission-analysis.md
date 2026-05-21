@@ -316,3 +316,7 @@ The guarded path now exposes a restart contract preview as well: it names the
 `mc2_01` template, player team, commander slot, player-unit patch mode, and
 spawn-intent count that a future `BattleMission` recreation call would consume,
 while still leaving the active mission instance untouched.
+The next dry-run layer now clones the template `MissionContract` and patches
+only the cloned player unit spawns from the handoff roster. Enemy units,
+objectives, terrain, triggers, and the source template remain unchanged, and
+the prepared contract is not launched into a live `BattleMission` yet.

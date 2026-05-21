@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using UnityEngine;
 
 namespace MC2Demo.BattleCore
 {
@@ -417,6 +418,32 @@ namespace MC2Demo.BattleCore
         public string Summary { get; internal set; }
         public string PreviewNote { get; internal set; }
         public MechBayMissionRestartSpawnIntent[] SpawnIntents { get; internal set; }
+    }
+
+    public sealed class MechBayMissionRestartContractCloneDryRun
+    {
+        public bool InventoryChanged { get; internal set; }
+        public bool Ready { get; internal set; }
+        public bool CreatesMissionInstance { get; internal set; }
+        public bool IncludesDepotMissionSlot { get; internal set; }
+        public bool PreparedContractAvailable { get; internal set; }
+        public int MissionSlotCount { get; internal set; }
+        public int SpawnIntentCount { get; internal set; }
+        public int TemplateUnitCount { get; internal set; }
+        public int TemplatePlayerUnitCount { get; internal set; }
+        public int PreparedUnitCount { get; internal set; }
+        public int PreparedPlayerUnitCount { get; internal set; }
+        public int ReplacedPlayerSpawnCount { get; internal set; }
+        public int PreservedNonPlayerUnitCount { get; internal set; }
+        public string MissionTemplateId { get; internal set; }
+        public string ContractSchema { get; internal set; }
+        public string PatchMode { get; internal set; }
+        public string Status { get; internal set; }
+        public string Requirements { get; internal set; }
+        public string Summary { get; internal set; }
+        public string PreviewNote { get; internal set; }
+        public MechBayMissionRestartSpawnIntent[] SpawnIntents { get; internal set; }
+        public MissionContract PreparedContract { get; internal set; }
     }
 
     public sealed class MechBayReceiptItemDefinition
@@ -1585,6 +1612,76 @@ namespace MC2Demo.BattleCore
             };
         }
 
+        public static MechBayMissionRestartContractCloneDryRun BuildRestartContractCloneDryRun(
+            MechBayInventoryContract inventory,
+            MissionContract templateContract)
+        {
+            MechBayMissionRestartContractPreview preview = BuildRestartContractPreview(inventory);
+            MechBayMissionRestartSpawnIntent[] intents = preview?.SpawnIntents ?? Array.Empty<MechBayMissionRestartSpawnIntent>();
+            int templateUnitCount = templateContract?.units?.Length ?? 0;
+            int templatePlayerUnitCount = CountPlayerUnitSpawns(templateContract?.units);
+            bool hasTemplate = templateContract != null;
+            bool hasCapacity = templatePlayerUnitCount >= intents.Length && intents.Length > 0;
+
+            MissionContract preparedContract = null;
+            int replacedPlayerSpawns = 0;
+            int preparedUnitCount = 0;
+            int preparedPlayerUnitCount = 0;
+            int preservedNonPlayerUnitCount = 0;
+            if (preview?.Ready == true && hasTemplate && hasCapacity)
+            {
+                preparedContract = CloneMissionContract(templateContract);
+                replacedPlayerSpawns = PatchPreparedPlayerSpawns(preparedContract, intents);
+                preparedUnitCount = preparedContract?.units?.Length ?? 0;
+                preparedPlayerUnitCount = CountPlayerUnitSpawns(preparedContract?.units);
+                preservedNonPlayerUnitCount = CountNonPlayerUnitSpawns(preparedContract?.units);
+            }
+
+            bool ready = preview?.Ready == true
+                && preparedContract != null
+                && replacedPlayerSpawns == intents.Length
+                && preparedPlayerUnitCount == intents.Length;
+            string missionTemplateId = string.IsNullOrWhiteSpace(templateContract?.mission?.id)
+                ? preview?.MissionTemplateId
+                : templateContract.mission.id;
+            string schema = string.IsNullOrWhiteSpace(templateContract?.schema)
+                ? preview?.ContractSchema
+                : templateContract.schema;
+
+            return new MechBayMissionRestartContractCloneDryRun
+            {
+                InventoryChanged = false,
+                Ready = ready,
+                CreatesMissionInstance = false,
+                IncludesDepotMissionSlot = preview?.IncludesDepotMissionSlot == true,
+                PreparedContractAvailable = preparedContract != null,
+                MissionSlotCount = preview?.MissionSlotCount ?? 0,
+                SpawnIntentCount = preview?.SpawnIntentCount ?? 0,
+                TemplateUnitCount = templateUnitCount,
+                TemplatePlayerUnitCount = templatePlayerUnitCount,
+                PreparedUnitCount = preparedUnitCount,
+                PreparedPlayerUnitCount = preparedPlayerUnitCount,
+                ReplacedPlayerSpawnCount = replacedPlayerSpawns,
+                PreservedNonPlayerUnitCount = preservedNonPlayerUnitCount,
+                MissionTemplateId = missionTemplateId,
+                ContractSchema = schema,
+                PatchMode = DemoRestartPatchMode,
+                Status = ready ? "Restart contract clone dry run ready" : "Restart contract clone dry run unavailable",
+                Requirements = ready
+                    ? "BattleMission constructor hook"
+                    : RestartContractCloneRequirements(preview, hasTemplate, templatePlayerUnitCount, intents.Length),
+                Summary = RestartContractCloneSummary(
+                    missionTemplateId,
+                    preparedUnitCount,
+                    replacedPlayerSpawns,
+                    preservedNonPlayerUnitCount,
+                    preview?.IncludesDepotMissionSlot == true),
+                PreviewNote = "Dry run only: prepared contract not launched",
+                SpawnIntents = intents,
+                PreparedContract = preparedContract
+            };
+        }
+
         private static MechBaySquadSelectionSlot SlotFromRoster(MechBayOwnedRosterEntry entry)
         {
             return new MechBaySquadSelectionSlot
@@ -1680,6 +1777,164 @@ namespace MC2Demo.BattleCore
                 + intents.Length.ToString(CultureInfo.InvariantCulture)
                 + " commander "
                 + commanderName;
+            return includesDepotMissionSlot ? text + "  depot included" : text;
+        }
+
+        private static MissionContract CloneMissionContract(MissionContract templateContract)
+        {
+            if (templateContract == null)
+            {
+                return null;
+            }
+
+            string json = JsonUtility.ToJson(templateContract);
+            return string.IsNullOrWhiteSpace(json) ? null : JsonUtility.FromJson<MissionContract>(json);
+        }
+
+        private static int PatchPreparedPlayerSpawns(
+            MissionContract preparedContract,
+            MechBayMissionRestartSpawnIntent[] intents)
+        {
+            UnitSpawn[] units = preparedContract?.units;
+            if (preparedContract == null || units == null || intents == null || intents.Length == 0)
+            {
+                return 0;
+            }
+
+            List<UnitSpawn> patchedUnits = new(units.Length);
+            int intentIndex = 0;
+            int replaced = 0;
+            for (int index = 0; index < units.Length; index++)
+            {
+                UnitSpawn spawn = units[index];
+                if (spawn == null)
+                {
+                    continue;
+                }
+
+                if (!spawn.isPlayerUnit)
+                {
+                    patchedUnits.Add(spawn);
+                    continue;
+                }
+
+                if (intentIndex >= intents.Length)
+                {
+                    continue;
+                }
+
+                ApplyRestartIntentToSpawn(spawn, intents[intentIndex]);
+                patchedUnits.Add(spawn);
+                intentIndex++;
+                replaced++;
+            }
+
+            preparedContract.units = patchedUnits.ToArray();
+            return replaced;
+        }
+
+        private static void ApplyRestartIntentToSpawn(
+            UnitSpawn spawn,
+            MechBayMissionRestartSpawnIntent intent)
+        {
+            if (spawn == null || intent == null)
+            {
+                return;
+            }
+
+            spawn.isPlayerUnit = true;
+            spawn.teamId = DemoPlayerTeamId;
+            spawn.commanderId = DemoCommanderId;
+            spawn.pilotId = Math.Max(1, intent.spawnIndex);
+            spawn.unitType = string.IsNullOrWhiteSpace(intent.unitType) ? spawn.unitType : intent.unitType;
+            spawn.brain = DemoPlayerBrain;
+            spawn.squadId = Math.Max(1, intent.spawnIndex);
+        }
+
+        private static int CountPlayerUnitSpawns(UnitSpawn[] units)
+        {
+            if (units == null)
+            {
+                return 0;
+            }
+
+            int count = 0;
+            for (int index = 0; index < units.Length; index++)
+            {
+                if (units[index]?.isPlayerUnit == true)
+                {
+                    count++;
+                }
+            }
+
+            return count;
+        }
+
+        private static int CountNonPlayerUnitSpawns(UnitSpawn[] units)
+        {
+            if (units == null)
+            {
+                return 0;
+            }
+
+            int count = 0;
+            for (int index = 0; index < units.Length; index++)
+            {
+                if (units[index] != null && !units[index].isPlayerUnit)
+                {
+                    count++;
+                }
+            }
+
+            return count;
+        }
+
+        private static string RestartContractCloneRequirements(
+            MechBayMissionRestartContractPreview preview,
+            bool hasTemplate,
+            int templatePlayerUnitCount,
+            int spawnIntentCount)
+        {
+            if (preview?.Ready != true)
+            {
+                return "Need restart contract preview";
+            }
+
+            if (!hasTemplate)
+            {
+                return "Need template MissionContract";
+            }
+
+            if (templatePlayerUnitCount < spawnIntentCount)
+            {
+                return "Need more template player spawns";
+            }
+
+            return "Need prepared contract";
+        }
+
+        private static string RestartContractCloneSummary(
+            string missionTemplateId,
+            int preparedUnitCount,
+            int replacedPlayerSpawns,
+            int preservedNonPlayerUnitCount,
+            bool includesDepotMissionSlot)
+        {
+            if (preparedUnitCount <= 0 || replacedPlayerSpawns <= 0)
+            {
+                return "No prepared MissionContract";
+            }
+
+            string mission = string.IsNullOrWhiteSpace(missionTemplateId) ? "mission" : missionTemplateId;
+            string text = "Prepared MissionContract: "
+                + mission
+                + " units "
+                + preparedUnitCount.ToString(CultureInfo.InvariantCulture)
+                + " replaced "
+                + replacedPlayerSpawns.ToString(CultureInfo.InvariantCulture)
+                + " player spawns preserved "
+                + preservedNonPlayerUnitCount.ToString(CultureInfo.InvariantCulture)
+                + " non-player";
             return includesDepotMissionSlot ? text + "  depot included" : text;
         }
 

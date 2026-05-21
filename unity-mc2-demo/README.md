@@ -71,6 +71,7 @@ Current demo behavior:
 - maps the handoff roster into restart dry-run spawn intents without creating a new mission instance
 - shows a disabled restart Apply guard so the dry run cannot mutate runtime battle state yet
 - previews the future BattleMission restart contract input without instantiating a mission
+- prepares a cloned MissionContract dry run that replaces player spawns while leaving the active mission untouched
 - warns when draft armor plate or heat sink usage exceeds starter inventory and blocks applying that fit
 - shows starter mech condition and one-click demo repair that spends local token balance
 - applies a local mission receipt for completed bounty tokens and salvaged mech fragments at mission end

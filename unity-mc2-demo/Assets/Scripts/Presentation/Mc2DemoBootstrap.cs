@@ -2543,7 +2543,7 @@ namespace MC2Demo.Presentation
 
             y += 30f;
             DrawMechBayInventorySummary(x, y, width);
-            y += 456f;
+            y += 478f;
             if (showWarehouseDraftFitPreview)
             {
                 DrawWarehouseDraftFitPreview(x, y, width);
@@ -2626,7 +2626,8 @@ namespace MC2Demo.Presentation
             DrawMissionRestartDryRun(x, y + 192f, width);
             DrawMissionRestartApplyGuard(x, y + 214f, width);
             DrawMissionRestartContractPreview(x, y + 236f, width);
-            DrawOwnedRosterDetail(x, y + 258f, width, roster, pilotHirePreview);
+            DrawMissionRestartContractCloneDryRun(x, y + 258f, width);
+            DrawOwnedRosterDetail(x, y + 280f, width, roster, pilotHirePreview);
         }
 
         private void DrawLoadoutUnit(UnitState unit, float x, float y, float width)
@@ -2957,6 +2958,34 @@ namespace MC2Demo.Presentation
                 + commander
                 + "  "
                 + note;
+        }
+
+        private void DrawMissionRestartContractCloneDryRun(float x, float y, float width)
+        {
+            MechBayMissionRestartContractCloneDryRun dryRun =
+                MechBayMissionHandoffPreviewService.BuildRestartContractCloneDryRun(demoInventory, mission?.Contract);
+            GUI.Label(
+                new Rect(x, y, width, 18f),
+                "Clone Dry Run " + TruncateText(MissionRestartContractCloneDryRunText(dryRun), 60));
+        }
+
+        private static string MissionRestartContractCloneDryRunText(MechBayMissionRestartContractCloneDryRun dryRun)
+        {
+            if (dryRun == null)
+            {
+                return "unavailable";
+            }
+
+            string status = string.IsNullOrWhiteSpace(dryRun.Status)
+                ? "Restart contract clone dry run unavailable"
+                : dryRun.Status;
+            return dryRun.ReplacedPlayerSpawnCount.ToString(CultureInfo.InvariantCulture)
+                + "/"
+                + dryRun.TemplatePlayerUnitCount.ToString(CultureInfo.InvariantCulture)
+                + " player spawns  "
+                + status
+                + "  "
+                + (dryRun.PreparedContractAvailable ? "contract ready" : "no contract");
         }
 
         private static string WeaponShopPreviewText(MechBayWeaponShopPreview preview)

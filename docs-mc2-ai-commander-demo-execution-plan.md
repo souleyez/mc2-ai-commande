@@ -80,6 +80,7 @@ The Unity demo currently supports:
 - restart dry run maps handoff roster slots to future spawn intents without creating a new mission instance
 - restart apply guard rejects the dry-run apply path without mutating inventory or runtime battle state
 - restart contract preview describes future BattleMission input without instantiating a mission
+- restart contract clone dry run prepares a copied MissionContract payload with replaced player spawns but no live launch
 - starter inventory availability feedback warns on armor plate or heat sink shortages and blocks applying invalid drafts
 - starter mech condition and one-click demo repair spend local token balance and restore damaged mechs
 - starter mission receipt applies completed bounty tokens and salvaged mech fragments to local inventory
@@ -397,7 +398,7 @@ Tasks:
 
 ## Current Recommended Next Task
 
-Start with **starter mission restart contract clone dry run**.
+Start with **starter mission restart BattleMission construction dry run**.
 
 Reason:
 
@@ -429,5 +430,6 @@ Reason:
 - The next-mission handoff now has a restart dry run that maps handoff slots to future spawn intents without creating a new mission instance.
 - The restart dry run now has an Apply guard, so the eventual mission recreation path has an explicit no-op contract before it mutates runtime battle state.
 - The restart path now has a contract preview that describes the future `BattleMission` input without instantiating it.
-- The next low-risk step is a contract clone dry run that can prepare a replacement `MissionContract` payload while still avoiding a live mission restart.
+- The restart path now has a contract clone dry run that prepares a replacement `MissionContract` payload while still avoiding a live mission restart.
+- The next low-risk step is a `BattleMission` construction dry run that instantiates the prepared contract only as a throwaway validation object, not as the active combat mission.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.
