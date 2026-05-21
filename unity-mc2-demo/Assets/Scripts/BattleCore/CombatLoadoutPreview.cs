@@ -100,6 +100,18 @@ namespace MC2Demo.BattleCore
         public int gridY;
     }
 
+    public sealed class CombatLoadoutFillerOverride
+    {
+        public int gridX;
+        public int gridY;
+        public string category;
+    }
+
+    public static class LoadoutFillerOverrideCategory
+    {
+        public const string Empty = "Empty";
+    }
+
     public static class CombatLoadoutPreviewBuilder
     {
         private const int ProjectedGridWidth = 4;
@@ -111,12 +123,12 @@ namespace MC2Demo.BattleCore
 
         public static CombatLoadoutPreview Build(string chassisId, CombatProfile profile)
         {
-            return Build(chassisId, profile, null, null);
+            return Build(chassisId, profile, null, null, null);
         }
 
         public static CombatLoadoutPreview Build(string chassisId, CombatProfile profile, bool[] enabledWeapons)
         {
-            return Build(chassisId, profile, enabledWeapons, null);
+            return Build(chassisId, profile, enabledWeapons, null, null);
         }
 
         public static CombatLoadoutPreview Build(
@@ -124,6 +136,16 @@ namespace MC2Demo.BattleCore
             CombatProfile profile,
             bool[] enabledWeapons,
             CombatLoadoutPlacementOverride[] placementOverrides)
+        {
+            return Build(chassisId, profile, enabledWeapons, placementOverrides, null);
+        }
+
+        public static CombatLoadoutPreview Build(
+            string chassisId,
+            CombatProfile profile,
+            bool[] enabledWeapons,
+            CombatLoadoutPlacementOverride[] placementOverrides,
+            CombatLoadoutFillerOverride[] fillerOverrides)
         {
             CombatWeaponDefinition[] weapons = profile?.Weapons ?? Array.Empty<CombatWeaponDefinition>();
             LoadoutGridCell[][] weaponShapes = BuildWeaponShapes(weapons);
@@ -215,7 +237,8 @@ namespace MC2Demo.BattleCore
                 weightLimit,
                 projectedWeight,
                 heatPerShot,
-                heatLimit);
+                heatLimit,
+                fillerOverrides);
 
             LoadoutItemDefinition[] itemDefinitions = items.ToArray();
             LoadoutPlacedItemDefinition[] placedItemDefinitions = placedItems.ToArray();
@@ -275,7 +298,8 @@ namespace MC2Demo.BattleCore
             float weightLimit,
             float projectedWeight,
             float heatPerShot,
-            float heatLimit)
+            float heatLimit,
+            CombatLoadoutFillerOverride[] fillerOverrides)
         {
             float remainingWeight = weightLimit > 0f ? weightLimit - projectedWeight : 0f;
             int fillerIndex = 0;
@@ -290,14 +314,42 @@ namespace MC2Demo.BattleCore
                         continue;
                     }
 
-                    bool useHeatSink = remainingWeight >= ProjectedHeatSinkWeight
+                    bool defaultUseHeatSink = remainingWeight >= ProjectedHeatSinkWeight
                         && heatSinkCount < 2
                         && (prefersCooling || fillerIndex % 4 == 0);
-                    if (!useHeatSink && remainingWeight < ProjectedArmorPlateWeight)
+                    bool defaultCanAddArmor = remainingWeight >= ProjectedArmorPlateWeight;
+                    string forcedCategory = FindFillerOverrideCategory(fillerOverrides, x, y);
+                    if (!defaultUseHeatSink && !defaultCanAddArmor && !IsForcedFillerCategory(forcedCategory))
                     {
                         return;
                     }
 
+                    if (forcedCategory == LoadoutFillerOverrideCategory.Empty)
+                    {
+                        if (defaultUseHeatSink)
+                        {
+                            remainingWeight -= ProjectedHeatSinkWeight;
+                            heatSinkCount++;
+                            fillerIndex++;
+                        }
+                        else if (defaultCanAddArmor)
+                        {
+                            remainingWeight -= ProjectedArmorPlateWeight;
+                            fillerIndex++;
+                        }
+
+                        continue;
+                    }
+
+                    bool hasForcedCategory = IsForcedFillerCategory(forcedCategory);
+                    if (hasForcedCategory && forcedCategory != LoadoutItemCategory.ArmorPlate && forcedCategory != LoadoutItemCategory.HeatSink)
+                    {
+                        continue;
+                    }
+
+                    bool useHeatSink = hasForcedCategory
+                        ? forcedCategory == LoadoutItemCategory.HeatSink
+                        : defaultUseHeatSink;
                     string category = useHeatSink ? LoadoutItemCategory.HeatSink : LoadoutItemCategory.ArmorPlate;
                     string itemId = "projected-" + (useHeatSink ? "heat-sink-" : "armor-plate-") + fillerIndex;
                     string displayName = useHeatSink ? "Projected Heat Sink" : "Projected Armor Plate";
@@ -345,6 +397,30 @@ namespace MC2Demo.BattleCore
                     fillerIndex++;
                 }
             }
+        }
+
+        private static string FindFillerOverrideCategory(CombatLoadoutFillerOverride[] fillerOverrides, int x, int y)
+        {
+            if (fillerOverrides == null)
+            {
+                return null;
+            }
+
+            for (int index = 0; index < fillerOverrides.Length; index++)
+            {
+                CombatLoadoutFillerOverride fillerOverride = fillerOverrides[index];
+                if (fillerOverride != null && fillerOverride.gridX == x && fillerOverride.gridY == y)
+                {
+                    return fillerOverride.category;
+                }
+            }
+
+            return null;
+        }
+
+        private static bool IsForcedFillerCategory(string category)
+        {
+            return !string.IsNullOrEmpty(category);
         }
 
         private static bool IsWeaponEnabled(bool[] enabledWeapons, int index)

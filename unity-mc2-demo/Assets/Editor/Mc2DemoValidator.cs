@@ -287,6 +287,7 @@ namespace MC2Demo.EditorTools
                 "UrbanMech"
             };
 
+            bool testedFillerOverride = false;
             foreach (string unitType in mechUnitTypes)
             {
                 CombatProfile profile = combatProfiles.ForUnitType(unitType, true);
@@ -362,6 +363,54 @@ namespace MC2Demo.EditorTools
                     throw new InvalidDataException("Projected loadout did not add any filler item despite spare load for " + unitType);
                 }
 
+                CombatLoadoutPreviewGridCell fillerCell = FirstFillerCell(preview);
+                if (fillerCell != null)
+                {
+                    testedFillerOverride = true;
+                    CombatLoadoutPreview emptyFillerPreview = CombatLoadoutPreviewBuilder.Build(
+                        unitType,
+                        profile,
+                        null,
+                        null,
+                        new[]
+                        {
+                            new CombatLoadoutFillerOverride
+                            {
+                                gridX = fillerCell.X,
+                                gridY = fillerCell.Y,
+                                category = LoadoutFillerOverrideCategory.Empty
+                            }
+                        });
+                    if (HasFillerCellAt(emptyFillerPreview, fillerCell.X, fillerCell.Y, null))
+                    {
+                        throw new InvalidDataException("Projected filler empty override did not clear the selected cell for " + unitType);
+                    }
+
+                    CombatLoadoutPreview heatSinkFillerPreview = CombatLoadoutPreviewBuilder.Build(
+                        unitType,
+                        profile,
+                        null,
+                        null,
+                        new[]
+                        {
+                            new CombatLoadoutFillerOverride
+                            {
+                                gridX = fillerCell.X,
+                                gridY = fillerCell.Y,
+                                category = LoadoutItemCategory.HeatSink
+                            }
+                        });
+                    if (!HasFillerCellAt(heatSinkFillerPreview, fillerCell.X, fillerCell.Y, LoadoutItemCategory.HeatSink))
+                    {
+                        throw new InvalidDataException("Projected filler heat-sink override did not place a heat sink for " + unitType);
+                    }
+
+                    if (heatSinkFillerPreview.Validation.TotalHeatDissipationBonus <= emptyFillerPreview.Validation.TotalHeatDissipationBonus)
+                    {
+                        throw new InvalidDataException("Projected filler heat-sink override did not increase cooling for " + unitType);
+                    }
+                }
+
                 CombatLoadoutPreviewItem firstItem = preview.Items[0];
                 CombatLoadoutPreviewItem secondItem = preview.Items[Math.Min(1, preview.Items.Length - 1)];
                 CombatLoadoutPreview overlapPreview = CombatLoadoutPreviewBuilder.Build(
@@ -400,6 +449,42 @@ namespace MC2Demo.EditorTools
                     throw new InvalidDataException("Projected loadout placement override did not surface bounds validation for " + unitType);
                 }
             }
+
+            if (!testedFillerOverride)
+            {
+                throw new InvalidDataException("Expected at least one source loadout to exercise filler overrides.");
+            }
+        }
+
+        private static CombatLoadoutPreviewGridCell FirstFillerCell(CombatLoadoutPreview preview)
+        {
+            foreach (CombatLoadoutPreviewGridCell cell in preview.OccupiedCells)
+            {
+                if (cell != null && cell.SourceWeaponIndex < 0)
+                {
+                    return cell;
+                }
+            }
+
+            return null;
+        }
+
+        private static bool HasFillerCellAt(CombatLoadoutPreview preview, int x, int y, string category)
+        {
+            foreach (CombatLoadoutPreviewGridCell cell in preview.OccupiedCells)
+            {
+                if (cell == null || cell.SourceWeaponIndex >= 0 || cell.X != x || cell.Y != y)
+                {
+                    continue;
+                }
+
+                if (category == null || cell.Category == category)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private static bool HasPreviewCellForWeapon(CombatLoadoutPreview preview, int sourceWeaponIndex)

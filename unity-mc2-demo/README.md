@@ -39,6 +39,7 @@ Current demo behavior:
 - visualizes the projected mech bay slot grid with placeholder multi-cell weapon shapes
 - lets the mech bay select and nudge projected weapons to preview overlap and bounds validation
 - projects spare-load armor plates and heat sinks into free cells with hardness and cooling readouts
+- lets projected filler cells cycle between armor, heat sink, and empty to preview loadout tradeoffs
 - supports one-shot Jet orders with terrain-aware landing rejection
 - provides a toggleable current-objective mission map and a pause/restart/end system panel
 - resolves mission victory or defeat through BattleCore result state

@@ -212,4 +212,6 @@ on/off toggles and projected weapon nudges, proving that fitting edits can
 immediately recompute heat, load, grid occupancy, overlap, bounds, and validator
 status without touching live battle damage yet. Spare load is now projected into
 free cells as simple armor plates and heat sinks, exposing hardness and cooling
-totals before full inventory editing exists.
+totals before full inventory editing exists. Those projected filler cells can
+also be cycled between armor, heat sink, and empty so the first fitting tradeoff
+is interactive without committing to a saved inventory format yet.

@@ -33,6 +33,7 @@ namespace MC2Demo.Presentation
         private readonly Dictionary<string, Material> materialCache = new(StringComparer.Ordinal);
         private readonly Dictionary<string, bool[]> loadoutWeaponEnabledByUnit = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, CombatLoadoutPlacementOverride[]> loadoutPlacementOverridesByUnit = new(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, List<CombatLoadoutFillerOverride>> loadoutFillerOverridesByUnit = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, int> selectedLoadoutWeaponByUnit = new(StringComparer.OrdinalIgnoreCase);
         private readonly List<Material> ownedMaterials = new();
         private readonly List<string> combatLog = new();
@@ -2538,7 +2539,8 @@ namespace MC2Demo.Presentation
                 key,
                 unit?.Profile,
                 WeaponEnabledStateFor(unit),
-                LoadoutPlacementOverridesFor(unit));
+                LoadoutPlacementOverridesFor(unit),
+                LoadoutFillerOverridesFor(unit));
         }
 
         private static string FirstLoadoutError(LoadoutValidationResult result)
@@ -2596,14 +2598,20 @@ namespace MC2Demo.Presentation
                     DrawColorRect(new Rect(cell.x, cell.y, cell.width, 1f), new Color(0.35f, 0.42f, 0.44f, 0.95f));
                     DrawColorRect(new Rect(cell.x, cell.yMax - 1f, cell.width, 1f), new Color(0.02f, 0.025f, 0.03f, 0.95f));
 
-                    if (occupiedCell != null
-                        && occupiedCell.SourceWeaponIndex >= 0
-                        && Event.current.type == EventType.MouseDown
+                    if (Event.current.type == EventType.MouseDown
                         && Event.current.button == 0
                         && cell.Contains(Event.current.mousePosition))
                     {
-                        SetSelectedLoadoutWeapon(unit, occupiedCell.SourceWeaponIndex);
-                        statusText = "Selected " + TruncateText(occupiedCell.DisplayName, 24);
+                        if (occupiedCell != null && occupiedCell.SourceWeaponIndex >= 0)
+                        {
+                            SetSelectedLoadoutWeapon(unit, occupiedCell.SourceWeaponIndex);
+                            statusText = "Selected " + TruncateText(occupiedCell.DisplayName, 24);
+                        }
+                        else if (cellStack <= 1)
+                        {
+                            CycleFillerOverride(unit, column, row, occupiedCell?.Category);
+                        }
+
                         Event.current.Use();
                     }
 
@@ -2846,6 +2854,22 @@ namespace MC2Demo.Presentation
             return placementOverrides;
         }
 
+        private CombatLoadoutFillerOverride[] LoadoutFillerOverridesFor(UnitState unit)
+        {
+            if (unit == null)
+            {
+                return null;
+            }
+
+            if (!loadoutFillerOverridesByUnit.TryGetValue(unit.Id ?? "", out List<CombatLoadoutFillerOverride> fillerOverrides)
+                || fillerOverrides.Count == 0)
+            {
+                return null;
+            }
+
+            return fillerOverrides.ToArray();
+        }
+
         private int SelectedLoadoutWeaponIndexFor(UnitState unit, CombatLoadoutPreview preview)
         {
             if (unit == null || preview == null || preview.Items.Length == 0)
@@ -2907,6 +2931,97 @@ namespace MC2Demo.Presentation
 
             placementOverrides[selectedWeaponIndex] = null;
             statusText = "Reset temporary slot";
+        }
+
+        private void CycleFillerOverride(UnitState unit, int gridX, int gridY, string currentCategory)
+        {
+            if (unit == null)
+            {
+                return;
+            }
+
+            List<CombatLoadoutFillerOverride> fillerOverrides = MutableLoadoutFillerOverridesFor(unit);
+            CombatLoadoutFillerOverride fillerOverride = FindFillerOverride(fillerOverrides, gridX, gridY);
+            string nextCategory = NextFillerCategory(currentCategory);
+            if (fillerOverride == null)
+            {
+                fillerOverrides.Add(new CombatLoadoutFillerOverride
+                {
+                    gridX = gridX,
+                    gridY = gridY,
+                    category = nextCategory
+                });
+            }
+            else
+            {
+                fillerOverride.category = nextCategory;
+            }
+
+            statusText = "Filler " + FillerStatusName(nextCategory);
+        }
+
+        private List<CombatLoadoutFillerOverride> MutableLoadoutFillerOverridesFor(UnitState unit)
+        {
+            string key = unit?.Id ?? "";
+            if (!loadoutFillerOverridesByUnit.TryGetValue(key, out List<CombatLoadoutFillerOverride> fillerOverrides))
+            {
+                fillerOverrides = new List<CombatLoadoutFillerOverride>();
+                loadoutFillerOverridesByUnit[key] = fillerOverrides;
+            }
+
+            return fillerOverrides;
+        }
+
+        private static CombatLoadoutFillerOverride FindFillerOverride(
+            List<CombatLoadoutFillerOverride> fillerOverrides,
+            int gridX,
+            int gridY)
+        {
+            if (fillerOverrides == null)
+            {
+                return null;
+            }
+
+            for (int index = 0; index < fillerOverrides.Count; index++)
+            {
+                CombatLoadoutFillerOverride fillerOverride = fillerOverrides[index];
+                if (fillerOverride != null && fillerOverride.gridX == gridX && fillerOverride.gridY == gridY)
+                {
+                    return fillerOverride;
+                }
+            }
+
+            return null;
+        }
+
+        private static string NextFillerCategory(string currentCategory)
+        {
+            if (currentCategory == LoadoutItemCategory.ArmorPlate)
+            {
+                return LoadoutItemCategory.HeatSink;
+            }
+
+            if (currentCategory == LoadoutItemCategory.HeatSink)
+            {
+                return LoadoutFillerOverrideCategory.Empty;
+            }
+
+            return LoadoutItemCategory.ArmorPlate;
+        }
+
+        private static string FillerStatusName(string category)
+        {
+            if (category == LoadoutItemCategory.ArmorPlate)
+            {
+                return "Armor";
+            }
+
+            if (category == LoadoutItemCategory.HeatSink)
+            {
+                return "Heat Sink";
+            }
+
+            return "Empty";
         }
 
         private void DrawSystemPanel()
