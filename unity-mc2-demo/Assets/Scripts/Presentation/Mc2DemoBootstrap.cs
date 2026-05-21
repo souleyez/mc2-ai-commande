@@ -2543,7 +2543,7 @@ namespace MC2Demo.Presentation
 
             y += 30f;
             DrawMechBayInventorySummary(x, y, width);
-            y += 434f;
+            y += 456f;
             if (showWarehouseDraftFitPreview)
             {
                 DrawWarehouseDraftFitPreview(x, y, width);
@@ -2625,7 +2625,8 @@ namespace MC2Demo.Presentation
             DrawMissionHandoffLaunchGuard(x, y + 170f, width, handoffPreview);
             DrawMissionRestartDryRun(x, y + 192f, width);
             DrawMissionRestartApplyGuard(x, y + 214f, width);
-            DrawOwnedRosterDetail(x, y + 236f, width, roster, pilotHirePreview);
+            DrawMissionRestartContractPreview(x, y + 236f, width);
+            DrawOwnedRosterDetail(x, y + 258f, width, roster, pilotHirePreview);
         }
 
         private void DrawLoadoutUnit(UnitState unit, float x, float y, float width)
@@ -2926,6 +2927,36 @@ namespace MC2Demo.Presentation
                 + "  "
                 + guard.SpawnIntentCount.ToString(CultureInfo.InvariantCulture)
                 + " intents";
+        }
+
+        private void DrawMissionRestartContractPreview(float x, float y, float width)
+        {
+            MechBayMissionRestartContractPreview preview =
+                MechBayMissionHandoffPreviewService.BuildRestartContractPreview(demoInventory);
+            GUI.Label(
+                new Rect(x, y, width, 18f),
+                "Restart Contract " + TruncateText(MissionRestartContractPreviewText(preview), 58));
+        }
+
+        private static string MissionRestartContractPreviewText(MechBayMissionRestartContractPreview preview)
+        {
+            if (preview == null)
+            {
+                return "unavailable";
+            }
+
+            string mission = string.IsNullOrWhiteSpace(preview.MissionTemplateId) ? "mission" : preview.MissionTemplateId;
+            string commander = string.IsNullOrWhiteSpace(preview.CommanderDisplayName)
+                ? "commander"
+                : preview.CommanderDisplayName;
+            string note = string.IsNullOrWhiteSpace(preview.PreviewNote) ? "contract not instantiated" : preview.PreviewNote;
+            return preview.SpawnIntentCount.ToString(CultureInfo.InvariantCulture)
+                + " spawns  "
+                + mission
+                + "  "
+                + commander
+                + "  "
+                + note;
         }
 
         private static string WeaponShopPreviewText(MechBayWeaponShopPreview preview)

@@ -396,6 +396,29 @@ namespace MC2Demo.BattleCore
         public string Summary { get; internal set; }
     }
 
+    public sealed class MechBayMissionRestartContractPreview
+    {
+        public bool InventoryChanged { get; internal set; }
+        public bool Ready { get; internal set; }
+        public bool CreatesMissionInstance { get; internal set; }
+        public bool IncludesDepotMissionSlot { get; internal set; }
+        public int MissionSlotCount { get; internal set; }
+        public int SpawnIntentCount { get; internal set; }
+        public int PlayerTeamId { get; internal set; }
+        public int CommanderId { get; internal set; }
+        public string MissionTemplateId { get; internal set; }
+        public string ContractSchema { get; internal set; }
+        public string PatchMode { get; internal set; }
+        public string CommanderOwnedMechId { get; internal set; }
+        public string CommanderDisplayName { get; internal set; }
+        public string UnitBrain { get; internal set; }
+        public string Status { get; internal set; }
+        public string Requirements { get; internal set; }
+        public string Summary { get; internal set; }
+        public string PreviewNote { get; internal set; }
+        public MechBayMissionRestartSpawnIntent[] SpawnIntents { get; internal set; }
+    }
+
     public sealed class MechBayReceiptItemDefinition
     {
         public string itemId;
@@ -1416,6 +1439,13 @@ namespace MC2Demo.BattleCore
 
     public static class MechBayMissionHandoffPreviewService
     {
+        private const string DemoMissionTemplateId = "mc2_01";
+        private const string DemoMissionContractSchema = "mc2-unity-demo-contract-v1";
+        private const string DemoRestartPatchMode = "Replace player unit spawns";
+        private const string DemoPlayerBrain = "PBrain";
+        private const int DemoPlayerTeamId = 0;
+        private const int DemoCommanderId = 0;
+
         public static MechBayMissionHandoffPreview BuildPreview(MechBayInventoryContract inventory)
         {
             MechBayOwnedRosterEntry[] roster = MechBayOwnedRosterService.BuildRosterPreview(inventory);
@@ -1525,6 +1555,36 @@ namespace MC2Demo.BattleCore
             };
         }
 
+        public static MechBayMissionRestartContractPreview BuildRestartContractPreview(MechBayInventoryContract inventory)
+        {
+            MechBayMissionRestartDryRun dryRun = BuildRestartDryRun(inventory);
+            MechBayMissionRestartSpawnIntent[] intents = dryRun?.SpawnIntents ?? Array.Empty<MechBayMissionRestartSpawnIntent>();
+            MechBayMissionRestartSpawnIntent commander = FirstRestartIntent(intents);
+            bool ready = dryRun?.Ready == true && commander != null;
+            return new MechBayMissionRestartContractPreview
+            {
+                InventoryChanged = false,
+                Ready = ready,
+                CreatesMissionInstance = false,
+                IncludesDepotMissionSlot = dryRun?.IncludesDepotMissionSlot == true,
+                MissionSlotCount = dryRun?.MissionSlotCount ?? 0,
+                SpawnIntentCount = dryRun?.SpawnIntentCount ?? 0,
+                PlayerTeamId = DemoPlayerTeamId,
+                CommanderId = DemoCommanderId,
+                MissionTemplateId = DemoMissionTemplateId,
+                ContractSchema = DemoMissionContractSchema,
+                PatchMode = DemoRestartPatchMode,
+                CommanderOwnedMechId = commander?.ownedMechId,
+                CommanderDisplayName = string.IsNullOrWhiteSpace(commander?.displayName) ? commander?.unitType : commander.displayName,
+                UnitBrain = DemoPlayerBrain,
+                Status = ready ? "Restart contract preview ready" : "Restart contract preview unavailable",
+                Requirements = ready ? "BattleMission recreation hook" : "Need restart dry run",
+                Summary = RestartContractSummary(intents, dryRun?.IncludesDepotMissionSlot == true),
+                PreviewNote = "Preview only: contract not instantiated",
+                SpawnIntents = intents
+            };
+        }
+
         private static MechBaySquadSelectionSlot SlotFromRoster(MechBayOwnedRosterEntry entry)
         {
             return new MechBaySquadSelectionSlot
@@ -1578,6 +1638,48 @@ namespace MC2Demo.BattleCore
                 text += " +" + (intents.Length - count).ToString(CultureInfo.InvariantCulture);
             }
 
+            return includesDepotMissionSlot ? text + "  depot included" : text;
+        }
+
+        private static MechBayMissionRestartSpawnIntent FirstRestartIntent(MechBayMissionRestartSpawnIntent[] intents)
+        {
+            if (intents == null)
+            {
+                return null;
+            }
+
+            for (int index = 0; index < intents.Length; index++)
+            {
+                if (intents[index] != null)
+                {
+                    return intents[index];
+                }
+            }
+
+            return null;
+        }
+
+        private static string RestartContractSummary(
+            MechBayMissionRestartSpawnIntent[] intents,
+            bool includesDepotMissionSlot)
+        {
+            if (intents == null || intents.Length == 0)
+            {
+                return "No BattleMission input";
+            }
+
+            MechBayMissionRestartSpawnIntent commander = FirstRestartIntent(intents);
+            string commanderName = string.IsNullOrWhiteSpace(commander?.displayName)
+                ? commander?.unitType ?? "Mech"
+                : commander.displayName;
+            string text = "BattleMission input: "
+                + DemoMissionTemplateId
+                + " team "
+                + DemoPlayerTeamId.ToString(CultureInfo.InvariantCulture)
+                + " spawns "
+                + intents.Length.ToString(CultureInfo.InvariantCulture)
+                + " commander "
+                + commanderName;
             return includesDepotMissionSlot ? text + "  depot included" : text;
         }
 

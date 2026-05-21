@@ -1180,6 +1180,53 @@ namespace MC2Demo.EditorTools
                 + (guard.Summary ?? "null");
         }
 
+        private static string MissionRestartContractPreviewDebugText(MechBayMissionRestartContractPreview preview)
+        {
+            if (preview == null)
+            {
+                return "null contract preview";
+            }
+
+            return "ready="
+                + preview.Ready
+                + ", changed="
+                + preview.InventoryChanged
+                + ", creates="
+                + preview.CreatesMissionInstance
+                + ", mission="
+                + (preview.MissionTemplateId ?? "null")
+                + ", schema="
+                + (preview.ContractSchema ?? "null")
+                + ", patch="
+                + (preview.PatchMode ?? "null")
+                + ", team="
+                + preview.PlayerTeamId
+                + ", commanderId="
+                + preview.CommanderId
+                + ", commander="
+                + (preview.CommanderOwnedMechId ?? "null")
+                + "/"
+                + (preview.CommanderDisplayName ?? "null")
+                + ", brain="
+                + (preview.UnitBrain ?? "null")
+                + ", slots="
+                + preview.MissionSlotCount
+                + ", intents="
+                + preview.SpawnIntentCount
+                + "/"
+                + (preview.SpawnIntents?.Length ?? -1)
+                + ", depot="
+                + preview.IncludesDepotMissionSlot
+                + ", status="
+                + (preview.Status ?? "null")
+                + ", requirements="
+                + (preview.Requirements ?? "null")
+                + ", summary="
+                + (preview.Summary ?? "null")
+                + ", note="
+                + (preview.PreviewNote ?? "null");
+        }
+
         private static string SquadDraftDebugText(MechBaySquadSelectionDraftState draft)
         {
             if (draft == null)
@@ -2690,6 +2737,8 @@ namespace MC2Demo.EditorTools
                 MechBayMissionHandoffPreviewService.BuildRestartDryRun(receiptInventory);
             MechBayMissionRestartApplyGuard lockedRestartApplyGuard =
                 MechBayMissionHandoffPreviewService.BuildRestartApplyGuard(receiptInventory);
+            MechBayMissionRestartContractPreview lockedRestartContractPreview =
+                MechBayMissionHandoffPreviewService.BuildRestartContractPreview(receiptInventory);
             if (lockedSquadPreview == null
                 || lockedSquadPreview.InventoryChanged
                 || lockedSquadPreview.Status != "No depot candidates ready"
@@ -2790,6 +2839,36 @@ namespace MC2Demo.EditorTools
                 throw new InvalidDataException(
                     "Expected locked mission restart apply guard to reject without mutating inventory or creating a mission instance. Got "
                     + MissionRestartApplyGuardDebugText(lockedRestartApplyGuard));
+            }
+
+            if (lockedRestartContractPreview == null
+                || lockedRestartContractPreview.InventoryChanged
+                || !lockedRestartContractPreview.Ready
+                || lockedRestartContractPreview.CreatesMissionInstance
+                || lockedRestartContractPreview.IncludesDepotMissionSlot
+                || lockedRestartContractPreview.MissionSlotCount != lockedRestartDryRun.MissionSlotCount
+                || lockedRestartContractPreview.SpawnIntentCount != lockedRestartDryRun.SpawnIntentCount
+                || lockedRestartContractPreview.SpawnIntents == null
+                || lockedRestartContractPreview.SpawnIntents.Length != lockedRestartDryRun.SpawnIntentCount
+                || lockedRestartContractPreview.MissionTemplateId != "mc2_01"
+                || lockedRestartContractPreview.ContractSchema != "mc2-unity-demo-contract-v1"
+                || lockedRestartContractPreview.PatchMode != "Replace player unit spawns"
+                || lockedRestartContractPreview.PlayerTeamId != 0
+                || lockedRestartContractPreview.CommanderId != 0
+                || lockedRestartContractPreview.UnitBrain != "PBrain"
+                || lockedRestartContractPreview.CommanderOwnedMechId != lockedRestartDryRun.SpawnIntents[0].ownedMechId
+                || lockedRestartContractPreview.CommanderDisplayName != lockedRestartDryRun.SpawnIntents[0].displayName
+                || lockedRestartContractPreview.Status != "Restart contract preview ready"
+                || lockedRestartContractPreview.Requirements != "BattleMission recreation hook"
+                || lockedRestartContractPreview.PreviewNote != "Preview only: contract not instantiated"
+                || !lockedRestartContractPreview.Summary.Contains("BattleMission input:", StringComparison.Ordinal)
+                || lockedRestartContractPreview.Summary.Contains("depot included", StringComparison.Ordinal)
+                || ContainsRestartIntent(lockedRestartContractPreview.SpawnIntents, assembledRaven.ownedMechId)
+                || receiptInventory.tokenBalance != receiptInventoryResult.Summary.TokenBalance)
+            {
+                throw new InvalidDataException(
+                    "Expected locked mission restart contract preview to expose future BattleMission input without instantiating it. Got "
+                    + MissionRestartContractPreviewDebugText(lockedRestartContractPreview));
             }
 
             MechBaySquadSelectionDraftState lockedSquadDraft =
@@ -3075,6 +3154,8 @@ namespace MC2Demo.EditorTools
                 MechBayMissionHandoffPreviewService.BuildRestartDryRun(receiptInventory);
             MechBayMissionRestartApplyGuard squadPostApplyRestartApplyGuard =
                 MechBayMissionHandoffPreviewService.BuildRestartApplyGuard(receiptInventory);
+            MechBayMissionRestartContractPreview squadPostApplyRestartContractPreview =
+                MechBayMissionHandoffPreviewService.BuildRestartContractPreview(receiptInventory);
             if (squadApply == null
                 || !squadApply.Accepted
                 || !squadApply.InventoryChanged
@@ -3209,6 +3290,37 @@ namespace MC2Demo.EditorTools
                 throw new InvalidDataException(
                     "Expected post-swap mission restart apply guard to reject without mutating inventory or creating a mission instance. Got "
                     + MissionRestartApplyGuardDebugText(squadPostApplyRestartApplyGuard));
+            }
+
+            if (squadPostApplyRestartContractPreview == null
+                || squadPostApplyRestartContractPreview.InventoryChanged
+                || !squadPostApplyRestartContractPreview.Ready
+                || squadPostApplyRestartContractPreview.CreatesMissionInstance
+                || !squadPostApplyRestartContractPreview.IncludesDepotMissionSlot
+                || squadPostApplyRestartContractPreview.MissionSlotCount != squadPostApplyRestartDryRun.MissionSlotCount
+                || squadPostApplyRestartContractPreview.SpawnIntentCount != squadPostApplyRestartDryRun.SpawnIntentCount
+                || squadPostApplyRestartContractPreview.SpawnIntents == null
+                || squadPostApplyRestartContractPreview.SpawnIntents.Length != squadPostApplyRestartDryRun.SpawnIntentCount
+                || squadPostApplyRestartContractPreview.MissionTemplateId != "mc2_01"
+                || squadPostApplyRestartContractPreview.ContractSchema != "mc2-unity-demo-contract-v1"
+                || squadPostApplyRestartContractPreview.PatchMode != "Replace player unit spawns"
+                || squadPostApplyRestartContractPreview.PlayerTeamId != 0
+                || squadPostApplyRestartContractPreview.CommanderId != 0
+                || squadPostApplyRestartContractPreview.UnitBrain != "PBrain"
+                || squadPostApplyRestartContractPreview.CommanderOwnedMechId != squadPostApplyRestartDryRun.SpawnIntents[0].ownedMechId
+                || squadPostApplyRestartContractPreview.CommanderDisplayName != squadPostApplyRestartDryRun.SpawnIntents[0].displayName
+                || squadPostApplyRestartContractPreview.Status != "Restart contract preview ready"
+                || squadPostApplyRestartContractPreview.Requirements != "BattleMission recreation hook"
+                || squadPostApplyRestartContractPreview.PreviewNote != "Preview only: contract not instantiated"
+                || !squadPostApplyRestartContractPreview.Summary.Contains("BattleMission input:", StringComparison.Ordinal)
+                || !squadPostApplyRestartContractPreview.Summary.Contains("depot included", StringComparison.Ordinal)
+                || !ContainsRestartIntent(squadPostApplyRestartContractPreview.SpawnIntents, assembledRaven.ownedMechId)
+                || ContainsRestartIntent(squadPostApplyRestartContractPreview.SpawnIntents, selectedOutgoingSlot.ownedMechId)
+                || receiptInventory.tokenBalance != tokenBeforeDraftFitPreview)
+            {
+                throw new InvalidDataException(
+                    "Expected post-swap mission restart contract preview to expose refreshed BattleMission input without instantiating it. Got "
+                    + MissionRestartContractPreviewDebugText(squadPostApplyRestartContractPreview));
             }
 
             BattleMission defeat = new(MakeResultContract(completeOnStart: false), resultProfiles);

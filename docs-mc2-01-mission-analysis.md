@@ -312,3 +312,7 @@ and depot-slot marker, while still creating no new `BattleMission`.
 The restart dry run now also has an Apply guard. It reports the spawn-intent
 count but always rejects, preserving inventory and runtime combat state until
 the real `BattleMission` recreation path exists.
+The guarded path now exposes a restart contract preview as well: it names the
+`mc2_01` template, player team, commander slot, player-unit patch mode, and
+spawn-intent count that a future `BattleMission` recreation call would consume,
+while still leaving the active mission instance untouched.
