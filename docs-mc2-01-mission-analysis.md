@@ -231,3 +231,6 @@ armor plate or heat sink choices show a shortage and cannot be applied.
 The same starter inventory now owns the demo token balance used by the mech bay:
 damaged player mechs show condition and repair cost, and a one-click repair
 spends local tokens to restore structure and damaged sections.
+Mission end now also creates a local inventory receipt: completed bounty points
+increase the demo token balance, while destroyed enemy unit labels become
+mech-fragment stacks for later assembly rules.

@@ -2216,6 +2216,29 @@ namespace MC2Demo.EditorTools
                 throw new InvalidDataException("Expected ended commander observation to include victory result summary.");
             }
 
+            MechBayInventoryContract receiptInventory = MechBayInventoryBuilder.BuildDemoInventory(instantVictory.PlayerUnits());
+            int tokenBeforeReceipt = receiptInventory.tokenBalance;
+            MissionResultSummary receiptSummary = new()
+            {
+                completedRewardResourcePoints = 1250,
+                destroyedEnemyUnitLabels = new[] { "enemy-1 Raven", "enemy-2 Raven", "enemy-3 Centipede" },
+                salvageClaimCount = 3
+            };
+            MechBayMissionReceipt receipt = MechBayMissionReceiptService.ApplyMissionReceipt(receiptInventory, receiptSummary);
+            if (!receipt.Applied
+                || receipt.TokenDelta != 1250
+                || receipt.TokenBalance != tokenBeforeReceipt + 1250
+                || receipt.SalvageFragmentCount != 3)
+            {
+                throw new InvalidDataException("Expected mission receipt to apply token rewards and salvage fragments.");
+            }
+
+            MechBayInventoryValidationResult receiptInventoryResult = MechBayInventoryValidator.Validate(receiptInventory);
+            if (!receiptInventoryResult.IsValid || receiptInventoryResult.Summary.MechFragmentCount != 3)
+            {
+                throw new InvalidDataException("Expected mission receipt to keep inventory valid and expose mech fragments.");
+            }
+
             BattleMission defeat = new(MakeResultContract(completeOnStart: false), resultProfiles);
             for (int tick = 0; tick < 10 && defeat.Result == MissionResultState.InProgress; tick++)
             {

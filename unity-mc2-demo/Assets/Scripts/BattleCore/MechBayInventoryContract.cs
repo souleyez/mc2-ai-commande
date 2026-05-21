@@ -59,6 +59,7 @@ namespace MC2Demo.BattleCore
         public int WeaponCount { get; internal set; }
         public int ArmorPlateCount { get; internal set; }
         public int HeatSinkCount { get; internal set; }
+        public int MechFragmentCount { get; internal set; }
     }
 
     public sealed class MechBayInventoryUsage
@@ -124,6 +125,23 @@ namespace MC2Demo.BattleCore
         public string Message { get; internal set; }
         public int Cost { get; internal set; }
         public int TokenBalance { get; internal set; }
+    }
+
+    public sealed class MechBayMissionReceipt
+    {
+        public bool Applied { get; internal set; }
+        public int TokenDelta { get; internal set; }
+        public int TokenBalance { get; internal set; }
+        public int SalvageFragmentCount { get; internal set; }
+        public MechBayReceiptItemDefinition[] ItemStacks { get; internal set; }
+    }
+
+    public sealed class MechBayReceiptItemDefinition
+    {
+        public string itemId;
+        public string displayName;
+        public string category;
+        public int quantity;
     }
 
     public static class MechBayInventoryValidator
@@ -280,6 +298,9 @@ namespace MC2Demo.BattleCore
                     break;
                 case LoadoutItemCategory.HeatSink:
                     result.Summary.HeatSinkCount += Math.Max(0, stack.quantity);
+                    break;
+                case LoadoutItemCategory.MechFragment:
+                    result.Summary.MechFragmentCount += Math.Max(0, stack.quantity);
                     break;
                 default:
                     result.AddError("Unknown inventory item category: " + stack.category);
@@ -522,6 +543,196 @@ namespace MC2Demo.BattleCore
             result.TokenBalance = inventory.tokenBalance;
             result.Message = "Repaired " + unit.UnitType;
             return result;
+        }
+    }
+
+    public static class MechBayMissionReceiptService
+    {
+        public static MechBayMissionReceipt ApplyMissionReceipt(
+            MechBayInventoryContract inventory,
+            MissionResultSummary summary)
+        {
+            MechBayMissionReceipt receipt = BuildMissionReceipt(summary);
+            receipt.TokenBalance = Math.Max(0, inventory?.tokenBalance ?? 0);
+            if (inventory == null)
+            {
+                return receipt;
+            }
+
+            inventory.tokenBalance = Math.Max(0, inventory.tokenBalance + receipt.TokenDelta);
+            MechBayReceiptItemDefinition[] itemStacks = receipt.ItemStacks ?? Array.Empty<MechBayReceiptItemDefinition>();
+            for (int index = 0; index < itemStacks.Length; index++)
+            {
+                MechBayReceiptItemDefinition item = itemStacks[index];
+                if (item == null)
+                {
+                    continue;
+                }
+
+                AddInventoryStack(inventory, item.itemId, item.displayName, item.category, item.quantity);
+            }
+
+            receipt.Applied = true;
+            receipt.TokenBalance = inventory.tokenBalance;
+            return receipt;
+        }
+
+        public static MechBayMissionReceipt BuildMissionReceipt(MissionResultSummary summary)
+        {
+            List<MechBayReceiptItemDefinition> itemStacks = new();
+            string[] destroyedEnemyLabels = summary?.destroyedEnemyUnitLabels ?? Array.Empty<string>();
+            for (int index = 0; index < destroyedEnemyLabels.Length; index++)
+            {
+                string unitType = ExtractUnitType(destroyedEnemyLabels[index]);
+                string itemId = "fragment-" + SafeItemId(unitType);
+                AddReceiptStack(
+                    itemStacks,
+                    itemId,
+                    unitType + " Fragment",
+                    LoadoutItemCategory.MechFragment,
+                    1);
+            }
+
+            int tokenDelta = Math.Max(0, summary?.completedRewardResourcePoints ?? 0);
+            int salvageCount = 0;
+            for (int index = 0; index < itemStacks.Count; index++)
+            {
+                salvageCount += Math.Max(0, itemStacks[index]?.quantity ?? 0);
+            }
+
+            return new MechBayMissionReceipt
+            {
+                TokenDelta = tokenDelta,
+                SalvageFragmentCount = salvageCount,
+                ItemStacks = itemStacks.ToArray()
+            };
+        }
+
+        private static void AddReceiptStack(
+            List<MechBayReceiptItemDefinition> itemStacks,
+            string itemId,
+            string displayName,
+            string category,
+            int quantity)
+        {
+            if (quantity <= 0)
+            {
+                return;
+            }
+
+            MechBayReceiptItemDefinition stack = FindReceiptStack(itemStacks, itemId);
+            if (stack == null)
+            {
+                itemStacks.Add(new MechBayReceiptItemDefinition
+                {
+                    itemId = itemId,
+                    displayName = displayName,
+                    category = category,
+                    quantity = quantity
+                });
+                return;
+            }
+
+            stack.quantity += quantity;
+        }
+
+        private static MechBayReceiptItemDefinition FindReceiptStack(
+            List<MechBayReceiptItemDefinition> itemStacks,
+            string itemId)
+        {
+            for (int index = 0; index < itemStacks.Count; index++)
+            {
+                MechBayReceiptItemDefinition stack = itemStacks[index];
+                if (stack != null && string.Equals(stack.itemId, itemId, StringComparison.OrdinalIgnoreCase))
+                {
+                    return stack;
+                }
+            }
+
+            return null;
+        }
+
+        private static void AddInventoryStack(
+            MechBayInventoryContract inventory,
+            string itemId,
+            string displayName,
+            string category,
+            int quantity)
+        {
+            if (inventory == null || quantity <= 0)
+            {
+                return;
+            }
+
+            List<MechBayItemStackDefinition> itemStacks = new(inventory.itemStacks ?? Array.Empty<MechBayItemStackDefinition>());
+            MechBayItemStackDefinition stack = FindInventoryStack(itemStacks, itemId);
+            if (stack == null)
+            {
+                itemStacks.Add(new MechBayItemStackDefinition
+                {
+                    itemId = itemId,
+                    displayName = displayName,
+                    category = category,
+                    quantity = quantity,
+                    equippedQuantity = 0
+                });
+            }
+            else
+            {
+                stack.quantity += quantity;
+            }
+
+            inventory.itemStacks = itemStacks.ToArray();
+        }
+
+        private static MechBayItemStackDefinition FindInventoryStack(
+            List<MechBayItemStackDefinition> itemStacks,
+            string itemId)
+        {
+            for (int index = 0; index < itemStacks.Count; index++)
+            {
+                MechBayItemStackDefinition stack = itemStacks[index];
+                if (stack != null && string.Equals(stack.itemId, itemId, StringComparison.OrdinalIgnoreCase))
+                {
+                    return stack;
+                }
+            }
+
+            return null;
+        }
+
+        private static string ExtractUnitType(string unitLabel)
+        {
+            if (string.IsNullOrWhiteSpace(unitLabel))
+            {
+                return "Unknown";
+            }
+
+            string trimmed = unitLabel.Trim();
+            int firstSpace = trimmed.IndexOf(' ');
+            return firstSpace < 0 || firstSpace + 1 >= trimmed.Length
+                ? trimmed
+                : trimmed.Substring(firstSpace + 1).Trim();
+        }
+
+        private static string SafeItemId(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return "unknown";
+            }
+
+            char[] chars = value.Trim().ToLowerInvariant().ToCharArray();
+            for (int index = 0; index < chars.Length; index++)
+            {
+                char character = chars[index];
+                if ((character < 'a' || character > 'z') && (character < '0' || character > '9'))
+                {
+                    chars[index] = '-';
+                }
+            }
+
+            return new string(chars).Trim('-');
         }
     }
 }

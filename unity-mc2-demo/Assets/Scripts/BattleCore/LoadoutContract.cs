@@ -101,6 +101,7 @@ namespace MC2Demo.BattleCore
         public const string HeatSink = "HeatSink";
         public const string Radar = "Radar";
         public const string JumpJet = "JumpJet";
+        public const string MechFragment = "MechFragment";
     }
 
     public static class LoadoutEquipmentSlotType

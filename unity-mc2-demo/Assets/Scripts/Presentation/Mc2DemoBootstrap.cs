@@ -49,6 +49,8 @@ namespace MC2Demo.Presentation
         private CombatProfileCatalog combatProfiles = CombatProfileCatalog.Empty;
         private MechBayInventoryContract demoInventory;
         private MechBayInventoryValidationResult demoInventoryValidation;
+        private MechBayMissionReceipt missionReceipt;
+        private bool missionReceiptApplied;
         private string pendingDetachedUnitId;
         private bool pendingJumpOrder;
         private bool showMissionMap;
@@ -795,6 +797,7 @@ namespace MC2Demo.Presentation
             lastMissionResult = mission.Result;
             if (mission.Result == MissionResultState.Victory)
             {
+                ApplyMissionReceiptOnce();
                 statusText = "Mission complete";
                 AddCombatLogLine("Mission complete");
                 Debug.Log("MC2 mission complete: " + mission.ResultReason);
@@ -802,10 +805,29 @@ namespace MC2Demo.Presentation
             }
             else if (mission.Result == MissionResultState.Defeat)
             {
+                ApplyMissionReceiptOnce();
                 statusText = "Mission failed";
                 AddCombatLogLine("Mission failed");
                 Debug.Log("MC2 mission failed: " + mission.ResultReason);
                 SetPaused(true);
+            }
+        }
+
+        private void ApplyMissionReceiptOnce()
+        {
+            if (missionReceiptApplied || mission == null || demoInventory == null)
+            {
+                return;
+            }
+
+            missionReceipt = MechBayMissionReceiptService.ApplyMissionReceipt(demoInventory, mission.ResultSummary);
+            missionReceiptApplied = true;
+            RefreshDemoInventoryValidation();
+            if (missionReceipt.TokenDelta > 0 || missionReceipt.SalvageFragmentCount > 0)
+            {
+                AddCombatLogLine(
+                    "Receipt token +" + FormatTokens(missionReceipt.TokenDelta)
+                    + " fragments +" + missionReceipt.SalvageFragmentCount);
             }
         }
 
@@ -2546,7 +2568,8 @@ namespace MC2Demo.Presentation
                 "Mechs " + summary.MechCount.ToString(CultureInfo.InvariantCulture)
                 + "  Weapons " + summary.WeaponCount.ToString(CultureInfo.InvariantCulture)
                 + "  Armor " + InventoryUseText(availability?.Usage?.ArmorPlateCount ?? 0, availability?.AvailableArmorPlateCount ?? summary.ArmorPlateCount)
-                + "  Sinks " + InventoryUseText(availability?.Usage?.HeatSinkCount ?? 0, availability?.AvailableHeatSinkCount ?? summary.HeatSinkCount));
+                + "  Sinks " + InventoryUseText(availability?.Usage?.HeatSinkCount ?? 0, availability?.AvailableHeatSinkCount ?? summary.HeatSinkCount)
+                + "  Frags " + summary.MechFragmentCount.ToString(CultureInfo.InvariantCulture));
         }
 
         private void DrawLoadoutUnit(UnitState unit, float x, float y, float width)
@@ -3669,18 +3692,18 @@ namespace MC2Demo.Presentation
                 return;
             }
 
-            Rect panel = new((Screen.width - 380f) * 0.5f, 72f, 380f, 264f);
+            Rect panel = new((Screen.width - 400f) * 0.5f, 72f, 400f, 292f);
             GUI.Box(panel, MissionResultText());
             GUI.Label(new Rect(panel.x + 18f, panel.y + 36f, panel.width - 36f, 42f), mission.ResultReason);
             DrawMissionResultSummary(panel, mission.ResultSummary);
 
-            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 204f, 162f, 30f), "Restart"))
+            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 232f, 172f, 30f), "Restart"))
             {
                 Time.timeScale = 1f;
                 SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
             }
 
-            if (GUI.Button(new Rect(panel.x + 200f, panel.y + 204f, 162f, 30f), "End Demo"))
+            if (GUI.Button(new Rect(panel.x + 210f, panel.y + 232f, 172f, 30f), "End Demo"))
             {
                 Application.Quit(0);
             }
@@ -3718,6 +3741,16 @@ namespace MC2Demo.Presentation
                 "Salvage claims " + summary.salvageClaimCount
                 + "    Total bounty " + FormatTokens(summary.visibleRewardResourcePoints));
             y += 22f;
+
+            if (missionReceipt != null)
+            {
+                GUI.Label(
+                    new Rect(panel.x + 18f, y, panel.width - 36f, 20f),
+                    "Receipt Token " + SignedTokens(missionReceipt.TokenDelta)
+                    + "    Frags +" + missionReceipt.SalvageFragmentCount
+                    + "    Balance " + FormatTokens(missionReceipt.TokenBalance));
+                y += 22f;
+            }
 
             string completed = FirstSummaryItem(summary.completedVisibleObjectiveTitles);
             if (!string.IsNullOrEmpty(completed))
