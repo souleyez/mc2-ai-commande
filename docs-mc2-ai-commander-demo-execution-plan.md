@@ -68,11 +68,11 @@ The Unity demo currently supports:
 - fitted warehouse mechs show a deployment preview explaining that future squad selection is still required
 - roster detail shows a squad-selection placeholder without altering current mission deployment
 - squad-selection preview lists current mission slots and fitted depot candidates without changing inventory or deployment
-- squad-selection preview shows a disabled swap guard with future replace-slot requirements
+- squad-selection preview shows a disabled swap guard while Confirm owns the staged swap action
 - squad-selection preview shows a dry-run replacement summary without applying roster changes
-- squad-selection preview shows a pending swap confirmation stub without applying roster changes
-- squad-selection confirmation returns a rejected no-op result without changing roster, inventory, or token state
-- squad-selection confirmation now reads from a local draft state that stages outgoing and incoming mech IDs without mutating deployment
+- squad-selection preview shows a pending swap confirmation row before roster mutation
+- squad-selection confirmation reads from a local draft state that stages outgoing and incoming mech IDs
+- squad-selection confirmation applies a guarded local roster swap by exchanging mission availability flags
 - squad-selection draft controls can cycle outgoing mission slots and incoming depot candidates while staying local-only
 - starter inventory availability feedback warns on armor plate or heat sink shortages and blocks applying invalid drafts
 - starter mech condition and one-click demo repair spend local token balance and restore damaged mechs
@@ -391,7 +391,7 @@ Tasks:
 
 ## Current Recommended Next Task
 
-Start with **starter squad-selection guarded roster swap apply**.
+Start with **starter squad-selection post-swap refresh polish**.
 
 Reason:
 
@@ -411,11 +411,11 @@ Reason:
 - The roster now explains why fitted depot mechs are still held until a future squad-selection flow exists.
 - The roster now shows a squad-selection placeholder, so the deployment path is visible before it can alter mission rosters.
 - The squad-selection preview now lists current mission slots and fitted depot candidates without changing deployment.
-- The squad-selection preview now includes a disabled swap guard, so the future replace-slot action has visible rules before it can mutate mission rosters.
+- The squad-selection preview now includes a disabled swap guard, while Confirm owns the staged roster mutation.
 - The squad-selection preview now shows a dry-run replacement summary that selects one current slot and one depot candidate without applying it.
-- The squad-selection preview now shows a pending swap confirmation stub, so the UI can show a staged replacement before any inventory or mission roster mutation exists.
-- The squad-selection confirmation path now returns a rejected apply-result contract, so pressing into the future confirmation path is a safe no-op before real roster mutation exists.
-- The squad-selection confirmation path now reads from a local draft state container that holds selected outgoing and incoming mech IDs without mutating mission deployment.
+- The squad-selection preview now shows a pending swap confirmation row, so the UI can show a staged replacement before committing it.
+- The squad-selection confirmation path now reads from a local draft state container that holds selected outgoing and incoming mech IDs.
 - The squad-selection draft controls now cycle mission slots and depot candidates while keeping the selected IDs local-only.
-- The next low-risk step is a guarded roster swap apply, so Confirm can finally replace mission availability flags while preserving validation and rollback boundaries.
+- The squad-selection confirmation path now applies a guarded local roster swap by exchanging mission availability flags while preserving token and inventory counts.
+- The next low-risk step is post-swap refresh polish, so the roster detail and preview stay readable after the only current depot candidate joins the mission squad.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.

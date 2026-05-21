@@ -843,14 +843,19 @@ namespace MC2Demo.BattleCore
 
         private static bool DeployableForMission(MechBayOwnedMechDefinition mech)
         {
-            return !IsWarehouseMech(mech) && mech != null && mech.availableForMission;
+            return mech != null && mech.availableForMission;
         }
 
         private static string DeploymentStatus(MechBayOwnedMechDefinition mech)
         {
+            if (mech != null && mech.availableForMission)
+            {
+                return "Deployable now";
+            }
+
             if (!IsWarehouseMech(mech))
             {
-                return mech != null && mech.availableForMission ? "Deployable now" : "Unavailable";
+                return "Unavailable";
             }
 
             if (IsPendingDepotFit(mech))
@@ -868,9 +873,14 @@ namespace MC2Demo.BattleCore
 
         private static string DeploymentRequirements(MechBayOwnedMechDefinition mech, bool hasSpareWeaponStock)
         {
+            if (mech != null && mech.availableForMission)
+            {
+                return "Current mission squad";
+            }
+
             if (!IsWarehouseMech(mech))
             {
-                return mech != null && mech.availableForMission ? "Current mission squad" : "Repair or mission reset";
+                return "Repair or mission reset";
             }
 
             if (IsPendingDepotFit(mech))
@@ -903,9 +913,14 @@ namespace MC2Demo.BattleCore
 
         private static string SquadSelectionStatus(MechBayOwnedMechDefinition mech)
         {
+            if (mech != null && mech.availableForMission)
+            {
+                return "Already in mission squad";
+            }
+
             if (!IsWarehouseMech(mech))
             {
-                return mech != null && mech.availableForMission ? "Already in mission squad" : "Mission squad unavailable";
+                return "Mission squad unavailable";
             }
 
             if (IsPendingDepotFit(mech))
@@ -923,9 +938,14 @@ namespace MC2Demo.BattleCore
 
         private static string SquadSelectionRequirements(MechBayOwnedMechDefinition mech, bool hasSpareWeaponStock)
         {
+            if (mech != null && mech.availableForMission)
+            {
+                return "Current mission slot";
+            }
+
             if (!IsWarehouseMech(mech))
             {
-                return mech != null && mech.availableForMission ? "Current mission slot" : "Repair or mission reset";
+                return "Repair or mission reset";
             }
 
             if (IsPendingDepotFit(mech))
@@ -1014,16 +1034,16 @@ namespace MC2Demo.BattleCore
                     continue;
                 }
 
-                if (entry.isWarehouseMech)
+                if (entry.availableForMission)
+                {
+                    missionSlots.Add(SlotFromRoster(entry));
+                }
+                else if (entry.isWarehouseMech)
                 {
                     if (entry.squadSelectionCandidate)
                     {
                         depotCandidates.Add(SlotFromRoster(entry));
                     }
-                }
-                else
-                {
-                    missionSlots.Add(SlotFromRoster(entry));
                 }
             }
 
@@ -1068,7 +1088,7 @@ namespace MC2Demo.BattleCore
                 Ready = ready,
                 Status = ready ? "Draft swap staged" : "Draft swap unavailable",
                 Requirements = ready
-                    ? "Future replace-slot action"
+                    ? "Confirm staged roster swap"
                     : DryRunSummary(outgoing, incoming),
                 Summary = ready
                     ? "Draft " + SlotName(incoming) + " over " + SlotName(outgoing)
@@ -1120,11 +1140,49 @@ namespace MC2Demo.BattleCore
                 return result;
             }
 
-            result.Message = "Squad swap disabled for this demo";
-            result.Reason = string.IsNullOrWhiteSpace(draft.Requirements)
-                ? "Future replace-slot action"
-                : draft.Requirements;
+            if (inventory == null)
+            {
+                result.Message = "Inventory missing";
+                result.Reason = "Inventory unavailable";
+                return result;
+            }
+
+            MechBayOwnedMechDefinition outgoing = FindOwnedMech(inventory, draft.OutgoingOwnedMechId);
+            MechBayOwnedMechDefinition incoming = FindOwnedMech(inventory, draft.IncomingOwnedMechId);
+            if (outgoing == null || incoming == null)
+            {
+                result.Message = "Squad swap unavailable";
+                result.Reason = "Selected mech missing";
+                return result;
+            }
+
+            outgoing.availableForMission = false;
+            incoming.availableForMission = true;
+            result.Accepted = true;
+            result.InventoryChanged = true;
+            result.Message = "Applied squad swap";
+            result.Reason = "Roster availability swapped";
             return result;
+        }
+
+        private static MechBayOwnedMechDefinition FindOwnedMech(MechBayInventoryContract inventory, string ownedMechId)
+        {
+            if (string.IsNullOrWhiteSpace(ownedMechId))
+            {
+                return null;
+            }
+
+            MechBayOwnedMechDefinition[] ownedMechs = inventory?.ownedMechs ?? Array.Empty<MechBayOwnedMechDefinition>();
+            for (int index = 0; index < ownedMechs.Length; index++)
+            {
+                MechBayOwnedMechDefinition mech = ownedMechs[index];
+                if (mech != null && string.Equals(mech.ownedMechId, ownedMechId, StringComparison.OrdinalIgnoreCase))
+                {
+                    return mech;
+                }
+            }
+
+            return null;
         }
 
         private static MechBaySquadSelectionSlot SlotFromRoster(MechBayOwnedRosterEntry entry)
@@ -1144,7 +1202,7 @@ namespace MC2Demo.BattleCore
 
         private static string SwapStatus(int missionSlotCount, int candidateCount)
         {
-            return missionSlotCount > 0 && candidateCount > 0 ? "Swap locked: preview only" : "Swap unavailable";
+            return missionSlotCount > 0 && candidateCount > 0 ? "Swap guarded: use Confirm" : "Swap unavailable";
         }
 
         private static string SwapRequirements(int missionSlotCount, int candidateCount)
@@ -1159,7 +1217,7 @@ namespace MC2Demo.BattleCore
                 return "Need mission slot";
             }
 
-            return candidateCount <= 0 ? "Need fitted depot candidate" : "Future replace-slot action";
+            return candidateCount <= 0 ? "Need fitted depot candidate" : "Confirm staged roster swap";
         }
 
         private static string DryRunStatus(MechBaySquadSelectionSlot outgoing, MechBaySquadSelectionSlot incoming)
@@ -1184,7 +1242,7 @@ namespace MC2Demo.BattleCore
                 return "Need fitted depot candidate";
             }
 
-            return "Replace " + SlotName(outgoing) + " with " + SlotName(incoming) + " when enabled";
+            return "Replace " + SlotName(outgoing) + " with " + SlotName(incoming) + " when confirmed";
         }
 
         private static string SlotName(MechBaySquadSelectionSlot slot)
@@ -1213,7 +1271,7 @@ namespace MC2Demo.BattleCore
 
         private static string PendingSwapStatus(MechBaySquadSelectionSlot outgoing, MechBaySquadSelectionSlot incoming)
         {
-            return outgoing != null && incoming != null ? "Pending confirmation stub" : "No pending swap";
+            return outgoing != null && incoming != null ? "Pending confirmation" : "No pending swap";
         }
 
         private static string PendingSwapSummary(MechBaySquadSelectionSlot outgoing, MechBaySquadSelectionSlot incoming)
@@ -1223,7 +1281,7 @@ namespace MC2Demo.BattleCore
                 return DryRunSummary(outgoing, incoming);
             }
 
-            return "Stage " + SlotName(incoming) + " over " + SlotName(outgoing) + " after future confirmation";
+            return "Stage " + SlotName(incoming) + " over " + SlotName(outgoing) + " for confirmation";
         }
     }
 

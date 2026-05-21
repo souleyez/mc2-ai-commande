@@ -282,16 +282,16 @@ does not change the current mission roster or deployment flags.
 That placeholder now opens a read-only squad-selection preview, listing the
 current mission slots and any fitted depot candidates while keeping inventory
 and mission deployment unchanged.
-The preview also includes a disabled Swap guard that reports why replacement is
-locked today and what future replace-slot action is required.
+The preview also includes a disabled Swap guard, while the staged Confirm row
+owns the guarded roster swap action.
 When both a current mission slot and a fitted depot candidate exist, the preview
 now shows a dry-run replacement summary without applying roster changes.
 That pair now becomes a local squad-selection draft state, preserving the
 selected outgoing and incoming mech IDs separately from the read-only preview.
 The draft row now has tiny cycle controls for outgoing mission slots and
 incoming depot candidates, but cycling only changes the local draft IDs.
-That dry run now feeds a pending confirmation row, so the future replace-slot
-flow can show a staged swap before it can mutate the roster.
-The confirmation path now returns a rejected no-op result, preserving token,
-mech, weapon, and deployment state while reporting the future replace-slot
-requirement.
+That dry run now feeds a pending confirmation row, so the staged replace-slot
+flow can mutate only local mission availability flags.
+The confirmation path now swaps the outgoing and incoming `availableForMission`
+flags while preserving token, mech count, weapon count, and current combat
+state.

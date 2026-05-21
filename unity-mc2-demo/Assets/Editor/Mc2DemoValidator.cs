@@ -1093,6 +1093,26 @@ namespace MC2Demo.EditorTools
                 + draft.InventoryChanged;
         }
 
+        private static bool ContainsSquadSlot(MechBaySquadSelectionSlot[] slots, string ownedMechId)
+        {
+            if (string.IsNullOrWhiteSpace(ownedMechId))
+            {
+                return false;
+            }
+
+            MechBaySquadSelectionSlot[] safeSlots = slots ?? Array.Empty<MechBaySquadSelectionSlot>();
+            for (int index = 0; index < safeSlots.Length; index++)
+            {
+                MechBaySquadSelectionSlot slot = safeSlots[index];
+                if (slot != null && string.Equals(slot.ownedMechId, ownedMechId, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         private static bool HasWarehouseRosterEntry(MechBayOwnedRosterEntry[] roster, string unitType)
         {
             return FindWarehouseRosterEntry(roster, unitType) != null;
@@ -1107,6 +1127,26 @@ namespace MC2Demo.EditorTools
                 if (entry != null
                     && entry.isWarehouseMech
                     && string.Equals(entry.unitType, unitType, StringComparison.OrdinalIgnoreCase))
+                {
+                    return entry;
+                }
+            }
+
+            return null;
+        }
+
+        private static MechBayOwnedRosterEntry FindRosterEntryByOwnedId(MechBayOwnedRosterEntry[] roster, string ownedMechId)
+        {
+            if (string.IsNullOrWhiteSpace(ownedMechId))
+            {
+                return null;
+            }
+
+            MechBayOwnedRosterEntry[] entries = roster ?? Array.Empty<MechBayOwnedRosterEntry>();
+            for (int index = 0; index < entries.Length; index++)
+            {
+                MechBayOwnedRosterEntry entry = entries[index];
+                if (entry != null && string.Equals(entry.ownedMechId, ownedMechId, StringComparison.OrdinalIgnoreCase))
                 {
                     return entry;
                 }
@@ -2735,18 +2775,19 @@ namespace MC2Demo.EditorTools
                 || squadPreviewInventoryResult.Summary.WeaponCount != draftFitApplyInventoryResult.Summary.WeaponCount
                 || receiptInventory.tokenBalance != tokenBeforeDraftFitPreview
                 || squadPreview.SwapEnabled
-                || squadPreview.SwapStatus != "Swap locked: preview only"
-                || squadPreview.SwapRequirements != "Future replace-slot action"
+                || squadPreview.SwapStatus != "Swap guarded: use Confirm"
+                || squadPreview.SwapRequirements != "Confirm staged roster swap"
                 || !squadPreview.DryRunAvailable
                 || squadPreview.DryRunStatus != "Dry run ready"
                 || !squadPreview.DryRunSummary.Contains("Replace ", StringComparison.Ordinal)
                 || !squadPreview.DryRunSummary.Contains(" with " + assembledRaven.displayName, StringComparison.Ordinal)
+                || !squadPreview.DryRunSummary.Contains(" when confirmed", StringComparison.Ordinal)
                 || string.IsNullOrWhiteSpace(squadPreview.DryRunOutgoingOwnedMechId)
                 || squadPreview.DryRunIncomingOwnedMechId != assembledRaven.ownedMechId
                 || !squadPreview.PendingSwapAvailable
-                || squadPreview.PendingSwapStatus != "Pending confirmation stub"
+                || squadPreview.PendingSwapStatus != "Pending confirmation"
                 || !squadPreview.PendingSwapSummary.Contains("Stage " + assembledRaven.displayName, StringComparison.Ordinal)
-                || !squadPreview.PendingSwapSummary.Contains(" after future confirmation", StringComparison.Ordinal))
+                || !squadPreview.PendingSwapSummary.Contains(" for confirmation", StringComparison.Ordinal))
             {
                 throw new InvalidDataException(
                     "Expected read-only squad-selection preview to show current slots and one fitted depot candidate without changing inventory. Got "
@@ -2759,7 +2800,7 @@ namespace MC2Demo.EditorTools
                 || squadDraft.InventoryChanged
                 || !squadDraft.Ready
                 || squadDraft.Status != "Draft swap staged"
-                || squadDraft.Requirements != "Future replace-slot action"
+                || squadDraft.Requirements != "Confirm staged roster swap"
                 || !squadDraft.Summary.Contains("Draft " + assembledRaven.displayName, StringComparison.Ordinal)
                 || squadDraft.OutgoingOwnedMechId != squadPreview.DryRunOutgoingOwnedMechId
                 || squadDraft.IncomingOwnedMechId != assembledRaven.ownedMechId
@@ -2782,7 +2823,7 @@ namespace MC2Demo.EditorTools
                 || selectedSquadDraft.InventoryChanged
                 || !selectedSquadDraft.Ready
                 || selectedSquadDraft.Status != "Draft swap staged"
-                || selectedSquadDraft.Requirements != "Future replace-slot action"
+                || selectedSquadDraft.Requirements != "Confirm staged roster swap"
                 || selectedSquadDraft.OutgoingOwnedMechId != selectedOutgoingSlot.ownedMechId
                 || selectedSquadDraft.IncomingOwnedMechId != assembledRaven.ownedMechId
                 || selectedSquadDraft.OutgoingDisplayName != selectedOutgoingSlot.displayName
@@ -2801,11 +2842,16 @@ namespace MC2Demo.EditorTools
                 MechBayInventoryValidator.Validate(receiptInventory);
             MechBayOwnedRosterEntry[] squadApplyRoster = MechBayOwnedRosterService.BuildRosterPreview(receiptInventory);
             MechBayOwnedRosterEntry squadApplyRaven = FindWarehouseRosterEntry(squadApplyRoster, "Raven");
+            MechBayOwnedRosterEntry squadApplyOutgoing = FindRosterEntryByOwnedId(
+                squadApplyRoster,
+                selectedOutgoingSlot.ownedMechId);
+            MechBaySquadSelectionPreview squadPostApplyPreview =
+                MechBaySquadSelectionPreviewService.BuildPreview(receiptInventory);
             if (squadApply == null
-                || squadApply.Accepted
-                || squadApply.InventoryChanged
-                || squadApply.Message != "Squad swap disabled for this demo"
-                || squadApply.Reason != "Future replace-slot action"
+                || !squadApply.Accepted
+                || !squadApply.InventoryChanged
+                || squadApply.Message != "Applied squad swap"
+                || squadApply.Reason != "Roster availability swapped"
                 || squadApply.Summary != selectedSquadDraft.Summary
                 || squadApply.OutgoingOwnedMechId != selectedOutgoingSlot.ownedMechId
                 || squadApply.IncomingOwnedMechId != assembledRaven.ownedMechId
@@ -2817,11 +2863,28 @@ namespace MC2Demo.EditorTools
                 || squadApplyInventoryResult.Summary.MechFragmentCount != draftFitApplyInventoryResult.Summary.MechFragmentCount
                 || receiptInventory.tokenBalance != tokenBeforeDraftFitPreview
                 || squadApplyRaven == null
-                || squadApplyRaven.availableForMission
+                || !squadApplyRaven.availableForMission
+                || !squadApplyRaven.deployableForMission
                 || squadApplyRaven.activeLoadoutId != MechBayWarehouseDraftFitPreviewService.DemoWarehouseFitLoadoutId
-                || squadApplyRaven.squadSelectionStatus != "Ready for future squad selection")
+                || squadApplyRaven.deploymentStatus != "Deployable now"
+                || squadApplyRaven.deploymentRequirements != "Current mission squad"
+                || squadApplyRaven.squadSelectionStatus != "Already in mission squad"
+                || squadApplyRaven.squadSelectionRequirements != "Current mission slot"
+                || squadApplyOutgoing == null
+                || squadApplyOutgoing.availableForMission
+                || squadApplyOutgoing.deployableForMission
+                || squadApplyOutgoing.deploymentStatus != "Unavailable"
+                || squadApplyOutgoing.deploymentRequirements != "Repair or mission reset"
+                || squadApplyOutgoing.squadSelectionStatus != "Mission squad unavailable"
+                || squadPostApplyPreview == null
+                || squadPostApplyPreview.InventoryChanged
+                || squadPostApplyPreview.MissionSlotCount != squadPreview.MissionSlotCount
+                || squadPostApplyPreview.CandidateCount != 0
+                || squadPostApplyPreview.DryRunIncomingOwnedMechId != null
+                || !ContainsSquadSlot(squadPostApplyPreview.MissionSlots, assembledRaven.ownedMechId)
+                || ContainsSquadSlot(squadPostApplyPreview.MissionSlots, selectedOutgoingSlot.ownedMechId))
             {
-                throw new InvalidDataException("Expected pending squad-selection apply path to reject without changing inventory or deployment.");
+                throw new InvalidDataException("Expected pending squad-selection apply path to swap roster availability without changing inventory counts.");
             }
 
             BattleMission defeat = new(MakeResultContract(completeOnStart: false), resultProfiles);

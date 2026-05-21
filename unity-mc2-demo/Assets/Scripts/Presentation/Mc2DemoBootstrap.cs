@@ -3381,7 +3381,12 @@ namespace MC2Demo.Presentation
                     MechBaySquadSelectionPreviewService.TryApplyPendingSwap(demoInventory, draft);
                 statusText = result?.Message ?? "Squad swap unavailable";
                 AddCombatLogLine("Squad selection " + statusText);
-                RefreshDemoInventoryValidation();
+                if (result?.Accepted == true)
+                {
+                    ClearSquadSelectionDraft();
+                }
+
+                demoInventoryValidation = MechBayInventoryValidator.Validate(demoInventory);
             }
 
             GUI.enabled = previousEnabled;
