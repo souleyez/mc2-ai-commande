@@ -57,6 +57,7 @@ The Unity demo currently supports:
 - assembled depot mechs stay held with a pending-loadout placeholder until a future fitting flow equips them
 - depot roster detail shows a disabled Draft Fit affordance as a visible future fitting stub
 - depot fit stub previews missing spare weapon stock and pilot assignment requirements
+- depot roster detail shows a read-only pilot placeholder for the future pilot/social system
 - starter inventory availability feedback warns on armor plate or heat sink shortages and blocks applying invalid drafts
 - starter mech condition and one-click demo repair spend local token balance and restore damaged mechs
 - starter mission receipt applies completed bounty tokens and salvaged mech fragments to local inventory
@@ -374,7 +375,7 @@ Tasks:
 
 ## Current Recommended Next Task
 
-Start with **starter depot pilot placeholder**.
+Start with **starter spare weapon stock preview**.
 
 Reason:
 
@@ -383,5 +384,6 @@ Reason:
 - Assembled depot mechs now stay held with `pending-loadout`, so they cannot be confused with deployable squad mechs.
 - The roster detail now shows a disabled Draft Fit affordance, making the future fitting workflow visible without enabling it yet.
 - The depot fit stub now previews missing spare weapon stock and pilot assignment requirements.
-- The next low-risk step is to add a read-only pilot placeholder line for depot mechs, so the future pilot/social system has a clear UI slot.
-- Keep it read-only first; selecting assembled mechs for future missions, shop stock, saved accounts, event drop tables, and multiplayer support still come later.
+- The roster detail now shows a read-only pilot placeholder, so the future pilot/social system has a clear UI slot.
+- The next low-risk step is to preview spare weapon stock for depot fitting, still read-only, before adding shop purchases or real fitting actions.
+- Keep it read-only first; selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.

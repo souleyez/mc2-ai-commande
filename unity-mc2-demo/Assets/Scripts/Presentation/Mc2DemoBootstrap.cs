@@ -2526,7 +2526,7 @@ namespace MC2Demo.Presentation
 
             y += 30f;
             DrawMechBayInventorySummary(x, y, width);
-            y += 170f;
+            y += 192f;
 
             int unitCount = CountPlayerUnits();
             Rect viewport = new(x, y, width, panel.yMax - y - 12f);
@@ -2810,7 +2810,10 @@ namespace MC2Demo.Presentation
             GUI.Label(
                 new Rect(x + 70f, y + 20f, width - 70f, 18f),
                 TruncateText(OwnedRosterFitText(entry), 62));
-            DrawOwnedRosterDraftFitStub(x + 70f, y + 42f, width - 70f, entry);
+            GUI.Label(
+                new Rect(x + 70f, y + 42f, width - 70f, 18f),
+                TruncateText(OwnedRosterPilotText(entry), 62));
+            DrawOwnedRosterDraftFitStub(x + 70f, y + 64f, width - 70f, entry);
         }
 
         private void ClampSelectedRosterIndex(MechBayOwnedRosterEntry[] roster)
@@ -2859,6 +2862,18 @@ namespace MC2Demo.Presentation
             string loadout = string.IsNullOrWhiteSpace(entry.activeLoadoutId) ? "none" : entry.activeLoadoutId;
             string id = string.IsNullOrWhiteSpace(entry.ownedMechId) ? "unknown" : entry.ownedMechId;
             return "Chassis " + chassis + "  Fit " + loadoutStatus + " (" + loadout + ")  Id " + id;
+        }
+
+        private static string OwnedRosterPilotText(MechBayOwnedRosterEntry entry)
+        {
+            if (entry == null)
+            {
+                return "Pilot unavailable";
+            }
+
+            string status = string.IsNullOrWhiteSpace(entry.pilotStatus) ? "Unknown" : entry.pilotStatus;
+            string pilot = string.IsNullOrWhiteSpace(entry.pilotDisplayName) ? "No pilot assigned" : entry.pilotDisplayName;
+            return "Pilot " + status + " (" + pilot + ")";
         }
 
         private static void DrawOwnedRosterDraftFitStub(float x, float y, float width, MechBayOwnedRosterEntry entry)

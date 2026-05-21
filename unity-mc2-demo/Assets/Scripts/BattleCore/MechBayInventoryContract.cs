@@ -76,6 +76,9 @@ namespace MC2Demo.BattleCore
         public string draftFitRequirements { get; internal set; }
         public bool hasSpareWeaponStock { get; internal set; }
         public bool hasPilotAssignment { get; internal set; }
+        public bool hasPilotPlaceholder { get; internal set; }
+        public string pilotStatus { get; internal set; }
+        public string pilotDisplayName { get; internal set; }
         public bool availableForMission { get; internal set; }
         public int conditionPercent { get; internal set; }
         public bool isWarehouseMech { get; internal set; }
@@ -549,6 +552,9 @@ namespace MC2Demo.BattleCore
                     draftFitRequirements = DraftFitRequirements(mech, hasSpareWeaponStock),
                     hasSpareWeaponStock = hasSpareWeaponStock,
                     hasPilotAssignment = HasPilotAssignment(mech),
+                    hasPilotPlaceholder = HasPilotPlaceholder(mech),
+                    pilotStatus = PilotStatus(mech),
+                    pilotDisplayName = PilotDisplayName(mech),
                     availableForMission = mech.availableForMission,
                     conditionPercent = Math.Max(0, Math.Min(100, mech.conditionPercent)),
                     isWarehouseMech = IsWarehouseMech(mech)
@@ -607,6 +613,21 @@ namespace MC2Demo.BattleCore
         private static bool HasPilotAssignment(MechBayOwnedMechDefinition mech)
         {
             return !IsWarehouseMech(mech);
+        }
+
+        private static bool HasPilotPlaceholder(MechBayOwnedMechDefinition mech)
+        {
+            return IsWarehouseMech(mech);
+        }
+
+        private static string PilotStatus(MechBayOwnedMechDefinition mech)
+        {
+            return IsWarehouseMech(mech) ? "Pilot required" : "Assigned";
+        }
+
+        private static string PilotDisplayName(MechBayOwnedMechDefinition mech)
+        {
+            return IsWarehouseMech(mech) ? "No pilot assigned" : "Mission pilot";
         }
 
         private static bool IsPendingDepotFit(MechBayOwnedMechDefinition mech)
