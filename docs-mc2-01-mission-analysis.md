@@ -226,3 +226,5 @@ events carry blocked damage so the log can explain why a hit landed for less.
 The mech bay now builds a starter runtime inventory from the player squad, source
 weapons, projected armor plates, projected heat sinks, and a demo token balance,
 giving later shop/salvage/repair work a small contract to grow from.
+Current draft fits are now checked against that starter inventory, so extra
+armor plate or heat sink choices show a shortage and cannot be applied.

@@ -312,6 +312,39 @@ namespace MC2Demo.EditorTools
             {
                 throw new InvalidDataException("Expected starter inventory to expose armor plates and heat sinks.");
             }
+
+            MechBayInventoryAvailabilityResult defaultAvailability = MechBayInventoryValidator.ValidateUsage(
+                inventory,
+                BuildMechBayInventoryUsage(mission));
+            if (!defaultAvailability.IsValid)
+            {
+                throw new InvalidDataException("Starter mech bay inventory does not cover the default draft: " + FirstInventoryAvailabilityError(defaultAvailability));
+            }
+
+            MechBayInventoryUsage excessArmorUsage = new();
+            excessArmorUsage.AddArmorPlates(result.Summary.ArmorPlateCount + 1);
+            if (MechBayInventoryValidator.ValidateUsage(inventory, excessArmorUsage).IsValid)
+            {
+                throw new InvalidDataException("Starter mech bay inventory did not block excess armor plate usage.");
+            }
+
+            MechBayInventoryUsage excessSinkUsage = new();
+            excessSinkUsage.AddHeatSinks(result.Summary.HeatSinkCount + 1);
+            if (MechBayInventoryValidator.ValidateUsage(inventory, excessSinkUsage).IsValid)
+            {
+                throw new InvalidDataException("Starter mech bay inventory did not block excess heat sink usage.");
+            }
+        }
+
+        private static MechBayInventoryUsage BuildMechBayInventoryUsage(BattleMission mission)
+        {
+            MechBayInventoryUsage usage = new();
+            foreach (UnitState unit in mission.PlayerUnits())
+            {
+                usage.AddLoadoutPreview(CombatLoadoutPreviewBuilder.Build(unit.UnitType, unit.Profile));
+            }
+
+            return usage;
         }
 
         private static void ValidateSourceLoadoutPreview(CombatProfileCatalog combatProfiles)
@@ -846,6 +879,12 @@ namespace MC2Demo.EditorTools
         }
 
         private static string FirstInventoryError(MechBayInventoryValidationResult result)
+        {
+            string[] errors = result.Errors;
+            return errors.Length == 0 ? "no errors" : errors[0];
+        }
+
+        private static string FirstInventoryAvailabilityError(MechBayInventoryAvailabilityResult result)
         {
             string[] errors = result.Errors;
             return errors.Length == 0 ? "no errors" : errors[0];

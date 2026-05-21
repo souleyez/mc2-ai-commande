@@ -2525,13 +2525,15 @@ namespace MC2Demo.Presentation
             }
 
             MechBayInventorySummary summary = demoInventoryValidation.Summary;
+            MechBayInventoryAvailabilityResult availability = CurrentDraftInventoryAvailability();
+            bool inventoryReady = demoInventoryValidation.IsValid && availability != null && availability.IsValid;
             Color previous = GUI.color;
-            GUI.color = demoInventoryValidation.IsValid ? new Color(0.58f, 0.82f, 1f, 1f) : new Color(1f, 0.78f, 0.28f, 1f);
+            GUI.color = inventoryReady ? new Color(0.58f, 0.82f, 1f, 1f) : new Color(1f, 0.78f, 0.28f, 1f);
             GUI.Label(
                 new Rect(x, y, width * 0.46f, 18f),
-                demoInventoryValidation.IsValid
+                inventoryReady
                     ? "Inventory OK"
-                    : "Inventory Review: " + TruncateText(FirstInventoryError(demoInventoryValidation), 28));
+                    : "Inventory Review: " + TruncateText(InventoryStatusError(availability), 28));
             GUI.color = previous;
 
             GUI.Label(
@@ -2541,8 +2543,8 @@ namespace MC2Demo.Presentation
                 new Rect(x, y + 20f, width, 18f),
                 "Mechs " + summary.MechCount.ToString(CultureInfo.InvariantCulture)
                 + "  Weapons " + summary.WeaponCount.ToString(CultureInfo.InvariantCulture)
-                + "  Armor " + summary.ArmorPlateCount.ToString(CultureInfo.InvariantCulture)
-                + "  Sinks " + summary.HeatSinkCount.ToString(CultureInfo.InvariantCulture));
+                + "  Armor " + InventoryUseText(availability?.Usage?.ArmorPlateCount ?? 0, availability?.AvailableArmorPlateCount ?? summary.ArmorPlateCount)
+                + "  Sinks " + InventoryUseText(availability?.Usage?.HeatSinkCount ?? 0, availability?.AvailableHeatSinkCount ?? summary.HeatSinkCount));
         }
 
         private void DrawLoadoutUnit(UnitState unit, float x, float y, float width)
@@ -2627,6 +2629,48 @@ namespace MC2Demo.Presentation
         {
             string[] errors = result.Errors;
             return errors.Length == 0 ? "" : errors[0];
+        }
+
+        private MechBayInventoryAvailabilityResult CurrentDraftInventoryAvailability()
+        {
+            MechBayInventoryUsage usage = new();
+            if (mission != null)
+            {
+                foreach (UnitState unit in mission.PlayerUnits())
+                {
+                    usage.AddLoadoutPreview(LoadoutPreviewFor(unit));
+                }
+            }
+
+            return MechBayInventoryValidator.ValidateUsage(demoInventory, usage);
+        }
+
+        private string InventoryStatusError(MechBayInventoryAvailabilityResult availability)
+        {
+            if (availability != null && !availability.IsValid)
+            {
+                return FirstInventoryAvailabilityError(availability);
+            }
+
+            return demoInventoryValidation == null ? "" : FirstInventoryError(demoInventoryValidation);
+        }
+
+        private static string FirstInventoryAvailabilityError(MechBayInventoryAvailabilityResult result)
+        {
+            if (result == null)
+            {
+                return "";
+            }
+
+            string[] errors = result.Errors;
+            return errors.Length == 0 ? "" : errors[0];
+        }
+
+        private static string InventoryUseText(int used, int available)
+        {
+            return used.ToString(CultureInfo.InvariantCulture)
+                + "/"
+                + available.ToString(CultureInfo.InvariantCulture);
         }
 
         private void DrawLoadoutSectionLine(UnitState unit, float x, float y, float width)
@@ -2903,13 +2947,23 @@ namespace MC2Demo.Presentation
         private void DrawLoadoutEditControls(UnitState unit, CombatLoadoutPreview preview, float x, float y, float width)
         {
             bool hasPendingEdits = HasPendingLoadoutEdits(unit);
+            MechBayInventoryAvailabilityResult availability = CurrentDraftInventoryAvailability();
+            bool hasInventory = availability != null && availability.IsValid;
             Color previousColor = GUI.color;
-            GUI.color = hasPendingEdits ? new Color(1f, 0.86f, 0.32f, 1f) : new Color(0.58f, 0.82f, 1f, 1f);
-            GUI.Label(new Rect(x, y, width - 146f, 18f), hasPendingEdits ? "Draft fit" : "Applied fit");
+            GUI.color = !hasInventory
+                ? new Color(1f, 0.78f, 0.28f, 1f)
+                : hasPendingEdits
+                    ? new Color(1f, 0.86f, 0.32f, 1f)
+                    : new Color(0.58f, 0.82f, 1f, 1f);
+            GUI.Label(
+                new Rect(x, y, width - 146f, 18f),
+                !hasInventory
+                    ? "Inventory short: " + TruncateText(FirstInventoryAvailabilityError(availability), 24)
+                    : hasPendingEdits ? "Draft fit" : "Applied fit");
             GUI.color = previousColor;
 
             bool previousEnabled = GUI.enabled;
-            GUI.enabled = previousEnabled && hasPendingEdits && preview != null && preview.Validation.IsValid;
+            GUI.enabled = previousEnabled && hasPendingEdits && preview != null && preview.Validation.IsValid && hasInventory;
             if (GUI.Button(new Rect(x + width - 144f, y - 2f, 66f, 22f), "Apply"))
             {
                 ApplyLoadoutDraft(unit, preview);
@@ -3064,6 +3118,13 @@ namespace MC2Demo.Presentation
             if (!preview.Validation.IsValid)
             {
                 statusText = "Fix fit before apply";
+                return;
+            }
+
+            MechBayInventoryAvailabilityResult availability = CurrentDraftInventoryAvailability();
+            if (availability == null || !availability.IsValid)
+            {
+                statusText = "Inventory short: " + FirstInventoryAvailabilityError(availability);
                 return;
             }
 

@@ -45,6 +45,7 @@ Current demo behavior:
 - applies armor hardness as simple incoming damage reduction and heat sinks as faster cooling
 - shows applied armor/cooling bonuses in unit weapon status and blocked damage in combat logs
 - builds a starter mech bay inventory summary for owned mechs, weapons, armor plates, heat sinks, and demo token balance
+- warns when draft armor plate or heat sink usage exceeds starter inventory and blocks applying that fit
 - supports one-shot Jet orders with terrain-aware landing rejection
 - provides a toggleable current-objective mission map and a pause/restart/end system panel
 - resolves mission victory or defeat through BattleCore result state

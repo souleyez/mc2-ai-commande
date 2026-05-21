@@ -61,6 +61,63 @@ namespace MC2Demo.BattleCore
         public int HeatSinkCount { get; internal set; }
     }
 
+    public sealed class MechBayInventoryUsage
+    {
+        public int ArmorPlateCount { get; private set; }
+        public int HeatSinkCount { get; private set; }
+
+        public void AddLoadoutPreview(CombatLoadoutPreview preview)
+        {
+            CombatLoadoutPreviewGridCell[] cells = preview?.OccupiedCells ?? Array.Empty<CombatLoadoutPreviewGridCell>();
+            for (int index = 0; index < cells.Length; index++)
+            {
+                CombatLoadoutPreviewGridCell cell = cells[index];
+                if (cell == null)
+                {
+                    continue;
+                }
+
+                if (cell.Category == LoadoutItemCategory.ArmorPlate)
+                {
+                    AddArmorPlates(1);
+                }
+                else if (cell.Category == LoadoutItemCategory.HeatSink)
+                {
+                    AddHeatSinks(1);
+                }
+            }
+        }
+
+        public void AddArmorPlates(int count)
+        {
+            ArmorPlateCount += Math.Max(0, count);
+        }
+
+        public void AddHeatSinks(int count)
+        {
+            HeatSinkCount += Math.Max(0, count);
+        }
+    }
+
+    public sealed class MechBayInventoryAvailabilityResult
+    {
+        private readonly List<string> errors = new();
+
+        public bool IsValid => errors.Count == 0;
+        public string[] Errors => errors.ToArray();
+        public MechBayInventoryUsage Usage { get; internal set; }
+        public int AvailableArmorPlateCount { get; internal set; }
+        public int AvailableHeatSinkCount { get; internal set; }
+
+        internal void AddError(string error)
+        {
+            if (!string.IsNullOrEmpty(error))
+            {
+                errors.Add(error);
+            }
+        }
+    }
+
     public static class MechBayInventoryValidator
     {
         public const string Schema = "mc2-mech-bay-inventory-v1";
@@ -82,6 +139,44 @@ namespace MC2Demo.BattleCore
 
             ValidateOwnedMechs(contract.ownedMechs, result);
             ValidateItemStacks(contract.itemStacks, result);
+            return result;
+        }
+
+        public static MechBayInventoryAvailabilityResult ValidateUsage(
+            MechBayInventoryContract contract,
+            MechBayInventoryUsage usage)
+        {
+            MechBayInventoryAvailabilityResult result = new()
+            {
+                Usage = usage ?? new MechBayInventoryUsage(),
+                AvailableArmorPlateCount = CountAvailableItems(contract, LoadoutItemCategory.ArmorPlate),
+                AvailableHeatSinkCount = CountAvailableItems(contract, LoadoutItemCategory.HeatSink)
+            };
+
+            MechBayInventoryValidationResult contractResult = Validate(contract);
+            foreach (string error in contractResult.Errors)
+            {
+                result.AddError(error);
+            }
+
+            if (result.Usage.ArmorPlateCount > result.AvailableArmorPlateCount)
+            {
+                result.AddError(
+                    "Armor plates "
+                    + result.Usage.ArmorPlateCount
+                    + "/"
+                    + result.AvailableArmorPlateCount);
+            }
+
+            if (result.Usage.HeatSinkCount > result.AvailableHeatSinkCount)
+            {
+                result.AddError(
+                    "Heat sinks "
+                    + result.Usage.HeatSinkCount
+                    + "/"
+                    + result.AvailableHeatSinkCount);
+            }
+
             return result;
         }
 
@@ -182,6 +277,22 @@ namespace MC2Demo.BattleCore
                     result.AddError("Unknown inventory item category: " + stack.category);
                     break;
             }
+        }
+
+        private static int CountAvailableItems(MechBayInventoryContract contract, string category)
+        {
+            int count = 0;
+            MechBayItemStackDefinition[] itemStacks = contract?.itemStacks ?? Array.Empty<MechBayItemStackDefinition>();
+            for (int index = 0; index < itemStacks.Length; index++)
+            {
+                MechBayItemStackDefinition stack = itemStacks[index];
+                if (stack != null && string.Equals(stack.category, category, StringComparison.Ordinal))
+                {
+                    count += Math.Max(0, stack.quantity);
+                }
+            }
+
+            return count;
         }
     }
 

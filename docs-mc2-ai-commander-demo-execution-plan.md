@@ -53,6 +53,7 @@ The Unity demo currently supports:
 - applied armor hardness reduces incoming damage and applied heat sinks increase cooling
 - applied armor/cooling bonuses appear in unit weapon status and blocked damage appears in combat logs
 - starter mech bay inventory contract summarizes owned mechs, weapons, armor plates, heat sinks, and demo token balance
+- starter inventory availability feedback warns on armor plate or heat sink shortages and blocks applying invalid drafts
 - CLI/AI loop pieces:
   - `-mc2Command`
   - `-mc2AdvanceSeconds`
@@ -366,10 +367,10 @@ Tasks:
 
 ## Current Recommended Next Task
 
-Start with **inventory-aware loadout availability feedback**.
+Start with **starter mech condition and repair affordance**.
 
 Reason:
 
-- The starter inventory contract now exists and is visible in the mech bay.
-- The next low-risk step is to warn when draft armor/sink choices exceed available demo inventory.
-- Keep this as local feedback first; purchasing, salvage, repair, and saved accounts still come later.
+- The mech bay now has local inventory and can block over-budget armor/sink drafts.
+- The next low-risk step is to surface per-mech condition and a demo repair affordance that spends from the local token balance.
+- Keep it local and one-click first; salvage, shop stock, saved accounts, and wait timers still come later.
