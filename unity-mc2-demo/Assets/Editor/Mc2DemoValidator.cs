@@ -298,6 +298,12 @@ namespace MC2Demo.EditorTools
                 throw new InvalidDataException("Expected starter inventory to expose 3 player mechs.");
             }
 
+            MechBayOwnedRosterEntry[] starterRoster = MechBayOwnedRosterService.BuildRosterPreview(inventory);
+            if (starterRoster.Length != 3 || HasWarehouseRosterEntry(starterRoster, "Raven"))
+            {
+                throw new InvalidDataException("Expected starter owned-mech roster to expose only the initial player squad.");
+            }
+
             if (result.Summary.TokenBalance <= 0)
             {
                 throw new InvalidDataException("Expected starter inventory to expose demo token balance.");
@@ -914,6 +920,23 @@ namespace MC2Demo.EditorTools
         {
             string[] errors = result.Errors;
             return errors.Length == 0 ? "no errors" : errors[0];
+        }
+
+        private static bool HasWarehouseRosterEntry(MechBayOwnedRosterEntry[] roster, string unitType)
+        {
+            MechBayOwnedRosterEntry[] entries = roster ?? Array.Empty<MechBayOwnedRosterEntry>();
+            for (int index = 0; index < entries.Length; index++)
+            {
+                MechBayOwnedRosterEntry entry = entries[index];
+                if (entry != null
+                    && entry.isWarehouseMech
+                    && string.Equals(entry.unitType, unitType, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private static LoadoutBuildDefinition MakeSyntheticLoadout(string loadoutId, params LoadoutPlacedItemDefinition[] placedItems)
@@ -2275,6 +2298,12 @@ namespace MC2Demo.EditorTools
             if (bestProgress == null || bestProgress.unitType != "Centipede" || bestProgress.fragments != 1 || bestProgress.canAssemble)
             {
                 throw new InvalidDataException("Expected auto-assembly to consume ready Raven fragments and leave Centipede progress.");
+            }
+
+            MechBayOwnedRosterEntry[] assembledRoster = MechBayOwnedRosterService.BuildRosterPreview(receiptInventory);
+            if (!HasWarehouseRosterEntry(assembledRoster, "Raven"))
+            {
+                throw new InvalidDataException("Expected owned-mech roster to expose the newly assembled warehouse Raven.");
             }
 
             BattleMission defeat = new(MakeResultContract(completeOnStart: false), resultProfiles);

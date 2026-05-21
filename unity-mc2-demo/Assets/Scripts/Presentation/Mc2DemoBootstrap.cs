@@ -2525,7 +2525,7 @@ namespace MC2Demo.Presentation
 
             y += 30f;
             DrawMechBayInventorySummary(x, y, width);
-            y += 66f;
+            y += 86f;
 
             int unitCount = CountPlayerUnits();
             Rect viewport = new(x, y, width, panel.yMax - y - 12f);
@@ -2574,6 +2574,9 @@ namespace MC2Demo.Presentation
             GUI.Label(
                 new Rect(x, y + 40f, width, 18f),
                 "Assembly " + AssemblyPreviewText(MechBayAssemblyPreviewService.BestAssemblyProgress(demoInventory)));
+            GUI.Label(
+                new Rect(x, y + 60f, width, 18f),
+                "Roster " + TruncateText(OwnedRosterText(MechBayOwnedRosterService.BuildRosterPreview(demoInventory)), 62));
         }
 
         private void DrawLoadoutUnit(UnitState unit, float x, float y, float width)
@@ -2725,6 +2728,52 @@ namespace MC2Demo.Presentation
             return text;
         }
 
+        private static string OwnedRosterText(MechBayOwnedRosterEntry[] roster)
+        {
+            if (roster == null || roster.Length == 0)
+            {
+                return "No owned mechs";
+            }
+
+            List<string> entries = new();
+            int visibleCount = Mathf.Min(3, roster.Length);
+            for (int index = 0; index < visibleCount; index++)
+            {
+                MechBayOwnedRosterEntry entry = roster[index];
+                if (entry == null)
+                {
+                    continue;
+                }
+
+                string label = string.IsNullOrWhiteSpace(entry.unitType) ? "Mech" : entry.unitType;
+                if (entry.isWarehouseMech)
+                {
+                    label += " depot";
+                }
+
+                label += " " + entry.conditionPercent.ToString(CultureInfo.InvariantCulture) + "%";
+                if (!entry.availableForMission)
+                {
+                    label += " hold";
+                }
+
+                entries.Add(label);
+            }
+
+            if (entries.Count == 0)
+            {
+                return "No owned mechs";
+            }
+
+            string text = roster.Length.ToString(CultureInfo.InvariantCulture) + ": " + string.Join(" | ", entries);
+            if (roster.Length > visibleCount)
+            {
+                text += " +" + (roster.Length - visibleCount).ToString(CultureInfo.InvariantCulture);
+            }
+
+            return text;
+        }
+
         private static string ReceiptAssemblyLogText(MechBayMissionReceipt receipt)
         {
             if (receipt == null || receipt.AssembledMechCount <= 0)
@@ -2789,7 +2838,34 @@ namespace MC2Demo.Presentation
 
         private void RefreshDemoInventoryValidation()
         {
+            SyncDemoInventorySquadCondition();
             demoInventoryValidation = MechBayInventoryValidator.Validate(demoInventory);
+        }
+
+        private void SyncDemoInventorySquadCondition()
+        {
+            if (demoInventory?.ownedMechs == null || mission == null)
+            {
+                return;
+            }
+
+            foreach (UnitState unit in mission.PlayerUnits())
+            {
+                if (unit == null)
+                {
+                    continue;
+                }
+
+                for (int index = 0; index < demoInventory.ownedMechs.Length; index++)
+                {
+                    MechBayOwnedMechDefinition mech = demoInventory.ownedMechs[index];
+                    if (mech != null && string.Equals(mech.unitId, unit.Id, StringComparison.OrdinalIgnoreCase))
+                    {
+                        mech.conditionPercent = MechConditionPercent(unit);
+                        mech.availableForMission = unit.IsActive && !unit.IsDestroyed;
+                    }
+                }
+            }
         }
 
         private static int MechConditionPercent(UnitState unit)
@@ -3898,6 +3974,7 @@ namespace MC2Demo.Presentation
 
             pendingDetachedUnitId = null;
             pendingJumpOrder = false;
+            RefreshDemoInventoryValidation();
             statusText = "Mech bay open";
         }
 

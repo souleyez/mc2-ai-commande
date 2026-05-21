@@ -62,6 +62,16 @@ namespace MC2Demo.BattleCore
         public int MechFragmentCount { get; internal set; }
     }
 
+    public sealed class MechBayOwnedRosterEntry
+    {
+        public string ownedMechId { get; internal set; }
+        public string unitType { get; internal set; }
+        public string displayName { get; internal set; }
+        public bool availableForMission { get; internal set; }
+        public int conditionPercent { get; internal set; }
+        public bool isWarehouseMech { get; internal set; }
+    }
+
     public sealed class MechBayInventoryUsage
     {
         public int ArmorPlateCount { get; private set; }
@@ -498,6 +508,46 @@ namespace MC2Demo.BattleCore
 
             float ratio = Math.Max(0f, Math.Min(1f, unit.CurrentStructure / unit.Profile.MaxStructure));
             return (int)Math.Round(ratio * 100f);
+        }
+    }
+
+    public static class MechBayOwnedRosterService
+    {
+        public static MechBayOwnedRosterEntry[] BuildRosterPreview(MechBayInventoryContract inventory)
+        {
+            MechBayOwnedMechDefinition[] ownedMechs = inventory?.ownedMechs ?? Array.Empty<MechBayOwnedMechDefinition>();
+            List<MechBayOwnedRosterEntry> entries = new();
+            for (int index = 0; index < ownedMechs.Length; index++)
+            {
+                MechBayOwnedMechDefinition mech = ownedMechs[index];
+                if (mech == null)
+                {
+                    continue;
+                }
+
+                entries.Add(new MechBayOwnedRosterEntry
+                {
+                    ownedMechId = mech.ownedMechId,
+                    unitType = mech.unitType,
+                    displayName = string.IsNullOrWhiteSpace(mech.displayName) ? mech.unitType : mech.displayName,
+                    availableForMission = mech.availableForMission,
+                    conditionPercent = Math.Max(0, Math.Min(100, mech.conditionPercent)),
+                    isWarehouseMech = IsWarehouseMech(mech)
+                });
+            }
+
+            return entries.ToArray();
+        }
+
+        private static bool IsWarehouseMech(MechBayOwnedMechDefinition mech)
+        {
+            return StartsWith(mech?.unitId, "warehouse-") || StartsWith(mech?.ownedMechId, "assembled-");
+        }
+
+        private static bool StartsWith(string value, string prefix)
+        {
+            return !string.IsNullOrWhiteSpace(value)
+                && value.StartsWith(prefix, StringComparison.OrdinalIgnoreCase);
         }
     }
 
