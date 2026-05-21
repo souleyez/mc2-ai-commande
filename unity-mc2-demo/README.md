@@ -43,6 +43,7 @@ Current demo behavior:
 - marks mech bay edits as draft/applied and can reset a draft back to the last applied demo fit
 - hands applied demo fits to combat readiness, range, heat, cooldown, and weapon display stats
 - applies armor hardness as simple incoming damage reduction and heat sinks as faster cooling
+- shows applied armor/cooling bonuses in unit weapon status and blocked damage in combat logs
 - supports one-shot Jet orders with terrain-aware landing rejection
 - provides a toggleable current-objective mission map and a pause/restart/end system panel
 - resolves mission victory or defeat through BattleCore result state

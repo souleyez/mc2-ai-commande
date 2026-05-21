@@ -325,7 +325,8 @@ namespace MC2Demo.BattleCore
                 result.DamageApplied,
                 target.IsDestroyed,
                 CombatPrimaryWeaponType,
-                CombatPrimarySpecialEffect);
+                CombatPrimarySpecialEffect,
+                result.DamageMitigated);
         }
 
         public CombatEvent FireAt(StructureState target)
@@ -363,7 +364,7 @@ namespace MC2Demo.BattleCore
         {
             if (!IsActive || IsDestroyed)
             {
-                return new DamageResult("", 0f);
+                return new DamageResult("", 0f, 0f);
             }
 
             DamageSection section = SelectDamageSection(attackerId);
@@ -412,14 +413,16 @@ namespace MC2Demo.BattleCore
 
         private DamageResult ApplyDamageWithOverflow(DamageSection firstSection, float damage)
         {
-            float remaining = Mathf.Max(0f, damage * CombatIncomingDamageMultiplier);
+            float rawDamage = Mathf.Max(0f, damage);
+            float mitigatedDamage = Mathf.Max(0f, rawDamage - rawDamage * CombatIncomingDamageMultiplier);
+            float remaining = Mathf.Max(0f, rawDamage - mitigatedDamage);
             float applied = 0f;
             string lastHitSectionName = firstSection.Name;
 
             remaining = ApplyDamageToSection(firstSection, remaining, ref applied, ref lastHitSectionName);
             if (remaining <= 0f)
             {
-                return new DamageResult(lastHitSectionName, applied);
+                return new DamageResult(lastHitSectionName, applied, mitigatedDamage);
             }
 
             foreach (DamageSection section in Sections)
@@ -436,7 +439,7 @@ namespace MC2Demo.BattleCore
                 }
             }
 
-            return new DamageResult(lastHitSectionName, applied);
+            return new DamageResult(lastHitSectionName, applied, mitigatedDamage);
         }
 
         private static float ApplyDamageToSection(DamageSection section, float damage, ref float applied, ref string lastHitSectionName)
@@ -588,11 +591,13 @@ namespace MC2Demo.BattleCore
         {
             public string SectionName { get; }
             public float DamageApplied { get; }
+            public float DamageMitigated { get; }
 
-            public DamageResult(string sectionName, float damageApplied)
+            public DamageResult(string sectionName, float damageApplied, float damageMitigated)
             {
                 SectionName = sectionName;
                 DamageApplied = damageApplied;
+                DamageMitigated = damageMitigated;
             }
         }
     }

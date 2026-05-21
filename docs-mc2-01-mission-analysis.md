@@ -221,3 +221,5 @@ Applied demo fits now hand effective weapon range, damage, cooldown, heat, and
 cooling into combat and commander observation without changing source profile data.
 Armor hardness uses a single incoming-damage multiplier, while heat sinks add to
 the runtime cooling rate; both remain demo-only effects until saved loadouts exist.
+Applied armor/cooling bonuses now appear in the unit weapon status, and combat
+events carry blocked damage so the log can explain why a hit landed for less.

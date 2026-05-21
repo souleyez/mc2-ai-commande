@@ -629,6 +629,41 @@ namespace MC2Demo.EditorTools
             {
                 throw new InvalidDataException("Runtime armor hardness did not reduce incoming section damage.");
             }
+
+            UnitState attacker = new(new UnitSpawn
+            {
+                spawnId = "armor-event-attacker",
+                teamId = 1,
+                isPlayerUnit = false,
+                unitType = "Centipede",
+                position = new MissionPose()
+            }, combatProfiles);
+            UnitState armorEventTarget = new(new UnitSpawn
+            {
+                spawnId = "armor-event-target",
+                teamId = 0,
+                isPlayerUnit = true,
+                unitType = "Werewolf",
+                position = new MissionPose()
+            }, combatProfiles);
+            armorEventTarget.ApplyDemoLoadout(new UnitLoadoutCombatOverride
+            {
+                weaponRange = armorEventTarget.Profile.WeaponRange,
+                weaponDamage = armorEventTarget.Profile.WeaponDamage,
+                weaponCooldown = armorEventTarget.Profile.WeaponCooldown,
+                heatPerShot = armorEventTarget.Profile.HeatPerShot,
+                heatDissipationPerSecond = armorEventTarget.Profile.HeatDissipationPerSecond,
+                armorHardnessBonus = 4f,
+                totalWeaponWeight = armorEventTarget.Profile.TotalWeaponWeight,
+                primaryWeaponName = armorEventTarget.Profile.PrimaryWeaponName,
+                primaryWeaponType = armorEventTarget.Profile.PrimaryWeaponType,
+                primarySpecialEffect = armorEventTarget.Profile.PrimarySpecialEffect
+            });
+            CombatEvent armorEvent = attacker.FireAt(armorEventTarget);
+            if (armorEvent.Damage <= 0f || armorEvent.MitigatedDamage <= 0f)
+            {
+                throw new InvalidDataException("Runtime armor hardness did not surface mitigation in combat events.");
+            }
         }
 
         private static LoadoutItemDefinition FindLoadoutItem(LoadoutContract contract, string itemId)

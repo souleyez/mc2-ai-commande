@@ -6,6 +6,7 @@ namespace MC2Demo.BattleCore
         public string TargetId { get; }
         public string SectionName { get; }
         public float Damage { get; }
+        public float MitigatedDamage { get; }
         public bool DestroyedTarget { get; }
         public string WeaponType { get; }
         public int SpecialEffect { get; }
@@ -17,12 +18,14 @@ namespace MC2Demo.BattleCore
             float damage,
             bool destroyedTarget,
             string weaponType = "Generic",
-            int specialEffect = 0)
+            int specialEffect = 0,
+            float mitigatedDamage = 0f)
         {
             AttackerId = attackerId;
             TargetId = targetId;
             SectionName = sectionName;
             Damage = damage;
+            MitigatedDamage = mitigatedDamage;
             DestroyedTarget = destroyedTarget;
             WeaponType = weaponType;
             SpecialEffect = specialEffect;

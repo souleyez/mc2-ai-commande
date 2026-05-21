@@ -456,6 +456,11 @@ namespace MC2Demo.Presentation
                     + combatEvent.SectionName
                     + " for "
                     + Mathf.RoundToInt(combatEvent.Damage);
+                if (combatEvent.MitigatedDamage > 0.4f)
+                {
+                    line += " block " + Mathf.RoundToInt(combatEvent.MitigatedDamage);
+                }
+
                 if (combatEvent.DestroyedTarget)
                 {
                     line += " destroyed";
@@ -2123,7 +2128,29 @@ namespace MC2Demo.Presentation
                 state = "Out of range";
             }
 
-            return weapon + "  R" + Mathf.RoundToInt(unit.CombatWeaponRange) + "  " + state;
+            return weapon + "  R" + Mathf.RoundToInt(unit.CombatWeaponRange) + "  " + state + CombatBonusText(unit);
+        }
+
+        private string CombatBonusText(UnitState unit)
+        {
+            if (unit == null || !unit.HasAppliedDemoLoadout)
+            {
+                return "";
+            }
+
+            string text = "";
+            if (unit.CombatArmorHardnessBonus > 0.01f)
+            {
+                text += " A+" + FormatDecimal(unit.CombatArmorHardnessBonus);
+            }
+
+            float coolingBonus = unit.CombatHeatDissipationPerSecond - unit.Profile.HeatDissipationPerSecond;
+            if (coolingBonus > 0.01f)
+            {
+                text += " C+" + FormatDecimal(coolingBonus);
+            }
+
+            return text;
         }
 
         private string ShortWeaponName(string weaponName)
