@@ -1124,6 +1124,35 @@ namespace MC2Demo.EditorTools
                 + (guard.Summary ?? "null");
         }
 
+        private static string MissionRestartDryRunDebugText(MechBayMissionRestartDryRun dryRun)
+        {
+            if (dryRun == null)
+            {
+                return "null dry run";
+            }
+
+            return "ready="
+                + dryRun.Ready
+                + ", changed="
+                + dryRun.InventoryChanged
+                + ", creates="
+                + dryRun.CreatesMissionInstance
+                + ", slots="
+                + dryRun.MissionSlotCount
+                + ", intents="
+                + dryRun.SpawnIntentCount
+                + "/"
+                + (dryRun.SpawnIntents?.Length ?? -1)
+                + ", depot="
+                + dryRun.IncludesDepotMissionSlot
+                + ", status="
+                + (dryRun.Status ?? "null")
+                + ", summary="
+                + (dryRun.Summary ?? "null")
+                + ", note="
+                + (dryRun.PreviewNote ?? "null");
+        }
+
         private static string SquadDraftDebugText(MechBaySquadSelectionDraftState draft)
         {
             if (draft == null)
@@ -1163,6 +1192,26 @@ namespace MC2Demo.EditorTools
             {
                 MechBaySquadSelectionSlot slot = safeSlots[index];
                 if (slot != null && string.Equals(slot.ownedMechId, ownedMechId, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool ContainsRestartIntent(MechBayMissionRestartSpawnIntent[] intents, string ownedMechId)
+        {
+            if (string.IsNullOrWhiteSpace(ownedMechId))
+            {
+                return false;
+            }
+
+            MechBayMissionRestartSpawnIntent[] safeIntents = intents ?? Array.Empty<MechBayMissionRestartSpawnIntent>();
+            for (int index = 0; index < safeIntents.Length; index++)
+            {
+                MechBayMissionRestartSpawnIntent intent = safeIntents[index];
+                if (intent != null && string.Equals(intent.ownedMechId, ownedMechId, StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }
@@ -2610,6 +2659,8 @@ namespace MC2Demo.EditorTools
                 MechBayMissionHandoffPreviewService.BuildPreview(receiptInventory);
             MechBayMissionHandoffLaunchGuard lockedLaunchGuard =
                 MechBayMissionHandoffPreviewService.BuildLaunchGuard(receiptInventory);
+            MechBayMissionRestartDryRun lockedRestartDryRun =
+                MechBayMissionHandoffPreviewService.BuildRestartDryRun(receiptInventory);
             if (lockedSquadPreview == null
                 || lockedSquadPreview.InventoryChanged
                 || lockedSquadPreview.Status != "No depot candidates ready"
@@ -2672,6 +2723,27 @@ namespace MC2Demo.EditorTools
                 throw new InvalidDataException(
                     "Expected locked mission handoff launch guard to reject without mutating inventory. Got "
                     + MissionHandoffLaunchGuardDebugText(lockedLaunchGuard));
+            }
+
+            if (lockedRestartDryRun == null
+                || lockedRestartDryRun.InventoryChanged
+                || !lockedRestartDryRun.Ready
+                || lockedRestartDryRun.CreatesMissionInstance
+                || lockedRestartDryRun.IncludesDepotMissionSlot
+                || lockedRestartDryRun.MissionSlotCount != lockedHandoffPreview.MissionSlotCount
+                || lockedRestartDryRun.SpawnIntentCount != lockedHandoffPreview.MissionSlotCount
+                || lockedRestartDryRun.SpawnIntents == null
+                || lockedRestartDryRun.SpawnIntents.Length != lockedRestartDryRun.SpawnIntentCount
+                || lockedRestartDryRun.Status != "Restart dry run ready"
+                || lockedRestartDryRun.PreviewNote != "Dry run only: no BattleMission created"
+                || !lockedRestartDryRun.Summary.Contains("Spawn intents:", StringComparison.Ordinal)
+                || lockedRestartDryRun.SpawnIntents[0].spawnIndex != 1
+                || lockedRestartDryRun.SpawnIntents[0].spawnRole != "Commander"
+                || ContainsRestartIntent(lockedRestartDryRun.SpawnIntents, assembledRaven.ownedMechId))
+            {
+                throw new InvalidDataException(
+                    "Expected locked mission restart dry run to map current squad slots without creating a mission instance. Got "
+                    + MissionRestartDryRunDebugText(lockedRestartDryRun));
             }
 
             MechBaySquadSelectionDraftState lockedSquadDraft =
@@ -2953,6 +3025,8 @@ namespace MC2Demo.EditorTools
                 MechBayMissionHandoffPreviewService.BuildPreview(receiptInventory);
             MechBayMissionHandoffLaunchGuard squadPostApplyLaunchGuard =
                 MechBayMissionHandoffPreviewService.BuildLaunchGuard(receiptInventory);
+            MechBayMissionRestartDryRun squadPostApplyRestartDryRun =
+                MechBayMissionHandoffPreviewService.BuildRestartDryRun(receiptInventory);
             if (squadApply == null
                 || !squadApply.Accepted
                 || !squadApply.InventoryChanged
@@ -3049,6 +3123,27 @@ namespace MC2Demo.EditorTools
                 throw new InvalidDataException(
                     "Expected post-swap mission handoff launch guard to reject without mutating inventory or battle state. Got "
                     + MissionHandoffLaunchGuardDebugText(squadPostApplyLaunchGuard));
+            }
+
+            if (squadPostApplyRestartDryRun == null
+                || squadPostApplyRestartDryRun.InventoryChanged
+                || !squadPostApplyRestartDryRun.Ready
+                || squadPostApplyRestartDryRun.CreatesMissionInstance
+                || !squadPostApplyRestartDryRun.IncludesDepotMissionSlot
+                || squadPostApplyRestartDryRun.MissionSlotCount != squadPostApplyHandoff.MissionSlotCount
+                || squadPostApplyRestartDryRun.SpawnIntentCount != squadPostApplyHandoff.MissionSlotCount
+                || squadPostApplyRestartDryRun.SpawnIntents == null
+                || squadPostApplyRestartDryRun.SpawnIntents.Length != squadPostApplyRestartDryRun.SpawnIntentCount
+                || squadPostApplyRestartDryRun.Status != "Restart dry run ready"
+                || squadPostApplyRestartDryRun.PreviewNote != "Dry run only: no BattleMission created"
+                || !squadPostApplyRestartDryRun.Summary.Contains("Spawn intents:", StringComparison.Ordinal)
+                || !squadPostApplyRestartDryRun.Summary.Contains("depot included", StringComparison.Ordinal)
+                || !ContainsRestartIntent(squadPostApplyRestartDryRun.SpawnIntents, assembledRaven.ownedMechId)
+                || ContainsRestartIntent(squadPostApplyRestartDryRun.SpawnIntents, selectedOutgoingSlot.ownedMechId))
+            {
+                throw new InvalidDataException(
+                    "Expected post-swap mission restart dry run to map the refreshed handoff roster without creating a mission instance. Got "
+                    + MissionRestartDryRunDebugText(squadPostApplyRestartDryRun));
             }
 
             BattleMission defeat = new(MakeResultContract(completeOnStart: false), resultProfiles);

@@ -302,6 +302,7 @@ namespace MC2Demo.BattleCore
         public string pilotDisplayName { get; internal set; }
         public int conditionPercent { get; internal set; }
         public string selectionStatus { get; internal set; }
+        public bool isDepotMissionSlot { get; internal set; }
     }
 
     public sealed class MechBaySquadSelectionApplyResult
@@ -353,6 +354,33 @@ namespace MC2Demo.BattleCore
         public string Message { get; internal set; }
         public string Reason { get; internal set; }
         public string Summary { get; internal set; }
+    }
+
+    public sealed class MechBayMissionRestartDryRun
+    {
+        public bool InventoryChanged { get; internal set; }
+        public bool Ready { get; internal set; }
+        public bool CreatesMissionInstance { get; internal set; }
+        public bool IncludesDepotMissionSlot { get; internal set; }
+        public int MissionSlotCount { get; internal set; }
+        public int SpawnIntentCount { get; internal set; }
+        public string Status { get; internal set; }
+        public string Summary { get; internal set; }
+        public string PreviewNote { get; internal set; }
+        public MechBayMissionRestartSpawnIntent[] SpawnIntents { get; internal set; }
+    }
+
+    public sealed class MechBayMissionRestartSpawnIntent
+    {
+        public int spawnIndex { get; internal set; }
+        public string spawnRole { get; internal set; }
+        public string ownedMechId { get; internal set; }
+        public string unitType { get; internal set; }
+        public string chassisId { get; internal set; }
+        public string displayName { get; internal set; }
+        public string activeLoadoutId { get; internal set; }
+        public string pilotDisplayName { get; internal set; }
+        public bool isDepotMissionSlot { get; internal set; }
     }
 
     public sealed class MechBayReceiptItemDefinition
@@ -1229,7 +1257,8 @@ namespace MC2Demo.BattleCore
                 activeLoadoutId = entry.activeLoadoutId,
                 pilotDisplayName = entry.pilotDisplayName,
                 conditionPercent = entry.conditionPercent,
-                selectionStatus = entry.squadSelectionStatus
+                selectionStatus = entry.squadSelectionStatus,
+                isDepotMissionSlot = entry.isWarehouseMech
             };
         }
 
@@ -1427,6 +1456,44 @@ namespace MC2Demo.BattleCore
             };
         }
 
+        public static MechBayMissionRestartDryRun BuildRestartDryRun(MechBayInventoryContract inventory)
+        {
+            MechBayMissionHandoffPreview preview = BuildPreview(inventory);
+            MechBaySquadSelectionSlot[] slots = preview?.MissionSlots ?? Array.Empty<MechBaySquadSelectionSlot>();
+            MechBayMissionRestartSpawnIntent[] intents = new MechBayMissionRestartSpawnIntent[slots.Length];
+            for (int index = 0; index < slots.Length; index++)
+            {
+                MechBaySquadSelectionSlot slot = slots[index];
+                intents[index] = new MechBayMissionRestartSpawnIntent
+                {
+                    spawnIndex = index + 1,
+                    spawnRole = index == 0 ? "Commander" : "Lancemate",
+                    ownedMechId = slot?.ownedMechId,
+                    unitType = slot?.unitType,
+                    chassisId = slot?.chassisId,
+                    displayName = string.IsNullOrWhiteSpace(slot?.displayName) ? slot?.unitType : slot.displayName,
+                    activeLoadoutId = slot?.activeLoadoutId,
+                    pilotDisplayName = slot?.pilotDisplayName,
+                    isDepotMissionSlot = slot?.isDepotMissionSlot == true
+                };
+            }
+
+            bool ready = preview?.ReadyForFutureLaunch == true && intents.Length > 0;
+            return new MechBayMissionRestartDryRun
+            {
+                InventoryChanged = false,
+                Ready = ready,
+                CreatesMissionInstance = false,
+                IncludesDepotMissionSlot = preview?.IncludesDepotMissionSlot == true,
+                MissionSlotCount = preview?.MissionSlotCount ?? 0,
+                SpawnIntentCount = intents.Length,
+                Status = ready ? "Restart dry run ready" : "Restart dry run unavailable",
+                Summary = RestartSummary(intents, preview?.IncludesDepotMissionSlot == true),
+                PreviewNote = "Dry run only: no BattleMission created",
+                SpawnIntents = intents
+            };
+        }
+
         private static MechBaySquadSelectionSlot SlotFromRoster(MechBayOwnedRosterEntry entry)
         {
             return new MechBaySquadSelectionSlot
@@ -1438,7 +1505,8 @@ namespace MC2Demo.BattleCore
                 activeLoadoutId = entry.activeLoadoutId,
                 pilotDisplayName = entry.pilotDisplayName,
                 conditionPercent = entry.conditionPercent,
-                selectionStatus = entry.deploymentStatus
+                selectionStatus = entry.deploymentStatus,
+                isDepotMissionSlot = entry.isWarehouseMech
             };
         }
 
@@ -1450,6 +1518,36 @@ namespace MC2Demo.BattleCore
             }
 
             return includesDepotMissionSlot ? "Launch preview includes depot mech" : "Launch preview uses current squad";
+        }
+
+        private static string RestartSummary(MechBayMissionRestartSpawnIntent[] intents, bool includesDepotMissionSlot)
+        {
+            if (intents == null || intents.Length == 0)
+            {
+                return "No spawn intents";
+            }
+
+            string text = "Spawn intents: ";
+            int count = Math.Min(3, intents.Length);
+            for (int index = 0; index < count; index++)
+            {
+                if (index > 0)
+                {
+                    text += "; ";
+                }
+
+                MechBayMissionRestartSpawnIntent intent = intents[index];
+                string name = string.IsNullOrWhiteSpace(intent?.displayName) ? intent?.unitType ?? "Mech" : intent.displayName;
+                string role = string.IsNullOrWhiteSpace(intent?.spawnRole) ? "Lancemate" : intent.spawnRole;
+                text += intent.spawnIndex.ToString(CultureInfo.InvariantCulture) + " " + name + " " + role;
+            }
+
+            if (intents.Length > count)
+            {
+                text += " +" + (intents.Length - count).ToString(CultureInfo.InvariantCulture);
+            }
+
+            return includesDepotMissionSlot ? text + "  depot included" : text;
         }
 
         private static string Summary(List<MechBaySquadSelectionSlot> missionSlots, bool includesDepotMissionSlot)

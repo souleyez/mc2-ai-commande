@@ -2543,7 +2543,7 @@ namespace MC2Demo.Presentation
 
             y += 30f;
             DrawMechBayInventorySummary(x, y, width);
-            y += 390f;
+            y += 412f;
             if (showWarehouseDraftFitPreview)
             {
                 DrawWarehouseDraftFitPreview(x, y, width);
@@ -2623,7 +2623,8 @@ namespace MC2Demo.Presentation
                 new Rect(x, y + 148f, width, 18f),
                 "Next Mission " + TruncateText(MissionHandoffPreviewText(handoffPreview), 58));
             DrawMissionHandoffLaunchGuard(x, y + 170f, width, handoffPreview);
-            DrawOwnedRosterDetail(x, y + 192f, width, roster, pilotHirePreview);
+            DrawMissionRestartDryRun(x, y + 192f, width);
+            DrawOwnedRosterDetail(x, y + 214f, width, roster, pilotHirePreview);
         }
 
         private void DrawLoadoutUnit(UnitState unit, float x, float y, float width)
@@ -2869,6 +2870,29 @@ namespace MC2Demo.Presentation
             string reason = string.IsNullOrWhiteSpace(guard.Reason) ? "Future mission restart hook not wired" : guard.Reason;
             string note = string.IsNullOrWhiteSpace(preview?.PreviewNote) ? "Current battle unchanged" : preview.PreviewNote;
             return message + "  " + reason + "  " + note;
+        }
+
+        private void DrawMissionRestartDryRun(float x, float y, float width)
+        {
+            MechBayMissionRestartDryRun dryRun =
+                MechBayMissionHandoffPreviewService.BuildRestartDryRun(demoInventory);
+            GUI.Label(new Rect(x, y, width, 18f), "Restart Dry Run " + TruncateText(MissionRestartDryRunText(dryRun), 58));
+        }
+
+        private static string MissionRestartDryRunText(MechBayMissionRestartDryRun dryRun)
+        {
+            if (dryRun == null)
+            {
+                return "unavailable";
+            }
+
+            string status = string.IsNullOrWhiteSpace(dryRun.Status) ? "Restart dry run unavailable" : dryRun.Status;
+            string summary = string.IsNullOrWhiteSpace(dryRun.Summary) ? "No spawn intents" : dryRun.Summary;
+            return dryRun.SpawnIntentCount.ToString(CultureInfo.InvariantCulture)
+                + " intents  "
+                + status
+                + "  "
+                + TruncateText(summary, 34);
         }
 
         private static string WeaponShopPreviewText(MechBayWeaponShopPreview preview)

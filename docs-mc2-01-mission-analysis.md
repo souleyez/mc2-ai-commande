@@ -306,3 +306,6 @@ mission yet.
 That handoff now has a disabled Launch guard. The guard reports the staged
 roster and explicitly blocks mission restart until a future launch hook can
 rebuild a live mission instance from the inventory roster.
+The same handoff now produces a restart dry run: each available mission slot is
+mapped to a future spawn intent with commander/lancemate role, pilot, loadout,
+and depot-slot marker, while still creating no new `BattleMission`.
