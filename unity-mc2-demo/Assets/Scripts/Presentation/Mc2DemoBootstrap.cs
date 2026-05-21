@@ -3107,11 +3107,18 @@ namespace MC2Demo.Presentation
             return "Stock " + stock;
         }
 
-        private static void DrawOwnedRosterDraftFitStub(float x, float y, float width, MechBayOwnedRosterEntry entry)
+        private void DrawOwnedRosterDraftFitStub(float x, float y, float width, MechBayOwnedRosterEntry entry)
         {
+            bool canOpenDraftFitGate = entry != null && entry.hasDraftFitStub && entry.draftFitReady;
             bool previousEnabled = GUI.enabled;
-            GUI.enabled = false;
-            GUI.Button(new Rect(x, y - 2f, 72f, 22f), "Draft Fit");
+            GUI.enabled = previousEnabled && canOpenDraftFitGate;
+            if (GUI.Button(new Rect(x, y - 2f, 72f, 22f), "Draft Fit"))
+            {
+                string name = entry == null || string.IsNullOrWhiteSpace(entry.displayName) ? "depot mech" : entry.displayName;
+                statusText = "Draft fit ready: " + TruncateText(name, 24);
+                AddCombatLogLine("Mech bay draft fit gate ready for " + name);
+            }
+
             GUI.enabled = previousEnabled;
 
             string status = entry == null || string.IsNullOrWhiteSpace(entry.draftFitStatus)

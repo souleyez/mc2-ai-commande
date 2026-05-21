@@ -308,6 +308,7 @@ namespace MC2Demo.EditorTools
                 || string.IsNullOrWhiteSpace(starterRoster[0].activeLoadoutId)
                 || starterRoster[0].loadoutStatus != "Ready fit"
                 || starterRoster[0].hasDraftFitStub
+                || starterRoster[0].draftFitReady
                 || starterRoster[0].draftFitStatus != "Use squad fit cards below"
                 || starterRoster[0].draftFitRequirements != "Current fit active"
                 || !starterRoster[0].hasPilotAssignment
@@ -2408,6 +2409,7 @@ namespace MC2Demo.EditorTools
                 || assembledRaven.activeLoadoutId != "pending-loadout"
                 || assembledRaven.loadoutStatus != "Needs loadout"
                 || !assembledRaven.hasDraftFitStub
+                || assembledRaven.draftFitReady
                 || assembledRaven.draftFitStatus != "Draft fitting locked for this demo"
                 || assembledRaven.draftFitRequirements != "Need stock weapons + pilot"
                 || assembledRaven.hasSpareWeaponStock
@@ -2465,10 +2467,34 @@ namespace MC2Demo.EditorTools
                 || assembledRaven.hasPilotPlaceholder
                 || assembledRaven.pilotStatus != "Assigned NPC"
                 || assembledRaven.pilotDisplayName != hireCandidate.displayName
+                || assembledRaven.draftFitReady
                 || assembledRaven.draftFitRequirements != "Need stock weapons"
                 || assembledRaven.availableForMission)
             {
                 throw new InvalidDataException("Expected demo pilot hire to spend tokens and assign one NPC pilot to the warehouse mech.");
+            }
+
+            MechBayWeaponShopPreview fitGateShopPreview = MechBayWeaponShopPreviewService.BuildPreview(receiptInventory);
+            MechBayWeaponPurchasePreviewResult fitGatePurchase = MechBayWeaponShopPreviewService.TryApplyDemoPurchase(
+                receiptInventory,
+                fitGateShopPreview.Entries[0].itemId);
+            receiptInventoryResult = MechBayInventoryValidator.Validate(receiptInventory);
+            MechBayOwnedRosterEntry[] fitGateRoster = MechBayOwnedRosterService.BuildRosterPreview(receiptInventory);
+            assembledRaven = FindWarehouseRosterEntry(fitGateRoster, "Raven");
+            if (fitGatePurchase == null
+                || !fitGatePurchase.Accepted
+                || !fitGatePurchase.InventoryChanged
+                || !receiptInventoryResult.IsValid
+                || assembledRaven == null
+                || !assembledRaven.hasDraftFitStub
+                || !assembledRaven.draftFitReady
+                || assembledRaven.draftFitStatus != "Draft fitting ready"
+                || assembledRaven.draftFitRequirements != "Ready for future fitting"
+                || !assembledRaven.hasSpareWeaponStock
+                || !assembledRaven.hasPilotAssignment
+                || assembledRaven.availableForMission)
+            {
+                throw new InvalidDataException("Expected demo pilot hire plus spare weapon stock to unlock the warehouse draft-fit readiness gate.");
             }
 
             BattleMission defeat = new(MakeResultContract(completeOnStart: false), resultProfiles);

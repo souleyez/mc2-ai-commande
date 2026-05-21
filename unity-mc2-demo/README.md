@@ -54,6 +54,7 @@ Current demo behavior:
 - previews an ordinary weapon shop as the future source of spare depot weapons
 - supports a demo ordinary weapon purchase that spends local tokens and adds one spare weapon
 - supports demo NPC pilot hiring that spends local tokens and assigns a warehouse pilot
+- enables a Draft Fit readiness gate when a warehouse mech has both spare weapon stock and a pilot
 - warns when draft armor plate or heat sink usage exceeds starter inventory and blocks applying that fit
 - shows starter mech condition and one-click demo repair that spends local token balance
 - applies a local mission receipt for completed bounty tokens and salvaged mech fragments at mission end

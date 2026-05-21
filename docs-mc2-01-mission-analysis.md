@@ -264,3 +264,6 @@ The same panel now previews starter NPC pilot hire candidates with token cost
 and death-risk status. The demo hire path can now spend local tokens and assign
 one NPC pilot to a warehouse mech, resolving the pilot side of the future depot
 fitting gate while leaving friend pilots, wages, and real pilot death for later.
+When a warehouse mech has both spare weapon stock and an assigned pilot, the
+Draft Fit affordance now opens a readiness gate: it becomes clickable and gives
+player feedback without consuming inventory or creating a real loadout yet.

@@ -76,6 +76,7 @@ namespace MC2Demo.BattleCore
         public string activeLoadoutId { get; internal set; }
         public string loadoutStatus { get; internal set; }
         public bool hasDraftFitStub { get; internal set; }
+        public bool draftFitReady { get; internal set; }
         public string draftFitStatus { get; internal set; }
         public string draftFitRequirements { get; internal set; }
         public bool hasSpareWeaponStock { get; internal set; }
@@ -630,7 +631,8 @@ namespace MC2Demo.BattleCore
                     activeLoadoutId = mech.activeLoadoutId,
                     loadoutStatus = LoadoutStatus(mech),
                     hasDraftFitStub = IsPendingDepotFit(mech),
-                    draftFitStatus = DraftFitStatus(mech),
+                    draftFitReady = DraftFitReady(mech, hasSpareWeaponStock),
+                    draftFitStatus = DraftFitStatus(mech, hasSpareWeaponStock),
                     draftFitRequirements = DraftFitRequirements(mech, hasSpareWeaponStock),
                     hasSpareWeaponStock = hasSpareWeaponStock,
                     spareWeaponStockCount = spareWeaponStockCount,
@@ -664,8 +666,18 @@ namespace MC2Demo.BattleCore
             return string.IsNullOrWhiteSpace(mech?.activeLoadoutId) ? "No loadout" : "Ready fit";
         }
 
-        private static string DraftFitStatus(MechBayOwnedMechDefinition mech)
+        private static bool DraftFitReady(MechBayOwnedMechDefinition mech, bool hasSpareWeaponStock)
         {
+            return IsPendingDepotFit(mech) && hasSpareWeaponStock && HasPilotAssignment(mech);
+        }
+
+        private static string DraftFitStatus(MechBayOwnedMechDefinition mech, bool hasSpareWeaponStock)
+        {
+            if (DraftFitReady(mech, hasSpareWeaponStock))
+            {
+                return "Draft fitting ready";
+            }
+
             if (IsPendingDepotFit(mech))
             {
                 return "Draft fitting locked for this demo";
