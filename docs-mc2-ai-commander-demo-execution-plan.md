@@ -45,6 +45,7 @@ The Unity demo currently supports:
 - source weapon loadout projection in the mech bay with validator status, heat/load limits, and occupied grid cell counts
 - temporary mech bay weapon toggles that immediately recompute projected heat, load, grid occupancy, and fitting status
 - projected mech bay slot grid visualization with placeholder multi-cell weapon shapes exposed from BattleCore preview data
+- temporary projected weapon placement edits with overlap and out-of-bounds validator feedback
 - CLI/AI loop pieces:
   - `-mc2Command`
   - `-mc2AdvanceSeconds`
@@ -358,10 +359,10 @@ Tasks:
 
 ## Current Recommended Next Task
 
-Start with **temporary loadout placement edits**.
+Start with **armor plate and heat sink filler projection**.
 
 Reason:
 
-- The mech bay now shows validator-backed multi-cell source weapon shapes.
-- The next low-risk step is to select one projected item and nudge it around the temporary grid.
-- That will prove visible overlap/out-of-bounds validation before inventory, saves, economy, or full drag-and-drop are added.
+- The mech bay now proves source weapons can be moved through validator-backed temporary edits.
+- The original fitting loop also relies on leftover single-cell armor plates and heat sinks.
+- The next useful step is to project simple filler items into free cells so heat/load tradeoffs become visible before full inventory editing.

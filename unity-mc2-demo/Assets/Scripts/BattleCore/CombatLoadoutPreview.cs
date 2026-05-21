@@ -9,6 +9,7 @@ namespace MC2Demo.BattleCore
         public int GridWidth { get; }
         public int GridHeight { get; }
         public CombatLoadoutPreviewGridCell[] OccupiedCells { get; }
+        public CombatLoadoutPreviewItem[] Items { get; }
         public float HeatLimit { get; }
         public float WeightLimit { get; }
 
@@ -18,6 +19,7 @@ namespace MC2Demo.BattleCore
             int gridWidth,
             int gridHeight,
             CombatLoadoutPreviewGridCell[] occupiedCells,
+            CombatLoadoutPreviewItem[] items,
             float heatLimit,
             float weightLimit)
         {
@@ -26,8 +28,35 @@ namespace MC2Demo.BattleCore
             GridWidth = gridWidth;
             GridHeight = gridHeight;
             OccupiedCells = occupiedCells ?? Array.Empty<CombatLoadoutPreviewGridCell>();
+            Items = items ?? Array.Empty<CombatLoadoutPreviewItem>();
             HeatLimit = heatLimit;
             WeightLimit = weightLimit;
+        }
+    }
+
+    public sealed class CombatLoadoutPreviewItem
+    {
+        public int SourceWeaponIndex { get; }
+        public int GridX { get; }
+        public int GridY { get; }
+        public string ItemId { get; }
+        public string DisplayName { get; }
+        public string WeaponType { get; }
+
+        internal CombatLoadoutPreviewItem(
+            int sourceWeaponIndex,
+            int gridX,
+            int gridY,
+            string itemId,
+            string displayName,
+            string weaponType)
+        {
+            SourceWeaponIndex = sourceWeaponIndex;
+            GridX = gridX;
+            GridY = gridY;
+            ItemId = itemId;
+            DisplayName = displayName;
+            WeaponType = weaponType;
         }
     }
 
@@ -57,20 +86,37 @@ namespace MC2Demo.BattleCore
         }
     }
 
+    public sealed class CombatLoadoutPlacementOverride
+    {
+        public int sourceWeaponIndex;
+        public int gridX;
+        public int gridY;
+    }
+
     public static class CombatLoadoutPreviewBuilder
     {
         private const int ProjectedGridWidth = 4;
 
         public static CombatLoadoutPreview Build(string chassisId, CombatProfile profile)
         {
-            return Build(chassisId, profile, null);
+            return Build(chassisId, profile, null, null);
         }
 
         public static CombatLoadoutPreview Build(string chassisId, CombatProfile profile, bool[] enabledWeapons)
         {
+            return Build(chassisId, profile, enabledWeapons, null);
+        }
+
+        public static CombatLoadoutPreview Build(
+            string chassisId,
+            CombatProfile profile,
+            bool[] enabledWeapons,
+            CombatLoadoutPlacementOverride[] placementOverrides)
+        {
             CombatWeaponDefinition[] weapons = profile?.Weapons ?? Array.Empty<CombatWeaponDefinition>();
             LoadoutGridCell[][] weaponShapes = BuildWeaponShapes(weapons);
             LoadoutPlacedItemDefinition[] sourcePlacements = PackWeaponShapes(weaponShapes, ProjectedGridWidth, out int gridHeight);
+            ApplyPlacementOverrides(sourcePlacements, placementOverrides);
             int gridCapacity = ProjectedGridWidth * gridHeight;
             float heatCapacity = profile == null ? 0f : profile.HeatCapacity;
             float heatPerShot = profile == null ? 0f : profile.HeatPerShot;
@@ -84,6 +130,7 @@ namespace MC2Demo.BattleCore
             LoadoutItemDefinition[] items = new LoadoutItemDefinition[enabledCount];
             LoadoutPlacedItemDefinition[] placedItems = new LoadoutPlacedItemDefinition[enabledCount];
             CombatLoadoutPreviewGridCell[] occupiedCells = new CombatLoadoutPreviewGridCell[CountEnabledShapeCells(weaponShapes, enabledWeapons)];
+            CombatLoadoutPreviewItem[] previewItems = new CombatLoadoutPreviewItem[enabledCount];
             int itemIndex = 0;
             int cellIndex = 0;
             for (int index = 0; index < weapons.Length; index++)
@@ -116,6 +163,13 @@ namespace MC2Demo.BattleCore
                     gridX = sourcePlacements[index].gridX,
                     gridY = sourcePlacements[index].gridY
                 };
+                previewItems[itemIndex] = new CombatLoadoutPreviewItem(
+                    index,
+                    sourcePlacements[index].gridX,
+                    sourcePlacements[index].gridY,
+                    itemId,
+                    string.IsNullOrEmpty(weapon?.name) ? itemId : weapon.name,
+                    weapon?.type);
                 foreach (LoadoutGridCell shapeCell in weaponShapes[index])
                 {
                     occupiedCells[cellIndex] = new CombatLoadoutPreviewGridCell(
@@ -163,7 +217,7 @@ namespace MC2Demo.BattleCore
             };
 
             LoadoutValidationResult validation = LoadoutValidator.Validate(contract, contract.loadouts[0]);
-            return new CombatLoadoutPreview(validation, gridCapacity, ProjectedGridWidth, gridHeight, occupiedCells, heatLimit, weightLimit);
+            return new CombatLoadoutPreview(validation, gridCapacity, ProjectedGridWidth, gridHeight, occupiedCells, previewItems, heatLimit, weightLimit);
         }
 
         private static int CountEnabledWeapons(int weaponCount, bool[] enabledWeapons)
@@ -188,6 +242,30 @@ namespace MC2Demo.BattleCore
         private static bool IsWeaponEnabled(bool[] enabledWeapons, int index)
         {
             return enabledWeapons == null || index >= enabledWeapons.Length || enabledWeapons[index];
+        }
+
+        private static void ApplyPlacementOverrides(
+            LoadoutPlacedItemDefinition[] placements,
+            CombatLoadoutPlacementOverride[] placementOverrides)
+        {
+            if (placements == null || placementOverrides == null)
+            {
+                return;
+            }
+
+            for (int index = 0; index < placementOverrides.Length; index++)
+            {
+                CombatLoadoutPlacementOverride placementOverride = placementOverrides[index];
+                if (placementOverride == null
+                    || placementOverride.sourceWeaponIndex < 0
+                    || placementOverride.sourceWeaponIndex >= placements.Length)
+                {
+                    continue;
+                }
+
+                placements[placementOverride.sourceWeaponIndex].gridX = placementOverride.gridX;
+                placements[placementOverride.sourceWeaponIndex].gridY = placementOverride.gridY;
+            }
         }
 
         private static int CountEnabledShapeCells(LoadoutGridCell[][] weaponShapes, bool[] enabledWeapons)

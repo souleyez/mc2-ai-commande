@@ -37,6 +37,7 @@ Current demo behavior:
 - shows projected source loadout validation status, heat/load limits, and occupied grid cells in the mech bay
 - lets the mech bay temporarily toggle stock weapons on or off and immediately recompute validation readouts
 - visualizes the projected mech bay slot grid with placeholder multi-cell weapon shapes
+- lets the mech bay select and nudge projected weapons to preview overlap and bounds validation
 - supports one-shot Jet orders with terrain-aware landing rejection
 - provides a toggleable current-objective mission map and a pause/restart/end system panel
 - resolves mission victory or defeat through BattleCore result state

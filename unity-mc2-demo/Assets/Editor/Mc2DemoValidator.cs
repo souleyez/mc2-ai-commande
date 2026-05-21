@@ -361,6 +361,44 @@ namespace MC2Demo.EditorTools
                 {
                     throw new InvalidDataException("Projected disabled loadout did not reduce heat and weight for " + unitType);
                 }
+
+                CombatLoadoutPreviewItem firstItem = preview.Items[0];
+                CombatLoadoutPreviewItem secondItem = preview.Items[Math.Min(1, preview.Items.Length - 1)];
+                CombatLoadoutPreview overlapPreview = CombatLoadoutPreviewBuilder.Build(
+                    unitType,
+                    profile,
+                    null,
+                    new[]
+                    {
+                        new CombatLoadoutPlacementOverride
+                        {
+                            sourceWeaponIndex = firstItem.SourceWeaponIndex,
+                            gridX = secondItem.GridX,
+                            gridY = secondItem.GridY
+                        }
+                    });
+                if (overlapPreview.Validation.IsValid || !HasLoadoutErrorContaining(overlapPreview, "occupied by both"))
+                {
+                    throw new InvalidDataException("Projected loadout placement override did not surface overlap validation for " + unitType);
+                }
+
+                CombatLoadoutPreview outOfBoundsPreview = CombatLoadoutPreviewBuilder.Build(
+                    unitType,
+                    profile,
+                    null,
+                    new[]
+                    {
+                        new CombatLoadoutPlacementOverride
+                        {
+                            sourceWeaponIndex = firstItem.SourceWeaponIndex,
+                            gridX = preview.GridWidth,
+                            gridY = 0
+                        }
+                    });
+                if (outOfBoundsPreview.Validation.IsValid || !HasLoadoutErrorContaining(outOfBoundsPreview, "out-of-bounds"))
+                {
+                    throw new InvalidDataException("Projected loadout placement override did not surface bounds validation for " + unitType);
+                }
             }
         }
 
@@ -396,6 +434,20 @@ namespace MC2Demo.EditorTools
             foreach (CombatLoadoutPreviewGridCell cell in preview.OccupiedCells)
             {
                 if (cell != null && CountPreviewCellsForWeapon(preview, cell.SourceWeaponIndex) > 1)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool HasLoadoutErrorContaining(CombatLoadoutPreview preview, string text)
+        {
+            foreach (string error in preview.Validation.Errors)
+            {
+                if (!string.IsNullOrEmpty(error)
+                    && error.IndexOf(text, StringComparison.OrdinalIgnoreCase) >= 0)
                 {
                     return true;
                 }

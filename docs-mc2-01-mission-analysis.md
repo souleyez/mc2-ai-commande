@@ -208,5 +208,6 @@ preview so the player can see heat, load, grid occupancy, fitting status, and a
 compact occupied-slot grid before direct editing is added. The projection now
 uses placeholder multi-cell shapes for source weapon families such as LRM racks,
 SRM packs, autocannons, PPCs, and large lasers. It also supports temporary weapon
-on/off toggles, proving that fitting edits can immediately recompute heat, load,
-grid occupancy, and validator status without touching live battle damage yet.
+on/off toggles and projected weapon nudges, proving that fitting edits can
+immediately recompute heat, load, grid occupancy, overlap, bounds, and validator
+status without touching live battle damage yet.
