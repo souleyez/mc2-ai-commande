@@ -205,7 +205,8 @@ placement overlap, blocked cells, rotation, bounds, heat caps, weight caps, and
 special-slot compatibility before the mech bay becomes editable. The current
 mech bay UI projects each source weapon loadout into a simple validator-backed
 preview so the player can see heat, load, grid occupancy, fitting status, and a
-compact occupied-slot grid before direct editing is added. It now also supports
-temporary weapon on/off toggles, proving that fitting edits can immediately
-recompute heat, load, grid occupancy, and validator status without touching live
-battle damage yet.
+compact occupied-slot grid before direct editing is added. The projection now
+uses placeholder multi-cell shapes for source weapon families such as LRM racks,
+SRM packs, autocannons, PPCs, and large lasers. It also supports temporary weapon
+on/off toggles, proving that fitting edits can immediately recompute heat, load,
+grid occupancy, and validator status without touching live battle damage yet.

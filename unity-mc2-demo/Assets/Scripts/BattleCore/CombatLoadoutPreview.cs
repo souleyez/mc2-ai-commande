@@ -38,14 +38,22 @@ namespace MC2Demo.BattleCore
         public int SourceWeaponIndex { get; }
         public string ItemId { get; }
         public string DisplayName { get; }
+        public string WeaponType { get; }
 
-        internal CombatLoadoutPreviewGridCell(int x, int y, int sourceWeaponIndex, string itemId, string displayName)
+        internal CombatLoadoutPreviewGridCell(
+            int x,
+            int y,
+            int sourceWeaponIndex,
+            string itemId,
+            string displayName,
+            string weaponType)
         {
             X = x;
             Y = y;
             SourceWeaponIndex = sourceWeaponIndex;
             ItemId = itemId;
             DisplayName = displayName;
+            WeaponType = weaponType;
         }
     }
 
@@ -61,7 +69,8 @@ namespace MC2Demo.BattleCore
         public static CombatLoadoutPreview Build(string chassisId, CombatProfile profile, bool[] enabledWeapons)
         {
             CombatWeaponDefinition[] weapons = profile?.Weapons ?? Array.Empty<CombatWeaponDefinition>();
-            int gridHeight = Math.Max(1, (weapons.Length + ProjectedGridWidth - 1) / ProjectedGridWidth);
+            LoadoutGridCell[][] weaponShapes = BuildWeaponShapes(weapons);
+            LoadoutPlacedItemDefinition[] sourcePlacements = PackWeaponShapes(weaponShapes, ProjectedGridWidth, out int gridHeight);
             int gridCapacity = ProjectedGridWidth * gridHeight;
             float heatCapacity = profile == null ? 0f : profile.HeatCapacity;
             float heatPerShot = profile == null ? 0f : profile.HeatPerShot;
@@ -74,8 +83,9 @@ namespace MC2Demo.BattleCore
             int enabledCount = CountEnabledWeapons(weapons.Length, enabledWeapons);
             LoadoutItemDefinition[] items = new LoadoutItemDefinition[enabledCount];
             LoadoutPlacedItemDefinition[] placedItems = new LoadoutPlacedItemDefinition[enabledCount];
-            CombatLoadoutPreviewGridCell[] occupiedCells = new CombatLoadoutPreviewGridCell[enabledCount];
-            int placedIndex = 0;
+            CombatLoadoutPreviewGridCell[] occupiedCells = new CombatLoadoutPreviewGridCell[CountEnabledShapeCells(weaponShapes, enabledWeapons)];
+            int itemIndex = 0;
+            int cellIndex = 0;
             for (int index = 0; index < weapons.Length; index++)
             {
                 if (!IsWeaponEnabled(enabledWeapons, index))
@@ -85,7 +95,7 @@ namespace MC2Demo.BattleCore
 
                 CombatWeaponDefinition weapon = weapons[index];
                 string itemId = "source-weapon-" + index;
-                items[placedIndex] = new LoadoutItemDefinition
+                items[itemIndex] = new LoadoutItemDefinition
                 {
                     itemId = itemId,
                     displayName = string.IsNullOrEmpty(weapon?.name) ? itemId : weapon.name,
@@ -97,25 +107,28 @@ namespace MC2Demo.BattleCore
                     damage = weapon?.damage ?? 0f,
                     range = weapon?.rangeMax ?? 0f,
                     cooldown = weapon?.recycleTime ?? 0f,
-                    shapeCells = new[]
-                    {
-                        new LoadoutGridCell { x = 0, y = 0 }
-                    }
+                    shapeCells = weaponShapes[index]
                 };
 
-                placedItems[placedIndex] = new LoadoutPlacedItemDefinition
+                placedItems[itemIndex] = new LoadoutPlacedItemDefinition
                 {
                     itemId = itemId,
-                    gridX = index % ProjectedGridWidth,
-                    gridY = index / ProjectedGridWidth
+                    gridX = sourcePlacements[index].gridX,
+                    gridY = sourcePlacements[index].gridY
                 };
-                occupiedCells[placedIndex] = new CombatLoadoutPreviewGridCell(
-                    index % ProjectedGridWidth,
-                    index / ProjectedGridWidth,
-                    index,
-                    itemId,
-                    string.IsNullOrEmpty(weapon?.name) ? itemId : weapon.name);
-                placedIndex++;
+                foreach (LoadoutGridCell shapeCell in weaponShapes[index])
+                {
+                    occupiedCells[cellIndex] = new CombatLoadoutPreviewGridCell(
+                        sourcePlacements[index].gridX + shapeCell.x,
+                        sourcePlacements[index].gridY + shapeCell.y,
+                        index,
+                        itemId,
+                        string.IsNullOrEmpty(weapon?.name) ? itemId : weapon.name,
+                        weapon?.type);
+                    cellIndex++;
+                }
+
+                itemIndex++;
             }
 
             LoadoutContract contract = new()
@@ -175,6 +188,189 @@ namespace MC2Demo.BattleCore
         private static bool IsWeaponEnabled(bool[] enabledWeapons, int index)
         {
             return enabledWeapons == null || index >= enabledWeapons.Length || enabledWeapons[index];
+        }
+
+        private static int CountEnabledShapeCells(LoadoutGridCell[][] weaponShapes, bool[] enabledWeapons)
+        {
+            int count = 0;
+            for (int index = 0; index < weaponShapes.Length; index++)
+            {
+                if (IsWeaponEnabled(enabledWeapons, index))
+                {
+                    count += Math.Max(1, weaponShapes[index]?.Length ?? 0);
+                }
+            }
+
+            return count;
+        }
+
+        private static LoadoutGridCell[][] BuildWeaponShapes(CombatWeaponDefinition[] weapons)
+        {
+            LoadoutGridCell[][] shapes = new LoadoutGridCell[weapons.Length][];
+            for (int index = 0; index < weapons.Length; index++)
+            {
+                shapes[index] = BuildWeaponShape(weapons[index]);
+            }
+
+            return shapes;
+        }
+
+        private static LoadoutGridCell[] BuildWeaponShape(CombatWeaponDefinition weapon)
+        {
+            string name = weapon?.name ?? "";
+            string type = weapon?.type ?? "";
+            if (ContainsText(type, "Missile"))
+            {
+                return ContainsText(name, "LRM") ? VerticalShape(3) : VerticalShape(2);
+            }
+
+            if (ContainsText(type, "Ballistic"))
+            {
+                if (ContainsText(name, "MG") || (weapon?.weight ?? 0f) <= 2.5f)
+                {
+                    return SingleCellShape();
+                }
+
+                return new[]
+                {
+                    new LoadoutGridCell { x = 0, y = 0 },
+                    new LoadoutGridCell { x = 1, y = 0 }
+                };
+            }
+
+            if (ContainsText(type, "Energy"))
+            {
+                if (ContainsText(name, "PPC") || ContainsText(name, "Large") || (weapon?.weight ?? 0f) >= 4f)
+                {
+                    return VerticalShape(2);
+                }
+            }
+
+            return SingleCellShape();
+        }
+
+        private static LoadoutGridCell[] SingleCellShape()
+        {
+            return new[] { new LoadoutGridCell { x = 0, y = 0 } };
+        }
+
+        private static LoadoutGridCell[] VerticalShape(int height)
+        {
+            LoadoutGridCell[] cells = new LoadoutGridCell[Math.Max(1, height)];
+            for (int index = 0; index < cells.Length; index++)
+            {
+                cells[index] = new LoadoutGridCell { x = 0, y = index };
+            }
+
+            return cells;
+        }
+
+        private static LoadoutPlacedItemDefinition[] PackWeaponShapes(LoadoutGridCell[][] weaponShapes, int width, out int gridHeight)
+        {
+            int totalCells = CountShapeCells(weaponShapes);
+            int minimumHeight = Math.Max(TallestShape(weaponShapes), Math.Max(1, (totalCells + width - 1) / width));
+            int maximumHeight = Math.Max(minimumHeight, totalCells + 1);
+            for (gridHeight = minimumHeight; gridHeight <= maximumHeight; gridHeight++)
+            {
+                if (TryPackWeaponShapes(weaponShapes, width, gridHeight, out LoadoutPlacedItemDefinition[] placements))
+                {
+                    return placements;
+                }
+            }
+
+            gridHeight = maximumHeight;
+            TryPackWeaponShapes(weaponShapes, width, gridHeight, out LoadoutPlacedItemDefinition[] fallbackPlacements);
+            return fallbackPlacements;
+        }
+
+        private static bool TryPackWeaponShapes(
+            LoadoutGridCell[][] weaponShapes,
+            int width,
+            int height,
+            out LoadoutPlacedItemDefinition[] placements)
+        {
+            bool[,] occupied = new bool[width, height];
+            placements = new LoadoutPlacedItemDefinition[weaponShapes.Length];
+            for (int index = 0; index < weaponShapes.Length; index++)
+            {
+                LoadoutGridCell[] shape = weaponShapes[index];
+                bool placed = false;
+                for (int y = 0; y < height && !placed; y++)
+                {
+                    for (int x = 0; x < width && !placed; x++)
+                    {
+                        if (!ShapeFits(shape, x, y, width, height, occupied))
+                        {
+                            continue;
+                        }
+
+                        placements[index] = new LoadoutPlacedItemDefinition { gridX = x, gridY = y };
+                        MarkShape(shape, x, y, occupied);
+                        placed = true;
+                    }
+                }
+
+                if (!placed)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static bool ShapeFits(LoadoutGridCell[] shape, int originX, int originY, int width, int height, bool[,] occupied)
+        {
+            foreach (LoadoutGridCell cell in shape)
+            {
+                int x = originX + cell.x;
+                int y = originY + cell.y;
+                if (x < 0 || y < 0 || x >= width || y >= height || occupied[x, y])
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static void MarkShape(LoadoutGridCell[] shape, int originX, int originY, bool[,] occupied)
+        {
+            foreach (LoadoutGridCell cell in shape)
+            {
+                occupied[originX + cell.x, originY + cell.y] = true;
+            }
+        }
+
+        private static int CountShapeCells(LoadoutGridCell[][] weaponShapes)
+        {
+            int count = 0;
+            foreach (LoadoutGridCell[] shape in weaponShapes)
+            {
+                count += Math.Max(1, shape?.Length ?? 0);
+            }
+
+            return count;
+        }
+
+        private static int TallestShape(LoadoutGridCell[][] weaponShapes)
+        {
+            int tallest = 1;
+            foreach (LoadoutGridCell[] shape in weaponShapes)
+            {
+                foreach (LoadoutGridCell cell in shape)
+                {
+                    tallest = Math.Max(tallest, cell.y + 1);
+                }
+            }
+
+            return tallest;
+        }
+
+        private static bool ContainsText(string text, string value)
+        {
+            return !string.IsNullOrEmpty(text)
+                && text.IndexOf(value, StringComparison.OrdinalIgnoreCase) >= 0;
         }
     }
 }

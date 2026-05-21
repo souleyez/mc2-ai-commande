@@ -306,14 +306,19 @@ namespace MC2Demo.EditorTools
                     throw new InvalidDataException("Projected loadout grid dimensions are invalid for " + unitType);
                 }
 
-                if (preview.Validation.OccupiedGridCells != profile.Weapons.Length)
+                if (preview.Validation.OccupiedGridCells != preview.OccupiedCells.Length)
                 {
-                    throw new InvalidDataException("Projected loadout did not occupy one cell per source weapon for " + unitType);
+                    throw new InvalidDataException("Projected loadout validation and visual grid disagree for " + unitType);
                 }
 
-                if (preview.OccupiedCells.Length != profile.Weapons.Length)
+                if (preview.OccupiedCells.Length < profile.Weapons.Length)
                 {
-                    throw new InvalidDataException("Projected loadout did not expose one visual grid cell per source weapon for " + unitType);
+                    throw new InvalidDataException("Projected loadout should expose at least one visual grid cell per source weapon for " + unitType);
+                }
+
+                if (!HasMultiCellWeaponProjection(preview))
+                {
+                    throw new InvalidDataException("Projected loadout did not expose any multi-cell weapon shape for " + unitType);
                 }
 
                 if (Math.Abs(preview.Validation.TotalHeat - profile.HeatPerShot) > 0.001f)
@@ -339,10 +344,11 @@ namespace MC2Demo.EditorTools
                 }
 
                 enabledWeapons[0] = false;
+                int disabledWeaponCellCount = CountPreviewCellsForWeapon(preview, 0);
                 CombatLoadoutPreview disabledPreview = CombatLoadoutPreviewBuilder.Build(unitType, profile, enabledWeapons);
-                if (disabledPreview.Validation.OccupiedGridCells != profile.Weapons.Length - 1)
+                if (disabledPreview.Validation.OccupiedGridCells != preview.Validation.OccupiedGridCells - disabledWeaponCellCount)
                 {
-                    throw new InvalidDataException("Projected disabled loadout did not remove one occupied cell for " + unitType);
+                    throw new InvalidDataException("Projected disabled loadout did not remove the disabled weapon shape for " + unitType);
                 }
 
                 if (HasPreviewCellForWeapon(disabledPreview, 0))
@@ -363,6 +369,33 @@ namespace MC2Demo.EditorTools
             foreach (CombatLoadoutPreviewGridCell cell in preview.OccupiedCells)
             {
                 if (cell != null && cell.SourceWeaponIndex == sourceWeaponIndex)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static int CountPreviewCellsForWeapon(CombatLoadoutPreview preview, int sourceWeaponIndex)
+        {
+            int count = 0;
+            foreach (CombatLoadoutPreviewGridCell cell in preview.OccupiedCells)
+            {
+                if (cell != null && cell.SourceWeaponIndex == sourceWeaponIndex)
+                {
+                    count++;
+                }
+            }
+
+            return count;
+        }
+
+        private static bool HasMultiCellWeaponProjection(CombatLoadoutPreview preview)
+        {
+            foreach (CombatLoadoutPreviewGridCell cell in preview.OccupiedCells)
+            {
+                if (cell != null && CountPreviewCellsForWeapon(preview, cell.SourceWeaponIndex) > 1)
                 {
                     return true;
                 }

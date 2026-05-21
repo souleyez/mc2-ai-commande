@@ -2459,13 +2459,13 @@ namespace MC2Demo.Presentation
             y += 30f;
             int unitCount = CountPlayerUnits();
             Rect viewport = new(x, y, width, panel.yMax - y - 12f);
-            Rect content = new(0f, 0f, width - 20f, Mathf.Max(viewport.height, unitCount * 252f));
+            Rect content = new(0f, 0f, width - 20f, Mathf.Max(viewport.height, unitCount * 304f));
             loadoutScroll = GUI.BeginScrollView(viewport, loadoutScroll, content);
             float itemY = 0f;
             foreach (UnitState unit in mission.PlayerUnits())
             {
                 DrawLoadoutUnit(unit, 0f, itemY, content.width);
-                itemY += 252f;
+                itemY += 304f;
             }
 
             GUI.EndScrollView();
@@ -2473,7 +2473,7 @@ namespace MC2Demo.Presentation
 
         private void DrawLoadoutUnit(UnitState unit, float x, float y, float width)
         {
-            Rect card = new(x, y, width, 240f);
+            Rect card = new(x, y, width, 292f);
             GUI.Box(card, unit.UnitType + "  " + unit.Id);
 
             float left = x + 12f;
@@ -2566,8 +2566,8 @@ namespace MC2Demo.Presentation
             }
 
             float gap = 2f;
-            float maxGridWidth = Mathf.Min(width, 152f);
-            float cellSize = Mathf.Clamp((maxGridWidth - gap * (preview.GridWidth - 1)) / preview.GridWidth, 18f, 28f);
+            float maxGridWidth = Mathf.Min(width, 96f);
+            float cellSize = Mathf.Clamp((maxGridWidth - gap * (preview.GridWidth - 1)) / preview.GridWidth, 16f, 22f);
             float gridWidth = preview.GridWidth * cellSize + (preview.GridWidth - 1) * gap;
             float gridHeight = preview.GridHeight * cellSize + (preview.GridHeight - 1) * gap;
             DrawColorRect(new Rect(x, y, gridWidth + 2f, gridHeight + 2f), new Color(0.04f, 0.05f, 0.055f, 0.96f));
@@ -2580,7 +2580,8 @@ namespace MC2Demo.Presentation
                     CombatLoadoutPreviewGridCell occupiedCell = LoadoutCellAt(preview, column, row);
                     Color fill = occupiedCell == null
                         ? new Color(0.10f, 0.12f, 0.13f, 1f)
-                        : new Color(0.18f, 0.45f, 0.68f, 1f);
+                        : WeaponColor(occupiedCell.WeaponType);
+                    fill.a = 1f;
                     DrawColorRect(cell, fill);
                     DrawColorRect(new Rect(cell.x, cell.y, cell.width, 1f), new Color(0.35f, 0.42f, 0.44f, 0.95f));
                     DrawColorRect(new Rect(cell.x, cell.yMax - 1f, cell.width, 1f), new Color(0.02f, 0.025f, 0.03f, 0.95f));

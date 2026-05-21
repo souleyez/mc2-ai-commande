@@ -44,7 +44,7 @@ The Unity demo currently supports:
 - deterministic BattleCore loadout validator for grid bounds, blocked cells, overlap, rotation, heat caps, weight caps, and special-slot compatibility
 - source weapon loadout projection in the mech bay with validator status, heat/load limits, and occupied grid cell counts
 - temporary mech bay weapon toggles that immediately recompute projected heat, load, grid occupancy, and fitting status
-- projected mech bay slot grid visualization with enabled weapon cells exposed from BattleCore preview data
+- projected mech bay slot grid visualization with placeholder multi-cell weapon shapes exposed from BattleCore preview data
 - CLI/AI loop pieces:
   - `-mc2Command`
   - `-mc2AdvanceSeconds`
@@ -358,10 +358,10 @@ Tasks:
 
 ## Current Recommended Next Task
 
-Start with **source weapon shape projection**.
+Start with **temporary loadout placement edits**.
 
 Reason:
 
-- The mech bay now shows validator-backed occupied slots instead of only aggregate counts.
-- The current projection still treats each source weapon as one cell.
-- The next useful step is to map weapon families into simple placeholder shapes, such as tall missile racks, compact autocannons, and single-cell support items, before full drag-and-drop editing.
+- The mech bay now shows validator-backed multi-cell source weapon shapes.
+- The next low-risk step is to select one projected item and nudge it around the temporary grid.
+- That will prove visible overlap/out-of-bounds validation before inventory, saves, economy, or full drag-and-drop are added.
