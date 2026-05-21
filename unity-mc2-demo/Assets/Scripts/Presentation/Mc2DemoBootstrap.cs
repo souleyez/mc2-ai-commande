@@ -31,6 +31,7 @@ namespace MC2Demo.Presentation
         private readonly Dictionary<string, GameObject> structureHealthBarBacks = new();
         private readonly Dictionary<string, GameObject> structureHealthBarFills = new();
         private readonly Dictionary<string, Material> materialCache = new(StringComparer.Ordinal);
+        private readonly Dictionary<string, CombatLoadoutPreview> loadoutPreviewCache = new(StringComparer.OrdinalIgnoreCase);
         private readonly List<Material> ownedMaterials = new();
         private readonly List<string> combatLog = new();
         private BattleMission mission;
@@ -2458,13 +2459,13 @@ namespace MC2Demo.Presentation
             y += 30f;
             int unitCount = CountPlayerUnits();
             Rect viewport = new(x, y, width, panel.yMax - y - 12f);
-            Rect content = new(0f, 0f, width - 20f, Mathf.Max(viewport.height, unitCount * 132f));
+            Rect content = new(0f, 0f, width - 20f, Mathf.Max(viewport.height, unitCount * 156f));
             loadoutScroll = GUI.BeginScrollView(viewport, loadoutScroll, content);
             float itemY = 0f;
             foreach (UnitState unit in mission.PlayerUnits())
             {
                 DrawLoadoutUnit(unit, 0f, itemY, content.width);
-                itemY += 132f;
+                itemY += 156f;
             }
 
             GUI.EndScrollView();
@@ -2472,12 +2473,13 @@ namespace MC2Demo.Presentation
 
         private void DrawLoadoutUnit(UnitState unit, float x, float y, float width)
         {
-            Rect card = new(x, y, width, 124f);
+            Rect card = new(x, y, width, 148f);
             GUI.Box(card, unit.UnitType + "  " + unit.Id);
 
             float left = x + 12f;
             float right = x + width * 0.50f;
             float lineY = y + 24f;
+            CombatLoadoutPreview loadoutPreview = LoadoutPreviewFor(unit);
             GUI.Label(
                 new Rect(left, lineY, width * 0.46f, 18f),
                 "Structure " + Mathf.RoundToInt(unit.CurrentStructure) + "/" + Mathf.RoundToInt(unit.Profile.MaxStructure)
@@ -2497,11 +2499,50 @@ namespace MC2Demo.Presentation
                 + "  Damage " + FormatDecimal(unit.Profile.WeaponDamage)
                 + "  CD " + FormatDecimal(unit.Profile.WeaponCooldown));
 
-            lineY += 22f;
+            lineY += 20f;
+            DrawProjectedLoadoutStatus(loadoutPreview, left, right, lineY, width);
+
+            lineY += 24f;
             DrawLoadoutSectionLine(unit, left, lineY, width - 24f);
 
             lineY += 34f;
             DrawWeaponLoadoutLines(unit.Profile.Weapons, left, lineY, width - 24f);
+        }
+
+        private void DrawProjectedLoadoutStatus(CombatLoadoutPreview preview, float left, float right, float y, float width)
+        {
+            LoadoutValidationResult result = preview.Validation;
+            Color previous = GUI.color;
+            GUI.color = result.IsValid ? new Color(0.50f, 1f, 0.62f, 1f) : new Color(1f, 0.78f, 0.28f, 1f);
+            GUI.Label(
+                new Rect(left, y, width * 0.46f, 18f),
+                result.IsValid ? "Fit OK" : "Fit Review: " + TruncateText(FirstLoadoutError(result), 28));
+            GUI.color = previous;
+
+            GUI.Label(
+                new Rect(right, y, width * 0.46f, 18f),
+                "Heat " + FormatDecimal(result.TotalHeat) + "/" + FormatDecimal(preview.HeatLimit)
+                + "  Load " + FormatDecimal(result.TotalWeight) + "/" + FormatDecimal(preview.WeightLimit)
+                + "  Grid " + result.OccupiedGridCells + "/" + preview.GridCapacity);
+        }
+
+        private CombatLoadoutPreview LoadoutPreviewFor(UnitState unit)
+        {
+            string key = unit?.UnitType ?? "";
+            if (loadoutPreviewCache.TryGetValue(key, out CombatLoadoutPreview preview))
+            {
+                return preview;
+            }
+
+            preview = CombatLoadoutPreviewBuilder.Build(key, unit?.Profile);
+            loadoutPreviewCache[key] = preview;
+            return preview;
+        }
+
+        private static string FirstLoadoutError(LoadoutValidationResult result)
+        {
+            string[] errors = result.Errors;
+            return errors.Length == 0 ? "" : errors[0];
         }
 
         private void DrawLoadoutSectionLine(UnitState unit, float x, float y, float width)

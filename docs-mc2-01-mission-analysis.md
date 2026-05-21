@@ -202,4 +202,7 @@ The Unity validator now carries a tiny synthetic contract that proves the data
 shape can express a 3 x 3 chassis grid, a vertical weapon, single-cell armor and
 heat-sink items, plus radar and jump-jet slots. BattleCore also validates
 placement overlap, blocked cells, rotation, bounds, heat caps, weight caps, and
-special-slot compatibility before the mech bay becomes editable.
+special-slot compatibility before the mech bay becomes editable. The current
+mech bay UI projects each source weapon loadout into a simple validator-backed
+preview so the player can see heat, load, grid occupancy, and fitting status
+before direct editing is added.

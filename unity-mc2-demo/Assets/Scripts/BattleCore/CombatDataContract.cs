@@ -17,7 +17,9 @@ namespace MC2Demo.BattleCore
         public string unitType;
         public string source;
         public string sourceKind;
+        public float tonnage;
         public float heatIndex;
+        public float loadIndex;
         public CombatSectionDefinition[] sections;
         public CombatWeaponDefinition[] weapons;
         public CombatProfileFields combatProfile;

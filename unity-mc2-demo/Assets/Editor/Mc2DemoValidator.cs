@@ -47,6 +47,7 @@ namespace MC2Demo.EditorTools
             }
 
             ValidateSourceDrivenProfiles(combatProfiles);
+            ValidateSourceLoadoutPreview(combatProfiles);
             ValidateLoadoutContractShape();
 
             string contractJson = File.ReadAllText(contractPath);
@@ -274,6 +275,53 @@ namespace MC2Demo.EditorTools
             }
 
             ValidateSyntheticLoadoutValidator(contract, loadout);
+        }
+
+        private static void ValidateSourceLoadoutPreview(CombatProfileCatalog combatProfiles)
+        {
+            string[] mechUnitTypes =
+            {
+                "Werewolf",
+                "Bushwacker",
+                "Starslayer",
+                "UrbanMech"
+            };
+
+            foreach (string unitType in mechUnitTypes)
+            {
+                CombatProfile profile = combatProfiles.ForUnitType(unitType, true);
+                if (profile.Tonnage <= 0f || profile.LoadLimit <= 0f)
+                {
+                    throw new InvalidDataException("Expected source tonnage and load limit for mech: " + unitType);
+                }
+
+                CombatLoadoutPreview preview = CombatLoadoutPreviewBuilder.Build(unitType, profile);
+                if (preview.GridCapacity < profile.Weapons.Length)
+                {
+                    throw new InvalidDataException("Projected loadout grid is too small for " + unitType);
+                }
+
+                if (preview.Validation.OccupiedGridCells != profile.Weapons.Length)
+                {
+                    throw new InvalidDataException("Projected loadout did not occupy one cell per source weapon for " + unitType);
+                }
+
+                if (Math.Abs(preview.Validation.TotalHeat - profile.HeatPerShot) > 0.001f)
+                {
+                    throw new InvalidDataException("Projected loadout heat does not match source heat for " + unitType);
+                }
+
+                if (Math.Abs(preview.Validation.TotalWeight - profile.TotalWeaponWeight) > 0.001f)
+                {
+                    throw new InvalidDataException("Projected loadout weight does not match source weight for " + unitType);
+                }
+
+                if (Math.Abs(preview.HeatLimit - profile.HeatCapacity) > 0.001f
+                    || Math.Abs(preview.WeightLimit - profile.LoadLimit) > 0.001f)
+                {
+                    throw new InvalidDataException("Projected loadout limits do not match source limits for " + unitType);
+                }
+            }
         }
 
         private static LoadoutItemDefinition FindLoadoutItem(LoadoutContract contract, string itemId)

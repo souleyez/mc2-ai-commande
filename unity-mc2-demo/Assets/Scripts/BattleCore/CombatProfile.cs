@@ -13,6 +13,8 @@ namespace MC2Demo.BattleCore
         public float HeatCapacity { get; }
         public float HeatPerShot { get; }
         public float HeatDissipationPerSecond { get; }
+        public float LoadLimit { get; }
+        public float Tonnage { get; }
         public string PrimaryWeaponName { get; }
         public string PrimaryWeaponType { get; }
         public int PrimarySpecialEffect { get; }
@@ -30,6 +32,8 @@ namespace MC2Demo.BattleCore
             float heatCapacity,
             float heatPerShot,
             float heatDissipationPerSecond,
+            float loadLimit,
+            float tonnage,
             string primaryWeaponName,
             string primaryWeaponType,
             int primarySpecialEffect,
@@ -45,6 +49,8 @@ namespace MC2Demo.BattleCore
             HeatCapacity = heatCapacity;
             HeatPerShot = heatPerShot;
             HeatDissipationPerSecond = heatDissipationPerSecond;
+            LoadLimit = loadLimit;
+            Tonnage = tonnage;
             PrimaryWeaponName = primaryWeaponName;
             PrimaryWeaponType = primaryWeaponType;
             PrimarySpecialEffect = primarySpecialEffect;
@@ -73,6 +79,8 @@ namespace MC2Demo.BattleCore
                 CalculateHeatCapacity(record, fields),
                 CalculateHeatPerShot(record),
                 CalculateHeatDissipationPerSecond(record, fields),
+                record.loadIndex,
+                record.tonnage,
                 string.IsNullOrEmpty(primaryWeapon?.name) ? "Aggregate Weapons" : primaryWeapon.name,
                 string.IsNullOrEmpty(primaryWeapon?.type) ? "Generic" : primaryWeapon.type,
                 primaryWeapon?.specialEffect ?? 0,
@@ -123,6 +131,8 @@ namespace MC2Demo.BattleCore
                 weaponDamage,
                 weaponCooldown,
                 Mathf.Max(1f, maxStructure * 0.15f),
+                0f,
+                0f,
                 0f,
                 0f,
                 "Fallback Weapon",

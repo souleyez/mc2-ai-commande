@@ -42,6 +42,7 @@ The Unity demo currently supports:
 - compact tactical UI with unit status, read-only mech bay, mission brief, current-objective map, world objective hints, health bars, command rings, range rings, and target lines
 - initial BattleCore loadout contract for chassis grids, item shapes, heat, weight, armor plates, heat sinks, radar slots, and jump jet slots
 - deterministic BattleCore loadout validator for grid bounds, blocked cells, overlap, rotation, heat caps, weight caps, and special-slot compatibility
+- source weapon loadout projection in the mech bay with validator status, heat/load limits, and occupied grid cell counts
 - CLI/AI loop pieces:
   - `-mc2Command`
   - `-mc2AdvanceSeconds`
@@ -355,10 +356,10 @@ Tasks:
 
 ## Current Recommended Next Task
 
-Start with **a small mech bay validation readout**.
+Start with **a minimal editable mech bay interaction**.
 
 Reason:
 
-- The loadout contract and validator now exist in BattleCore.
-- The safest next UI step is to show validation-derived heat/weight/loadout status in the existing mech bay before adding drag-and-drop editing.
-- That keeps the fitting loop visible to the player while avoiding a large UI interaction jump.
+- The loadout contract, validator, and read-only validation readout are now in place.
+- The next step should stay tiny: select one stock weapon, toggle it enabled/disabled in a temporary loadout, and show validator changes immediately.
+- This proves the fitting loop without committing to full drag-and-drop, inventory, economy, or save data.
