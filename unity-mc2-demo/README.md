@@ -40,6 +40,7 @@ Current demo behavior:
 - lets the mech bay select and nudge projected weapons to preview overlap and bounds validation
 - projects spare-load armor plates and heat sinks into free cells with hardness and cooling readouts
 - lets projected filler cells cycle between armor, heat sink, and empty to preview loadout tradeoffs
+- marks mech bay edits as draft/applied and can reset a draft back to the last applied demo fit
 - supports one-shot Jet orders with terrain-aware landing rejection
 - provides a toggleable current-objective mission map and a pause/restart/end system panel
 - resolves mission victory or defeat through BattleCore result state

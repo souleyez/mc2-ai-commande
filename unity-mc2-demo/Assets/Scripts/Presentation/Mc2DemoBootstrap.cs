@@ -34,6 +34,9 @@ namespace MC2Demo.Presentation
         private readonly Dictionary<string, bool[]> loadoutWeaponEnabledByUnit = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, CombatLoadoutPlacementOverride[]> loadoutPlacementOverridesByUnit = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, List<CombatLoadoutFillerOverride>> loadoutFillerOverridesByUnit = new(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, bool[]> appliedLoadoutWeaponEnabledByUnit = new(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, CombatLoadoutPlacementOverride[]> appliedLoadoutPlacementOverridesByUnit = new(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, CombatLoadoutFillerOverride[]> appliedLoadoutFillerOverridesByUnit = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, int> selectedLoadoutWeaponByUnit = new(StringComparer.OrdinalIgnoreCase);
         private readonly List<Material> ownedMaterials = new();
         private readonly List<string> combatLog = new();
@@ -2462,13 +2465,13 @@ namespace MC2Demo.Presentation
             y += 30f;
             int unitCount = CountPlayerUnits();
             Rect viewport = new(x, y, width, panel.yMax - y - 12f);
-            Rect content = new(0f, 0f, width - 20f, Mathf.Max(viewport.height, unitCount * 356f));
+            Rect content = new(0f, 0f, width - 20f, Mathf.Max(viewport.height, unitCount * 388f));
             loadoutScroll = GUI.BeginScrollView(viewport, loadoutScroll, content);
             float itemY = 0f;
             foreach (UnitState unit in mission.PlayerUnits())
             {
                 DrawLoadoutUnit(unit, 0f, itemY, content.width);
-                itemY += 356f;
+                itemY += 388f;
             }
 
             GUI.EndScrollView();
@@ -2476,7 +2479,7 @@ namespace MC2Demo.Presentation
 
         private void DrawLoadoutUnit(UnitState unit, float x, float y, float width)
         {
-            Rect card = new(x, y, width, 344f);
+            Rect card = new(x, y, width, 376f);
             GUI.Box(card, unit.UnitType + "  " + unit.Id);
 
             float left = x + 12f;
@@ -2512,7 +2515,10 @@ namespace MC2Demo.Presentation
             float gridHeight = DrawProjectedLoadoutGrid(unit, loadoutPreview, left, lineY, width - 24f);
 
             lineY += gridHeight + 8f;
-            DrawWeaponLoadoutLines(unit, left, lineY, width - 24f);
+            float weaponHeight = DrawWeaponLoadoutLines(unit, left, lineY, width - 24f);
+
+            lineY += weaponHeight + 6f;
+            DrawLoadoutEditControls(unit, loadoutPreview, left, lineY, width - 24f);
         }
 
         private void DrawProjectedLoadoutStatus(CombatLoadoutPreview preview, float left, float right, float y, float width)
@@ -2775,17 +2781,18 @@ namespace MC2Demo.Presentation
             return null;
         }
 
-        private void DrawWeaponLoadoutLines(UnitState unit, float x, float y, float width)
+        private float DrawWeaponLoadoutLines(UnitState unit, float x, float y, float width)
         {
             CombatWeaponDefinition[] weapons = unit?.Profile?.Weapons;
             if (weapons == null || weapons.Length == 0)
             {
                 GUI.Label(new Rect(x, y, width, 18f), "Weapons: aggregate profile");
-                return;
+                return 24f;
             }
 
             int count = Mathf.Min(8, weapons.Length);
             int columns = Mathf.Min(4, count);
+            int rows = Mathf.CeilToInt(count / (float)columns);
             float columnWidth = width / columns;
             bool[] enabledWeapons = WeaponEnabledStateFor(unit);
             for (int index = 0; index < count; index++)
@@ -2815,6 +2822,32 @@ namespace MC2Demo.Presentation
                     statusText = (enabledWeapons[index] ? "Enabled " : "Disabled ") + TruncateText(weapon.name, 20);
                 }
             }
+
+            return rows * 26f;
+        }
+
+        private void DrawLoadoutEditControls(UnitState unit, CombatLoadoutPreview preview, float x, float y, float width)
+        {
+            bool hasPendingEdits = HasPendingLoadoutEdits(unit);
+            Color previousColor = GUI.color;
+            GUI.color = hasPendingEdits ? new Color(1f, 0.86f, 0.32f, 1f) : new Color(0.58f, 0.82f, 1f, 1f);
+            GUI.Label(new Rect(x, y, width - 146f, 18f), hasPendingEdits ? "Draft fit" : "Applied fit");
+            GUI.color = previousColor;
+
+            bool previousEnabled = GUI.enabled;
+            GUI.enabled = previousEnabled && hasPendingEdits && preview != null && preview.Validation.IsValid;
+            if (GUI.Button(new Rect(x + width - 144f, y - 2f, 66f, 22f), "Apply"))
+            {
+                ApplyLoadoutDraft(unit, preview);
+            }
+
+            GUI.enabled = previousEnabled && hasPendingEdits;
+            if (GUI.Button(new Rect(x + width - 72f, y - 2f, 64f, 22f), "Reset"))
+            {
+                ResetLoadoutDraft(unit);
+            }
+
+            GUI.enabled = previousEnabled;
         }
 
         private bool[] WeaponEnabledStateFor(UnitState unit)
@@ -2933,6 +2966,235 @@ namespace MC2Demo.Presentation
             statusText = "Reset temporary slot";
         }
 
+        private bool HasPendingLoadoutEdits(UnitState unit)
+        {
+            if (unit == null)
+            {
+                return false;
+            }
+
+            string key = unit.Id ?? "";
+            int weaponCount = unit.Profile?.Weapons?.Length ?? 0;
+            return !WeaponStatesEqual(WeaponEnabledStateFor(unit), AppliedWeaponStateFor(key), weaponCount)
+                || !PlacementStatesEqual(LoadoutPlacementOverridesFor(unit), AppliedPlacementStateFor(key), weaponCount)
+                || !FillerStatesEqual(LoadoutFillerOverridesFor(unit), AppliedFillerStateFor(key));
+        }
+
+        private void ApplyLoadoutDraft(UnitState unit, CombatLoadoutPreview preview)
+        {
+            if (unit == null || preview == null)
+            {
+                return;
+            }
+
+            if (!preview.Validation.IsValid)
+            {
+                statusText = "Fix fit before apply";
+                return;
+            }
+
+            string key = unit.Id ?? "";
+            int weaponCount = unit.Profile?.Weapons?.Length ?? 0;
+            appliedLoadoutWeaponEnabledByUnit[key] = CloneWeaponState(WeaponEnabledStateFor(unit), weaponCount);
+            appliedLoadoutPlacementOverridesByUnit[key] = ClonePlacementOverrides(LoadoutPlacementOverridesFor(unit), weaponCount);
+            appliedLoadoutFillerOverridesByUnit[key] = CloneFillerOverrides(LoadoutFillerOverridesFor(unit));
+            statusText = "Applied demo fit";
+        }
+
+        private void ResetLoadoutDraft(UnitState unit)
+        {
+            if (unit == null)
+            {
+                return;
+            }
+
+            string key = unit.Id ?? "";
+            int weaponCount = unit.Profile?.Weapons?.Length ?? 0;
+            loadoutWeaponEnabledByUnit[key] = CloneWeaponState(AppliedWeaponStateFor(key), weaponCount);
+            loadoutPlacementOverridesByUnit[key] = ClonePlacementOverrides(AppliedPlacementStateFor(key), weaponCount);
+            CombatLoadoutFillerOverride[] appliedFillers = AppliedFillerStateFor(key);
+            if (appliedFillers == null || appliedFillers.Length == 0)
+            {
+                loadoutFillerOverridesByUnit.Remove(key);
+            }
+            else
+            {
+                loadoutFillerOverridesByUnit[key] = new List<CombatLoadoutFillerOverride>(CloneFillerOverrides(appliedFillers));
+            }
+
+            statusText = "Reset draft fit";
+        }
+
+        private bool[] AppliedWeaponStateFor(string key)
+        {
+            return appliedLoadoutWeaponEnabledByUnit.TryGetValue(key ?? "", out bool[] appliedWeapons)
+                ? appliedWeapons
+                : null;
+        }
+
+        private CombatLoadoutPlacementOverride[] AppliedPlacementStateFor(string key)
+        {
+            return appliedLoadoutPlacementOverridesByUnit.TryGetValue(key ?? "", out CombatLoadoutPlacementOverride[] appliedPlacements)
+                ? appliedPlacements
+                : null;
+        }
+
+        private CombatLoadoutFillerOverride[] AppliedFillerStateFor(string key)
+        {
+            return appliedLoadoutFillerOverridesByUnit.TryGetValue(key ?? "", out CombatLoadoutFillerOverride[] appliedFillers)
+                ? appliedFillers
+                : null;
+        }
+
+        private static bool WeaponStatesEqual(bool[] currentState, bool[] appliedState, int weaponCount)
+        {
+            for (int index = 0; index < weaponCount; index++)
+            {
+                if (WeaponEnabledAt(currentState, index) != WeaponEnabledAt(appliedState, index))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static bool WeaponEnabledAt(bool[] state, int index)
+        {
+            return state == null || index >= state.Length || state[index];
+        }
+
+        private static bool PlacementStatesEqual(
+            CombatLoadoutPlacementOverride[] currentState,
+            CombatLoadoutPlacementOverride[] appliedState,
+            int weaponCount)
+        {
+            for (int index = 0; index < weaponCount; index++)
+            {
+                CombatLoadoutPlacementOverride current = PlacementAt(currentState, index);
+                CombatLoadoutPlacementOverride applied = PlacementAt(appliedState, index);
+                if (!PlacementEquals(current, applied))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static CombatLoadoutPlacementOverride PlacementAt(CombatLoadoutPlacementOverride[] state, int index)
+        {
+            return state != null && index >= 0 && index < state.Length ? state[index] : null;
+        }
+
+        private static bool PlacementEquals(CombatLoadoutPlacementOverride current, CombatLoadoutPlacementOverride applied)
+        {
+            if (current == null || applied == null)
+            {
+                return current == null && applied == null;
+            }
+
+            return current.sourceWeaponIndex == applied.sourceWeaponIndex
+                && current.gridX == applied.gridX
+                && current.gridY == applied.gridY;
+        }
+
+        private static bool FillerStatesEqual(CombatLoadoutFillerOverride[] currentState, CombatLoadoutFillerOverride[] appliedState)
+        {
+            int currentCount = currentState?.Length ?? 0;
+            int appliedCount = appliedState?.Length ?? 0;
+            if (currentCount != appliedCount)
+            {
+                return false;
+            }
+
+            for (int index = 0; index < currentCount; index++)
+            {
+                CombatLoadoutFillerOverride current = currentState[index];
+                CombatLoadoutFillerOverride applied = FindFillerOverride(appliedState, current?.gridX ?? -1, current?.gridY ?? -1);
+                if (!FillerEquals(current, applied))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static bool FillerEquals(CombatLoadoutFillerOverride current, CombatLoadoutFillerOverride applied)
+        {
+            if (current == null || applied == null)
+            {
+                return current == null && applied == null;
+            }
+
+            return current.gridX == applied.gridX
+                && current.gridY == applied.gridY
+                && current.category == applied.category;
+        }
+
+        private static bool[] CloneWeaponState(bool[] source, int weaponCount)
+        {
+            bool[] clone = new bool[weaponCount];
+            for (int index = 0; index < clone.Length; index++)
+            {
+                clone[index] = WeaponEnabledAt(source, index);
+            }
+
+            return clone;
+        }
+
+        private static CombatLoadoutPlacementOverride[] ClonePlacementOverrides(
+            CombatLoadoutPlacementOverride[] source,
+            int weaponCount)
+        {
+            CombatLoadoutPlacementOverride[] clone = new CombatLoadoutPlacementOverride[weaponCount];
+            for (int index = 0; index < clone.Length; index++)
+            {
+                CombatLoadoutPlacementOverride sourcePlacement = PlacementAt(source, index);
+                if (sourcePlacement == null)
+                {
+                    continue;
+                }
+
+                clone[index] = new CombatLoadoutPlacementOverride
+                {
+                    sourceWeaponIndex = sourcePlacement.sourceWeaponIndex,
+                    gridX = sourcePlacement.gridX,
+                    gridY = sourcePlacement.gridY
+                };
+            }
+
+            return clone;
+        }
+
+        private static CombatLoadoutFillerOverride[] CloneFillerOverrides(CombatLoadoutFillerOverride[] source)
+        {
+            if (source == null || source.Length == 0)
+            {
+                return Array.Empty<CombatLoadoutFillerOverride>();
+            }
+
+            CombatLoadoutFillerOverride[] clone = new CombatLoadoutFillerOverride[source.Length];
+            for (int index = 0; index < source.Length; index++)
+            {
+                CombatLoadoutFillerOverride sourceFiller = source[index];
+                if (sourceFiller == null)
+                {
+                    continue;
+                }
+
+                clone[index] = new CombatLoadoutFillerOverride
+                {
+                    gridX = sourceFiller.gridX,
+                    gridY = sourceFiller.gridY,
+                    category = sourceFiller.category
+                };
+            }
+
+            return clone;
+        }
+
         private void CycleFillerOverride(UnitState unit, int gridX, int gridY, string currentCategory)
         {
             if (unit == null)
@@ -2983,6 +3245,28 @@ namespace MC2Demo.Presentation
             }
 
             for (int index = 0; index < fillerOverrides.Count; index++)
+            {
+                CombatLoadoutFillerOverride fillerOverride = fillerOverrides[index];
+                if (fillerOverride != null && fillerOverride.gridX == gridX && fillerOverride.gridY == gridY)
+                {
+                    return fillerOverride;
+                }
+            }
+
+            return null;
+        }
+
+        private static CombatLoadoutFillerOverride FindFillerOverride(
+            CombatLoadoutFillerOverride[] fillerOverrides,
+            int gridX,
+            int gridY)
+        {
+            if (fillerOverrides == null)
+            {
+                return null;
+            }
+
+            for (int index = 0; index < fillerOverrides.Length; index++)
             {
                 CombatLoadoutFillerOverride fillerOverride = fillerOverrides[index];
                 if (fillerOverride != null && fillerOverride.gridX == gridX && fillerOverride.gridY == gridY)

@@ -48,6 +48,7 @@ The Unity demo currently supports:
 - temporary projected weapon placement edits with overlap and out-of-bounds validator feedback
 - spare-load armor plate and heat sink filler projection with hardness and cooling totals
 - toggleable projected filler cells that cycle between armor, heat sink, and empty
+- mech bay draft/apply/reset boundaries for temporary demo fits
 - CLI/AI loop pieces:
   - `-mc2Command`
   - `-mc2AdvanceSeconds`
@@ -361,10 +362,10 @@ Tasks:
 
 ## Current Recommended Next Task
 
-Start with **mech bay edit reset/apply boundaries**.
+Start with **applied loadout combat handoff**.
 
 Reason:
 
-- The mech bay can now temporarily toggle weapons, nudge projected weapon positions, and switch filler cells between armor, heat sink, and empty.
-- The next low-risk step is to make the temporary edit state explicit with reset-all and apply boundaries.
-- That will keep the demo understandable before introducing persistent inventory, shop data, or saved mech builds.
+- The mech bay can now preview, apply, and reset temporary demo fits.
+- The next low-risk step is to project an applied valid fit into the demo combat profile for weapon heat/load/readiness.
+- Keep this as a runtime demo handoff only; persistent inventory, shop data, and saved mech builds still come later.
