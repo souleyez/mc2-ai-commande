@@ -3149,6 +3149,23 @@ namespace MC2Demo.Presentation
             MechBayWarehouseDraftFitPreview preview =
                 MechBayWarehouseDraftFitPreviewService.BuildPreview(demoInventory, warehouseDraftFitPreviewMechId);
             GUI.Box(new Rect(x, y, width, 104f), "Warehouse Draft Fit Preview");
+            bool previousEnabled = GUI.enabled;
+            GUI.enabled = previousEnabled && preview != null && preview.Ready;
+            if (GUI.Button(new Rect(x + width - 112f, y + 4f, 48f, 22f), "Apply"))
+            {
+                MechBayWarehouseDraftFitApplyResult result =
+                    MechBayWarehouseDraftFitPreviewService.TryApplyDemoFit(demoInventory, warehouseDraftFitPreviewMechId);
+                RefreshDemoInventoryValidation();
+                statusText = result?.Message ?? "Draft fit unavailable";
+                if (result != null && result.Accepted)
+                {
+                    AddCombatLogLine("Mech bay " + result.Message + " for " + result.displayName);
+                    showWarehouseDraftFitPreview = false;
+                    warehouseDraftFitPreviewMechId = null;
+                }
+            }
+
+            GUI.enabled = previousEnabled;
             if (GUI.Button(new Rect(x + width - 58f, y + 4f, 48f, 22f), "Hide"))
             {
                 showWarehouseDraftFitPreview = false;

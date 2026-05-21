@@ -249,6 +249,19 @@ namespace MC2Demo.BattleCore
         public string PreviewNote { get; internal set; }
     }
 
+    public sealed class MechBayWarehouseDraftFitApplyResult
+    {
+        public bool Accepted { get; internal set; }
+        public bool InventoryChanged { get; internal set; }
+        public string ownedMechId { get; internal set; }
+        public string displayName { get; internal set; }
+        public string activeLoadoutId { get; internal set; }
+        public string weaponItemId { get; internal set; }
+        public string weaponDisplayName { get; internal set; }
+        public int spareWeaponStockCount { get; internal set; }
+        public string Message { get; internal set; }
+    }
+
     public sealed class MechBayReceiptItemDefinition
     {
         public string itemId;
@@ -1238,6 +1251,8 @@ namespace MC2Demo.BattleCore
 
     public static class MechBayWarehouseDraftFitPreviewService
     {
+        public const string DemoWarehouseFitLoadoutId = "warehouse-demo-fit";
+
         public static MechBayWarehouseDraftFitPreview BuildPreview(
             MechBayInventoryContract inventory,
             string ownedMechId)
@@ -1277,6 +1292,55 @@ namespace MC2Demo.BattleCore
                 spareWeaponStockCount = weapon == null ? 0 : Math.Max(0, weapon.quantity - weapon.equippedQuantity),
                 PreviewNote = ready ? "Preview only: no inventory or loadout changes" : "Resolve requirements before fitting"
             };
+        }
+
+        public static MechBayWarehouseDraftFitApplyResult TryApplyDemoFit(
+            MechBayInventoryContract inventory,
+            string ownedMechId)
+        {
+            MechBayWarehouseDraftFitPreview preview = BuildPreview(inventory, ownedMechId);
+            MechBayWarehouseDraftFitApplyResult result = new()
+            {
+                Accepted = false,
+                InventoryChanged = false,
+                ownedMechId = preview?.ownedMechId ?? ownedMechId,
+                displayName = preview?.displayName,
+                activeLoadoutId = preview?.activeLoadoutId,
+                weaponItemId = preview?.weaponItemId,
+                weaponDisplayName = preview?.weaponDisplayName,
+                spareWeaponStockCount = preview?.spareWeaponStockCount ?? 0,
+                Message = preview?.Requirements ?? "Draft fit unavailable"
+            };
+
+            if (inventory == null)
+            {
+                result.Message = "Inventory missing";
+                return result;
+            }
+
+            if (preview == null || !preview.Ready)
+            {
+                result.Message = preview?.Requirements ?? "Draft fit unavailable";
+                return result;
+            }
+
+            MechBayOwnedMechDefinition target = FindOwnedMech(inventory, preview.ownedMechId);
+            MechBayItemStackDefinition weapon = FirstSpareWeapon(inventory);
+            if (target == null || weapon == null)
+            {
+                result.Message = "Draft fit unavailable";
+                return result;
+            }
+
+            weapon.equippedQuantity++;
+            target.activeLoadoutId = DemoWarehouseFitLoadoutId;
+            target.availableForMission = false;
+            result.Accepted = true;
+            result.InventoryChanged = true;
+            result.activeLoadoutId = target.activeLoadoutId;
+            result.spareWeaponStockCount = Math.Max(0, weapon.quantity - weapon.equippedQuantity);
+            result.Message = "Applied warehouse draft fit";
+            return result;
         }
 
         private static string DraftFitRequirements(MechBayOwnedMechDefinition target, bool hasPilot, bool hasSpareWeapon)

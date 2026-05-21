@@ -2521,6 +2521,36 @@ namespace MC2Demo.EditorTools
                 throw new InvalidDataException("Expected warehouse draft-fit preview to show selected pilot and spare weapon without changing inventory.");
             }
 
+            MechBayWarehouseDraftFitApplyResult draftFitApply =
+                MechBayWarehouseDraftFitPreviewService.TryApplyDemoFit(receiptInventory, assembledRaven.ownedMechId);
+            MechBayInventoryValidationResult draftFitApplyInventoryResult = MechBayInventoryValidator.Validate(receiptInventory);
+            MechBayOwnedRosterEntry[] draftFitApplyRoster = MechBayOwnedRosterService.BuildRosterPreview(receiptInventory);
+            assembledRaven = FindWarehouseRosterEntry(draftFitApplyRoster, "Raven");
+            if (draftFitApply == null
+                || !draftFitApply.Accepted
+                || !draftFitApply.InventoryChanged
+                || draftFitApply.activeLoadoutId != MechBayWarehouseDraftFitPreviewService.DemoWarehouseFitLoadoutId
+                || draftFitApply.weaponItemId != fitGatePurchase.itemId
+                || draftFitApply.weaponDisplayName != fitGatePurchase.displayName
+                || draftFitApply.spareWeaponStockCount != 0
+                || receiptInventory.tokenBalance != tokenBeforeDraftFitPreview
+                || !draftFitApplyInventoryResult.IsValid
+                || draftFitApplyInventoryResult.Summary.WeaponCount != weaponCountBeforeDraftFitPreview
+                || assembledRaven == null
+                || assembledRaven.availableForMission
+                || assembledRaven.activeLoadoutId != MechBayWarehouseDraftFitPreviewService.DemoWarehouseFitLoadoutId
+                || assembledRaven.loadoutStatus != "Ready fit"
+                || assembledRaven.hasDraftFitStub
+                || assembledRaven.draftFitReady
+                || assembledRaven.draftFitStatus != "Depot fit read-only"
+                || assembledRaven.draftFitRequirements != "Current fit active"
+                || assembledRaven.hasSpareWeaponStock
+                || assembledRaven.spareWeaponStockCount != 0
+                || !assembledRaven.hasPilotAssignment)
+            {
+                throw new InvalidDataException("Expected warehouse draft-fit apply stub to consume one spare weapon and keep the mech non-deployable.");
+            }
+
             BattleMission defeat = new(MakeResultContract(completeOnStart: false), resultProfiles);
             for (int tick = 0; tick < 10 && defeat.Result == MissionResultState.InProgress; tick++)
             {

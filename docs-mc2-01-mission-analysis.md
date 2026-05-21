@@ -270,3 +270,6 @@ player feedback without consuming inventory or creating a real loadout yet.
 That gate now opens a read-only warehouse draft-fit preview, showing the
 selected warehouse mech, assigned pilot, first spare weapon stack, and a clear
 note that no inventory or loadout changes are applied yet.
+The preview now has a demo-only Apply action: it consumes one spare weapon stack
+into the warehouse mech, swaps `pending-loadout` for a placeholder
+`warehouse-demo-fit`, and still keeps that mech out of mission deployment.
