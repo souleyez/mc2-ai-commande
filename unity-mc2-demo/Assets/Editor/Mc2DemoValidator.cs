@@ -53,6 +53,7 @@ namespace MC2Demo.EditorTools
 
             string contractJson = File.ReadAllText(contractPath);
             BattleMission mission = BattleMission.FromJson(contractJson, combatProfiles);
+            ValidateMechBayInventoryContract(mission);
             if (mission.Units.Count != 29)
             {
                 throw new InvalidDataException("Expected 29 units, got " + mission.Units.Count);
@@ -276,6 +277,41 @@ namespace MC2Demo.EditorTools
             }
 
             ValidateSyntheticLoadoutValidator(contract, loadout);
+        }
+
+        private static void ValidateMechBayInventoryContract(BattleMission mission)
+        {
+            MechBayInventoryContract inventory = MechBayInventoryBuilder.BuildDemoInventory(mission.PlayerUnits());
+            MechBayInventoryValidationResult result = MechBayInventoryValidator.Validate(inventory);
+            if (!result.IsValid)
+            {
+                throw new InvalidDataException("Starter mech bay inventory is invalid: " + FirstInventoryError(result));
+            }
+
+            if (inventory.schema != MechBayInventoryValidator.Schema)
+            {
+                throw new InvalidDataException("Unexpected starter mech bay inventory schema: " + inventory.schema);
+            }
+
+            if (result.Summary.MechCount != 3)
+            {
+                throw new InvalidDataException("Expected starter inventory to expose 3 player mechs.");
+            }
+
+            if (result.Summary.TokenBalance <= 0)
+            {
+                throw new InvalidDataException("Expected starter inventory to expose demo token balance.");
+            }
+
+            if (result.Summary.WeaponCount <= 0)
+            {
+                throw new InvalidDataException("Expected starter inventory to expose source weapon stacks.");
+            }
+
+            if (result.Summary.ArmorPlateCount <= 0 || result.Summary.HeatSinkCount <= 0)
+            {
+                throw new InvalidDataException("Expected starter inventory to expose armor plates and heat sinks.");
+            }
         }
 
         private static void ValidateSourceLoadoutPreview(CombatProfileCatalog combatProfiles)
@@ -804,6 +840,12 @@ namespace MC2Demo.EditorTools
         }
 
         private static string FirstLoadoutError(LoadoutValidationResult result)
+        {
+            string[] errors = result.Errors;
+            return errors.Length == 0 ? "no errors" : errors[0];
+        }
+
+        private static string FirstInventoryError(MechBayInventoryValidationResult result)
         {
             string[] errors = result.Errors;
             return errors.Length == 0 ? "no errors" : errors[0];

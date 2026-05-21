@@ -223,3 +223,6 @@ Armor hardness uses a single incoming-damage multiplier, while heat sinks add to
 the runtime cooling rate; both remain demo-only effects until saved loadouts exist.
 Applied armor/cooling bonuses now appear in the unit weapon status, and combat
 events carry blocked damage so the log can explain why a hit landed for less.
+The mech bay now builds a starter runtime inventory from the player squad, source
+weapons, projected armor plates, projected heat sinks, and a demo token balance,
+giving later shop/salvage/repair work a small contract to grow from.

@@ -45,6 +45,8 @@ namespace MC2Demo.Presentation
         private CommanderCommandPort commandPort;
         private CommanderObservationPort observationPort;
         private CombatProfileCatalog combatProfiles = CombatProfileCatalog.Empty;
+        private MechBayInventoryContract demoInventory;
+        private MechBayInventoryValidationResult demoInventoryValidation;
         private string pendingDetachedUnitId;
         private bool pendingJumpOrder;
         private bool showMissionMap;
@@ -113,6 +115,13 @@ namespace MC2Demo.Presentation
             scriptBridge = new MissionScriptBridge(mission);
             commandPort = new CommanderCommandPort(mission, JumpDistance, DemoTerrainView.IsUsableLandingPosition);
             observationPort = new CommanderObservationPort(mission);
+            demoInventory = MechBayInventoryBuilder.BuildDemoInventory(mission.PlayerUnits());
+            demoInventoryValidation = MechBayInventoryValidator.Validate(demoInventory);
+            if (!demoInventoryValidation.IsValid)
+            {
+                Debug.LogWarning("MC2 mech bay inventory review: " + FirstInventoryError(demoInventoryValidation));
+            }
+
             statusText = "Loaded " + mission.Contract.mission.id;
             Debug.Log("MC2 demo loaded mission contract: " + mission.Contract.mission.id);
         }
@@ -2490,6 +2499,9 @@ namespace MC2Demo.Presentation
             }
 
             y += 30f;
+            DrawMechBayInventorySummary(x, y, width);
+            y += 46f;
+
             int unitCount = CountPlayerUnits();
             Rect viewport = new(x, y, width, panel.yMax - y - 12f);
             Rect content = new(0f, 0f, width - 20f, Mathf.Max(viewport.height, unitCount * 388f));
@@ -2502,6 +2514,35 @@ namespace MC2Demo.Presentation
             }
 
             GUI.EndScrollView();
+        }
+
+        private void DrawMechBayInventorySummary(float x, float y, float width)
+        {
+            if (demoInventoryValidation == null)
+            {
+                GUI.Label(new Rect(x, y, width, 18f), "Inventory loading");
+                return;
+            }
+
+            MechBayInventorySummary summary = demoInventoryValidation.Summary;
+            Color previous = GUI.color;
+            GUI.color = demoInventoryValidation.IsValid ? new Color(0.58f, 0.82f, 1f, 1f) : new Color(1f, 0.78f, 0.28f, 1f);
+            GUI.Label(
+                new Rect(x, y, width * 0.46f, 18f),
+                demoInventoryValidation.IsValid
+                    ? "Inventory OK"
+                    : "Inventory Review: " + TruncateText(FirstInventoryError(demoInventoryValidation), 28));
+            GUI.color = previous;
+
+            GUI.Label(
+                new Rect(x + width * 0.48f, y, width * 0.50f, 18f),
+                "Token " + summary.TokenBalance.ToString(CultureInfo.InvariantCulture));
+            GUI.Label(
+                new Rect(x, y + 20f, width, 18f),
+                "Mechs " + summary.MechCount.ToString(CultureInfo.InvariantCulture)
+                + "  Weapons " + summary.WeaponCount.ToString(CultureInfo.InvariantCulture)
+                + "  Armor " + summary.ArmorPlateCount.ToString(CultureInfo.InvariantCulture)
+                + "  Sinks " + summary.HeatSinkCount.ToString(CultureInfo.InvariantCulture));
         }
 
         private void DrawLoadoutUnit(UnitState unit, float x, float y, float width)
@@ -2577,6 +2618,12 @@ namespace MC2Demo.Presentation
         }
 
         private static string FirstLoadoutError(LoadoutValidationResult result)
+        {
+            string[] errors = result.Errors;
+            return errors.Length == 0 ? "" : errors[0];
+        }
+
+        private static string FirstInventoryError(MechBayInventoryValidationResult result)
         {
             string[] errors = result.Errors;
             return errors.Length == 0 ? "" : errors[0];

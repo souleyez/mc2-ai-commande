@@ -52,6 +52,7 @@ The Unity demo currently supports:
 - applied demo fit handoff into combat readiness, range, heat, cooldown, and weapon display stats
 - applied armor hardness reduces incoming damage and applied heat sinks increase cooling
 - applied armor/cooling bonuses appear in unit weapon status and blocked damage appears in combat logs
+- starter mech bay inventory contract summarizes owned mechs, weapons, armor plates, heat sinks, and demo token balance
 - CLI/AI loop pieces:
   - `-mc2Command`
   - `-mc2AdvanceSeconds`
@@ -365,10 +366,10 @@ Tasks:
 
 ## Current Recommended Next Task
 
-Start with **starter mech bay inventory contract**.
+Start with **inventory-aware loadout availability feedback**.
 
 Reason:
 
-- Applied demo fits now affect combat and are visible in battle feedback.
-- The next low-risk step is to define a tiny runtime inventory contract for owned mechs, weapons, armor plates, and heat sinks.
-- Keep this local/demo-only first; shop data, economy, and saved accounts still come later.
+- The starter inventory contract now exists and is visible in the mech bay.
+- The next low-risk step is to warn when draft armor/sink choices exceed available demo inventory.
+- Keep this as local feedback first; purchasing, salvage, repair, and saved accounts still come later.
