@@ -47,6 +47,7 @@ namespace MC2Demo.EditorTools
             }
 
             ValidateSourceDrivenProfiles(combatProfiles);
+            ValidateLoadoutContractShape();
 
             string contractJson = File.ReadAllText(contractPath);
             BattleMission mission = BattleMission.FromJson(contractJson, combatProfiles);
@@ -180,6 +181,271 @@ namespace MC2Demo.EditorTools
                     throw new InvalidDataException("Combat profile has no weapon range/damage metrics: " + unitType);
                 }
             }
+        }
+
+        private static void ValidateLoadoutContractShape()
+        {
+            LoadoutContract contract = MakeSyntheticLoadoutContract();
+            if (contract.schema != "mc2-loadout-contract-v1")
+            {
+                throw new InvalidDataException("Unexpected loadout schema: " + contract.schema);
+            }
+
+            if (contract.chassisDefinitions == null || contract.chassisDefinitions.Length != 1)
+            {
+                throw new InvalidDataException("Expected one synthetic chassis definition.");
+            }
+
+            LoadoutChassisDefinition chassis = contract.chassisDefinitions[0];
+            if (chassis.slotGrid == null || chassis.slotGrid.width != 3 || chassis.slotGrid.height != 3)
+            {
+                throw new InvalidDataException("Expected a 3x3 synthetic loadout grid.");
+            }
+
+            if (chassis.equipmentSlots == null || chassis.equipmentSlots.Length != 2)
+            {
+                throw new InvalidDataException("Expected radar and jump jet equipment slots.");
+            }
+
+            if (contract.loadouts == null || contract.loadouts.Length != 1)
+            {
+                throw new InvalidDataException("Expected one synthetic loadout build.");
+            }
+
+            LoadoutBuildDefinition loadout = contract.loadouts[0];
+            if (loadout.placedItems == null || loadout.placedItems.Length != 5)
+            {
+                throw new InvalidDataException("Expected weapon, armor, heat sink, radar, and jump jet items.");
+            }
+
+            float heat = 0f;
+            float weight = 0f;
+            int gridItems = 0;
+            int slottedItems = 0;
+            foreach (LoadoutPlacedItemDefinition placedItem in loadout.placedItems)
+            {
+                LoadoutItemDefinition item = FindLoadoutItem(contract, placedItem.itemId);
+                heat += item.heat;
+                weight += item.weight;
+
+                if (string.IsNullOrEmpty(placedItem.equipmentSlotId))
+                {
+                    gridItems++;
+                    if (item.shapeCells == null || item.shapeCells.Length == 0)
+                    {
+                        throw new InvalidDataException("Grid item has no occupied cells: " + item.itemId);
+                    }
+                }
+                else
+                {
+                    slottedItems++;
+                    LoadoutEquipmentSlotDefinition slot = FindLoadoutEquipmentSlot(chassis, placedItem.equipmentSlotId);
+                    if (!ItemAllowsEquipmentSlot(item, slot.slotType))
+                    {
+                        throw new InvalidDataException("Item does not allow equipment slot type: " + item.itemId);
+                    }
+                }
+            }
+
+            if (gridItems != 3 || slottedItems != 2)
+            {
+                throw new InvalidDataException("Expected three grid items and two equipment-slot items.");
+            }
+
+            if (heat > chassis.heatLimit || weight > chassis.weightLimit)
+            {
+                throw new InvalidDataException("Synthetic loadout exceeds heat or weight limits.");
+            }
+
+            LoadoutItemDefinition verticalWeapon = FindLoadoutItem(contract, "synthetic-ppc");
+            if (verticalWeapon.shapeCells.Length != 3)
+            {
+                throw new InvalidDataException("Expected synthetic weapon to occupy three cells.");
+            }
+
+            if (FindLoadoutItem(contract, "synthetic-armor-plate").armorHardnessBonus <= 0f)
+            {
+                throw new InvalidDataException("Expected armor plate to define a hardness bonus.");
+            }
+
+            if (FindLoadoutItem(contract, "synthetic-heat-sink").heatDissipationBonus <= 0f)
+            {
+                throw new InvalidDataException("Expected heat sink to define a dissipation bonus.");
+            }
+        }
+
+        private static LoadoutItemDefinition FindLoadoutItem(LoadoutContract contract, string itemId)
+        {
+            foreach (LoadoutItemDefinition item in contract.itemDefinitions)
+            {
+                if (item != null && item.itemId == itemId)
+                {
+                    return item;
+                }
+            }
+
+            throw new InvalidDataException("Missing synthetic loadout item: " + itemId);
+        }
+
+        private static LoadoutEquipmentSlotDefinition FindLoadoutEquipmentSlot(LoadoutChassisDefinition chassis, string slotId)
+        {
+            foreach (LoadoutEquipmentSlotDefinition slot in chassis.equipmentSlots)
+            {
+                if (slot != null && slot.slotId == slotId)
+                {
+                    return slot;
+                }
+            }
+
+            throw new InvalidDataException("Missing synthetic equipment slot: " + slotId);
+        }
+
+        private static bool ItemAllowsEquipmentSlot(LoadoutItemDefinition item, string slotType)
+        {
+            if (item.allowedEquipmentSlotTypes == null)
+            {
+                return false;
+            }
+
+            foreach (string allowedSlotType in item.allowedEquipmentSlotTypes)
+            {
+                if (allowedSlotType == slotType)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static LoadoutContract MakeSyntheticLoadoutContract()
+        {
+            return new LoadoutContract
+            {
+                schema = "mc2-loadout-contract-v1",
+                chassisDefinitions = new[]
+                {
+                    new LoadoutChassisDefinition
+                    {
+                        chassisId = "synthetic-light-mech",
+                        displayName = "Synthetic Light Mech",
+                        sourceKind = "validator-synthetic",
+                        heatLimit = 12f,
+                        weightLimit = 18f,
+                        slotGrid = new LoadoutSlotGridDefinition
+                        {
+                            width = 3,
+                            height = 3,
+                            blockedCells = new[]
+                            {
+                                new LoadoutGridCell { x = 2, y = 0 }
+                            }
+                        },
+                        equipmentSlots = new[]
+                        {
+                            new LoadoutEquipmentSlotDefinition
+                            {
+                                slotId = "radar-slot",
+                                slotType = LoadoutEquipmentSlotType.Radar,
+                                sectionName = "Torso"
+                            },
+                            new LoadoutEquipmentSlotDefinition
+                            {
+                                slotId = "jump-slot",
+                                slotType = LoadoutEquipmentSlotType.JumpJet,
+                                sectionName = "Legs"
+                            }
+                        },
+                        sections = new[]
+                        {
+                            new LoadoutSectionDefinition { sectionName = "Cockpit", baseStructure = 15f, critical = true },
+                            new LoadoutSectionDefinition { sectionName = "Torso", baseStructure = 45f },
+                            new LoadoutSectionDefinition { sectionName = "Left Arm", baseStructure = 22f },
+                            new LoadoutSectionDefinition { sectionName = "Right Arm", baseStructure = 22f },
+                            new LoadoutSectionDefinition { sectionName = "Legs", baseStructure = 28f }
+                        }
+                    }
+                },
+                itemDefinitions = new[]
+                {
+                    new LoadoutItemDefinition
+                    {
+                        itemId = "synthetic-ppc",
+                        displayName = "Synthetic PPC",
+                        category = LoadoutItemCategory.Weapon,
+                        weaponType = "EnergyWeapon",
+                        sourceComponentId = 140,
+                        heat = 8f,
+                        weight = 6f,
+                        damage = 18f,
+                        range = 780f,
+                        cooldown = 3f,
+                        shapeCells = new[]
+                        {
+                            new LoadoutGridCell { x = 0, y = 0 },
+                            new LoadoutGridCell { x = 0, y = 1 },
+                            new LoadoutGridCell { x = 0, y = 2 }
+                        }
+                    },
+                    new LoadoutItemDefinition
+                    {
+                        itemId = "synthetic-armor-plate",
+                        displayName = "Synthetic Armor Plate",
+                        category = LoadoutItemCategory.ArmorPlate,
+                        weight = 1f,
+                        armorHardnessBonus = 3f,
+                        shapeCells = new[]
+                        {
+                            new LoadoutGridCell { x = 0, y = 0 }
+                        }
+                    },
+                    new LoadoutItemDefinition
+                    {
+                        itemId = "synthetic-heat-sink",
+                        displayName = "Synthetic Heat Sink",
+                        category = LoadoutItemCategory.HeatSink,
+                        weight = 1f,
+                        heatDissipationBonus = 2f,
+                        shapeCells = new[]
+                        {
+                            new LoadoutGridCell { x = 0, y = 0 }
+                        }
+                    },
+                    new LoadoutItemDefinition
+                    {
+                        itemId = "synthetic-radar",
+                        displayName = "Synthetic Radar",
+                        category = LoadoutItemCategory.Radar,
+                        weight = 1f,
+                        allowedEquipmentSlotTypes = new[] { LoadoutEquipmentSlotType.Radar }
+                    },
+                    new LoadoutItemDefinition
+                    {
+                        itemId = "synthetic-jump-jets",
+                        displayName = "Synthetic Jump Jets",
+                        category = LoadoutItemCategory.JumpJet,
+                        weight = 2f,
+                        allowedEquipmentSlotTypes = new[] { LoadoutEquipmentSlotType.JumpJet }
+                    }
+                },
+                loadouts = new[]
+                {
+                    new LoadoutBuildDefinition
+                    {
+                        loadoutId = "synthetic-light-mech-stock",
+                        chassisId = "synthetic-light-mech",
+                        displayName = "Synthetic Stock Loadout",
+                        placedItems = new[]
+                        {
+                            new LoadoutPlacedItemDefinition { itemId = "synthetic-ppc", gridX = 0, gridY = 0, sectionName = "Right Arm" },
+                            new LoadoutPlacedItemDefinition { itemId = "synthetic-armor-plate", gridX = 1, gridY = 0, sectionName = "Torso" },
+                            new LoadoutPlacedItemDefinition { itemId = "synthetic-heat-sink", gridX = 1, gridY = 1, sectionName = "Torso" },
+                            new LoadoutPlacedItemDefinition { itemId = "synthetic-radar", equipmentSlotId = "radar-slot", sectionName = "Torso" },
+                            new LoadoutPlacedItemDefinition { itemId = "synthetic-jump-jets", equipmentSlotId = "jump-slot", sectionName = "Legs" }
+                        }
+                    }
+                }
+            };
         }
 
         private static void ValidateCombatSimulation(BattleMission mission)

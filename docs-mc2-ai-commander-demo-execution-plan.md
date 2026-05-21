@@ -40,6 +40,7 @@ The Unity demo currently supports:
 - player squad orders, detached unit orders, focused unit/structure attacks, and Jet orders
 - heat, cooldown, weapon range/readiness, simple section damage, section penalties, and animated breakoff/ejection effects
 - compact tactical UI with unit status, read-only mech bay, mission brief, current-objective map, world objective hints, health bars, command rings, range rings, and target lines
+- initial BattleCore loadout contract for chassis grids, item shapes, heat, weight, armor plates, heat sinks, radar slots, and jump jet slots
 - CLI/AI loop pieces:
   - `-mc2Command`
   - `-mc2AdvanceSeconds`
@@ -353,11 +354,10 @@ Tasks:
 
 ## Current Recommended Next Task
 
-Start with **Milestone 5, Task 12: Define Loadout Data Contract**.
+Start with **Milestone 5, Task 13: Add Loadout Validator**.
 
 Reason:
 
-- The battle command loop, AI/CLI seam, mission debrief, and read-only mech bay are now in place.
-- The next major player-fun loop is mech fitting, but it needs a deterministic BattleCore contract before UI editing.
-- A tiny synthetic contract lets us validate slot grids, heat, weight, and equipment shapes without committing to final art or economy systems.
-- Keeping this data model separate from Unity presentation preserves the future cross-platform path.
+- The loadout data shape now exists and is covered by a tiny synthetic contract check.
+- The next useful step is deterministic placement validation: grid bounds, blocked cells, overlaps, rotation, heat cap, weight cap, and special-slot compatibility.
+- Once that validator is stable, the mech bay UI can safely move from read-only display toward actual fitting interactions.

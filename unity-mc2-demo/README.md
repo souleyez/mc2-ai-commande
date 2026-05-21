@@ -32,6 +32,7 @@ Current demo behavior:
 - carries source weapon type and special-effect metadata into combat visuals
 - shows weapon name, range, cooldown, heat lock, and range readiness in the unit panel
 - opens a read-only mech bay with source weapon loadout, heat, weight, range, damage, and section status
+- defines the first BattleCore loadout contract for chassis grids, item shapes, heat, weight, and special equipment slots
 - supports one-shot Jet orders with terrain-aware landing rejection
 - provides a toggleable current-objective mission map and a pause/restart/end system panel
 - resolves mission victory or defeat through BattleCore result state

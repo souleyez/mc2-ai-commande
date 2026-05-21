@@ -185,3 +185,21 @@ a direct dependency on the old script runtime.
 The current exporter writes this contract as `mc2-unity-demo-contract-v1`. It is
 not a final save format; it is a bridge format for the first playable Unity
 prototype.
+
+## Loadout Contract Direction
+
+The first loadout contract is intentionally BattleCore-only and UI-agnostic. It
+models the player-facing fitting loop as:
+
+- a chassis definition with heat limit, weight limit, section health, a fixed
+  rectangular slot grid, blocked grid cells, and optional equipment slots
+- item definitions for weapons, armor plates, heat sinks, radar, and jump jets
+- item shape cells for grid placement, including tall weapon shapes such as the
+  original vertical three-cell style
+- placed loadout items with grid coordinates or a special equipment slot id
+
+The Unity validator now carries a tiny synthetic contract that proves the data
+shape can express a 3 x 3 chassis grid, a vertical weapon, single-cell armor and
+heat-sink items, plus radar and jump-jet slots. The next step is a deterministic
+validator that checks placement overlap, blocked cells, rotation, heat caps, and
+weight caps before the mech bay becomes editable.
