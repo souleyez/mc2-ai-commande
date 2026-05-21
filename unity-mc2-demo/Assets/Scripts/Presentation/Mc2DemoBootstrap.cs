@@ -2552,7 +2552,7 @@ namespace MC2Demo.Presentation
             else if (showSquadSelectionPreview)
             {
                 DrawSquadSelectionPreview(x, y, width);
-                y += 226f;
+                y += 272f;
             }
 
             int unitCount = CountPlayerUnits();
@@ -3227,7 +3227,7 @@ namespace MC2Demo.Presentation
             squadSelectionDraftOutgoingOwnedMechId = draft?.OutgoingOwnedMechId;
             squadSelectionDraftIncomingOwnedMechId = draft?.IncomingOwnedMechId;
 
-            GUI.Box(new Rect(x, y, width, 214f), "Squad Selection Preview");
+            GUI.Box(new Rect(x, y, width, 260f), "Squad Selection Preview");
             if (GUI.Button(new Rect(x + width - 58f, y + 4f, 48f, 22f), "Hide"))
             {
                 showSquadSelectionPreview = false;
@@ -3249,12 +3249,73 @@ namespace MC2Demo.Presentation
             GUI.Label(
                 new Rect(x + 12f, y + 84f, width - 24f, 18f),
                 TruncateText("Candidates " + SquadSelectionSlotSummary(preview?.DepotCandidates, "none ready"), 76));
-            DrawSquadSelectionDraftState(x + 12f, y + 106f, width - 24f, draft);
-            DrawSquadSelectionSwapGuard(x + 12f, y + 128f, width - 24f, preview);
-            DrawSquadSelectionDryRun(x + 12f, y + 150f, width - 24f, preview);
-            DrawSquadSelectionPendingSwap(x + 12f, y + 172f, width - 24f, preview, draft);
+            DrawSquadSelectionDraftPickers(x + 12f, y + 106f, width - 24f, preview, draft);
+            DrawSquadSelectionDraftState(x + 12f, y + 154f, width - 24f, draft);
+            DrawSquadSelectionSwapGuard(x + 12f, y + 176f, width - 24f, preview);
+            DrawSquadSelectionDryRun(x + 12f, y + 198f, width - 24f, preview);
+            DrawSquadSelectionPendingSwap(x + 12f, y + 220f, width - 24f, preview, draft);
             string note = string.IsNullOrWhiteSpace(preview?.PreviewNote) ? "Preview only" : preview.PreviewNote;
-            GUI.Label(new Rect(x + 12f, y + 192f, width - 24f, 18f), TruncateText(note, 76));
+            GUI.Label(new Rect(x + 12f, y + 240f, width - 24f, 18f), TruncateText(note, 76));
+        }
+
+        private void DrawSquadSelectionDraftPickers(
+            float x,
+            float y,
+            float width,
+            MechBaySquadSelectionPreview preview,
+            MechBaySquadSelectionDraftState draft)
+        {
+            DrawSquadSelectionDraftPicker(
+                x,
+                y,
+                width,
+                "Out",
+                preview?.MissionSlots,
+                draft?.OutgoingOwnedMechId,
+                true);
+            DrawSquadSelectionDraftPicker(
+                x,
+                y + 22f,
+                width,
+                "In",
+                preview?.DepotCandidates,
+                draft?.IncomingOwnedMechId,
+                false);
+        }
+
+        private void DrawSquadSelectionDraftPicker(
+            float x,
+            float y,
+            float width,
+            string label,
+            MechBaySquadSelectionSlot[] slots,
+            string selectedOwnedMechId,
+            bool outgoing)
+        {
+            MechBaySquadSelectionSlot[] safeSlots = slots ?? Array.Empty<MechBaySquadSelectionSlot>();
+            bool canCycle = safeSlots.Length > 1;
+            bool previousEnabled = GUI.enabled;
+            GUI.enabled = previousEnabled && canCycle;
+            if (GUI.Button(new Rect(x, y - 2f, 28f, 22f), "<"))
+            {
+                CycleSquadSelectionDraft(safeSlots, outgoing, -1);
+            }
+
+            if (GUI.Button(new Rect(x + 34f, y - 2f, 28f, 22f), ">"))
+            {
+                CycleSquadSelectionDraft(safeSlots, outgoing, 1);
+            }
+
+            GUI.enabled = previousEnabled;
+            int selectedIndex = SquadSelectionSlotIndex(safeSlots, selectedOwnedMechId);
+            MechBaySquadSelectionSlot selected = selectedIndex >= 0 ? safeSlots[selectedIndex] : null;
+            string count = safeSlots.Length > 0
+                ? " (" + (selectedIndex + 1).ToString(CultureInfo.InvariantCulture) + "/"
+                  + safeSlots.Length.ToString(CultureInfo.InvariantCulture) + ")"
+                : " (0/0)";
+            GUI.Label(
+                new Rect(x + 70f, y, width - 70f, 18f),
+                TruncateText(label + " " + SquadSelectionSlotName(selected) + count, 64));
         }
 
         private static void DrawSquadSelectionDraftState(
@@ -3370,6 +3431,73 @@ namespace MC2Demo.Presentation
             }
 
             return text.Length == 0 ? emptyText : text;
+        }
+
+        private void CycleSquadSelectionDraft(MechBaySquadSelectionSlot[] slots, bool outgoing, int direction)
+        {
+            MechBaySquadSelectionSlot[] safeSlots = slots ?? Array.Empty<MechBaySquadSelectionSlot>();
+            if (safeSlots.Length == 0)
+            {
+                return;
+            }
+
+            string selectedOwnedMechId = outgoing
+                ? squadSelectionDraftOutgoingOwnedMechId
+                : squadSelectionDraftIncomingOwnedMechId;
+            int selectedIndex = SquadSelectionSlotIndex(safeSlots, selectedOwnedMechId);
+            if (selectedIndex < 0)
+            {
+                selectedIndex = 0;
+            }
+            else
+            {
+                selectedIndex = (selectedIndex + direction + safeSlots.Length) % safeSlots.Length;
+            }
+
+            MechBaySquadSelectionSlot selected = safeSlots[selectedIndex];
+            if (outgoing)
+            {
+                squadSelectionDraftOutgoingOwnedMechId = selected?.ownedMechId;
+                statusText = "Draft outgoing: " + TruncateText(SquadSelectionSlotName(selected), 24);
+            }
+            else
+            {
+                squadSelectionDraftIncomingOwnedMechId = selected?.ownedMechId;
+                statusText = "Draft incoming: " + TruncateText(SquadSelectionSlotName(selected), 24);
+            }
+        }
+
+        private static int SquadSelectionSlotIndex(MechBaySquadSelectionSlot[] slots, string ownedMechId)
+        {
+            if (slots == null || slots.Length == 0)
+            {
+                return -1;
+            }
+
+            if (string.IsNullOrWhiteSpace(ownedMechId))
+            {
+                return 0;
+            }
+
+            for (int index = 0; index < slots.Length; index++)
+            {
+                if (string.Equals(slots[index]?.ownedMechId, ownedMechId, StringComparison.OrdinalIgnoreCase))
+                {
+                    return index;
+                }
+            }
+
+            return 0;
+        }
+
+        private static string SquadSelectionSlotName(MechBaySquadSelectionSlot slot)
+        {
+            if (slot == null)
+            {
+                return "none";
+            }
+
+            return string.IsNullOrWhiteSpace(slot.displayName) ? slot.unitType ?? "mech" : slot.displayName;
         }
 
         private void DrawWarehouseDraftFitPreview(float x, float y, float width)

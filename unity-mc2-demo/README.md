@@ -63,6 +63,7 @@ Current demo behavior:
 - shows a disabled swap guard with the future replace-slot requirements
 - shows a dry-run swap preview for the first current slot and fitted depot candidate
 - stages the first current slot and fitted depot candidate in a local squad-selection draft state
+- lets the local squad-selection draft cycle outgoing mission slots and incoming depot candidates
 - shows a pending swap confirmation stub without applying roster changes
 - rejects pending squad swap confirmation without changing roster, inventory, or token state
 - warns when draft armor plate or heat sink usage exceeds starter inventory and blocks applying that fit
