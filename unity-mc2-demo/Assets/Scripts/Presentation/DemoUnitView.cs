@@ -228,8 +228,10 @@ namespace MC2Demo.Presentation
 
             sectionParts.Remove(partName);
             Vector3 startScale = part.transform.lossyScale;
+            Vector3 startPosition = part.transform.position;
+            Vector3 endPosition = startPosition + transform.TransformDirection(localImpulse);
             part.transform.SetParent(null, true);
-            part.transform.position += transform.TransformDirection(localImpulse);
+            part.transform.position = startPosition;
             part.transform.rotation = Quaternion.Euler(18f, partName.GetHashCode() % 360, 72f);
 
             Collider partCollider = part.GetComponent<Collider>();
@@ -239,7 +241,7 @@ namespace MC2Demo.Presentation
             }
 
             DemoTransientEffect transient = part.AddComponent<DemoTransientEffect>();
-            transient.Begin(color, 2.85f, startScale, startScale * 0.62f);
+            transient.BeginMoving(color, 2.85f, startScale, startScale * 0.62f, endPosition);
         }
 
         private void SpawnDamageBurst(Vector3 position, float scale)
@@ -261,7 +263,7 @@ namespace MC2Demo.Presentation
             CreateBeam("Ejection Trail", start, end, new Color(0.72f, 0.9f, 1f, 0.68f), 1.2f, 0.045f);
             CreateBeam("Ejection Smoke Trail", start + Vector3.down * 0.08f, end + Vector3.down * 0.35f, new Color(0.08f, 0.10f, 0.12f, 0.36f), 1.6f, 0.075f);
             CreateTransient("Ejection Flash", PrimitiveType.Sphere, start, new Color(1f, 0.75f, 0.28f, 0.78f), 0.48f, Vector3.one * 0.18f, Vector3.one * 0.95f);
-            CreateTransient("Pilot Ejection Pod", PrimitiveType.Sphere, end, new Color(0.88f, 0.95f, 1f, 0.92f), 1.75f, Vector3.one * 0.18f, Vector3.one * 0.38f);
+            CreateMovingTransient("Pilot Ejection Pod", PrimitiveType.Sphere, start, end, new Color(0.88f, 0.95f, 1f, 0.92f), 1.75f, Vector3.one * 0.18f, Vector3.one * 0.38f);
             SpawnDamageBurst(start, 1.05f);
         }
 
@@ -410,6 +412,21 @@ namespace MC2Demo.Presentation
 
             DemoTransientEffect transient = effect.AddComponent<DemoTransientEffect>();
             transient.Begin(color, duration, fromScale, toScale);
+        }
+
+        private void CreateMovingTransient(string effectName, PrimitiveType primitive, Vector3 start, Vector3 end, Color color, float duration, Vector3 fromScale, Vector3 toScale)
+        {
+            GameObject effect = GameObject.CreatePrimitive(primitive);
+            effect.name = effectName;
+            effect.transform.position = start;
+            Collider effectCollider = effect.GetComponent<Collider>();
+            if (effectCollider != null)
+            {
+                Destroy(effectCollider);
+            }
+
+            DemoTransientEffect transient = effect.AddComponent<DemoTransientEffect>();
+            transient.BeginMoving(color, duration, fromScale, toScale, end);
         }
 
         private void CreateBeam(string effectName, Vector3 from, Vector3 to, Color color, float duration, float radius)

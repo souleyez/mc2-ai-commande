@@ -10,6 +10,9 @@ namespace MC2Demo.Presentation
         private float age;
         private Vector3 startScale;
         private Vector3 endScale;
+        private bool hasEndPosition;
+        private Vector3 startPosition;
+        private Vector3 endPosition;
 
         public void Begin(Color color, float duration, Vector3 fromScale, Vector3 toScale)
         {
@@ -18,6 +21,7 @@ namespace MC2Demo.Presentation
             startScale = fromScale;
             endScale = toScale;
             transform.localScale = startScale;
+            hasEndPosition = false;
 
             Renderer renderer = GetComponent<Renderer>();
             if (renderer != null)
@@ -39,10 +43,24 @@ namespace MC2Demo.Presentation
             }
         }
 
+        public void BeginMoving(Color color, float duration, Vector3 fromScale, Vector3 toScale, Vector3 targetPosition)
+        {
+            Begin(color, duration, fromScale, toScale);
+            hasEndPosition = true;
+            startPosition = transform.position;
+            endPosition = targetPosition;
+        }
+
         private void Update()
         {
             age += Time.deltaTime;
             float t = Mathf.Clamp01(age / lifetime);
+            float easedT = 1f - Mathf.Pow(1f - t, 2f);
+            if (hasEndPosition)
+            {
+                transform.position = Vector3.Lerp(startPosition, endPosition, easedT);
+            }
+
             transform.localScale = Vector3.Lerp(startScale, endScale, t);
             if (material != null)
             {

@@ -38,7 +38,7 @@ The Unity demo currently supports:
 - source-gated objective activation and completion
 - enemy activation and lightweight patrol orders
 - player squad orders, detached unit orders, focused unit/structure attacks, and Jet orders
-- heat, cooldown, weapon range/readiness, simple section damage, section penalties, and placeholder breakoff/ejection effects
+- heat, cooldown, weapon range/readiness, simple section damage, section penalties, and animated breakoff/ejection effects
 - compact tactical UI with unit status, read-only mech bay, mission brief, current-objective map, world objective hints, health bars, command rings, range rings, and target lines
 - CLI/AI loop pieces:
   - `-mc2Command`
@@ -353,11 +353,11 @@ Tasks:
 
 ## Current Recommended Next Task
 
-Start with **Milestone 1, Task 1: Add Commander Command File Playback**.
+Start with **Milestone 5, Task 12: Define Loadout Data Contract**.
 
 Reason:
 
-- It directly extends the AI/CLI loop already implemented.
-- It creates a repeatable demo harness without adding UI.
-- It is small, testable, and useful for later rule AI and LLM AI control.
-- It reduces manual command typing and makes future smoke tests more expressive.
+- The battle command loop, AI/CLI seam, mission debrief, and read-only mech bay are now in place.
+- The next major player-fun loop is mech fitting, but it needs a deterministic BattleCore contract before UI editing.
+- A tiny synthetic contract lets us validate slot grids, heat, weight, and equipment shapes without committing to final art or economy systems.
+- Keeping this data model separate from Unity presentation preserves the future cross-platform path.
