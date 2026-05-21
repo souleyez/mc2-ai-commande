@@ -240,3 +240,5 @@ When a stack reaches the demo threshold, the local inventory now consumes the
 ready fragments and adds a 100% condition warehouse mech for later roster work.
 The mech bay now reads that same inventory as a compact owned-mech roster, so
 assembled warehouse mechs are visible before any future squad-selection flow.
+Roster entries can now be cycled into a read-only detail preview with source,
+condition, availability, chassis, loadout id, and inventory id.

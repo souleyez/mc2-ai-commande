@@ -53,7 +53,7 @@ The Unity demo currently supports:
 - applied armor hardness reduces incoming damage and applied heat sinks increase cooling
 - applied armor/cooling bonuses appear in unit weapon status and blocked damage appears in combat logs
 - starter mech bay inventory contract summarizes owned mechs, weapons, armor plates, heat sinks, and demo token balance
-- starter mech bay roster preview lists owned squad and assembled depot mechs with condition state
+- starter mech bay roster preview lists owned squad and assembled depot mechs with a read-only detail view
 - starter inventory availability feedback warns on armor plate or heat sink shortages and blocks applying invalid drafts
 - starter mech condition and one-click demo repair spend local token balance and restore damaged mechs
 - starter mission receipt applies completed bounty tokens and salvaged mech fragments to local inventory
@@ -371,11 +371,11 @@ Tasks:
 
 ## Current Recommended Next Task
 
-Start with **starter roster detail preview**.
+Start with **starter depot loadout placeholder**.
 
 Reason:
 
 - Mission rewards now add tokens and salvage fragments, and ready fragment sets become local warehouse mechs.
-- The mech bay now has a compact roster line, but not a focused detail view for warehouse mechs.
-- The next low-risk step is to let the player click or cycle roster entries for a read-only detail panel.
+- The mech bay now has a compact roster line and a read-only detail view for owned mechs.
+- The next low-risk step is to mark assembled depot mechs with a clear placeholder loadout/equipment status before they can ever be selected for missions.
 - Keep it read-only first; selecting assembled mechs for future missions, shop stock, saved accounts, event drop tables, and multiplayer support still come later.

@@ -60,6 +60,7 @@ namespace MC2Demo.Presentation
         private MissionResultState lastMissionResult = MissionResultState.InProgress;
         private Camera mainCamera;
         private Vector2 loadoutScroll;
+        private int selectedRosterIndex;
         private string statusText = "Loading";
 
         private void Start()
@@ -2525,7 +2526,7 @@ namespace MC2Demo.Presentation
 
             y += 30f;
             DrawMechBayInventorySummary(x, y, width);
-            y += 86f;
+            y += 126f;
 
             int unitCount = CountPlayerUnits();
             Rect viewport = new(x, y, width, panel.yMax - y - 12f);
@@ -2574,9 +2575,12 @@ namespace MC2Demo.Presentation
             GUI.Label(
                 new Rect(x, y + 40f, width, 18f),
                 "Assembly " + AssemblyPreviewText(MechBayAssemblyPreviewService.BestAssemblyProgress(demoInventory)));
+            MechBayOwnedRosterEntry[] roster = MechBayOwnedRosterService.BuildRosterPreview(demoInventory);
+            ClampSelectedRosterIndex(roster);
             GUI.Label(
                 new Rect(x, y + 60f, width, 18f),
-                "Roster " + TruncateText(OwnedRosterText(MechBayOwnedRosterService.BuildRosterPreview(demoInventory)), 62));
+                "Roster " + TruncateText(OwnedRosterText(roster), 62));
+            DrawOwnedRosterDetail(x, y + 82f, width, roster);
         }
 
         private void DrawLoadoutUnit(UnitState unit, float x, float y, float width)
@@ -2772,6 +2776,80 @@ namespace MC2Demo.Presentation
             }
 
             return text;
+        }
+
+        private void DrawOwnedRosterDetail(float x, float y, float width, MechBayOwnedRosterEntry[] roster)
+        {
+            if (roster == null || roster.Length == 0)
+            {
+                GUI.Label(new Rect(x, y, width, 18f), "Detail No owned mechs");
+                return;
+            }
+
+            MechBayOwnedRosterEntry entry = roster[Mathf.Clamp(selectedRosterIndex, 0, roster.Length - 1)];
+            bool previousEnabled = GUI.enabled;
+            GUI.enabled = previousEnabled && roster.Length > 1;
+            if (GUI.Button(new Rect(x, y - 2f, 28f, 22f), "<"))
+            {
+                selectedRosterIndex = (selectedRosterIndex + roster.Length - 1) % roster.Length;
+                entry = roster[selectedRosterIndex];
+                statusText = "Roster " + TruncateText(entry.displayName, 20);
+            }
+
+            if (GUI.Button(new Rect(x + 34f, y - 2f, 28f, 22f), ">"))
+            {
+                selectedRosterIndex = (selectedRosterIndex + 1) % roster.Length;
+                entry = roster[selectedRosterIndex];
+                statusText = "Roster " + TruncateText(entry.displayName, 20);
+            }
+
+            GUI.enabled = previousEnabled;
+            GUI.Label(
+                new Rect(x + 70f, y, width - 70f, 18f),
+                TruncateText(OwnedRosterDetailText(entry), 62));
+            GUI.Label(
+                new Rect(x + 70f, y + 20f, width - 70f, 18f),
+                TruncateText(OwnedRosterFitText(entry), 62));
+        }
+
+        private void ClampSelectedRosterIndex(MechBayOwnedRosterEntry[] roster)
+        {
+            int count = roster?.Length ?? 0;
+            if (count <= 0)
+            {
+                selectedRosterIndex = 0;
+                return;
+            }
+
+            selectedRosterIndex = Mathf.Clamp(selectedRosterIndex, 0, count - 1);
+        }
+
+        private static string OwnedRosterDetailText(MechBayOwnedRosterEntry entry)
+        {
+            if (entry == null)
+            {
+                return "Detail unavailable";
+            }
+
+            string source = entry.isWarehouseMech ? "Depot" : "Squad";
+            string state = entry.availableForMission ? "Ready" : "Hold";
+            string name = string.IsNullOrWhiteSpace(entry.displayName) ? entry.unitType : entry.displayName;
+            return source + " " + name
+                + "  " + entry.conditionPercent.ToString(CultureInfo.InvariantCulture) + "%"
+                + "  " + state;
+        }
+
+        private static string OwnedRosterFitText(MechBayOwnedRosterEntry entry)
+        {
+            if (entry == null)
+            {
+                return "";
+            }
+
+            string chassis = string.IsNullOrWhiteSpace(entry.chassisId) ? entry.unitType : entry.chassisId;
+            string loadout = string.IsNullOrWhiteSpace(entry.activeLoadoutId) ? "none" : entry.activeLoadoutId;
+            string id = string.IsNullOrWhiteSpace(entry.ownedMechId) ? "unknown" : entry.ownedMechId;
+            return "Chassis " + chassis + "  Fit " + loadout + "  Id " + id;
         }
 
         private static string ReceiptAssemblyLogText(MechBayMissionReceipt receipt)

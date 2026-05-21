@@ -65,8 +65,11 @@ namespace MC2Demo.BattleCore
     public sealed class MechBayOwnedRosterEntry
     {
         public string ownedMechId { get; internal set; }
+        public string unitId { get; internal set; }
         public string unitType { get; internal set; }
+        public string chassisId { get; internal set; }
         public string displayName { get; internal set; }
+        public string activeLoadoutId { get; internal set; }
         public bool availableForMission { get; internal set; }
         public int conditionPercent { get; internal set; }
         public bool isWarehouseMech { get; internal set; }
@@ -528,8 +531,11 @@ namespace MC2Demo.BattleCore
                 entries.Add(new MechBayOwnedRosterEntry
                 {
                     ownedMechId = mech.ownedMechId,
+                    unitId = mech.unitId,
                     unitType = mech.unitType,
+                    chassisId = mech.chassisId,
                     displayName = string.IsNullOrWhiteSpace(mech.displayName) ? mech.unitType : mech.displayName,
+                    activeLoadoutId = mech.activeLoadoutId,
                     availableForMission = mech.availableForMission,
                     conditionPercent = Math.Max(0, Math.Min(100, mech.conditionPercent)),
                     isWarehouseMech = IsWarehouseMech(mech)
