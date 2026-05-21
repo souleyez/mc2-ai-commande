@@ -334,6 +334,32 @@ namespace MC2Demo.EditorTools
             {
                 throw new InvalidDataException("Starter mech bay inventory did not block excess heat sink usage.");
             }
+
+            UnitState player = FirstPlayerUnit(mission);
+            float structureBeforeDamage = player.CurrentStructure;
+            float appliedDamage = player.ApplyDirectSectionDamage(player.Sections[0].Name, 5f);
+            int repairCost = MechBayRepairService.EstimateRepairCostResourcePoints(player);
+            if (appliedDamage <= 0f || repairCost <= 0)
+            {
+                throw new InvalidDataException("Starter repair affordance did not detect player mech damage.");
+            }
+
+            int tokenBeforeRepair = inventory.tokenBalance;
+            MechBayRepairResult repairResult = MechBayRepairService.TryRepair(inventory, player);
+            if (!repairResult.Accepted)
+            {
+                throw new InvalidDataException("Starter repair affordance was blocked: " + repairResult.Message);
+            }
+
+            if (inventory.tokenBalance != tokenBeforeRepair - repairCost)
+            {
+                throw new InvalidDataException("Starter repair affordance did not spend the expected token amount.");
+            }
+
+            if (Math.Abs(player.CurrentStructure - structureBeforeDamage) > 0.001f || MechBayRepairService.EstimateRepairCostResourcePoints(player) != 0)
+            {
+                throw new InvalidDataException("Starter repair affordance did not restore player mech condition.");
+            }
         }
 
         private static MechBayInventoryUsage BuildMechBayInventoryUsage(BattleMission mission)

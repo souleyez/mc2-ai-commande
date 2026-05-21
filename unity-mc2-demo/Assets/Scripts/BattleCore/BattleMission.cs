@@ -804,19 +804,7 @@ namespace MC2Demo.BattleCore
 
         private static int EstimateRepairCostResourcePoints(UnitState unit)
         {
-            if (unit == null)
-            {
-                return 0;
-            }
-
-            float missingStructure = Mathf.Max(0f, unit.Profile.MaxStructure - unit.CurrentStructure);
-            float missingSectionStructure = 0f;
-            foreach (DamageSection section in unit.Sections)
-            {
-                missingSectionStructure += Mathf.Max(0f, section.MaxHitPoints - section.HitPoints);
-            }
-
-            return Mathf.CeilToInt((missingStructure * 30f) + (missingSectionStructure * 12f));
+            return MechBayRepairService.EstimateRepairCostResourcePoints(unit);
         }
 
         private static bool IsPlayerUnitDamaged(UnitState unit)

@@ -119,6 +119,29 @@ namespace MC2Demo.BattleCore
             }
         }
 
+        public void RepairToFull()
+        {
+            foreach (DamageSection section in Sections)
+            {
+                section.RepairToFull();
+            }
+
+            CurrentStructure = Profile.MaxStructure;
+            CurrentHeat = 0f;
+            IsDestroyed = false;
+            IsActive = true;
+            IsJumping = false;
+            JumpLift = 0f;
+            HasMoveOrder = false;
+            IsDetached = false;
+            AttackTargetId = null;
+            CurrentTargetId = null;
+            LastHitSection = null;
+            LastDamageTaken = 0f;
+            WeaponCooldownRemaining = 0f;
+            MoveTarget = MissionPosition;
+        }
+
         public void SetMoveOrder(Vector2 missionPoint, bool detached)
         {
             if (!IsActive || IsDestroyed)

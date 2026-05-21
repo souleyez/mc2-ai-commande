@@ -17,6 +17,8 @@ namespace MC2Demo.Presentation
         [SerializeField] private float cameraYaw = 45f;
         private const float JumpDistance = 520f;
         private const float MiniMaxCommanderAdvanceSeconds = 8f;
+        private const float LoadoutCardHeight = 396f;
+        private const float LoadoutCardStride = 408f;
 
         private readonly Dictionary<string, DemoUnitView> unitViews = new();
         private readonly Dictionary<string, DemoStructureView> structureViews = new();
@@ -116,7 +118,7 @@ namespace MC2Demo.Presentation
             commandPort = new CommanderCommandPort(mission, JumpDistance, DemoTerrainView.IsUsableLandingPosition);
             observationPort = new CommanderObservationPort(mission);
             demoInventory = MechBayInventoryBuilder.BuildDemoInventory(mission.PlayerUnits());
-            demoInventoryValidation = MechBayInventoryValidator.Validate(demoInventory);
+            RefreshDemoInventoryValidation();
             if (!demoInventoryValidation.IsValid)
             {
                 Debug.LogWarning("MC2 mech bay inventory review: " + FirstInventoryError(demoInventoryValidation));
@@ -2504,13 +2506,13 @@ namespace MC2Demo.Presentation
 
             int unitCount = CountPlayerUnits();
             Rect viewport = new(x, y, width, panel.yMax - y - 12f);
-            Rect content = new(0f, 0f, width - 20f, Mathf.Max(viewport.height, unitCount * 388f));
+            Rect content = new(0f, 0f, width - 20f, Mathf.Max(viewport.height, unitCount * LoadoutCardStride));
             loadoutScroll = GUI.BeginScrollView(viewport, loadoutScroll, content);
             float itemY = 0f;
             foreach (UnitState unit in mission.PlayerUnits())
             {
                 DrawLoadoutUnit(unit, 0f, itemY, content.width);
-                itemY += 388f;
+                itemY += LoadoutCardStride;
             }
 
             GUI.EndScrollView();
@@ -2549,7 +2551,7 @@ namespace MC2Demo.Presentation
 
         private void DrawLoadoutUnit(UnitState unit, float x, float y, float width)
         {
-            Rect card = new(x, y, width, 376f);
+            Rect card = new(x, y, width, LoadoutCardHeight);
             GUI.Box(card, unit.UnitType + "  " + unit.Id);
 
             float left = x + 12f;
@@ -2574,6 +2576,9 @@ namespace MC2Demo.Presentation
                 "Range " + Mathf.RoundToInt(unit.CombatWeaponRange)
                 + "  Damage " + FormatDecimal(unit.CombatWeaponDamage)
                 + "  CD " + FormatDecimal(unit.CombatWeaponCooldown));
+
+            lineY += 20f;
+            DrawMechConditionLine(unit, left, right, lineY, width);
 
             lineY += 20f;
             DrawProjectedLoadoutStatus(loadoutPreview, left, right, lineY, width);
@@ -2671,6 +2676,49 @@ namespace MC2Demo.Presentation
             return used.ToString(CultureInfo.InvariantCulture)
                 + "/"
                 + available.ToString(CultureInfo.InvariantCulture);
+        }
+
+        private void DrawMechConditionLine(UnitState unit, float left, float right, float y, float width)
+        {
+            int condition = MechConditionPercent(unit);
+            int repairCost = MechBayRepairService.EstimateRepairCostResourcePoints(unit);
+            GUI.Label(
+                new Rect(left, y, width * 0.46f, 18f),
+                "Condition " + condition.ToString(CultureInfo.InvariantCulture) + "%"
+                + "  Repair " + FormatTokens(repairCost));
+
+            bool previousEnabled = GUI.enabled;
+            GUI.enabled = previousEnabled
+                && repairCost > 0
+                && demoInventory != null
+                && demoInventory.tokenBalance >= repairCost;
+            if (GUI.Button(new Rect(right, y - 2f, 86f, 22f), "Repair"))
+            {
+                MechBayRepairResult result = MechBayRepairService.TryRepair(demoInventory, unit);
+                RefreshDemoInventoryValidation();
+                statusText = result.Message;
+            }
+
+            GUI.enabled = previousEnabled;
+            if (repairCost > 0 && demoInventory != null && demoInventory.tokenBalance < repairCost)
+            {
+                GUI.Label(new Rect(right + 92f, y, width * 0.46f - 92f, 18f), "Need " + FormatTokens(repairCost));
+            }
+        }
+
+        private void RefreshDemoInventoryValidation()
+        {
+            demoInventoryValidation = MechBayInventoryValidator.Validate(demoInventory);
+        }
+
+        private static int MechConditionPercent(UnitState unit)
+        {
+            if (unit?.Profile == null || unit.Profile.MaxStructure <= 0f)
+            {
+                return 0;
+            }
+
+            return Mathf.RoundToInt(Mathf.Clamp01(unit.CurrentStructure / unit.Profile.MaxStructure) * 100f);
         }
 
         private void DrawLoadoutSectionLine(UnitState unit, float x, float y, float width)

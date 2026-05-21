@@ -54,6 +54,7 @@ The Unity demo currently supports:
 - applied armor/cooling bonuses appear in unit weapon status and blocked damage appears in combat logs
 - starter mech bay inventory contract summarizes owned mechs, weapons, armor plates, heat sinks, and demo token balance
 - starter inventory availability feedback warns on armor plate or heat sink shortages and blocks applying invalid drafts
+- starter mech condition and one-click demo repair spend local token balance and restore damaged mechs
 - CLI/AI loop pieces:
   - `-mc2Command`
   - `-mc2AdvanceSeconds`
@@ -367,10 +368,10 @@ Tasks:
 
 ## Current Recommended Next Task
 
-Start with **starter mech condition and repair affordance**.
+Start with **starter salvage and reward inventory receipt**.
 
 Reason:
 
-- The mech bay now has local inventory and can block over-budget armor/sink drafts.
-- The next low-risk step is to surface per-mech condition and a demo repair affordance that spends from the local token balance.
-- Keep it local and one-click first; salvage, shop stock, saved accounts, and wait timers still come later.
+- The mech bay now has local inventory, usage gates, token balance, and one-click repair.
+- The next low-risk step is to turn mission reward/salvage output into a local inventory receipt after demo completion.
+- Keep it as a local receipt first; shop stock, saved accounts, repeated-task rules, and multiplayer support still come later.

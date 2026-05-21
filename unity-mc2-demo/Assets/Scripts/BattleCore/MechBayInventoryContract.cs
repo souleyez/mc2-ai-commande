@@ -118,6 +118,14 @@ namespace MC2Demo.BattleCore
         }
     }
 
+    public sealed class MechBayRepairResult
+    {
+        public bool Accepted { get; internal set; }
+        public string Message { get; internal set; }
+        public int Cost { get; internal set; }
+        public int TokenBalance { get; internal set; }
+    }
+
     public static class MechBayInventoryValidator
     {
         public const string Schema = "mc2-mech-bay-inventory-v1";
@@ -452,6 +460,68 @@ namespace MC2Demo.BattleCore
 
             float ratio = Math.Max(0f, Math.Min(1f, unit.CurrentStructure / unit.Profile.MaxStructure));
             return (int)Math.Round(ratio * 100f);
+        }
+    }
+
+    public static class MechBayRepairService
+    {
+        public static int EstimateRepairCostResourcePoints(UnitState unit)
+        {
+            if (unit == null)
+            {
+                return 0;
+            }
+
+            float missingStructure = Math.Max(0f, unit.Profile.MaxStructure - unit.CurrentStructure);
+            float missingSectionStructure = 0f;
+            foreach (DamageSection section in unit.Sections)
+            {
+                missingSectionStructure += Math.Max(0f, section.MaxHitPoints - section.HitPoints);
+            }
+
+            return (int)Math.Ceiling((missingStructure * 30f) + (missingSectionStructure * 12f));
+        }
+
+        public static MechBayRepairResult TryRepair(MechBayInventoryContract inventory, UnitState unit)
+        {
+            int cost = EstimateRepairCostResourcePoints(unit);
+            MechBayRepairResult result = new()
+            {
+                Cost = cost,
+                TokenBalance = Math.Max(0, inventory?.tokenBalance ?? 0)
+            };
+
+            if (inventory == null)
+            {
+                result.Message = "Inventory missing";
+                return result;
+            }
+
+            if (unit == null)
+            {
+                result.Message = "No mech selected";
+                return result;
+            }
+
+            if (cost <= 0)
+            {
+                result.Accepted = true;
+                result.Message = "No repair needed";
+                return result;
+            }
+
+            if (inventory.tokenBalance < cost)
+            {
+                result.Message = "Need " + cost + " token";
+                return result;
+            }
+
+            inventory.tokenBalance -= cost;
+            unit.RepairToFull();
+            result.Accepted = true;
+            result.TokenBalance = inventory.tokenBalance;
+            result.Message = "Repaired " + unit.UnitType;
+            return result;
         }
     }
 }

@@ -23,5 +23,10 @@ namespace MC2Demo.BattleCore
             HitPoints -= applied;
             return damage - applied;
         }
+
+        public void RepairToFull()
+        {
+            HitPoints = MaxHitPoints;
+        }
     }
 }
