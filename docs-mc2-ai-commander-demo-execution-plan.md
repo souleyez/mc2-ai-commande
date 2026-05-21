@@ -50,6 +50,7 @@ The Unity demo currently supports:
 - toggleable projected filler cells that cycle between armor, heat sink, and empty
 - mech bay draft/apply/reset boundaries for temporary demo fits
 - applied demo fit handoff into combat readiness, range, heat, cooldown, and weapon display stats
+- applied armor hardness reduces incoming damage and applied heat sinks increase cooling
 - CLI/AI loop pieces:
   - `-mc2Command`
   - `-mc2AdvanceSeconds`
@@ -363,10 +364,10 @@ Tasks:
 
 ## Current Recommended Next Task
 
-Start with **loadout armor and cooling combat effects**.
+Start with **applied loadout feedback polish**.
 
 Reason:
 
-- Applied demo fits now reach runtime combat range, damage, cooldown, heat, and commander observation.
-- The next low-risk step is to let applied armor plates and heat sinks alter simple combat behavior in a visible way.
+- Applied demo fits now alter weapons, cooling, and armor hardness in runtime combat.
+- The next low-risk step is to make those applied effects more legible in the battle UI and combat log.
 - Keep this as a runtime demo handoff only; persistent inventory, shop data, and saved mech builds still come later.

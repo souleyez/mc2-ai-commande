@@ -7,6 +7,7 @@ namespace MC2Demo.BattleCore
     {
         private const float ArriveDistance = 20f;
         private const float JumpDuration = 0.45f;
+        private const float ArmorHardnessReductionPerPoint = 0.08f;
 
         public string Id { get; }
         public string UnitType { get; }
@@ -24,6 +25,8 @@ namespace MC2Demo.BattleCore
         public float CombatWeaponCooldown => appliedLoadout?.weaponCooldown ?? Profile.WeaponCooldown;
         public float CombatHeatPerShot => appliedLoadout?.heatPerShot ?? Profile.HeatPerShot;
         public float CombatHeatDissipationPerSecond => appliedLoadout?.heatDissipationPerSecond ?? Profile.HeatDissipationPerSecond;
+        public float CombatArmorHardnessBonus => appliedLoadout?.armorHardnessBonus ?? 0f;
+        public float CombatIncomingDamageMultiplier => 1f / (1f + Mathf.Max(0f, CombatArmorHardnessBonus) * ArmorHardnessReductionPerPoint);
         public float CombatTotalWeaponWeight => appliedLoadout?.totalWeaponWeight ?? Profile.TotalWeaponWeight;
         public string CombatPrimaryWeaponName => appliedLoadout?.primaryWeaponName ?? Profile.PrimaryWeaponName;
         public string CombatPrimaryWeaponType => appliedLoadout?.primaryWeaponType ?? Profile.PrimaryWeaponType;
@@ -409,7 +412,7 @@ namespace MC2Demo.BattleCore
 
         private DamageResult ApplyDamageWithOverflow(DamageSection firstSection, float damage)
         {
-            float remaining = damage;
+            float remaining = Mathf.Max(0f, damage * CombatIncomingDamageMultiplier);
             float applied = 0f;
             string lastHitSectionName = firstSection.Name;
 
@@ -601,6 +604,7 @@ namespace MC2Demo.BattleCore
         public float weaponCooldown;
         public float heatPerShot;
         public float heatDissipationPerSecond;
+        public float armorHardnessBonus;
         public float totalWeaponWeight;
         public string primaryWeaponName;
         public string primaryWeaponType;

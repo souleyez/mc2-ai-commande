@@ -3097,6 +3097,7 @@ namespace MC2Demo.Presentation
             }
 
             float heatSinkBonus = preview?.Validation.TotalHeatDissipationBonus ?? 0f;
+            float armorHardnessBonus = preview?.Validation.TotalArmorHardnessBonus ?? 0f;
             if (enabledCount <= 0)
             {
                 return new UnitLoadoutCombatOverride
@@ -3106,6 +3107,7 @@ namespace MC2Demo.Presentation
                     weaponCooldown = profile.WeaponCooldown,
                     heatPerShot = 0f,
                     heatDissipationPerSecond = profile.HeatDissipationPerSecond + heatSinkBonus,
+                    armorHardnessBonus = armorHardnessBonus,
                     totalWeaponWeight = preview?.Validation.TotalWeight ?? 0f,
                     primaryWeaponName = "No Weapons",
                     primaryWeaponType = "Generic",
@@ -3125,6 +3127,7 @@ namespace MC2Demo.Presentation
                     : cooldownWeightedTotal / cooldownWeight,
                 heatPerShot = allWeaponsEnabled ? profile.HeatPerShot : enabledHeat,
                 heatDissipationPerSecond = profile.HeatDissipationPerSecond + heatSinkBonus,
+                armorHardnessBonus = armorHardnessBonus,
                 totalWeaponWeight = preview?.Validation.TotalWeight ?? enabledWeight,
                 primaryWeaponName = allWeaponsEnabled
                     ? profile.PrimaryWeaponName

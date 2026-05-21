@@ -219,3 +219,5 @@ separates draft edits from the last applied demo fit, with reset returning to
 that applied state; this is still a runtime preview boundary, not saved inventory.
 Applied demo fits now hand effective weapon range, damage, cooldown, heat, and
 cooling into combat and commander observation without changing source profile data.
+Armor hardness uses a single incoming-damage multiplier, while heat sinks add to
+the runtime cooling rate; both remain demo-only effects until saved loadouts exist.

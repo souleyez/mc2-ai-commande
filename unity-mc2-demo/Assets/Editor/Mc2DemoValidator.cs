@@ -562,6 +562,7 @@ namespace MC2Demo.EditorTools
                 weaponCooldown = 0.8f,
                 heatPerShot = 2f,
                 heatDissipationPerSecond = 9f,
+                armorHardnessBonus = 4f,
                 totalWeaponWeight = 12f,
                 primaryWeaponName = "Runtime Test Laser",
                 primaryWeaponType = "Energy",
@@ -574,6 +575,8 @@ namespace MC2Demo.EditorTools
                 || Math.Abs(unit.CombatWeaponCooldown - 0.8f) > 0.001f
                 || Math.Abs(unit.CombatHeatPerShot - 2f) > 0.001f
                 || Math.Abs(unit.CombatHeatDissipationPerSecond - 9f) > 0.001f
+                || Math.Abs(unit.CombatArmorHardnessBonus - 4f) > 0.001f
+                || unit.CombatIncomingDamageMultiplier >= 1f
                 || unit.CombatPrimaryWeaponName != "Runtime Test Laser"
                 || unit.CombatPrimaryWeaponType != "Energy"
                 || unit.CombatPrimarySpecialEffect != 4)
@@ -584,9 +587,47 @@ namespace MC2Demo.EditorTools
             unit.ClearDemoLoadout();
             if (unit.HasAppliedDemoLoadout
                 || Math.Abs(unit.CombatWeaponRange - sourceRange) > 0.001f
-                || Math.Abs(unit.CombatWeaponDamage - sourceDamage) > 0.001f)
+                || Math.Abs(unit.CombatWeaponDamage - sourceDamage) > 0.001f
+                || unit.CombatArmorHardnessBonus > 0f)
             {
                 throw new InvalidDataException("Runtime loadout combat override did not clear back to source stats.");
+            }
+
+            UnitState unarmored = new(new UnitSpawn
+            {
+                spawnId = "unarmored-damage-test",
+                teamId = 0,
+                isPlayerUnit = true,
+                unitType = "Werewolf",
+                position = new MissionPose()
+            }, combatProfiles);
+            UnitState armored = new(new UnitSpawn
+            {
+                spawnId = "armored-damage-test",
+                teamId = 0,
+                isPlayerUnit = true,
+                unitType = "Werewolf",
+                position = new MissionPose()
+            }, combatProfiles);
+            armored.ApplyDemoLoadout(new UnitLoadoutCombatOverride
+            {
+                weaponRange = armored.Profile.WeaponRange,
+                weaponDamage = armored.Profile.WeaponDamage,
+                weaponCooldown = armored.Profile.WeaponCooldown,
+                heatPerShot = armored.Profile.HeatPerShot,
+                heatDissipationPerSecond = armored.Profile.HeatDissipationPerSecond,
+                armorHardnessBonus = 4f,
+                totalWeaponWeight = armored.Profile.TotalWeaponWeight,
+                primaryWeaponName = armored.Profile.PrimaryWeaponName,
+                primaryWeaponType = armored.Profile.PrimaryWeaponType,
+                primarySpecialEffect = armored.Profile.PrimarySpecialEffect
+            });
+
+            float unarmoredDamage = unarmored.ApplyDirectSectionDamage("Torso", 20f);
+            float armoredDamage = armored.ApplyDirectSectionDamage("Torso", 20f);
+            if (armoredDamage <= 0f || armoredDamage >= unarmoredDamage)
+            {
+                throw new InvalidDataException("Runtime armor hardness did not reduce incoming section damage.");
             }
         }
 
