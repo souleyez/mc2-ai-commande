@@ -217,3 +217,5 @@ also be cycled between armor, heat sink, and empty so the first fitting tradeoff
 is interactive without committing to a saved inventory format yet. The UI now
 separates draft edits from the last applied demo fit, with reset returning to
 that applied state; this is still a runtime preview boundary, not saved inventory.
+Applied demo fits now hand effective weapon range, damage, cooldown, heat, and
+cooling into combat and commander observation without changing source profile data.

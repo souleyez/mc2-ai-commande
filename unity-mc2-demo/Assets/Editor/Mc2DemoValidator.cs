@@ -48,6 +48,7 @@ namespace MC2Demo.EditorTools
 
             ValidateSourceDrivenProfiles(combatProfiles);
             ValidateSourceLoadoutPreview(combatProfiles);
+            ValidateRuntimeLoadoutCombatOverride(combatProfiles);
             ValidateLoadoutContractShape();
 
             string contractJson = File.ReadAllText(contractPath);
@@ -539,6 +540,54 @@ namespace MC2Demo.EditorTools
             }
 
             return false;
+        }
+
+        private static void ValidateRuntimeLoadoutCombatOverride(CombatProfileCatalog combatProfiles)
+        {
+            UnitState unit = new(new UnitSpawn
+            {
+                spawnId = "loadout-override-player",
+                teamId = 0,
+                isPlayerUnit = true,
+                unitType = "Werewolf",
+                position = new MissionPose()
+            }, combatProfiles);
+
+            float sourceRange = unit.CombatWeaponRange;
+            float sourceDamage = unit.CombatWeaponDamage;
+            unit.ApplyDemoLoadout(new UnitLoadoutCombatOverride
+            {
+                weaponRange = 321f,
+                weaponDamage = 7f,
+                weaponCooldown = 0.8f,
+                heatPerShot = 2f,
+                heatDissipationPerSecond = 9f,
+                totalWeaponWeight = 12f,
+                primaryWeaponName = "Runtime Test Laser",
+                primaryWeaponType = "Energy",
+                primarySpecialEffect = 4
+            });
+
+            if (!unit.HasAppliedDemoLoadout
+                || Math.Abs(unit.CombatWeaponRange - 321f) > 0.001f
+                || Math.Abs(unit.CombatWeaponDamage - 7f) > 0.001f
+                || Math.Abs(unit.CombatWeaponCooldown - 0.8f) > 0.001f
+                || Math.Abs(unit.CombatHeatPerShot - 2f) > 0.001f
+                || Math.Abs(unit.CombatHeatDissipationPerSecond - 9f) > 0.001f
+                || unit.CombatPrimaryWeaponName != "Runtime Test Laser"
+                || unit.CombatPrimaryWeaponType != "Energy"
+                || unit.CombatPrimarySpecialEffect != 4)
+            {
+                throw new InvalidDataException("Runtime loadout combat override was not reflected by UnitState effective stats.");
+            }
+
+            unit.ClearDemoLoadout();
+            if (unit.HasAppliedDemoLoadout
+                || Math.Abs(unit.CombatWeaponRange - sourceRange) > 0.001f
+                || Math.Abs(unit.CombatWeaponDamage - sourceDamage) > 0.001f)
+            {
+                throw new InvalidDataException("Runtime loadout combat override did not clear back to source stats.");
+            }
         }
 
         private static LoadoutItemDefinition FindLoadoutItem(LoadoutContract contract, string itemId)

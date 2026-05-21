@@ -18,6 +18,16 @@ namespace MC2Demo.BattleCore
         public int ActivationObjectiveIndex { get; }
         public CombatProfile Profile { get; }
         public DamageSection[] Sections { get; }
+        public bool HasAppliedDemoLoadout => appliedLoadout != null;
+        public float CombatWeaponRange => appliedLoadout?.weaponRange ?? Profile.WeaponRange;
+        public float CombatWeaponDamage => appliedLoadout?.weaponDamage ?? Profile.WeaponDamage;
+        public float CombatWeaponCooldown => appliedLoadout?.weaponCooldown ?? Profile.WeaponCooldown;
+        public float CombatHeatPerShot => appliedLoadout?.heatPerShot ?? Profile.HeatPerShot;
+        public float CombatHeatDissipationPerSecond => appliedLoadout?.heatDissipationPerSecond ?? Profile.HeatDissipationPerSecond;
+        public float CombatTotalWeaponWeight => appliedLoadout?.totalWeaponWeight ?? Profile.TotalWeaponWeight;
+        public string CombatPrimaryWeaponName => appliedLoadout?.primaryWeaponName ?? Profile.PrimaryWeaponName;
+        public string CombatPrimaryWeaponType => appliedLoadout?.primaryWeaponType ?? Profile.PrimaryWeaponType;
+        public int CombatPrimarySpecialEffect => appliedLoadout?.primarySpecialEffect ?? Profile.PrimarySpecialEffect;
         public bool IsActive { get; private set; }
         public bool IsDestroyed { get; private set; }
         public bool IsJumping { get; private set; }
@@ -39,11 +49,12 @@ namespace MC2Demo.BattleCore
         public bool IsWeaponCoolingDown => WeaponCooldownRemaining > 0f;
         public float CurrentHeat { get; private set; }
         public float HeatRatio => Profile.HeatCapacity <= 0f ? 0f : CurrentHeat / Profile.HeatCapacity;
-        public float WeaponCooldownRatio => Profile.WeaponCooldown <= 0f ? 0f : WeaponCooldownRemaining / Profile.WeaponCooldown;
+        public float WeaponCooldownRatio => CombatWeaponCooldown <= 0f ? 0f : WeaponCooldownRemaining / CombatWeaponCooldown;
         public float WeaponReadinessRatio => Mathf.Clamp01(1f - WeaponCooldownRatio);
         public Vector2 SpawnPosition { get; }
         public Vector2 MissionPosition { get; private set; }
         public Vector2 MoveTarget { get; private set; }
+        private UnitLoadoutCombatOverride appliedLoadout;
         private Vector2 jumpStart;
         private Vector2 jumpEnd;
         private float jumpElapsed;
@@ -84,6 +95,24 @@ namespace MC2Demo.BattleCore
                 AttackTargetId = null;
                 CurrentTargetId = null;
                 MoveTarget = MissionPosition;
+            }
+        }
+
+        public void ApplyDemoLoadout(UnitLoadoutCombatOverride loadout)
+        {
+            appliedLoadout = loadout;
+            if (WeaponCooldownRemaining > CombatWeaponCooldown)
+            {
+                WeaponCooldownRemaining = Mathf.Max(0f, CombatWeaponCooldown);
+            }
+        }
+
+        public void ClearDemoLoadout()
+        {
+            appliedLoadout = null;
+            if (WeaponCooldownRemaining > CombatWeaponCooldown)
+            {
+                WeaponCooldownRemaining = Mathf.Max(0f, CombatWeaponCooldown);
             }
         }
 
@@ -229,9 +258,9 @@ namespace MC2Demo.BattleCore
 
         public void TickWeapon(float deltaTime)
         {
-            if (CurrentHeat > 0f && Profile.HeatDissipationPerSecond > 0f)
+            if (CurrentHeat > 0f && CombatHeatDissipationPerSecond > 0f)
             {
-                CurrentHeat = Mathf.Max(0f, CurrentHeat - (Profile.HeatDissipationPerSecond * Mathf.Max(0f, deltaTime)));
+                CurrentHeat = Mathf.Max(0f, CurrentHeat - (CombatHeatDissipationPerSecond * Mathf.Max(0f, deltaTime)));
             }
 
             if (WeaponCooldownRemaining > 0f)
@@ -271,19 +300,19 @@ namespace MC2Demo.BattleCore
         public bool IsInWeaponRange(UnitState target)
         {
             return target != null
-                && Vector2.Distance(MissionPosition, target.MissionPosition) <= Profile.WeaponRange;
+                && Vector2.Distance(MissionPosition, target.MissionPosition) <= CombatWeaponRange;
         }
 
         public bool IsInWeaponRange(StructureState target)
         {
             return target != null
-                && Vector2.Distance(MissionPosition, target.MissionPosition) <= Profile.WeaponRange + target.Radius;
+                && Vector2.Distance(MissionPosition, target.MissionPosition) <= CombatWeaponRange + target.Radius;
         }
 
         public CombatEvent FireAt(UnitState target)
         {
             CurrentTargetId = target.Id;
-            WeaponCooldownRemaining = Profile.WeaponCooldown;
+            WeaponCooldownRemaining = CombatWeaponCooldown;
             AddWeaponHeat();
             DamageResult result = target.ApplyDamage(EffectiveWeaponDamage(), Id);
             return new CombatEvent(
@@ -292,14 +321,14 @@ namespace MC2Demo.BattleCore
                 result.SectionName,
                 result.DamageApplied,
                 target.IsDestroyed,
-                Profile.PrimaryWeaponType,
-                Profile.PrimarySpecialEffect);
+                CombatPrimaryWeaponType,
+                CombatPrimarySpecialEffect);
         }
 
         public CombatEvent FireAt(StructureState target)
         {
             CurrentTargetId = target.Id;
-            WeaponCooldownRemaining = Profile.WeaponCooldown;
+            WeaponCooldownRemaining = CombatWeaponCooldown;
             AddWeaponHeat();
             float damage = target.ApplyDamage(EffectiveWeaponDamage());
             return new CombatEvent(
@@ -308,8 +337,8 @@ namespace MC2Demo.BattleCore
                 "Structure",
                 damage,
                 target.IsDestroyed,
-                Profile.PrimaryWeaponType,
-                Profile.PrimarySpecialEffect);
+                CombatPrimaryWeaponType,
+                CombatPrimarySpecialEffect);
         }
 
         public void SetCurrentTarget(UnitState target)
@@ -480,12 +509,12 @@ namespace MC2Demo.BattleCore
 
         private float EffectiveWeaponDamage()
         {
-            return Profile.WeaponDamage * FirepowerRatio;
+            return CombatWeaponDamage * FirepowerRatio;
         }
 
         private float EffectiveHeatPerShot()
         {
-            return Profile.HeatPerShot * FirepowerRatio;
+            return CombatHeatPerShot * FirepowerRatio;
         }
 
         private void AddWeaponHeat()
@@ -563,5 +592,18 @@ namespace MC2Demo.BattleCore
                 DamageApplied = damageApplied;
             }
         }
+    }
+
+    public sealed class UnitLoadoutCombatOverride
+    {
+        public float weaponRange;
+        public float weaponDamage;
+        public float weaponCooldown;
+        public float heatPerShot;
+        public float heatDissipationPerSecond;
+        public float totalWeaponWeight;
+        public string primaryWeaponName;
+        public string primaryWeaponType;
+        public int primarySpecialEffect;
     }
 }

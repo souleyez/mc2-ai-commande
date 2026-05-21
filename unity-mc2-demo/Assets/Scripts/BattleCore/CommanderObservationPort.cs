@@ -292,7 +292,7 @@ namespace MC2Demo.BattleCore
                 structureRatio = unit.Structure,
                 heatRatio = unit.HeatRatio,
                 weaponReadyRatio = unit.WeaponReadinessRatio,
-                weaponRange = unit.Profile.WeaponRange,
+                weaponRange = unit.CombatWeaponRange,
                 x = unit.MissionPosition.x,
                 y = unit.MissionPosition.y,
                 moveTargetX = unit.MoveTarget.x,

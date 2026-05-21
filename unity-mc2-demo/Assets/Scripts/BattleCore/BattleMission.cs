@@ -315,7 +315,7 @@ namespace MC2Demo.BattleCore
 
             UnitState bestTarget = null;
             float bestDistanceSqr = float.MaxValue;
-            float rangeSqr = attacker.Profile.WeaponRange * attacker.Profile.WeaponRange;
+            float rangeSqr = attacker.CombatWeaponRange * attacker.CombatWeaponRange;
 
             foreach (UnitState candidate in units)
             {
@@ -360,7 +360,7 @@ namespace MC2Demo.BattleCore
 
             StructureState bestTarget = null;
             float bestDistanceSqr = float.MaxValue;
-            float range = attacker.Profile.WeaponRange;
+            float range = attacker.CombatWeaponRange;
 
             foreach (StructureState candidate in structures)
             {
@@ -426,7 +426,7 @@ namespace MC2Demo.BattleCore
 
         private static float EnemyAlertRange(UnitState unit)
         {
-            return Mathf.Max(900f, unit.Profile.WeaponRange * 1.8f);
+            return Mathf.Max(900f, unit.CombatWeaponRange * 1.8f);
         }
 
         private bool TryGetMissionPatrolPoint(UnitState unit, out Vector2 patrolPoint)
@@ -559,7 +559,7 @@ namespace MC2Demo.BattleCore
             UnitState unitTarget = FindAttackableUnit(attacker.AttackTargetId, playerTeam: attacker.IsPlayerUnit);
             if (unitTarget != null)
             {
-                bool inRange = Vector2.Distance(attacker.MissionPosition, unitTarget.MissionPosition) <= attacker.Profile.WeaponRange;
+                bool inRange = Vector2.Distance(attacker.MissionPosition, unitTarget.MissionPosition) <= attacker.CombatWeaponRange;
                 attacker.UpdateAttackOrder(unitTarget.MissionPosition, inRange);
                 return;
             }
@@ -568,7 +568,7 @@ namespace MC2Demo.BattleCore
             if (structureTarget != null)
             {
                 bool inRange = Vector2.Distance(attacker.MissionPosition, structureTarget.MissionPosition)
-                    <= attacker.Profile.WeaponRange + structureTarget.Radius;
+                    <= attacker.CombatWeaponRange + structureTarget.Radius;
                 attacker.UpdateAttackOrder(structureTarget.MissionPosition, inRange);
                 return;
             }

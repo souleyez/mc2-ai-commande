@@ -1418,7 +1418,7 @@ namespace MC2Demo.Presentation
             }
 
             bool isVisible = !unit.IsDestroyed
-                && unit.Profile.WeaponRange > 0f
+                && unit.CombatWeaponRange > 0f
                 && (pendingDetachedUnitId == unit.Id
                     || unit.IsDetached
                     || unit.HasAttackOrder
@@ -1427,7 +1427,7 @@ namespace MC2Demo.Presentation
             if (isVisible)
             {
                 marker.transform.position = GroundMarkerPosition(unit.MissionPosition, 0.045f);
-                float worldDiameter = Mathf.Clamp((unit.Profile.WeaponRange / 100f) * 2f, 1.2f, 8f);
+                float worldDiameter = Mathf.Clamp((unit.CombatWeaponRange / 100f) * 2f, 1.2f, 8f);
                 marker.transform.localScale = new Vector3(worldDiameter, 0.01f, worldDiameter);
             }
         }
@@ -2083,7 +2083,7 @@ namespace MC2Demo.Presentation
                 Rect bar = new(barBack.x, barBack.y, barBack.width * unit.Structure, barBack.height);
                 DrawColorRect(bar, unit.IsDestroyed ? Color.red : Color.green);
 
-                if (unit.Profile.HeatPerShot > 0f)
+                if (unit.CombatHeatPerShot > 0f)
                 {
                     Rect heatBack = new(24, y + 31, 292, 4);
                     GUI.DrawTexture(heatBack, Texture2D.grayTexture);
@@ -2104,7 +2104,7 @@ namespace MC2Demo.Presentation
 
         private string WeaponStatusText(UnitState unit)
         {
-            string weapon = ShortWeaponName(unit.Profile.PrimaryWeaponName);
+            string weapon = ShortWeaponName(unit.CombatPrimaryWeaponName);
             string state = "Ready";
             if (unit.IsDestroyed)
             {
@@ -2123,7 +2123,7 @@ namespace MC2Demo.Presentation
                 state = "Out of range";
             }
 
-            return weapon + "  R" + Mathf.RoundToInt(unit.Profile.WeaponRange) + "  " + state;
+            return weapon + "  R" + Mathf.RoundToInt(unit.CombatWeaponRange) + "  " + state;
         }
 
         private string ShortWeaponName(string weaponName)
@@ -2493,17 +2493,17 @@ namespace MC2Demo.Presentation
             GUI.Label(
                 new Rect(right, lineY, width * 0.46f, 18f),
                 "Heat " + FormatDecimal(unit.CurrentHeat) + "/" + FormatDecimal(unit.Profile.HeatCapacity)
-                + "  Load " + FormatDecimal(unit.Profile.TotalWeaponWeight));
+                + "  Load " + FormatDecimal(unit.CombatTotalWeaponWeight));
 
             lineY += 20f;
             GUI.Label(
                 new Rect(left, lineY, width * 0.46f, 18f),
-                "Primary " + TruncateText(unit.Profile.PrimaryWeaponName, 28));
+                "Primary " + TruncateText(unit.CombatPrimaryWeaponName, 28));
             GUI.Label(
                 new Rect(right, lineY, width * 0.46f, 18f),
-                "Range " + Mathf.RoundToInt(unit.Profile.WeaponRange)
-                + "  Damage " + FormatDecimal(unit.Profile.WeaponDamage)
-                + "  CD " + FormatDecimal(unit.Profile.WeaponCooldown));
+                "Range " + Mathf.RoundToInt(unit.CombatWeaponRange)
+                + "  Damage " + FormatDecimal(unit.CombatWeaponDamage)
+                + "  CD " + FormatDecimal(unit.CombatWeaponCooldown));
 
             lineY += 20f;
             DrawProjectedLoadoutStatus(loadoutPreview, left, right, lineY, width);
@@ -2998,6 +2998,7 @@ namespace MC2Demo.Presentation
             appliedLoadoutWeaponEnabledByUnit[key] = CloneWeaponState(WeaponEnabledStateFor(unit), weaponCount);
             appliedLoadoutPlacementOverridesByUnit[key] = ClonePlacementOverrides(LoadoutPlacementOverridesFor(unit), weaponCount);
             appliedLoadoutFillerOverridesByUnit[key] = CloneFillerOverrides(LoadoutFillerOverridesFor(unit));
+            unit.ApplyDemoLoadout(BuildAppliedLoadoutCombatOverride(unit, preview));
             statusText = "Applied demo fit";
         }
 
@@ -3010,6 +3011,7 @@ namespace MC2Demo.Presentation
 
             string key = unit.Id ?? "";
             int weaponCount = unit.Profile?.Weapons?.Length ?? 0;
+            bool hasAppliedState = HasAppliedLoadoutState(key);
             loadoutWeaponEnabledByUnit[key] = CloneWeaponState(AppliedWeaponStateFor(key), weaponCount);
             loadoutPlacementOverridesByUnit[key] = ClonePlacementOverrides(AppliedPlacementStateFor(key), weaponCount);
             CombatLoadoutFillerOverride[] appliedFillers = AppliedFillerStateFor(key);
@@ -3022,7 +3024,126 @@ namespace MC2Demo.Presentation
                 loadoutFillerOverridesByUnit[key] = new List<CombatLoadoutFillerOverride>(CloneFillerOverrides(appliedFillers));
             }
 
+            if (hasAppliedState)
+            {
+                unit.ApplyDemoLoadout(BuildAppliedLoadoutCombatOverride(unit, LoadoutPreviewFor(unit)));
+            }
+            else
+            {
+                unit.ClearDemoLoadout();
+            }
+
             statusText = "Reset draft fit";
+        }
+
+        private UnitLoadoutCombatOverride BuildAppliedLoadoutCombatOverride(UnitState unit, CombatLoadoutPreview preview)
+        {
+            CombatProfile profile = unit?.Profile;
+            if (profile == null)
+            {
+                return null;
+            }
+
+            CombatWeaponDefinition[] weapons = profile.Weapons ?? Array.Empty<CombatWeaponDefinition>();
+            bool[] enabledWeapons = WeaponEnabledStateFor(unit);
+            int enabledCount = 0;
+            bool allWeaponsEnabled = weapons.Length > 0;
+            float enabledDamage = 0f;
+            float totalDamage = 0f;
+            float enabledHeat = 0f;
+            float enabledWeight = 0f;
+            float enabledRange = 0f;
+            float cooldownWeightedTotal = 0f;
+            float cooldownWeight = 0f;
+            CombatWeaponDefinition primaryWeapon = null;
+            float primaryScore = float.MinValue;
+            for (int index = 0; index < weapons.Length; index++)
+            {
+                CombatWeaponDefinition weapon = weapons[index];
+                if (weapon == null)
+                {
+                    continue;
+                }
+
+                totalDamage += Mathf.Max(0f, weapon.damage);
+                bool enabled = WeaponEnabledAt(enabledWeapons, index);
+                if (!enabled)
+                {
+                    allWeaponsEnabled = false;
+                    continue;
+                }
+
+                enabledCount++;
+                enabledDamage += Mathf.Max(0f, weapon.damage);
+                enabledHeat += Mathf.Max(0f, weapon.heat);
+                enabledWeight += Mathf.Max(0f, weapon.weight);
+                enabledRange = Mathf.Max(enabledRange, Mathf.Max(0f, weapon.rangeMax));
+                float weight = Mathf.Max(1f, weapon.damage);
+                if (weapon.recycleTime > 0f)
+                {
+                    cooldownWeightedTotal += weapon.recycleTime * weight;
+                    cooldownWeight += weight;
+                }
+
+                float score = weapon.damagePerTenSeconds > 0f
+                    ? weapon.damagePerTenSeconds
+                    : weapon.damage;
+                score += Mathf.Max(0f, weapon.rangeMax) * 0.001f;
+                if (score > primaryScore)
+                {
+                    primaryScore = score;
+                    primaryWeapon = weapon;
+                }
+            }
+
+            float heatSinkBonus = preview?.Validation.TotalHeatDissipationBonus ?? 0f;
+            if (enabledCount <= 0)
+            {
+                return new UnitLoadoutCombatOverride
+                {
+                    weaponRange = 0f,
+                    weaponDamage = 0f,
+                    weaponCooldown = profile.WeaponCooldown,
+                    heatPerShot = 0f,
+                    heatDissipationPerSecond = profile.HeatDissipationPerSecond + heatSinkBonus,
+                    totalWeaponWeight = preview?.Validation.TotalWeight ?? 0f,
+                    primaryWeaponName = "No Weapons",
+                    primaryWeaponType = "Generic",
+                    primarySpecialEffect = 0
+                };
+            }
+
+            float weaponDamage = allWeaponsEnabled || totalDamage <= 0f
+                ? profile.WeaponDamage
+                : profile.WeaponDamage * Mathf.Clamp01(enabledDamage / totalDamage);
+            return new UnitLoadoutCombatOverride
+            {
+                weaponRange = allWeaponsEnabled ? profile.WeaponRange : enabledRange,
+                weaponDamage = weaponDamage,
+                weaponCooldown = allWeaponsEnabled || cooldownWeight <= 0f
+                    ? profile.WeaponCooldown
+                    : cooldownWeightedTotal / cooldownWeight,
+                heatPerShot = allWeaponsEnabled ? profile.HeatPerShot : enabledHeat,
+                heatDissipationPerSecond = profile.HeatDissipationPerSecond + heatSinkBonus,
+                totalWeaponWeight = preview?.Validation.TotalWeight ?? enabledWeight,
+                primaryWeaponName = allWeaponsEnabled
+                    ? profile.PrimaryWeaponName
+                    : string.IsNullOrEmpty(primaryWeapon?.name) ? "Enabled Weapons" : primaryWeapon.name,
+                primaryWeaponType = allWeaponsEnabled
+                    ? profile.PrimaryWeaponType
+                    : string.IsNullOrEmpty(primaryWeapon?.type) ? "Generic" : primaryWeapon.type,
+                primarySpecialEffect = allWeaponsEnabled
+                    ? profile.PrimarySpecialEffect
+                    : primaryWeapon?.specialEffect ?? 0
+            };
+        }
+
+        private bool HasAppliedLoadoutState(string key)
+        {
+            key ??= "";
+            return appliedLoadoutWeaponEnabledByUnit.ContainsKey(key)
+                || appliedLoadoutPlacementOverridesByUnit.ContainsKey(key)
+                || appliedLoadoutFillerOverridesByUnit.ContainsKey(key);
         }
 
         private bool[] AppliedWeaponStateFor(string key)
