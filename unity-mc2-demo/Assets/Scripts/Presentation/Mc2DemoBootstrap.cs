@@ -2814,24 +2814,40 @@ namespace MC2Demo.Presentation
                 + cost
                 + "  afford "
                 + affordableCount.ToString(CultureInfo.InvariantCulture)
-                + "  preview only";
+                + "  demo buy";
         }
 
-        private static void DrawWeaponShopPurchaseStub(
+        private void DrawWeaponShopPurchaseStub(
             float x,
             float y,
             float width,
             MechBayWeaponShopPreview preview,
             MechBayInventoryContract inventory)
         {
-            bool previousEnabled = GUI.enabled;
-            GUI.enabled = false;
-            GUI.Button(new Rect(x, y - 2f, 46f, 22f), "Buy");
-            GUI.enabled = previousEnabled;
-
             MechBayWeaponShopEntry firstEntry = FirstWeaponShopEntry(preview);
             MechBayWeaponPurchasePreviewResult purchasePreview =
                 MechBayWeaponShopPreviewService.PreviewPurchase(inventory, firstEntry?.itemId);
+            bool canPurchase = firstEntry != null
+                && firstEntry.purchaseEnabled
+                && purchasePreview != null
+                && purchasePreview.CanAfford;
+
+            bool previousEnabled = GUI.enabled;
+            GUI.enabled = previousEnabled && canPurchase;
+            if (GUI.Button(new Rect(x, y - 2f, 46f, 22f), "Buy"))
+            {
+                MechBayWeaponPurchasePreviewResult result =
+                    MechBayWeaponShopPreviewService.TryApplyDemoPurchase(inventory, firstEntry.itemId);
+                statusText = result?.Message ?? "Purchase unavailable";
+                if (result != null && result.Accepted)
+                {
+                    AddCombatLogLine("Shop " + result.Message);
+                    RefreshDemoInventoryValidation();
+                    purchasePreview = MechBayWeaponShopPreviewService.PreviewPurchase(inventory, firstEntry.itemId);
+                }
+            }
+
+            GUI.enabled = previousEnabled;
             GUI.Label(new Rect(x + 54f, y, width - 54f, 18f), TruncateText(WeaponShopPurchaseStubText(purchasePreview), 56));
         }
 

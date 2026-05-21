@@ -51,8 +51,8 @@ Current demo behavior:
 - previews depot fitting requirements such as spare weapon stock and pilot assignment
 - shows a read-only pilot placeholder for depot mechs before the future pilot/social loop exists
 - previews spare weapon stock counts for future depot fitting
-- previews a read-only ordinary weapon shop as the future source of spare depot weapons
-- shows a disabled weapon purchase stub that previews cost without changing inventory
+- previews an ordinary weapon shop as the future source of spare depot weapons
+- supports a demo ordinary weapon purchase that spends local tokens and adds one spare weapon
 - warns when draft armor plate or heat sink usage exceeds starter inventory and blocks applying that fit
 - shows starter mech condition and one-click demo repair that spends local token balance
 - applies a local mission receipt for completed bounty tokens and salvaged mech fragments at mission end

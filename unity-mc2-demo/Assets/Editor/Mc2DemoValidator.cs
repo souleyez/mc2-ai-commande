@@ -334,12 +334,13 @@ namespace MC2Demo.EditorTools
                 || shopPreview.Status != "Ordinary weapon shop preview"
                 || shopPreview.Entries == null
                 || shopPreview.Entries.Length != 3
-                || shopPreview.Entries[0].purchaseEnabled
+                || !shopPreview.Entries[0].purchaseEnabled
                 || !shopPreview.Entries[0].canAfford
                 || shopPreview.Entries[0].tokenCost <= 0
+                || shopPreview.Entries[0].purchaseStatus != "Demo purchase"
                 || string.IsNullOrWhiteSpace(shopPreview.Entries[0].displayName))
             {
-                throw new InvalidDataException("Expected starter weapon shop preview to expose read-only ordinary weapons.");
+                throw new InvalidDataException("Expected starter weapon shop preview to expose demo-purchasable ordinary weapons.");
             }
 
             int tokenBeforePurchasePreview = inventory.tokenBalance;
@@ -354,12 +355,35 @@ namespace MC2Demo.EditorTools
                 || purchasePreview.TokenBalance != tokenBeforePurchasePreview
                 || purchasePreview.TokenCost != shopPreview.Entries[0].tokenCost
                 || !purchasePreview.CanAfford
-                || purchasePreview.Message != "Purchase preview only"
+                || purchasePreview.Message != "Ready demo purchase"
                 || inventory.tokenBalance != tokenBeforePurchasePreview
                 || !afterPurchasePreview.IsValid
                 || afterPurchasePreview.Summary.WeaponCount != weaponCountBeforePurchasePreview)
             {
                 throw new InvalidDataException("Expected starter weapon purchase stub to preview without changing inventory.");
+            }
+
+            MechBayInventoryContract purchaseInventory = MechBayInventoryBuilder.BuildDemoInventory(mission.PlayerUnits());
+            MechBayInventoryValidationResult purchaseBefore = MechBayInventoryValidator.Validate(purchaseInventory);
+            int tokenBeforePurchase = purchaseInventory.tokenBalance;
+            int weaponCountBeforePurchase = purchaseBefore.Summary.WeaponCount;
+            MechBayWeaponPurchasePreviewResult purchaseResult = MechBayWeaponShopPreviewService.TryApplyDemoPurchase(
+                purchaseInventory,
+                shopPreview.Entries[0].itemId);
+            MechBayInventoryValidationResult purchaseAfter = MechBayInventoryValidator.Validate(purchaseInventory);
+            MechBayOwnedRosterEntry[] purchaseRoster = MechBayOwnedRosterService.BuildRosterPreview(purchaseInventory);
+            if (purchaseResult == null
+                || !purchaseResult.Accepted
+                || !purchaseResult.InventoryChanged
+                || purchaseResult.TokenBalance != tokenBeforePurchase - shopPreview.Entries[0].tokenCost
+                || purchaseInventory.tokenBalance != purchaseResult.TokenBalance
+                || !purchaseAfter.IsValid
+                || purchaseAfter.Summary.WeaponCount != weaponCountBeforePurchase + 1
+                || purchaseRoster.Length == 0
+                || !purchaseRoster[0].hasSpareWeaponStock
+                || purchaseRoster[0].spareWeaponStockCount != 1)
+            {
+                throw new InvalidDataException("Expected demo weapon purchase to spend tokens and add one spare weapon.");
             }
 
             if (result.Summary.WeaponCount <= 0)

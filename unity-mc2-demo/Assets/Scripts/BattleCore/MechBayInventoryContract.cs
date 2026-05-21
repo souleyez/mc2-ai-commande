@@ -756,8 +756,8 @@ namespace MC2Demo.BattleCore
                     weaponFamily = source.weaponFamily,
                     tokenCost = source.tokenCost,
                     canAfford = tokenBalance >= source.tokenCost,
-                    purchaseEnabled = false,
-                    purchaseStatus = "Preview only"
+                    purchaseEnabled = tokenBalance >= source.tokenCost,
+                    purchaseStatus = tokenBalance >= source.tokenCost ? "Demo purchase" : "Need token"
                 };
             }
 
@@ -797,8 +797,45 @@ namespace MC2Demo.BattleCore
                 TokenBalance = tokenBalance,
                 CanAfford = tokenBalance >= entry.tokenCost,
                 InventoryChanged = false,
-                Message = "Purchase preview only"
+                Message = tokenBalance >= entry.tokenCost ? "Ready demo purchase" : "Need token"
             };
+        }
+
+        public static MechBayWeaponPurchasePreviewResult TryApplyDemoPurchase(
+            MechBayInventoryContract inventory,
+            string itemId)
+        {
+            MechBayWeaponPurchasePreviewResult preview = PreviewPurchase(inventory, itemId);
+            if (preview == null)
+            {
+                return preview;
+            }
+
+            if (inventory == null)
+            {
+                preview.Message = "Inventory missing";
+                return preview;
+            }
+
+            MechBayWeaponShopEntry entry = FindCatalogEntry(itemId);
+            if (entry == null)
+            {
+                return preview;
+            }
+
+            if (inventory.tokenBalance < entry.tokenCost)
+            {
+                preview.Message = "Need " + entry.tokenCost.ToString(CultureInfo.InvariantCulture) + " token";
+                return preview;
+            }
+
+            inventory.tokenBalance -= entry.tokenCost;
+            AddInventoryStack(inventory, entry.itemId, entry.displayName, LoadoutItemCategory.Weapon, 1);
+            preview.Accepted = true;
+            preview.TokenBalance = inventory.tokenBalance;
+            preview.InventoryChanged = true;
+            preview.Message = "Purchased " + entry.displayName;
+            return preview;
         }
 
         private static MechBayWeaponShopEntry CatalogEntry(
@@ -816,6 +853,55 @@ namespace MC2Demo.BattleCore
                 purchaseEnabled = false,
                 purchaseStatus = "Preview only"
             };
+        }
+
+        private static void AddInventoryStack(
+            MechBayInventoryContract inventory,
+            string itemId,
+            string displayName,
+            string category,
+            int quantity)
+        {
+            if (inventory == null || quantity <= 0)
+            {
+                return;
+            }
+
+            List<MechBayItemStackDefinition> itemStacks = new(inventory.itemStacks ?? Array.Empty<MechBayItemStackDefinition>());
+            MechBayItemStackDefinition stack = FindInventoryStack(itemStacks, itemId);
+            if (stack == null)
+            {
+                itemStacks.Add(new MechBayItemStackDefinition
+                {
+                    itemId = itemId,
+                    displayName = displayName,
+                    category = category,
+                    quantity = quantity,
+                    equippedQuantity = 0
+                });
+            }
+            else
+            {
+                stack.quantity += quantity;
+            }
+
+            inventory.itemStacks = itemStacks.ToArray();
+        }
+
+        private static MechBayItemStackDefinition FindInventoryStack(
+            List<MechBayItemStackDefinition> itemStacks,
+            string itemId)
+        {
+            for (int index = 0; index < itemStacks.Count; index++)
+            {
+                MechBayItemStackDefinition stack = itemStacks[index];
+                if (stack != null && string.Equals(stack.itemId, itemId, StringComparison.OrdinalIgnoreCase))
+                {
+                    return stack;
+                }
+            }
+
+            return null;
         }
 
         private static MechBayWeaponShopEntry FindCatalogEntry(string itemId)

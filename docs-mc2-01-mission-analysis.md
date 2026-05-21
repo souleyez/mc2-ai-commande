@@ -254,9 +254,9 @@ or assignment yet.
 It now exposes spare weapon stock counts too, making it clear when all starter
 weapons are mounted on the active squad and no depot fitting weapon stock is
 available yet.
-The mech bay also exposes a read-only ordinary weapon shop preview, establishing
-where future spare depot weapons will come from before purchase or fitting
+The mech bay also exposes an ordinary weapon shop preview, establishing where
+future spare depot weapons come from before full shop balancing or fitting
 actions are enabled.
-That shop now includes a disabled purchase stub: it can preview the selected
-ordinary weapon cost and affordability, but it deliberately leaves token balance
-and inventory unchanged.
+That shop now has a tightly scoped demo purchase path: buying the first ordinary
+weapon spends local tokens and adds one unequipped weapon stack, making the
+depot spare-weapon requirement visibly resolvable without full shop balancing.
