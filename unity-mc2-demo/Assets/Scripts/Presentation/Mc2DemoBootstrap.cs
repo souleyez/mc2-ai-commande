@@ -2530,7 +2530,7 @@ namespace MC2Demo.Presentation
 
             y += 30f;
             DrawMechBayInventorySummary(x, y, width);
-            y += 302f;
+            y += 346f;
             if (showWarehouseDraftFitPreview)
             {
                 DrawWarehouseDraftFitPreview(x, y, width);
@@ -2964,11 +2964,14 @@ namespace MC2Demo.Presentation
             GUI.Label(
                 new Rect(x + 70f, y + 42f, width - 70f, 18f),
                 TruncateText(OwnedRosterPilotText(entry), 62));
-            DrawOwnedRosterPilotHireStub(x + 70f, y + 64f, width - 70f, entry, pilotHirePreview);
             GUI.Label(
-                new Rect(x + 70f, y + 86f, width - 70f, 18f),
+                new Rect(x + 70f, y + 64f, width - 70f, 18f),
+                TruncateText(OwnedRosterDeploymentText(entry), 62));
+            DrawOwnedRosterPilotHireStub(x + 70f, y + 86f, width - 70f, entry, pilotHirePreview);
+            GUI.Label(
+                new Rect(x + 70f, y + 108f, width - 70f, 18f),
                 TruncateText(OwnedRosterWeaponStockText(entry), 62));
-            DrawOwnedRosterDraftFitStub(x + 70f, y + 108f, width - 70f, entry);
+            DrawOwnedRosterDraftFitStub(x + 70f, y + 130f, width - 70f, entry);
         }
 
         private void ClampSelectedRosterIndex(MechBayOwnedRosterEntry[] roster)
@@ -3029,6 +3032,18 @@ namespace MC2Demo.Presentation
             string status = string.IsNullOrWhiteSpace(entry.pilotStatus) ? "Unknown" : entry.pilotStatus;
             string pilot = string.IsNullOrWhiteSpace(entry.pilotDisplayName) ? "No pilot assigned" : entry.pilotDisplayName;
             return "Pilot " + status + " (" + pilot + ")";
+        }
+
+        private static string OwnedRosterDeploymentText(MechBayOwnedRosterEntry entry)
+        {
+            if (entry == null)
+            {
+                return "Deploy unavailable";
+            }
+
+            string status = string.IsNullOrWhiteSpace(entry.deploymentStatus) ? "Unknown" : entry.deploymentStatus;
+            string requirements = string.IsNullOrWhiteSpace(entry.deploymentRequirements) ? "Requirements unknown" : entry.deploymentRequirements;
+            return "Deploy " + status + "  " + requirements;
         }
 
         private void DrawOwnedRosterPilotHireStub(

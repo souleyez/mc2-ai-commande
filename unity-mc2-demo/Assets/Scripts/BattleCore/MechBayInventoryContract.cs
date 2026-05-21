@@ -87,6 +87,9 @@ namespace MC2Demo.BattleCore
         public bool hasPilotPlaceholder { get; internal set; }
         public string pilotStatus { get; internal set; }
         public string pilotDisplayName { get; internal set; }
+        public bool deployableForMission { get; internal set; }
+        public string deploymentStatus { get; internal set; }
+        public string deploymentRequirements { get; internal set; }
         public bool availableForMission { get; internal set; }
         public int conditionPercent { get; internal set; }
         public bool isWarehouseMech { get; internal set; }
@@ -673,6 +676,9 @@ namespace MC2Demo.BattleCore
                     hasPilotPlaceholder = HasPilotPlaceholder(mech),
                     pilotStatus = PilotStatus(mech),
                     pilotDisplayName = PilotDisplayName(mech),
+                    deployableForMission = DeployableForMission(mech),
+                    deploymentStatus = DeploymentStatus(mech),
+                    deploymentRequirements = DeploymentRequirements(mech, hasSpareWeaponStock),
                     availableForMission = mech.availableForMission,
                     conditionPercent = Math.Max(0, Math.Min(100, mech.conditionPercent)),
                     isWarehouseMech = IsWarehouseMech(mech)
@@ -767,6 +773,51 @@ namespace MC2Demo.BattleCore
             }
 
             return IsWarehouseMech(mech) ? "No pilot assigned" : "Mission pilot";
+        }
+
+        private static bool DeployableForMission(MechBayOwnedMechDefinition mech)
+        {
+            return !IsWarehouseMech(mech) && mech != null && mech.availableForMission;
+        }
+
+        private static string DeploymentStatus(MechBayOwnedMechDefinition mech)
+        {
+            if (!IsWarehouseMech(mech))
+            {
+                return mech != null && mech.availableForMission ? "Deployable now" : "Unavailable";
+            }
+
+            if (IsPendingDepotFit(mech))
+            {
+                return "Held: needs depot fit";
+            }
+
+            if (string.Equals(mech?.activeLoadoutId, MechBayWarehouseDraftFitPreviewService.DemoWarehouseFitLoadoutId, StringComparison.OrdinalIgnoreCase))
+            {
+                return "Held: future squad selection";
+            }
+
+            return string.IsNullOrWhiteSpace(mech?.activeLoadoutId) ? "Held: no loadout" : "Held: depot mech";
+        }
+
+        private static string DeploymentRequirements(MechBayOwnedMechDefinition mech, bool hasSpareWeaponStock)
+        {
+            if (!IsWarehouseMech(mech))
+            {
+                return mech != null && mech.availableForMission ? "Current mission squad" : "Repair or mission reset";
+            }
+
+            if (IsPendingDepotFit(mech))
+            {
+                return DraftFitRequirements(mech, hasSpareWeaponStock);
+            }
+
+            if (string.Equals(mech?.activeLoadoutId, MechBayWarehouseDraftFitPreviewService.DemoWarehouseFitLoadoutId, StringComparison.OrdinalIgnoreCase))
+            {
+                return "Future squad-selection flow";
+            }
+
+            return "Future depot deployment flow";
         }
 
         private static string WeaponStockStatus(int spareWeaponStockCount, int totalWeaponStockCount)

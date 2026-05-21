@@ -273,3 +273,6 @@ note that no inventory or loadout changes are applied yet.
 The preview now has a demo-only Apply action: it consumes one spare weapon stack
 into the warehouse mech, swaps `pending-loadout` for a placeholder
 `warehouse-demo-fit`, and still keeps that mech out of mission deployment.
+Fitted warehouse mechs now show a deployment preview line in the roster detail,
+marking them as held for a future squad-selection flow instead of silently
+looking ready for the current mission.

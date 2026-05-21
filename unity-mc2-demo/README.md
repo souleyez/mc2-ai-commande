@@ -57,6 +57,7 @@ Current demo behavior:
 - enables a Draft Fit readiness gate when a warehouse mech has both spare weapon stock and a pilot
 - opens a read-only warehouse draft-fit preview showing the selected pilot and spare weapon before real fitting exists
 - applies a demo warehouse draft fit that consumes one spare weapon and keeps the mech non-deployable
+- previews fitted warehouse deployment status and explains why fitted depot mechs are still held
 - warns when draft armor plate or heat sink usage exceeds starter inventory and blocks applying that fit
 - shows starter mech condition and one-click demo repair that spends local token balance
 - applies a local mission receipt for completed bounty tokens and salvaged mech fragments at mission end

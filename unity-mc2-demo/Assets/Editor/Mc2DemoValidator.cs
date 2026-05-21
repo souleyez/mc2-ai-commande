@@ -319,6 +319,9 @@ namespace MC2Demo.EditorTools
                 || starterRoster[0].hasPilotPlaceholder
                 || starterRoster[0].pilotStatus != "Assigned"
                 || starterRoster[0].pilotDisplayName != "Mission pilot"
+                || !starterRoster[0].deployableForMission
+                || starterRoster[0].deploymentStatus != "Deployable now"
+                || starterRoster[0].deploymentRequirements != "Current mission squad"
                 || starterRoster[0].conditionPercent <= 0)
             {
                 throw new InvalidDataException("Expected starter owned-mech roster entries to include detail preview fields.");
@@ -2419,6 +2422,9 @@ namespace MC2Demo.EditorTools
                 || !assembledRaven.hasPilotPlaceholder
                 || assembledRaven.pilotStatus != "Pilot required"
                 || assembledRaven.pilotDisplayName != "No pilot assigned"
+                || assembledRaven.deployableForMission
+                || assembledRaven.deploymentStatus != "Held: needs depot fit"
+                || assembledRaven.deploymentRequirements != "Need stock weapons + pilot"
                 || string.IsNullOrWhiteSpace(assembledRaven.ownedMechId))
             {
                 throw new InvalidDataException("Expected assembled warehouse Raven to stay held with a pending loadout placeholder.");
@@ -2546,7 +2552,10 @@ namespace MC2Demo.EditorTools
                 || assembledRaven.draftFitRequirements != "Current fit active"
                 || assembledRaven.hasSpareWeaponStock
                 || assembledRaven.spareWeaponStockCount != 0
-                || !assembledRaven.hasPilotAssignment)
+                || !assembledRaven.hasPilotAssignment
+                || assembledRaven.deployableForMission
+                || assembledRaven.deploymentStatus != "Held: future squad selection"
+                || assembledRaven.deploymentRequirements != "Future squad-selection flow")
             {
                 throw new InvalidDataException("Expected warehouse draft-fit apply stub to consume one spare weapon and keep the mech non-deployable.");
             }
