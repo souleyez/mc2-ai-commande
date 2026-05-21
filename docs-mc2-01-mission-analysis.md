@@ -200,6 +200,6 @@ models the player-facing fitting loop as:
 
 The Unity validator now carries a tiny synthetic contract that proves the data
 shape can express a 3 x 3 chassis grid, a vertical weapon, single-cell armor and
-heat-sink items, plus radar and jump-jet slots. The next step is a deterministic
-validator that checks placement overlap, blocked cells, rotation, heat caps, and
-weight caps before the mech bay becomes editable.
+heat-sink items, plus radar and jump-jet slots. BattleCore also validates
+placement overlap, blocked cells, rotation, bounds, heat caps, weight caps, and
+special-slot compatibility before the mech bay becomes editable.

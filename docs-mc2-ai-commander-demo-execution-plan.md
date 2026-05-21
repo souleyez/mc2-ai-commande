@@ -41,6 +41,7 @@ The Unity demo currently supports:
 - heat, cooldown, weapon range/readiness, simple section damage, section penalties, and animated breakoff/ejection effects
 - compact tactical UI with unit status, read-only mech bay, mission brief, current-objective map, world objective hints, health bars, command rings, range rings, and target lines
 - initial BattleCore loadout contract for chassis grids, item shapes, heat, weight, armor plates, heat sinks, radar slots, and jump jet slots
+- deterministic BattleCore loadout validator for grid bounds, blocked cells, overlap, rotation, heat caps, weight caps, and special-slot compatibility
 - CLI/AI loop pieces:
   - `-mc2Command`
   - `-mc2AdvanceSeconds`
@@ -354,10 +355,10 @@ Tasks:
 
 ## Current Recommended Next Task
 
-Start with **Milestone 5, Task 13: Add Loadout Validator**.
+Start with **a small mech bay validation readout**.
 
 Reason:
 
-- The loadout data shape now exists and is covered by a tiny synthetic contract check.
-- The next useful step is deterministic placement validation: grid bounds, blocked cells, overlaps, rotation, heat cap, weight cap, and special-slot compatibility.
-- Once that validator is stable, the mech bay UI can safely move from read-only display toward actual fitting interactions.
+- The loadout contract and validator now exist in BattleCore.
+- The safest next UI step is to show validation-derived heat/weight/loadout status in the existing mech bay before adding drag-and-drop editing.
+- That keeps the fitting loop visible to the player while avoiding a large UI interaction jump.

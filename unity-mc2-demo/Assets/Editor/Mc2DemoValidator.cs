@@ -272,6 +272,8 @@ namespace MC2Demo.EditorTools
             {
                 throw new InvalidDataException("Expected heat sink to define a dissipation bonus.");
             }
+
+            ValidateSyntheticLoadoutValidator(contract, loadout);
         }
 
         private static LoadoutItemDefinition FindLoadoutItem(LoadoutContract contract, string itemId)
@@ -316,6 +318,110 @@ namespace MC2Demo.EditorTools
             }
 
             return false;
+        }
+
+        private static void ValidateSyntheticLoadoutValidator(LoadoutContract contract, LoadoutBuildDefinition stockLoadout)
+        {
+            AssertLoadoutValid(contract, stockLoadout, "stock synthetic loadout");
+            LoadoutValidationResult stockResult = LoadoutValidator.Validate(contract, stockLoadout);
+            if (Math.Abs(stockResult.TotalHeat - 8f) > 0.001f || Math.Abs(stockResult.TotalWeight - 11f) > 0.001f)
+            {
+                throw new InvalidDataException("Unexpected synthetic loadout heat/weight totals.");
+            }
+
+            AssertLoadoutValid(
+                contract,
+                MakeSyntheticLoadout(
+                    "synthetic-rotated-weapon",
+                    new LoadoutPlacedItemDefinition { itemId = "synthetic-ppc", gridX = 0, gridY = 2, rotated = true, sectionName = "Right Arm" },
+                    new LoadoutPlacedItemDefinition { itemId = "synthetic-armor-plate", gridX = 1, gridY = 0, sectionName = "Torso" },
+                    new LoadoutPlacedItemDefinition { itemId = "synthetic-heat-sink", gridX = 1, gridY = 1, sectionName = "Torso" },
+                    new LoadoutPlacedItemDefinition { itemId = "synthetic-radar", equipmentSlotId = "radar-slot", sectionName = "Torso" },
+                    new LoadoutPlacedItemDefinition { itemId = "synthetic-jump-jets", equipmentSlotId = "jump-slot", sectionName = "Legs" }),
+                "rotated synthetic weapon loadout");
+
+            AssertLoadoutInvalid(
+                contract,
+                MakeSyntheticLoadout(
+                    "synthetic-overlap",
+                    new LoadoutPlacedItemDefinition { itemId = "synthetic-ppc", gridX = 0, gridY = 0 },
+                    new LoadoutPlacedItemDefinition { itemId = "synthetic-armor-plate", gridX = 0, gridY = 1 }),
+                "overlapping grid cells");
+
+            AssertLoadoutInvalid(
+                contract,
+                MakeSyntheticLoadout(
+                    "synthetic-blocked-cell",
+                    new LoadoutPlacedItemDefinition { itemId = "synthetic-armor-plate", gridX = 2, gridY = 0 }),
+                "blocked grid cell");
+
+            AssertLoadoutInvalid(
+                contract,
+                MakeSyntheticLoadout(
+                    "synthetic-out-of-bounds",
+                    new LoadoutPlacedItemDefinition { itemId = "synthetic-ppc", gridX = 2, gridY = 0 }),
+                "out-of-bounds grid cell");
+
+            AssertLoadoutInvalid(
+                contract,
+                MakeSyntheticLoadout(
+                    "synthetic-slot-mismatch",
+                    new LoadoutPlacedItemDefinition { itemId = "synthetic-radar", equipmentSlotId = "jump-slot" }),
+                "equipment slot type mismatch");
+
+            AssertLoadoutInvalid(
+                contract,
+                MakeSyntheticLoadout(
+                    "synthetic-duplicate-slot",
+                    new LoadoutPlacedItemDefinition { itemId = "synthetic-radar", equipmentSlotId = "radar-slot" },
+                    new LoadoutPlacedItemDefinition { itemId = "synthetic-radar", equipmentSlotId = "radar-slot" }),
+                "duplicate equipment slot use");
+
+            LoadoutChassisDefinition chassis = contract.chassisDefinitions[0];
+            float oldHeatLimit = chassis.heatLimit;
+            chassis.heatLimit = 7f;
+            AssertLoadoutInvalid(contract, stockLoadout, "heat limit overrun");
+            chassis.heatLimit = oldHeatLimit;
+
+            float oldWeightLimit = chassis.weightLimit;
+            chassis.weightLimit = 10f;
+            AssertLoadoutInvalid(contract, stockLoadout, "weight limit overrun");
+            chassis.weightLimit = oldWeightLimit;
+        }
+
+        private static void AssertLoadoutValid(LoadoutContract contract, LoadoutBuildDefinition loadout, string scenario)
+        {
+            LoadoutValidationResult result = LoadoutValidator.Validate(contract, loadout);
+            if (!result.IsValid)
+            {
+                throw new InvalidDataException("Expected valid loadout for " + scenario + ", got: " + FirstLoadoutError(result));
+            }
+        }
+
+        private static void AssertLoadoutInvalid(LoadoutContract contract, LoadoutBuildDefinition loadout, string scenario)
+        {
+            LoadoutValidationResult result = LoadoutValidator.Validate(contract, loadout);
+            if (result.IsValid)
+            {
+                throw new InvalidDataException("Expected invalid loadout for " + scenario + ".");
+            }
+        }
+
+        private static string FirstLoadoutError(LoadoutValidationResult result)
+        {
+            string[] errors = result.Errors;
+            return errors.Length == 0 ? "no errors" : errors[0];
+        }
+
+        private static LoadoutBuildDefinition MakeSyntheticLoadout(string loadoutId, params LoadoutPlacedItemDefinition[] placedItems)
+        {
+            return new LoadoutBuildDefinition
+            {
+                loadoutId = loadoutId,
+                chassisId = "synthetic-light-mech",
+                displayName = loadoutId,
+                placedItems = placedItems
+            };
         }
 
         private static LoadoutContract MakeSyntheticLoadoutContract()
