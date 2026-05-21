@@ -3277,10 +3277,15 @@ namespace MC2Demo.Presentation
         private void DrawSquadSelectionPendingSwap(float x, float y, float width, MechBaySquadSelectionPreview preview)
         {
             bool previousEnabled = GUI.enabled;
-            GUI.enabled = false;
+            bool canConfirm = preview?.PendingSwapAvailable == true;
+            GUI.enabled = previousEnabled && canConfirm;
             if (GUI.Button(new Rect(x, y - 2f, 72f, 22f), "Confirm"))
             {
-                statusText = "Squad swap confirmation unavailable";
+                MechBaySquadSelectionApplyResult result =
+                    MechBaySquadSelectionPreviewService.TryApplyPendingSwap(demoInventory);
+                statusText = result?.Message ?? "Squad swap unavailable";
+                AddCombatLogLine("Squad selection " + statusText);
+                RefreshDemoInventoryValidation();
             }
 
             GUI.enabled = previousEnabled;

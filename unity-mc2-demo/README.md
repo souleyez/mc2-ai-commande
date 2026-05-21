@@ -63,6 +63,7 @@ Current demo behavior:
 - shows a disabled swap guard with the future replace-slot requirements
 - shows a dry-run swap preview for the first current slot and fitted depot candidate
 - shows a pending swap confirmation stub without applying roster changes
+- rejects pending squad swap confirmation without changing roster, inventory, or token state
 - warns when draft armor plate or heat sink usage exceeds starter inventory and blocks applying that fit
 - shows starter mech condition and one-click demo repair that spends local token balance
 - applies a local mission receipt for completed bounty tokens and salvaged mech fragments at mission end

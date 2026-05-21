@@ -2508,6 +2508,29 @@ namespace MC2Demo.EditorTools
                     + SquadPreviewDebugText(lockedSquadPreview));
             }
 
+            MechBaySquadSelectionApplyResult lockedSquadApply =
+                MechBaySquadSelectionPreviewService.TryApplyPendingSwap(receiptInventory);
+            MechBayInventoryValidationResult lockedSquadApplyInventoryResult =
+                MechBayInventoryValidator.Validate(receiptInventory);
+            if (lockedSquadApply == null
+                || lockedSquadApply.Accepted
+                || lockedSquadApply.InventoryChanged
+                || lockedSquadApply.Message != "No pending squad swap"
+                || lockedSquadApply.Reason != "Need fitted depot candidate"
+                || lockedSquadApply.Summary != "Need fitted depot candidate"
+                || string.IsNullOrWhiteSpace(lockedSquadApply.OutgoingOwnedMechId)
+                || !string.IsNullOrWhiteSpace(lockedSquadApply.IncomingOwnedMechId)
+                || !lockedSquadApplyInventoryResult.IsValid
+                || lockedSquadApplyInventoryResult.Summary.MechCount != receiptInventoryResult.Summary.MechCount
+                || lockedSquadApplyInventoryResult.Summary.WeaponCount != receiptInventoryResult.Summary.WeaponCount
+                || lockedSquadApplyInventoryResult.Summary.ArmorPlateCount != receiptInventoryResult.Summary.ArmorPlateCount
+                || lockedSquadApplyInventoryResult.Summary.HeatSinkCount != receiptInventoryResult.Summary.HeatSinkCount
+                || lockedSquadApplyInventoryResult.Summary.MechFragmentCount != receiptInventoryResult.Summary.MechFragmentCount
+                || receiptInventory.tokenBalance != receiptInventoryResult.Summary.TokenBalance)
+            {
+                throw new InvalidDataException("Expected locked squad-selection apply path to reject without changing inventory.");
+            }
+
             MechBayPilotHirePreview warehousePilotHirePreview = MechBayPilotHirePreviewService.BuildPreview(receiptInventory);
             MechBayPilotHireCandidate hireCandidate = warehousePilotHirePreview.Candidates[0];
             int tokenBeforePilotHirePreview = receiptInventory.tokenBalance;
@@ -2685,6 +2708,35 @@ namespace MC2Demo.EditorTools
                 throw new InvalidDataException(
                     "Expected read-only squad-selection preview to show current slots and one fitted depot candidate without changing inventory. Got "
                     + SquadPreviewDebugText(squadPreview));
+            }
+
+            MechBaySquadSelectionApplyResult squadApply =
+                MechBaySquadSelectionPreviewService.TryApplyPendingSwap(receiptInventory);
+            MechBayInventoryValidationResult squadApplyInventoryResult =
+                MechBayInventoryValidator.Validate(receiptInventory);
+            MechBayOwnedRosterEntry[] squadApplyRoster = MechBayOwnedRosterService.BuildRosterPreview(receiptInventory);
+            MechBayOwnedRosterEntry squadApplyRaven = FindWarehouseRosterEntry(squadApplyRoster, "Raven");
+            if (squadApply == null
+                || squadApply.Accepted
+                || squadApply.InventoryChanged
+                || squadApply.Message != "Squad swap disabled for this demo"
+                || squadApply.Reason != "Future replace-slot action"
+                || !squadApply.Summary.Contains("Stage " + assembledRaven.displayName, StringComparison.Ordinal)
+                || squadApply.OutgoingOwnedMechId != squadPreview.DryRunOutgoingOwnedMechId
+                || squadApply.IncomingOwnedMechId != assembledRaven.ownedMechId
+                || !squadApplyInventoryResult.IsValid
+                || squadApplyInventoryResult.Summary.MechCount != draftFitApplyInventoryResult.Summary.MechCount
+                || squadApplyInventoryResult.Summary.WeaponCount != draftFitApplyInventoryResult.Summary.WeaponCount
+                || squadApplyInventoryResult.Summary.ArmorPlateCount != draftFitApplyInventoryResult.Summary.ArmorPlateCount
+                || squadApplyInventoryResult.Summary.HeatSinkCount != draftFitApplyInventoryResult.Summary.HeatSinkCount
+                || squadApplyInventoryResult.Summary.MechFragmentCount != draftFitApplyInventoryResult.Summary.MechFragmentCount
+                || receiptInventory.tokenBalance != tokenBeforeDraftFitPreview
+                || squadApplyRaven == null
+                || squadApplyRaven.availableForMission
+                || squadApplyRaven.activeLoadoutId != MechBayWarehouseDraftFitPreviewService.DemoWarehouseFitLoadoutId
+                || squadApplyRaven.squadSelectionStatus != "Ready for future squad selection")
+            {
+                throw new InvalidDataException("Expected pending squad-selection apply path to reject without changing inventory or deployment.");
             }
 
             BattleMission defeat = new(MakeResultContract(completeOnStart: false), resultProfiles);

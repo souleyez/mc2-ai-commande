@@ -303,6 +303,17 @@ namespace MC2Demo.BattleCore
         public string selectionStatus { get; internal set; }
     }
 
+    public sealed class MechBaySquadSelectionApplyResult
+    {
+        public bool Accepted { get; internal set; }
+        public bool InventoryChanged { get; internal set; }
+        public string Message { get; internal set; }
+        public string Reason { get; internal set; }
+        public string Summary { get; internal set; }
+        public string OutgoingOwnedMechId { get; internal set; }
+        public string IncomingOwnedMechId { get; internal set; }
+    }
+
     public sealed class MechBayReceiptItemDefinition
     {
         public string itemId;
@@ -1027,6 +1038,36 @@ namespace MC2Demo.BattleCore
                 MissionSlots = missionSlots.ToArray(),
                 DepotCandidates = depotCandidates.ToArray()
             };
+        }
+
+        public static MechBaySquadSelectionApplyResult TryApplyPendingSwap(MechBayInventoryContract inventory)
+        {
+            MechBaySquadSelectionPreview preview = BuildPreview(inventory);
+            MechBaySquadSelectionApplyResult result = new()
+            {
+                Accepted = false,
+                InventoryChanged = false,
+                Summary = string.IsNullOrWhiteSpace(preview?.PendingSwapSummary)
+                    ? "No pending swap"
+                    : preview.PendingSwapSummary,
+                OutgoingOwnedMechId = preview?.DryRunOutgoingOwnedMechId,
+                IncomingOwnedMechId = preview?.DryRunIncomingOwnedMechId
+            };
+
+            if (preview == null || !preview.PendingSwapAvailable)
+            {
+                result.Message = "No pending squad swap";
+                result.Reason = string.IsNullOrWhiteSpace(preview?.PendingSwapSummary)
+                    ? "Need mission slot + fitted depot candidate"
+                    : preview.PendingSwapSummary;
+                return result;
+            }
+
+            result.Message = "Squad swap disabled for this demo";
+            result.Reason = string.IsNullOrWhiteSpace(preview.SwapRequirements)
+                ? "Future replace-slot action"
+                : preview.SwapRequirements;
+            return result;
         }
 
         private static MechBaySquadSelectionSlot SlotFromRoster(MechBayOwnedRosterEntry entry)

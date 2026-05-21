@@ -286,5 +286,8 @@ The preview also includes a disabled Swap guard that reports why replacement is
 locked today and what future replace-slot action is required.
 When both a current mission slot and a fitted depot candidate exist, the preview
 now shows a dry-run replacement summary without applying roster changes.
-That dry run now feeds a disabled pending confirmation row, so the future
-replace-slot flow can show a staged swap before it can mutate the roster.
+That dry run now feeds a pending confirmation row, so the future replace-slot
+flow can show a staged swap before it can mutate the roster.
+The confirmation path now returns a rejected no-op result, preserving token,
+mech, weapon, and deployment state while reporting the future replace-slot
+requirement.
