@@ -295,3 +295,7 @@ flow can mutate only local mission availability flags.
 The confirmation path now swaps the outgoing and incoming `availableForMission`
 flags while preserving token, mech count, weapon count, and current combat
 state.
+After confirmation, the squad-selection preview now refreshes into a completed
+state: the joined depot mech is treated as a current mission slot, no longer
+appears as an incoming candidate, and the draft summary reports that the swap
+has already been applied.

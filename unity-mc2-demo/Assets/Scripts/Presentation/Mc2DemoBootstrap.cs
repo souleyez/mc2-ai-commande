@@ -3387,6 +3387,13 @@ namespace MC2Demo.Presentation
                 }
 
                 demoInventoryValidation = MechBayInventoryValidator.Validate(demoInventory);
+                preview = MechBaySquadSelectionPreviewService.BuildPreview(demoInventory);
+                draft = MechBaySquadSelectionPreviewService.BuildDraftState(
+                    demoInventory,
+                    squadSelectionDraftOutgoingOwnedMechId,
+                    squadSelectionDraftIncomingOwnedMechId);
+                squadSelectionDraftOutgoingOwnedMechId = draft?.OutgoingOwnedMechId;
+                squadSelectionDraftIncomingOwnedMechId = draft?.IncomingOwnedMechId;
             }
 
             GUI.enabled = previousEnabled;

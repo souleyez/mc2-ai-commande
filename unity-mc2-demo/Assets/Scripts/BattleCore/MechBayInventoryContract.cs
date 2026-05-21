@@ -274,6 +274,7 @@ namespace MC2Demo.BattleCore
         public bool InventoryChanged { get; internal set; }
         public string Status { get; internal set; }
         public string PreviewNote { get; internal set; }
+        public bool HasRefreshedMissionSlot { get; internal set; }
         public int MissionSlotCount { get; internal set; }
         public int CandidateCount { get; internal set; }
         public bool SwapEnabled { get; internal set; }
@@ -904,6 +905,8 @@ namespace MC2Demo.BattleCore
         private static bool SquadSelectionCandidate(MechBayOwnedMechDefinition mech)
         {
             return IsWarehouseMech(mech)
+                && mech != null
+                && !mech.availableForMission
                 && HasPilotAssignment(mech)
                 && string.Equals(
                     mech?.activeLoadoutId,
@@ -1026,6 +1029,7 @@ namespace MC2Demo.BattleCore
             MechBayOwnedRosterEntry[] roster = MechBayOwnedRosterService.BuildRosterPreview(inventory);
             List<MechBaySquadSelectionSlot> missionSlots = new();
             List<MechBaySquadSelectionSlot> depotCandidates = new();
+            bool hasRefreshedMissionSlot = false;
             for (int index = 0; index < roster.Length; index++)
             {
                 MechBayOwnedRosterEntry entry = roster[index];
@@ -1036,6 +1040,7 @@ namespace MC2Demo.BattleCore
 
                 if (entry.availableForMission)
                 {
+                    hasRefreshedMissionSlot = hasRefreshedMissionSlot || entry.isWarehouseMech;
                     missionSlots.Add(SlotFromRoster(entry));
                 }
                 else if (entry.isWarehouseMech)
@@ -1053,21 +1058,22 @@ namespace MC2Demo.BattleCore
             return new MechBaySquadSelectionPreview
             {
                 InventoryChanged = false,
-                Status = depotCandidates.Count > 0 ? "Read-only squad selection preview" : "No depot candidates ready",
-                PreviewNote = "Preview only: mission squad unchanged",
+                Status = PreviewStatus(depotCandidates.Count, hasRefreshedMissionSlot),
+                PreviewNote = PreviewNote(hasRefreshedMissionSlot),
+                HasRefreshedMissionSlot = hasRefreshedMissionSlot,
                 MissionSlotCount = missionSlots.Count,
                 CandidateCount = depotCandidates.Count,
                 SwapEnabled = false,
-                SwapStatus = SwapStatus(missionSlots.Count, depotCandidates.Count),
-                SwapRequirements = SwapRequirements(missionSlots.Count, depotCandidates.Count),
+                SwapStatus = SwapStatus(missionSlots.Count, depotCandidates.Count, hasRefreshedMissionSlot),
+                SwapRequirements = SwapRequirements(missionSlots.Count, depotCandidates.Count, hasRefreshedMissionSlot),
                 DryRunAvailable = dryRunOutgoing != null && dryRunIncoming != null,
-                DryRunStatus = DryRunStatus(dryRunOutgoing, dryRunIncoming),
-                DryRunSummary = DryRunSummary(dryRunOutgoing, dryRunIncoming),
+                DryRunStatus = DryRunStatus(dryRunOutgoing, dryRunIncoming, hasRefreshedMissionSlot),
+                DryRunSummary = DryRunSummary(dryRunOutgoing, dryRunIncoming, hasRefreshedMissionSlot),
                 DryRunOutgoingOwnedMechId = dryRunOutgoing?.ownedMechId,
                 DryRunIncomingOwnedMechId = dryRunIncoming?.ownedMechId,
                 PendingSwapAvailable = pendingSwapAvailable,
                 PendingSwapStatus = PendingSwapStatus(dryRunOutgoing, dryRunIncoming),
-                PendingSwapSummary = PendingSwapSummary(dryRunOutgoing, dryRunIncoming),
+                PendingSwapSummary = PendingSwapSummary(dryRunOutgoing, dryRunIncoming, hasRefreshedMissionSlot),
                 MissionSlots = missionSlots.ToArray(),
                 DepotCandidates = depotCandidates.ToArray()
             };
@@ -1089,10 +1095,10 @@ namespace MC2Demo.BattleCore
                 Status = ready ? "Draft swap staged" : "Draft swap unavailable",
                 Requirements = ready
                     ? "Confirm staged roster swap"
-                    : DryRunSummary(outgoing, incoming),
+                    : DraftUnavailableSummary(preview, outgoing, incoming),
                 Summary = ready
                     ? "Draft " + SlotName(incoming) + " over " + SlotName(outgoing)
-                    : DryRunSummary(outgoing, incoming),
+                    : DraftUnavailableSummary(preview, outgoing, incoming),
                 OutgoingOwnedMechId = outgoing?.ownedMechId,
                 IncomingOwnedMechId = incoming?.ownedMechId,
                 OutgoingDisplayName = SlotName(outgoing),
@@ -1200,13 +1206,40 @@ namespace MC2Demo.BattleCore
             };
         }
 
-        private static string SwapStatus(int missionSlotCount, int candidateCount)
+        private static string PreviewStatus(int candidateCount, bool hasRefreshedMissionSlot)
         {
+            if (candidateCount > 0)
+            {
+                return "Read-only squad selection preview";
+            }
+
+            return hasRefreshedMissionSlot ? "Mission squad refreshed" : "No depot candidates ready";
+        }
+
+        private static string PreviewNote(bool hasRefreshedMissionSlot)
+        {
+            return hasRefreshedMissionSlot
+                ? "Confirmed swap applied: mission squad updated"
+                : "Preview only: mission squad unchanged";
+        }
+
+        private static string SwapStatus(int missionSlotCount, int candidateCount, bool hasRefreshedMissionSlot)
+        {
+            if (hasRefreshedMissionSlot && candidateCount <= 0)
+            {
+                return "Swap complete";
+            }
+
             return missionSlotCount > 0 && candidateCount > 0 ? "Swap guarded: use Confirm" : "Swap unavailable";
         }
 
-        private static string SwapRequirements(int missionSlotCount, int candidateCount)
+        private static string SwapRequirements(int missionSlotCount, int candidateCount, bool hasRefreshedMissionSlot)
         {
+            if (hasRefreshedMissionSlot && candidateCount <= 0)
+            {
+                return "No fitted depot candidates remain";
+            }
+
             if (missionSlotCount <= 0 && candidateCount <= 0)
             {
                 return "Need mission slot + fitted depot candidate";
@@ -1220,13 +1253,29 @@ namespace MC2Demo.BattleCore
             return candidateCount <= 0 ? "Need fitted depot candidate" : "Confirm staged roster swap";
         }
 
-        private static string DryRunStatus(MechBaySquadSelectionSlot outgoing, MechBaySquadSelectionSlot incoming)
+        private static string DryRunStatus(
+            MechBaySquadSelectionSlot outgoing,
+            MechBaySquadSelectionSlot incoming,
+            bool hasRefreshedMissionSlot)
         {
+            if (hasRefreshedMissionSlot && incoming == null)
+            {
+                return "Dry run cleared";
+            }
+
             return outgoing != null && incoming != null ? "Dry run ready" : "Dry run unavailable";
         }
 
-        private static string DryRunSummary(MechBaySquadSelectionSlot outgoing, MechBaySquadSelectionSlot incoming)
+        private static string DryRunSummary(
+            MechBaySquadSelectionSlot outgoing,
+            MechBaySquadSelectionSlot incoming,
+            bool hasRefreshedMissionSlot)
         {
+            if (hasRefreshedMissionSlot && incoming == null)
+            {
+                return "Confirmed swap already applied";
+            }
+
             if (outgoing == null && incoming == null)
             {
                 return "Need mission slot + fitted depot candidate";
@@ -1243,6 +1292,14 @@ namespace MC2Demo.BattleCore
             }
 
             return "Replace " + SlotName(outgoing) + " with " + SlotName(incoming) + " when confirmed";
+        }
+
+        private static string DraftUnavailableSummary(
+            MechBaySquadSelectionPreview preview,
+            MechBaySquadSelectionSlot outgoing,
+            MechBaySquadSelectionSlot incoming)
+        {
+            return DryRunSummary(outgoing, incoming, preview?.HasRefreshedMissionSlot == true);
         }
 
         private static string SlotName(MechBaySquadSelectionSlot slot)
@@ -1274,11 +1331,14 @@ namespace MC2Demo.BattleCore
             return outgoing != null && incoming != null ? "Pending confirmation" : "No pending swap";
         }
 
-        private static string PendingSwapSummary(MechBaySquadSelectionSlot outgoing, MechBaySquadSelectionSlot incoming)
+        private static string PendingSwapSummary(
+            MechBaySquadSelectionSlot outgoing,
+            MechBaySquadSelectionSlot incoming,
+            bool hasRefreshedMissionSlot)
         {
             if (outgoing == null || incoming == null)
             {
-                return DryRunSummary(outgoing, incoming);
+                return DryRunSummary(outgoing, incoming, hasRefreshedMissionSlot);
             }
 
             return "Stage " + SlotName(incoming) + " over " + SlotName(outgoing) + " for confirmation";

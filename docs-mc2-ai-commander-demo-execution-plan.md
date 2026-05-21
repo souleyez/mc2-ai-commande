@@ -74,6 +74,7 @@ The Unity demo currently supports:
 - squad-selection confirmation reads from a local draft state that stages outgoing and incoming mech IDs
 - squad-selection confirmation applies a guarded local roster swap by exchanging mission availability flags
 - squad-selection draft controls can cycle outgoing mission slots and incoming depot candidates while staying local-only
+- squad-selection preview refreshes after confirmation so the joined depot mech becomes a mission slot and no longer appears as a candidate
 - starter inventory availability feedback warns on armor plate or heat sink shortages and blocks applying invalid drafts
 - starter mech condition and one-click demo repair spend local token balance and restore damaged mechs
 - starter mission receipt applies completed bounty tokens and salvaged mech fragments to local inventory
@@ -391,7 +392,7 @@ Tasks:
 
 ## Current Recommended Next Task
 
-Start with **starter squad-selection post-swap refresh polish**.
+Start with **starter squad-selection mission handoff preview**.
 
 Reason:
 
@@ -417,5 +418,6 @@ Reason:
 - The squad-selection confirmation path now reads from a local draft state container that holds selected outgoing and incoming mech IDs.
 - The squad-selection draft controls now cycle mission slots and depot candidates while keeping the selected IDs local-only.
 - The squad-selection confirmation path now applies a guarded local roster swap by exchanging mission availability flags while preserving token and inventory counts.
-- The next low-risk step is post-swap refresh polish, so the roster detail and preview stay readable after the only current depot candidate joins the mission squad.
+- The squad-selection preview now refreshes after confirmation, so the roster detail and preview stay readable after the only current depot candidate joins the mission squad.
+- The next low-risk step is a read-only mission handoff preview, so future mission launch/restart code can consume the selected `availableForMission` roster without mutating the current combat state.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.

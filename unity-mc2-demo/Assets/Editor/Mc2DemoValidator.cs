@@ -1036,6 +1036,8 @@ namespace MC2Demo.EditorTools
                 + (preview.Status ?? "null")
                 + ", note="
                 + (preview.PreviewNote ?? "null")
+                + ", refreshed="
+                + preview.HasRefreshedMissionSlot
                 + ", slots="
                 + preview.MissionSlotCount
                 + "/"
@@ -2552,6 +2554,7 @@ namespace MC2Demo.EditorTools
                 || lockedSquadPreview.InventoryChanged
                 || lockedSquadPreview.Status != "No depot candidates ready"
                 || lockedSquadPreview.PreviewNote != "Preview only: mission squad unchanged"
+                || lockedSquadPreview.HasRefreshedMissionSlot
                 || lockedSquadPreview.MissionSlotCount <= 0
                 || lockedSquadPreview.CandidateCount != 0
                 || lockedSquadPreview.MissionSlots == null
@@ -2759,6 +2762,7 @@ namespace MC2Demo.EditorTools
                 || squadPreview.InventoryChanged
                 || squadPreview.Status != "Read-only squad selection preview"
                 || squadPreview.PreviewNote != "Preview only: mission squad unchanged"
+                || squadPreview.HasRefreshedMissionSlot
                 || squadPreview.MissionSlotCount <= 0
                 || squadPreview.CandidateCount != 1
                 || squadPreview.MissionSlots == null
@@ -2847,6 +2851,8 @@ namespace MC2Demo.EditorTools
                 selectedOutgoingSlot.ownedMechId);
             MechBaySquadSelectionPreview squadPostApplyPreview =
                 MechBaySquadSelectionPreviewService.BuildPreview(receiptInventory);
+            MechBaySquadSelectionDraftState squadPostApplyDraft =
+                MechBaySquadSelectionPreviewService.BuildDraftState(receiptInventory, null, null);
             if (squadApply == null
                 || !squadApply.Accepted
                 || !squadApply.InventoryChanged
@@ -2868,6 +2874,7 @@ namespace MC2Demo.EditorTools
                 || squadApplyRaven.activeLoadoutId != MechBayWarehouseDraftFitPreviewService.DemoWarehouseFitLoadoutId
                 || squadApplyRaven.deploymentStatus != "Deployable now"
                 || squadApplyRaven.deploymentRequirements != "Current mission squad"
+                || squadApplyRaven.squadSelectionCandidate
                 || squadApplyRaven.squadSelectionStatus != "Already in mission squad"
                 || squadApplyRaven.squadSelectionRequirements != "Current mission slot"
                 || squadApplyOutgoing == null
@@ -2878,13 +2885,32 @@ namespace MC2Demo.EditorTools
                 || squadApplyOutgoing.squadSelectionStatus != "Mission squad unavailable"
                 || squadPostApplyPreview == null
                 || squadPostApplyPreview.InventoryChanged
+                || squadPostApplyPreview.Status != "Mission squad refreshed"
+                || squadPostApplyPreview.PreviewNote != "Confirmed swap applied: mission squad updated"
+                || !squadPostApplyPreview.HasRefreshedMissionSlot
                 || squadPostApplyPreview.MissionSlotCount != squadPreview.MissionSlotCount
                 || squadPostApplyPreview.CandidateCount != 0
+                || squadPostApplyPreview.SwapStatus != "Swap complete"
+                || squadPostApplyPreview.SwapRequirements != "No fitted depot candidates remain"
+                || squadPostApplyPreview.DryRunStatus != "Dry run cleared"
+                || squadPostApplyPreview.DryRunSummary != "Confirmed swap already applied"
                 || squadPostApplyPreview.DryRunIncomingOwnedMechId != null
+                || squadPostApplyPreview.PendingSwapStatus != "No pending swap"
+                || squadPostApplyPreview.PendingSwapSummary != "Confirmed swap already applied"
                 || !ContainsSquadSlot(squadPostApplyPreview.MissionSlots, assembledRaven.ownedMechId)
-                || ContainsSquadSlot(squadPostApplyPreview.MissionSlots, selectedOutgoingSlot.ownedMechId))
+                || ContainsSquadSlot(squadPostApplyPreview.MissionSlots, selectedOutgoingSlot.ownedMechId)
+                || squadPostApplyDraft == null
+                || squadPostApplyDraft.InventoryChanged
+                || squadPostApplyDraft.Ready
+                || squadPostApplyDraft.Status != "Draft swap unavailable"
+                || squadPostApplyDraft.Requirements != "Confirmed swap already applied"
+                || squadPostApplyDraft.Summary != "Confirmed swap already applied")
             {
-                throw new InvalidDataException("Expected pending squad-selection apply path to swap roster availability without changing inventory counts.");
+                throw new InvalidDataException(
+                    "Expected pending squad-selection apply path to swap roster availability and refresh squad preview state without changing inventory counts. Got "
+                    + SquadPreviewDebugText(squadPostApplyPreview)
+                    + " / "
+                    + SquadDraftDebugText(squadPostApplyDraft));
             }
 
             BattleMission defeat = new(MakeResultContract(completeOnStart: false), resultProfiles);
