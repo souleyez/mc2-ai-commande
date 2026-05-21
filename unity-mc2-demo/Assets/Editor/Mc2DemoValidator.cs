@@ -1153,6 +1153,33 @@ namespace MC2Demo.EditorTools
                 + (dryRun.PreviewNote ?? "null");
         }
 
+        private static string MissionRestartApplyGuardDebugText(MechBayMissionRestartApplyGuard guard)
+        {
+            if (guard == null)
+            {
+                return "null guard";
+            }
+
+            return "accepted="
+                + guard.Accepted
+                + ", changed="
+                + guard.InventoryChanged
+                + ", apply="
+                + guard.ApplyEnabled
+                + ", creates="
+                + guard.CreatesMissionInstance
+                + ", intents="
+                + guard.SpawnIntentCount
+                + ", depot="
+                + guard.IncludesDepotMissionSlot
+                + ", message="
+                + (guard.Message ?? "null")
+                + ", reason="
+                + (guard.Reason ?? "null")
+                + ", summary="
+                + (guard.Summary ?? "null");
+        }
+
         private static string SquadDraftDebugText(MechBaySquadSelectionDraftState draft)
         {
             if (draft == null)
@@ -2661,6 +2688,8 @@ namespace MC2Demo.EditorTools
                 MechBayMissionHandoffPreviewService.BuildLaunchGuard(receiptInventory);
             MechBayMissionRestartDryRun lockedRestartDryRun =
                 MechBayMissionHandoffPreviewService.BuildRestartDryRun(receiptInventory);
+            MechBayMissionRestartApplyGuard lockedRestartApplyGuard =
+                MechBayMissionHandoffPreviewService.BuildRestartApplyGuard(receiptInventory);
             if (lockedSquadPreview == null
                 || lockedSquadPreview.InventoryChanged
                 || lockedSquadPreview.Status != "No depot candidates ready"
@@ -2744,6 +2773,23 @@ namespace MC2Demo.EditorTools
                 throw new InvalidDataException(
                     "Expected locked mission restart dry run to map current squad slots without creating a mission instance. Got "
                     + MissionRestartDryRunDebugText(lockedRestartDryRun));
+            }
+
+            if (lockedRestartApplyGuard == null
+                || lockedRestartApplyGuard.Accepted
+                || lockedRestartApplyGuard.InventoryChanged
+                || lockedRestartApplyGuard.ApplyEnabled
+                || lockedRestartApplyGuard.CreatesMissionInstance
+                || lockedRestartApplyGuard.IncludesDepotMissionSlot
+                || lockedRestartApplyGuard.SpawnIntentCount != lockedRestartDryRun.SpawnIntentCount
+                || lockedRestartApplyGuard.Message != "Restart apply guarded"
+                || lockedRestartApplyGuard.Reason != "Future BattleMission recreation hook not wired"
+                || lockedRestartApplyGuard.Summary != lockedRestartDryRun.Summary
+                || receiptInventory.tokenBalance != receiptInventoryResult.Summary.TokenBalance)
+            {
+                throw new InvalidDataException(
+                    "Expected locked mission restart apply guard to reject without mutating inventory or creating a mission instance. Got "
+                    + MissionRestartApplyGuardDebugText(lockedRestartApplyGuard));
             }
 
             MechBaySquadSelectionDraftState lockedSquadDraft =
@@ -3027,6 +3073,8 @@ namespace MC2Demo.EditorTools
                 MechBayMissionHandoffPreviewService.BuildLaunchGuard(receiptInventory);
             MechBayMissionRestartDryRun squadPostApplyRestartDryRun =
                 MechBayMissionHandoffPreviewService.BuildRestartDryRun(receiptInventory);
+            MechBayMissionRestartApplyGuard squadPostApplyRestartApplyGuard =
+                MechBayMissionHandoffPreviewService.BuildRestartApplyGuard(receiptInventory);
             if (squadApply == null
                 || !squadApply.Accepted
                 || !squadApply.InventoryChanged
@@ -3144,6 +3192,23 @@ namespace MC2Demo.EditorTools
                 throw new InvalidDataException(
                     "Expected post-swap mission restart dry run to map the refreshed handoff roster without creating a mission instance. Got "
                     + MissionRestartDryRunDebugText(squadPostApplyRestartDryRun));
+            }
+
+            if (squadPostApplyRestartApplyGuard == null
+                || squadPostApplyRestartApplyGuard.Accepted
+                || squadPostApplyRestartApplyGuard.InventoryChanged
+                || squadPostApplyRestartApplyGuard.ApplyEnabled
+                || squadPostApplyRestartApplyGuard.CreatesMissionInstance
+                || !squadPostApplyRestartApplyGuard.IncludesDepotMissionSlot
+                || squadPostApplyRestartApplyGuard.SpawnIntentCount != squadPostApplyRestartDryRun.SpawnIntentCount
+                || squadPostApplyRestartApplyGuard.Message != "Restart apply guarded"
+                || squadPostApplyRestartApplyGuard.Reason != "Future BattleMission recreation hook not wired"
+                || squadPostApplyRestartApplyGuard.Summary != squadPostApplyRestartDryRun.Summary
+                || receiptInventory.tokenBalance != tokenBeforeDraftFitPreview)
+            {
+                throw new InvalidDataException(
+                    "Expected post-swap mission restart apply guard to reject without mutating inventory or creating a mission instance. Got "
+                    + MissionRestartApplyGuardDebugText(squadPostApplyRestartApplyGuard));
             }
 
             BattleMission defeat = new(MakeResultContract(completeOnStart: false), resultProfiles);

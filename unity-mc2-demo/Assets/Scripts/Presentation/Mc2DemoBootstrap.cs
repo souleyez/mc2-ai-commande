@@ -2543,7 +2543,7 @@ namespace MC2Demo.Presentation
 
             y += 30f;
             DrawMechBayInventorySummary(x, y, width);
-            y += 412f;
+            y += 434f;
             if (showWarehouseDraftFitPreview)
             {
                 DrawWarehouseDraftFitPreview(x, y, width);
@@ -2624,7 +2624,8 @@ namespace MC2Demo.Presentation
                 "Next Mission " + TruncateText(MissionHandoffPreviewText(handoffPreview), 58));
             DrawMissionHandoffLaunchGuard(x, y + 170f, width, handoffPreview);
             DrawMissionRestartDryRun(x, y + 192f, width);
-            DrawOwnedRosterDetail(x, y + 214f, width, roster, pilotHirePreview);
+            DrawMissionRestartApplyGuard(x, y + 214f, width);
+            DrawOwnedRosterDetail(x, y + 236f, width, roster, pilotHirePreview);
         }
 
         private void DrawLoadoutUnit(UnitState unit, float x, float y, float width)
@@ -2893,6 +2894,38 @@ namespace MC2Demo.Presentation
                 + status
                 + "  "
                 + TruncateText(summary, 34);
+        }
+
+        private void DrawMissionRestartApplyGuard(float x, float y, float width)
+        {
+            MechBayMissionRestartApplyGuard guard =
+                MechBayMissionHandoffPreviewService.BuildRestartApplyGuard(demoInventory);
+            bool previousEnabled = GUI.enabled;
+            GUI.enabled = previousEnabled && guard?.ApplyEnabled == true;
+            if (GUI.Button(new Rect(x, y - 2f, 58f, 22f), "Apply"))
+            {
+                statusText = guard?.Message ?? "Restart apply unavailable";
+            }
+
+            GUI.enabled = previousEnabled;
+            GUI.Label(new Rect(x + 66f, y, width - 66f, 18f), TruncateText(MissionRestartApplyGuardText(guard), 56));
+        }
+
+        private static string MissionRestartApplyGuardText(MechBayMissionRestartApplyGuard guard)
+        {
+            if (guard == null)
+            {
+                return "Restart apply unavailable";
+            }
+
+            string message = string.IsNullOrWhiteSpace(guard.Message) ? "Restart apply guarded" : guard.Message;
+            string reason = string.IsNullOrWhiteSpace(guard.Reason) ? "Future BattleMission recreation hook not wired" : guard.Reason;
+            return message
+                + "  "
+                + reason
+                + "  "
+                + guard.SpawnIntentCount.ToString(CultureInfo.InvariantCulture)
+                + " intents";
         }
 
         private static string WeaponShopPreviewText(MechBayWeaponShopPreview preview)

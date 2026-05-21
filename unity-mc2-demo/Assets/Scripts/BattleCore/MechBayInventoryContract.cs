@@ -383,6 +383,19 @@ namespace MC2Demo.BattleCore
         public bool isDepotMissionSlot { get; internal set; }
     }
 
+    public sealed class MechBayMissionRestartApplyGuard
+    {
+        public bool Accepted { get; internal set; }
+        public bool InventoryChanged { get; internal set; }
+        public bool ApplyEnabled { get; internal set; }
+        public bool CreatesMissionInstance { get; internal set; }
+        public bool IncludesDepotMissionSlot { get; internal set; }
+        public int SpawnIntentCount { get; internal set; }
+        public string Message { get; internal set; }
+        public string Reason { get; internal set; }
+        public string Summary { get; internal set; }
+    }
+
     public sealed class MechBayReceiptItemDefinition
     {
         public string itemId;
@@ -1491,6 +1504,24 @@ namespace MC2Demo.BattleCore
                 Summary = RestartSummary(intents, preview?.IncludesDepotMissionSlot == true),
                 PreviewNote = "Dry run only: no BattleMission created",
                 SpawnIntents = intents
+            };
+        }
+
+        public static MechBayMissionRestartApplyGuard BuildRestartApplyGuard(MechBayInventoryContract inventory)
+        {
+            MechBayMissionRestartDryRun dryRun = BuildRestartDryRun(inventory);
+            bool ready = dryRun?.Ready == true;
+            return new MechBayMissionRestartApplyGuard
+            {
+                Accepted = false,
+                InventoryChanged = false,
+                ApplyEnabled = false,
+                CreatesMissionInstance = false,
+                IncludesDepotMissionSlot = dryRun?.IncludesDepotMissionSlot == true,
+                SpawnIntentCount = dryRun?.SpawnIntentCount ?? 0,
+                Message = ready ? "Restart apply guarded" : "Restart apply unavailable",
+                Reason = ready ? "Future BattleMission recreation hook not wired" : "Need restart dry run",
+                Summary = string.IsNullOrWhiteSpace(dryRun?.Summary) ? "No spawn intents" : dryRun.Summary
             };
         }
 

@@ -309,3 +309,6 @@ rebuild a live mission instance from the inventory roster.
 The same handoff now produces a restart dry run: each available mission slot is
 mapped to a future spawn intent with commander/lancemate role, pilot, loadout,
 and depot-slot marker, while still creating no new `BattleMission`.
+The restart dry run now also has an Apply guard. It reports the spawn-intent
+count but always rejects, preserving inventory and runtime combat state until
+the real `BattleMission` recreation path exists.
