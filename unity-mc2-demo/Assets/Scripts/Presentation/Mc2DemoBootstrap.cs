@@ -2543,7 +2543,7 @@ namespace MC2Demo.Presentation
 
             y += 30f;
             DrawMechBayInventorySummary(x, y, width);
-            y += 368f;
+            y += 390f;
             if (showWarehouseDraftFitPreview)
             {
                 DrawWarehouseDraftFitPreview(x, y, width);
@@ -2622,7 +2622,8 @@ namespace MC2Demo.Presentation
             GUI.Label(
                 new Rect(x, y + 148f, width, 18f),
                 "Next Mission " + TruncateText(MissionHandoffPreviewText(handoffPreview), 58));
-            DrawOwnedRosterDetail(x, y + 170f, width, roster, pilotHirePreview);
+            DrawMissionHandoffLaunchGuard(x, y + 170f, width, handoffPreview);
+            DrawOwnedRosterDetail(x, y + 192f, width, roster, pilotHirePreview);
         }
 
         private void DrawLoadoutUnit(UnitState unit, float x, float y, float width)
@@ -2834,6 +2835,40 @@ namespace MC2Demo.Presentation
                 + TruncateText(summary, 38)
                 + "  "
                 + launch;
+        }
+
+        private void DrawMissionHandoffLaunchGuard(
+            float x,
+            float y,
+            float width,
+            MechBayMissionHandoffPreview preview)
+        {
+            MechBayMissionHandoffLaunchGuard guard =
+                MechBayMissionHandoffPreviewService.BuildLaunchGuard(demoInventory);
+            bool previousEnabled = GUI.enabled;
+            GUI.enabled = previousEnabled && guard?.LaunchEnabled == true;
+            if (GUI.Button(new Rect(x, y - 2f, 58f, 22f), "Launch"))
+            {
+                statusText = guard?.Message ?? "Mission launch unavailable";
+            }
+
+            GUI.enabled = previousEnabled;
+            GUI.Label(new Rect(x + 66f, y, width - 66f, 18f), TruncateText(MissionHandoffLaunchGuardText(guard, preview), 56));
+        }
+
+        private static string MissionHandoffLaunchGuardText(
+            MechBayMissionHandoffLaunchGuard guard,
+            MechBayMissionHandoffPreview preview)
+        {
+            if (guard == null)
+            {
+                return "Launch unavailable";
+            }
+
+            string message = string.IsNullOrWhiteSpace(guard.Message) ? "Mission launch guarded" : guard.Message;
+            string reason = string.IsNullOrWhiteSpace(guard.Reason) ? "Future mission restart hook not wired" : guard.Reason;
+            string note = string.IsNullOrWhiteSpace(preview?.PreviewNote) ? "Current battle unchanged" : preview.PreviewNote;
+            return message + "  " + reason + "  " + note;
         }
 
         private static string WeaponShopPreviewText(MechBayWeaponShopPreview preview)

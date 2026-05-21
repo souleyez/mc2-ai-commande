@@ -343,6 +343,18 @@ namespace MC2Demo.BattleCore
         public MechBaySquadSelectionSlot[] MissionSlots { get; internal set; }
     }
 
+    public sealed class MechBayMissionHandoffLaunchGuard
+    {
+        public bool Accepted { get; internal set; }
+        public bool InventoryChanged { get; internal set; }
+        public bool LaunchEnabled { get; internal set; }
+        public bool IncludesDepotMissionSlot { get; internal set; }
+        public int MissionSlotCount { get; internal set; }
+        public string Message { get; internal set; }
+        public string Reason { get; internal set; }
+        public string Summary { get; internal set; }
+    }
+
     public sealed class MechBayReceiptItemDefinition
     {
         public string itemId;
@@ -1393,6 +1405,25 @@ namespace MC2Demo.BattleCore
                 Summary = Summary(missionSlots, includesDepotMissionSlot),
                 PreviewNote = "Preview only: current battle state unchanged",
                 MissionSlots = missionSlots.ToArray()
+            };
+        }
+
+        public static MechBayMissionHandoffLaunchGuard BuildLaunchGuard(MechBayInventoryContract inventory)
+        {
+            MechBayMissionHandoffPreview preview = BuildPreview(inventory);
+            bool ready = preview?.ReadyForFutureLaunch == true;
+            return new MechBayMissionHandoffLaunchGuard
+            {
+                Accepted = false,
+                InventoryChanged = false,
+                LaunchEnabled = false,
+                IncludesDepotMissionSlot = preview?.IncludesDepotMissionSlot == true,
+                MissionSlotCount = preview?.MissionSlotCount ?? 0,
+                Message = ready ? "Mission launch guarded" : "Mission launch unavailable",
+                Reason = ready ? "Future mission restart hook not wired" : "Need available mission slot",
+                Summary = string.IsNullOrWhiteSpace(preview?.Summary)
+                    ? "No available mission slots"
+                    : preview.Summary
             };
         }
 

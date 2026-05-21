@@ -67,6 +67,7 @@ Current demo behavior:
 - applies pending squad swap confirmation by exchanging local mission availability flags
 - refreshes squad-selection status after confirmation so the joined depot mech is no longer shown as a candidate
 - previews the next-mission handoff roster from `availableForMission` without restarting the current battle
+- shows a disabled Launch guard explaining that the future mission restart hook is not wired yet
 - warns when draft armor plate or heat sink usage exceeds starter inventory and blocks applying that fit
 - shows starter mech condition and one-click demo repair that spends local token balance
 - applies a local mission receipt for completed bounty tokens and salvaged mech fragments at mission end

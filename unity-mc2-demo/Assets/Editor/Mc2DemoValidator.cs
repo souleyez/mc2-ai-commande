@@ -1099,6 +1099,31 @@ namespace MC2Demo.EditorTools
                 + preview.InventoryChanged;
         }
 
+        private static string MissionHandoffLaunchGuardDebugText(MechBayMissionHandoffLaunchGuard guard)
+        {
+            if (guard == null)
+            {
+                return "null guard";
+            }
+
+            return "accepted="
+                + guard.Accepted
+                + ", changed="
+                + guard.InventoryChanged
+                + ", enabled="
+                + guard.LaunchEnabled
+                + ", slots="
+                + guard.MissionSlotCount
+                + ", depot="
+                + guard.IncludesDepotMissionSlot
+                + ", message="
+                + (guard.Message ?? "null")
+                + ", reason="
+                + (guard.Reason ?? "null")
+                + ", summary="
+                + (guard.Summary ?? "null");
+        }
+
         private static string SquadDraftDebugText(MechBaySquadSelectionDraftState draft)
         {
             if (draft == null)
@@ -2583,6 +2608,8 @@ namespace MC2Demo.EditorTools
                 MechBaySquadSelectionPreviewService.BuildPreview(receiptInventory);
             MechBayMissionHandoffPreview lockedHandoffPreview =
                 MechBayMissionHandoffPreviewService.BuildPreview(receiptInventory);
+            MechBayMissionHandoffLaunchGuard lockedLaunchGuard =
+                MechBayMissionHandoffPreviewService.BuildLaunchGuard(receiptInventory);
             if (lockedSquadPreview == null
                 || lockedSquadPreview.InventoryChanged
                 || lockedSquadPreview.Status != "No depot candidates ready"
@@ -2629,6 +2656,22 @@ namespace MC2Demo.EditorTools
                 throw new InvalidDataException(
                     "Expected mission handoff preview to expose only current available mission slots before depot swap. Got "
                     + MissionHandoffDebugText(lockedHandoffPreview));
+            }
+
+            if (lockedLaunchGuard == null
+                || lockedLaunchGuard.Accepted
+                || lockedLaunchGuard.InventoryChanged
+                || lockedLaunchGuard.LaunchEnabled
+                || lockedLaunchGuard.IncludesDepotMissionSlot
+                || lockedLaunchGuard.MissionSlotCount != lockedHandoffPreview.MissionSlotCount
+                || lockedLaunchGuard.Message != "Mission launch guarded"
+                || lockedLaunchGuard.Reason != "Future mission restart hook not wired"
+                || lockedLaunchGuard.Summary != lockedHandoffPreview.Summary
+                || receiptInventory.tokenBalance != receiptInventoryResult.Summary.TokenBalance)
+            {
+                throw new InvalidDataException(
+                    "Expected locked mission handoff launch guard to reject without mutating inventory. Got "
+                    + MissionHandoffLaunchGuardDebugText(lockedLaunchGuard));
             }
 
             MechBaySquadSelectionDraftState lockedSquadDraft =
@@ -2908,6 +2951,8 @@ namespace MC2Demo.EditorTools
                 MechBaySquadSelectionPreviewService.BuildDraftState(receiptInventory, null, null);
             MechBayMissionHandoffPreview squadPostApplyHandoff =
                 MechBayMissionHandoffPreviewService.BuildPreview(receiptInventory);
+            MechBayMissionHandoffLaunchGuard squadPostApplyLaunchGuard =
+                MechBayMissionHandoffPreviewService.BuildLaunchGuard(receiptInventory);
             if (squadApply == null
                 || !squadApply.Accepted
                 || !squadApply.InventoryChanged
@@ -2988,6 +3033,22 @@ namespace MC2Demo.EditorTools
                 throw new InvalidDataException(
                     "Expected mission handoff preview to consume the refreshed availableForMission roster without launching a new battle. Got "
                     + MissionHandoffDebugText(squadPostApplyHandoff));
+            }
+
+            if (squadPostApplyLaunchGuard == null
+                || squadPostApplyLaunchGuard.Accepted
+                || squadPostApplyLaunchGuard.InventoryChanged
+                || squadPostApplyLaunchGuard.LaunchEnabled
+                || !squadPostApplyLaunchGuard.IncludesDepotMissionSlot
+                || squadPostApplyLaunchGuard.MissionSlotCount != squadPostApplyHandoff.MissionSlotCount
+                || squadPostApplyLaunchGuard.Message != "Mission launch guarded"
+                || squadPostApplyLaunchGuard.Reason != "Future mission restart hook not wired"
+                || squadPostApplyLaunchGuard.Summary != squadPostApplyHandoff.Summary
+                || receiptInventory.tokenBalance != tokenBeforeDraftFitPreview)
+            {
+                throw new InvalidDataException(
+                    "Expected post-swap mission handoff launch guard to reject without mutating inventory or battle state. Got "
+                    + MissionHandoffLaunchGuardDebugText(squadPostApplyLaunchGuard));
             }
 
             BattleMission defeat = new(MakeResultContract(completeOnStart: false), resultProfiles);

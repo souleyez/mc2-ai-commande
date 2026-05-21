@@ -303,3 +303,6 @@ The mech bay now also shows a read-only next-mission handoff preview built
 from the `availableForMission` roster. It can include the joined depot mech
 after a confirmed swap, but it does not restart or mutate the active combat
 mission yet.
+That handoff now has a disabled Launch guard. The guard reports the staged
+roster and explicitly blocks mission restart until a future launch hook can
+rebuild a live mission instance from the inventory roster.
