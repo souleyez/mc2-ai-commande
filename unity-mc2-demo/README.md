@@ -50,6 +50,7 @@ Current demo behavior:
 - shows a disabled Draft Fit affordance for depot mechs so the future fitting path is visible but inactive
 - previews depot fitting requirements such as spare weapon stock and pilot assignment
 - shows a read-only pilot placeholder for depot mechs before the future pilot/social loop exists
+- previews spare weapon stock counts for future depot fitting
 - warns when draft armor plate or heat sink usage exceeds starter inventory and blocks applying that fit
 - shows starter mech condition and one-click demo repair that spends local token balance
 - applies a local mission receipt for completed bounty tokens and salvaged mech fragments at mission end

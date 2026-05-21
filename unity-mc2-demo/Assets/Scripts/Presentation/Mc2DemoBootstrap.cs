@@ -2526,7 +2526,7 @@ namespace MC2Demo.Presentation
 
             y += 30f;
             DrawMechBayInventorySummary(x, y, width);
-            y += 192f;
+            y += 214f;
 
             int unitCount = CountPlayerUnits();
             Rect viewport = new(x, y, width, panel.yMax - y - 12f);
@@ -2813,7 +2813,10 @@ namespace MC2Demo.Presentation
             GUI.Label(
                 new Rect(x + 70f, y + 42f, width - 70f, 18f),
                 TruncateText(OwnedRosterPilotText(entry), 62));
-            DrawOwnedRosterDraftFitStub(x + 70f, y + 64f, width - 70f, entry);
+            GUI.Label(
+                new Rect(x + 70f, y + 64f, width - 70f, 18f),
+                TruncateText(OwnedRosterWeaponStockText(entry), 62));
+            DrawOwnedRosterDraftFitStub(x + 70f, y + 86f, width - 70f, entry);
         }
 
         private void ClampSelectedRosterIndex(MechBayOwnedRosterEntry[] roster)
@@ -2874,6 +2877,19 @@ namespace MC2Demo.Presentation
             string status = string.IsNullOrWhiteSpace(entry.pilotStatus) ? "Unknown" : entry.pilotStatus;
             string pilot = string.IsNullOrWhiteSpace(entry.pilotDisplayName) ? "No pilot assigned" : entry.pilotDisplayName;
             return "Pilot " + status + " (" + pilot + ")";
+        }
+
+        private static string OwnedRosterWeaponStockText(MechBayOwnedRosterEntry entry)
+        {
+            if (entry == null)
+            {
+                return "Stock unavailable";
+            }
+
+            string stock = string.IsNullOrWhiteSpace(entry.spareWeaponStockStatus)
+                ? "No weapon stock"
+                : entry.spareWeaponStockStatus;
+            return "Stock " + stock;
         }
 
         private static void DrawOwnedRosterDraftFitStub(float x, float y, float width, MechBayOwnedRosterEntry entry)

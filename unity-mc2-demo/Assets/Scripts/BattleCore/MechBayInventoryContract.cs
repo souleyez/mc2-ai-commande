@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace MC2Demo.BattleCore
 {
@@ -75,6 +76,9 @@ namespace MC2Demo.BattleCore
         public string draftFitStatus { get; internal set; }
         public string draftFitRequirements { get; internal set; }
         public bool hasSpareWeaponStock { get; internal set; }
+        public int spareWeaponStockCount { get; internal set; }
+        public int totalWeaponStockCount { get; internal set; }
+        public string spareWeaponStockStatus { get; internal set; }
         public bool hasPilotAssignment { get; internal set; }
         public bool hasPilotPlaceholder { get; internal set; }
         public string pilotStatus { get; internal set; }
@@ -528,7 +532,10 @@ namespace MC2Demo.BattleCore
         public static MechBayOwnedRosterEntry[] BuildRosterPreview(MechBayInventoryContract inventory)
         {
             MechBayOwnedMechDefinition[] ownedMechs = inventory?.ownedMechs ?? Array.Empty<MechBayOwnedMechDefinition>();
-            bool hasSpareWeaponStock = CountAvailableItems(inventory, LoadoutItemCategory.Weapon) > 0;
+            int spareWeaponStockCount = CountAvailableItems(inventory, LoadoutItemCategory.Weapon);
+            int totalWeaponStockCount = CountTotalItems(inventory, LoadoutItemCategory.Weapon);
+            bool hasSpareWeaponStock = spareWeaponStockCount > 0;
+            string spareWeaponStockStatus = WeaponStockStatus(spareWeaponStockCount, totalWeaponStockCount);
             List<MechBayOwnedRosterEntry> entries = new();
             for (int index = 0; index < ownedMechs.Length; index++)
             {
@@ -551,6 +558,9 @@ namespace MC2Demo.BattleCore
                     draftFitStatus = DraftFitStatus(mech),
                     draftFitRequirements = DraftFitRequirements(mech, hasSpareWeaponStock),
                     hasSpareWeaponStock = hasSpareWeaponStock,
+                    spareWeaponStockCount = spareWeaponStockCount,
+                    totalWeaponStockCount = totalWeaponStockCount,
+                    spareWeaponStockStatus = spareWeaponStockStatus,
                     hasPilotAssignment = HasPilotAssignment(mech),
                     hasPilotPlaceholder = HasPilotPlaceholder(mech),
                     pilotStatus = PilotStatus(mech),
@@ -630,6 +640,24 @@ namespace MC2Demo.BattleCore
             return IsWarehouseMech(mech) ? "No pilot assigned" : "Mission pilot";
         }
 
+        private static string WeaponStockStatus(int spareWeaponStockCount, int totalWeaponStockCount)
+        {
+            if (spareWeaponStockCount > 0)
+            {
+                return spareWeaponStockCount.ToString(CultureInfo.InvariantCulture)
+                    + " spare / "
+                    + totalWeaponStockCount.ToString(CultureInfo.InvariantCulture)
+                    + " weapon stock";
+            }
+
+            if (totalWeaponStockCount > 0)
+            {
+                return "0 spare / " + totalWeaponStockCount.ToString(CultureInfo.InvariantCulture) + " weapon stock";
+            }
+
+            return "No weapon stock";
+        }
+
         private static bool IsPendingDepotFit(MechBayOwnedMechDefinition mech)
         {
             return IsWarehouseMech(mech)
@@ -646,6 +674,22 @@ namespace MC2Demo.BattleCore
                 if (stack != null && string.Equals(stack.category, category, StringComparison.Ordinal))
                 {
                     count += Math.Max(0, stack.quantity - stack.equippedQuantity);
+                }
+            }
+
+            return count;
+        }
+
+        private static int CountTotalItems(MechBayInventoryContract inventory, string category)
+        {
+            int count = 0;
+            MechBayItemStackDefinition[] itemStacks = inventory?.itemStacks ?? Array.Empty<MechBayItemStackDefinition>();
+            for (int index = 0; index < itemStacks.Length; index++)
+            {
+                MechBayItemStackDefinition stack = itemStacks[index];
+                if (stack != null && string.Equals(stack.category, category, StringComparison.Ordinal))
+                {
+                    count += Math.Max(0, stack.quantity);
                 }
             }
 

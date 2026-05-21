@@ -251,3 +251,6 @@ assignment, both missing for newly assembled depot mechs in the current demo.
 The roster detail also includes a read-only pilot placeholder, so depot mechs
 have an explicit future pilot/social system slot without enabling pilot hiring
 or assignment yet.
+It now exposes spare weapon stock counts too, making it clear when all starter
+weapons are mounted on the active squad and no depot fitting weapon stock is
+available yet.

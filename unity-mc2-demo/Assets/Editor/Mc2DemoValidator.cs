@@ -311,6 +311,10 @@ namespace MC2Demo.EditorTools
                 || starterRoster[0].draftFitStatus != "Use squad fit cards below"
                 || starterRoster[0].draftFitRequirements != "Current fit active"
                 || !starterRoster[0].hasPilotAssignment
+                || starterRoster[0].hasSpareWeaponStock
+                || starterRoster[0].spareWeaponStockCount != 0
+                || starterRoster[0].totalWeaponStockCount <= 0
+                || string.IsNullOrWhiteSpace(starterRoster[0].spareWeaponStockStatus)
                 || starterRoster[0].hasPilotPlaceholder
                 || starterRoster[0].pilotStatus != "Assigned"
                 || starterRoster[0].pilotDisplayName != "Mission pilot"
@@ -2331,6 +2335,8 @@ namespace MC2Demo.EditorTools
                 || assembledRaven.draftFitStatus != "Draft fitting locked for this demo"
                 || assembledRaven.draftFitRequirements != "Need stock weapons + pilot"
                 || assembledRaven.hasSpareWeaponStock
+                || assembledRaven.spareWeaponStockCount != 0
+                || string.IsNullOrWhiteSpace(assembledRaven.spareWeaponStockStatus)
                 || assembledRaven.hasPilotAssignment
                 || !assembledRaven.hasPilotPlaceholder
                 || assembledRaven.pilotStatus != "Pilot required"
