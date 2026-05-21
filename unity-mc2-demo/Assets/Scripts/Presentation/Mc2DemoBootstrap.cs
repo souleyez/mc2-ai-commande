@@ -62,6 +62,7 @@ namespace MC2Demo.Presentation
         private Vector2 loadoutScroll;
         private int selectedRosterIndex;
         private bool showWarehouseDraftFitPreview;
+        private bool showSquadSelectionPreview;
         private string warehouseDraftFitPreviewMechId;
         private string statusText = "Loading";
 
@@ -2040,6 +2041,9 @@ namespace MC2Demo.Presentation
             {
                 showMissionMap = !showMissionMap;
                 showLoadoutPanel = false;
+                showWarehouseDraftFitPreview = false;
+                showSquadSelectionPreview = false;
+                warehouseDraftFitPreviewMechId = null;
                 showSystemPanel = false;
                 if (mission.Result == MissionResultState.InProgress)
                 {
@@ -2054,6 +2058,9 @@ namespace MC2Demo.Presentation
                 if (showLoadoutPanel)
                 {
                     showLoadoutPanel = false;
+                    showWarehouseDraftFitPreview = false;
+                    showSquadSelectionPreview = false;
+                    warehouseDraftFitPreviewMechId = null;
                     if (mission.Result == MissionResultState.InProgress)
                     {
                         SetPaused(false);
@@ -2519,6 +2526,7 @@ namespace MC2Demo.Presentation
             {
                 showLoadoutPanel = false;
                 showWarehouseDraftFitPreview = false;
+                showSquadSelectionPreview = false;
                 warehouseDraftFitPreviewMechId = null;
                 if (mission.Result == MissionResultState.InProgress)
                 {
@@ -2535,6 +2543,11 @@ namespace MC2Demo.Presentation
             {
                 DrawWarehouseDraftFitPreview(x, y, width);
                 y += 116f;
+            }
+            else if (showSquadSelectionPreview)
+            {
+                DrawSquadSelectionPreview(x, y, width);
+                y += 138f;
             }
 
             int unitCount = CountPlayerUnits();
@@ -3142,6 +3155,7 @@ namespace MC2Demo.Presentation
             {
                 string name = entry == null || string.IsNullOrWhiteSpace(entry.displayName) ? "depot mech" : entry.displayName;
                 showWarehouseDraftFitPreview = true;
+                showSquadSelectionPreview = false;
                 warehouseDraftFitPreviewMechId = entry?.ownedMechId;
                 statusText = "Draft fit ready: " + TruncateText(name, 24);
                 AddCombatLogLine("Mech bay draft fit gate ready for " + name);
@@ -3162,11 +3176,17 @@ namespace MC2Demo.Presentation
 
         private void DrawOwnedRosterSquadSelectionStub(float x, float y, float width, MechBayOwnedRosterEntry entry)
         {
+            bool canPreviewSquad = entry != null;
             bool previousEnabled = GUI.enabled;
-            GUI.enabled = false;
+            GUI.enabled = previousEnabled && canPreviewSquad;
             if (GUI.Button(new Rect(x, y - 2f, 72f, 22f), "Squad"))
             {
-                statusText = "Squad selection unavailable";
+                string name = string.IsNullOrWhiteSpace(entry?.displayName) ? "owned mech" : entry.displayName;
+                showSquadSelectionPreview = true;
+                showWarehouseDraftFitPreview = false;
+                warehouseDraftFitPreviewMechId = null;
+                statusText = "Squad preview: " + TruncateText(name, 24);
+                AddCombatLogLine("Mech bay squad selection preview opened");
             }
 
             GUI.enabled = previousEnabled;
@@ -3187,6 +3207,73 @@ namespace MC2Demo.Presentation
                 ? "Requirements unknown"
                 : entry.squadSelectionRequirements;
             return status + "  " + requirements;
+        }
+
+        private void DrawSquadSelectionPreview(float x, float y, float width)
+        {
+            MechBaySquadSelectionPreview preview = MechBaySquadSelectionPreviewService.BuildPreview(demoInventory);
+            GUI.Box(new Rect(x, y, width, 126f), "Squad Selection Preview");
+            if (GUI.Button(new Rect(x + width - 58f, y + 4f, 48f, 22f), "Hide"))
+            {
+                showSquadSelectionPreview = false;
+                statusText = "Squad preview closed";
+            }
+
+            string status = string.IsNullOrWhiteSpace(preview?.Status) ? "Preview unavailable" : preview.Status;
+            GUI.Label(new Rect(x + 12f, y + 24f, width - 24f, 18f), TruncateText(status, 76));
+            GUI.Label(
+                new Rect(x + 12f, y + 44f, width - 24f, 18f),
+                "Current Slots "
+                + (preview?.MissionSlotCount ?? 0).ToString(CultureInfo.InvariantCulture)
+                + "  Depot Candidates "
+                + (preview?.CandidateCount ?? 0).ToString(CultureInfo.InvariantCulture));
+            GUI.Label(
+                new Rect(x + 12f, y + 64f, width - 24f, 18f),
+                TruncateText("Slots " + SquadSelectionSlotSummary(preview?.MissionSlots, "none"), 76));
+            GUI.Label(
+                new Rect(x + 12f, y + 84f, width - 24f, 18f),
+                TruncateText("Candidates " + SquadSelectionSlotSummary(preview?.DepotCandidates, "none ready"), 76));
+            string note = string.IsNullOrWhiteSpace(preview?.PreviewNote) ? "Preview only" : preview.PreviewNote;
+            GUI.Label(new Rect(x + 12f, y + 104f, width - 24f, 18f), TruncateText(note, 76));
+        }
+
+        private static string SquadSelectionSlotSummary(MechBaySquadSelectionSlot[] slots, string emptyText)
+        {
+            if (slots == null || slots.Length == 0)
+            {
+                return emptyText;
+            }
+
+            string text = "";
+            int count = Math.Min(3, slots.Length);
+            for (int index = 0; index < count; index++)
+            {
+                MechBaySquadSelectionSlot slot = slots[index];
+                if (slot == null)
+                {
+                    continue;
+                }
+
+                if (text.Length > 0)
+                {
+                    text += "; ";
+                }
+
+                string name = string.IsNullOrWhiteSpace(slot.displayName) ? slot.unitType : slot.displayName;
+                string pilot = string.IsNullOrWhiteSpace(slot.pilotDisplayName) ? "No pilot" : slot.pilotDisplayName;
+                text += name
+                    + " "
+                    + slot.conditionPercent.ToString(CultureInfo.InvariantCulture)
+                    + "% "
+                    + pilot;
+            }
+
+            if (slots.Length > count)
+            {
+                text += " +" + (slots.Length - count).ToString(CultureInfo.InvariantCulture);
+            }
+
+            return text.Length == 0 ? emptyText : text;
         }
 
         private void DrawWarehouseDraftFitPreview(float x, float y, float width)
@@ -4413,6 +4500,9 @@ namespace MC2Demo.Presentation
         {
             showSystemPanel = true;
             showLoadoutPanel = false;
+            showWarehouseDraftFitPreview = false;
+            showSquadSelectionPreview = false;
+            warehouseDraftFitPreviewMechId = null;
             showMissionMap = false;
             if (mission.Result == MissionResultState.InProgress)
             {
@@ -4427,6 +4517,9 @@ namespace MC2Demo.Presentation
         private void OpenLoadoutPanel()
         {
             showLoadoutPanel = true;
+            showWarehouseDraftFitPreview = false;
+            showSquadSelectionPreview = false;
+            warehouseDraftFitPreviewMechId = null;
             showMissionMap = false;
             showSystemPanel = false;
             if (mission.Result == MissionResultState.InProgress)

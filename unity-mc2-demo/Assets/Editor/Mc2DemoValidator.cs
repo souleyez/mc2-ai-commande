@@ -1025,6 +1025,29 @@ namespace MC2Demo.EditorTools
             return errors.Length == 0 ? "no errors" : errors[0];
         }
 
+        private static string SquadPreviewDebugText(MechBaySquadSelectionPreview preview)
+        {
+            if (preview == null)
+            {
+                return "null preview";
+            }
+
+            return "status="
+                + (preview.Status ?? "null")
+                + ", note="
+                + (preview.PreviewNote ?? "null")
+                + ", slots="
+                + preview.MissionSlotCount
+                + "/"
+                + (preview.MissionSlots?.Length ?? -1)
+                + ", candidates="
+                + preview.CandidateCount
+                + "/"
+                + (preview.DepotCandidates?.Length ?? -1)
+                + ", changed="
+                + preview.InventoryChanged;
+        }
+
         private static bool HasWarehouseRosterEntry(MechBayOwnedRosterEntry[] roster, string unitType)
         {
             return FindWarehouseRosterEntry(roster, unitType) != null;
@@ -2438,6 +2461,24 @@ namespace MC2Demo.EditorTools
                 throw new InvalidDataException("Expected assembled warehouse Raven to stay held with a pending loadout placeholder.");
             }
 
+            MechBaySquadSelectionPreview lockedSquadPreview =
+                MechBaySquadSelectionPreviewService.BuildPreview(receiptInventory);
+            if (lockedSquadPreview == null
+                || lockedSquadPreview.InventoryChanged
+                || lockedSquadPreview.Status != "No depot candidates ready"
+                || lockedSquadPreview.PreviewNote != "Preview only: mission squad unchanged"
+                || lockedSquadPreview.MissionSlotCount <= 0
+                || lockedSquadPreview.CandidateCount != 0
+                || lockedSquadPreview.MissionSlots == null
+                || lockedSquadPreview.MissionSlots.Length != lockedSquadPreview.MissionSlotCount
+                || lockedSquadPreview.DepotCandidates == null
+                || lockedSquadPreview.DepotCandidates.Length != 0)
+            {
+                throw new InvalidDataException(
+                    "Expected starter squad-selection preview to list mission slots and hide locked depot mechs. Got "
+                    + SquadPreviewDebugText(lockedSquadPreview));
+            }
+
             MechBayPilotHirePreview warehousePilotHirePreview = MechBayPilotHirePreviewService.BuildPreview(receiptInventory);
             MechBayPilotHireCandidate hireCandidate = warehousePilotHirePreview.Candidates[0];
             int tokenBeforePilotHirePreview = receiptInventory.tokenBalance;
@@ -2570,6 +2611,38 @@ namespace MC2Demo.EditorTools
                 || assembledRaven.squadSelectionRequirements != "Future squad-selection screen")
             {
                 throw new InvalidDataException("Expected warehouse draft-fit apply stub to consume one spare weapon and keep the mech non-deployable.");
+            }
+
+            MechBaySquadSelectionPreview squadPreview =
+                MechBaySquadSelectionPreviewService.BuildPreview(receiptInventory);
+            MechBayInventoryValidationResult squadPreviewInventoryResult = MechBayInventoryValidator.Validate(receiptInventory);
+            MechBaySquadSelectionSlot squadCandidate =
+                squadPreview?.DepotCandidates != null && squadPreview.DepotCandidates.Length > 0
+                    ? squadPreview.DepotCandidates[0]
+                    : null;
+            if (squadPreview == null
+                || squadPreview.InventoryChanged
+                || squadPreview.Status != "Read-only squad selection preview"
+                || squadPreview.PreviewNote != "Preview only: mission squad unchanged"
+                || squadPreview.MissionSlotCount <= 0
+                || squadPreview.CandidateCount != 1
+                || squadPreview.MissionSlots == null
+                || squadPreview.MissionSlots.Length != squadPreview.MissionSlotCount
+                || squadPreview.DepotCandidates == null
+                || squadPreview.DepotCandidates.Length != 1
+                || squadCandidate == null
+                || squadCandidate.ownedMechId != assembledRaven.ownedMechId
+                || squadCandidate.displayName != assembledRaven.displayName
+                || squadCandidate.conditionPercent != 100
+                || squadCandidate.selectionStatus != "Ready for future squad selection"
+                || !squadPreviewInventoryResult.IsValid
+                || squadPreviewInventoryResult.Summary.MechCount != draftFitApplyInventoryResult.Summary.MechCount
+                || squadPreviewInventoryResult.Summary.WeaponCount != draftFitApplyInventoryResult.Summary.WeaponCount
+                || receiptInventory.tokenBalance != tokenBeforeDraftFitPreview)
+            {
+                throw new InvalidDataException(
+                    "Expected read-only squad-selection preview to show current slots and one fitted depot candidate without changing inventory. Got "
+                    + SquadPreviewDebugText(squadPreview));
             }
 
             BattleMission defeat = new(MakeResultContract(completeOnStart: false), resultProfiles);

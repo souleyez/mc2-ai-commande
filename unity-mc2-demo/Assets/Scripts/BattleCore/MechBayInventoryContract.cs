@@ -269,6 +269,29 @@ namespace MC2Demo.BattleCore
         public string Message { get; internal set; }
     }
 
+    public sealed class MechBaySquadSelectionPreview
+    {
+        public bool InventoryChanged { get; internal set; }
+        public string Status { get; internal set; }
+        public string PreviewNote { get; internal set; }
+        public int MissionSlotCount { get; internal set; }
+        public int CandidateCount { get; internal set; }
+        public MechBaySquadSelectionSlot[] MissionSlots { get; internal set; }
+        public MechBaySquadSelectionSlot[] DepotCandidates { get; internal set; }
+    }
+
+    public sealed class MechBaySquadSelectionSlot
+    {
+        public string ownedMechId { get; internal set; }
+        public string unitType { get; internal set; }
+        public string chassisId { get; internal set; }
+        public string displayName { get; internal set; }
+        public string activeLoadoutId { get; internal set; }
+        public string pilotDisplayName { get; internal set; }
+        public int conditionPercent { get; internal set; }
+        public string selectionStatus { get; internal set; }
+    }
+
     public sealed class MechBayReceiptItemDefinition
     {
         public string itemId;
@@ -938,6 +961,62 @@ namespace MC2Demo.BattleCore
         {
             return !string.IsNullOrWhiteSpace(value)
                 && value.StartsWith(prefix, StringComparison.OrdinalIgnoreCase);
+        }
+    }
+
+    public static class MechBaySquadSelectionPreviewService
+    {
+        public static MechBaySquadSelectionPreview BuildPreview(MechBayInventoryContract inventory)
+        {
+            MechBayOwnedRosterEntry[] roster = MechBayOwnedRosterService.BuildRosterPreview(inventory);
+            List<MechBaySquadSelectionSlot> missionSlots = new();
+            List<MechBaySquadSelectionSlot> depotCandidates = new();
+            for (int index = 0; index < roster.Length; index++)
+            {
+                MechBayOwnedRosterEntry entry = roster[index];
+                if (entry == null)
+                {
+                    continue;
+                }
+
+                if (entry.isWarehouseMech)
+                {
+                    if (entry.squadSelectionCandidate)
+                    {
+                        depotCandidates.Add(SlotFromRoster(entry));
+                    }
+                }
+                else
+                {
+                    missionSlots.Add(SlotFromRoster(entry));
+                }
+            }
+
+            return new MechBaySquadSelectionPreview
+            {
+                InventoryChanged = false,
+                Status = depotCandidates.Count > 0 ? "Read-only squad selection preview" : "No depot candidates ready",
+                PreviewNote = "Preview only: mission squad unchanged",
+                MissionSlotCount = missionSlots.Count,
+                CandidateCount = depotCandidates.Count,
+                MissionSlots = missionSlots.ToArray(),
+                DepotCandidates = depotCandidates.ToArray()
+            };
+        }
+
+        private static MechBaySquadSelectionSlot SlotFromRoster(MechBayOwnedRosterEntry entry)
+        {
+            return new MechBaySquadSelectionSlot
+            {
+                ownedMechId = entry.ownedMechId,
+                unitType = entry.unitType,
+                chassisId = entry.chassisId,
+                displayName = string.IsNullOrWhiteSpace(entry.displayName) ? entry.unitType : entry.displayName,
+                activeLoadoutId = entry.activeLoadoutId,
+                pilotDisplayName = entry.pilotDisplayName,
+                conditionPercent = entry.conditionPercent,
+                selectionStatus = entry.squadSelectionStatus
+            };
         }
     }
 

@@ -66,7 +66,8 @@ The Unity demo currently supports:
 - warehouse Draft Fit opens a read-only preview showing the selected pilot and spare weapon without changing inventory
 - warehouse Draft Fit preview can apply a demo placeholder fit that consumes one spare weapon and keeps the mech non-deployable
 - fitted warehouse mechs show a deployment preview explaining that future squad selection is still required
-- roster detail shows a disabled squad-selection placeholder without altering current mission deployment
+- roster detail shows a squad-selection placeholder without altering current mission deployment
+- squad-selection preview lists current mission slots and fitted depot candidates without changing inventory or deployment
 - starter inventory availability feedback warns on armor plate or heat sink shortages and blocks applying invalid drafts
 - starter mech condition and one-click demo repair spend local token balance and restore damaged mechs
 - starter mission receipt applies completed bounty tokens and salvaged mech fragments to local inventory
@@ -384,7 +385,7 @@ Tasks:
 
 ## Current Recommended Next Task
 
-Start with **starter read-only squad-selection preview**.
+Start with **starter squad-selection swap guard**.
 
 Reason:
 
@@ -402,6 +403,7 @@ Reason:
 - The depot Draft Fit affordance now opens a read-only preview showing the selected pilot and spare weapon without changing inventory or loadouts.
 - The depot Draft Fit preview now has a demo-only Apply action that consumes one spare weapon and changes the warehouse mech from `pending-loadout` to `warehouse-demo-fit`, while keeping it non-deployable.
 - The roster now explains why fitted depot mechs are still held until a future squad-selection flow exists.
-- The roster now shows a disabled squad-selection placeholder, so the deployment path is visible before it can alter mission rosters.
-- The next low-risk step is a read-only squad-selection preview panel that lists current mission slots and fitted depot candidates without changing deployment.
+- The roster now shows a squad-selection placeholder, so the deployment path is visible before it can alter mission rosters.
+- The squad-selection preview now lists current mission slots and fitted depot candidates without changing deployment.
+- The next low-risk step is a disabled swap guard inside that preview, so the future replace-slot action has visible rules before it can mutate mission rosters.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.

@@ -276,6 +276,9 @@ into the warehouse mech, swaps `pending-loadout` for a placeholder
 Fitted warehouse mechs now show a deployment preview line in the roster detail,
 marking them as held for a future squad-selection flow instead of silently
 looking ready for the current mission.
-The same roster detail now exposes a disabled Squad selection placeholder. It
+The same roster detail now exposes a Squad selection placeholder. It
 marks fitted depot mechs as candidates for a future squad-selection screen but
 does not change the current mission roster or deployment flags.
+That placeholder now opens a read-only squad-selection preview, listing the
+current mission slots and any fitted depot candidates while keeping inventory
+and mission deployment unchanged.
