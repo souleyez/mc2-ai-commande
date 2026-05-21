@@ -2459,13 +2459,13 @@ namespace MC2Demo.Presentation
             y += 30f;
             int unitCount = CountPlayerUnits();
             Rect viewport = new(x, y, width, panel.yMax - y - 12f);
-            Rect content = new(0f, 0f, width - 20f, Mathf.Max(viewport.height, unitCount * 184f));
+            Rect content = new(0f, 0f, width - 20f, Mathf.Max(viewport.height, unitCount * 252f));
             loadoutScroll = GUI.BeginScrollView(viewport, loadoutScroll, content);
             float itemY = 0f;
             foreach (UnitState unit in mission.PlayerUnits())
             {
                 DrawLoadoutUnit(unit, 0f, itemY, content.width);
-                itemY += 184f;
+                itemY += 252f;
             }
 
             GUI.EndScrollView();
@@ -2473,7 +2473,7 @@ namespace MC2Demo.Presentation
 
         private void DrawLoadoutUnit(UnitState unit, float x, float y, float width)
         {
-            Rect card = new(x, y, width, 176f);
+            Rect card = new(x, y, width, 240f);
             GUI.Box(card, unit.UnitType + "  " + unit.Id);
 
             float left = x + 12f;
@@ -2506,6 +2506,9 @@ namespace MC2Demo.Presentation
             DrawLoadoutSectionLine(unit, left, lineY, width - 24f);
 
             lineY += 34f;
+            float gridHeight = DrawProjectedLoadoutGrid(loadoutPreview, left, lineY, width - 24f);
+
+            lineY += gridHeight + 8f;
             DrawWeaponLoadoutLines(unit, left, lineY, width - 24f);
         }
 
@@ -2555,6 +2558,63 @@ namespace MC2Demo.Presentation
             }
         }
 
+        private float DrawProjectedLoadoutGrid(CombatLoadoutPreview preview, float x, float y, float width)
+        {
+            if (preview == null || preview.GridWidth <= 0 || preview.GridHeight <= 0)
+            {
+                return 0f;
+            }
+
+            float gap = 2f;
+            float maxGridWidth = Mathf.Min(width, 152f);
+            float cellSize = Mathf.Clamp((maxGridWidth - gap * (preview.GridWidth - 1)) / preview.GridWidth, 18f, 28f);
+            float gridWidth = preview.GridWidth * cellSize + (preview.GridWidth - 1) * gap;
+            float gridHeight = preview.GridHeight * cellSize + (preview.GridHeight - 1) * gap;
+            DrawColorRect(new Rect(x, y, gridWidth + 2f, gridHeight + 2f), new Color(0.04f, 0.05f, 0.055f, 0.96f));
+
+            for (int row = 0; row < preview.GridHeight; row++)
+            {
+                for (int column = 0; column < preview.GridWidth; column++)
+                {
+                    Rect cell = new(x + 1f + column * (cellSize + gap), y + 1f + row * (cellSize + gap), cellSize, cellSize);
+                    CombatLoadoutPreviewGridCell occupiedCell = LoadoutCellAt(preview, column, row);
+                    Color fill = occupiedCell == null
+                        ? new Color(0.10f, 0.12f, 0.13f, 1f)
+                        : new Color(0.18f, 0.45f, 0.68f, 1f);
+                    DrawColorRect(cell, fill);
+                    DrawColorRect(new Rect(cell.x, cell.y, cell.width, 1f), new Color(0.35f, 0.42f, 0.44f, 0.95f));
+                    DrawColorRect(new Rect(cell.x, cell.yMax - 1f, cell.width, 1f), new Color(0.02f, 0.025f, 0.03f, 0.95f));
+
+                    if (occupiedCell != null)
+                    {
+                        GUI.Label(
+                            new Rect(cell.x + 4f, cell.y + 3f, cell.width - 6f, cell.height - 4f),
+                            (occupiedCell.SourceWeaponIndex + 1).ToString(CultureInfo.InvariantCulture));
+                    }
+                }
+            }
+
+            GUI.Label(
+                new Rect(x + gridWidth + 10f, y + 2f, Mathf.Max(120f, width - gridWidth - 10f), 18f),
+                "Slots " + preview.Validation.OccupiedGridCells + "/" + preview.GridCapacity);
+            return gridHeight + 2f;
+        }
+
+        private static CombatLoadoutPreviewGridCell LoadoutCellAt(CombatLoadoutPreview preview, int x, int y)
+        {
+            CombatLoadoutPreviewGridCell[] occupiedCells = preview.OccupiedCells;
+            for (int index = 0; index < occupiedCells.Length; index++)
+            {
+                CombatLoadoutPreviewGridCell cell = occupiedCells[index];
+                if (cell != null && cell.X == x && cell.Y == y)
+                {
+                    return cell;
+                }
+            }
+
+            return null;
+        }
+
         private void DrawWeaponLoadoutLines(UnitState unit, float x, float y, float width)
         {
             CombatWeaponDefinition[] weapons = unit?.Profile?.Weapons;
@@ -2564,8 +2624,9 @@ namespace MC2Demo.Presentation
                 return;
             }
 
-            int count = Mathf.Min(3, weapons.Length);
-            float columnWidth = width / count;
+            int count = Mathf.Min(8, weapons.Length);
+            int columns = Mathf.Min(4, count);
+            float columnWidth = width / columns;
             bool[] enabledWeapons = WeaponEnabledStateFor(unit);
             for (int index = 0; index < count; index++)
             {
@@ -2575,14 +2636,15 @@ namespace MC2Demo.Presentation
                     continue;
                 }
 
-                float columnX = x + index * columnWidth;
-                string label = TruncateText(weapon.name, 16)
-                    + "  R" + Mathf.RoundToInt(weapon.rangeMax)
-                    + " D" + FormatDecimal(weapon.damage)
+                int row = index / columns;
+                int column = index % columns;
+                float columnX = x + column * columnWidth;
+                float rowY = y + row * 26f;
+                string label = (index + 1).ToString(CultureInfo.InvariantCulture) + " " + TruncateText(weapon.name, 7)
                     + " H" + FormatDecimal(weapon.heat)
                     + " W" + FormatDecimal(weapon.weight);
-                GUI.Label(new Rect(columnX, y, columnWidth - 52f, 18f), label);
-                if (GUI.Button(new Rect(columnX + columnWidth - 46f, y - 2f, 42f, 22f), enabledWeapons[index] ? "On" : "Off"))
+                GUI.Label(new Rect(columnX, rowY, columnWidth - 52f, 18f), label);
+                if (GUI.Button(new Rect(columnX + columnWidth - 46f, rowY - 2f, 42f, 22f), enabledWeapons[index] ? "On" : "Off"))
                 {
                     enabledWeapons[index] = !enabledWeapons[index];
                     statusText = (enabledWeapons[index] ? "Enabled " : "Disabled ") + TruncateText(weapon.name, 20);

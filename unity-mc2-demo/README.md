@@ -31,11 +31,12 @@ Current demo behavior:
 - tracks source-derived weapon heat, cooling, and heat lockouts in combat
 - carries source weapon type and special-effect metadata into combat visuals
 - shows weapon name, range, cooldown, heat lock, and range readiness in the unit panel
-- opens a read-only mech bay with source weapon loadout, heat, weight, range, damage, and section status
+- opens a mech bay preview with source weapon loadout, heat, weight, range, damage, and section status
 - defines the first BattleCore loadout contract for chassis grids, item shapes, heat, weight, and special equipment slots
 - validates loadout grid placement, rotation, blocked cells, overlap, heat, weight, and equipment slot compatibility
 - shows projected source loadout validation status, heat/load limits, and occupied grid cells in the mech bay
 - lets the mech bay temporarily toggle stock weapons on or off and immediately recompute validation readouts
+- visualizes the projected mech bay slot grid and marks enabled weapon cells
 - supports one-shot Jet orders with terrain-aware landing rejection
 - provides a toggleable current-objective mission map and a pause/restart/end system panel
 - resolves mission victory or defeat through BattleCore result state

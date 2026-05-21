@@ -301,9 +301,19 @@ namespace MC2Demo.EditorTools
                     throw new InvalidDataException("Projected loadout grid is too small for " + unitType);
                 }
 
+                if (preview.GridWidth != 4 || preview.GridHeight <= 0)
+                {
+                    throw new InvalidDataException("Projected loadout grid dimensions are invalid for " + unitType);
+                }
+
                 if (preview.Validation.OccupiedGridCells != profile.Weapons.Length)
                 {
                     throw new InvalidDataException("Projected loadout did not occupy one cell per source weapon for " + unitType);
+                }
+
+                if (preview.OccupiedCells.Length != profile.Weapons.Length)
+                {
+                    throw new InvalidDataException("Projected loadout did not expose one visual grid cell per source weapon for " + unitType);
                 }
 
                 if (Math.Abs(preview.Validation.TotalHeat - profile.HeatPerShot) > 0.001f)
@@ -335,12 +345,30 @@ namespace MC2Demo.EditorTools
                     throw new InvalidDataException("Projected disabled loadout did not remove one occupied cell for " + unitType);
                 }
 
+                if (HasPreviewCellForWeapon(disabledPreview, 0))
+                {
+                    throw new InvalidDataException("Projected disabled loadout still exposes disabled weapon cell for " + unitType);
+                }
+
                 if (disabledPreview.Validation.TotalHeat >= preview.Validation.TotalHeat
                     || disabledPreview.Validation.TotalWeight >= preview.Validation.TotalWeight)
                 {
                     throw new InvalidDataException("Projected disabled loadout did not reduce heat and weight for " + unitType);
                 }
             }
+        }
+
+        private static bool HasPreviewCellForWeapon(CombatLoadoutPreview preview, int sourceWeaponIndex)
+        {
+            foreach (CombatLoadoutPreviewGridCell cell in preview.OccupiedCells)
+            {
+                if (cell != null && cell.SourceWeaponIndex == sourceWeaponIndex)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private static LoadoutItemDefinition FindLoadoutItem(LoadoutContract contract, string itemId)

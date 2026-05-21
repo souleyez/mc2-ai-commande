@@ -6,19 +6,46 @@ namespace MC2Demo.BattleCore
     {
         public LoadoutValidationResult Validation { get; }
         public int GridCapacity { get; }
+        public int GridWidth { get; }
+        public int GridHeight { get; }
+        public CombatLoadoutPreviewGridCell[] OccupiedCells { get; }
         public float HeatLimit { get; }
         public float WeightLimit { get; }
 
         internal CombatLoadoutPreview(
             LoadoutValidationResult validation,
             int gridCapacity,
+            int gridWidth,
+            int gridHeight,
+            CombatLoadoutPreviewGridCell[] occupiedCells,
             float heatLimit,
             float weightLimit)
         {
             Validation = validation;
             GridCapacity = gridCapacity;
+            GridWidth = gridWidth;
+            GridHeight = gridHeight;
+            OccupiedCells = occupiedCells ?? Array.Empty<CombatLoadoutPreviewGridCell>();
             HeatLimit = heatLimit;
             WeightLimit = weightLimit;
+        }
+    }
+
+    public sealed class CombatLoadoutPreviewGridCell
+    {
+        public int X { get; }
+        public int Y { get; }
+        public int SourceWeaponIndex { get; }
+        public string ItemId { get; }
+        public string DisplayName { get; }
+
+        internal CombatLoadoutPreviewGridCell(int x, int y, int sourceWeaponIndex, string itemId, string displayName)
+        {
+            X = x;
+            Y = y;
+            SourceWeaponIndex = sourceWeaponIndex;
+            ItemId = itemId;
+            DisplayName = displayName;
         }
     }
 
@@ -47,6 +74,7 @@ namespace MC2Demo.BattleCore
             int enabledCount = CountEnabledWeapons(weapons.Length, enabledWeapons);
             LoadoutItemDefinition[] items = new LoadoutItemDefinition[enabledCount];
             LoadoutPlacedItemDefinition[] placedItems = new LoadoutPlacedItemDefinition[enabledCount];
+            CombatLoadoutPreviewGridCell[] occupiedCells = new CombatLoadoutPreviewGridCell[enabledCount];
             int placedIndex = 0;
             for (int index = 0; index < weapons.Length; index++)
             {
@@ -81,6 +109,12 @@ namespace MC2Demo.BattleCore
                     gridX = index % ProjectedGridWidth,
                     gridY = index / ProjectedGridWidth
                 };
+                occupiedCells[placedIndex] = new CombatLoadoutPreviewGridCell(
+                    index % ProjectedGridWidth,
+                    index / ProjectedGridWidth,
+                    index,
+                    itemId,
+                    string.IsNullOrEmpty(weapon?.name) ? itemId : weapon.name);
                 placedIndex++;
             }
 
@@ -116,7 +150,7 @@ namespace MC2Demo.BattleCore
             };
 
             LoadoutValidationResult validation = LoadoutValidator.Validate(contract, contract.loadouts[0]);
-            return new CombatLoadoutPreview(validation, gridCapacity, heatLimit, weightLimit);
+            return new CombatLoadoutPreview(validation, gridCapacity, ProjectedGridWidth, gridHeight, occupiedCells, heatLimit, weightLimit);
         }
 
         private static int CountEnabledWeapons(int weaponCount, bool[] enabledWeapons)

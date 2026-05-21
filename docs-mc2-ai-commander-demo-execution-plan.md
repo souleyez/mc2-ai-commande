@@ -39,11 +39,12 @@ The Unity demo currently supports:
 - enemy activation and lightweight patrol orders
 - player squad orders, detached unit orders, focused unit/structure attacks, and Jet orders
 - heat, cooldown, weapon range/readiness, simple section damage, section penalties, and animated breakoff/ejection effects
-- compact tactical UI with unit status, read-only mech bay, mission brief, current-objective map, world objective hints, health bars, command rings, range rings, and target lines
+- compact tactical UI with unit status, mech bay preview, mission brief, current-objective map, world objective hints, health bars, command rings, range rings, and target lines
 - initial BattleCore loadout contract for chassis grids, item shapes, heat, weight, armor plates, heat sinks, radar slots, and jump jet slots
 - deterministic BattleCore loadout validator for grid bounds, blocked cells, overlap, rotation, heat caps, weight caps, and special-slot compatibility
 - source weapon loadout projection in the mech bay with validator status, heat/load limits, and occupied grid cell counts
 - temporary mech bay weapon toggles that immediately recompute projected heat, load, grid occupancy, and fitting status
+- projected mech bay slot grid visualization with enabled weapon cells exposed from BattleCore preview data
 - CLI/AI loop pieces:
   - `-mc2Command`
   - `-mc2AdvanceSeconds`
@@ -357,10 +358,10 @@ Tasks:
 
 ## Current Recommended Next Task
 
-Start with **mech bay grid visualization**.
+Start with **source weapon shape projection**.
 
 Reason:
 
-- The mech bay now proves temporary edits can flow through the validator.
-- The next low-risk visual step is to show the projected slot grid occupancy beside the readout.
-- Grid visualization prepares the player-facing fitting mental model before drag-and-drop placement is added.
+- The mech bay now shows validator-backed occupied slots instead of only aggregate counts.
+- The current projection still treats each source weapon as one cell.
+- The next useful step is to map weapon families into simple placeholder shapes, such as tall missile racks, compact autocannons, and single-cell support items, before full drag-and-drop editing.
