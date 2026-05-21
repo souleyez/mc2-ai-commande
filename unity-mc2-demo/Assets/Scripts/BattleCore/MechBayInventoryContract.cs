@@ -133,6 +133,8 @@ namespace MC2Demo.BattleCore
         public int TokenDelta { get; internal set; }
         public int TokenBalance { get; internal set; }
         public int SalvageFragmentCount { get; internal set; }
+        public int AssembledMechCount { get; internal set; }
+        public string[] AssembledMechNames { get; internal set; }
         public MechBayReceiptItemDefinition[] ItemStacks { get; internal set; }
     }
 
@@ -151,6 +153,12 @@ namespace MC2Demo.BattleCore
         public int fragments { get; internal set; }
         public int requiredFragments { get; internal set; }
         public bool canAssemble { get; internal set; }
+    }
+
+    public sealed class MechBayAssemblyResult
+    {
+        public int AssembledMechCount { get; internal set; }
+        public string[] AssembledMechNames { get; internal set; }
     }
 
     public static class MechBayInventoryValidator
@@ -581,6 +589,9 @@ namespace MC2Demo.BattleCore
                 AddInventoryStack(inventory, item.itemId, item.displayName, item.category, item.quantity);
             }
 
+            MechBayAssemblyResult assemblyResult = MechBayAssemblyPreviewService.AutoAssembleReadyFragments(inventory);
+            receipt.AssembledMechCount = assemblyResult.AssembledMechCount;
+            receipt.AssembledMechNames = assemblyResult.AssembledMechNames;
             receipt.Applied = true;
             receipt.TokenBalance = inventory.tokenBalance;
             return receipt;
@@ -613,6 +624,7 @@ namespace MC2Demo.BattleCore
             {
                 TokenDelta = tokenDelta,
                 SalvageFragmentCount = salvageCount,
+                AssembledMechNames = Array.Empty<string>(),
                 ItemStacks = itemStacks.ToArray()
             };
         }
@@ -782,6 +794,59 @@ namespace MC2Demo.BattleCore
             return progress.Length == 0 ? null : progress[0];
         }
 
+        public static MechBayAssemblyResult AutoAssembleReadyFragments(MechBayInventoryContract inventory)
+        {
+            MechBayAssemblyResult result = new()
+            {
+                AssembledMechNames = Array.Empty<string>()
+            };
+            if (inventory == null)
+            {
+                return result;
+            }
+
+            List<MechBayItemStackDefinition> itemStacks = new(inventory.itemStacks ?? Array.Empty<MechBayItemStackDefinition>());
+            List<MechBayOwnedMechDefinition> ownedMechs = new(inventory.ownedMechs ?? Array.Empty<MechBayOwnedMechDefinition>());
+            List<string> assembledNames = new();
+            for (int index = 0; index < itemStacks.Count; index++)
+            {
+                MechBayItemStackDefinition stack = itemStacks[index];
+                if (stack == null
+                    || stack.category != LoadoutItemCategory.MechFragment
+                    || stack.quantity < DemoRequiredFragmentsPerMech)
+                {
+                    continue;
+                }
+
+                string unitType = UnitTypeFromFragmentStack(stack);
+                int assemblyCount = stack.quantity / DemoRequiredFragmentsPerMech;
+                stack.quantity -= assemblyCount * DemoRequiredFragmentsPerMech;
+                for (int assemblyIndex = 0; assemblyIndex < assemblyCount; assemblyIndex++)
+                {
+                    string ownedMechId = NextOwnedMechId(ownedMechs, unitType);
+                    ownedMechs.Add(new MechBayOwnedMechDefinition
+                    {
+                        ownedMechId = ownedMechId,
+                        unitId = "warehouse-" + ownedMechId,
+                        unitType = unitType,
+                        chassisId = unitType,
+                        displayName = unitType + " Assembled",
+                        activeLoadoutId = unitType + "-assembled",
+                        availableForMission = true,
+                        conditionPercent = 100
+                    });
+                    assembledNames.Add(unitType);
+                }
+            }
+
+            itemStacks.RemoveAll(IsEmptyFragmentStack);
+            inventory.itemStacks = itemStacks.ToArray();
+            inventory.ownedMechs = ownedMechs.ToArray();
+            result.AssembledMechCount = assembledNames.Count;
+            result.AssembledMechNames = assembledNames.ToArray();
+            return result;
+        }
+
         private static int CompareAssemblyProgress(MechBayAssemblyProgress left, MechBayAssemblyProgress right)
         {
             if (left == null || right == null)
@@ -820,6 +885,64 @@ namespace MC2Demo.BattleCore
             }
 
             return string.IsNullOrWhiteSpace(displayName) ? "Unknown" : displayName.Trim();
+        }
+
+        private static bool IsEmptyFragmentStack(MechBayItemStackDefinition stack)
+        {
+            return stack != null
+                && stack.category == LoadoutItemCategory.MechFragment
+                && stack.quantity <= 0
+                && stack.equippedQuantity <= 0;
+        }
+
+        private static string NextOwnedMechId(List<MechBayOwnedMechDefinition> ownedMechs, string unitType)
+        {
+            string stem = "assembled-" + SafeId(unitType);
+            for (int index = 1; index < 1000; index++)
+            {
+                string candidate = stem + "-" + index.ToString("00");
+                if (!HasOwnedMechId(ownedMechs, candidate))
+                {
+                    return candidate;
+                }
+            }
+
+            return stem + "-overflow";
+        }
+
+        private static bool HasOwnedMechId(List<MechBayOwnedMechDefinition> ownedMechs, string ownedMechId)
+        {
+            for (int index = 0; index < ownedMechs.Count; index++)
+            {
+                MechBayOwnedMechDefinition mech = ownedMechs[index];
+                if (mech != null && string.Equals(mech.ownedMechId, ownedMechId, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static string SafeId(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return "unknown";
+            }
+
+            char[] chars = value.Trim().ToLowerInvariant().ToCharArray();
+            for (int index = 0; index < chars.Length; index++)
+            {
+                char character = chars[index];
+                if ((character < 'a' || character > 'z') && (character < '0' || character > '9'))
+                {
+                    chars[index] = '-';
+                }
+            }
+
+            string id = new string(chars).Trim('-');
+            return string.IsNullOrWhiteSpace(id) ? "unknown" : id;
         }
 
         private static string HumanizeItemId(string value)

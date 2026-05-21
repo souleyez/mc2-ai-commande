@@ -827,7 +827,8 @@ namespace MC2Demo.Presentation
             {
                 AddCombatLogLine(
                     "Receipt token +" + FormatTokens(missionReceipt.TokenDelta)
-                    + " fragments +" + missionReceipt.SalvageFragmentCount);
+                    + " fragments +" + missionReceipt.SalvageFragmentCount
+                    + ReceiptAssemblyLogText(missionReceipt));
             }
         }
 
@@ -2724,6 +2725,40 @@ namespace MC2Demo.Presentation
             return text;
         }
 
+        private static string ReceiptAssemblyLogText(MechBayMissionReceipt receipt)
+        {
+            if (receipt == null || receipt.AssembledMechCount <= 0)
+            {
+                return "";
+            }
+
+            return " built +" + receipt.AssembledMechCount.ToString(CultureInfo.InvariantCulture)
+                + " " + AssemblyNameOrGeneric(receipt);
+        }
+
+        private static string ReceiptAssemblyText(MechBayMissionReceipt receipt)
+        {
+            if (receipt == null || receipt.AssembledMechCount <= 0)
+            {
+                return "";
+            }
+
+            string text = "Built +" + receipt.AssembledMechCount.ToString(CultureInfo.InvariantCulture)
+                + " " + AssemblyNameOrGeneric(receipt);
+            return text;
+        }
+
+        private static string AssemblyNameOrGeneric(MechBayMissionReceipt receipt)
+        {
+            if (receipt != null && receipt.AssembledMechCount > 1)
+            {
+                return "mechs";
+            }
+
+            string[] names = receipt?.AssembledMechNames ?? Array.Empty<string>();
+            return names.Length == 0 || string.IsNullOrWhiteSpace(names[0]) ? "Mech" : names[0];
+        }
+
         private void DrawMechConditionLine(UnitState unit, float left, float right, float y, float width)
         {
             int condition = MechConditionPercent(unit);
@@ -3715,18 +3750,18 @@ namespace MC2Demo.Presentation
                 return;
             }
 
-            Rect panel = new((Screen.width - 400f) * 0.5f, 72f, 400f, 316f);
+            Rect panel = new((Screen.width - 400f) * 0.5f, 72f, 400f, 338f);
             GUI.Box(panel, MissionResultText());
             GUI.Label(new Rect(panel.x + 18f, panel.y + 36f, panel.width - 36f, 42f), mission.ResultReason);
             DrawMissionResultSummary(panel, mission.ResultSummary);
 
-            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 256f, 172f, 30f), "Restart"))
+            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 278f, 172f, 30f), "Restart"))
             {
                 Time.timeScale = 1f;
                 SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
             }
 
-            if (GUI.Button(new Rect(panel.x + 210f, panel.y + 256f, 172f, 30f), "End Demo"))
+            if (GUI.Button(new Rect(panel.x + 210f, panel.y + 278f, 172f, 30f), "End Demo"))
             {
                 Application.Quit(0);
             }
@@ -3773,6 +3808,13 @@ namespace MC2Demo.Presentation
                     + "    Frags +" + missionReceipt.SalvageFragmentCount
                     + "    Balance " + FormatTokens(missionReceipt.TokenBalance));
                 y += 22f;
+
+                string assemblyText = ReceiptAssemblyText(missionReceipt);
+                if (!string.IsNullOrEmpty(assemblyText))
+                {
+                    GUI.Label(new Rect(panel.x + 18f, y, panel.width - 36f, 20f), assemblyText);
+                    y += 22f;
+                }
 
                 GUI.Label(
                     new Rect(panel.x + 18f, y, panel.width - 36f, 20f),

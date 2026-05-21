@@ -2239,6 +2239,7 @@ namespace MC2Demo.EditorTools
                 throw new InvalidDataException("Expected mission receipt to keep inventory valid and expose mech fragments.");
             }
 
+            int mechCountBeforeAssembly = receiptInventoryResult.Summary.MechCount;
             MechBayAssemblyProgress[] assemblyProgress = MechBayAssemblyPreviewService.BuildAssemblyPreview(receiptInventory);
             MechBayAssemblyProgress bestProgress = MechBayAssemblyPreviewService.BestAssemblyProgress(receiptInventory);
             if (assemblyProgress.Length != 2
@@ -2251,17 +2252,29 @@ namespace MC2Demo.EditorTools
                 throw new InvalidDataException("Expected starter assembly preview to show Raven fragment progress below threshold.");
             }
 
-            MechBayMissionReceiptService.ApplyMissionReceipt(
+            MechBayMissionReceipt assemblyReceipt = MechBayMissionReceiptService.ApplyMissionReceipt(
                 receiptInventory,
                 new MissionResultSummary
                 {
                     destroyedEnemyUnitLabels = new[] { "enemy-4 Raven" },
                     salvageClaimCount = 1
                 });
+            receiptInventoryResult = MechBayInventoryValidator.Validate(receiptInventory);
             bestProgress = MechBayAssemblyPreviewService.BestAssemblyProgress(receiptInventory);
-            if (bestProgress == null || bestProgress.unitType != "Raven" || bestProgress.fragments != 3 || !bestProgress.canAssemble)
+            if (assemblyReceipt.AssembledMechCount != 1
+                || assemblyReceipt.AssembledMechNames == null
+                || assemblyReceipt.AssembledMechNames.Length != 1
+                || assemblyReceipt.AssembledMechNames[0] != "Raven"
+                || !receiptInventoryResult.IsValid
+                || receiptInventoryResult.Summary.MechCount != mechCountBeforeAssembly + 1
+                || receiptInventoryResult.Summary.MechFragmentCount != 1)
             {
-                throw new InvalidDataException("Expected starter assembly preview to mark complete fragment sets as ready.");
+                throw new InvalidDataException("Expected ready starter fragments to auto-assemble one Raven and leave only remaining fragments.");
+            }
+
+            if (bestProgress == null || bestProgress.unitType != "Centipede" || bestProgress.fragments != 1 || bestProgress.canAssemble)
+            {
+                throw new InvalidDataException("Expected auto-assembly to consume ready Raven fragments and leave Centipede progress.");
             }
 
             BattleMission defeat = new(MakeResultContract(completeOnStart: false), resultProfiles);
