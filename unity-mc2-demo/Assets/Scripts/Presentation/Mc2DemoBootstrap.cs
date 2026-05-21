@@ -2526,7 +2526,7 @@ namespace MC2Demo.Presentation
 
             y += 30f;
             DrawMechBayInventorySummary(x, y, width);
-            y += 126f;
+            y += 148f;
 
             int unitCount = CountPlayerUnits();
             Rect viewport = new(x, y, width, panel.yMax - y - 12f);
@@ -2810,6 +2810,7 @@ namespace MC2Demo.Presentation
             GUI.Label(
                 new Rect(x + 70f, y + 20f, width - 70f, 18f),
                 TruncateText(OwnedRosterFitText(entry), 62));
+            DrawOwnedRosterDraftFitStub(x + 70f, y + 42f, width - 70f, entry);
         }
 
         private void ClampSelectedRosterIndex(MechBayOwnedRosterEntry[] roster)
@@ -2858,6 +2859,19 @@ namespace MC2Demo.Presentation
             string loadout = string.IsNullOrWhiteSpace(entry.activeLoadoutId) ? "none" : entry.activeLoadoutId;
             string id = string.IsNullOrWhiteSpace(entry.ownedMechId) ? "unknown" : entry.ownedMechId;
             return "Chassis " + chassis + "  Fit " + loadoutStatus + " (" + loadout + ")  Id " + id;
+        }
+
+        private static void DrawOwnedRosterDraftFitStub(float x, float y, float width, MechBayOwnedRosterEntry entry)
+        {
+            bool previousEnabled = GUI.enabled;
+            GUI.enabled = false;
+            GUI.Button(new Rect(x, y - 2f, 72f, 22f), "Draft Fit");
+            GUI.enabled = previousEnabled;
+
+            string status = entry == null || string.IsNullOrWhiteSpace(entry.draftFitStatus)
+                ? "Fit draft unavailable"
+                : entry.draftFitStatus;
+            GUI.Label(new Rect(x + 80f, y, width - 80f, 18f), TruncateText(status, 44));
         }
 
         private static string ReceiptAssemblyLogText(MechBayMissionReceipt receipt)

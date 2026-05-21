@@ -71,6 +71,8 @@ namespace MC2Demo.BattleCore
         public string displayName { get; internal set; }
         public string activeLoadoutId { get; internal set; }
         public string loadoutStatus { get; internal set; }
+        public bool hasDraftFitStub { get; internal set; }
+        public string draftFitStatus { get; internal set; }
         public bool availableForMission { get; internal set; }
         public int conditionPercent { get; internal set; }
         public bool isWarehouseMech { get; internal set; }
@@ -538,6 +540,8 @@ namespace MC2Demo.BattleCore
                     displayName = string.IsNullOrWhiteSpace(mech.displayName) ? mech.unitType : mech.displayName,
                     activeLoadoutId = mech.activeLoadoutId,
                     loadoutStatus = LoadoutStatus(mech),
+                    hasDraftFitStub = IsPendingDepotFit(mech),
+                    draftFitStatus = DraftFitStatus(mech),
                     availableForMission = mech.availableForMission,
                     conditionPercent = Math.Max(0, Math.Min(100, mech.conditionPercent)),
                     isWarehouseMech = IsWarehouseMech(mech)
@@ -554,12 +558,28 @@ namespace MC2Demo.BattleCore
 
         private static string LoadoutStatus(MechBayOwnedMechDefinition mech)
         {
-            if (IsWarehouseMech(mech) && string.Equals(mech?.activeLoadoutId, "pending-loadout", StringComparison.OrdinalIgnoreCase))
+            if (IsPendingDepotFit(mech))
             {
                 return "Needs loadout";
             }
 
             return string.IsNullOrWhiteSpace(mech?.activeLoadoutId) ? "No loadout" : "Ready fit";
+        }
+
+        private static string DraftFitStatus(MechBayOwnedMechDefinition mech)
+        {
+            if (IsPendingDepotFit(mech))
+            {
+                return "Draft fitting locked for this demo";
+            }
+
+            return IsWarehouseMech(mech) ? "Depot fit read-only" : "Use squad fit cards below";
+        }
+
+        private static bool IsPendingDepotFit(MechBayOwnedMechDefinition mech)
+        {
+            return IsWarehouseMech(mech)
+                && string.Equals(mech?.activeLoadoutId, "pending-loadout", StringComparison.OrdinalIgnoreCase);
         }
 
         private static bool StartsWith(string value, string prefix)

@@ -244,3 +244,5 @@ Roster entries can now be cycled into a read-only detail preview with source,
 condition, availability, chassis, loadout id, and inventory id.
 Assembled depot mechs are intentionally held with a pending-loadout placeholder,
 so they are visible as assets but not treated as deployable squad mechs yet.
+The roster detail now includes a disabled Draft Fit control, reserving UI space
+for the later depot fitting flow without changing mission deployment rules.

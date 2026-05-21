@@ -55,6 +55,7 @@ The Unity demo currently supports:
 - starter mech bay inventory contract summarizes owned mechs, weapons, armor plates, heat sinks, and demo token balance
 - starter mech bay roster preview lists owned squad and assembled depot mechs with a read-only detail view
 - assembled depot mechs stay held with a pending-loadout placeholder until a future fitting flow equips them
+- depot roster detail shows a disabled Draft Fit affordance as a visible future fitting stub
 - starter inventory availability feedback warns on armor plate or heat sink shortages and blocks applying invalid drafts
 - starter mech condition and one-click demo repair spend local token balance and restore damaged mechs
 - starter mission receipt applies completed bounty tokens and salvaged mech fragments to local inventory
@@ -372,12 +373,13 @@ Tasks:
 
 ## Current Recommended Next Task
 
-Start with **starter depot fit draft stub**.
+Start with **starter depot fit requirements preview**.
 
 Reason:
 
 - Mission rewards now add tokens and salvage fragments, and ready fragment sets become local warehouse mechs.
 - The mech bay now has a compact roster line and a read-only detail view for owned mechs.
 - Assembled depot mechs now stay held with `pending-loadout`, so they cannot be confused with deployable squad mechs.
-- The next low-risk step is to add a disabled/read-only draft-fit affordance for depot mechs, making the future fitting workflow visible without enabling it yet.
+- The roster detail now shows a disabled Draft Fit affordance, making the future fitting workflow visible without enabling it yet.
+- The next low-risk step is to preview simple requirements for enabling that future depot fit, such as needing stock weapons and a pilot assignment.
 - Keep it read-only first; selecting assembled mechs for future missions, shop stock, saved accounts, event drop tables, and multiplayer support still come later.
