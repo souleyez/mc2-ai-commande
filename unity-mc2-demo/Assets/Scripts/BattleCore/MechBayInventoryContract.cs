@@ -182,6 +182,18 @@ namespace MC2Demo.BattleCore
         public string purchaseStatus { get; internal set; }
     }
 
+    public sealed class MechBayWeaponPurchasePreviewResult
+    {
+        public bool Accepted { get; internal set; }
+        public string itemId { get; internal set; }
+        public string displayName { get; internal set; }
+        public int TokenCost { get; internal set; }
+        public int TokenBalance { get; internal set; }
+        public bool CanAfford { get; internal set; }
+        public bool InventoryChanged { get; internal set; }
+        public string Message { get; internal set; }
+    }
+
     public sealed class MechBayReceiptItemDefinition
     {
         public string itemId;
@@ -757,6 +769,38 @@ namespace MC2Demo.BattleCore
             };
         }
 
+        public static MechBayWeaponPurchasePreviewResult PreviewPurchase(
+            MechBayInventoryContract inventory,
+            string itemId)
+        {
+            int tokenBalance = Math.Max(0, inventory?.tokenBalance ?? 0);
+            MechBayWeaponShopEntry entry = FindCatalogEntry(itemId);
+            if (entry == null)
+            {
+                return new MechBayWeaponPurchasePreviewResult
+                {
+                    Accepted = false,
+                    itemId = itemId,
+                    TokenBalance = tokenBalance,
+                    CanAfford = false,
+                    InventoryChanged = false,
+                    Message = "Weapon unavailable"
+                };
+            }
+
+            return new MechBayWeaponPurchasePreviewResult
+            {
+                Accepted = false,
+                itemId = entry.itemId,
+                displayName = entry.displayName,
+                TokenCost = entry.tokenCost,
+                TokenBalance = tokenBalance,
+                CanAfford = tokenBalance >= entry.tokenCost,
+                InventoryChanged = false,
+                Message = "Purchase preview only"
+            };
+        }
+
         private static MechBayWeaponShopEntry CatalogEntry(
             string itemId,
             string displayName,
@@ -772,6 +816,25 @@ namespace MC2Demo.BattleCore
                 purchaseEnabled = false,
                 purchaseStatus = "Preview only"
             };
+        }
+
+        private static MechBayWeaponShopEntry FindCatalogEntry(string itemId)
+        {
+            if (string.IsNullOrWhiteSpace(itemId))
+            {
+                return null;
+            }
+
+            for (int index = 0; index < StarterCatalog.Length; index++)
+            {
+                MechBayWeaponShopEntry entry = StarterCatalog[index];
+                if (entry != null && string.Equals(entry.itemId, itemId, StringComparison.OrdinalIgnoreCase))
+                {
+                    return entry;
+                }
+            }
+
+            return null;
         }
     }
 

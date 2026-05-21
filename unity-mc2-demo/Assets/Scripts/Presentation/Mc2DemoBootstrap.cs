@@ -2526,7 +2526,7 @@ namespace MC2Demo.Presentation
 
             y += 30f;
             DrawMechBayInventorySummary(x, y, width);
-            y += 236f;
+            y += 258f;
 
             int unitCount = CountPlayerUnits();
             Rect viewport = new(x, y, width, panel.yMax - y - 12f);
@@ -2575,15 +2575,17 @@ namespace MC2Demo.Presentation
             GUI.Label(
                 new Rect(x, y + 40f, width, 18f),
                 "Assembly " + AssemblyPreviewText(MechBayAssemblyPreviewService.BestAssemblyProgress(demoInventory)));
+            MechBayWeaponShopPreview shopPreview = MechBayWeaponShopPreviewService.BuildPreview(demoInventory);
             GUI.Label(
                 new Rect(x, y + 60f, width, 18f),
-                "Shop " + WeaponShopPreviewText(MechBayWeaponShopPreviewService.BuildPreview(demoInventory)));
+                "Shop " + WeaponShopPreviewText(shopPreview));
+            DrawWeaponShopPurchaseStub(x, y + 82f, width, shopPreview, demoInventory);
             MechBayOwnedRosterEntry[] roster = MechBayOwnedRosterService.BuildRosterPreview(demoInventory);
             ClampSelectedRosterIndex(roster);
             GUI.Label(
-                new Rect(x, y + 80f, width, 18f),
+                new Rect(x, y + 104f, width, 18f),
                 "Roster " + TruncateText(OwnedRosterText(roster), 62));
-            DrawOwnedRosterDetail(x, y + 102f, width, roster);
+            DrawOwnedRosterDetail(x, y + 126f, width, roster);
         }
 
         private void DrawLoadoutUnit(UnitState unit, float x, float y, float width)
@@ -2813,6 +2815,49 @@ namespace MC2Demo.Presentation
                 + "  afford "
                 + affordableCount.ToString(CultureInfo.InvariantCulture)
                 + "  preview only";
+        }
+
+        private static void DrawWeaponShopPurchaseStub(
+            float x,
+            float y,
+            float width,
+            MechBayWeaponShopPreview preview,
+            MechBayInventoryContract inventory)
+        {
+            bool previousEnabled = GUI.enabled;
+            GUI.enabled = false;
+            GUI.Button(new Rect(x, y - 2f, 46f, 22f), "Buy");
+            GUI.enabled = previousEnabled;
+
+            MechBayWeaponShopEntry firstEntry = FirstWeaponShopEntry(preview);
+            MechBayWeaponPurchasePreviewResult purchasePreview =
+                MechBayWeaponShopPreviewService.PreviewPurchase(inventory, firstEntry?.itemId);
+            GUI.Label(new Rect(x + 54f, y, width - 54f, 18f), TruncateText(WeaponShopPurchaseStubText(purchasePreview), 56));
+        }
+
+        private static MechBayWeaponShopEntry FirstWeaponShopEntry(MechBayWeaponShopPreview preview)
+        {
+            MechBayWeaponShopEntry[] entries = preview?.Entries ?? Array.Empty<MechBayWeaponShopEntry>();
+            for (int index = 0; index < entries.Length; index++)
+            {
+                if (entries[index] != null)
+                {
+                    return entries[index];
+                }
+            }
+
+            return null;
+        }
+
+        private static string WeaponShopPurchaseStubText(MechBayWeaponPurchasePreviewResult purchasePreview)
+        {
+            if (purchasePreview == null || string.IsNullOrWhiteSpace(purchasePreview.displayName))
+            {
+                return "Purchase unavailable";
+            }
+
+            string cost = FormatTokens(purchasePreview.TokenCost) + " token";
+            return purchasePreview.displayName + " " + cost + "  " + purchasePreview.Message;
         }
 
         private void DrawOwnedRosterDetail(float x, float y, float width, MechBayOwnedRosterEntry[] roster)

@@ -342,6 +342,26 @@ namespace MC2Demo.EditorTools
                 throw new InvalidDataException("Expected starter weapon shop preview to expose read-only ordinary weapons.");
             }
 
+            int tokenBeforePurchasePreview = inventory.tokenBalance;
+            int weaponCountBeforePurchasePreview = result.Summary.WeaponCount;
+            MechBayWeaponPurchasePreviewResult purchasePreview = MechBayWeaponShopPreviewService.PreviewPurchase(
+                inventory,
+                shopPreview.Entries[0].itemId);
+            MechBayInventoryValidationResult afterPurchasePreview = MechBayInventoryValidator.Validate(inventory);
+            if (purchasePreview == null
+                || purchasePreview.Accepted
+                || purchasePreview.InventoryChanged
+                || purchasePreview.TokenBalance != tokenBeforePurchasePreview
+                || purchasePreview.TokenCost != shopPreview.Entries[0].tokenCost
+                || !purchasePreview.CanAfford
+                || purchasePreview.Message != "Purchase preview only"
+                || inventory.tokenBalance != tokenBeforePurchasePreview
+                || !afterPurchasePreview.IsValid
+                || afterPurchasePreview.Summary.WeaponCount != weaponCountBeforePurchasePreview)
+            {
+                throw new InvalidDataException("Expected starter weapon purchase stub to preview without changing inventory.");
+            }
+
             if (result.Summary.WeaponCount <= 0)
             {
                 throw new InvalidDataException("Expected starter inventory to expose source weapon stacks.");

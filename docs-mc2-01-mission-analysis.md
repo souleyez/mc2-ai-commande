@@ -257,3 +257,6 @@ available yet.
 The mech bay also exposes a read-only ordinary weapon shop preview, establishing
 where future spare depot weapons will come from before purchase or fitting
 actions are enabled.
+That shop now includes a disabled purchase stub: it can preview the selected
+ordinary weapon cost and affordability, but it deliberately leaves token balance
+and inventory unchanged.

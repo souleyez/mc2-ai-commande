@@ -60,6 +60,7 @@ The Unity demo currently supports:
 - depot roster detail shows a read-only pilot placeholder for the future pilot/social system
 - depot roster detail previews spare weapon stock counts before the shop or fitting flow exists
 - mech bay summary previews a read-only ordinary weapon shop as the future source of spare depot weapons
+- mech bay summary shows a disabled weapon purchase stub that previews cost without changing inventory
 - starter inventory availability feedback warns on armor plate or heat sink shortages and blocks applying invalid drafts
 - starter mech condition and one-click demo repair spend local token balance and restore damaged mechs
 - starter mission receipt applies completed bounty tokens and salvaged mech fragments to local inventory
@@ -377,7 +378,7 @@ Tasks:
 
 ## Current Recommended Next Task
 
-Start with **starter weapon purchase stub**.
+Start with **starter demo weapon purchase application**.
 
 Reason:
 
@@ -389,5 +390,6 @@ Reason:
 - The roster detail now shows a read-only pilot placeholder, so the future pilot/social system has a clear UI slot.
 - The roster detail now previews spare weapon stock counts, confirming that starter source weapons are all mounted and no depot fitting weapon stock is free yet.
 - The mech bay summary now shows a read-only ordinary weapon shop preview, so the future source of spare weapon stock is visible.
-- The next low-risk step is to add a disabled or demo-only purchase affordance that previews how ordinary weapons will enter inventory without enabling full shop balancing yet.
+- The mech bay summary now shows a disabled weapon purchase stub, proving the purchase path can preview cost without mutating inventory.
+- The next low-risk step is to enable a tightly scoped demo-only ordinary weapon purchase that deducts tokens and adds one spare weapon stack, then keep real shop balancing for later.
 - Keep it read-only first; selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.
