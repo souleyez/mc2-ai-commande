@@ -1056,6 +1056,12 @@ namespace MC2Demo.EditorTools
                 + (preview.DryRunStatus ?? "null")
                 + "/"
                 + (preview.DryRunSummary ?? "null")
+                + ", pending="
+                + preview.PendingSwapAvailable
+                + "/"
+                + (preview.PendingSwapStatus ?? "null")
+                + "/"
+                + (preview.PendingSwapSummary ?? "null")
                 + ", changed="
                 + preview.InventoryChanged;
         }
@@ -2492,7 +2498,10 @@ namespace MC2Demo.EditorTools
                 || lockedSquadPreview.DryRunStatus != "Dry run unavailable"
                 || lockedSquadPreview.DryRunSummary != "Need fitted depot candidate"
                 || !string.IsNullOrWhiteSpace(lockedSquadPreview.DryRunIncomingOwnedMechId)
-                || string.IsNullOrWhiteSpace(lockedSquadPreview.DryRunOutgoingOwnedMechId))
+                || string.IsNullOrWhiteSpace(lockedSquadPreview.DryRunOutgoingOwnedMechId)
+                || lockedSquadPreview.PendingSwapAvailable
+                || lockedSquadPreview.PendingSwapStatus != "No pending swap"
+                || lockedSquadPreview.PendingSwapSummary != "Need fitted depot candidate")
             {
                 throw new InvalidDataException(
                     "Expected starter squad-selection preview to list mission slots and hide locked depot mechs. Got "
@@ -2667,7 +2676,11 @@ namespace MC2Demo.EditorTools
                 || !squadPreview.DryRunSummary.Contains("Replace ", StringComparison.Ordinal)
                 || !squadPreview.DryRunSummary.Contains(" with " + assembledRaven.displayName, StringComparison.Ordinal)
                 || string.IsNullOrWhiteSpace(squadPreview.DryRunOutgoingOwnedMechId)
-                || squadPreview.DryRunIncomingOwnedMechId != assembledRaven.ownedMechId)
+                || squadPreview.DryRunIncomingOwnedMechId != assembledRaven.ownedMechId
+                || !squadPreview.PendingSwapAvailable
+                || squadPreview.PendingSwapStatus != "Pending confirmation stub"
+                || !squadPreview.PendingSwapSummary.Contains("Stage " + assembledRaven.displayName, StringComparison.Ordinal)
+                || !squadPreview.PendingSwapSummary.Contains(" after future confirmation", StringComparison.Ordinal))
             {
                 throw new InvalidDataException(
                     "Expected read-only squad-selection preview to show current slots and one fitted depot candidate without changing inventory. Got "

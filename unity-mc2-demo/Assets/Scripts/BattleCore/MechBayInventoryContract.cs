@@ -284,6 +284,9 @@ namespace MC2Demo.BattleCore
         public string DryRunSummary { get; internal set; }
         public string DryRunOutgoingOwnedMechId { get; internal set; }
         public string DryRunIncomingOwnedMechId { get; internal set; }
+        public bool PendingSwapAvailable { get; internal set; }
+        public string PendingSwapStatus { get; internal set; }
+        public string PendingSwapSummary { get; internal set; }
         public MechBaySquadSelectionSlot[] MissionSlots { get; internal set; }
         public MechBaySquadSelectionSlot[] DepotCandidates { get; internal set; }
     }
@@ -1002,6 +1005,7 @@ namespace MC2Demo.BattleCore
 
             MechBaySquadSelectionSlot dryRunOutgoing = missionSlots.Count > 0 ? missionSlots[0] : null;
             MechBaySquadSelectionSlot dryRunIncoming = depotCandidates.Count > 0 ? depotCandidates[0] : null;
+            bool pendingSwapAvailable = dryRunOutgoing != null && dryRunIncoming != null;
             return new MechBaySquadSelectionPreview
             {
                 InventoryChanged = false,
@@ -1017,6 +1021,9 @@ namespace MC2Demo.BattleCore
                 DryRunSummary = DryRunSummary(dryRunOutgoing, dryRunIncoming),
                 DryRunOutgoingOwnedMechId = dryRunOutgoing?.ownedMechId,
                 DryRunIncomingOwnedMechId = dryRunIncoming?.ownedMechId,
+                PendingSwapAvailable = pendingSwapAvailable,
+                PendingSwapStatus = PendingSwapStatus(dryRunOutgoing, dryRunIncoming),
+                PendingSwapSummary = PendingSwapSummary(dryRunOutgoing, dryRunIncoming),
                 MissionSlots = missionSlots.ToArray(),
                 DepotCandidates = depotCandidates.ToArray()
             };
@@ -1085,6 +1092,21 @@ namespace MC2Demo.BattleCore
         private static string SlotName(MechBaySquadSelectionSlot slot)
         {
             return string.IsNullOrWhiteSpace(slot?.displayName) ? slot?.unitType ?? "mech" : slot.displayName;
+        }
+
+        private static string PendingSwapStatus(MechBaySquadSelectionSlot outgoing, MechBaySquadSelectionSlot incoming)
+        {
+            return outgoing != null && incoming != null ? "Pending confirmation stub" : "No pending swap";
+        }
+
+        private static string PendingSwapSummary(MechBaySquadSelectionSlot outgoing, MechBaySquadSelectionSlot incoming)
+        {
+            if (outgoing == null || incoming == null)
+            {
+                return DryRunSummary(outgoing, incoming);
+            }
+
+            return "Stage " + SlotName(incoming) + " over " + SlotName(outgoing) + " after future confirmation";
         }
     }
 
