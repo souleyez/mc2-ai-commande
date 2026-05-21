@@ -63,6 +63,7 @@ The Unity demo currently supports:
 - mech bay summary supports a demo ordinary weapon purchase that spends local tokens and adds one spare weapon
 - mech bay summary and roster detail support demo NPC pilot hiring that spends local tokens and assigns a warehouse pilot
 - depot Draft Fit affordance becomes a readiness gate once spare weapon stock and a pilot are both present
+- warehouse Draft Fit opens a read-only preview showing the selected pilot and spare weapon without changing inventory
 - starter inventory availability feedback warns on armor plate or heat sink shortages and blocks applying invalid drafts
 - starter mech condition and one-click demo repair spend local token balance and restore damaged mechs
 - starter mission receipt applies completed bounty tokens and salvaged mech fragments to local inventory
@@ -380,7 +381,7 @@ Tasks:
 
 ## Current Recommended Next Task
 
-Start with **starter warehouse draft-fit preview screen**.
+Start with **starter warehouse draft-fit apply stub**.
 
 Reason:
 
@@ -395,5 +396,6 @@ Reason:
 - The mech bay summary now supports a tightly scoped demo-only ordinary weapon purchase that deducts tokens and adds one spare weapon stack.
 - The mech bay now supports demo-only NPC pilot hiring that deducts tokens and assigns a pilot to a warehouse mech.
 - The depot Draft Fit affordance now becomes clickable once spare stock and a pilot are both present, giving feedback without changing loadouts.
-- The next low-risk step is a read-only warehouse draft-fit preview screen, so we can show which stock weapon and pilot would be used before creating the real fitting transaction.
+- The depot Draft Fit affordance now opens a read-only preview showing the selected pilot and spare weapon without changing inventory or loadouts.
+- The next low-risk step is a demo-only apply stub that consumes one spare weapon and changes the warehouse mech from `pending-loadout` to a placeholder fitted state, still without making it deployable.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.

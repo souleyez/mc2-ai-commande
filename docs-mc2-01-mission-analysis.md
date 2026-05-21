@@ -267,3 +267,6 @@ fitting gate while leaving friend pilots, wages, and real pilot death for later.
 When a warehouse mech has both spare weapon stock and an assigned pilot, the
 Draft Fit affordance now opens a readiness gate: it becomes clickable and gives
 player feedback without consuming inventory or creating a real loadout yet.
+That gate now opens a read-only warehouse draft-fit preview, showing the
+selected warehouse mech, assigned pilot, first spare weapon stack, and a clear
+note that no inventory or loadout changes are applied yet.

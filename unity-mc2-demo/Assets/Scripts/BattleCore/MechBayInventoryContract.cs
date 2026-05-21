@@ -231,6 +231,24 @@ namespace MC2Demo.BattleCore
         public string Message { get; internal set; }
     }
 
+    public sealed class MechBayWarehouseDraftFitPreview
+    {
+        public bool Ready { get; internal set; }
+        public bool InventoryChanged { get; internal set; }
+        public string Status { get; internal set; }
+        public string Requirements { get; internal set; }
+        public string ownedMechId { get; internal set; }
+        public string displayName { get; internal set; }
+        public string chassisId { get; internal set; }
+        public string activeLoadoutId { get; internal set; }
+        public string pilotDisplayName { get; internal set; }
+        public string pilotStatus { get; internal set; }
+        public string weaponItemId { get; internal set; }
+        public string weaponDisplayName { get; internal set; }
+        public int spareWeaponStockCount { get; internal set; }
+        public string PreviewNote { get; internal set; }
+    }
+
     public sealed class MechBayReceiptItemDefinition
     {
         public string itemId;
@@ -1209,6 +1227,129 @@ namespace MC2Demo.BattleCore
         private static bool IsWarehouseMech(MechBayOwnedMechDefinition mech)
         {
             return StartsWith(mech?.unitId, "warehouse-") || StartsWith(mech?.ownedMechId, "assembled-");
+        }
+
+        private static bool StartsWith(string value, string prefix)
+        {
+            return !string.IsNullOrWhiteSpace(value)
+                && value.StartsWith(prefix, StringComparison.OrdinalIgnoreCase);
+        }
+    }
+
+    public static class MechBayWarehouseDraftFitPreviewService
+    {
+        public static MechBayWarehouseDraftFitPreview BuildPreview(
+            MechBayInventoryContract inventory,
+            string ownedMechId)
+        {
+            MechBayOwnedMechDefinition target = FindOwnedMech(inventory, ownedMechId);
+            if (target == null)
+            {
+                return new MechBayWarehouseDraftFitPreview
+                {
+                    Ready = false,
+                    InventoryChanged = false,
+                    Status = "Draft fit preview unavailable",
+                    Requirements = "Mech unavailable",
+                    ownedMechId = ownedMechId,
+                    PreviewNote = "Preview only"
+                };
+            }
+
+            MechBayItemStackDefinition weapon = FirstSpareWeapon(inventory);
+            bool hasPilot = !string.IsNullOrWhiteSpace(target.pilotId);
+            bool ready = IsPendingDepotFit(target) && hasPilot && weapon != null;
+            string requirements = DraftFitRequirements(target, hasPilot, weapon != null);
+            return new MechBayWarehouseDraftFitPreview
+            {
+                Ready = ready,
+                InventoryChanged = false,
+                Status = ready ? "Read-only draft fit preview" : "Draft fit preview locked",
+                Requirements = requirements,
+                ownedMechId = target.ownedMechId,
+                displayName = string.IsNullOrWhiteSpace(target.displayName) ? target.unitType : target.displayName,
+                chassisId = target.chassisId,
+                activeLoadoutId = target.activeLoadoutId,
+                pilotDisplayName = hasPilot ? target.pilotDisplayName : "No pilot assigned",
+                pilotStatus = hasPilot ? PilotStatus(target) : "Pilot required",
+                weaponItemId = weapon?.itemId,
+                weaponDisplayName = weapon?.displayName,
+                spareWeaponStockCount = weapon == null ? 0 : Math.Max(0, weapon.quantity - weapon.equippedQuantity),
+                PreviewNote = ready ? "Preview only: no inventory or loadout changes" : "Resolve requirements before fitting"
+            };
+        }
+
+        private static string DraftFitRequirements(MechBayOwnedMechDefinition target, bool hasPilot, bool hasSpareWeapon)
+        {
+            if (!IsPendingDepotFit(target))
+            {
+                return "No pending depot fit";
+            }
+
+            if (hasPilot && hasSpareWeapon)
+            {
+                return "Ready for future fitting";
+            }
+
+            if (hasSpareWeapon)
+            {
+                return "Need pilot";
+            }
+
+            return hasPilot ? "Need stock weapons" : "Need stock weapons + pilot";
+        }
+
+        private static MechBayOwnedMechDefinition FindOwnedMech(MechBayInventoryContract inventory, string ownedMechId)
+        {
+            if (string.IsNullOrWhiteSpace(ownedMechId))
+            {
+                return null;
+            }
+
+            MechBayOwnedMechDefinition[] ownedMechs = inventory?.ownedMechs ?? Array.Empty<MechBayOwnedMechDefinition>();
+            for (int index = 0; index < ownedMechs.Length; index++)
+            {
+                MechBayOwnedMechDefinition mech = ownedMechs[index];
+                if (mech != null && string.Equals(mech.ownedMechId, ownedMechId, StringComparison.OrdinalIgnoreCase))
+                {
+                    return mech;
+                }
+            }
+
+            return null;
+        }
+
+        private static MechBayItemStackDefinition FirstSpareWeapon(MechBayInventoryContract inventory)
+        {
+            MechBayItemStackDefinition[] itemStacks = inventory?.itemStacks ?? Array.Empty<MechBayItemStackDefinition>();
+            for (int index = 0; index < itemStacks.Length; index++)
+            {
+                MechBayItemStackDefinition stack = itemStacks[index];
+                if (stack != null
+                    && string.Equals(stack.category, LoadoutItemCategory.Weapon, StringComparison.Ordinal)
+                    && stack.quantity - stack.equippedQuantity > 0)
+                {
+                    return stack;
+                }
+            }
+
+            return null;
+        }
+
+        private static bool IsPendingDepotFit(MechBayOwnedMechDefinition mech)
+        {
+            return IsWarehouseMech(mech)
+                && string.Equals(mech?.activeLoadoutId, "pending-loadout", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static bool IsWarehouseMech(MechBayOwnedMechDefinition mech)
+        {
+            return StartsWith(mech?.unitId, "warehouse-") || StartsWith(mech?.ownedMechId, "assembled-");
+        }
+
+        private static string PilotStatus(MechBayOwnedMechDefinition mech)
+        {
+            return string.Equals(mech?.pilotType, "NPC", StringComparison.OrdinalIgnoreCase) ? "Assigned NPC" : "Assigned";
         }
 
         private static bool StartsWith(string value, string prefix)

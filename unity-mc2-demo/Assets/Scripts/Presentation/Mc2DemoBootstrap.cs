@@ -61,6 +61,8 @@ namespace MC2Demo.Presentation
         private Camera mainCamera;
         private Vector2 loadoutScroll;
         private int selectedRosterIndex;
+        private bool showWarehouseDraftFitPreview;
+        private string warehouseDraftFitPreviewMechId;
         private string statusText = "Loading";
 
         private void Start()
@@ -2516,6 +2518,8 @@ namespace MC2Demo.Presentation
             if (GUI.Button(new Rect(panel.xMax - 66f, panel.y + 6f, 52f, 24f), "Close"))
             {
                 showLoadoutPanel = false;
+                showWarehouseDraftFitPreview = false;
+                warehouseDraftFitPreviewMechId = null;
                 if (mission.Result == MissionResultState.InProgress)
                 {
                     SetPaused(false);
@@ -2527,9 +2531,15 @@ namespace MC2Demo.Presentation
             y += 30f;
             DrawMechBayInventorySummary(x, y, width);
             y += 302f;
+            if (showWarehouseDraftFitPreview)
+            {
+                DrawWarehouseDraftFitPreview(x, y, width);
+                y += 116f;
+            }
 
             int unitCount = CountPlayerUnits();
-            Rect viewport = new(x, y, width, panel.yMax - y - 12f);
+            float viewportHeight = Mathf.Max(40f, panel.yMax - y - 12f);
+            Rect viewport = new(x, y, width, viewportHeight);
             Rect content = new(0f, 0f, width - 20f, Mathf.Max(viewport.height, unitCount * LoadoutCardStride));
             loadoutScroll = GUI.BeginScrollView(viewport, loadoutScroll, content);
             float itemY = 0f;
@@ -3115,6 +3125,8 @@ namespace MC2Demo.Presentation
             if (GUI.Button(new Rect(x, y - 2f, 72f, 22f), "Draft Fit"))
             {
                 string name = entry == null || string.IsNullOrWhiteSpace(entry.displayName) ? "depot mech" : entry.displayName;
+                showWarehouseDraftFitPreview = true;
+                warehouseDraftFitPreviewMechId = entry?.ownedMechId;
                 statusText = "Draft fit ready: " + TruncateText(name, 24);
                 AddCombatLogLine("Mech bay draft fit gate ready for " + name);
             }
@@ -3130,6 +3142,36 @@ namespace MC2Demo.Presentation
                 ? "Requirements unknown"
                 : "Requires " + entry.draftFitRequirements;
             GUI.Label(new Rect(x + 80f, y + 22f, width - 80f, 18f), TruncateText(requirements, 44));
+        }
+
+        private void DrawWarehouseDraftFitPreview(float x, float y, float width)
+        {
+            MechBayWarehouseDraftFitPreview preview =
+                MechBayWarehouseDraftFitPreviewService.BuildPreview(demoInventory, warehouseDraftFitPreviewMechId);
+            GUI.Box(new Rect(x, y, width, 104f), "Warehouse Draft Fit Preview");
+            if (GUI.Button(new Rect(x + width - 58f, y + 4f, 48f, 22f), "Hide"))
+            {
+                showWarehouseDraftFitPreview = false;
+                warehouseDraftFitPreviewMechId = null;
+                statusText = "Draft fit preview closed";
+            }
+
+            string mech = string.IsNullOrWhiteSpace(preview?.displayName) ? "Mech unavailable" : preview.displayName;
+            string chassis = string.IsNullOrWhiteSpace(preview?.chassisId) ? "unknown" : preview.chassisId;
+            string status = string.IsNullOrWhiteSpace(preview?.Status) ? "Preview unavailable" : preview.Status;
+            GUI.Label(new Rect(x + 12f, y + 24f, width - 24f, 18f), TruncateText(mech + "  Chassis " + chassis + "  " + status, 76));
+
+            string pilot = string.IsNullOrWhiteSpace(preview?.pilotDisplayName) ? "No pilot assigned" : preview.pilotDisplayName;
+            string pilotStatus = string.IsNullOrWhiteSpace(preview?.pilotStatus) ? "Pilot required" : preview.pilotStatus;
+            GUI.Label(new Rect(x + 12f, y + 44f, width - 24f, 18f), TruncateText("Pilot " + pilotStatus + " (" + pilot + ")", 76));
+
+            string weapon = string.IsNullOrWhiteSpace(preview?.weaponDisplayName) ? "No spare weapon selected" : preview.weaponDisplayName;
+            string stock = preview == null ? "0" : preview.spareWeaponStockCount.ToString(CultureInfo.InvariantCulture);
+            GUI.Label(new Rect(x + 12f, y + 64f, width - 24f, 18f), TruncateText("Weapon " + weapon + "  spare " + stock, 76));
+
+            string requirements = string.IsNullOrWhiteSpace(preview?.Requirements) ? "Requirements unknown" : preview.Requirements;
+            string note = string.IsNullOrWhiteSpace(preview?.PreviewNote) ? "Preview only" : preview.PreviewNote;
+            GUI.Label(new Rect(x + 12f, y + 84f, width - 24f, 18f), TruncateText(requirements + "  " + note, 76));
         }
 
         private static string ReceiptAssemblyLogText(MechBayMissionReceipt receipt)

@@ -2497,6 +2497,30 @@ namespace MC2Demo.EditorTools
                 throw new InvalidDataException("Expected demo pilot hire plus spare weapon stock to unlock the warehouse draft-fit readiness gate.");
             }
 
+            int tokenBeforeDraftFitPreview = receiptInventory.tokenBalance;
+            int weaponCountBeforeDraftFitPreview = receiptInventoryResult.Summary.WeaponCount;
+            MechBayWarehouseDraftFitPreview draftFitPreview =
+                MechBayWarehouseDraftFitPreviewService.BuildPreview(receiptInventory, assembledRaven.ownedMechId);
+            MechBayInventoryValidationResult draftFitPreviewInventoryResult = MechBayInventoryValidator.Validate(receiptInventory);
+            if (draftFitPreview == null
+                || !draftFitPreview.Ready
+                || draftFitPreview.InventoryChanged
+                || draftFitPreview.Status != "Read-only draft fit preview"
+                || draftFitPreview.Requirements != "Ready for future fitting"
+                || draftFitPreview.ownedMechId != assembledRaven.ownedMechId
+                || draftFitPreview.pilotDisplayName != hireCandidate.displayName
+                || draftFitPreview.pilotStatus != "Assigned NPC"
+                || draftFitPreview.weaponItemId != fitGatePurchase.itemId
+                || draftFitPreview.weaponDisplayName != fitGatePurchase.displayName
+                || draftFitPreview.spareWeaponStockCount != 1
+                || draftFitPreview.PreviewNote != "Preview only: no inventory or loadout changes"
+                || receiptInventory.tokenBalance != tokenBeforeDraftFitPreview
+                || !draftFitPreviewInventoryResult.IsValid
+                || draftFitPreviewInventoryResult.Summary.WeaponCount != weaponCountBeforeDraftFitPreview)
+            {
+                throw new InvalidDataException("Expected warehouse draft-fit preview to show selected pilot and spare weapon without changing inventory.");
+            }
+
             BattleMission defeat = new(MakeResultContract(completeOnStart: false), resultProfiles);
             for (int tick = 0; tick < 10 && defeat.Result == MissionResultState.InProgress; tick++)
             {
