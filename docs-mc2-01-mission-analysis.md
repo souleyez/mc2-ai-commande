@@ -260,3 +260,6 @@ actions are enabled.
 That shop now has a tightly scoped demo purchase path: buying the first ordinary
 weapon spends local tokens and adds one unequipped weapon stack, making the
 depot spare-weapon requirement visibly resolvable without full shop balancing.
+The same panel now previews starter NPC pilot hire candidates with token cost
+and death-risk status, keeping pilot assignment read-only until the later
+social/NPC pilot rules are implemented.

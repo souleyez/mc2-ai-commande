@@ -328,6 +328,24 @@ namespace MC2Demo.EditorTools
                 throw new InvalidDataException("Expected starter inventory to expose demo token balance.");
             }
 
+            MechBayPilotHirePreview pilotHirePreview = MechBayPilotHirePreviewService.BuildPreview(inventory);
+            if (pilotHirePreview == null
+                || pilotHirePreview.TokenBalance != inventory.tokenBalance
+                || pilotHirePreview.Status != "NPC pilot hire preview"
+                || pilotHirePreview.Candidates == null
+                || pilotHirePreview.Candidates.Length != 2
+                || string.IsNullOrWhiteSpace(pilotHirePreview.Candidates[0].pilotId)
+                || string.IsNullOrWhiteSpace(pilotHirePreview.Candidates[0].displayName)
+                || pilotHirePreview.Candidates[0].pilotType != "NPC"
+                || pilotHirePreview.Candidates[0].hireCost <= 0
+                || !pilotHirePreview.Candidates[0].canAfford
+                || pilotHirePreview.Candidates[0].hireEnabled
+                || pilotHirePreview.Candidates[0].hireStatus != "Preview only"
+                || pilotHirePreview.Candidates[0].riskProfile != "NPC death risk")
+            {
+                throw new InvalidDataException("Expected starter pilot hire preview to expose read-only NPC candidates.");
+            }
+
             MechBayWeaponShopPreview shopPreview = MechBayWeaponShopPreviewService.BuildPreview(inventory);
             if (shopPreview == null
                 || shopPreview.TokenBalance != inventory.tokenBalance

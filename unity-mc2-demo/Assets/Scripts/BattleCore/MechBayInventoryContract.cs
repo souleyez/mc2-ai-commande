@@ -194,6 +194,25 @@ namespace MC2Demo.BattleCore
         public string Message { get; internal set; }
     }
 
+    public sealed class MechBayPilotHirePreview
+    {
+        public int TokenBalance { get; internal set; }
+        public string Status { get; internal set; }
+        public MechBayPilotHireCandidate[] Candidates { get; internal set; }
+    }
+
+    public sealed class MechBayPilotHireCandidate
+    {
+        public string pilotId { get; internal set; }
+        public string displayName { get; internal set; }
+        public string pilotType { get; internal set; }
+        public int hireCost { get; internal set; }
+        public bool canAfford { get; internal set; }
+        public bool hireEnabled { get; internal set; }
+        public string hireStatus { get; internal set; }
+        public string riskProfile { get; internal set; }
+    }
+
     public sealed class MechBayReceiptItemDefinition
     {
         public string itemId;
@@ -921,6 +940,62 @@ namespace MC2Demo.BattleCore
             }
 
             return null;
+        }
+    }
+
+    public static class MechBayPilotHirePreviewService
+    {
+        private static readonly MechBayPilotHireCandidate[] StarterCandidates =
+        {
+            Candidate("pilot-npc-recruit", "NPC Recruit", "NPC", 600, "NPC death risk"),
+            Candidate("pilot-npc-gunner", "NPC Gunner", "NPC", 950, "NPC death risk")
+        };
+
+        public static MechBayPilotHirePreview BuildPreview(MechBayInventoryContract inventory)
+        {
+            int tokenBalance = Math.Max(0, inventory?.tokenBalance ?? 0);
+            MechBayPilotHireCandidate[] candidates = new MechBayPilotHireCandidate[StarterCandidates.Length];
+            for (int index = 0; index < StarterCandidates.Length; index++)
+            {
+                MechBayPilotHireCandidate source = StarterCandidates[index];
+                candidates[index] = new MechBayPilotHireCandidate
+                {
+                    pilotId = source.pilotId,
+                    displayName = source.displayName,
+                    pilotType = source.pilotType,
+                    hireCost = source.hireCost,
+                    canAfford = tokenBalance >= source.hireCost,
+                    hireEnabled = false,
+                    hireStatus = "Preview only",
+                    riskProfile = source.riskProfile
+                };
+            }
+
+            return new MechBayPilotHirePreview
+            {
+                TokenBalance = tokenBalance,
+                Status = "NPC pilot hire preview",
+                Candidates = candidates
+            };
+        }
+
+        private static MechBayPilotHireCandidate Candidate(
+            string pilotId,
+            string displayName,
+            string pilotType,
+            int hireCost,
+            string riskProfile)
+        {
+            return new MechBayPilotHireCandidate
+            {
+                pilotId = pilotId,
+                displayName = displayName,
+                pilotType = pilotType,
+                hireCost = Math.Max(0, hireCost),
+                hireEnabled = false,
+                hireStatus = "Preview only",
+                riskProfile = riskProfile
+            };
         }
     }
 

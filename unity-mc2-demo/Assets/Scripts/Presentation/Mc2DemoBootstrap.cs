@@ -2526,7 +2526,7 @@ namespace MC2Demo.Presentation
 
             y += 30f;
             DrawMechBayInventorySummary(x, y, width);
-            y += 258f;
+            y += 302f;
 
             int unitCount = CountPlayerUnits();
             Rect viewport = new(x, y, width, panel.yMax - y - 12f);
@@ -2580,12 +2580,16 @@ namespace MC2Demo.Presentation
                 new Rect(x, y + 60f, width, 18f),
                 "Shop " + WeaponShopPreviewText(shopPreview));
             DrawWeaponShopPurchaseStub(x, y + 82f, width, shopPreview, demoInventory);
+            MechBayPilotHirePreview pilotHirePreview = MechBayPilotHirePreviewService.BuildPreview(demoInventory);
+            GUI.Label(
+                new Rect(x, y + 104f, width, 18f),
+                "Pilot Hire " + PilotHirePreviewText(pilotHirePreview));
             MechBayOwnedRosterEntry[] roster = MechBayOwnedRosterService.BuildRosterPreview(demoInventory);
             ClampSelectedRosterIndex(roster);
             GUI.Label(
-                new Rect(x, y + 104f, width, 18f),
+                new Rect(x, y + 126f, width, 18f),
                 "Roster " + TruncateText(OwnedRosterText(roster), 62));
-            DrawOwnedRosterDetail(x, y + 126f, width, roster);
+            DrawOwnedRosterDetail(x, y + 148f, width, roster, pilotHirePreview);
         }
 
         private void DrawLoadoutUnit(UnitState unit, float x, float y, float width)
@@ -2876,7 +2880,46 @@ namespace MC2Demo.Presentation
             return purchasePreview.displayName + " " + cost + "  " + purchasePreview.Message;
         }
 
-        private void DrawOwnedRosterDetail(float x, float y, float width, MechBayOwnedRosterEntry[] roster)
+        private static string PilotHirePreviewText(MechBayPilotHirePreview preview)
+        {
+            MechBayPilotHireCandidate[] candidates = preview?.Candidates ?? Array.Empty<MechBayPilotHireCandidate>();
+            if (candidates.Length == 0)
+            {
+                return "No NPC pilots";
+            }
+
+            int cheapestCost = int.MaxValue;
+            int affordableCount = 0;
+            for (int index = 0; index < candidates.Length; index++)
+            {
+                MechBayPilotHireCandidate candidate = candidates[index];
+                if (candidate == null)
+                {
+                    continue;
+                }
+
+                cheapestCost = Mathf.Min(cheapestCost, Mathf.Max(0, candidate.hireCost));
+                if (candidate.canAfford)
+                {
+                    affordableCount++;
+                }
+            }
+
+            string cost = cheapestCost == int.MaxValue ? "unknown" : FormatTokens(cheapestCost) + " token";
+            return candidates.Length.ToString(CultureInfo.InvariantCulture)
+                + " NPC candidates from "
+                + cost
+                + "  afford "
+                + affordableCount.ToString(CultureInfo.InvariantCulture)
+                + "  preview";
+        }
+
+        private void DrawOwnedRosterDetail(
+            float x,
+            float y,
+            float width,
+            MechBayOwnedRosterEntry[] roster,
+            MechBayPilotHirePreview pilotHirePreview)
         {
             if (roster == null || roster.Length == 0)
             {
@@ -2913,8 +2956,11 @@ namespace MC2Demo.Presentation
                 TruncateText(OwnedRosterPilotText(entry), 62));
             GUI.Label(
                 new Rect(x + 70f, y + 64f, width - 70f, 18f),
+                TruncateText(OwnedRosterPilotHireText(entry, pilotHirePreview), 62));
+            GUI.Label(
+                new Rect(x + 70f, y + 86f, width - 70f, 18f),
                 TruncateText(OwnedRosterWeaponStockText(entry), 62));
-            DrawOwnedRosterDraftFitStub(x + 70f, y + 86f, width - 70f, entry);
+            DrawOwnedRosterDraftFitStub(x + 70f, y + 108f, width - 70f, entry);
         }
 
         private void ClampSelectedRosterIndex(MechBayOwnedRosterEntry[] roster)
@@ -2975,6 +3021,42 @@ namespace MC2Demo.Presentation
             string status = string.IsNullOrWhiteSpace(entry.pilotStatus) ? "Unknown" : entry.pilotStatus;
             string pilot = string.IsNullOrWhiteSpace(entry.pilotDisplayName) ? "No pilot assigned" : entry.pilotDisplayName;
             return "Pilot " + status + " (" + pilot + ")";
+        }
+
+        private static string OwnedRosterPilotHireText(MechBayOwnedRosterEntry entry, MechBayPilotHirePreview preview)
+        {
+            if (entry == null)
+            {
+                return "Hire Pilot unavailable";
+            }
+
+            if (!entry.hasPilotPlaceholder)
+            {
+                return "Hire Pilot already assigned";
+            }
+
+            MechBayPilotHireCandidate candidate = FirstPilotHireCandidate(preview);
+            if (candidate == null)
+            {
+                return "Hire Pilot unavailable";
+            }
+
+            string cost = FormatTokens(candidate.hireCost) + " token";
+            return "Hire Pilot " + candidate.displayName + " " + cost + "  " + candidate.hireStatus;
+        }
+
+        private static MechBayPilotHireCandidate FirstPilotHireCandidate(MechBayPilotHirePreview preview)
+        {
+            MechBayPilotHireCandidate[] candidates = preview?.Candidates ?? Array.Empty<MechBayPilotHireCandidate>();
+            for (int index = 0; index < candidates.Length; index++)
+            {
+                if (candidates[index] != null)
+                {
+                    return candidates[index];
+                }
+            }
+
+            return null;
         }
 
         private static string OwnedRosterWeaponStockText(MechBayOwnedRosterEntry entry)
