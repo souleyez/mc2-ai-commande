@@ -284,3 +284,5 @@ current mission slots and any fitted depot candidates while keeping inventory
 and mission deployment unchanged.
 The preview also includes a disabled Swap guard that reports why replacement is
 locked today and what future replace-slot action is required.
+When both a current mission slot and a fitted depot candidate exist, the preview
+now shows a dry-run replacement summary without applying roster changes.

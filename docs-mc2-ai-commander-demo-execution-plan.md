@@ -69,6 +69,7 @@ The Unity demo currently supports:
 - roster detail shows a squad-selection placeholder without altering current mission deployment
 - squad-selection preview lists current mission slots and fitted depot candidates without changing inventory or deployment
 - squad-selection preview shows a disabled swap guard with future replace-slot requirements
+- squad-selection preview shows a dry-run replacement summary without applying roster changes
 - starter inventory availability feedback warns on armor plate or heat sink shortages and blocks applying invalid drafts
 - starter mech condition and one-click demo repair spend local token balance and restore damaged mechs
 - starter mission receipt applies completed bounty tokens and salvaged mech fragments to local inventory
@@ -386,7 +387,7 @@ Tasks:
 
 ## Current Recommended Next Task
 
-Start with **starter squad-selection dry-run swap preview**.
+Start with **starter squad-selection pending swap confirmation**.
 
 Reason:
 
@@ -407,5 +408,6 @@ Reason:
 - The roster now shows a squad-selection placeholder, so the deployment path is visible before it can alter mission rosters.
 - The squad-selection preview now lists current mission slots and fitted depot candidates without changing deployment.
 - The squad-selection preview now includes a disabled swap guard, so the future replace-slot action has visible rules before it can mutate mission rosters.
-- The next low-risk step is a dry-run swap preview that selects one current slot and one depot candidate, then explains the proposed replacement without applying it.
+- The squad-selection preview now shows a dry-run replacement summary that selects one current slot and one depot candidate without applying it.
+- The next low-risk step is a pending swap confirmation stub, so the UI can show a staged replacement before any inventory or mission roster mutation exists.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.

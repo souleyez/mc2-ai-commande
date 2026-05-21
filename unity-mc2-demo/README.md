@@ -61,6 +61,7 @@ Current demo behavior:
 - shows a squad-selection placeholder before warehouse mechs can alter the mission squad
 - opens a read-only squad-selection preview listing current mission slots and fitted depot candidates
 - shows a disabled swap guard with the future replace-slot requirements
+- shows a dry-run swap preview for the first current slot and fitted depot candidate
 - warns when draft armor plate or heat sink usage exceeds starter inventory and blocks applying that fit
 - shows starter mech condition and one-click demo repair that spends local token balance
 - applies a local mission receipt for completed bounty tokens and salvaged mech fragments at mission end

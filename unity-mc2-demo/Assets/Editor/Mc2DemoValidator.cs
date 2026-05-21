@@ -1050,6 +1050,12 @@ namespace MC2Demo.EditorTools
                 + (preview.SwapStatus ?? "null")
                 + "/"
                 + (preview.SwapRequirements ?? "null")
+                + ", dryRun="
+                + preview.DryRunAvailable
+                + "/"
+                + (preview.DryRunStatus ?? "null")
+                + "/"
+                + (preview.DryRunSummary ?? "null")
                 + ", changed="
                 + preview.InventoryChanged;
         }
@@ -2481,7 +2487,12 @@ namespace MC2Demo.EditorTools
                 || lockedSquadPreview.DepotCandidates.Length != 0
                 || lockedSquadPreview.SwapEnabled
                 || lockedSquadPreview.SwapStatus != "Swap unavailable"
-                || lockedSquadPreview.SwapRequirements != "Need fitted depot candidate")
+                || lockedSquadPreview.SwapRequirements != "Need fitted depot candidate"
+                || lockedSquadPreview.DryRunAvailable
+                || lockedSquadPreview.DryRunStatus != "Dry run unavailable"
+                || lockedSquadPreview.DryRunSummary != "Need fitted depot candidate"
+                || !string.IsNullOrWhiteSpace(lockedSquadPreview.DryRunIncomingOwnedMechId)
+                || string.IsNullOrWhiteSpace(lockedSquadPreview.DryRunOutgoingOwnedMechId))
             {
                 throw new InvalidDataException(
                     "Expected starter squad-selection preview to list mission slots and hide locked depot mechs. Got "
@@ -2650,7 +2661,13 @@ namespace MC2Demo.EditorTools
                 || receiptInventory.tokenBalance != tokenBeforeDraftFitPreview
                 || squadPreview.SwapEnabled
                 || squadPreview.SwapStatus != "Swap locked: preview only"
-                || squadPreview.SwapRequirements != "Future replace-slot action")
+                || squadPreview.SwapRequirements != "Future replace-slot action"
+                || !squadPreview.DryRunAvailable
+                || squadPreview.DryRunStatus != "Dry run ready"
+                || !squadPreview.DryRunSummary.Contains("Replace ", StringComparison.Ordinal)
+                || !squadPreview.DryRunSummary.Contains(" with " + assembledRaven.displayName, StringComparison.Ordinal)
+                || string.IsNullOrWhiteSpace(squadPreview.DryRunOutgoingOwnedMechId)
+                || squadPreview.DryRunIncomingOwnedMechId != assembledRaven.ownedMechId)
             {
                 throw new InvalidDataException(
                     "Expected read-only squad-selection preview to show current slots and one fitted depot candidate without changing inventory. Got "

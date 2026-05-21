@@ -279,6 +279,11 @@ namespace MC2Demo.BattleCore
         public bool SwapEnabled { get; internal set; }
         public string SwapStatus { get; internal set; }
         public string SwapRequirements { get; internal set; }
+        public bool DryRunAvailable { get; internal set; }
+        public string DryRunStatus { get; internal set; }
+        public string DryRunSummary { get; internal set; }
+        public string DryRunOutgoingOwnedMechId { get; internal set; }
+        public string DryRunIncomingOwnedMechId { get; internal set; }
         public MechBaySquadSelectionSlot[] MissionSlots { get; internal set; }
         public MechBaySquadSelectionSlot[] DepotCandidates { get; internal set; }
     }
@@ -995,6 +1000,8 @@ namespace MC2Demo.BattleCore
                 }
             }
 
+            MechBaySquadSelectionSlot dryRunOutgoing = missionSlots.Count > 0 ? missionSlots[0] : null;
+            MechBaySquadSelectionSlot dryRunIncoming = depotCandidates.Count > 0 ? depotCandidates[0] : null;
             return new MechBaySquadSelectionPreview
             {
                 InventoryChanged = false,
@@ -1005,6 +1012,11 @@ namespace MC2Demo.BattleCore
                 SwapEnabled = false,
                 SwapStatus = SwapStatus(missionSlots.Count, depotCandidates.Count),
                 SwapRequirements = SwapRequirements(missionSlots.Count, depotCandidates.Count),
+                DryRunAvailable = dryRunOutgoing != null && dryRunIncoming != null,
+                DryRunStatus = DryRunStatus(dryRunOutgoing, dryRunIncoming),
+                DryRunSummary = DryRunSummary(dryRunOutgoing, dryRunIncoming),
+                DryRunOutgoingOwnedMechId = dryRunOutgoing?.ownedMechId,
+                DryRunIncomingOwnedMechId = dryRunIncoming?.ownedMechId,
                 MissionSlots = missionSlots.ToArray(),
                 DepotCandidates = depotCandidates.ToArray()
             };
@@ -1043,6 +1055,36 @@ namespace MC2Demo.BattleCore
             }
 
             return candidateCount <= 0 ? "Need fitted depot candidate" : "Future replace-slot action";
+        }
+
+        private static string DryRunStatus(MechBaySquadSelectionSlot outgoing, MechBaySquadSelectionSlot incoming)
+        {
+            return outgoing != null && incoming != null ? "Dry run ready" : "Dry run unavailable";
+        }
+
+        private static string DryRunSummary(MechBaySquadSelectionSlot outgoing, MechBaySquadSelectionSlot incoming)
+        {
+            if (outgoing == null && incoming == null)
+            {
+                return "Need mission slot + fitted depot candidate";
+            }
+
+            if (outgoing == null)
+            {
+                return "Need mission slot";
+            }
+
+            if (incoming == null)
+            {
+                return "Need fitted depot candidate";
+            }
+
+            return "Replace " + SlotName(outgoing) + " with " + SlotName(incoming) + " when enabled";
+        }
+
+        private static string SlotName(MechBaySquadSelectionSlot slot)
+        {
+            return string.IsNullOrWhiteSpace(slot?.displayName) ? slot?.unitType ?? "mech" : slot.displayName;
         }
     }
 
