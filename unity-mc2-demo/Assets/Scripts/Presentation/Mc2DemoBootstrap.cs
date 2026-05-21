@@ -41,10 +41,12 @@ namespace MC2Demo.Presentation
         private string pendingDetachedUnitId;
         private bool pendingJumpOrder;
         private bool showMissionMap;
+        private bool showLoadoutPanel;
         private bool showSystemPanel;
         private bool isPaused;
         private MissionResultState lastMissionResult = MissionResultState.InProgress;
         private Camera mainCamera;
+        private Vector2 loadoutScroll;
         private string statusText = "Loading";
 
         private void Start()
@@ -1959,6 +1961,7 @@ namespace MC2Demo.Presentation
             DrawCombatPanel();
             DrawMissionBriefPanel();
             DrawMissionMap();
+            DrawLoadoutPanel();
             DrawSystemPanel();
             DrawMissionResultPanel();
         }
@@ -1969,14 +1972,14 @@ namespace MC2Demo.Presentation
             GUI.Label(new Rect(18, y, 320, 22), "Lance");
             y += 24f;
 
-            if (GUI.Button(new Rect(18, y, 70, 28), "All"))
+            if (GUI.Button(new Rect(18, y, 54, 28), "All"))
             {
                 pendingDetachedUnitId = null;
                 pendingJumpOrder = false;
                 statusText = "Squad selected";
             }
 
-            if (GUI.Button(new Rect(94, y, 70, 28), pendingJumpOrder ? "Jet..." : "Jet"))
+            if (GUI.Button(new Rect(78, y, 54, 28), pendingJumpOrder ? "Jet..." : "Jet"))
             {
                 pendingJumpOrder = true;
                 statusText = string.IsNullOrEmpty(pendingDetachedUnitId)
@@ -1984,13 +1987,38 @@ namespace MC2Demo.Presentation
                     : "Select jet destination for " + pendingDetachedUnitId;
             }
 
-            if (GUI.Button(new Rect(170, y, 70, 28), showMissionMap ? "Map-" : "Map"))
+            if (GUI.Button(new Rect(138, y, 54, 28), showMissionMap ? "Map-" : "Map"))
             {
                 showMissionMap = !showMissionMap;
+                showLoadoutPanel = false;
+                showSystemPanel = false;
+                if (mission.Result == MissionResultState.InProgress)
+                {
+                    SetPaused(false);
+                }
+
                 statusText = showMissionMap ? "Mission map open" : "Mission map closed";
             }
 
-            if (GUI.Button(new Rect(246, y, 76, 28), "System"))
+            if (GUI.Button(new Rect(198, y, 54, 28), showLoadoutPanel ? "Bay-" : "Bay"))
+            {
+                if (showLoadoutPanel)
+                {
+                    showLoadoutPanel = false;
+                    if (mission.Result == MissionResultState.InProgress)
+                    {
+                        SetPaused(false);
+                    }
+
+                    statusText = "Mech bay closed";
+                }
+                else
+                {
+                    OpenLoadoutPanel();
+                }
+            }
+
+            if (GUI.Button(new Rect(258, y, 64, 28), "System"))
             {
                 OpenSystemPanel();
             }
@@ -2402,6 +2430,124 @@ namespace MC2Demo.Presentation
             }
         }
 
+        private void DrawLoadoutPanel()
+        {
+            if (!showLoadoutPanel)
+            {
+                return;
+            }
+
+            Rect panel = LoadoutPanelRect();
+            GUI.Box(panel, "Mech Bay");
+            float x = panel.x + 14f;
+            float y = panel.y + 34f;
+            float width = panel.width - 28f;
+
+            GUI.Label(new Rect(x, y, width - 76f, 22f), "Squad loadout");
+            if (GUI.Button(new Rect(panel.xMax - 66f, panel.y + 6f, 52f, 24f), "Close"))
+            {
+                showLoadoutPanel = false;
+                if (mission.Result == MissionResultState.InProgress)
+                {
+                    SetPaused(false);
+                }
+
+                statusText = "Mech bay closed";
+            }
+
+            y += 30f;
+            int unitCount = CountPlayerUnits();
+            Rect viewport = new(x, y, width, panel.yMax - y - 12f);
+            Rect content = new(0f, 0f, width - 20f, Mathf.Max(viewport.height, unitCount * 132f));
+            loadoutScroll = GUI.BeginScrollView(viewport, loadoutScroll, content);
+            float itemY = 0f;
+            foreach (UnitState unit in mission.PlayerUnits())
+            {
+                DrawLoadoutUnit(unit, 0f, itemY, content.width);
+                itemY += 132f;
+            }
+
+            GUI.EndScrollView();
+        }
+
+        private void DrawLoadoutUnit(UnitState unit, float x, float y, float width)
+        {
+            Rect card = new(x, y, width, 124f);
+            GUI.Box(card, unit.UnitType + "  " + unit.Id);
+
+            float left = x + 12f;
+            float right = x + width * 0.50f;
+            float lineY = y + 24f;
+            GUI.Label(
+                new Rect(left, lineY, width * 0.46f, 18f),
+                "Structure " + Mathf.RoundToInt(unit.CurrentStructure) + "/" + Mathf.RoundToInt(unit.Profile.MaxStructure)
+                + "  Move " + Mathf.RoundToInt(unit.Profile.MoveSpeed));
+            GUI.Label(
+                new Rect(right, lineY, width * 0.46f, 18f),
+                "Heat " + FormatDecimal(unit.CurrentHeat) + "/" + FormatDecimal(unit.Profile.HeatCapacity)
+                + "  Load " + FormatDecimal(unit.Profile.TotalWeaponWeight));
+
+            lineY += 20f;
+            GUI.Label(
+                new Rect(left, lineY, width * 0.46f, 18f),
+                "Primary " + TruncateText(unit.Profile.PrimaryWeaponName, 28));
+            GUI.Label(
+                new Rect(right, lineY, width * 0.46f, 18f),
+                "Range " + Mathf.RoundToInt(unit.Profile.WeaponRange)
+                + "  Damage " + FormatDecimal(unit.Profile.WeaponDamage)
+                + "  CD " + FormatDecimal(unit.Profile.WeaponCooldown));
+
+            lineY += 22f;
+            DrawLoadoutSectionLine(unit, left, lineY, width - 24f);
+
+            lineY += 34f;
+            DrawWeaponLoadoutLines(unit.Profile.Weapons, left, lineY, width - 24f);
+        }
+
+        private void DrawLoadoutSectionLine(UnitState unit, float x, float y, float width)
+        {
+            int count = Mathf.Max(1, unit.Sections.Length);
+            float gap = 6f;
+            float segmentWidth = (width - gap * (count - 1)) / count;
+            for (int index = 0; index < unit.Sections.Length; index++)
+            {
+                DamageSection section = unit.Sections[index];
+                float segmentX = x + index * (segmentWidth + gap);
+                Rect back = new(segmentX, y, segmentWidth, 7f);
+                DrawColorRect(back, new Color(0.08f, 0.09f, 0.10f, 1f));
+                DrawColorRect(new Rect(segmentX, y, segmentWidth * section.Ratio, 7f), SectionHealthColor(section));
+                string value = section.IsDestroyed ? "X" : Mathf.RoundToInt(section.Ratio * 100f).ToString(CultureInfo.InvariantCulture);
+                GUI.Label(new Rect(segmentX, y + 8f, segmentWidth + 4f, 16f), ShortSectionName(section.Name) + " " + value);
+            }
+        }
+
+        private void DrawWeaponLoadoutLines(CombatWeaponDefinition[] weapons, float x, float y, float width)
+        {
+            if (weapons == null || weapons.Length == 0)
+            {
+                GUI.Label(new Rect(x, y, width, 18f), "Weapons: aggregate profile");
+                return;
+            }
+
+            int count = Mathf.Min(3, weapons.Length);
+            float columnWidth = width / count;
+            for (int index = 0; index < count; index++)
+            {
+                CombatWeaponDefinition weapon = weapons[index];
+                if (weapon == null)
+                {
+                    continue;
+                }
+
+                string label = TruncateText(weapon.name, 18)
+                    + "  R" + Mathf.RoundToInt(weapon.rangeMax)
+                    + " D" + FormatDecimal(weapon.damage)
+                    + " H" + FormatDecimal(weapon.heat)
+                    + " W" + FormatDecimal(weapon.weight);
+                GUI.Label(new Rect(x + index * columnWidth, y, columnWidth - 8f, 18f), label);
+            }
+        }
+
         private void DrawSystemPanel()
         {
             if (!showSystemPanel)
@@ -2530,6 +2676,11 @@ namespace MC2Demo.Presentation
             return value.ToString("N0", CultureInfo.InvariantCulture);
         }
 
+        private static string FormatDecimal(float value)
+        {
+            return value.ToString("0.#", CultureInfo.InvariantCulture);
+        }
+
         private static string SignedTokens(int value)
         {
             return (value >= 0 ? "+" : "") + FormatTokens(value);
@@ -2553,6 +2704,8 @@ namespace MC2Demo.Presentation
         private void OpenSystemPanel()
         {
             showSystemPanel = true;
+            showLoadoutPanel = false;
+            showMissionMap = false;
             if (mission.Result == MissionResultState.InProgress)
             {
                 SetPaused(true);
@@ -2561,6 +2714,21 @@ namespace MC2Demo.Presentation
             pendingDetachedUnitId = null;
             pendingJumpOrder = false;
             statusText = "System open";
+        }
+
+        private void OpenLoadoutPanel()
+        {
+            showLoadoutPanel = true;
+            showMissionMap = false;
+            showSystemPanel = false;
+            if (mission.Result == MissionResultState.InProgress)
+            {
+                SetPaused(true);
+            }
+
+            pendingDetachedUnitId = null;
+            pendingJumpOrder = false;
+            statusText = "Mech bay open";
         }
 
         private void SetPaused(bool paused)
@@ -2591,6 +2759,11 @@ namespace MC2Demo.Presentation
                 return true;
             }
 
+            if (showLoadoutPanel && LoadoutPanelRect().Contains(guiPoint))
+            {
+                return true;
+            }
+
             return showSystemPanel && SystemPanelRect().Contains(guiPoint);
         }
 
@@ -2605,6 +2778,13 @@ namespace MC2Demo.Presentation
         {
             float width = 260f;
             float height = 232f;
+            return new Rect((Screen.width - width) * 0.5f, (Screen.height - height) * 0.5f, width, height);
+        }
+
+        private Rect LoadoutPanelRect()
+        {
+            float width = Mathf.Clamp(Screen.width * 0.54f, 560f, 760f);
+            float height = Mathf.Clamp(Screen.height * 0.72f, 360f, 540f);
             return new Rect((Screen.width - width) * 0.5f, (Screen.height - height) * 0.5f, width, height);
         }
 
@@ -2730,6 +2910,17 @@ namespace MC2Demo.Presentation
                 {
                     count++;
                 }
+            }
+
+            return count;
+        }
+
+        private int CountPlayerUnits()
+        {
+            int count = 0;
+            foreach (UnitState unit in mission.PlayerUnits())
+            {
+                count++;
             }
 
             return count;

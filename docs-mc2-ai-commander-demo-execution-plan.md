@@ -39,7 +39,7 @@ The Unity demo currently supports:
 - enemy activation and lightweight patrol orders
 - player squad orders, detached unit orders, focused unit/structure attacks, and Jet orders
 - heat, cooldown, weapon range/readiness, simple section damage, section penalties, and placeholder breakoff/ejection effects
-- compact tactical UI with unit status, mission brief, current-objective map, world objective hints, health bars, command rings, range rings, and target lines
+- compact tactical UI with unit status, read-only mech bay, mission brief, current-objective map, world objective hints, health bars, command rings, range rings, and target lines
 - CLI/AI loop pieces:
   - `-mc2Command`
   - `-mc2AdvanceSeconds`

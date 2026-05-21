@@ -31,6 +31,7 @@ Current demo behavior:
 - tracks source-derived weapon heat, cooling, and heat lockouts in combat
 - carries source weapon type and special-effect metadata into combat visuals
 - shows weapon name, range, cooldown, heat lock, and range readiness in the unit panel
+- opens a read-only mech bay with source weapon loadout, heat, weight, range, damage, and section status
 - supports one-shot Jet orders with terrain-aware landing rejection
 - provides a toggleable current-objective mission map and a pause/restart/end system panel
 - resolves mission victory or defeat through BattleCore result state

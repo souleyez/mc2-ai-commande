@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace MC2Demo.BattleCore
@@ -15,6 +16,8 @@ namespace MC2Demo.BattleCore
         public string PrimaryWeaponName { get; }
         public string PrimaryWeaponType { get; }
         public int PrimarySpecialEffect { get; }
+        public CombatWeaponDefinition[] Weapons { get; }
+        public float TotalWeaponWeight { get; }
         public CombatSectionDefinition[] Sections { get; }
         public string SourceKind { get; }
 
@@ -30,6 +33,7 @@ namespace MC2Demo.BattleCore
             string primaryWeaponName,
             string primaryWeaponType,
             int primarySpecialEffect,
+            CombatWeaponDefinition[] weapons,
             CombatSectionDefinition[] sections,
             string sourceKind)
         {
@@ -44,6 +48,8 @@ namespace MC2Demo.BattleCore
             PrimaryWeaponName = primaryWeaponName;
             PrimaryWeaponType = primaryWeaponType;
             PrimarySpecialEffect = primarySpecialEffect;
+            Weapons = weapons ?? Array.Empty<CombatWeaponDefinition>();
+            TotalWeaponWeight = CalculateTotalWeaponWeight(Weapons);
             Sections = sections;
             SourceKind = sourceKind;
         }
@@ -56,6 +62,7 @@ namespace MC2Demo.BattleCore
             }
 
             CombatProfileFields fields = record.combatProfile;
+            CombatWeaponDefinition[] weapons = record.weapons ?? Array.Empty<CombatWeaponDefinition>();
             CombatWeaponDefinition primaryWeapon = SelectPrimaryWeapon(record);
             return new CombatProfile(
                 fields.maxStructure,
@@ -69,6 +76,7 @@ namespace MC2Demo.BattleCore
                 string.IsNullOrEmpty(primaryWeapon?.name) ? "Aggregate Weapons" : primaryWeapon.name,
                 string.IsNullOrEmpty(primaryWeapon?.type) ? "Generic" : primaryWeapon.type,
                 primaryWeapon?.specialEffect ?? 0,
+                weapons,
                 record.sections,
                 string.IsNullOrEmpty(record.sourceKind) ? "combat-data" : record.sourceKind);
         }
@@ -120,8 +128,28 @@ namespace MC2Demo.BattleCore
                 "Fallback Weapon",
                 "Generic",
                 0,
+                Array.Empty<CombatWeaponDefinition>(),
                 DefaultSections(maxStructure, isPlayerUnit),
                 "hardcoded-fallback");
+        }
+
+        private static float CalculateTotalWeaponWeight(CombatWeaponDefinition[] weapons)
+        {
+            if (weapons == null || weapons.Length == 0)
+            {
+                return 0f;
+            }
+
+            float total = 0f;
+            foreach (CombatWeaponDefinition weapon in weapons)
+            {
+                if (weapon != null && weapon.weight > 0f)
+                {
+                    total += weapon.weight;
+                }
+            }
+
+            return total;
         }
 
         private static float CalculateHeatCapacity(CombatUnitProfile record, CombatProfileFields fields)

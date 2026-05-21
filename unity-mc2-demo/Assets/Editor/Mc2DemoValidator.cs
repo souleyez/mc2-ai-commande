@@ -149,6 +149,36 @@ namespace MC2Demo.EditorTools
                 {
                     throw new InvalidDataException("Combat profile is still fallback-driven: " + unitType);
                 }
+
+                if (profile.Weapons.Length == 0)
+                {
+                    throw new InvalidDataException("Combat profile has no source weapon loadout: " + unitType);
+                }
+
+                if (profile.TotalWeaponWeight <= 0f)
+                {
+                    throw new InvalidDataException("Combat profile has no source weapon weight: " + unitType);
+                }
+
+                if (profile.HeatCapacity <= 0f)
+                {
+                    throw new InvalidDataException("Combat profile has no heat capacity: " + unitType);
+                }
+
+                bool hasWeaponMetrics = false;
+                foreach (CombatWeaponDefinition weapon in profile.Weapons)
+                {
+                    if (weapon != null && weapon.rangeMax > 0f && (weapon.damage > 0f || weapon.damagePerTenSeconds > 0f))
+                    {
+                        hasWeaponMetrics = true;
+                        break;
+                    }
+                }
+
+                if (!hasWeaponMetrics)
+                {
+                    throw new InvalidDataException("Combat profile has no weapon range/damage metrics: " + unitType);
+                }
             }
         }
 
