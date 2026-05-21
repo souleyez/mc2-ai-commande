@@ -299,3 +299,7 @@ After confirmation, the squad-selection preview now refreshes into a completed
 state: the joined depot mech is treated as a current mission slot, no longer
 appears as an incoming candidate, and the draft summary reports that the swap
 has already been applied.
+The mech bay now also shows a read-only next-mission handoff preview built
+from the `availableForMission` roster. It can include the joined depot mech
+after a confirmed swap, but it does not restart or mutate the active combat
+mission yet.

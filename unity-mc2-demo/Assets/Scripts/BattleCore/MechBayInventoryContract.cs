@@ -328,6 +328,21 @@ namespace MC2Demo.BattleCore
         public string IncomingDisplayName { get; internal set; }
     }
 
+    public sealed class MechBayMissionHandoffPreview
+    {
+        public bool InventoryChanged { get; internal set; }
+        public bool ReadyForFutureLaunch { get; internal set; }
+        public bool LaunchEnabled { get; internal set; }
+        public bool IncludesDepotMissionSlot { get; internal set; }
+        public int MissionSlotCount { get; internal set; }
+        public string Status { get; internal set; }
+        public string LaunchStatus { get; internal set; }
+        public string LaunchRequirements { get; internal set; }
+        public string Summary { get; internal set; }
+        public string PreviewNote { get; internal set; }
+        public MechBaySquadSelectionSlot[] MissionSlots { get; internal set; }
+    }
+
     public sealed class MechBayReceiptItemDefinition
     {
         public string itemId;
@@ -1342,6 +1357,97 @@ namespace MC2Demo.BattleCore
             }
 
             return "Stage " + SlotName(incoming) + " over " + SlotName(outgoing) + " for confirmation";
+        }
+    }
+
+    public static class MechBayMissionHandoffPreviewService
+    {
+        public static MechBayMissionHandoffPreview BuildPreview(MechBayInventoryContract inventory)
+        {
+            MechBayOwnedRosterEntry[] roster = MechBayOwnedRosterService.BuildRosterPreview(inventory);
+            List<MechBaySquadSelectionSlot> missionSlots = new();
+            bool includesDepotMissionSlot = false;
+            for (int index = 0; index < roster.Length; index++)
+            {
+                MechBayOwnedRosterEntry entry = roster[index];
+                if (entry == null || !entry.availableForMission)
+                {
+                    continue;
+                }
+
+                includesDepotMissionSlot = includesDepotMissionSlot || entry.isWarehouseMech;
+                missionSlots.Add(SlotFromRoster(entry));
+            }
+
+            bool ready = missionSlots.Count > 0;
+            return new MechBayMissionHandoffPreview
+            {
+                InventoryChanged = false,
+                ReadyForFutureLaunch = ready,
+                LaunchEnabled = false,
+                IncludesDepotMissionSlot = includesDepotMissionSlot,
+                MissionSlotCount = missionSlots.Count,
+                Status = ready ? "Future mission roster ready" : "No mission roster ready",
+                LaunchStatus = LaunchStatus(ready, includesDepotMissionSlot),
+                LaunchRequirements = ready ? "Future mission launch hook" : "Need available mission slot",
+                Summary = Summary(missionSlots, includesDepotMissionSlot),
+                PreviewNote = "Preview only: current battle state unchanged",
+                MissionSlots = missionSlots.ToArray()
+            };
+        }
+
+        private static MechBaySquadSelectionSlot SlotFromRoster(MechBayOwnedRosterEntry entry)
+        {
+            return new MechBaySquadSelectionSlot
+            {
+                ownedMechId = entry.ownedMechId,
+                unitType = entry.unitType,
+                chassisId = entry.chassisId,
+                displayName = string.IsNullOrWhiteSpace(entry.displayName) ? entry.unitType : entry.displayName,
+                activeLoadoutId = entry.activeLoadoutId,
+                pilotDisplayName = entry.pilotDisplayName,
+                conditionPercent = entry.conditionPercent,
+                selectionStatus = entry.deploymentStatus
+            };
+        }
+
+        private static string LaunchStatus(bool ready, bool includesDepotMissionSlot)
+        {
+            if (!ready)
+            {
+                return "Launch unavailable";
+            }
+
+            return includesDepotMissionSlot ? "Launch preview includes depot mech" : "Launch preview uses current squad";
+        }
+
+        private static string Summary(List<MechBaySquadSelectionSlot> missionSlots, bool includesDepotMissionSlot)
+        {
+            if (missionSlots == null || missionSlots.Count == 0)
+            {
+                return "No available mission slots";
+            }
+
+            string text = "Next mission roster: ";
+            int count = Math.Min(3, missionSlots.Count);
+            for (int index = 0; index < count; index++)
+            {
+                if (index > 0)
+                {
+                    text += "; ";
+                }
+
+                MechBaySquadSelectionSlot slot = missionSlots[index];
+                string name = string.IsNullOrWhiteSpace(slot?.displayName) ? slot?.unitType ?? "Mech" : slot.displayName;
+                text += name;
+            }
+
+            if (missionSlots.Count > count)
+            {
+                text += " +" + (missionSlots.Count - count).ToString(CultureInfo.InvariantCulture);
+            }
+
+            return includesDepotMissionSlot ? text + "  depot included" : text;
         }
     }
 

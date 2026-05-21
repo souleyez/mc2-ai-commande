@@ -2617,7 +2617,12 @@ namespace MC2Demo.Presentation
             GUI.Label(
                 new Rect(x, y + 126f, width, 18f),
                 "Roster " + TruncateText(OwnedRosterText(roster), 62));
-            DrawOwnedRosterDetail(x, y + 148f, width, roster, pilotHirePreview);
+            MechBayMissionHandoffPreview handoffPreview =
+                MechBayMissionHandoffPreviewService.BuildPreview(demoInventory);
+            GUI.Label(
+                new Rect(x, y + 148f, width, 18f),
+                "Next Mission " + TruncateText(MissionHandoffPreviewText(handoffPreview), 58));
+            DrawOwnedRosterDetail(x, y + 170f, width, roster, pilotHirePreview);
         }
 
         private void DrawLoadoutUnit(UnitState unit, float x, float y, float width)
@@ -2813,6 +2818,22 @@ namespace MC2Demo.Presentation
             }
 
             return text;
+        }
+
+        private static string MissionHandoffPreviewText(MechBayMissionHandoffPreview preview)
+        {
+            if (preview == null)
+            {
+                return "handoff unavailable";
+            }
+
+            string launch = string.IsNullOrWhiteSpace(preview.LaunchStatus) ? "Launch preview unavailable" : preview.LaunchStatus;
+            string summary = string.IsNullOrWhiteSpace(preview.Summary) ? "No available mission slots" : preview.Summary;
+            return preview.MissionSlotCount.ToString(CultureInfo.InvariantCulture)
+                + " slots  "
+                + TruncateText(summary, 38)
+                + "  "
+                + launch;
         }
 
         private static string WeaponShopPreviewText(MechBayWeaponShopPreview preview)

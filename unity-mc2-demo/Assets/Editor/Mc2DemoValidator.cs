@@ -1068,6 +1068,37 @@ namespace MC2Demo.EditorTools
                 + preview.InventoryChanged;
         }
 
+        private static string MissionHandoffDebugText(MechBayMissionHandoffPreview preview)
+        {
+            if (preview == null)
+            {
+                return "null preview";
+            }
+
+            return "status="
+                + (preview.Status ?? "null")
+                + ", ready="
+                + preview.ReadyForFutureLaunch
+                + ", launch="
+                + preview.LaunchEnabled
+                + "/"
+                + (preview.LaunchStatus ?? "null")
+                + "/"
+                + (preview.LaunchRequirements ?? "null")
+                + ", slots="
+                + preview.MissionSlotCount
+                + "/"
+                + (preview.MissionSlots?.Length ?? -1)
+                + ", depot="
+                + preview.IncludesDepotMissionSlot
+                + ", summary="
+                + (preview.Summary ?? "null")
+                + ", note="
+                + (preview.PreviewNote ?? "null")
+                + ", changed="
+                + preview.InventoryChanged;
+        }
+
         private static string SquadDraftDebugText(MechBaySquadSelectionDraftState draft)
         {
             if (draft == null)
@@ -2550,6 +2581,8 @@ namespace MC2Demo.EditorTools
 
             MechBaySquadSelectionPreview lockedSquadPreview =
                 MechBaySquadSelectionPreviewService.BuildPreview(receiptInventory);
+            MechBayMissionHandoffPreview lockedHandoffPreview =
+                MechBayMissionHandoffPreviewService.BuildPreview(receiptInventory);
             if (lockedSquadPreview == null
                 || lockedSquadPreview.InventoryChanged
                 || lockedSquadPreview.Status != "No depot candidates ready"
@@ -2576,6 +2609,26 @@ namespace MC2Demo.EditorTools
                 throw new InvalidDataException(
                     "Expected starter squad-selection preview to list mission slots and hide locked depot mechs. Got "
                     + SquadPreviewDebugText(lockedSquadPreview));
+            }
+
+            if (lockedHandoffPreview == null
+                || lockedHandoffPreview.InventoryChanged
+                || !lockedHandoffPreview.ReadyForFutureLaunch
+                || lockedHandoffPreview.LaunchEnabled
+                || lockedHandoffPreview.IncludesDepotMissionSlot
+                || lockedHandoffPreview.MissionSlotCount != lockedSquadPreview.MissionSlotCount
+                || lockedHandoffPreview.MissionSlots == null
+                || lockedHandoffPreview.MissionSlots.Length != lockedHandoffPreview.MissionSlotCount
+                || lockedHandoffPreview.Status != "Future mission roster ready"
+                || lockedHandoffPreview.LaunchStatus != "Launch preview uses current squad"
+                || lockedHandoffPreview.LaunchRequirements != "Future mission launch hook"
+                || lockedHandoffPreview.PreviewNote != "Preview only: current battle state unchanged"
+                || !lockedHandoffPreview.Summary.Contains("Next mission roster:", StringComparison.Ordinal)
+                || ContainsSquadSlot(lockedHandoffPreview.MissionSlots, assembledRaven.ownedMechId))
+            {
+                throw new InvalidDataException(
+                    "Expected mission handoff preview to expose only current available mission slots before depot swap. Got "
+                    + MissionHandoffDebugText(lockedHandoffPreview));
             }
 
             MechBaySquadSelectionDraftState lockedSquadDraft =
@@ -2853,6 +2906,8 @@ namespace MC2Demo.EditorTools
                 MechBaySquadSelectionPreviewService.BuildPreview(receiptInventory);
             MechBaySquadSelectionDraftState squadPostApplyDraft =
                 MechBaySquadSelectionPreviewService.BuildDraftState(receiptInventory, null, null);
+            MechBayMissionHandoffPreview squadPostApplyHandoff =
+                MechBayMissionHandoffPreviewService.BuildPreview(receiptInventory);
             if (squadApply == null
                 || !squadApply.Accepted
                 || !squadApply.InventoryChanged
@@ -2911,6 +2966,28 @@ namespace MC2Demo.EditorTools
                     + SquadPreviewDebugText(squadPostApplyPreview)
                     + " / "
                     + SquadDraftDebugText(squadPostApplyDraft));
+            }
+
+            if (squadPostApplyHandoff == null
+                || squadPostApplyHandoff.InventoryChanged
+                || !squadPostApplyHandoff.ReadyForFutureLaunch
+                || squadPostApplyHandoff.LaunchEnabled
+                || !squadPostApplyHandoff.IncludesDepotMissionSlot
+                || squadPostApplyHandoff.MissionSlotCount != squadPostApplyPreview.MissionSlotCount
+                || squadPostApplyHandoff.MissionSlots == null
+                || squadPostApplyHandoff.MissionSlots.Length != squadPostApplyHandoff.MissionSlotCount
+                || squadPostApplyHandoff.Status != "Future mission roster ready"
+                || squadPostApplyHandoff.LaunchStatus != "Launch preview includes depot mech"
+                || squadPostApplyHandoff.LaunchRequirements != "Future mission launch hook"
+                || squadPostApplyHandoff.PreviewNote != "Preview only: current battle state unchanged"
+                || !squadPostApplyHandoff.Summary.Contains("Next mission roster:", StringComparison.Ordinal)
+                || !squadPostApplyHandoff.Summary.Contains("depot included", StringComparison.Ordinal)
+                || !ContainsSquadSlot(squadPostApplyHandoff.MissionSlots, assembledRaven.ownedMechId)
+                || ContainsSquadSlot(squadPostApplyHandoff.MissionSlots, selectedOutgoingSlot.ownedMechId))
+            {
+                throw new InvalidDataException(
+                    "Expected mission handoff preview to consume the refreshed availableForMission roster without launching a new battle. Got "
+                    + MissionHandoffDebugText(squadPostApplyHandoff));
             }
 
             BattleMission defeat = new(MakeResultContract(completeOnStart: false), resultProfiles);
