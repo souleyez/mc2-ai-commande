@@ -326,9 +326,9 @@ namespace MC2Demo.EditorTools
                     throw new InvalidDataException("Projected loadout heat does not match source heat for " + unitType);
                 }
 
-                if (Math.Abs(preview.Validation.TotalWeight - profile.TotalWeaponWeight) > 0.001f)
+                if (preview.Validation.TotalWeight + 0.001f < profile.TotalWeaponWeight)
                 {
-                    throw new InvalidDataException("Projected loadout weight does not match source weight for " + unitType);
+                    throw new InvalidDataException("Projected loadout weight dropped below source weapon weight for " + unitType);
                 }
 
                 if (Math.Abs(preview.HeatLimit - profile.HeatCapacity) > 0.001f
@@ -344,22 +344,22 @@ namespace MC2Demo.EditorTools
                 }
 
                 enabledWeapons[0] = false;
-                int disabledWeaponCellCount = CountPreviewCellsForWeapon(preview, 0);
                 CombatLoadoutPreview disabledPreview = CombatLoadoutPreviewBuilder.Build(unitType, profile, enabledWeapons);
-                if (disabledPreview.Validation.OccupiedGridCells != preview.Validation.OccupiedGridCells - disabledWeaponCellCount)
-                {
-                    throw new InvalidDataException("Projected disabled loadout did not remove the disabled weapon shape for " + unitType);
-                }
-
                 if (HasPreviewCellForWeapon(disabledPreview, 0))
                 {
                     throw new InvalidDataException("Projected disabled loadout still exposes disabled weapon cell for " + unitType);
                 }
 
-                if (disabledPreview.Validation.TotalHeat >= preview.Validation.TotalHeat
-                    || disabledPreview.Validation.TotalWeight >= preview.Validation.TotalWeight)
+                if (disabledPreview.Validation.TotalHeat >= preview.Validation.TotalHeat)
                 {
-                    throw new InvalidDataException("Projected disabled loadout did not reduce heat and weight for " + unitType);
+                    throw new InvalidDataException("Projected disabled loadout did not reduce heat for " + unitType);
+                }
+
+                if (preview.Validation.TotalArmorHardnessBonus <= 0f
+                    && preview.Validation.TotalHeatDissipationBonus <= 0f
+                    && preview.Validation.TotalWeight < preview.WeightLimit)
+                {
+                    throw new InvalidDataException("Projected loadout did not add any filler item despite spare load for " + unitType);
                 }
 
                 CombatLoadoutPreviewItem firstItem = preview.Items[0];
@@ -507,6 +507,12 @@ namespace MC2Demo.EditorTools
             if (Math.Abs(stockResult.TotalHeat - 8f) > 0.001f || Math.Abs(stockResult.TotalWeight - 11f) > 0.001f)
             {
                 throw new InvalidDataException("Unexpected synthetic loadout heat/weight totals.");
+            }
+
+            if (Math.Abs(stockResult.TotalArmorHardnessBonus - 3f) > 0.001f
+                || Math.Abs(stockResult.TotalHeatDissipationBonus - 2f) > 0.001f)
+            {
+                throw new InvalidDataException("Unexpected synthetic loadout armor/heat-sink totals.");
             }
 
             AssertLoadoutValid(

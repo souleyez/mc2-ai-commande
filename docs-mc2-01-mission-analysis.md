@@ -210,4 +210,6 @@ uses placeholder multi-cell shapes for source weapon families such as LRM racks,
 SRM packs, autocannons, PPCs, and large lasers. It also supports temporary weapon
 on/off toggles and projected weapon nudges, proving that fitting edits can
 immediately recompute heat, load, grid occupancy, overlap, bounds, and validator
-status without touching live battle damage yet.
+status without touching live battle damage yet. Spare load is now projected into
+free cells as simple armor plates and heat sinks, exposing hardness and cooling
+totals before full inventory editing exists.

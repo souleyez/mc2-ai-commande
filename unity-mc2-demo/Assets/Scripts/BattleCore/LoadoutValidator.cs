@@ -11,6 +11,8 @@ namespace MC2Demo.BattleCore
         public string[] Errors => errors.ToArray();
         public float TotalHeat { get; internal set; }
         public float TotalWeight { get; internal set; }
+        public float TotalArmorHardnessBonus { get; internal set; }
+        public float TotalHeatDissipationBonus { get; internal set; }
         public int OccupiedGridCells { get; internal set; }
 
         internal void AddError(string error)
@@ -75,6 +77,8 @@ namespace MC2Demo.BattleCore
 
                 result.TotalHeat += Math.Max(0f, item.heat);
                 result.TotalWeight += Math.Max(0f, item.weight);
+                result.TotalArmorHardnessBonus += Math.Max(0f, item.armorHardnessBonus);
+                result.TotalHeatDissipationBonus += Math.Max(0f, item.heatDissipationBonus);
 
                 if (!string.IsNullOrEmpty(placedItem.equipmentSlotId))
                 {

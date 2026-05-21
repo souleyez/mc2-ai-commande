@@ -2461,13 +2461,13 @@ namespace MC2Demo.Presentation
             y += 30f;
             int unitCount = CountPlayerUnits();
             Rect viewport = new(x, y, width, panel.yMax - y - 12f);
-            Rect content = new(0f, 0f, width - 20f, Mathf.Max(viewport.height, unitCount * 304f));
+            Rect content = new(0f, 0f, width - 20f, Mathf.Max(viewport.height, unitCount * 356f));
             loadoutScroll = GUI.BeginScrollView(viewport, loadoutScroll, content);
             float itemY = 0f;
             foreach (UnitState unit in mission.PlayerUnits())
             {
                 DrawLoadoutUnit(unit, 0f, itemY, content.width);
-                itemY += 304f;
+                itemY += 356f;
             }
 
             GUI.EndScrollView();
@@ -2475,7 +2475,7 @@ namespace MC2Demo.Presentation
 
         private void DrawLoadoutUnit(UnitState unit, float x, float y, float width)
         {
-            Rect card = new(x, y, width, 292f);
+            Rect card = new(x, y, width, 344f);
             GUI.Box(card, unit.UnitType + "  " + unit.Id);
 
             float left = x + 12f;
@@ -2590,13 +2590,14 @@ namespace MC2Demo.Presentation
                         ? new Color(0.10f, 0.12f, 0.13f, 1f)
                         : cellStack > 1
                             ? new Color(1f, 0.22f, 0.16f, 1f)
-                            : WeaponColor(occupiedCell.WeaponType);
+                            : LoadoutCellColor(occupiedCell);
                     fill.a = 1f;
                     DrawColorRect(cell, fill);
                     DrawColorRect(new Rect(cell.x, cell.y, cell.width, 1f), new Color(0.35f, 0.42f, 0.44f, 0.95f));
                     DrawColorRect(new Rect(cell.x, cell.yMax - 1f, cell.width, 1f), new Color(0.02f, 0.025f, 0.03f, 0.95f));
 
                     if (occupiedCell != null
+                        && occupiedCell.SourceWeaponIndex >= 0
                         && Event.current.type == EventType.MouseDown
                         && Event.current.button == 0
                         && cell.Contains(Event.current.mousePosition))
@@ -2610,8 +2611,8 @@ namespace MC2Demo.Presentation
                     {
                         GUI.Label(
                             new Rect(cell.x + 4f, cell.y + 3f, cell.width - 6f, cell.height - 4f),
-                            cellStack > 1 ? "!" : (occupiedCell.SourceWeaponIndex + 1).ToString(CultureInfo.InvariantCulture));
-                        if (occupiedCell.SourceWeaponIndex == selectedWeaponIndex)
+                            cellStack > 1 ? "!" : LoadoutCellLabel(occupiedCell));
+                        if (occupiedCell.SourceWeaponIndex >= 0 && occupiedCell.SourceWeaponIndex == selectedWeaponIndex)
                         {
                             DrawRectBorder(cell, new Color(1f, 0.95f, 0.22f, 1f), 2f);
                         }
@@ -2622,7 +2623,11 @@ namespace MC2Demo.Presentation
             GUI.Label(
                 new Rect(x + gridWidth + 10f, y + 2f, Mathf.Max(120f, width - gridWidth - 10f), 18f),
                 "Slots " + preview.Validation.OccupiedGridCells + "/" + preview.GridCapacity);
-            DrawLoadoutPlacementControls(unit, preview, x + gridWidth + 10f, y + 24f, Mathf.Max(160f, width - gridWidth - 10f));
+            GUI.Label(
+                new Rect(x + gridWidth + 10f, y + 20f, Mathf.Max(120f, width - gridWidth - 10f), 18f),
+                "Armor +" + FormatDecimal(preview.Validation.TotalArmorHardnessBonus)
+                + "  Sink +" + FormatDecimal(preview.Validation.TotalHeatDissipationBonus));
+            DrawLoadoutPlacementControls(unit, preview, x + gridWidth + 10f, y + 42f, Mathf.Max(160f, width - gridWidth - 10f));
             return Mathf.Max(gridHeight + 2f, 104f);
         }
 
@@ -2639,6 +2644,48 @@ namespace MC2Demo.Presentation
             }
 
             return null;
+        }
+
+        private static Color LoadoutCellColor(CombatLoadoutPreviewGridCell cell)
+        {
+            if (cell == null)
+            {
+                return new Color(0.10f, 0.12f, 0.13f, 1f);
+            }
+
+            if (cell.Category == LoadoutItemCategory.ArmorPlate)
+            {
+                return new Color(0.40f, 0.58f, 0.52f, 1f);
+            }
+
+            if (cell.Category == LoadoutItemCategory.HeatSink)
+            {
+                return new Color(0.28f, 0.58f, 0.95f, 1f);
+            }
+
+            return WeaponColor(cell.WeaponType);
+        }
+
+        private static string LoadoutCellLabel(CombatLoadoutPreviewGridCell cell)
+        {
+            if (cell == null)
+            {
+                return "";
+            }
+
+            if (cell.Category == LoadoutItemCategory.ArmorPlate)
+            {
+                return "A";
+            }
+
+            if (cell.Category == LoadoutItemCategory.HeatSink)
+            {
+                return "H";
+            }
+
+            return cell.SourceWeaponIndex >= 0
+                ? (cell.SourceWeaponIndex + 1).ToString(CultureInfo.InvariantCulture)
+                : "+";
         }
 
         private static int CountLoadoutCellsAt(CombatLoadoutPreview preview, int x, int y)

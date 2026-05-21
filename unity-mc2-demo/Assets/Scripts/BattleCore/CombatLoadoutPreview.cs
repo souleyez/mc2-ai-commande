@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace MC2Demo.BattleCore
 {
@@ -41,6 +42,7 @@ namespace MC2Demo.BattleCore
         public int GridY { get; }
         public string ItemId { get; }
         public string DisplayName { get; }
+        public string Category { get; }
         public string WeaponType { get; }
 
         internal CombatLoadoutPreviewItem(
@@ -49,6 +51,7 @@ namespace MC2Demo.BattleCore
             int gridY,
             string itemId,
             string displayName,
+            string category,
             string weaponType)
         {
             SourceWeaponIndex = sourceWeaponIndex;
@@ -56,6 +59,7 @@ namespace MC2Demo.BattleCore
             GridY = gridY;
             ItemId = itemId;
             DisplayName = displayName;
+            Category = category;
             WeaponType = weaponType;
         }
     }
@@ -67,6 +71,7 @@ namespace MC2Demo.BattleCore
         public int SourceWeaponIndex { get; }
         public string ItemId { get; }
         public string DisplayName { get; }
+        public string Category { get; }
         public string WeaponType { get; }
 
         internal CombatLoadoutPreviewGridCell(
@@ -75,6 +80,7 @@ namespace MC2Demo.BattleCore
             int sourceWeaponIndex,
             string itemId,
             string displayName,
+            string category,
             string weaponType)
         {
             X = x;
@@ -82,6 +88,7 @@ namespace MC2Demo.BattleCore
             SourceWeaponIndex = sourceWeaponIndex;
             ItemId = itemId;
             DisplayName = displayName;
+            Category = category;
             WeaponType = weaponType;
         }
     }
@@ -96,6 +103,11 @@ namespace MC2Demo.BattleCore
     public static class CombatLoadoutPreviewBuilder
     {
         private const int ProjectedGridWidth = 4;
+        private const int ProjectedFillerRows = 1;
+        private const float ProjectedArmorPlateWeight = 0.5f;
+        private const float ProjectedArmorHardnessBonus = 1f;
+        private const float ProjectedHeatSinkWeight = 1f;
+        private const float ProjectedHeatDissipationBonus = 1.5f;
 
         public static CombatLoadoutPreview Build(string chassisId, CombatProfile profile)
         {
@@ -117,6 +129,7 @@ namespace MC2Demo.BattleCore
             LoadoutGridCell[][] weaponShapes = BuildWeaponShapes(weapons);
             LoadoutPlacedItemDefinition[] sourcePlacements = PackWeaponShapes(weaponShapes, ProjectedGridWidth, out int gridHeight);
             ApplyPlacementOverrides(sourcePlacements, placementOverrides);
+            gridHeight += ProjectedFillerRows;
             int gridCapacity = ProjectedGridWidth * gridHeight;
             float heatCapacity = profile == null ? 0f : profile.HeatCapacity;
             float heatPerShot = profile == null ? 0f : profile.HeatPerShot;
@@ -126,13 +139,12 @@ namespace MC2Demo.BattleCore
             float weightLimit = loadLimit > 0f ? loadLimit : Math.Max(1f, totalWeaponWeight);
             string safeChassisId = string.IsNullOrEmpty(chassisId) ? "source-profile" : chassisId;
 
-            int enabledCount = CountEnabledWeapons(weapons.Length, enabledWeapons);
-            LoadoutItemDefinition[] items = new LoadoutItemDefinition[enabledCount];
-            LoadoutPlacedItemDefinition[] placedItems = new LoadoutPlacedItemDefinition[enabledCount];
-            CombatLoadoutPreviewGridCell[] occupiedCells = new CombatLoadoutPreviewGridCell[CountEnabledShapeCells(weaponShapes, enabledWeapons)];
-            CombatLoadoutPreviewItem[] previewItems = new CombatLoadoutPreviewItem[enabledCount];
-            int itemIndex = 0;
-            int cellIndex = 0;
+            List<LoadoutItemDefinition> items = new();
+            List<LoadoutPlacedItemDefinition> placedItems = new();
+            List<CombatLoadoutPreviewGridCell> occupiedCells = new();
+            List<CombatLoadoutPreviewItem> previewItems = new();
+            bool[,] occupiedInBounds = new bool[ProjectedGridWidth, gridHeight];
+            float projectedWeight = 0f;
             for (int index = 0; index < weapons.Length; index++)
             {
                 if (!IsWeaponEnabled(enabledWeapons, index))
@@ -142,7 +154,7 @@ namespace MC2Demo.BattleCore
 
                 CombatWeaponDefinition weapon = weapons[index];
                 string itemId = "source-weapon-" + index;
-                items[itemIndex] = new LoadoutItemDefinition
+                LoadoutItemDefinition item = new()
                 {
                     itemId = itemId,
                     displayName = string.IsNullOrEmpty(weapon?.name) ? itemId : weapon.name,
@@ -156,34 +168,59 @@ namespace MC2Demo.BattleCore
                     cooldown = weapon?.recycleTime ?? 0f,
                     shapeCells = weaponShapes[index]
                 };
+                items.Add(item);
 
-                placedItems[itemIndex] = new LoadoutPlacedItemDefinition
+                placedItems.Add(new LoadoutPlacedItemDefinition
                 {
                     itemId = itemId,
                     gridX = sourcePlacements[index].gridX,
                     gridY = sourcePlacements[index].gridY
-                };
-                previewItems[itemIndex] = new CombatLoadoutPreviewItem(
+                });
+                previewItems.Add(new CombatLoadoutPreviewItem(
                     index,
                     sourcePlacements[index].gridX,
                     sourcePlacements[index].gridY,
                     itemId,
                     string.IsNullOrEmpty(weapon?.name) ? itemId : weapon.name,
-                    weapon?.type);
+                    LoadoutItemCategory.Weapon,
+                    weapon?.type));
                 foreach (LoadoutGridCell shapeCell in weaponShapes[index])
                 {
-                    occupiedCells[cellIndex] = new CombatLoadoutPreviewGridCell(
-                        sourcePlacements[index].gridX + shapeCell.x,
-                        sourcePlacements[index].gridY + shapeCell.y,
+                    int cellX = sourcePlacements[index].gridX + shapeCell.x;
+                    int cellY = sourcePlacements[index].gridY + shapeCell.y;
+                    occupiedCells.Add(new CombatLoadoutPreviewGridCell(
+                        cellX,
+                        cellY,
                         index,
                         itemId,
                         string.IsNullOrEmpty(weapon?.name) ? itemId : weapon.name,
-                        weapon?.type);
-                    cellIndex++;
+                        LoadoutItemCategory.Weapon,
+                        weapon?.type));
+                    if (IsInsideGrid(cellX, cellY, ProjectedGridWidth, gridHeight))
+                    {
+                        occupiedInBounds[cellX, cellY] = true;
+                    }
                 }
 
-                itemIndex++;
+                projectedWeight += Math.Max(0f, item.weight);
             }
+
+            AddProjectedFillerItems(
+                items,
+                placedItems,
+                previewItems,
+                occupiedCells,
+                occupiedInBounds,
+                gridHeight,
+                weightLimit,
+                projectedWeight,
+                heatPerShot,
+                heatLimit);
+
+            LoadoutItemDefinition[] itemDefinitions = items.ToArray();
+            LoadoutPlacedItemDefinition[] placedItemDefinitions = placedItems.ToArray();
+            CombatLoadoutPreviewItem[] previewItemDefinitions = previewItems.ToArray();
+            CombatLoadoutPreviewGridCell[] occupiedCellDefinitions = occupiedCells.ToArray();
 
             LoadoutContract contract = new()
             {
@@ -203,7 +240,7 @@ namespace MC2Demo.BattleCore
                         }
                     }
                 },
-                itemDefinitions = items,
+                itemDefinitions = itemDefinitions,
                 loadouts = new[]
                 {
                     new LoadoutBuildDefinition
@@ -211,37 +248,113 @@ namespace MC2Demo.BattleCore
                         loadoutId = safeChassisId + "-source",
                         chassisId = safeChassisId,
                         displayName = safeChassisId + " source projection",
-                        placedItems = placedItems
+                        placedItems = placedItemDefinitions
                     }
                 }
             };
 
             LoadoutValidationResult validation = LoadoutValidator.Validate(contract, contract.loadouts[0]);
-            return new CombatLoadoutPreview(validation, gridCapacity, ProjectedGridWidth, gridHeight, occupiedCells, previewItems, heatLimit, weightLimit);
+            return new CombatLoadoutPreview(
+                validation,
+                gridCapacity,
+                ProjectedGridWidth,
+                gridHeight,
+                occupiedCellDefinitions,
+                previewItemDefinitions,
+                heatLimit,
+                weightLimit);
         }
 
-        private static int CountEnabledWeapons(int weaponCount, bool[] enabledWeapons)
+        private static void AddProjectedFillerItems(
+            List<LoadoutItemDefinition> items,
+            List<LoadoutPlacedItemDefinition> placedItems,
+            List<CombatLoadoutPreviewItem> previewItems,
+            List<CombatLoadoutPreviewGridCell> occupiedCells,
+            bool[,] occupiedInBounds,
+            int gridHeight,
+            float weightLimit,
+            float projectedWeight,
+            float heatPerShot,
+            float heatLimit)
         {
-            if (enabledWeapons == null)
+            float remainingWeight = weightLimit > 0f ? weightLimit - projectedWeight : 0f;
+            int fillerIndex = 0;
+            int heatSinkCount = 0;
+            bool prefersCooling = heatLimit > 0f && heatPerShot > heatLimit * 0.60f;
+            for (int y = 0; y < gridHeight; y++)
             {
-                return weaponCount;
-            }
-
-            int count = 0;
-            for (int index = 0; index < weaponCount; index++)
-            {
-                if (IsWeaponEnabled(enabledWeapons, index))
+                for (int x = 0; x < ProjectedGridWidth; x++)
                 {
-                    count++;
+                    if (occupiedInBounds[x, y])
+                    {
+                        continue;
+                    }
+
+                    bool useHeatSink = remainingWeight >= ProjectedHeatSinkWeight
+                        && heatSinkCount < 2
+                        && (prefersCooling || fillerIndex % 4 == 0);
+                    if (!useHeatSink && remainingWeight < ProjectedArmorPlateWeight)
+                    {
+                        return;
+                    }
+
+                    string category = useHeatSink ? LoadoutItemCategory.HeatSink : LoadoutItemCategory.ArmorPlate;
+                    string itemId = "projected-" + (useHeatSink ? "heat-sink-" : "armor-plate-") + fillerIndex;
+                    string displayName = useHeatSink ? "Projected Heat Sink" : "Projected Armor Plate";
+                    float itemWeight = useHeatSink ? ProjectedHeatSinkWeight : ProjectedArmorPlateWeight;
+                    items.Add(new LoadoutItemDefinition
+                    {
+                        itemId = itemId,
+                        displayName = displayName,
+                        category = category,
+                        weight = itemWeight,
+                        armorHardnessBonus = useHeatSink ? 0f : ProjectedArmorHardnessBonus,
+                        heatDissipationBonus = useHeatSink ? ProjectedHeatDissipationBonus : 0f,
+                        shapeCells = SingleCellShape()
+                    });
+                    placedItems.Add(new LoadoutPlacedItemDefinition
+                    {
+                        itemId = itemId,
+                        gridX = x,
+                        gridY = y
+                    });
+                    int fillerSourceIndex = -1 - fillerIndex;
+                    previewItems.Add(new CombatLoadoutPreviewItem(
+                        fillerSourceIndex,
+                        x,
+                        y,
+                        itemId,
+                        displayName,
+                        category,
+                        null));
+                    occupiedCells.Add(new CombatLoadoutPreviewGridCell(
+                        x,
+                        y,
+                        fillerSourceIndex,
+                        itemId,
+                        displayName,
+                        category,
+                        null));
+                    occupiedInBounds[x, y] = true;
+                    remainingWeight -= itemWeight;
+                    if (useHeatSink)
+                    {
+                        heatSinkCount++;
+                    }
+
+                    fillerIndex++;
                 }
             }
-
-            return count;
         }
 
         private static bool IsWeaponEnabled(bool[] enabledWeapons, int index)
         {
             return enabledWeapons == null || index >= enabledWeapons.Length || enabledWeapons[index];
+        }
+
+        private static bool IsInsideGrid(int x, int y, int width, int height)
+        {
+            return x >= 0 && y >= 0 && x < width && y < height;
         }
 
         private static void ApplyPlacementOverrides(
@@ -266,20 +379,6 @@ namespace MC2Demo.BattleCore
                 placements[placementOverride.sourceWeaponIndex].gridX = placementOverride.gridX;
                 placements[placementOverride.sourceWeaponIndex].gridY = placementOverride.gridY;
             }
-        }
-
-        private static int CountEnabledShapeCells(LoadoutGridCell[][] weaponShapes, bool[] enabledWeapons)
-        {
-            int count = 0;
-            for (int index = 0; index < weaponShapes.Length; index++)
-            {
-                if (IsWeaponEnabled(enabledWeapons, index))
-                {
-                    count += Math.Max(1, weaponShapes[index]?.Length ?? 0);
-                }
-            }
-
-            return count;
         }
 
         private static LoadoutGridCell[][] BuildWeaponShapes(CombatWeaponDefinition[] weapons)
