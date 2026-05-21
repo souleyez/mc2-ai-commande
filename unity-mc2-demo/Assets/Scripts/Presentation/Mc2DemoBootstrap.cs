@@ -2524,7 +2524,7 @@ namespace MC2Demo.Presentation
 
             y += 30f;
             DrawMechBayInventorySummary(x, y, width);
-            y += 46f;
+            y += 66f;
 
             int unitCount = CountPlayerUnits();
             Rect viewport = new(x, y, width, panel.yMax - y - 12f);
@@ -2570,6 +2570,9 @@ namespace MC2Demo.Presentation
                 + "  Armor " + InventoryUseText(availability?.Usage?.ArmorPlateCount ?? 0, availability?.AvailableArmorPlateCount ?? summary.ArmorPlateCount)
                 + "  Sinks " + InventoryUseText(availability?.Usage?.HeatSinkCount ?? 0, availability?.AvailableHeatSinkCount ?? summary.HeatSinkCount)
                 + "  Frags " + summary.MechFragmentCount.ToString(CultureInfo.InvariantCulture));
+            GUI.Label(
+                new Rect(x, y + 40f, width, 18f),
+                "Assembly " + AssemblyPreviewText(MechBayAssemblyPreviewService.BestAssemblyProgress(demoInventory)));
         }
 
         private void DrawLoadoutUnit(UnitState unit, float x, float y, float width)
@@ -2699,6 +2702,26 @@ namespace MC2Demo.Presentation
             return used.ToString(CultureInfo.InvariantCulture)
                 + "/"
                 + available.ToString(CultureInfo.InvariantCulture);
+        }
+
+        private static string AssemblyPreviewText(MechBayAssemblyProgress progress)
+        {
+            if (progress == null)
+            {
+                return "No fragments";
+            }
+
+            string text = progress.displayName
+                + " "
+                + progress.fragments.ToString(CultureInfo.InvariantCulture)
+                + "/"
+                + progress.requiredFragments.ToString(CultureInfo.InvariantCulture);
+            if (progress.canAssemble)
+            {
+                text += " ready";
+            }
+
+            return text;
         }
 
         private void DrawMechConditionLine(UnitState unit, float left, float right, float y, float width)
@@ -3692,18 +3715,18 @@ namespace MC2Demo.Presentation
                 return;
             }
 
-            Rect panel = new((Screen.width - 400f) * 0.5f, 72f, 400f, 292f);
+            Rect panel = new((Screen.width - 400f) * 0.5f, 72f, 400f, 316f);
             GUI.Box(panel, MissionResultText());
             GUI.Label(new Rect(panel.x + 18f, panel.y + 36f, panel.width - 36f, 42f), mission.ResultReason);
             DrawMissionResultSummary(panel, mission.ResultSummary);
 
-            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 232f, 172f, 30f), "Restart"))
+            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 256f, 172f, 30f), "Restart"))
             {
                 Time.timeScale = 1f;
                 SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
             }
 
-            if (GUI.Button(new Rect(panel.x + 210f, panel.y + 232f, 172f, 30f), "End Demo"))
+            if (GUI.Button(new Rect(panel.x + 210f, panel.y + 256f, 172f, 30f), "End Demo"))
             {
                 Application.Quit(0);
             }
@@ -3749,6 +3772,11 @@ namespace MC2Demo.Presentation
                     "Receipt Token " + SignedTokens(missionReceipt.TokenDelta)
                     + "    Frags +" + missionReceipt.SalvageFragmentCount
                     + "    Balance " + FormatTokens(missionReceipt.TokenBalance));
+                y += 22f;
+
+                GUI.Label(
+                    new Rect(panel.x + 18f, y, panel.width - 36f, 20f),
+                    "Assembly " + AssemblyPreviewText(MechBayAssemblyPreviewService.BestAssemblyProgress(demoInventory)));
                 y += 22f;
             }
 

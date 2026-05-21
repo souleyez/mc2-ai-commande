@@ -234,3 +234,5 @@ spends local tokens to restore structure and damaged sections.
 Mission end now also creates a local inventory receipt: completed bounty points
 increase the demo token balance, while destroyed enemy unit labels become
 mech-fragment stacks for later assembly rules.
+Those fragment stacks now feed a read-only starter assembly preview that shows
+the nearest mech type, current fragment count, demo threshold, and ready state.

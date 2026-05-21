@@ -2239,6 +2239,31 @@ namespace MC2Demo.EditorTools
                 throw new InvalidDataException("Expected mission receipt to keep inventory valid and expose mech fragments.");
             }
 
+            MechBayAssemblyProgress[] assemblyProgress = MechBayAssemblyPreviewService.BuildAssemblyPreview(receiptInventory);
+            MechBayAssemblyProgress bestProgress = MechBayAssemblyPreviewService.BestAssemblyProgress(receiptInventory);
+            if (assemblyProgress.Length != 2
+                || bestProgress == null
+                || bestProgress.unitType != "Raven"
+                || bestProgress.fragments != 2
+                || bestProgress.requiredFragments != MechBayAssemblyPreviewService.DemoRequiredFragmentsPerMech
+                || bestProgress.canAssemble)
+            {
+                throw new InvalidDataException("Expected starter assembly preview to show Raven fragment progress below threshold.");
+            }
+
+            MechBayMissionReceiptService.ApplyMissionReceipt(
+                receiptInventory,
+                new MissionResultSummary
+                {
+                    destroyedEnemyUnitLabels = new[] { "enemy-4 Raven" },
+                    salvageClaimCount = 1
+                });
+            bestProgress = MechBayAssemblyPreviewService.BestAssemblyProgress(receiptInventory);
+            if (bestProgress == null || bestProgress.unitType != "Raven" || bestProgress.fragments != 3 || !bestProgress.canAssemble)
+            {
+                throw new InvalidDataException("Expected starter assembly preview to mark complete fragment sets as ready.");
+            }
+
             BattleMission defeat = new(MakeResultContract(completeOnStart: false), resultProfiles);
             for (int tick = 0; tick < 10 && defeat.Result == MissionResultState.InProgress; tick++)
             {

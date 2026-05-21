@@ -144,6 +144,15 @@ namespace MC2Demo.BattleCore
         public int quantity;
     }
 
+    public sealed class MechBayAssemblyProgress
+    {
+        public string unitType { get; internal set; }
+        public string displayName { get; internal set; }
+        public int fragments { get; internal set; }
+        public int requiredFragments { get; internal set; }
+        public bool canAssemble { get; internal set; }
+    }
+
     public static class MechBayInventoryValidator
     {
         public const string Schema = "mc2-mech-bay-inventory-v1";
@@ -733,6 +742,108 @@ namespace MC2Demo.BattleCore
             }
 
             return new string(chars).Trim('-');
+        }
+    }
+
+    public static class MechBayAssemblyPreviewService
+    {
+        public const int DemoRequiredFragmentsPerMech = 3;
+
+        public static MechBayAssemblyProgress[] BuildAssemblyPreview(MechBayInventoryContract inventory)
+        {
+            List<MechBayAssemblyProgress> progress = new();
+            MechBayItemStackDefinition[] itemStacks = inventory?.itemStacks ?? Array.Empty<MechBayItemStackDefinition>();
+            for (int index = 0; index < itemStacks.Length; index++)
+            {
+                MechBayItemStackDefinition stack = itemStacks[index];
+                if (stack == null || stack.category != LoadoutItemCategory.MechFragment || stack.quantity <= 0)
+                {
+                    continue;
+                }
+
+                string unitType = UnitTypeFromFragmentStack(stack);
+                progress.Add(new MechBayAssemblyProgress
+                {
+                    unitType = unitType,
+                    displayName = unitType,
+                    fragments = Math.Max(0, stack.quantity),
+                    requiredFragments = DemoRequiredFragmentsPerMech,
+                    canAssemble = stack.quantity >= DemoRequiredFragmentsPerMech
+                });
+            }
+
+            progress.Sort(CompareAssemblyProgress);
+            return progress.ToArray();
+        }
+
+        public static MechBayAssemblyProgress BestAssemblyProgress(MechBayInventoryContract inventory)
+        {
+            MechBayAssemblyProgress[] progress = BuildAssemblyPreview(inventory);
+            return progress.Length == 0 ? null : progress[0];
+        }
+
+        private static int CompareAssemblyProgress(MechBayAssemblyProgress left, MechBayAssemblyProgress right)
+        {
+            if (left == null || right == null)
+            {
+                return left == null && right == null ? 0 : left == null ? 1 : -1;
+            }
+
+            if (left.canAssemble != right.canAssemble)
+            {
+                return left.canAssemble ? -1 : 1;
+            }
+
+            int fragmentCompare = right.fragments.CompareTo(left.fragments);
+            if (fragmentCompare != 0)
+            {
+                return fragmentCompare;
+            }
+
+            return string.Compare(left.displayName, right.displayName, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static string UnitTypeFromFragmentStack(MechBayItemStackDefinition stack)
+        {
+            string displayName = stack.displayName ?? "";
+            const string Suffix = " Fragment";
+            if (displayName.EndsWith(Suffix, StringComparison.OrdinalIgnoreCase))
+            {
+                return displayName.Substring(0, displayName.Length - Suffix.Length).Trim();
+            }
+
+            string itemId = stack.itemId ?? "";
+            const string Prefix = "fragment-";
+            if (itemId.StartsWith(Prefix, StringComparison.OrdinalIgnoreCase))
+            {
+                return HumanizeItemId(itemId.Substring(Prefix.Length));
+            }
+
+            return string.IsNullOrWhiteSpace(displayName) ? "Unknown" : displayName.Trim();
+        }
+
+        private static string HumanizeItemId(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return "Unknown";
+            }
+
+            string[] parts = value.Split(new[] { '-' }, StringSplitOptions.RemoveEmptyEntries);
+            for (int index = 0; index < parts.Length; index++)
+            {
+                string part = parts[index];
+                if (part.Length > 1)
+                {
+                    parts[index] = char.ToUpperInvariant(part[0]) + part.Substring(1);
+                }
+                else
+                {
+                    parts[index] = part.ToUpperInvariant();
+                }
+            }
+
+            return string.Join(" ", parts);
         }
     }
 }

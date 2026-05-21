@@ -56,6 +56,7 @@ The Unity demo currently supports:
 - starter inventory availability feedback warns on armor plate or heat sink shortages and blocks applying invalid drafts
 - starter mech condition and one-click demo repair spend local token balance and restore damaged mechs
 - starter mission receipt applies completed bounty tokens and salvaged mech fragments to local inventory
+- starter fragment assembly preview shows progress toward the demo mech assembly threshold
 - CLI/AI loop pieces:
   - `-mc2Command`
   - `-mc2AdvanceSeconds`
@@ -369,10 +370,11 @@ Tasks:
 
 ## Current Recommended Next Task
 
-Start with **starter fragment assembly preview**.
+Start with **starter auto-assembly handoff**.
 
 Reason:
 
 - Mission rewards and salvage now enter the local inventory as a receipt.
-- The next low-risk step is to show fragment progress toward auto-assembling a mech, without creating a full crafting system yet.
-- Keep it read-only preview first; shop stock, saved accounts, event drop tables, and multiplayer support still come later.
+- Fragment progress now appears in the mech bay and mission result receipt.
+- The next low-risk step is to convert a ready fragment set into a newly owned starter mech inside the local demo inventory.
+- Keep it local and demo-only first; shop stock, saved accounts, event drop tables, and multiplayer support still come later.
