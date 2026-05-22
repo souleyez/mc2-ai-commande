@@ -67,15 +67,13 @@ Current demo behavior:
 - lets the local squad-selection draft cycle outgoing mission slots and incoming depot candidates
 - applies pending squad swap confirmation by exchanging local mission availability flags
 - refreshes squad-selection status after confirmation so the joined depot mech is no longer shown as a candidate
-- keeps the squad-selection preview visible inside the mech bay and exposes the guarded next-mission Apply handoff there
+- keeps the squad-selection preview visible inside the mech bay and exposes the guarded next-mission Launch handoff there
 - previews the next-mission handoff roster from `availableForMission` without restarting the current battle
-- shows a disabled Launch guard explaining that the future mission restart hook is not wired yet
-- maps the handoff roster into restart dry-run spawn intents without creating a new mission instance
+- shows a player-facing next-mission Ready/Blocked summary with a guarded Launch action and lineup preview
+- maps the handoff roster into restart spawn intents behind the Launch guard
 - supports command-file depot swap smoke actions for preparing a demo depot candidate, applying the swap, and asserting restart identity
-- enables restart Apply only after a validated BattleMission construction path is available
-- previews the future BattleMission restart contract input without instantiating a mission
-- prepares a cloned MissionContract dry run that replaces player spawns while leaving the active mission untouched
-- constructs a throwaway BattleMission dry run from the prepared contract without swapping the active mission
+- enables Launch only after a validated BattleMission construction path is available
+- keeps MissionContract clone and BattleMission construction validation behind that guarded Launch path
 - can restart the active battle by building a replacement BattleMission, immediately disabling old runtime scene roots, and rebuilding Unity views from the guarded path
 - keeps the mech bay open and paused when restart Apply is triggered from the mech bay, while system/CLI restarts return directly to battle
 - shows a post-restart mission-state roster line with active, deployed, ready, repair, held, fit, and unavailable counts

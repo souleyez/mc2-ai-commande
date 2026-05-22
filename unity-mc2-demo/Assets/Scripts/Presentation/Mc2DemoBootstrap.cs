@@ -2893,7 +2893,7 @@ namespace MC2Demo.Presentation
             y += 30f;
             bool showInlineMechBayPreview = showWarehouseDraftFitPreview || showSquadSelectionPreview;
             DrawMechBayInventorySummary(x, y, width, !showInlineMechBayPreview);
-            y += showInlineMechBayPreview ? 326f : 522f;
+            y += showInlineMechBayPreview ? 260f : 456f;
             if (showWarehouseDraftFitPreview)
             {
                 DrawWarehouseDraftFitPreview(x, y, width);
@@ -2970,18 +2970,19 @@ namespace MC2Demo.Presentation
             DrawRosterMissionStateLine(x, y + 148f, width, roster);
             MechBayMissionHandoffPreview handoffPreview =
                 MechBayMissionHandoffPreviewService.BuildPreview(demoInventory);
+            MechBayMissionRestartApplyGuard restartGuard =
+                MechBayMissionHandoffPreviewService.BuildRestartApplyGuard(
+                    demoInventory,
+                    mission?.Contract,
+                    combatProfiles);
             GUI.Label(
                 new Rect(x, y + 170f, width, 18f),
-                "Next Mission " + TruncateText(MissionHandoffPreviewText(handoffPreview), 58));
-            DrawMissionHandoffLaunchGuard(x, y + 192f, width, handoffPreview);
-            DrawMissionRestartDryRun(x, y + 214f, width);
-            DrawMissionRestartApplyGuard(x, y + 236f, width);
-            DrawMissionRestartContractPreview(x, y + 258f, width);
-            DrawMissionRestartContractCloneDryRun(x, y + 280f, width);
-            DrawMissionRestartConstructionDryRun(x, y + 302f, width);
+                "Next Mission " + TruncateText(MissionHandoffPlayerSummaryText(handoffPreview, restartGuard), 58));
+            DrawMissionHandoffLaunchAction(x, y + 192f, width, handoffPreview, restartGuard);
+            DrawMissionHandoffLineup(x, y + 214f, width, handoffPreview);
             if (showRosterDetail)
             {
-                DrawOwnedRosterDetail(x, y + 324f, width, roster, pilotHirePreview);
+                DrawOwnedRosterDetail(x, y + 236f, width, roster, pilotHirePreview);
             }
         }
 
@@ -3411,27 +3412,45 @@ namespace MC2Demo.Presentation
                 + launch;
         }
 
-        private void DrawMissionHandoffLaunchGuard(
+        private static string MissionHandoffPlayerSummaryText(
+            MechBayMissionHandoffPreview preview,
+            MechBayMissionRestartApplyGuard guard)
+        {
+            if (preview == null)
+            {
+                return "No mission roster";
+            }
+
+            MechBaySquadSelectionSlot[] slots = preview.MissionSlots ?? Array.Empty<MechBaySquadSelectionSlot>();
+            string state = guard?.ApplyEnabled == true ? "Ready" : "Blocked";
+            string depot = preview.IncludesDepotMissionSlot ? "depot included" : "current squad";
+            return state
+                + "  "
+                + slots.Length.ToString(CultureInfo.InvariantCulture)
+                + " mechs  "
+                + depot;
+        }
+
+        private void DrawMissionHandoffLaunchAction(
             float x,
             float y,
             float width,
-            MechBayMissionHandoffPreview preview)
+            MechBayMissionHandoffPreview preview,
+            MechBayMissionRestartApplyGuard guard)
         {
-            MechBayMissionHandoffLaunchGuard guard =
-                MechBayMissionHandoffPreviewService.BuildLaunchGuard(demoInventory);
             bool previousEnabled = GUI.enabled;
-            GUI.enabled = previousEnabled && guard?.LaunchEnabled == true;
+            GUI.enabled = previousEnabled && guard?.ApplyEnabled == true;
             if (GUI.Button(new Rect(x, y - 2f, 58f, 22f), "Launch"))
             {
-                statusText = guard?.Message ?? "Mission launch unavailable";
+                TryApplyMissionRestartRuntimeSwap(keepMechBayOpen: true);
             }
 
             GUI.enabled = previousEnabled;
-            GUI.Label(new Rect(x + 66f, y, width - 66f, 18f), TruncateText(MissionHandoffLaunchGuardText(guard, preview), 56));
+            GUI.Label(new Rect(x + 66f, y, width - 66f, 18f), TruncateText(MissionHandoffLaunchActionText(guard, preview), 56));
         }
 
-        private static string MissionHandoffLaunchGuardText(
-            MechBayMissionHandoffLaunchGuard guard,
+        private static string MissionHandoffLaunchActionText(
+            MechBayMissionRestartApplyGuard guard,
             MechBayMissionHandoffPreview preview)
         {
             if (guard == null)
@@ -3439,10 +3458,27 @@ namespace MC2Demo.Presentation
                 return "Launch unavailable";
             }
 
-            string message = string.IsNullOrWhiteSpace(guard.Message) ? "Mission launch guarded" : guard.Message;
-            string reason = string.IsNullOrWhiteSpace(guard.Reason) ? "Future mission restart hook not wired" : guard.Reason;
-            string note = string.IsNullOrWhiteSpace(preview?.PreviewNote) ? "Current battle unchanged" : preview.PreviewNote;
-            return message + "  " + reason + "  " + note;
+            if (guard.ApplyEnabled)
+            {
+                string depot = preview?.IncludesDepotMissionSlot == true ? "depot mech ready" : "squad ready";
+                return "Ready to start  "
+                    + guard.SpawnIntentCount.ToString(CultureInfo.InvariantCulture)
+                    + " mechs  "
+                    + depot;
+            }
+
+            string reason = string.IsNullOrWhiteSpace(guard.Reason) ? "Need a ready mission squad" : guard.Reason;
+            return "Blocked  " + reason;
+        }
+
+        private static void DrawMissionHandoffLineup(
+            float x,
+            float y,
+            float width,
+            MechBayMissionHandoffPreview preview)
+        {
+            string lineup = SquadSelectionSlotSummary(preview?.MissionSlots, "none ready");
+            GUI.Label(new Rect(x, y, width, 18f), TruncateText("Lineup " + lineup, 76));
         }
 
         private void DrawMissionRestartDryRun(float x, float y, float width)
@@ -4187,6 +4223,8 @@ namespace MC2Demo.Presentation
 
         private void DrawSquadSelectionRestartHandoff(float x, float y, float width)
         {
+            MechBayMissionHandoffPreview preview =
+                MechBayMissionHandoffPreviewService.BuildPreview(demoInventory);
             MechBayMissionRestartApplyGuard guard =
                 MechBayMissionHandoffPreviewService.BuildRestartApplyGuard(
                     demoInventory,
@@ -4194,13 +4232,13 @@ namespace MC2Demo.Presentation
                     combatProfiles);
             bool previousEnabled = GUI.enabled;
             GUI.enabled = previousEnabled && guard?.ApplyEnabled == true;
-            if (GUI.Button(new Rect(x, y - 2f, 72f, 22f), "Apply"))
+            if (GUI.Button(new Rect(x, y - 2f, 72f, 22f), "Launch"))
             {
                 TryApplyMissionRestartRuntimeSwap(keepMechBayOpen: true);
             }
 
             GUI.enabled = previousEnabled;
-            string text = MissionRestartApplyGuardText(guard);
+            string text = MissionHandoffLaunchActionText(guard, preview);
             GUI.Label(new Rect(x + 80f, y, width - 80f, 18f), TruncateText("Next Mission  " + text, 64));
         }
 

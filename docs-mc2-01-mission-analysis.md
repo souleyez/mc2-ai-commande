@@ -299,27 +299,19 @@ After confirmation, the squad-selection preview now refreshes into a completed
 state: the joined depot mech is treated as a current mission slot, no longer
 appears as an incoming candidate, and the draft summary reports that the swap
 has already been applied.
-The mech bay now also shows a read-only next-mission handoff preview built
-from the `availableForMission` roster. It can include the joined depot mech
-after a confirmed swap, but it does not restart or mutate the active combat
-mission yet.
-That handoff now has a disabled Launch guard. The guard reports the staged
-roster and explicitly blocks mission restart until a future launch hook can
-rebuild a live mission instance from the inventory roster.
-The same handoff now produces a restart dry run: each available mission slot is
-mapped to a future spawn intent with commander/lancemate role, pilot, loadout,
-and depot-slot marker, while still creating no new `BattleMission`.
-The restart dry run now also has an Apply guard. The legacy one-argument guard
-still rejects as a pure no-op, while the runtime guard enables Apply only after
-the cloned contract can build a valid replacement `BattleMission`.
-The guarded path now exposes a restart contract preview as well: it names the
+The mech bay now also shows a next-mission handoff built from the
+`availableForMission` roster. It can include the joined depot mech after a
+confirmed swap, and it now presents that state as a player-facing Ready/Blocked
+summary, guarded Launch action, and lineup preview.
+Behind that Launch action, each available mission slot is still mapped to a
+spawn intent with commander/lancemate role, pilot, loadout, and depot-slot
+marker before any live restart is allowed.
+The guarded path also keeps its restart contract validation: it names the
 `mc2_01` template, player team, commander slot, player-unit patch mode, and
-spawn-intent count that a future `BattleMission` recreation call would consume,
-while still leaving the active mission instance untouched.
-The next dry-run layer now clones the template `MissionContract` and patches
+spawn-intent count that the `BattleMission` recreation call consumes.
+The next validation layer clones the template `MissionContract` and patches
 only the cloned player unit spawns from the handoff roster. Enemy units,
-objectives, terrain, triggers, and the source template remain unchanged, and
-the prepared contract is not launched into a live `BattleMission` yet.
+objectives, terrain, triggers, and the source template remain unchanged.
 That prepared contract is now also passed through a throwaway `BattleMission`
 construction dry run. The dry run verifies that BattleCore can instantiate the
 patched payload and reports unit, player-unit, structure, objective, and initial
@@ -353,5 +345,9 @@ The command-file harness now has a demo-only depot swap identity check:
 runtime player unit and still report its owned mech identity after rebuild.
 The visible mech bay path now mirrors that handoff more closely: opening Squad
 selection replaces the lower roster detail with an inline preview, keeps the
-staged swap visible, and adds the same guarded next-mission Apply action inside
+staged swap visible, and adds the same guarded next-mission Launch action inside
 that preview instead of relying only on the summary rows above it.
+The next-mission area now hides the earlier technical dry-run ladder from the
+player-facing mech bay. It shows a Ready/Blocked summary, a guarded Launch
+button, and the selected lineup, while still using the same cloned-contract and
+replacement-`BattleMission` validation path before any live restart is allowed.

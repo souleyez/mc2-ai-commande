@@ -76,12 +76,8 @@ The Unity demo currently supports:
 - squad-selection draft controls can cycle outgoing mission slots and incoming depot candidates while staying local-only
 - squad-selection preview refreshes after confirmation so the joined depot mech becomes a mission slot and no longer appears as a candidate
 - next-mission handoff preview reads `availableForMission` roster slots without mutating the active combat mission
-- disabled next-mission Launch guard explains that the future restart hook is not wired yet
-- restart dry run maps handoff roster slots to future spawn intents without creating a new mission instance
-- restart apply guard enables only after a validated replacement BattleMission path exists
-- restart contract preview describes future BattleMission input without instantiating a mission
-- restart contract clone dry run prepares a copied MissionContract payload with replaced player spawns but no live launch
-- restart BattleMission construction dry run validates the prepared contract as a throwaway object without swapping the active mission
+- next-mission handoff area shows a player-facing Ready/Blocked summary, guarded Launch action, and selected lineup
+- restart spawn intent, contract clone, and BattleMission construction validation run behind the Launch guard
 - guarded runtime restart can replace the active BattleMission, clear generated Unity scene objects, rebind ports, and rebuild the world from the validated path
 - starter inventory availability feedback warns on armor plate or heat sink shortages and blocks applying invalid drafts
 - starter mech condition and one-click demo repair spend local token balance and restore damaged mechs
@@ -428,13 +424,9 @@ Reason:
 - The squad-selection draft controls now cycle mission slots and depot candidates while keeping the selected IDs local-only.
 - The squad-selection confirmation path now applies a guarded local roster swap by exchanging mission availability flags while preserving token and inventory counts.
 - The squad-selection preview now refreshes after confirmation, so the roster detail and preview stay readable after the only current depot candidate joins the mission squad.
-- The mech bay now has a read-only next-mission handoff preview, so future mission launch/restart code can consume the selected `availableForMission` roster without mutating the current combat state.
-- The next-mission handoff now has a disabled Launch guard that explains why the handoff roster is not yet applied to a live mission instance.
-- The next-mission handoff now has a restart dry run that maps handoff slots to future spawn intents without creating a new mission instance.
-- The restart dry run keeps a legacy no-op Apply guard and now also has a runtime Apply guard that enables only after the replacement mission construction path validates.
-- The restart path now has a contract preview that describes the future `BattleMission` input without instantiating it.
-- The restart path now has a contract clone dry run that prepares a replacement `MissionContract` payload while still avoiding a live mission restart.
-- The restart path now has a `BattleMission` construction dry run that instantiates the prepared contract only as a throwaway validation object, not as the active combat mission.
+- The mech bay now has a next-mission handoff preview, so mission launch/restart code can consume the selected `availableForMission` roster without mutating token or item inventory state.
+- The next-mission handoff now shows a player-facing Ready/Blocked summary, guarded Launch action, and selected lineup.
+- The restart validation path maps handoff slots to spawn intents, clones the mission contract, and validates replacement `BattleMission` construction before Launch can apply.
 - The restart path now has a guarded runtime swap that builds a replacement `BattleMission`, clears generated Unity scene objects, rebinds command/observation ports, and rebuilds the world without changing token or item counts.
 - Startup command files now support a script-level `restart` action, and `-mc2RestartMission` exposes the same guarded runtime swap from CLI startup args.
 - A dedicated `mc2_01-restart-demo.txt` command file now proves move, advance, report, repeated restart, and post-restart command playback in the built player.
@@ -443,6 +435,7 @@ Reason:
 - Post-restart roster/condition feedback now shows active player slots, deployed roster count, ready mechs, repair needs, held depot mechs, fit blockers, and unavailable mechs in the mech bay and restart combat log.
 - Restart handoff identity now flows through `UnitSpawn` into runtime `UnitState`, commander observations, loadout card titles, restart identity logs, and inventory condition sync.
 - A dedicated `mc2_01-restart-identity-swap.txt` command file now prepares a demo depot candidate, applies a squad swap, restarts, and asserts that runtime owned-mech identity includes the depot slot.
-- The squad-selection preview now appears inline in the mech bay when opened, hides lower roster detail to avoid being buried, and exposes the same guarded next-mission Apply handoff after the staged swap row.
-- The next low-risk step is to simplify the player-facing mech bay mission language by collapsing the remaining technical dry-run rows into a clearer ready/blocker summary while preserving the validated restart guards.
+- The squad-selection preview now appears inline in the mech bay when opened, hides lower roster detail to avoid being buried, and exposes the same guarded next-mission Launch handoff after the staged swap row.
+- The mech bay next-mission area now collapses the old Launch, dry-run, contract, clone, and construction rows into a player-facing Ready/Blocked summary, guarded Launch button, and lineup preview while preserving the validated restart guards.
+- The next low-risk step is to simplify the remaining squad-selection rows by replacing disabled Swap/Dry Run developer placeholders with one clearer staged-swap explanation.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.
