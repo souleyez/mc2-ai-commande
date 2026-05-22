@@ -68,12 +68,10 @@ The Unity demo currently supports:
 - fitted warehouse mechs show a deployment preview explaining that future squad selection is still required
 - roster detail shows a squad-selection placeholder without altering current mission deployment
 - squad-selection preview lists current mission slots and fitted depot candidates without changing inventory or deployment
-- squad-selection preview shows a disabled swap guard while Confirm owns the staged swap action
-- squad-selection preview shows a dry-run replacement summary without applying roster changes
-- squad-selection preview shows a pending swap confirmation row before roster mutation
 - squad-selection confirmation reads from a local draft state that stages outgoing and incoming mech IDs
 - squad-selection confirmation applies a guarded local roster swap by exchanging mission availability flags
 - squad-selection draft controls can cycle outgoing mission slots and incoming depot candidates while staying local-only
+- squad-selection preview shows a single replace plan with a Confirm row before roster mutation
 - squad-selection preview refreshes after confirmation so the joined depot mech becomes a mission slot and no longer appears as a candidate
 - next-mission handoff preview reads `availableForMission` roster slots without mutating the active combat mission
 - next-mission handoff area shows a player-facing Ready/Blocked summary, guarded Launch action, and selected lineup
@@ -417,11 +415,9 @@ Reason:
 - The roster now explains why fitted depot mechs are still held until a future squad-selection flow exists.
 - The roster now shows a squad-selection placeholder, so the deployment path is visible before it can alter mission rosters.
 - The squad-selection preview now lists current mission slots and fitted depot candidates without changing deployment.
-- The squad-selection preview now includes a disabled swap guard, while Confirm owns the staged roster mutation.
-- The squad-selection preview now shows a dry-run replacement summary that selects one current slot and one depot candidate without applying it.
-- The squad-selection preview now shows a pending swap confirmation row, so the UI can show a staged replacement before committing it.
 - The squad-selection confirmation path now reads from a local draft state container that holds selected outgoing and incoming mech IDs.
 - The squad-selection draft controls now cycle mission slots and depot candidates while keeping the selected IDs local-only.
+- The squad-selection preview now collapses the old disabled Swap and Dry Run rows into one clear replace plan plus Confirm.
 - The squad-selection confirmation path now applies a guarded local roster swap by exchanging mission availability flags while preserving token and inventory counts.
 - The squad-selection preview now refreshes after confirmation, so the roster detail and preview stay readable after the only current depot candidate joins the mission squad.
 - The mech bay now has a next-mission handoff preview, so mission launch/restart code can consume the selected `availableForMission` roster without mutating token or item inventory state.
@@ -437,5 +433,5 @@ Reason:
 - A dedicated `mc2_01-restart-identity-swap.txt` command file now prepares a demo depot candidate, applies a squad swap, restarts, and asserts that runtime owned-mech identity includes the depot slot.
 - The squad-selection preview now appears inline in the mech bay when opened, hides lower roster detail to avoid being buried, and exposes the same guarded next-mission Launch handoff after the staged swap row.
 - The mech bay next-mission area now collapses the old Launch, dry-run, contract, clone, and construction rows into a player-facing Ready/Blocked summary, guarded Launch button, and lineup preview while preserving the validated restart guards.
-- The next low-risk step is to simplify the remaining squad-selection rows by replacing disabled Swap/Dry Run developer placeholders with one clearer staged-swap explanation.
+- The next low-risk step is to make the roster `Squad` button preselect the clicked depot candidate or mission slot so the preview opens closer to the player's intent.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.

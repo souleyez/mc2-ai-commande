@@ -60,11 +60,10 @@ Current demo behavior:
 - applies a demo warehouse draft fit that consumes one spare weapon and keeps the mech non-deployable
 - previews fitted warehouse deployment status and explains why fitted depot mechs are still held
 - shows a squad-selection placeholder before warehouse mechs can alter the mission squad
-- opens a read-only squad-selection preview listing current mission slots and fitted depot candidates
-- shows a disabled swap guard while Confirm handles the staged roster swap
-- shows a dry-run swap preview for the first current slot and fitted depot candidate
+- opens a squad-selection preview listing current mission slots and fitted depot candidates
 - stages the first current slot and fitted depot candidate in a local squad-selection draft state
 - lets the local squad-selection draft cycle outgoing mission slots and incoming depot candidates
+- shows one replace plan that names the outgoing and incoming mechs before Confirm
 - applies pending squad swap confirmation by exchanging local mission availability flags
 - refreshes squad-selection status after confirmation so the joined depot mech is no longer shown as a candidate
 - keeps the squad-selection preview visible inside the mech bay and exposes the guarded next-mission Launch handoff there

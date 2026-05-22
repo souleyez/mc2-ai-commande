@@ -279,19 +279,17 @@ looking ready for the current mission.
 The same roster detail now exposes a Squad selection placeholder. It
 marks fitted depot mechs as candidates for a future squad-selection screen but
 does not change the current mission roster or deployment flags.
-That placeholder now opens a read-only squad-selection preview, listing the
-current mission slots and any fitted depot candidates while keeping inventory
-and mission deployment unchanged.
-The preview also includes a disabled Swap guard, while the staged Confirm row
-owns the guarded roster swap action.
+That placeholder now opens a squad-selection preview, listing the current
+mission slots and any fitted depot candidates while keeping inventory and
+mission deployment unchanged until the user confirms.
 When both a current mission slot and a fitted depot candidate exist, the preview
-now shows a dry-run replacement summary without applying roster changes.
+now shows one replace plan that names the outgoing and incoming mechs.
 That pair now becomes a local squad-selection draft state, preserving the
 selected outgoing and incoming mech IDs separately from the read-only preview.
 The draft row now has tiny cycle controls for outgoing mission slots and
 incoming depot candidates, but cycling only changes the local draft IDs.
-That dry run now feeds a pending confirmation row, so the staged replace-slot
-flow can mutate only local mission availability flags.
+That plan feeds a pending confirmation row, so the staged replace-slot flow can
+mutate only local mission availability flags.
 The confirmation path now swaps the outgoing and incoming `availableForMission`
 flags while preserving token, mech count, weapon count, and current combat
 state.

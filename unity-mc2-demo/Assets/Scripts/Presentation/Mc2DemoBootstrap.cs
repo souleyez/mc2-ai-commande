@@ -2902,7 +2902,7 @@ namespace MC2Demo.Presentation
             else if (showSquadSelectionPreview)
             {
                 DrawSquadSelectionPreview(x, y, width);
-                y += 294f;
+                y += 250f;
             }
 
             int unitCount = CountPlayerUnits();
@@ -4040,7 +4040,7 @@ namespace MC2Demo.Presentation
             squadSelectionDraftOutgoingOwnedMechId = draft?.OutgoingOwnedMechId;
             squadSelectionDraftIncomingOwnedMechId = draft?.IncomingOwnedMechId;
 
-            GUI.Box(new Rect(x, y, width, 282f), "Squad Selection / Next Mission");
+            GUI.Box(new Rect(x, y, width, 238f), "Squad Selection / Next Mission");
             if (GUI.Button(new Rect(x + width - 58f, y + 4f, 48f, 22f), "Hide"))
             {
                 showSquadSelectionPreview = false;
@@ -4063,13 +4063,11 @@ namespace MC2Demo.Presentation
                 new Rect(x + 12f, y + 84f, width - 24f, 18f),
                 TruncateText("Candidates " + SquadSelectionSlotSummary(preview?.DepotCandidates, "none ready"), 76));
             DrawSquadSelectionDraftPickers(x + 12f, y + 106f, width - 24f, preview, draft);
-            DrawSquadSelectionDraftState(x + 12f, y + 154f, width - 24f, draft);
-            DrawSquadSelectionSwapGuard(x + 12f, y + 176f, width - 24f, preview);
-            DrawSquadSelectionDryRun(x + 12f, y + 198f, width - 24f, preview);
-            DrawSquadSelectionPendingSwap(x + 12f, y + 220f, width - 24f, preview, draft);
-            DrawSquadSelectionRestartHandoff(x + 12f, y + 242f, width - 24f);
+            DrawSquadSelectionSwapPlan(x + 12f, y + 154f, width - 24f, draft);
+            DrawSquadSelectionPendingSwap(x + 12f, y + 176f, width - 24f, preview, draft);
+            DrawSquadSelectionRestartHandoff(x + 12f, y + 198f, width - 24f);
             string note = string.IsNullOrWhiteSpace(preview?.PreviewNote) ? "Preview only" : preview.PreviewNote;
-            GUI.Label(new Rect(x + 12f, y + 264f, width - 24f, 18f), TruncateText(note, 76));
+            GUI.Label(new Rect(x + 12f, y + 220f, width - 24f, 18f), TruncateText(note, 76));
         }
 
         private void DrawSquadSelectionDraftPickers(
@@ -4132,51 +4130,32 @@ namespace MC2Demo.Presentation
                 TruncateText(label + " " + SquadSelectionSlotName(selected) + count, 64));
         }
 
-        private static void DrawSquadSelectionDraftState(
+        private static void DrawSquadSelectionSwapPlan(
             float x,
             float y,
             float width,
             MechBaySquadSelectionDraftState draft)
         {
-            string status = string.IsNullOrWhiteSpace(draft?.Status) ? "Draft swap unavailable" : draft.Status;
-            string summary = string.IsNullOrWhiteSpace(draft?.Summary)
-                ? "Need mission slot + fitted depot candidate"
-                : draft.Summary;
-            GUI.Label(new Rect(x, y, width, 18f), TruncateText("Draft State  " + status + "  " + summary, 76));
-        }
-
-        private void DrawSquadSelectionSwapGuard(float x, float y, float width, MechBaySquadSelectionPreview preview)
-        {
-            bool previousEnabled = GUI.enabled;
-            GUI.enabled = false;
-            if (GUI.Button(new Rect(x, y - 2f, 72f, 22f), "Swap"))
+            string text;
+            if (draft?.Ready == true)
             {
-                statusText = "Squad swap unavailable";
+                string outgoing = string.IsNullOrWhiteSpace(draft.OutgoingDisplayName)
+                    ? "mission slot"
+                    : draft.OutgoingDisplayName;
+                string incoming = string.IsNullOrWhiteSpace(draft.IncomingDisplayName)
+                    ? "depot mech"
+                    : draft.IncomingDisplayName;
+                text = "Plan  Replace " + outgoing + " with " + incoming + "  Confirm updates next mission";
+            }
+            else
+            {
+                string requirements = string.IsNullOrWhiteSpace(draft?.Requirements)
+                    ? "Need mission slot + fitted depot candidate"
+                    : draft.Requirements;
+                text = "Plan blocked  " + requirements;
             }
 
-            GUI.enabled = previousEnabled;
-            string status = string.IsNullOrWhiteSpace(preview?.SwapStatus) ? "Swap unavailable" : preview.SwapStatus;
-            string requirements = string.IsNullOrWhiteSpace(preview?.SwapRequirements)
-                ? "Requirements unknown"
-                : preview.SwapRequirements;
-            GUI.Label(new Rect(x + 80f, y, width - 80f, 18f), TruncateText(status + "  " + requirements, 64));
-        }
-
-        private void DrawSquadSelectionDryRun(float x, float y, float width, MechBaySquadSelectionPreview preview)
-        {
-            bool previousEnabled = GUI.enabled;
-            GUI.enabled = false;
-            if (GUI.Button(new Rect(x, y - 2f, 72f, 22f), "Dry Run"))
-            {
-                statusText = "Squad swap dry run only";
-            }
-
-            GUI.enabled = previousEnabled;
-            string status = string.IsNullOrWhiteSpace(preview?.DryRunStatus) ? "Dry run unavailable" : preview.DryRunStatus;
-            string summary = string.IsNullOrWhiteSpace(preview?.DryRunSummary)
-                ? "Need mission slot + fitted depot candidate"
-                : preview.DryRunSummary;
-            GUI.Label(new Rect(x + 80f, y, width - 80f, 18f), TruncateText(status + "  " + summary, 64));
+            GUI.Label(new Rect(x, y, width, 18f), TruncateText(text, 76));
         }
 
         private void DrawSquadSelectionPendingSwap(
