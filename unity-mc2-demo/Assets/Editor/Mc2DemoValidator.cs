@@ -1280,6 +1280,55 @@ namespace MC2Demo.EditorTools
                 + (dryRun.PreviewNote ?? "null");
         }
 
+        private static string MissionRestartConstructionDryRunDebugText(MechBayMissionRestartConstructionDryRun dryRun)
+        {
+            if (dryRun == null)
+            {
+                return "null construction dry run";
+            }
+
+            return "ready="
+                + dryRun.Ready
+                + ", changed="
+                + dryRun.InventoryChanged
+                + ", activeCreates="
+                + dryRun.CreatesActiveMissionInstance
+                + ", throwaway="
+                + dryRun.ThrowawayMissionConstructed
+                + ", mission="
+                + (dryRun.MissionTemplateId ?? "null")
+                + ", intents="
+                + dryRun.SpawnIntentCount
+                + "/"
+                + (dryRun.SpawnIntents?.Length ?? -1)
+                + ", preparedUnits="
+                + dryRun.PreparedUnitCount
+                + ", constructedUnits="
+                + dryRun.ConstructedUnitCount
+                + ", constructedPlayers="
+                + dryRun.ConstructedPlayerUnitCount
+                + ", structures="
+                + dryRun.ConstructedStructureCount
+                + ", objectives="
+                + dryRun.ConstructedObjectiveCount
+                + ", depot="
+                + dryRun.IncludesDepotMissionSlot
+                + ", result="
+                + (dryRun.InitialResult ?? "null")
+                + ", reason="
+                + (dryRun.ResultReason ?? "null")
+                + ", error="
+                + (dryRun.ConstructionError ?? "null")
+                + ", status="
+                + (dryRun.Status ?? "null")
+                + ", requirements="
+                + (dryRun.Requirements ?? "null")
+                + ", summary="
+                + (dryRun.Summary ?? "null")
+                + ", note="
+                + (dryRun.PreviewNote ?? "null");
+        }
+
         private static string SquadDraftDebugText(MechBaySquadSelectionDraftState draft)
         {
             if (draft == null)
@@ -2794,6 +2843,11 @@ namespace MC2Demo.EditorTools
                 MechBayMissionHandoffPreviewService.BuildRestartContractPreview(receiptInventory);
             MechBayMissionRestartContractCloneDryRun lockedRestartContractCloneDryRun =
                 MechBayMissionHandoffPreviewService.BuildRestartContractCloneDryRun(receiptInventory, instantVictory.Contract);
+            MechBayMissionRestartConstructionDryRun lockedRestartConstructionDryRun =
+                MechBayMissionHandoffPreviewService.BuildRestartConstructionDryRun(
+                    receiptInventory,
+                    instantVictory.Contract,
+                    resultProfiles);
             if (lockedSquadPreview == null
                 || lockedSquadPreview.InventoryChanged
                 || lockedSquadPreview.Status != "No depot candidates ready"
@@ -2968,6 +3022,38 @@ namespace MC2Demo.EditorTools
                 throw new InvalidDataException(
                     "Expected locked mission restart contract clone dry run to prepare a separate MissionContract payload without launching it. Got "
                     + MissionRestartContractCloneDryRunDebugText(lockedRestartContractCloneDryRun));
+            }
+
+            if (lockedRestartConstructionDryRun == null
+                || lockedRestartConstructionDryRun.InventoryChanged
+                || !lockedRestartConstructionDryRun.Ready
+                || lockedRestartConstructionDryRun.CreatesActiveMissionInstance
+                || !lockedRestartConstructionDryRun.ThrowawayMissionConstructed
+                || lockedRestartConstructionDryRun.IncludesDepotMissionSlot
+                || lockedRestartConstructionDryRun.SpawnIntentCount != lockedRestartContractCloneDryRun.SpawnIntentCount
+                || lockedRestartConstructionDryRun.SpawnIntents == null
+                || lockedRestartConstructionDryRun.SpawnIntents.Length != lockedRestartConstructionDryRun.SpawnIntentCount
+                || lockedRestartConstructionDryRun.PreparedUnitCount != lockedRestartContractCloneDryRun.PreparedUnitCount
+                || lockedRestartConstructionDryRun.ConstructedUnitCount != lockedRestartContractCloneDryRun.PreparedUnitCount
+                || lockedRestartConstructionDryRun.ConstructedPlayerUnitCount != lockedRestartConstructionDryRun.SpawnIntentCount
+                || lockedRestartConstructionDryRun.ConstructedStructureCount != 0
+                || lockedRestartConstructionDryRun.ConstructedObjectiveCount != 1
+                || lockedRestartConstructionDryRun.MissionTemplateId != lockedRestartContractCloneDryRun.MissionTemplateId
+                || lockedRestartConstructionDryRun.InitialResult != MissionResultState.Victory.ToString()
+                || !string.IsNullOrWhiteSpace(lockedRestartConstructionDryRun.ConstructionError)
+                || lockedRestartConstructionDryRun.Status != "BattleMission construction dry run ready"
+                || lockedRestartConstructionDryRun.Requirements != "Active mission swap hook"
+                || lockedRestartConstructionDryRun.PreviewNote != "Throwaway BattleMission only: active mission unchanged"
+                || !lockedRestartConstructionDryRun.Summary.Contains("Throwaway BattleMission:", StringComparison.Ordinal)
+                || lockedRestartConstructionDryRun.Summary.Contains("depot included", StringComparison.Ordinal)
+                || ContainsRestartIntent(lockedRestartConstructionDryRun.SpawnIntents, assembledRaven.ownedMechId)
+                || instantVictory.Contract.units[0].unitType != "ValidatorPlayer"
+                || instantVictory.Contract.units[0].brain == "PBrain"
+                || receiptInventory.tokenBalance != receiptInventoryResult.Summary.TokenBalance)
+            {
+                throw new InvalidDataException(
+                    "Expected locked mission restart construction dry run to instantiate only a throwaway BattleMission without changing active state. Got "
+                    + MissionRestartConstructionDryRunDebugText(lockedRestartConstructionDryRun));
             }
 
             MechBaySquadSelectionDraftState lockedSquadDraft =
@@ -3257,6 +3343,11 @@ namespace MC2Demo.EditorTools
                 MechBayMissionHandoffPreviewService.BuildRestartContractPreview(receiptInventory);
             MechBayMissionRestartContractCloneDryRun squadPostApplyRestartContractCloneDryRun =
                 MechBayMissionHandoffPreviewService.BuildRestartContractCloneDryRun(receiptInventory, instantVictory.Contract);
+            MechBayMissionRestartConstructionDryRun squadPostApplyRestartConstructionDryRun =
+                MechBayMissionHandoffPreviewService.BuildRestartConstructionDryRun(
+                    receiptInventory,
+                    instantVictory.Contract,
+                    resultProfiles);
             if (squadApply == null
                 || !squadApply.Accepted
                 || !squadApply.InventoryChanged
@@ -3467,6 +3558,39 @@ namespace MC2Demo.EditorTools
                 throw new InvalidDataException(
                     "Expected post-swap mission restart contract clone dry run to prepare the refreshed roster payload without launching it. Got "
                     + MissionRestartContractCloneDryRunDebugText(squadPostApplyRestartContractCloneDryRun));
+            }
+
+            if (squadPostApplyRestartConstructionDryRun == null
+                || squadPostApplyRestartConstructionDryRun.InventoryChanged
+                || !squadPostApplyRestartConstructionDryRun.Ready
+                || squadPostApplyRestartConstructionDryRun.CreatesActiveMissionInstance
+                || !squadPostApplyRestartConstructionDryRun.ThrowawayMissionConstructed
+                || !squadPostApplyRestartConstructionDryRun.IncludesDepotMissionSlot
+                || squadPostApplyRestartConstructionDryRun.SpawnIntentCount != squadPostApplyRestartContractCloneDryRun.SpawnIntentCount
+                || squadPostApplyRestartConstructionDryRun.SpawnIntents == null
+                || squadPostApplyRestartConstructionDryRun.SpawnIntents.Length != squadPostApplyRestartConstructionDryRun.SpawnIntentCount
+                || squadPostApplyRestartConstructionDryRun.PreparedUnitCount != squadPostApplyRestartContractCloneDryRun.PreparedUnitCount
+                || squadPostApplyRestartConstructionDryRun.ConstructedUnitCount != squadPostApplyRestartContractCloneDryRun.PreparedUnitCount
+                || squadPostApplyRestartConstructionDryRun.ConstructedPlayerUnitCount != squadPostApplyRestartConstructionDryRun.SpawnIntentCount
+                || squadPostApplyRestartConstructionDryRun.ConstructedStructureCount != 0
+                || squadPostApplyRestartConstructionDryRun.ConstructedObjectiveCount != 1
+                || squadPostApplyRestartConstructionDryRun.MissionTemplateId != squadPostApplyRestartContractCloneDryRun.MissionTemplateId
+                || squadPostApplyRestartConstructionDryRun.InitialResult != MissionResultState.Victory.ToString()
+                || !string.IsNullOrWhiteSpace(squadPostApplyRestartConstructionDryRun.ConstructionError)
+                || squadPostApplyRestartConstructionDryRun.Status != "BattleMission construction dry run ready"
+                || squadPostApplyRestartConstructionDryRun.Requirements != "Active mission swap hook"
+                || squadPostApplyRestartConstructionDryRun.PreviewNote != "Throwaway BattleMission only: active mission unchanged"
+                || !squadPostApplyRestartConstructionDryRun.Summary.Contains("Throwaway BattleMission:", StringComparison.Ordinal)
+                || !squadPostApplyRestartConstructionDryRun.Summary.Contains("depot included", StringComparison.Ordinal)
+                || !ContainsRestartIntent(squadPostApplyRestartConstructionDryRun.SpawnIntents, assembledRaven.ownedMechId)
+                || ContainsRestartIntent(squadPostApplyRestartConstructionDryRun.SpawnIntents, selectedOutgoingSlot.ownedMechId)
+                || instantVictory.Contract.units[0].unitType != "ValidatorPlayer"
+                || instantVictory.Contract.units[0].brain == "PBrain"
+                || receiptInventory.tokenBalance != tokenBeforeDraftFitPreview)
+            {
+                throw new InvalidDataException(
+                    "Expected post-swap mission restart construction dry run to instantiate only a throwaway BattleMission from refreshed roster. Got "
+                    + MissionRestartConstructionDryRunDebugText(squadPostApplyRestartConstructionDryRun));
             }
 
             BattleMission defeat = new(MakeResultContract(completeOnStart: false), resultProfiles);

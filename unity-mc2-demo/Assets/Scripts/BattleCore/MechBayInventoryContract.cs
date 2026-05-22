@@ -446,6 +446,30 @@ namespace MC2Demo.BattleCore
         public MissionContract PreparedContract { get; internal set; }
     }
 
+    public sealed class MechBayMissionRestartConstructionDryRun
+    {
+        public bool InventoryChanged { get; internal set; }
+        public bool Ready { get; internal set; }
+        public bool CreatesActiveMissionInstance { get; internal set; }
+        public bool ThrowawayMissionConstructed { get; internal set; }
+        public bool IncludesDepotMissionSlot { get; internal set; }
+        public int SpawnIntentCount { get; internal set; }
+        public int PreparedUnitCount { get; internal set; }
+        public int ConstructedUnitCount { get; internal set; }
+        public int ConstructedPlayerUnitCount { get; internal set; }
+        public int ConstructedStructureCount { get; internal set; }
+        public int ConstructedObjectiveCount { get; internal set; }
+        public string MissionTemplateId { get; internal set; }
+        public string InitialResult { get; internal set; }
+        public string ResultReason { get; internal set; }
+        public string ConstructionError { get; internal set; }
+        public string Status { get; internal set; }
+        public string Requirements { get; internal set; }
+        public string Summary { get; internal set; }
+        public string PreviewNote { get; internal set; }
+        public MechBayMissionRestartSpawnIntent[] SpawnIntents { get; internal set; }
+    }
+
     public sealed class MechBayReceiptItemDefinition
     {
         public string itemId;
@@ -1682,6 +1706,68 @@ namespace MC2Demo.BattleCore
             };
         }
 
+        public static MechBayMissionRestartConstructionDryRun BuildRestartConstructionDryRun(
+            MechBayInventoryContract inventory,
+            MissionContract templateContract,
+            CombatProfileCatalog combatProfiles)
+        {
+            MechBayMissionRestartContractCloneDryRun cloneDryRun =
+                BuildRestartContractCloneDryRun(inventory, templateContract);
+            BattleMission throwawayMission = null;
+            string constructionError = "";
+            if (cloneDryRun?.Ready == true && cloneDryRun.PreparedContract != null)
+            {
+                try
+                {
+                    throwawayMission = new BattleMission(cloneDryRun.PreparedContract, combatProfiles);
+                }
+                catch (Exception exception)
+                {
+                    constructionError = exception.GetType().Name + ": " + exception.Message;
+                }
+            }
+
+            bool constructed = throwawayMission != null;
+            int constructedUnitCount = constructed ? throwawayMission.Units.Count : 0;
+            int constructedPlayerUnitCount = constructed ? CountPlayerUnits(throwawayMission) : 0;
+            int constructedStructureCount = constructed ? throwawayMission.Structures.Count : 0;
+            int constructedObjectiveCount = constructed ? throwawayMission.Objectives.Count : 0;
+            bool ready = constructed
+                && constructedUnitCount == cloneDryRun.PreparedUnitCount
+                && constructedPlayerUnitCount == cloneDryRun.SpawnIntentCount;
+
+            return new MechBayMissionRestartConstructionDryRun
+            {
+                InventoryChanged = false,
+                Ready = ready,
+                CreatesActiveMissionInstance = false,
+                ThrowawayMissionConstructed = constructed,
+                IncludesDepotMissionSlot = cloneDryRun?.IncludesDepotMissionSlot == true,
+                SpawnIntentCount = cloneDryRun?.SpawnIntentCount ?? 0,
+                PreparedUnitCount = cloneDryRun?.PreparedUnitCount ?? 0,
+                ConstructedUnitCount = constructedUnitCount,
+                ConstructedPlayerUnitCount = constructedPlayerUnitCount,
+                ConstructedStructureCount = constructedStructureCount,
+                ConstructedObjectiveCount = constructedObjectiveCount,
+                MissionTemplateId = cloneDryRun?.MissionTemplateId,
+                InitialResult = constructed ? throwawayMission.Result.ToString() : "",
+                ResultReason = constructed ? throwawayMission.ResultReason : "",
+                ConstructionError = constructionError,
+                Status = ready ? "BattleMission construction dry run ready" : "BattleMission construction dry run unavailable",
+                Requirements = ready
+                    ? "Active mission swap hook"
+                    : RestartConstructionRequirements(cloneDryRun, constructionError),
+                Summary = RestartConstructionSummary(
+                    cloneDryRun?.MissionTemplateId,
+                    constructedUnitCount,
+                    constructedPlayerUnitCount,
+                    constructedObjectiveCount,
+                    cloneDryRun?.IncludesDepotMissionSlot == true),
+                PreviewNote = "Throwaway BattleMission only: active mission unchanged",
+                SpawnIntents = cloneDryRun?.SpawnIntents ?? Array.Empty<MechBayMissionRestartSpawnIntent>()
+            };
+        }
+
         private static MechBaySquadSelectionSlot SlotFromRoster(MechBayOwnedRosterEntry entry)
         {
             return new MechBaySquadSelectionSlot
@@ -1935,6 +2021,66 @@ namespace MC2Demo.BattleCore
                 + " player spawns preserved "
                 + preservedNonPlayerUnitCount.ToString(CultureInfo.InvariantCulture)
                 + " non-player";
+            return includesDepotMissionSlot ? text + "  depot included" : text;
+        }
+
+        private static int CountPlayerUnits(BattleMission mission)
+        {
+            if (mission == null)
+            {
+                return 0;
+            }
+
+            int count = 0;
+            foreach (UnitState unit in mission.PlayerUnits())
+            {
+                if (unit != null)
+                {
+                    count++;
+                }
+            }
+
+            return count;
+        }
+
+        private static string RestartConstructionRequirements(
+            MechBayMissionRestartContractCloneDryRun cloneDryRun,
+            string constructionError)
+        {
+            if (cloneDryRun?.Ready != true)
+            {
+                return "Need restart contract clone dry run";
+            }
+
+            if (!string.IsNullOrWhiteSpace(constructionError))
+            {
+                return "Fix construction error";
+            }
+
+            return "Need throwaway BattleMission";
+        }
+
+        private static string RestartConstructionSummary(
+            string missionTemplateId,
+            int constructedUnitCount,
+            int constructedPlayerUnitCount,
+            int constructedObjectiveCount,
+            bool includesDepotMissionSlot)
+        {
+            if (constructedUnitCount <= 0)
+            {
+                return "No throwaway BattleMission";
+            }
+
+            string mission = string.IsNullOrWhiteSpace(missionTemplateId) ? "mission" : missionTemplateId;
+            string text = "Throwaway BattleMission: "
+                + mission
+                + " units "
+                + constructedUnitCount.ToString(CultureInfo.InvariantCulture)
+                + " players "
+                + constructedPlayerUnitCount.ToString(CultureInfo.InvariantCulture)
+                + " objectives "
+                + constructedObjectiveCount.ToString(CultureInfo.InvariantCulture);
             return includesDepotMissionSlot ? text + "  depot included" : text;
         }
 

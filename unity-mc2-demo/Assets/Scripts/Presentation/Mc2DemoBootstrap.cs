@@ -2543,7 +2543,7 @@ namespace MC2Demo.Presentation
 
             y += 30f;
             DrawMechBayInventorySummary(x, y, width);
-            y += 478f;
+            y += 500f;
             if (showWarehouseDraftFitPreview)
             {
                 DrawWarehouseDraftFitPreview(x, y, width);
@@ -2627,7 +2627,8 @@ namespace MC2Demo.Presentation
             DrawMissionRestartApplyGuard(x, y + 214f, width);
             DrawMissionRestartContractPreview(x, y + 236f, width);
             DrawMissionRestartContractCloneDryRun(x, y + 258f, width);
-            DrawOwnedRosterDetail(x, y + 280f, width, roster, pilotHirePreview);
+            DrawMissionRestartConstructionDryRun(x, y + 280f, width);
+            DrawOwnedRosterDetail(x, y + 302f, width, roster, pilotHirePreview);
         }
 
         private void DrawLoadoutUnit(UnitState unit, float x, float y, float width)
@@ -2986,6 +2987,37 @@ namespace MC2Demo.Presentation
                 + status
                 + "  "
                 + (dryRun.PreparedContractAvailable ? "contract ready" : "no contract");
+        }
+
+        private void DrawMissionRestartConstructionDryRun(float x, float y, float width)
+        {
+            MechBayMissionRestartConstructionDryRun dryRun =
+                MechBayMissionHandoffPreviewService.BuildRestartConstructionDryRun(
+                    demoInventory,
+                    mission?.Contract,
+                    combatProfiles);
+            GUI.Label(
+                new Rect(x, y, width, 18f),
+                "Mission Dry Run " + TruncateText(MissionRestartConstructionDryRunText(dryRun), 58));
+        }
+
+        private static string MissionRestartConstructionDryRunText(MechBayMissionRestartConstructionDryRun dryRun)
+        {
+            if (dryRun == null)
+            {
+                return "unavailable";
+            }
+
+            string status = string.IsNullOrWhiteSpace(dryRun.Status)
+                ? "BattleMission construction dry run unavailable"
+                : dryRun.Status;
+            return dryRun.ConstructedPlayerUnitCount.ToString(CultureInfo.InvariantCulture)
+                + "/"
+                + dryRun.SpawnIntentCount.ToString(CultureInfo.InvariantCulture)
+                + " players  "
+                + status
+                + "  "
+                + (dryRun.ThrowawayMissionConstructed ? "throwaway OK" : "not built");
         }
 
         private static string WeaponShopPreviewText(MechBayWeaponShopPreview preview)

@@ -320,3 +320,7 @@ The next dry-run layer now clones the template `MissionContract` and patches
 only the cloned player unit spawns from the handoff roster. Enemy units,
 objectives, terrain, triggers, and the source template remain unchanged, and
 the prepared contract is not launched into a live `BattleMission` yet.
+That prepared contract is now also passed through a throwaway `BattleMission`
+construction dry run. The dry run verifies that BattleCore can instantiate the
+patched payload and reports unit, player-unit, structure, objective, and initial
+result counts, but it never replaces the active combat mission.
