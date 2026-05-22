@@ -182,6 +182,96 @@ namespace MC2Demo.Presentation
                 + (mission.Contract.forests == null ? 0 : mission.Contract.forests.Length));
         }
 
+        private void TryApplyMissionRestartRuntimeSwap()
+        {
+            MechBayMissionRestartRuntimeSwapResult result =
+                MechBayMissionHandoffPreviewService.TryBuildRestartRuntimeSwap(
+                    demoInventory,
+                    mission?.Contract,
+                    combatProfiles);
+            if (result == null || !result.Accepted || result.Mission == null)
+            {
+                statusText = result?.Reason ?? "Restart unavailable";
+                AddCombatLogLine("Mission restart rejected: " + statusText);
+                return;
+            }
+
+            ApplyRestartedMission(result.Mission, result);
+        }
+
+        private void ApplyRestartedMission(
+            BattleMission replacementMission,
+            MechBayMissionRestartRuntimeSwapResult result)
+        {
+            if (replacementMission == null)
+            {
+                statusText = "Restart unavailable";
+                return;
+            }
+
+            Time.timeScale = 1f;
+            ClearRuntimeWorld();
+            mission = replacementMission;
+            scriptBridge = new MissionScriptBridge(mission);
+            commandPort = new CommanderCommandPort(mission, JumpDistance, DemoTerrainView.IsUsableLandingPosition);
+            observationPort = new CommanderObservationPort(mission);
+            missionReceipt = null;
+            missionReceiptApplied = false;
+            pendingDetachedUnitId = null;
+            pendingJumpOrder = false;
+            showMissionMap = false;
+            showLoadoutPanel = false;
+            showSystemPanel = false;
+            showWarehouseDraftFitPreview = false;
+            showSquadSelectionPreview = false;
+            warehouseDraftFitPreviewMechId = null;
+            ClearSquadSelectionDraft();
+            lastMissionResult = mission.Result;
+
+            BuildWorld();
+            RefreshDemoInventoryValidation();
+            SetPaused(false);
+            statusText = result?.Message ?? "Mission restarted";
+            AddCombatLogLine(statusText + ": " + (result?.Summary ?? "replacement ready"));
+        }
+
+        private void ClearRuntimeWorld()
+        {
+            unitViews.Clear();
+            structureViews.Clear();
+            unitSelectionMarkers.Clear();
+            unitOrderMarkers.Clear();
+            unitFocusMarkers.Clear();
+            unitRangeMarkers.Clear();
+            unitTargetLines.Clear();
+            unitHealthBarBacks.Clear();
+            unitHealthBarFills.Clear();
+            objectiveAreaMarkers.Clear();
+            structureHealthBarBacks.Clear();
+            structureHealthBarFills.Clear();
+            loadoutWeaponEnabledByUnit.Clear();
+            loadoutPlacementOverridesByUnit.Clear();
+            loadoutFillerOverridesByUnit.Clear();
+            appliedLoadoutWeaponEnabledByUnit.Clear();
+            appliedLoadoutPlacementOverridesByUnit.Clear();
+            appliedLoadoutFillerOverridesByUnit.Clear();
+            selectedLoadoutWeaponByUnit.Clear();
+            combatLog.Clear();
+            mainCamera = null;
+
+            GameObject[] roots = SceneManager.GetActiveScene().GetRootGameObjects();
+            for (int index = 0; index < roots.Length; index++)
+            {
+                GameObject root = roots[index];
+                if (root == null || root == gameObject || root.GetComponent<Mc2DemoBootstrap>() != null)
+                {
+                    continue;
+                }
+
+                Destroy(root);
+            }
+        }
+
         private void ScheduleSmokeTestQuitIfRequested()
         {
             string[] args = Environment.GetCommandLineArgs();
@@ -2902,12 +2992,15 @@ namespace MC2Demo.Presentation
         private void DrawMissionRestartApplyGuard(float x, float y, float width)
         {
             MechBayMissionRestartApplyGuard guard =
-                MechBayMissionHandoffPreviewService.BuildRestartApplyGuard(demoInventory);
+                MechBayMissionHandoffPreviewService.BuildRestartApplyGuard(
+                    demoInventory,
+                    mission?.Contract,
+                    combatProfiles);
             bool previousEnabled = GUI.enabled;
             GUI.enabled = previousEnabled && guard?.ApplyEnabled == true;
             if (GUI.Button(new Rect(x, y - 2f, 58f, 22f), "Apply"))
             {
-                statusText = guard?.Message ?? "Restart apply unavailable";
+                TryApplyMissionRestartRuntimeSwap();
             }
 
             GUI.enabled = previousEnabled;
@@ -2921,8 +3014,8 @@ namespace MC2Demo.Presentation
                 return "Restart apply unavailable";
             }
 
-            string message = string.IsNullOrWhiteSpace(guard.Message) ? "Restart apply guarded" : guard.Message;
-            string reason = string.IsNullOrWhiteSpace(guard.Reason) ? "Future BattleMission recreation hook not wired" : guard.Reason;
+            string message = string.IsNullOrWhiteSpace(guard.Message) ? "Restart apply unavailable" : guard.Message;
+            string reason = string.IsNullOrWhiteSpace(guard.Reason) ? "Runtime swap unavailable" : guard.Reason;
             return message
                 + "  "
                 + reason
@@ -4788,8 +4881,7 @@ namespace MC2Demo.Presentation
 
             if (GUI.Button(new Rect(panel.x + 18f, panel.y + 108f, panel.width - 36f, 30f), "Restart Mission"))
             {
-                Time.timeScale = 1f;
-                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+                TryApplyMissionRestartRuntimeSwap();
             }
 
             if (GUI.Button(new Rect(panel.x + 18f, panel.y + 146f, panel.width - 36f, 30f), "End Demo"))
@@ -4823,8 +4915,7 @@ namespace MC2Demo.Presentation
 
             if (GUI.Button(new Rect(panel.x + 18f, panel.y + 278f, 172f, 30f), "Restart"))
             {
-                Time.timeScale = 1f;
-                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+                TryApplyMissionRestartRuntimeSwap();
             }
 
             if (GUI.Button(new Rect(panel.x + 210f, panel.y + 278f, 172f, 30f), "End Demo"))

@@ -1329,6 +1329,53 @@ namespace MC2Demo.EditorTools
                 + (dryRun.PreviewNote ?? "null");
         }
 
+        private static string MissionRestartRuntimeSwapDebugText(MechBayMissionRestartRuntimeSwapResult result)
+        {
+            if (result == null)
+            {
+                return "null runtime swap";
+            }
+
+            return "accepted="
+                + result.Accepted
+                + ", changed="
+                + result.InventoryChanged
+                + ", built="
+                + result.BuiltMissionInstance
+                + ", mission="
+                + (result.MissionTemplateId ?? "null")
+                + ", intents="
+                + result.SpawnIntentCount
+                + "/"
+                + (result.SpawnIntents?.Length ?? -1)
+                + ", preparedUnits="
+                + result.PreparedUnitCount
+                + ", constructedUnits="
+                + result.ConstructedUnitCount
+                + ", constructedPlayers="
+                + result.ConstructedPlayerUnitCount
+                + ", structures="
+                + result.ConstructedStructureCount
+                + ", objectives="
+                + result.ConstructedObjectiveCount
+                + ", depot="
+                + result.IncludesDepotMissionSlot
+                + ", result="
+                + (result.InitialResult ?? "null")
+                + ", reason="
+                + (result.ResultReason ?? "null")
+                + ", error="
+                + (result.ConstructionError ?? "null")
+                + ", message="
+                + (result.Message ?? "null")
+                + ", guardReason="
+                + (result.Reason ?? "null")
+                + ", summary="
+                + (result.Summary ?? "null")
+                + ", hasMission="
+                + (result.Mission != null);
+        }
+
         private static string SquadDraftDebugText(MechBaySquadSelectionDraftState draft)
         {
             if (draft == null)
@@ -2848,6 +2895,16 @@ namespace MC2Demo.EditorTools
                     receiptInventory,
                     instantVictory.Contract,
                     resultProfiles);
+            MechBayMissionRestartApplyGuard lockedRuntimeApplyGuard =
+                MechBayMissionHandoffPreviewService.BuildRestartApplyGuard(
+                    receiptInventory,
+                    instantVictory.Contract,
+                    resultProfiles);
+            MechBayMissionRestartRuntimeSwapResult lockedRuntimeSwap =
+                MechBayMissionHandoffPreviewService.TryBuildRestartRuntimeSwap(
+                    receiptInventory,
+                    instantVictory.Contract,
+                    resultProfiles);
             if (lockedSquadPreview == null
                 || lockedSquadPreview.InventoryChanged
                 || lockedSquadPreview.Status != "No depot candidates ready"
@@ -3054,6 +3111,53 @@ namespace MC2Demo.EditorTools
                 throw new InvalidDataException(
                     "Expected locked mission restart construction dry run to instantiate only a throwaway BattleMission without changing active state. Got "
                     + MissionRestartConstructionDryRunDebugText(lockedRestartConstructionDryRun));
+            }
+
+            if (lockedRuntimeApplyGuard == null
+                || lockedRuntimeApplyGuard.Accepted
+                || lockedRuntimeApplyGuard.InventoryChanged
+                || !lockedRuntimeApplyGuard.ApplyEnabled
+                || lockedRuntimeApplyGuard.CreatesMissionInstance
+                || lockedRuntimeApplyGuard.IncludesDepotMissionSlot
+                || lockedRuntimeApplyGuard.SpawnIntentCount != lockedRestartConstructionDryRun.SpawnIntentCount
+                || lockedRuntimeApplyGuard.Message != "Restart apply ready"
+                || lockedRuntimeApplyGuard.Reason != "Runtime swap path validated"
+                || lockedRuntimeApplyGuard.Summary != lockedRestartConstructionDryRun.Summary
+                || receiptInventory.tokenBalance != receiptInventoryResult.Summary.TokenBalance)
+            {
+                throw new InvalidDataException(
+                    "Expected runtime mission restart apply guard to enable only after the construction path is validated. Got "
+                    + MissionRestartApplyGuardDebugText(lockedRuntimeApplyGuard));
+            }
+
+            if (lockedRuntimeSwap == null
+                || !lockedRuntimeSwap.Accepted
+                || lockedRuntimeSwap.InventoryChanged
+                || !lockedRuntimeSwap.BuiltMissionInstance
+                || lockedRuntimeSwap.Mission == null
+                || lockedRuntimeSwap.IncludesDepotMissionSlot
+                || lockedRuntimeSwap.SpawnIntentCount != lockedRestartConstructionDryRun.SpawnIntentCount
+                || lockedRuntimeSwap.PreparedUnitCount != lockedRestartConstructionDryRun.PreparedUnitCount
+                || lockedRuntimeSwap.ConstructedUnitCount != lockedRestartConstructionDryRun.ConstructedUnitCount
+                || lockedRuntimeSwap.ConstructedPlayerUnitCount != lockedRestartConstructionDryRun.ConstructedPlayerUnitCount
+                || lockedRuntimeSwap.ConstructedStructureCount != lockedRestartConstructionDryRun.ConstructedStructureCount
+                || lockedRuntimeSwap.ConstructedObjectiveCount != lockedRestartConstructionDryRun.ConstructedObjectiveCount
+                || lockedRuntimeSwap.MissionTemplateId != lockedRestartConstructionDryRun.MissionTemplateId
+                || lockedRuntimeSwap.InitialResult != MissionResultState.Victory.ToString()
+                || !string.IsNullOrWhiteSpace(lockedRuntimeSwap.ConstructionError)
+                || lockedRuntimeSwap.Message != "Mission restarted"
+                || lockedRuntimeSwap.Reason != "Runtime swap prepared"
+                || !lockedRuntimeSwap.Summary.Contains("Replacement BattleMission:", StringComparison.Ordinal)
+                || lockedRuntimeSwap.Summary.Contains("depot included", StringComparison.Ordinal)
+                || lockedRuntimeSwap.Mission.Contract.units[0].unitType != lockedRestartDryRun.SpawnIntents[0].unitType
+                || instantVictory.Contract.units[0].unitType != "ValidatorPlayer"
+                || instantVictory.Contract.units[0].brain == "PBrain"
+                || ContainsRestartIntent(lockedRuntimeSwap.SpawnIntents, assembledRaven.ownedMechId)
+                || receiptInventory.tokenBalance != receiptInventoryResult.Summary.TokenBalance)
+            {
+                throw new InvalidDataException(
+                    "Expected locked mission restart runtime swap to build a replacement BattleMission without mutating inventory or the template contract. Got "
+                    + MissionRestartRuntimeSwapDebugText(lockedRuntimeSwap));
             }
 
             MechBaySquadSelectionDraftState lockedSquadDraft =
@@ -3348,6 +3452,16 @@ namespace MC2Demo.EditorTools
                     receiptInventory,
                     instantVictory.Contract,
                     resultProfiles);
+            MechBayMissionRestartApplyGuard squadPostApplyRuntimeApplyGuard =
+                MechBayMissionHandoffPreviewService.BuildRestartApplyGuard(
+                    receiptInventory,
+                    instantVictory.Contract,
+                    resultProfiles);
+            MechBayMissionRestartRuntimeSwapResult squadPostApplyRuntimeSwap =
+                MechBayMissionHandoffPreviewService.TryBuildRestartRuntimeSwap(
+                    receiptInventory,
+                    instantVictory.Contract,
+                    resultProfiles);
             if (squadApply == null
                 || !squadApply.Accepted
                 || !squadApply.InventoryChanged
@@ -3591,6 +3705,54 @@ namespace MC2Demo.EditorTools
                 throw new InvalidDataException(
                     "Expected post-swap mission restart construction dry run to instantiate only a throwaway BattleMission from refreshed roster. Got "
                     + MissionRestartConstructionDryRunDebugText(squadPostApplyRestartConstructionDryRun));
+            }
+
+            if (squadPostApplyRuntimeApplyGuard == null
+                || squadPostApplyRuntimeApplyGuard.Accepted
+                || squadPostApplyRuntimeApplyGuard.InventoryChanged
+                || !squadPostApplyRuntimeApplyGuard.ApplyEnabled
+                || squadPostApplyRuntimeApplyGuard.CreatesMissionInstance
+                || !squadPostApplyRuntimeApplyGuard.IncludesDepotMissionSlot
+                || squadPostApplyRuntimeApplyGuard.SpawnIntentCount != squadPostApplyRestartConstructionDryRun.SpawnIntentCount
+                || squadPostApplyRuntimeApplyGuard.Message != "Restart apply ready"
+                || squadPostApplyRuntimeApplyGuard.Reason != "Runtime swap path validated"
+                || squadPostApplyRuntimeApplyGuard.Summary != squadPostApplyRestartConstructionDryRun.Summary
+                || receiptInventory.tokenBalance != tokenBeforeDraftFitPreview)
+            {
+                throw new InvalidDataException(
+                    "Expected post-swap runtime mission restart apply guard to enable only after the refreshed construction path is validated. Got "
+                    + MissionRestartApplyGuardDebugText(squadPostApplyRuntimeApplyGuard));
+            }
+
+            if (squadPostApplyRuntimeSwap == null
+                || !squadPostApplyRuntimeSwap.Accepted
+                || squadPostApplyRuntimeSwap.InventoryChanged
+                || !squadPostApplyRuntimeSwap.BuiltMissionInstance
+                || squadPostApplyRuntimeSwap.Mission == null
+                || !squadPostApplyRuntimeSwap.IncludesDepotMissionSlot
+                || squadPostApplyRuntimeSwap.SpawnIntentCount != squadPostApplyRestartConstructionDryRun.SpawnIntentCount
+                || squadPostApplyRuntimeSwap.PreparedUnitCount != squadPostApplyRestartConstructionDryRun.PreparedUnitCount
+                || squadPostApplyRuntimeSwap.ConstructedUnitCount != squadPostApplyRestartConstructionDryRun.ConstructedUnitCount
+                || squadPostApplyRuntimeSwap.ConstructedPlayerUnitCount != squadPostApplyRestartConstructionDryRun.ConstructedPlayerUnitCount
+                || squadPostApplyRuntimeSwap.ConstructedStructureCount != squadPostApplyRestartConstructionDryRun.ConstructedStructureCount
+                || squadPostApplyRuntimeSwap.ConstructedObjectiveCount != squadPostApplyRestartConstructionDryRun.ConstructedObjectiveCount
+                || squadPostApplyRuntimeSwap.MissionTemplateId != squadPostApplyRestartConstructionDryRun.MissionTemplateId
+                || squadPostApplyRuntimeSwap.InitialResult != MissionResultState.Victory.ToString()
+                || !string.IsNullOrWhiteSpace(squadPostApplyRuntimeSwap.ConstructionError)
+                || squadPostApplyRuntimeSwap.Message != "Mission restarted"
+                || squadPostApplyRuntimeSwap.Reason != "Runtime swap prepared"
+                || !squadPostApplyRuntimeSwap.Summary.Contains("Replacement BattleMission:", StringComparison.Ordinal)
+                || !squadPostApplyRuntimeSwap.Summary.Contains("depot included", StringComparison.Ordinal)
+                || squadPostApplyRuntimeSwap.Mission.Contract.units[0].unitType != assembledRaven.unitType
+                || instantVictory.Contract.units[0].unitType != "ValidatorPlayer"
+                || instantVictory.Contract.units[0].brain == "PBrain"
+                || !ContainsRestartIntent(squadPostApplyRuntimeSwap.SpawnIntents, assembledRaven.ownedMechId)
+                || ContainsRestartIntent(squadPostApplyRuntimeSwap.SpawnIntents, selectedOutgoingSlot.ownedMechId)
+                || receiptInventory.tokenBalance != tokenBeforeDraftFitPreview)
+            {
+                throw new InvalidDataException(
+                    "Expected post-swap mission restart runtime swap to build a replacement BattleMission from refreshed roster without mutating inventory or template contract. Got "
+                    + MissionRestartRuntimeSwapDebugText(squadPostApplyRuntimeSwap));
             }
 
             BattleMission defeat = new(MakeResultContract(completeOnStart: false), resultProfiles);

@@ -470,6 +470,29 @@ namespace MC2Demo.BattleCore
         public MechBayMissionRestartSpawnIntent[] SpawnIntents { get; internal set; }
     }
 
+    public sealed class MechBayMissionRestartRuntimeSwapResult
+    {
+        public bool Accepted { get; internal set; }
+        public bool InventoryChanged { get; internal set; }
+        public bool BuiltMissionInstance { get; internal set; }
+        public bool IncludesDepotMissionSlot { get; internal set; }
+        public int SpawnIntentCount { get; internal set; }
+        public int PreparedUnitCount { get; internal set; }
+        public int ConstructedUnitCount { get; internal set; }
+        public int ConstructedPlayerUnitCount { get; internal set; }
+        public int ConstructedStructureCount { get; internal set; }
+        public int ConstructedObjectiveCount { get; internal set; }
+        public string MissionTemplateId { get; internal set; }
+        public string InitialResult { get; internal set; }
+        public string ResultReason { get; internal set; }
+        public string ConstructionError { get; internal set; }
+        public string Message { get; internal set; }
+        public string Reason { get; internal set; }
+        public string Summary { get; internal set; }
+        public BattleMission Mission { get; internal set; }
+        public MechBayMissionRestartSpawnIntent[] SpawnIntents { get; internal set; }
+    }
+
     public sealed class MechBayReceiptItemDefinition
     {
         public string itemId;
@@ -1606,6 +1629,32 @@ namespace MC2Demo.BattleCore
             };
         }
 
+        public static MechBayMissionRestartApplyGuard BuildRestartApplyGuard(
+            MechBayInventoryContract inventory,
+            MissionContract templateContract,
+            CombatProfileCatalog combatProfiles)
+        {
+            MechBayMissionRestartConstructionDryRun constructionDryRun =
+                BuildRestartConstructionDryRun(inventory, templateContract, combatProfiles);
+            bool ready = constructionDryRun?.Ready == true;
+            return new MechBayMissionRestartApplyGuard
+            {
+                Accepted = false,
+                InventoryChanged = false,
+                ApplyEnabled = ready,
+                CreatesMissionInstance = false,
+                IncludesDepotMissionSlot = constructionDryRun?.IncludesDepotMissionSlot == true,
+                SpawnIntentCount = constructionDryRun?.SpawnIntentCount ?? 0,
+                Message = ready ? "Restart apply ready" : "Restart apply unavailable",
+                Reason = ready
+                    ? "Runtime swap path validated"
+                    : constructionDryRun?.Requirements ?? "Need BattleMission construction",
+                Summary = string.IsNullOrWhiteSpace(constructionDryRun?.Summary)
+                    ? "No restart BattleMission"
+                    : constructionDryRun.Summary
+            };
+        }
+
         public static MechBayMissionRestartContractPreview BuildRestartContractPreview(MechBayInventoryContract inventory)
         {
             MechBayMissionRestartDryRun dryRun = BuildRestartDryRun(inventory);
@@ -1764,6 +1813,67 @@ namespace MC2Demo.BattleCore
                     constructedObjectiveCount,
                     cloneDryRun?.IncludesDepotMissionSlot == true),
                 PreviewNote = "Throwaway BattleMission only: active mission unchanged",
+                SpawnIntents = cloneDryRun?.SpawnIntents ?? Array.Empty<MechBayMissionRestartSpawnIntent>()
+            };
+        }
+
+        public static MechBayMissionRestartRuntimeSwapResult TryBuildRestartRuntimeSwap(
+            MechBayInventoryContract inventory,
+            MissionContract templateContract,
+            CombatProfileCatalog combatProfiles)
+        {
+            MechBayMissionRestartContractCloneDryRun cloneDryRun =
+                BuildRestartContractCloneDryRun(inventory, templateContract);
+            BattleMission replacementMission = null;
+            string constructionError = "";
+            if (cloneDryRun?.Ready == true && cloneDryRun.PreparedContract != null)
+            {
+                try
+                {
+                    replacementMission = new BattleMission(cloneDryRun.PreparedContract, combatProfiles);
+                }
+                catch (Exception exception)
+                {
+                    constructionError = exception.GetType().Name + ": " + exception.Message;
+                }
+            }
+
+            bool constructed = replacementMission != null;
+            int constructedUnitCount = constructed ? replacementMission.Units.Count : 0;
+            int constructedPlayerUnitCount = constructed ? CountPlayerUnits(replacementMission) : 0;
+            int constructedStructureCount = constructed ? replacementMission.Structures.Count : 0;
+            int constructedObjectiveCount = constructed ? replacementMission.Objectives.Count : 0;
+            bool ready = constructed
+                && constructedUnitCount == cloneDryRun.PreparedUnitCount
+                && constructedPlayerUnitCount == cloneDryRun.SpawnIntentCount;
+
+            return new MechBayMissionRestartRuntimeSwapResult
+            {
+                Accepted = ready,
+                InventoryChanged = false,
+                BuiltMissionInstance = constructed,
+                IncludesDepotMissionSlot = cloneDryRun?.IncludesDepotMissionSlot == true,
+                SpawnIntentCount = cloneDryRun?.SpawnIntentCount ?? 0,
+                PreparedUnitCount = cloneDryRun?.PreparedUnitCount ?? 0,
+                ConstructedUnitCount = constructedUnitCount,
+                ConstructedPlayerUnitCount = constructedPlayerUnitCount,
+                ConstructedStructureCount = constructedStructureCount,
+                ConstructedObjectiveCount = constructedObjectiveCount,
+                MissionTemplateId = cloneDryRun?.MissionTemplateId,
+                InitialResult = constructed ? replacementMission.Result.ToString() : "",
+                ResultReason = constructed ? replacementMission.ResultReason : "",
+                ConstructionError = constructionError,
+                Message = ready ? "Mission restarted" : "Restart mission unavailable",
+                Reason = ready
+                    ? "Runtime swap prepared"
+                    : RestartRuntimeSwapRequirements(cloneDryRun, constructionError, constructed),
+                Summary = RestartRuntimeSwapSummary(
+                    cloneDryRun?.MissionTemplateId,
+                    constructedUnitCount,
+                    constructedPlayerUnitCount,
+                    constructedObjectiveCount,
+                    cloneDryRun?.IncludesDepotMissionSlot == true),
+                Mission = ready ? replacementMission : null,
                 SpawnIntents = cloneDryRun?.SpawnIntents ?? Array.Empty<MechBayMissionRestartSpawnIntent>()
             };
         }
@@ -2074,6 +2184,48 @@ namespace MC2Demo.BattleCore
 
             string mission = string.IsNullOrWhiteSpace(missionTemplateId) ? "mission" : missionTemplateId;
             string text = "Throwaway BattleMission: "
+                + mission
+                + " units "
+                + constructedUnitCount.ToString(CultureInfo.InvariantCulture)
+                + " players "
+                + constructedPlayerUnitCount.ToString(CultureInfo.InvariantCulture)
+                + " objectives "
+                + constructedObjectiveCount.ToString(CultureInfo.InvariantCulture);
+            return includesDepotMissionSlot ? text + "  depot included" : text;
+        }
+
+        private static string RestartRuntimeSwapRequirements(
+            MechBayMissionRestartContractCloneDryRun cloneDryRun,
+            string constructionError,
+            bool constructed)
+        {
+            if (cloneDryRun?.Ready != true)
+            {
+                return "Need restart contract clone dry run";
+            }
+
+            if (!string.IsNullOrWhiteSpace(constructionError))
+            {
+                return "Fix construction error";
+            }
+
+            return constructed ? "Need matching player unit count" : "Need replacement BattleMission";
+        }
+
+        private static string RestartRuntimeSwapSummary(
+            string missionTemplateId,
+            int constructedUnitCount,
+            int constructedPlayerUnitCount,
+            int constructedObjectiveCount,
+            bool includesDepotMissionSlot)
+        {
+            if (constructedUnitCount <= 0)
+            {
+                return "No replacement BattleMission";
+            }
+
+            string mission = string.IsNullOrWhiteSpace(missionTemplateId) ? "mission" : missionTemplateId;
+            string text = "Replacement BattleMission: "
                 + mission
                 + " units "
                 + constructedUnitCount.ToString(CultureInfo.InvariantCulture)

@@ -309,9 +309,9 @@ rebuild a live mission instance from the inventory roster.
 The same handoff now produces a restart dry run: each available mission slot is
 mapped to a future spawn intent with commander/lancemate role, pilot, loadout,
 and depot-slot marker, while still creating no new `BattleMission`.
-The restart dry run now also has an Apply guard. It reports the spawn-intent
-count but always rejects, preserving inventory and runtime combat state until
-the real `BattleMission` recreation path exists.
+The restart dry run now also has an Apply guard. The legacy one-argument guard
+still rejects as a pure no-op, while the runtime guard enables Apply only after
+the cloned contract can build a valid replacement `BattleMission`.
 The guarded path now exposes a restart contract preview as well: it names the
 `mc2_01` template, player team, commander slot, player-unit patch mode, and
 spawn-intent count that a future `BattleMission` recreation call would consume,
@@ -324,3 +324,7 @@ That prepared contract is now also passed through a throwaway `BattleMission`
 construction dry run. The dry run verifies that BattleCore can instantiate the
 patched payload and reports unit, player-unit, structure, objective, and initial
 result counts, but it never replaces the active combat mission.
+The Unity presentation can now consume the same validated path for an actual
+restart: it builds a replacement `BattleMission`, clears generated runtime scene
+objects and transient command UI state, rebinds command/observation ports, and
+rebuilds the world views without mutating inventory token or item counts.
