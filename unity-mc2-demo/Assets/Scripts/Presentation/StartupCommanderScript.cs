@@ -97,7 +97,19 @@ namespace MC2Demo.Presentation
                 return true;
             }
 
-            error = "Command file action must be command, advance, or report.";
+            if (string.Equals(verb, "restart", StringComparison.OrdinalIgnoreCase))
+            {
+                if (!string.IsNullOrWhiteSpace(payload))
+                {
+                    error = "Restart action does not accept arguments.";
+                    return false;
+                }
+
+                action = StartupCommanderScriptAction.Restart(lineNumber, rawLine);
+                return true;
+            }
+
+            error = "Command file action must be command, advance, report, or restart.";
             return false;
         }
     }
@@ -155,6 +167,16 @@ namespace MC2Demo.Presentation
                 SourceLine = sourceLine ?? string.Empty
             };
         }
+
+        public static StartupCommanderScriptAction Restart(int lineNumber, string sourceLine)
+        {
+            return new StartupCommanderScriptAction
+            {
+                Kind = StartupCommanderScriptActionKind.Restart,
+                LineNumber = lineNumber,
+                SourceLine = sourceLine ?? string.Empty
+            };
+        }
     }
 
     public enum StartupCommanderScriptActionKind
@@ -162,6 +184,7 @@ namespace MC2Demo.Presentation
         None,
         Command,
         Advance,
-        Report
+        Report,
+        Restart
     }
 }

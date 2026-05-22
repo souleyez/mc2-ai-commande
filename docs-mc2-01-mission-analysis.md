@@ -328,3 +328,7 @@ The Unity presentation can now consume the same validated path for an actual
 restart: it builds a replacement `BattleMission`, clears generated runtime scene
 objects and transient command UI state, rebinds command/observation ports, and
 rebuilds the world views without mutating inventory token or item counts.
+The startup command harness can now trigger the same restart path with a
+script-level `restart` action or `-mc2RestartMission`, so command-file smoke
+tests can verify that post-restart observation and movement commands still run
+against the rebuilt mission.

@@ -2470,18 +2470,20 @@ namespace MC2Demo.EditorTools
                     "",
                     "command squad move 500 0",
                     "advance 0.5",
+                    "restart",
                     "report",
                     "command unit player-1 attack structure structure-1"
                 },
                 "validator-command-file");
 
-            if (actions.Length != 4
+            if (actions.Length != 5
                 || actions[0].Kind != StartupCommanderScriptActionKind.Command
                 || actions[1].Kind != StartupCommanderScriptActionKind.Advance
-                || actions[2].Kind != StartupCommanderScriptActionKind.Report
-                || actions[3].CommandText != "unit player-1 attack structure structure-1")
+                || actions[2].Kind != StartupCommanderScriptActionKind.Restart
+                || actions[3].Kind != StartupCommanderScriptActionKind.Report
+                || actions[4].CommandText != "unit player-1 attack structure structure-1")
             {
-                throw new InvalidDataException("Expected command file parser to preserve command, advance, and report actions.");
+                throw new InvalidDataException("Expected command file parser to preserve command, advance, restart, and report actions.");
             }
 
             if (Math.Abs(actions[1].AdvanceSeconds - 0.5f) > 0.001f)
@@ -2505,6 +2507,23 @@ namespace MC2Demo.EditorTools
                     case StartupCommanderScriptActionKind.Advance:
                         mission.Tick(action.AdvanceSeconds);
                         break;
+                    case StartupCommanderScriptActionKind.Restart:
+                        MechBayInventoryContract inventory = MechBayInventoryBuilder.BuildDemoInventory(mission.PlayerUnits());
+                        MechBayMissionRestartRuntimeSwapResult restart =
+                            MechBayMissionHandoffPreviewService.TryBuildRestartRuntimeSwap(
+                                inventory,
+                                mission.Contract,
+                                CombatProfileCatalog.Empty);
+                        if (restart == null || !restart.Accepted || restart.Mission == null)
+                        {
+                            throw new InvalidDataException(
+                                "Expected command file restart action to build a replacement mission. Got "
+                                + MissionRestartRuntimeSwapDebugText(restart));
+                        }
+
+                        mission = restart.Mission;
+                        port = new CommanderCommandPort(mission, 520f, _ => true);
+                        break;
                     case StartupCommanderScriptActionKind.Report:
                         string json = new CommanderObservationPort(mission).ToJson();
                         if (string.IsNullOrEmpty(json) || !json.Contains("validator-command-port"))
@@ -2517,19 +2536,20 @@ namespace MC2Demo.EditorTools
 
             UnitState playerOne = mission.FindUnit("player-1");
             UnitState playerTwo = mission.FindUnit("player-2");
-            if (playerOne.AttackTargetId != "structure-1" || playerTwo.MoveTarget.x != 500f)
+            if (playerOne.AttackTargetId != "structure-1" || Math.Abs(playerTwo.MoveTarget.x - 500f) < 0.001f)
             {
-                throw new InvalidDataException("Expected command file playback to affect the battle mission.");
+                throw new InvalidDataException("Expected command file restart playback to reset old orders before accepting new ones.");
             }
 
-            if (Math.Abs(mission.MissionTimeSeconds - 0.5f) > 0.001f)
+            if (Math.Abs(mission.MissionTimeSeconds) > 0.001f)
             {
-                throw new InvalidDataException("Expected command file advance action to progress mission time.");
+                throw new InvalidDataException("Expected command file restart action to reset mission time.");
             }
 
             if (StartupCommanderScript.TryParseLine("advance nope", 1, out _, out _)
                 || StartupCommanderScript.TryParseLine("command", 1, out _, out _)
-                || StartupCommanderScript.TryParseLine("report now", 1, out _, out _))
+                || StartupCommanderScript.TryParseLine("report now", 1, out _, out _)
+                || StartupCommanderScript.TryParseLine("restart now", 1, out _, out _))
             {
                 throw new InvalidDataException("Expected malformed command file lines to be rejected.");
             }

@@ -91,6 +91,7 @@ The Unity demo currently supports:
   - `-mc2Command`
   - `-mc2AdvanceSeconds`
   - `-mc2ReportState`
+  - `-mc2RestartMission`
   - ordered startup command execution
 
 ## Guardrails
@@ -400,7 +401,7 @@ Tasks:
 
 ## Current Recommended Next Task
 
-Start with **starter mission restart runtime swap polish**.
+Start with **starter mission restart state polish**.
 
 Reason:
 
@@ -435,5 +436,7 @@ Reason:
 - The restart path now has a contract clone dry run that prepares a replacement `MissionContract` payload while still avoiding a live mission restart.
 - The restart path now has a `BattleMission` construction dry run that instantiates the prepared contract only as a throwaway validation object, not as the active combat mission.
 - The restart path now has a guarded runtime swap that builds a replacement `BattleMission`, clears generated Unity scene objects, rebinds command/observation ports, and rebuilds the world without changing token or item counts.
-- The next low-risk step is runtime polish around restart UX: preserve the useful mech-bay context where appropriate, add a command-file smoke path for restart, and tighten any state-reset edge cases seen in play.
+- Startup command files now support a script-level `restart` action, and `-mc2RestartMission` exposes the same guarded runtime swap from CLI startup args.
+- A dedicated `mc2_01-restart-demo.txt` command file proves move, advance, report, restart, report, and post-restart command playback in the built player.
+- The next low-risk step is runtime state polish around repeated restart UX: preserve useful mech-bay context where appropriate and tighten any state-reset edge cases seen in play.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.

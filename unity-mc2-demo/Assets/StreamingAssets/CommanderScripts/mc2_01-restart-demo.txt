@@ -1,0 +1,9 @@
+# Short script that proves runtime mission restart can rebuild the active battle.
+command squad move 3136 -789
+advance 1
+report
+restart
+report
+command squad move 3136 -789
+advance 1
+report

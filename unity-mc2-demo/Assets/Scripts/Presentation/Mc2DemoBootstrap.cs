@@ -182,7 +182,7 @@ namespace MC2Demo.Presentation
                 + (mission.Contract.forests == null ? 0 : mission.Contract.forests.Length));
         }
 
-        private void TryApplyMissionRestartRuntimeSwap()
+        private bool TryApplyMissionRestartRuntimeSwap()
         {
             MechBayMissionRestartRuntimeSwapResult result =
                 MechBayMissionHandoffPreviewService.TryBuildRestartRuntimeSwap(
@@ -193,10 +193,11 @@ namespace MC2Demo.Presentation
             {
                 statusText = result?.Reason ?? "Restart unavailable";
                 AddCombatLogLine("Mission restart rejected: " + statusText);
-                return;
+                return false;
             }
 
             ApplyRestartedMission(result.Mission, result);
+            return true;
         }
 
         private void ApplyRestartedMission(
@@ -309,6 +310,9 @@ namespace MC2Demo.Presentation
                     case "-mc2ReportState":
                         ReportStartupCommanderState();
                         break;
+                    case "-mc2RestartMission":
+                        RunStartupMissionRestart();
+                        break;
                     case "-mc2MinimaxCommanderSteps":
                         index = RunStartupMiniMaxCommander(args, index);
                         break;
@@ -385,6 +389,9 @@ namespace MC2Demo.Presentation
                     case StartupCommanderScriptActionKind.Report:
                         ReportStartupCommanderState();
                         break;
+                    case StartupCommanderScriptActionKind.Restart:
+                        RunStartupMissionRestart();
+                        break;
                 }
             }
         }
@@ -417,6 +424,20 @@ namespace MC2Demo.Presentation
             AddCombatLogLine(line);
             statusText = result.Message;
             Debug.Log("MC2 commander command: " + line + " message=" + result.Message);
+        }
+
+        private void RunStartupMissionRestart()
+        {
+            bool accepted = TryApplyMissionRestartRuntimeSwap();
+            Debug.Log(
+                "MC2 commander restart: accepted="
+                + accepted
+                + " mission="
+                + (mission?.Contract?.mission?.id ?? "none")
+                + " result="
+                + (mission == null ? "none" : mission.Result.ToString())
+                + " status="
+                + statusText);
         }
 
         private int RunStartupSimulationAdvance(string[] args, int index)

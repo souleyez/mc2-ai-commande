@@ -18,6 +18,7 @@ Current demo behavior:
 - defaults to squad orders, with status-bar click for detached single-unit order
 - routes player commands through a CLI-ready commander command port for AI draft/directive tests
 - exposes a CLI-ready commander observation JSON for compact AI planning summaries
+- supports scriptable runtime restart from startup args or command files
 - lets map clicks on hostile units or targetable buildings issue focused attack orders
 - renders command rings for selected units, order destinations, and focused targets
 - shows world objective area hints only for the current active objective
@@ -149,6 +150,27 @@ Run the player with a startup commander command file:
   -logFile "$PWD\..\analysis-output\unity-player-command-file.log"
 ```
 
+Run the player with a startup command file that restarts and rebuilds the active mission:
+
+```powershell
+& .\Builds\Windows\MC2UnityDemo.exe `
+  -batchmode -nographics -mc2SmokeTest `
+  -mc2CommandFile ".\Assets\StreamingAssets\CommanderScripts\mc2_01-restart-demo.txt" `
+  -logFile "$PWD\..\analysis-output\unity-player-restart-command-file.log"
+```
+
+Run the player with a direct startup restart:
+
+```powershell
+& .\Builds\Windows\MC2UnityDemo.exe `
+  -batchmode -nographics -mc2SmokeTest `
+  -mc2Command "squad move 3136 -789" `
+  -mc2AdvanceSeconds 1 `
+  -mc2RestartMission `
+  -mc2ReportState `
+  -logFile "$PWD\..\analysis-output\unity-player-restart-arg.log"
+```
+
 Run the player with MiniMax driving startup commander directives:
 
 ```powershell
@@ -169,6 +191,7 @@ Command files run in order and support blank lines plus `#` comments:
 command squad move 3136 -789
 advance 2
 report
+restart
 command unit unit-1 move 3221 -277
 ```
 
