@@ -440,5 +440,6 @@ Reason:
 - A dedicated `mc2_01-restart-demo.txt` command file now proves move, advance, report, repeated restart, and post-restart command playback in the built player.
 - Runtime restart now immediately disables old generated scene roots before queued destruction, reducing same-frame overlap risk while the replacement world is rebuilt.
 - Mech bay restart Apply now keeps the mech bay open and pauses the rebuilt mission, while system, result-panel, and CLI restarts still return directly to battle.
-- The next low-risk step is post-restart roster/condition feedback polish, so the player can immediately see which mechs are deployed, repaired, held, or unavailable after a rebuild.
+- Post-restart roster/condition feedback now shows active player slots, deployed roster count, ready mechs, repair needs, held depot mechs, fit blockers, and unavailable mechs in the mech bay and restart combat log.
+- The next low-risk step is to tighten the restart handoff identity mapping, so future depot-squad swaps can keep owned-mech identity, pilot, and condition clear after the rebuilt BattleMission is live.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.

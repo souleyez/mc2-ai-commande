@@ -235,6 +235,8 @@ namespace MC2Demo.Presentation
             SetPaused(keepMechBayOpen && mission.Result == MissionResultState.InProgress);
             statusText = keepMechBayOpen ? "Mission restarted - Mech bay open" : (result?.Message ?? "Mission restarted");
             AddCombatLogLine(statusText + ": " + (result?.Summary ?? "replacement ready"));
+            MechBayOwnedRosterEntry[] roster = MechBayOwnedRosterService.BuildRosterPreview(demoInventory);
+            AddCombatLogLine("Roster state: " + RosterMissionStateText(BuildRosterMissionState(roster)));
             Debug.Log(
                 "MC2 mission restart applied: clearedRoots="
                 + clearedRoots.ToString(CultureInfo.InvariantCulture)
@@ -2665,7 +2667,7 @@ namespace MC2Demo.Presentation
 
             y += 30f;
             DrawMechBayInventorySummary(x, y, width);
-            y += 500f;
+            y += 522f;
             if (showWarehouseDraftFitPreview)
             {
                 DrawWarehouseDraftFitPreview(x, y, width);
@@ -2739,18 +2741,19 @@ namespace MC2Demo.Presentation
             GUI.Label(
                 new Rect(x, y + 126f, width, 18f),
                 "Roster " + TruncateText(OwnedRosterText(roster), 62));
+            DrawRosterMissionStateLine(x, y + 148f, width, roster);
             MechBayMissionHandoffPreview handoffPreview =
                 MechBayMissionHandoffPreviewService.BuildPreview(demoInventory);
             GUI.Label(
-                new Rect(x, y + 148f, width, 18f),
+                new Rect(x, y + 170f, width, 18f),
                 "Next Mission " + TruncateText(MissionHandoffPreviewText(handoffPreview), 58));
-            DrawMissionHandoffLaunchGuard(x, y + 170f, width, handoffPreview);
-            DrawMissionRestartDryRun(x, y + 192f, width);
-            DrawMissionRestartApplyGuard(x, y + 214f, width);
-            DrawMissionRestartContractPreview(x, y + 236f, width);
-            DrawMissionRestartContractCloneDryRun(x, y + 258f, width);
-            DrawMissionRestartConstructionDryRun(x, y + 280f, width);
-            DrawOwnedRosterDetail(x, y + 302f, width, roster, pilotHirePreview);
+            DrawMissionHandoffLaunchGuard(x, y + 192f, width, handoffPreview);
+            DrawMissionRestartDryRun(x, y + 214f, width);
+            DrawMissionRestartApplyGuard(x, y + 236f, width);
+            DrawMissionRestartContractPreview(x, y + 258f, width);
+            DrawMissionRestartContractCloneDryRun(x, y + 280f, width);
+            DrawMissionRestartConstructionDryRun(x, y + 302f, width);
+            DrawOwnedRosterDetail(x, y + 324f, width, roster, pilotHirePreview);
         }
 
         private void DrawLoadoutUnit(UnitState unit, float x, float y, float width)
@@ -2946,6 +2949,141 @@ namespace MC2Demo.Presentation
             }
 
             return text;
+        }
+
+        private void DrawRosterMissionStateLine(float x, float y, float width, MechBayOwnedRosterEntry[] roster)
+        {
+            RosterMissionState state = BuildRosterMissionState(roster);
+            Color previous = GUI.color;
+            GUI.color = state.NeedsRepairCount > 0 || state.NeedsFitCount > 0 || state.UnavailableCount > 0
+                ? new Color(1f, 0.78f, 0.28f, 1f)
+                : new Color(0.58f, 0.82f, 1f, 1f);
+            GUI.Label(new Rect(x, y, width, 18f), "Mission State " + TruncateText(RosterMissionStateText(state), 72));
+            GUI.color = previous;
+        }
+
+        private RosterMissionState BuildRosterMissionState(MechBayOwnedRosterEntry[] roster)
+        {
+            int ownedCount = 0;
+            int deployedCount = 0;
+            int readyCount = 0;
+            int needsRepairCount = 0;
+            int heldCount = 0;
+            int needsFitCount = 0;
+            int unavailableCount = 0;
+            MechBayOwnedRosterEntry[] safeRoster = roster ?? Array.Empty<MechBayOwnedRosterEntry>();
+            for (int index = 0; index < safeRoster.Length; index++)
+            {
+                MechBayOwnedRosterEntry entry = safeRoster[index];
+                if (entry == null)
+                {
+                    continue;
+                }
+
+                ownedCount++;
+                bool needsFit = RosterEntryNeedsFit(entry);
+                if (entry.availableForMission)
+                {
+                    deployedCount++;
+                    if (entry.conditionPercent >= 100 && !needsFit)
+                    {
+                        readyCount++;
+                    }
+                }
+                else if (entry.isWarehouseMech)
+                {
+                    heldCount++;
+                }
+                else
+                {
+                    unavailableCount++;
+                }
+
+                if (entry.conditionPercent < 100)
+                {
+                    needsRepairCount++;
+                }
+
+                if (needsFit)
+                {
+                    needsFitCount++;
+                }
+            }
+
+            return new RosterMissionState(
+                ownedCount,
+                CountActivePlayerUnits(),
+                CountPlayerUnits(),
+                deployedCount,
+                readyCount,
+                needsRepairCount,
+                heldCount,
+                needsFitCount,
+                unavailableCount);
+        }
+
+        private static string RosterMissionStateText(RosterMissionState state)
+        {
+            return "Act "
+                + state.ActivePlayerCount.ToString(CultureInfo.InvariantCulture)
+                + "/"
+                + state.PlayerSlotCount.ToString(CultureInfo.InvariantCulture)
+                + "  Depl "
+                + state.DeployedCount.ToString(CultureInfo.InvariantCulture)
+                + "/"
+                + state.OwnedCount.ToString(CultureInfo.InvariantCulture)
+                + "  Ready "
+                + state.ReadyCount.ToString(CultureInfo.InvariantCulture)
+                + "  Repair "
+                + state.NeedsRepairCount.ToString(CultureInfo.InvariantCulture)
+                + "  Held "
+                + state.HeldCount.ToString(CultureInfo.InvariantCulture)
+                + "  Fit "
+                + state.NeedsFitCount.ToString(CultureInfo.InvariantCulture)
+                + "  Unavail "
+                + state.UnavailableCount.ToString(CultureInfo.InvariantCulture);
+        }
+
+        private static bool RosterEntryNeedsFit(MechBayOwnedRosterEntry entry)
+        {
+            return entry != null
+                && (string.Equals(entry.loadoutStatus, "Needs loadout", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(entry.loadoutStatus, "No loadout", StringComparison.OrdinalIgnoreCase));
+        }
+
+        private struct RosterMissionState
+        {
+            public RosterMissionState(
+                int ownedCount,
+                int activePlayerCount,
+                int playerSlotCount,
+                int deployedCount,
+                int readyCount,
+                int needsRepairCount,
+                int heldCount,
+                int needsFitCount,
+                int unavailableCount)
+            {
+                OwnedCount = ownedCount;
+                ActivePlayerCount = activePlayerCount;
+                PlayerSlotCount = playerSlotCount;
+                DeployedCount = deployedCount;
+                ReadyCount = readyCount;
+                NeedsRepairCount = needsRepairCount;
+                HeldCount = heldCount;
+                NeedsFitCount = needsFitCount;
+                UnavailableCount = unavailableCount;
+            }
+
+            public int OwnedCount { get; }
+            public int ActivePlayerCount { get; }
+            public int PlayerSlotCount { get; }
+            public int DeployedCount { get; }
+            public int ReadyCount { get; }
+            public int NeedsRepairCount { get; }
+            public int HeldCount { get; }
+            public int NeedsFitCount { get; }
+            public int UnavailableCount { get; }
         }
 
         private static string MissionHandoffPreviewText(MechBayMissionHandoffPreview preview)
@@ -3949,6 +4087,50 @@ namespace MC2Demo.Presentation
             {
                 GUI.Label(new Rect(right + 92f, y, width * 0.46f - 92f, 18f), "Need " + FormatTokens(repairCost));
             }
+            else
+            {
+                GUI.Label(new Rect(right + 92f, y, width * 0.46f - 92f, 18f), UnitMissionStateText(unit));
+            }
+        }
+
+        private static string UnitMissionStateText(UnitState unit)
+        {
+            if (unit == null)
+            {
+                return "State unknown";
+            }
+
+            if (unit.IsDestroyed)
+            {
+                return "Destroyed";
+            }
+
+            if (!unit.IsActive)
+            {
+                return "Held by trigger";
+            }
+
+            if (unit.IsJumping)
+            {
+                return "Jetting";
+            }
+
+            if (unit.IsDetached)
+            {
+                return "Solo order";
+            }
+
+            if (unit.HasAttackOrder)
+            {
+                return "Attacking";
+            }
+
+            if (unit.HasMoveOrder)
+            {
+                return "Moving";
+            }
+
+            return "Ready";
         }
 
         private void RefreshDemoInventoryValidation()
@@ -5292,9 +5474,33 @@ namespace MC2Demo.Presentation
         private int CountPlayerUnits()
         {
             int count = 0;
+            if (mission == null)
+            {
+                return count;
+            }
+
             foreach (UnitState unit in mission.PlayerUnits())
             {
                 count++;
+            }
+
+            return count;
+        }
+
+        private int CountActivePlayerUnits()
+        {
+            int count = 0;
+            if (mission == null)
+            {
+                return count;
+            }
+
+            foreach (UnitState unit in mission.PlayerUnits())
+            {
+                if (unit.IsActive && !unit.IsDestroyed)
+                {
+                    count++;
+                }
             }
 
             return count;

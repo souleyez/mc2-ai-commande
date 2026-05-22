@@ -339,3 +339,7 @@ The presentation now preserves the management context when restart is applied
 from the mech bay: the rebuilt mission stays paused and the mech bay remains
 open, while system, result-panel, and CLI restarts still resume directly into
 the battle view.
+The mech bay also reports the rebuilt roster state after restart: active player
+slots, deployed owned mechs, fully ready mechs, repair needs, held depot mechs,
+fit blockers, and unavailable mission mechs are visible in the summary line and
+the combat log.

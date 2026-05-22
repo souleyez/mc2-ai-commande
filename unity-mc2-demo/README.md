@@ -76,6 +76,7 @@ Current demo behavior:
 - constructs a throwaway BattleMission dry run from the prepared contract without swapping the active mission
 - can restart the active battle by building a replacement BattleMission, immediately disabling old runtime scene roots, and rebuilding Unity views from the guarded path
 - keeps the mech bay open and paused when restart Apply is triggered from the mech bay, while system/CLI restarts return directly to battle
+- shows a post-restart mission-state roster line with active, deployed, ready, repair, held, fit, and unavailable counts
 - warns when draft armor plate or heat sink usage exceeds starter inventory and blocks applying that fit
 - shows starter mech condition and one-click demo repair that spends local token balance
 - applies a local mission receipt for completed bounty tokens and salvaged mech fragments at mission end
