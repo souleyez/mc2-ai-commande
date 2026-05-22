@@ -211,7 +211,7 @@ namespace MC2Demo.Presentation
             }
 
             Time.timeScale = 1f;
-            ClearRuntimeWorld();
+            int clearedRoots = ClearRuntimeWorld();
             mission = replacementMission;
             scriptBridge = new MissionScriptBridge(mission);
             commandPort = new CommanderCommandPort(mission, JumpDistance, DemoTerrainView.IsUsableLandingPosition);
@@ -234,9 +234,10 @@ namespace MC2Demo.Presentation
             SetPaused(false);
             statusText = result?.Message ?? "Mission restarted";
             AddCombatLogLine(statusText + ": " + (result?.Summary ?? "replacement ready"));
+            Debug.Log("MC2 mission restart applied: clearedRoots=" + clearedRoots.ToString(CultureInfo.InvariantCulture));
         }
 
-        private void ClearRuntimeWorld()
+        private int ClearRuntimeWorld()
         {
             unitViews.Clear();
             structureViews.Clear();
@@ -260,6 +261,7 @@ namespace MC2Demo.Presentation
             combatLog.Clear();
             mainCamera = null;
 
+            int clearedRoots = 0;
             GameObject[] roots = SceneManager.GetActiveScene().GetRootGameObjects();
             for (int index = 0; index < roots.Length; index++)
             {
@@ -269,8 +271,12 @@ namespace MC2Demo.Presentation
                     continue;
                 }
 
+                root.SetActive(false);
                 Destroy(root);
+                clearedRoots++;
             }
+
+            return clearedRoots;
         }
 
         private void ScheduleSmokeTestQuitIfRequested()

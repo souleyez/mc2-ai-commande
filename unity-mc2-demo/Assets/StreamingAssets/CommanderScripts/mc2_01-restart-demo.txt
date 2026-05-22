@@ -7,3 +7,8 @@ report
 command squad move 3136 -789
 advance 1
 report
+restart
+report
+command squad move 3136 -789
+advance 0.5
+report

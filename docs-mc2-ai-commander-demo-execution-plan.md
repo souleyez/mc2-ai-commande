@@ -437,6 +437,7 @@ Reason:
 - The restart path now has a `BattleMission` construction dry run that instantiates the prepared contract only as a throwaway validation object, not as the active combat mission.
 - The restart path now has a guarded runtime swap that builds a replacement `BattleMission`, clears generated Unity scene objects, rebinds command/observation ports, and rebuilds the world without changing token or item counts.
 - Startup command files now support a script-level `restart` action, and `-mc2RestartMission` exposes the same guarded runtime swap from CLI startup args.
-- A dedicated `mc2_01-restart-demo.txt` command file proves move, advance, report, restart, report, and post-restart command playback in the built player.
-- The next low-risk step is runtime state polish around repeated restart UX: preserve useful mech-bay context where appropriate and tighten any state-reset edge cases seen in play.
+- A dedicated `mc2_01-restart-demo.txt` command file now proves move, advance, report, repeated restart, and post-restart command playback in the built player.
+- Runtime restart now immediately disables old generated scene roots before queued destruction, reducing same-frame overlap risk while the replacement world is rebuilt.
+- The next low-risk step is mech-bay restart UX polish: preserve useful mech-bay context where appropriate and make the post-restart roster/condition feedback easier to read.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.

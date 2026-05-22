@@ -332,3 +332,6 @@ The startup command harness can now trigger the same restart path with a
 script-level `restart` action or `-mc2RestartMission`, so command-file smoke
 tests can verify that post-restart observation and movement commands still run
 against the rebuilt mission.
+Repeated restart is also covered: generated scene roots are deactivated before
+they are queued for destruction, and the restart demo script runs two rebuilds
+before issuing another movement command.

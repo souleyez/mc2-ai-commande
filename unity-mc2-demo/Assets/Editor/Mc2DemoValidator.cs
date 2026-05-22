@@ -2472,16 +2472,22 @@ namespace MC2Demo.EditorTools
                     "advance 0.5",
                     "restart",
                     "report",
+                    "command squad move 500 0",
+                    "advance 0.25",
+                    "restart",
+                    "report",
                     "command unit player-1 attack structure structure-1"
                 },
                 "validator-command-file");
 
-            if (actions.Length != 5
+            if (actions.Length != 9
                 || actions[0].Kind != StartupCommanderScriptActionKind.Command
                 || actions[1].Kind != StartupCommanderScriptActionKind.Advance
                 || actions[2].Kind != StartupCommanderScriptActionKind.Restart
                 || actions[3].Kind != StartupCommanderScriptActionKind.Report
-                || actions[4].CommandText != "unit player-1 attack structure structure-1")
+                || actions[6].Kind != StartupCommanderScriptActionKind.Restart
+                || actions[7].Kind != StartupCommanderScriptActionKind.Report
+                || actions[8].CommandText != "unit player-1 attack structure structure-1")
             {
                 throw new InvalidDataException("Expected command file parser to preserve command, advance, restart, and report actions.");
             }
@@ -2493,6 +2499,7 @@ namespace MC2Demo.EditorTools
 
             BattleMission mission = new(MakeCommandPortContract(), CombatProfileCatalog.Empty);
             CommanderCommandPort port = new(mission, 520f, _ => true);
+            int restartCount = 0;
             foreach (StartupCommanderScriptAction action in actions)
             {
                 switch (action.Kind)
@@ -2523,6 +2530,7 @@ namespace MC2Demo.EditorTools
 
                         mission = restart.Mission;
                         port = new CommanderCommandPort(mission, 520f, _ => true);
+                        restartCount++;
                         break;
                     case StartupCommanderScriptActionKind.Report:
                         string json = new CommanderObservationPort(mission).ToJson();
@@ -2541,9 +2549,14 @@ namespace MC2Demo.EditorTools
                 throw new InvalidDataException("Expected command file restart playback to reset old orders before accepting new ones.");
             }
 
+            if (restartCount != 2)
+            {
+                throw new InvalidDataException("Expected command file playback to apply two restart actions.");
+            }
+
             if (Math.Abs(mission.MissionTimeSeconds) > 0.001f)
             {
-                throw new InvalidDataException("Expected command file restart action to reset mission time.");
+                throw new InvalidDataException("Expected final command file restart action to reset mission time.");
             }
 
             if (StartupCommanderScript.TryParseLine("advance nope", 1, out _, out _)

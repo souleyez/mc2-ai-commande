@@ -18,7 +18,7 @@ Current demo behavior:
 - defaults to squad orders, with status-bar click for detached single-unit order
 - routes player commands through a CLI-ready commander command port for AI draft/directive tests
 - exposes a CLI-ready commander observation JSON for compact AI planning summaries
-- supports scriptable runtime restart from startup args or command files
+- supports repeatable scriptable runtime restart from startup args or command files
 - lets map clicks on hostile units or targetable buildings issue focused attack orders
 - renders command rings for selected units, order destinations, and focused targets
 - shows world objective area hints only for the current active objective
@@ -74,7 +74,7 @@ Current demo behavior:
 - previews the future BattleMission restart contract input without instantiating a mission
 - prepares a cloned MissionContract dry run that replaces player spawns while leaving the active mission untouched
 - constructs a throwaway BattleMission dry run from the prepared contract without swapping the active mission
-- can restart the active battle by building a replacement BattleMission, clearing the runtime scene, and rebuilding Unity views from the guarded path
+- can restart the active battle by building a replacement BattleMission, immediately disabling old runtime scene roots, and rebuilding Unity views from the guarded path
 - warns when draft armor plate or heat sink usage exceeds starter inventory and blocks applying that fit
 - shows starter mech condition and one-click demo repair that spends local token balance
 - applies a local mission receipt for completed bounty tokens and salvaged mech fragments at mission end
