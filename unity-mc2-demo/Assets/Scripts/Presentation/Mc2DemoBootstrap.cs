@@ -182,7 +182,7 @@ namespace MC2Demo.Presentation
                 + (mission.Contract.forests == null ? 0 : mission.Contract.forests.Length));
         }
 
-        private bool TryApplyMissionRestartRuntimeSwap()
+        private bool TryApplyMissionRestartRuntimeSwap(bool keepMechBayOpen = false)
         {
             MechBayMissionRestartRuntimeSwapResult result =
                 MechBayMissionHandoffPreviewService.TryBuildRestartRuntimeSwap(
@@ -196,13 +196,14 @@ namespace MC2Demo.Presentation
                 return false;
             }
 
-            ApplyRestartedMission(result.Mission, result);
+            ApplyRestartedMission(result.Mission, result, keepMechBayOpen);
             return true;
         }
 
         private void ApplyRestartedMission(
             BattleMission replacementMission,
-            MechBayMissionRestartRuntimeSwapResult result)
+            MechBayMissionRestartRuntimeSwapResult result,
+            bool keepMechBayOpen)
         {
             if (replacementMission == null)
             {
@@ -221,7 +222,7 @@ namespace MC2Demo.Presentation
             pendingDetachedUnitId = null;
             pendingJumpOrder = false;
             showMissionMap = false;
-            showLoadoutPanel = false;
+            showLoadoutPanel = keepMechBayOpen;
             showSystemPanel = false;
             showWarehouseDraftFitPreview = false;
             showSquadSelectionPreview = false;
@@ -231,10 +232,14 @@ namespace MC2Demo.Presentation
 
             BuildWorld();
             RefreshDemoInventoryValidation();
-            SetPaused(false);
-            statusText = result?.Message ?? "Mission restarted";
+            SetPaused(keepMechBayOpen && mission.Result == MissionResultState.InProgress);
+            statusText = keepMechBayOpen ? "Mission restarted - Mech bay open" : (result?.Message ?? "Mission restarted");
             AddCombatLogLine(statusText + ": " + (result?.Summary ?? "replacement ready"));
-            Debug.Log("MC2 mission restart applied: clearedRoots=" + clearedRoots.ToString(CultureInfo.InvariantCulture));
+            Debug.Log(
+                "MC2 mission restart applied: clearedRoots="
+                + clearedRoots.ToString(CultureInfo.InvariantCulture)
+                + " keepMechBayOpen="
+                + keepMechBayOpen);
         }
 
         private int ClearRuntimeWorld()
@@ -3027,7 +3032,7 @@ namespace MC2Demo.Presentation
             GUI.enabled = previousEnabled && guard?.ApplyEnabled == true;
             if (GUI.Button(new Rect(x, y - 2f, 58f, 22f), "Apply"))
             {
-                TryApplyMissionRestartRuntimeSwap();
+                TryApplyMissionRestartRuntimeSwap(keepMechBayOpen: true);
             }
 
             GUI.enabled = previousEnabled;

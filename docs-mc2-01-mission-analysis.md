@@ -335,3 +335,7 @@ against the rebuilt mission.
 Repeated restart is also covered: generated scene roots are deactivated before
 they are queued for destruction, and the restart demo script runs two rebuilds
 before issuing another movement command.
+The presentation now preserves the management context when restart is applied
+from the mech bay: the rebuilt mission stays paused and the mech bay remains
+open, while system, result-panel, and CLI restarts still resume directly into
+the battle view.
