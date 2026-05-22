@@ -70,6 +70,7 @@ Current demo behavior:
 - previews the next-mission handoff roster from `availableForMission` without restarting the current battle
 - shows a disabled Launch guard explaining that the future mission restart hook is not wired yet
 - maps the handoff roster into restart dry-run spawn intents without creating a new mission instance
+- supports command-file depot swap smoke actions for preparing a demo depot candidate, applying the swap, and asserting restart identity
 - enables restart Apply only after a validated BattleMission construction path is available
 - previews the future BattleMission restart contract input without instantiating a mission
 - prepares a cloned MissionContract dry run that replaces player spawns while leaving the active mission untouched
@@ -162,6 +163,15 @@ Run the player with a startup command file that restarts and rebuilds the active
   -logFile "$PWD\..\analysis-output\unity-player-restart-command-file.log"
 ```
 
+Run the player with a startup command file that applies a demo depot squad swap, restarts, and asserts owned-mech identity:
+
+```powershell
+& .\Builds\Windows\MC2UnityDemo.exe `
+  -batchmode -nographics -mc2SmokeTest `
+  -mc2CommandFile ".\Assets\StreamingAssets\CommanderScripts\mc2_01-restart-identity-swap.txt" `
+  -logFile "$PWD\..\analysis-output\unity-player-restart-identity-swap.log"
+```
+
 Run the player with a direct startup restart:
 
 ```powershell
@@ -195,10 +205,13 @@ command squad move 3136 -789
 advance 2
 report
 restart
+assert-restart-identity
 command unit unit-1 move 3221 -277
 ```
 
 Relative command-file paths are checked from the current working directory first, then from the player `StreamingAssets` folder.
+
+Command files also support `prepare-depot-candidate`, `squad-swap`, and `assert-restart-identity depot` for the demo-only restart identity smoke path.
 
 Commander observation reports include `reportIndex` and `missionTimeSeconds` so future AI adapters can correlate decisions with elapsed battle time.
 

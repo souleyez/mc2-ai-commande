@@ -347,3 +347,7 @@ Restart identity now survives the runtime swap as explicit spawn metadata:
 `UnitSpawn` carries owned mech id, pilot display name, and active loadout id,
 `UnitState` exposes those fields to UI and commander observations, and inventory
 condition sync prefers owned mech id before falling back to legacy unit id.
+The command-file harness now has a demo-only depot swap identity check:
+`prepare-depot-candidate`, `squad-swap`, `restart`, and
+`assert-restart-identity depot` prove that a warehouse/depot slot can become a
+runtime player unit and still report its owned mech identity after rebuild.

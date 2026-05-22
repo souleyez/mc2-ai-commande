@@ -67,6 +67,8 @@ namespace MC2Demo.Presentation
         private string squadSelectionDraftOutgoingOwnedMechId;
         private string squadSelectionDraftIncomingOwnedMechId;
         private string statusText = "Loading";
+        private bool startupSmokeFailed;
+        private const string StartupSmokeDepotOwnedMechId = "assembled-smoke-depot";
 
         private void Start()
         {
@@ -382,6 +384,7 @@ namespace MC2Demo.Presentation
             {
                 AddCombatLogLine("CLI command file blocked: " + requestedPath);
                 statusText = "Command file blocked";
+                startupSmokeFailed = true;
                 Debug.LogError("MC2 commander command file blocked: path=" + resolvedPath + " error=" + exception.Message);
             }
 
@@ -405,6 +408,15 @@ namespace MC2Demo.Presentation
                         break;
                     case StartupCommanderScriptActionKind.Restart:
                         RunStartupMissionRestart();
+                        break;
+                    case StartupCommanderScriptActionKind.PrepareDepotCandidate:
+                        RunStartupPrepareDepotCandidate();
+                        break;
+                    case StartupCommanderScriptActionKind.SquadSwap:
+                        RunStartupSquadSwap();
+                        break;
+                    case StartupCommanderScriptActionKind.AssertRestartIdentity:
+                        RunStartupRestartIdentityAssertion(action.RequireDepotIdentity);
                         break;
                 }
             }
@@ -452,6 +464,218 @@ namespace MC2Demo.Presentation
                 + (mission == null ? "none" : mission.Result.ToString())
                 + " status="
                 + statusText);
+        }
+
+        private void RunStartupPrepareDepotCandidate()
+        {
+            bool accepted = EnsureStartupDepotSwapCandidate();
+            string message = accepted ? "prepared" : "blocked";
+            AddCombatLogLine("CLI depot candidate " + message);
+            Debug.Log("MC2 commander depot candidate: " + message);
+        }
+
+        private bool EnsureStartupDepotSwapCandidate()
+        {
+            if (demoInventory == null)
+            {
+                startupSmokeFailed = true;
+                statusText = "Depot candidate blocked";
+                return false;
+            }
+
+            List<MechBayOwnedMechDefinition> ownedMechs = new(demoInventory.ownedMechs ?? Array.Empty<MechBayOwnedMechDefinition>());
+            MechBayOwnedMechDefinition existing = FindOwnedMechByOwnedId(StartupSmokeDepotOwnedMechId);
+            if (existing == null)
+            {
+                string unitType = FirstRuntimePlayerUnitType();
+                existing = new MechBayOwnedMechDefinition
+                {
+                    ownedMechId = StartupSmokeDepotOwnedMechId,
+                    unitId = "warehouse-" + StartupSmokeDepotOwnedMechId,
+                    unitType = unitType,
+                    chassisId = unitType,
+                    displayName = unitType + " Smoke Depot",
+                    activeLoadoutId = MechBayWarehouseDraftFitPreviewService.DemoWarehouseFitLoadoutId,
+                    availableForMission = false,
+                    conditionPercent = 100,
+                    pilotId = "pilot-smoke-depot",
+                    pilotDisplayName = "Smoke Depot Pilot",
+                    pilotType = "NPC"
+                };
+                ownedMechs.Add(existing);
+                demoInventory.ownedMechs = ownedMechs.ToArray();
+            }
+
+            existing.availableForMission = false;
+            existing.conditionPercent = Math.Max(0, Math.Min(100, existing.conditionPercent <= 0 ? 100 : existing.conditionPercent));
+            existing.activeLoadoutId = MechBayWarehouseDraftFitPreviewService.DemoWarehouseFitLoadoutId;
+            if (string.IsNullOrWhiteSpace(existing.pilotId))
+            {
+                existing.pilotId = "pilot-smoke-depot";
+                existing.pilotDisplayName = "Smoke Depot Pilot";
+                existing.pilotType = "NPC";
+            }
+
+            RefreshDemoInventoryValidation();
+            MechBaySquadSelectionPreview preview = MechBaySquadSelectionPreviewService.BuildPreview(demoInventory);
+            bool ready = StartupDepotCandidateReady(preview);
+            if (!ready)
+            {
+                startupSmokeFailed = true;
+                statusText = "Depot candidate blocked";
+            }
+            else
+            {
+                statusText = "Depot candidate ready";
+            }
+
+            return ready;
+        }
+
+        private static bool StartupDepotCandidateReady(MechBaySquadSelectionPreview preview)
+        {
+            MechBaySquadSelectionSlot[] candidates = preview?.DepotCandidates ?? Array.Empty<MechBaySquadSelectionSlot>();
+            for (int index = 0; index < candidates.Length; index++)
+            {
+                if (string.Equals(
+                    candidates[index]?.ownedMechId,
+                    StartupSmokeDepotOwnedMechId,
+                    StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private string FirstRuntimePlayerUnitType()
+        {
+            if (mission != null)
+            {
+                foreach (UnitState unit in mission.PlayerUnits())
+                {
+                    if (!string.IsNullOrWhiteSpace(unit?.UnitType))
+                    {
+                        return unit.UnitType;
+                    }
+                }
+            }
+
+            MechBayOwnedMechDefinition[] ownedMechs = demoInventory?.ownedMechs ?? Array.Empty<MechBayOwnedMechDefinition>();
+            for (int index = 0; index < ownedMechs.Length; index++)
+            {
+                if (!string.IsNullOrWhiteSpace(ownedMechs[index]?.unitType))
+                {
+                    return ownedMechs[index].unitType;
+                }
+            }
+
+            return "Bushwacker";
+        }
+
+        private void RunStartupSquadSwap()
+        {
+            if (!EnsureStartupDepotSwapCandidate())
+            {
+                return;
+            }
+
+            MechBaySquadSelectionDraftState draft =
+                MechBaySquadSelectionPreviewService.BuildDraftState(demoInventory, null, StartupSmokeDepotOwnedMechId);
+            MechBaySquadSelectionApplyResult result =
+                MechBaySquadSelectionPreviewService.TryApplyPendingSwap(demoInventory, draft);
+            if (result?.Accepted == true)
+            {
+                ClearSquadSelectionDraft();
+                demoInventoryValidation = MechBayInventoryValidator.Validate(demoInventory);
+                statusText = "CLI squad swap applied";
+                AddCombatLogLine("CLI squad swap: " + result.Summary);
+                Debug.Log("MC2 commander squad swap: accepted summary=" + result.Summary);
+                return;
+            }
+
+            startupSmokeFailed = true;
+            statusText = "CLI squad swap blocked";
+            string reason = string.IsNullOrWhiteSpace(result?.Reason) ? "unknown" : result.Reason;
+            AddCombatLogLine("CLI squad swap blocked: " + reason);
+            Debug.LogError("MC2 commander squad swap blocked: " + reason);
+        }
+
+        private void RunStartupRestartIdentityAssertion(bool requireDepotIdentity)
+        {
+            RestartIdentityAssertionResult result = BuildRestartIdentityAssertion(requireDepotIdentity);
+            if (result.Accepted)
+            {
+                AddCombatLogLine("CLI identity assert OK: " + result.Summary);
+                Debug.Log("MC2 restart identity assertion OK: " + result.Summary);
+                return;
+            }
+
+            startupSmokeFailed = true;
+            statusText = "Restart identity assertion failed";
+            AddCombatLogLine("CLI identity assert failed: " + result.Summary);
+            Debug.LogError("MC2 restart identity assertion failed: " + result.Summary);
+        }
+
+        private RestartIdentityAssertionResult BuildRestartIdentityAssertion(bool requireDepotIdentity)
+        {
+            MechBayMissionRestartDryRun dryRun = MechBayMissionHandoffPreviewService.BuildRestartDryRun(demoInventory);
+            MechBayMissionRestartSpawnIntent[] intents = dryRun?.SpawnIntents ?? Array.Empty<MechBayMissionRestartSpawnIntent>();
+            if (mission == null || intents.Length == 0)
+            {
+                return RestartIdentityAssertionResult.Blocked("No restart identity intents");
+            }
+
+            int unitIndex = 0;
+            int matched = 0;
+            bool depotMatched = false;
+            List<string> mismatches = new();
+            foreach (UnitState unit in mission.PlayerUnits())
+            {
+                MechBayMissionRestartSpawnIntent intent = unitIndex < intents.Length ? intents[unitIndex] : null;
+                unitIndex++;
+                string expected = intent?.ownedMechId ?? "";
+                string actual = unit?.OwnedMechId ?? "";
+                bool same = !string.IsNullOrWhiteSpace(expected)
+                    && string.Equals(expected, actual, StringComparison.OrdinalIgnoreCase);
+                if (same)
+                {
+                    matched++;
+                    depotMatched = depotMatched || intent?.isDepotMissionSlot == true;
+                    continue;
+                }
+
+                if (mismatches.Count < 3)
+                {
+                    mismatches.Add((string.IsNullOrWhiteSpace(expected) ? "<none>" : expected)
+                        + "!="
+                        + (string.IsNullOrWhiteSpace(actual) ? "<none>" : actual));
+                }
+            }
+
+            bool countOk = unitIndex == intents.Length;
+            bool matchedAll = matched == intents.Length;
+            bool depotOk = !requireDepotIdentity || depotMatched;
+            string summary = "matched "
+                + matched.ToString(CultureInfo.InvariantCulture)
+                + "/"
+                + intents.Length.ToString(CultureInfo.InvariantCulture)
+                + " units"
+                + " depot="
+                + depotMatched
+                + " countOk="
+                + countOk;
+            if (mismatches.Count > 0)
+            {
+                summary += " mismatches " + string.Join("; ", mismatches);
+            }
+
+            return new RestartIdentityAssertionResult
+            {
+                Accepted = countOk && matchedAll && depotOk,
+                Summary = summary
+            };
         }
 
         private int RunStartupSimulationAdvance(string[] args, int index)
@@ -582,7 +806,7 @@ namespace MC2Demo.Presentation
 
         private void QuitSmokeTest()
         {
-            int exitCode = mission == null ? 1 : 0;
+            int exitCode = mission == null || startupSmokeFailed ? 1 : 0;
             Debug.Log("MC2 demo smoke test exiting with code " + exitCode);
             Application.Quit(exitCode);
         }
@@ -3106,6 +3330,21 @@ namespace MC2Demo.Presentation
             public int HeldCount { get; }
             public int NeedsFitCount { get; }
             public int UnavailableCount { get; }
+        }
+
+        private struct RestartIdentityAssertionResult
+        {
+            public bool Accepted { get; set; }
+            public string Summary { get; set; }
+
+            public static RestartIdentityAssertionResult Blocked(string summary)
+            {
+                return new RestartIdentityAssertionResult
+                {
+                    Accepted = false,
+                    Summary = summary ?? "blocked"
+                };
+            }
         }
 
         private string RestartIdentityText(MechBayMissionRestartRuntimeSwapResult result)

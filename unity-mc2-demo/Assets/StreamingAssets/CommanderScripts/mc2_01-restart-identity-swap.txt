@@ -1,0 +1,6 @@
+# Proves depot squad-swap identity survives a runtime mission restart.
+prepare-depot-candidate
+squad-swap
+restart
+assert-restart-identity depot
+report

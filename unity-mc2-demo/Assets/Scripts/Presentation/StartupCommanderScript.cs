@@ -109,7 +109,49 @@ namespace MC2Demo.Presentation
                 return true;
             }
 
-            error = "Command file action must be command, advance, report, or restart.";
+            if (string.Equals(verb, "prepare-depot-candidate", StringComparison.OrdinalIgnoreCase))
+            {
+                if (!string.IsNullOrWhiteSpace(payload))
+                {
+                    error = "Prepare depot candidate action does not accept arguments.";
+                    return false;
+                }
+
+                action = StartupCommanderScriptAction.PrepareDepotCandidate(lineNumber, rawLine);
+                return true;
+            }
+
+            if (string.Equals(verb, "squad-swap", StringComparison.OrdinalIgnoreCase))
+            {
+                if (!string.IsNullOrWhiteSpace(payload))
+                {
+                    error = "Squad swap action does not accept arguments.";
+                    return false;
+                }
+
+                action = StartupCommanderScriptAction.SquadSwap(lineNumber, rawLine);
+                return true;
+            }
+
+            if (string.Equals(verb, "assert-restart-identity", StringComparison.OrdinalIgnoreCase))
+            {
+                bool requireDepot = false;
+                if (!string.IsNullOrWhiteSpace(payload))
+                {
+                    if (!string.Equals(payload, "depot", StringComparison.OrdinalIgnoreCase))
+                    {
+                        error = "Assert restart identity action only accepts optional 'depot'.";
+                        return false;
+                    }
+
+                    requireDepot = true;
+                }
+
+                action = StartupCommanderScriptAction.AssertRestartIdentity(lineNumber, rawLine, requireDepot);
+                return true;
+            }
+
+            error = "Command file action must be command, advance, report, restart, prepare-depot-candidate, squad-swap, or assert-restart-identity.";
             return false;
         }
     }
@@ -121,6 +163,7 @@ namespace MC2Demo.Presentation
         public string SourceLine { get; private set; }
         public string CommandText { get; private set; }
         public float AdvanceSeconds { get; private set; }
+        public bool RequireDepotIdentity { get; private set; }
 
         private StartupCommanderScriptAction()
         {
@@ -177,6 +220,40 @@ namespace MC2Demo.Presentation
                 SourceLine = sourceLine ?? string.Empty
             };
         }
+
+        public static StartupCommanderScriptAction PrepareDepotCandidate(int lineNumber, string sourceLine)
+        {
+            return new StartupCommanderScriptAction
+            {
+                Kind = StartupCommanderScriptActionKind.PrepareDepotCandidate,
+                LineNumber = lineNumber,
+                SourceLine = sourceLine ?? string.Empty
+            };
+        }
+
+        public static StartupCommanderScriptAction SquadSwap(int lineNumber, string sourceLine)
+        {
+            return new StartupCommanderScriptAction
+            {
+                Kind = StartupCommanderScriptActionKind.SquadSwap,
+                LineNumber = lineNumber,
+                SourceLine = sourceLine ?? string.Empty
+            };
+        }
+
+        public static StartupCommanderScriptAction AssertRestartIdentity(
+            int lineNumber,
+            string sourceLine,
+            bool requireDepotIdentity)
+        {
+            return new StartupCommanderScriptAction
+            {
+                Kind = StartupCommanderScriptActionKind.AssertRestartIdentity,
+                LineNumber = lineNumber,
+                SourceLine = sourceLine ?? string.Empty,
+                RequireDepotIdentity = requireDepotIdentity
+            };
+        }
     }
 
     public enum StartupCommanderScriptActionKind
@@ -185,6 +262,9 @@ namespace MC2Demo.Presentation
         Command,
         Advance,
         Report,
-        Restart
+        Restart,
+        PrepareDepotCandidate,
+        SquadSwap,
+        AssertRestartIdentity
     }
 }

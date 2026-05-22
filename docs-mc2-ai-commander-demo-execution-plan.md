@@ -442,5 +442,6 @@ Reason:
 - Mech bay restart Apply now keeps the mech bay open and pauses the rebuilt mission, while system, result-panel, and CLI restarts still return directly to battle.
 - Post-restart roster/condition feedback now shows active player slots, deployed roster count, ready mechs, repair needs, held depot mechs, fit blockers, and unavailable mechs in the mech bay and restart combat log.
 - Restart handoff identity now flows through `UnitSpawn` into runtime `UnitState`, commander observations, loadout card titles, restart identity logs, and inventory condition sync.
-- The next low-risk step is to add a small restart identity smoke assertion/log check around depot-squad swap scenarios before making squad swap launch a primary flow.
+- A dedicated `mc2_01-restart-identity-swap.txt` command file now prepares a demo depot candidate, applies a squad swap, restarts, and asserts that runtime owned-mech identity includes the depot slot.
+- The next low-risk step is to turn the squad swap preview into a less hidden restart handoff path in the mech bay UI, while still keeping it guarded behind the current Apply flow.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.
