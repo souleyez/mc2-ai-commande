@@ -67,6 +67,7 @@ Current demo behavior:
 - lets the local squad-selection draft cycle outgoing mission slots and incoming depot candidates
 - applies pending squad swap confirmation by exchanging local mission availability flags
 - refreshes squad-selection status after confirmation so the joined depot mech is no longer shown as a candidate
+- keeps the squad-selection preview visible inside the mech bay and exposes the guarded next-mission Apply handoff there
 - previews the next-mission handoff roster from `availableForMission` without restarting the current battle
 - shows a disabled Launch guard explaining that the future mission restart hook is not wired yet
 - maps the handoff roster into restart dry-run spawn intents without creating a new mission instance

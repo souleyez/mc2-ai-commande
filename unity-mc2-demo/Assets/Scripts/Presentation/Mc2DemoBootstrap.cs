@@ -2891,8 +2891,9 @@ namespace MC2Demo.Presentation
             }
 
             y += 30f;
-            DrawMechBayInventorySummary(x, y, width);
-            y += 522f;
+            bool showInlineMechBayPreview = showWarehouseDraftFitPreview || showSquadSelectionPreview;
+            DrawMechBayInventorySummary(x, y, width, !showInlineMechBayPreview);
+            y += showInlineMechBayPreview ? 326f : 522f;
             if (showWarehouseDraftFitPreview)
             {
                 DrawWarehouseDraftFitPreview(x, y, width);
@@ -2901,7 +2902,7 @@ namespace MC2Demo.Presentation
             else if (showSquadSelectionPreview)
             {
                 DrawSquadSelectionPreview(x, y, width);
-                y += 272f;
+                y += 294f;
             }
 
             int unitCount = CountPlayerUnits();
@@ -2919,7 +2920,7 @@ namespace MC2Demo.Presentation
             GUI.EndScrollView();
         }
 
-        private void DrawMechBayInventorySummary(float x, float y, float width)
+        private void DrawMechBayInventorySummary(float x, float y, float width, bool showRosterDetail)
         {
             if (demoInventoryValidation == null)
             {
@@ -2978,7 +2979,10 @@ namespace MC2Demo.Presentation
             DrawMissionRestartContractPreview(x, y + 258f, width);
             DrawMissionRestartContractCloneDryRun(x, y + 280f, width);
             DrawMissionRestartConstructionDryRun(x, y + 302f, width);
-            DrawOwnedRosterDetail(x, y + 324f, width, roster, pilotHirePreview);
+            if (showRosterDetail)
+            {
+                DrawOwnedRosterDetail(x, y + 324f, width, roster, pilotHirePreview);
+            }
         }
 
         private void DrawLoadoutUnit(UnitState unit, float x, float y, float width)
@@ -4000,7 +4004,7 @@ namespace MC2Demo.Presentation
             squadSelectionDraftOutgoingOwnedMechId = draft?.OutgoingOwnedMechId;
             squadSelectionDraftIncomingOwnedMechId = draft?.IncomingOwnedMechId;
 
-            GUI.Box(new Rect(x, y, width, 260f), "Squad Selection Preview");
+            GUI.Box(new Rect(x, y, width, 282f), "Squad Selection / Next Mission");
             if (GUI.Button(new Rect(x + width - 58f, y + 4f, 48f, 22f), "Hide"))
             {
                 showSquadSelectionPreview = false;
@@ -4027,8 +4031,9 @@ namespace MC2Demo.Presentation
             DrawSquadSelectionSwapGuard(x + 12f, y + 176f, width - 24f, preview);
             DrawSquadSelectionDryRun(x + 12f, y + 198f, width - 24f, preview);
             DrawSquadSelectionPendingSwap(x + 12f, y + 220f, width - 24f, preview, draft);
+            DrawSquadSelectionRestartHandoff(x + 12f, y + 242f, width - 24f);
             string note = string.IsNullOrWhiteSpace(preview?.PreviewNote) ? "Preview only" : preview.PreviewNote;
-            GUI.Label(new Rect(x + 12f, y + 240f, width - 24f, 18f), TruncateText(note, 76));
+            GUI.Label(new Rect(x + 12f, y + 264f, width - 24f, 18f), TruncateText(note, 76));
         }
 
         private void DrawSquadSelectionDraftPickers(
@@ -4157,6 +4162,7 @@ namespace MC2Demo.Presentation
                 if (result?.Accepted == true)
                 {
                     ClearSquadSelectionDraft();
+                    AddCombatLogLine("Next mission handoff updated: " + result.Summary);
                 }
 
                 demoInventoryValidation = MechBayInventoryValidator.Validate(demoInventory);
@@ -4177,6 +4183,25 @@ namespace MC2Demo.Presentation
                 ? "Need mission slot + fitted depot candidate"
                 : preview.PendingSwapSummary;
             GUI.Label(new Rect(x + 80f, y, width - 80f, 18f), TruncateText(status + "  " + summary, 64));
+        }
+
+        private void DrawSquadSelectionRestartHandoff(float x, float y, float width)
+        {
+            MechBayMissionRestartApplyGuard guard =
+                MechBayMissionHandoffPreviewService.BuildRestartApplyGuard(
+                    demoInventory,
+                    mission?.Contract,
+                    combatProfiles);
+            bool previousEnabled = GUI.enabled;
+            GUI.enabled = previousEnabled && guard?.ApplyEnabled == true;
+            if (GUI.Button(new Rect(x, y - 2f, 72f, 22f), "Apply"))
+            {
+                TryApplyMissionRestartRuntimeSwap(keepMechBayOpen: true);
+            }
+
+            GUI.enabled = previousEnabled;
+            string text = MissionRestartApplyGuardText(guard);
+            GUI.Label(new Rect(x + 80f, y, width - 80f, 18f), TruncateText("Next Mission  " + text, 64));
         }
 
         private static string SquadSelectionSlotSummary(MechBaySquadSelectionSlot[] slots, string emptyText)
@@ -5702,7 +5727,7 @@ namespace MC2Demo.Presentation
         private Rect LoadoutPanelRect()
         {
             float width = Mathf.Clamp(Screen.width * 0.54f, 560f, 760f);
-            float height = Mathf.Clamp(Screen.height * 0.72f, 360f, 540f);
+            float height = Mathf.Clamp(Screen.height * 0.88f, 420f, 720f);
             return new Rect((Screen.width - width) * 0.5f, (Screen.height - height) * 0.5f, width, height);
         }
 

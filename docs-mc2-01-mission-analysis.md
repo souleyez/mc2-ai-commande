@@ -351,3 +351,7 @@ The command-file harness now has a demo-only depot swap identity check:
 `prepare-depot-candidate`, `squad-swap`, `restart`, and
 `assert-restart-identity depot` prove that a warehouse/depot slot can become a
 runtime player unit and still report its owned mech identity after rebuild.
+The visible mech bay path now mirrors that handoff more closely: opening Squad
+selection replaces the lower roster detail with an inline preview, keeps the
+staged swap visible, and adds the same guarded next-mission Apply action inside
+that preview instead of relying only on the summary rows above it.
