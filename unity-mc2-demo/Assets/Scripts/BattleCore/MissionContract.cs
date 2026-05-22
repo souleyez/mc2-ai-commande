@@ -77,6 +77,9 @@ namespace MC2Demo.BattleCore
         public int commanderId;
         public int pilotId;
         public bool isPlayerUnit;
+        public string ownedMechId;
+        public string pilotDisplayName;
+        public string activeLoadoutId;
         public string unitType;
         public string objectProfile;
         public int objectNumber;

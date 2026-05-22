@@ -10,8 +10,11 @@ namespace MC2Demo.BattleCore
         private const float ArmorHardnessReductionPerPoint = 0.08f;
 
         public string Id { get; }
+        public string OwnedMechId { get; }
         public string UnitType { get; }
         public string Brain { get; }
+        public string PilotDisplayName { get; }
+        public string ActiveLoadoutId { get; }
         public int TeamId { get; }
         public bool IsPlayerUnit { get; }
         public string ActivationFlagId { get; }
@@ -65,8 +68,11 @@ namespace MC2Demo.BattleCore
         public UnitState(UnitSpawn spawn, CombatProfileCatalog profiles)
         {
             Id = spawn.spawnId;
+            OwnedMechId = spawn.ownedMechId ?? "";
             UnitType = spawn.unitType;
             Brain = spawn.brain;
+            PilotDisplayName = spawn.pilotDisplayName ?? "";
+            ActiveLoadoutId = spawn.activeLoadoutId ?? "";
             TeamId = spawn.teamId;
             IsPlayerUnit = spawn.isPlayerUnit;
             ActivationFlagId = spawn.activationFlagId;

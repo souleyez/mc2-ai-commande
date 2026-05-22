@@ -235,6 +235,7 @@ namespace MC2Demo.Presentation
             SetPaused(keepMechBayOpen && mission.Result == MissionResultState.InProgress);
             statusText = keepMechBayOpen ? "Mission restarted - Mech bay open" : (result?.Message ?? "Mission restarted");
             AddCombatLogLine(statusText + ": " + (result?.Summary ?? "replacement ready"));
+            AddCombatLogLine("Identity map: " + RestartIdentityText(result));
             MechBayOwnedRosterEntry[] roster = MechBayOwnedRosterService.BuildRosterPreview(demoInventory);
             AddCombatLogLine("Roster state: " + RosterMissionStateText(BuildRosterMissionState(roster)));
             Debug.Log(
@@ -2759,7 +2760,7 @@ namespace MC2Demo.Presentation
         private void DrawLoadoutUnit(UnitState unit, float x, float y, float width)
         {
             Rect card = new(x, y, width, LoadoutCardHeight);
-            GUI.Box(card, unit.UnitType + "  " + unit.Id);
+            GUI.Box(card, TruncateText(LoadoutUnitTitle(unit), 82));
 
             float left = x + 12f;
             float right = x + width * 0.50f;
@@ -2801,6 +2802,27 @@ namespace MC2Demo.Presentation
 
             lineY += weaponHeight + 6f;
             DrawLoadoutEditControls(unit, loadoutPreview, left, lineY, width - 24f);
+        }
+
+        private static string LoadoutUnitTitle(UnitState unit)
+        {
+            if (unit == null)
+            {
+                return "Mech";
+            }
+
+            string title = unit.UnitType + "  " + unit.Id;
+            if (!string.IsNullOrWhiteSpace(unit.OwnedMechId))
+            {
+                title += "  owned " + unit.OwnedMechId;
+            }
+
+            if (!string.IsNullOrWhiteSpace(unit.PilotDisplayName))
+            {
+                title += "  pilot " + unit.PilotDisplayName;
+            }
+
+            return title;
         }
 
         private void DrawProjectedLoadoutStatus(CombatLoadoutPreview preview, float left, float right, float y, float width)
@@ -3084,6 +3106,50 @@ namespace MC2Demo.Presentation
             public int HeldCount { get; }
             public int NeedsFitCount { get; }
             public int UnavailableCount { get; }
+        }
+
+        private string RestartIdentityText(MechBayMissionRestartRuntimeSwapResult result)
+        {
+            MechBayMissionRestartSpawnIntent[] intents = result?.SpawnIntents ?? Array.Empty<MechBayMissionRestartSpawnIntent>();
+            if (mission == null || intents.Length == 0)
+            {
+                return "no owned-mech identity intents";
+            }
+
+            int bound = 0;
+            int playerIndex = 0;
+            List<string> sample = new();
+            foreach (UnitState unit in mission.PlayerUnits())
+            {
+                if (unit == null)
+                {
+                    continue;
+                }
+
+                MechBayMissionRestartSpawnIntent intent = playerIndex < intents.Length ? intents[playerIndex] : null;
+                playerIndex++;
+                string ownedId = unit.OwnedMechId ?? "";
+                if (!string.IsNullOrWhiteSpace(ownedId)
+                    && string.Equals(ownedId, intent?.ownedMechId, StringComparison.OrdinalIgnoreCase))
+                {
+                    bound++;
+                    if (sample.Count < 3)
+                    {
+                        sample.Add(ownedId + "->" + unit.Id);
+                    }
+                }
+            }
+
+            string text = bound.ToString(CultureInfo.InvariantCulture)
+                + "/"
+                + intents.Length.ToString(CultureInfo.InvariantCulture)
+                + " runtime units bound";
+            if (sample.Count > 0)
+            {
+                text += "  " + string.Join("; ", sample);
+            }
+
+            return text;
         }
 
         private static string MissionHandoffPreviewText(MechBayMissionHandoffPreview preview)
@@ -4153,16 +4219,73 @@ namespace MC2Demo.Presentation
                     continue;
                 }
 
-                for (int index = 0; index < demoInventory.ownedMechs.Length; index++)
+                MechBayOwnedMechDefinition mech = FindOwnedMechForRuntimeUnit(unit);
+                if (mech == null)
                 {
-                    MechBayOwnedMechDefinition mech = demoInventory.ownedMechs[index];
-                    if (mech != null && string.Equals(mech.unitId, unit.Id, StringComparison.OrdinalIgnoreCase))
-                    {
-                        mech.conditionPercent = MechConditionPercent(unit);
-                        mech.availableForMission = unit.IsActive && !unit.IsDestroyed;
-                    }
+                    continue;
+                }
+
+                mech.unitId = unit.Id;
+                mech.conditionPercent = MechConditionPercent(unit);
+                mech.availableForMission = unit.IsActive && !unit.IsDestroyed;
+            }
+        }
+
+        private MechBayOwnedMechDefinition FindOwnedMechForRuntimeUnit(UnitState unit)
+        {
+            if (unit == null || demoInventory?.ownedMechs == null)
+            {
+                return null;
+            }
+
+            if (!string.IsNullOrWhiteSpace(unit.OwnedMechId))
+            {
+                MechBayOwnedMechDefinition byOwnedId = FindOwnedMechByOwnedId(unit.OwnedMechId);
+                if (byOwnedId != null)
+                {
+                    return byOwnedId;
                 }
             }
+
+            return FindOwnedMechByUnitId(unit.Id);
+        }
+
+        private MechBayOwnedMechDefinition FindOwnedMechByOwnedId(string ownedMechId)
+        {
+            if (string.IsNullOrWhiteSpace(ownedMechId) || demoInventory?.ownedMechs == null)
+            {
+                return null;
+            }
+
+            for (int index = 0; index < demoInventory.ownedMechs.Length; index++)
+            {
+                MechBayOwnedMechDefinition mech = demoInventory.ownedMechs[index];
+                if (mech != null && string.Equals(mech.ownedMechId, ownedMechId, StringComparison.OrdinalIgnoreCase))
+                {
+                    return mech;
+                }
+            }
+
+            return null;
+        }
+
+        private MechBayOwnedMechDefinition FindOwnedMechByUnitId(string unitId)
+        {
+            if (string.IsNullOrWhiteSpace(unitId) || demoInventory?.ownedMechs == null)
+            {
+                return null;
+            }
+
+            for (int index = 0; index < demoInventory.ownedMechs.Length; index++)
+            {
+                MechBayOwnedMechDefinition mech = demoInventory.ownedMechs[index];
+                if (mech != null && string.Equals(mech.unitId, unitId, StringComparison.OrdinalIgnoreCase))
+                {
+                    return mech;
+                }
+            }
+
+            return null;
         }
 
         private static int MechConditionPercent(UnitState unit)

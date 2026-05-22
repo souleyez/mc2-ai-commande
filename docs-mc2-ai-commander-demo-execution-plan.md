@@ -441,5 +441,6 @@ Reason:
 - Runtime restart now immediately disables old generated scene roots before queued destruction, reducing same-frame overlap risk while the replacement world is rebuilt.
 - Mech bay restart Apply now keeps the mech bay open and pauses the rebuilt mission, while system, result-panel, and CLI restarts still return directly to battle.
 - Post-restart roster/condition feedback now shows active player slots, deployed roster count, ready mechs, repair needs, held depot mechs, fit blockers, and unavailable mechs in the mech bay and restart combat log.
-- The next low-risk step is to tighten the restart handoff identity mapping, so future depot-squad swaps can keep owned-mech identity, pilot, and condition clear after the rebuilt BattleMission is live.
+- Restart handoff identity now flows through `UnitSpawn` into runtime `UnitState`, commander observations, loadout card titles, restart identity logs, and inventory condition sync.
+- The next low-risk step is to add a small restart identity smoke assertion/log check around depot-squad swap scenarios before making squad swap launch a primary flow.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.

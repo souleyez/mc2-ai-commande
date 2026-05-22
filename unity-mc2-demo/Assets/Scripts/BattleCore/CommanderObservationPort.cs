@@ -279,7 +279,10 @@ namespace MC2Demo.BattleCore
             return new CommanderUnitObservation
             {
                 id = unit.Id,
+                ownedMechId = unit.OwnedMechId ?? "",
                 type = unit.UnitType,
+                pilotDisplayName = unit.PilotDisplayName ?? "",
+                activeLoadoutId = unit.ActiveLoadoutId ?? "",
                 teamId = unit.TeamId,
                 active = unit.IsActive,
                 destroyed = unit.IsDestroyed,
@@ -340,7 +343,10 @@ namespace MC2Demo.BattleCore
     public sealed class CommanderUnitObservation
     {
         public string id;
+        public string ownedMechId;
         public string type;
+        public string pilotDisplayName;
+        public string activeLoadoutId;
         public int teamId;
         public bool active;
         public bool destroyed;

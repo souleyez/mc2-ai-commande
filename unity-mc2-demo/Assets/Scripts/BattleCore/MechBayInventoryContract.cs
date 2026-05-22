@@ -2042,6 +2042,9 @@ namespace MC2Demo.BattleCore
             spawn.teamId = DemoPlayerTeamId;
             spawn.commanderId = DemoCommanderId;
             spawn.pilotId = Math.Max(1, intent.spawnIndex);
+            spawn.ownedMechId = intent.ownedMechId ?? "";
+            spawn.pilotDisplayName = intent.pilotDisplayName ?? "";
+            spawn.activeLoadoutId = intent.activeLoadoutId ?? "";
             spawn.unitType = string.IsNullOrWhiteSpace(intent.unitType) ? spawn.unitType : intent.unitType;
             spawn.brain = DemoPlayerBrain;
             spawn.squadId = Math.Max(1, intent.spawnIndex);

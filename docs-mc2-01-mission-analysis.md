@@ -343,3 +343,7 @@ The mech bay also reports the rebuilt roster state after restart: active player
 slots, deployed owned mechs, fully ready mechs, repair needs, held depot mechs,
 fit blockers, and unavailable mission mechs are visible in the summary line and
 the combat log.
+Restart identity now survives the runtime swap as explicit spawn metadata:
+`UnitSpawn` carries owned mech id, pilot display name, and active loadout id,
+`UnitState` exposes those fields to UI and commander observations, and inventory
+condition sync prefers owned mech id before falling back to legacy unit id.
