@@ -4000,13 +4000,7 @@ namespace MC2Demo.Presentation
             GUI.enabled = previousEnabled && canPreviewSquad;
             if (GUI.Button(new Rect(x, y - 2f, 72f, 22f), "Squad"))
             {
-                string name = string.IsNullOrWhiteSpace(entry?.displayName) ? "owned mech" : entry.displayName;
-                showSquadSelectionPreview = true;
-                showWarehouseDraftFitPreview = false;
-                warehouseDraftFitPreviewMechId = null;
-                ClearSquadSelectionDraft();
-                statusText = "Squad preview: " + TruncateText(name, 24);
-                AddCombatLogLine("Mech bay squad selection preview opened");
+                OpenSquadSelectionPreview(entry);
             }
 
             GUI.enabled = previousEnabled;
@@ -4027,6 +4021,34 @@ namespace MC2Demo.Presentation
                 ? "Requirements unknown"
                 : entry.squadSelectionRequirements;
             return status + "  " + requirements;
+        }
+
+        private void OpenSquadSelectionPreview(MechBayOwnedRosterEntry entry)
+        {
+            string name = string.IsNullOrWhiteSpace(entry?.displayName) ? "owned mech" : entry.displayName;
+            showSquadSelectionPreview = true;
+            showWarehouseDraftFitPreview = false;
+            warehouseDraftFitPreviewMechId = null;
+            ClearSquadSelectionDraft();
+
+            if (entry?.availableForMission == true)
+            {
+                squadSelectionDraftOutgoingOwnedMechId = entry.ownedMechId;
+                statusText = "Squad out: " + TruncateText(name, 24);
+                AddCombatLogLine("Mech bay squad selection opened with outgoing " + name);
+                return;
+            }
+
+            if (entry?.squadSelectionCandidate == true)
+            {
+                squadSelectionDraftIncomingOwnedMechId = entry.ownedMechId;
+                statusText = "Squad in: " + TruncateText(name, 24);
+                AddCombatLogLine("Mech bay squad selection opened with incoming " + name);
+                return;
+            }
+
+            statusText = "Squad preview: " + TruncateText(name, 24);
+            AddCombatLogLine("Mech bay squad selection preview opened");
         }
 
         private void DrawSquadSelectionPreview(float x, float y, float width)

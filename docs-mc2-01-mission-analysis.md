@@ -282,6 +282,9 @@ does not change the current mission roster or deployment flags.
 That placeholder now opens a squad-selection preview, listing the current
 mission slots and any fitted depot candidates while keeping inventory and
 mission deployment unchanged until the user confirms.
+If the user opens it from a current mission mech, that mech is preselected as
+the outgoing slot; opening it from a fitted depot candidate preselects that
+mech as the incoming slot.
 When both a current mission slot and a fitted depot candidate exist, the preview
 now shows one replace plan that names the outgoing and incoming mechs.
 That pair now becomes a local squad-selection draft state, preserving the

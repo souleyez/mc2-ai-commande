@@ -68,6 +68,7 @@ The Unity demo currently supports:
 - fitted warehouse mechs show a deployment preview explaining that future squad selection is still required
 - roster detail shows a squad-selection placeholder without altering current mission deployment
 - squad-selection preview lists current mission slots and fitted depot candidates without changing inventory or deployment
+- squad-selection opens with the clicked mission slot preselected as outgoing or clicked depot candidate preselected as incoming
 - squad-selection confirmation reads from a local draft state that stages outgoing and incoming mech IDs
 - squad-selection confirmation applies a guarded local roster swap by exchanging mission availability flags
 - squad-selection draft controls can cycle outgoing mission slots and incoming depot candidates while staying local-only
@@ -415,6 +416,7 @@ Reason:
 - The roster now explains why fitted depot mechs are still held until a future squad-selection flow exists.
 - The roster now shows a squad-selection placeholder, so the deployment path is visible before it can alter mission rosters.
 - The squad-selection preview now lists current mission slots and fitted depot candidates without changing deployment.
+- The roster Squad button now preselects clicked mission mechs as outgoing and clicked depot candidates as incoming.
 - The squad-selection confirmation path now reads from a local draft state container that holds selected outgoing and incoming mech IDs.
 - The squad-selection draft controls now cycle mission slots and depot candidates while keeping the selected IDs local-only.
 - The squad-selection preview now collapses the old disabled Swap and Dry Run rows into one clear replace plan plus Confirm.
@@ -433,5 +435,5 @@ Reason:
 - A dedicated `mc2_01-restart-identity-swap.txt` command file now prepares a demo depot candidate, applies a squad swap, restarts, and asserts that runtime owned-mech identity includes the depot slot.
 - The squad-selection preview now appears inline in the mech bay when opened, hides lower roster detail to avoid being buried, and exposes the same guarded next-mission Launch handoff after the staged swap row.
 - The mech bay next-mission area now collapses the old Launch, dry-run, contract, clone, and construction rows into a player-facing Ready/Blocked summary, guarded Launch button, and lineup preview while preserving the validated restart guards.
-- The next low-risk step is to make the roster `Squad` button preselect the clicked depot candidate or mission slot so the preview opens closer to the player's intent.
+- The next low-risk step is to add a compact visual cue beside Out/In rows so the selected replacement direction is unmistakable before Confirm.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.

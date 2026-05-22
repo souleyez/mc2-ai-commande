@@ -61,6 +61,7 @@ Current demo behavior:
 - previews fitted warehouse deployment status and explains why fitted depot mechs are still held
 - shows a squad-selection placeholder before warehouse mechs can alter the mission squad
 - opens a squad-selection preview listing current mission slots and fitted depot candidates
+- preselects the clicked mission mech as Out or clicked depot candidate as In when opening squad selection
 - stages the first current slot and fitted depot candidate in a local squad-selection draft state
 - lets the local squad-selection draft cycle outgoing mission slots and incoming depot candidates
 - shows one replace plan that names the outgoing and incoming mechs before Confirm
