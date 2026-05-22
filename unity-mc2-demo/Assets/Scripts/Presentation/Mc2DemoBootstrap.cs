@@ -4147,9 +4147,17 @@ namespace MC2Demo.Presentation
                 ? " (" + (selectedIndex + 1).ToString(CultureInfo.InvariantCulture) + "/"
                   + safeSlots.Length.ToString(CultureInfo.InvariantCulture) + ")"
                 : " (0/0)";
+            Color cueColor = outgoing
+                ? new Color(1f, 0.42f, 0.32f, 0.9f)
+                : new Color(0.42f, 0.82f, 1f, 0.9f);
+            string cueLabel = string.IsNullOrWhiteSpace(label)
+                ? (outgoing ? "OUT" : "IN")
+                : label.ToUpperInvariant();
+            string direction = outgoing ? " leaves squad  " : " joins squad  ";
+            DrawColorRect(new Rect(x + 70f, y + 4f, 10f, 10f), cueColor);
             GUI.Label(
-                new Rect(x + 70f, y, width - 70f, 18f),
-                TruncateText(label + " " + SquadSelectionSlotName(selected) + count, 64));
+                new Rect(x + 86f, y, width - 86f, 18f),
+                TruncateText(cueLabel + direction + SquadSelectionSlotName(selected) + count, 64));
         }
 
         private static void DrawSquadSelectionSwapPlan(

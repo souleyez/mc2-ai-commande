@@ -64,6 +64,7 @@ Current demo behavior:
 - preselects the clicked mission mech as Out or clicked depot candidate as In when opening squad selection
 - stages the first current slot and fitted depot candidate in a local squad-selection draft state
 - lets the local squad-selection draft cycle outgoing mission slots and incoming depot candidates
+- marks Out/In rows with direction cues before Confirm
 - shows one replace plan that names the outgoing and incoming mechs before Confirm
 - applies pending squad swap confirmation by exchanging local mission availability flags
 - refreshes squad-selection status after confirmation so the joined depot mech is no longer shown as a candidate

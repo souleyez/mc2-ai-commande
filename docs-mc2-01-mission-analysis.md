@@ -291,6 +291,8 @@ That pair now becomes a local squad-selection draft state, preserving the
 selected outgoing and incoming mech IDs separately from the read-only preview.
 The draft row now has tiny cycle controls for outgoing mission slots and
 incoming depot candidates, but cycling only changes the local draft IDs.
+The Out/In rows now carry compact direction cues so the replacement direction
+is visible before Confirm.
 That plan feeds a pending confirmation row, so the staged replace-slot flow can
 mutate only local mission availability flags.
 The confirmation path now swaps the outgoing and incoming `availableForMission`
