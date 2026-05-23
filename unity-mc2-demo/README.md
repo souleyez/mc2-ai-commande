@@ -68,6 +68,7 @@ Current demo behavior:
 - shows one replace plan that names the outgoing and incoming mechs before Confirm
 - uses short player-facing Confirm and Launch status text after squad swaps
 - marks Confirm and Launch rows with Ready/Blocked color cues
+- shows a compact completed-swap lineup before next-mission Launch
 - applies pending squad swap confirmation by exchanging local mission availability flags
 - refreshes squad-selection status after confirmation so the joined depot mech is no longer shown as a candidate
 - keeps the squad-selection preview visible inside the mech bay and exposes the guarded next-mission Launch handoff there

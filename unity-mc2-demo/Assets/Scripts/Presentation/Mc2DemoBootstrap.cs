@@ -3533,7 +3533,9 @@ namespace MC2Demo.Presentation
             float width,
             MechBayMissionHandoffPreview preview)
         {
-            string lineup = SquadSelectionSlotSummary(preview?.MissionSlots, "none ready");
+            string lineup = preview?.IncludesDepotMissionSlot == true
+                ? SquadSelectionCompactLineupSummary(preview.MissionSlots, "none ready")
+                : SquadSelectionSlotSummary(preview?.MissionSlots, "none ready");
             GUI.Label(new Rect(x, y, width, 18f), TruncateText("Lineup " + lineup, 76));
         }
 
@@ -4128,6 +4130,26 @@ namespace MC2Demo.Presentation
 
             string status = string.IsNullOrWhiteSpace(preview?.Status) ? "Preview unavailable" : preview.Status;
             GUI.Label(new Rect(x + 12f, y + 24f, width - 24f, 18f), TruncateText(status, 76));
+            if (SquadSelectionCompleted(preview))
+            {
+                GUI.Label(
+                    new Rect(x + 12f, y + 44f, width - 24f, 18f),
+                    "Done  Next mission squad ready  "
+                    + (preview?.MissionSlotCount ?? 0).ToString(CultureInfo.InvariantCulture)
+                    + " mechs");
+                GUI.Label(
+                    new Rect(x + 12f, y + 64f, width - 24f, 18f),
+                    TruncateText("Lineup " + SquadSelectionCompactLineupSummary(preview?.MissionSlots, "none ready"), 76));
+                GUI.Label(
+                    new Rect(x + 12f, y + 84f, width - 24f, 18f),
+                    "Depot candidate joined; replacement locked for launch");
+                DrawSquadSelectionPendingSwap(x + 12f, y + 106f, width - 24f, preview, draft);
+                DrawSquadSelectionRestartHandoff(x + 12f, y + 128f, width - 24f);
+                string completedNote = string.IsNullOrWhiteSpace(preview?.PreviewNote) ? "Swap complete" : preview.PreviewNote;
+                GUI.Label(new Rect(x + 12f, y + 150f, width - 24f, 18f), TruncateText(completedNote, 76));
+                return;
+            }
+
             GUI.Label(
                 new Rect(x + 12f, y + 44f, width - 24f, 18f),
                 "Current Slots "
@@ -4424,6 +4446,43 @@ namespace MC2Demo.Presentation
             }
 
             return text.Length == 0 ? emptyText : text;
+        }
+
+        private static bool SquadSelectionCompleted(MechBaySquadSelectionPreview preview)
+        {
+            return preview?.HasRefreshedMissionSlot == true && (preview.CandidateCount <= 0);
+        }
+
+        private static string SquadSelectionCompactLineupSummary(
+            MechBaySquadSelectionSlot[] slots,
+            string emptyText)
+        {
+            if (slots == null || slots.Length == 0)
+            {
+                return emptyText;
+            }
+
+            MechBaySquadSelectionSlot depotSlot = null;
+            for (int index = 0; index < slots.Length; index++)
+            {
+                MechBaySquadSelectionSlot slot = slots[index];
+                if (slot?.isDepotMissionSlot == true)
+                {
+                    depotSlot = slot;
+                    break;
+                }
+            }
+
+            string text = slots.Length.ToString(CultureInfo.InvariantCulture) + " mechs ready";
+            if (depotSlot != null)
+            {
+                string name = string.IsNullOrWhiteSpace(depotSlot.displayName)
+                    ? depotSlot.unitType
+                    : depotSlot.displayName;
+                text += "  " + name + " joined";
+            }
+
+            return text;
         }
 
         private void CycleSquadSelectionDraft(MechBaySquadSelectionSlot[] slots, bool outgoing, int direction)

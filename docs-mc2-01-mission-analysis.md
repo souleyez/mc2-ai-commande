@@ -360,3 +360,6 @@ state.
 Those rows now also carry Ready/Blocked color cues on the action button and
 status line, making disabled launch or confirm states visible without reading
 the full text.
+After a confirmed swap, the squad-selection preview now switches into a compact
+done state: it hides the Out/In picker rows, summarizes the updated lineup, and
+keeps only the confirmation status and next-mission Launch action visible.
