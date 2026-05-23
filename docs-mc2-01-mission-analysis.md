@@ -246,6 +246,9 @@ The explicit `saved-account-import-apply-preview <path>` command adds the future
 apply gate: it requires the loaded account to match the current account identity
 and then reports the token/mech/depot delta that would be applied, while still
 leaving the live mech bay unchanged.
+The mech bay summary now shows the latest guarded apply preview as a read-only
+confirmation row, so the pending save/load direction is visible before any real
+apply command exists.
 Current draft fits are now checked against that starter inventory, so extra
 armor plate or heat sink choices show a shortage and cannot be applied.
 The same starter inventory now owns the demo token balance used by the mech bay:

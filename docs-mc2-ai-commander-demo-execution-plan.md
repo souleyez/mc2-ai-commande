@@ -97,6 +97,7 @@ The Unity demo currently supports:
 - command-file `saved-account-save-load-preview` can now explicitly exercise JSON serialization and load validation without writing a save file
 - command-file `saved-account-export <path>` and `saved-account-import-preview <path>` can now manually write and validate local account JSON files when explicitly requested
 - command-file `saved-account-import-apply-preview <path>` can now guard account identity and show the delta that a future import apply would make without applying it
+- mech bay summary now shows the latest import apply preview as a read-only confirmation row
 - command-file `prepare-local-candidate` can now produce a ready depot candidate through local receipt assembly, NPC hiring, weapon purchase, and warehouse draft-fit services
 - local candidate prep now records a read-only saved-account delta line so token, mech, ready, depot, and item-stack changes are visible before any real save file exists
 - CLI/AI loop pieces:
@@ -469,5 +470,6 @@ Reason:
 - A manual command-file `saved-account-save-load-preview` hook now exercises JSON serialization, load validation, and zero-delta round-trip checks while keeping default startup and UI flows read-only.
 - A manual command-file save-file path now supports `saved-account-export <path>` and `saved-account-import-preview <path>`, so test runs can write and validate local account JSON only when a script asks for it.
 - A guarded `saved-account-import-apply-preview <path>` command now checks account identity and reports what token/mech/depot deltas a future apply would make, without mutating the live mech bay.
-- The next low-risk step is to expose the latest import apply preview in the mech bay UI as a read-only confirmation row before adding any actual apply command.
+- The mech bay summary now exposes the latest guarded import apply preview as a read-only confirmation row, keeping the future apply path visible without mutating live data.
+- The next low-risk step is to add a guarded actual import apply command behind an explicit command-file action, requiring a matching accepted preview before it can touch the live mech bay.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.

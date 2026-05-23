@@ -70,6 +70,8 @@ namespace MC2Demo.Presentation
         private string squadSelectionLastOutgoingDisplayName;
         private string squadSelectionLastIncomingDisplayName;
         private string lastSavedAccountDeltaText;
+        private string lastSavedAccountImportApplyPreviewText;
+        private bool lastSavedAccountImportApplyPreviewReady;
         private string statusText = "Loading";
         private bool startupSmokeFailed;
         private const string StartupSmokeDepotOwnedMechId = "assembled-smoke-depot";
@@ -723,6 +725,9 @@ namespace MC2Demo.Presentation
             bool sourceUnchanged = Math.Max(0, demoInventory?.tokenBalance ?? 0) == sourceTokenBalance;
             string summary = MechBaySavedAccountService.SummaryText(applyPreview.LoadedAccount ?? CurrentSavedAccountSnapshot());
             string deltaText = MechBaySavedAccountService.DeltaText(applyPreview.Delta);
+            lastSavedAccountImportApplyPreviewReady = applyPreview.Accepted && sourceUnchanged;
+            lastSavedAccountImportApplyPreviewText =
+                SavedAccountImportApplyPreviewText(applyPreview, deltaText, sourceUnchanged);
             string line = "path="
                 + resolvedPath
                 + " summary="
@@ -751,6 +756,30 @@ namespace MC2Demo.Presentation
             string reason = applyPreview.Message ?? "import apply preview failed";
             AddCombatLogLine("CLI saved account import apply preview failed: " + reason);
             Debug.LogError("MC2 saved account import apply preview failed: " + reason + " " + line);
+        }
+
+        private static string SavedAccountImportApplyPreviewText(
+            MechBaySavedAccountFileResult preview,
+            string deltaText,
+            bool sourceUnchanged)
+        {
+            if (preview == null)
+            {
+                return "Blocked  preview unavailable";
+            }
+
+            if (!sourceUnchanged)
+            {
+                return "Blocked  source changed during preview";
+            }
+
+            if (!preview.Accepted)
+            {
+                return "Blocked  " + (preview.Message ?? "preview rejected");
+            }
+
+            string delta = string.IsNullOrWhiteSpace(deltaText) ? "Delta none" : deltaText;
+            return (preview.WouldChange ? "Review  " : "Ready  ") + delta;
         }
 
         private static string FirstSavedAccountValidationError(MechBaySavedAccountValidationResult validation)
@@ -3567,21 +3596,22 @@ namespace MC2Demo.Presentation
                 new Rect(x, y + 60f, width, 18f),
                 "Assembly " + AssemblyPreviewText(MechBayAssemblyPreviewService.BestAssemblyProgress(demoInventory)));
             DrawLocalCandidatePrepAction(x, y + 82f, width);
+            DrawSavedAccountImportApplyPreviewLine(x, y + 104f, width);
             MechBayWeaponShopPreview shopPreview = MechBayWeaponShopPreviewService.BuildPreview(demoInventory);
             GUI.Label(
-                new Rect(x, y + 102f, width, 18f),
+                new Rect(x, y + 124f, width, 18f),
                 "Shop " + WeaponShopPreviewText(shopPreview));
-            DrawWeaponShopPurchaseStub(x, y + 124f, width, shopPreview, demoInventory);
+            DrawWeaponShopPurchaseStub(x, y + 146f, width, shopPreview, demoInventory);
             MechBayPilotHirePreview pilotHirePreview = MechBayPilotHirePreviewService.BuildPreview(demoInventory);
             GUI.Label(
-                new Rect(x, y + 146f, width, 18f),
+                new Rect(x, y + 168f, width, 18f),
                 "Pilot Hire " + PilotHirePreviewText(pilotHirePreview));
             MechBayOwnedRosterEntry[] roster = MechBayOwnedRosterService.BuildRosterPreview(demoInventory);
             ClampSelectedRosterIndex(roster);
             GUI.Label(
-                new Rect(x, y + 168f, width, 18f),
+                new Rect(x, y + 190f, width, 18f),
                 "Roster " + TruncateText(OwnedRosterText(roster), 62));
-            DrawRosterMissionStateLine(x, y + 190f, width, roster);
+            DrawRosterMissionStateLine(x, y + 212f, width, roster);
             MechBayMissionHandoffPreview handoffPreview =
                 MechBayMissionHandoffPreviewService.BuildPreview(demoInventory);
             MechBayMissionRestartApplyGuard restartGuard =
@@ -3593,13 +3623,13 @@ namespace MC2Demo.Presentation
                 ? MissionHandoffCompletedSummaryText(handoffPreview, restartGuard)
                 : MissionHandoffPlayerSummaryText(handoffPreview, restartGuard);
             GUI.Label(
-                new Rect(x, y + 212f, width, 18f),
+                new Rect(x, y + 234f, width, 18f),
                 "Next Mission " + TruncateText(handoffSummary, 58));
-            DrawMissionHandoffLaunchAction(x, y + 234f, width, handoffPreview, restartGuard);
-            DrawMissionHandoffLineup(x, y + 256f, width, handoffPreview);
+            DrawMissionHandoffLaunchAction(x, y + 256f, width, handoffPreview, restartGuard);
+            DrawMissionHandoffLineup(x, y + 278f, width, handoffPreview);
             if (showRosterDetail)
             {
-                DrawOwnedRosterDetail(x, y + 278f, width, roster, pilotHirePreview);
+                DrawOwnedRosterDetail(x, y + 300f, width, roster, pilotHirePreview);
             }
         }
 
@@ -4410,6 +4440,21 @@ namespace MC2Demo.Presentation
 
             string cost = FormatTokens(purchasePreview.TokenCost) + " token";
             return purchasePreview.displayName + " " + cost + "  " + purchasePreview.Message;
+        }
+
+        private void DrawSavedAccountImportApplyPreviewLine(float x, float y, float width)
+        {
+            bool hasPreview = !string.IsNullOrWhiteSpace(lastSavedAccountImportApplyPreviewText);
+            string text = hasPreview
+                ? lastSavedAccountImportApplyPreviewText
+                : "Idle  no import apply preview";
+            DrawActionStateLabel(
+                x,
+                y,
+                width,
+                "Import Apply " + text,
+                hasPreview && lastSavedAccountImportApplyPreviewReady,
+                68);
         }
 
         private void DrawLocalCandidatePrepAction(float x, float y, float width)
