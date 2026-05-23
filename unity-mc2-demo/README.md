@@ -65,10 +65,10 @@ Current demo behavior:
 - preselects the clicked mission mech as Out or clicked depot candidate as In when opening squad selection
 - stages the first current slot and fitted depot candidate in a local squad-selection draft state
 - lets the local squad-selection draft cycle outgoing mission slots and incoming depot candidates
-- marks Out/In rows with direction cues before Confirm
-- shows one replace plan that names the outgoing and incoming mechs before Confirm
-- uses short player-facing Confirm and Launch status text after squad swaps
-- marks Confirm and Launch rows with Ready/Blocked color cues
+- highlights Out/In rows with direction cues before setting the next squad
+- shows one replace plan that names the outgoing and incoming mechs before Set
+- uses short player-facing Set and Launch status text after squad swaps
+- marks Set and Launch rows with Ready/Blocked color cues
 - shows a compact completed-swap lineup before next-mission Launch
 - labels completed-swap Launch as a restart with the updated squad
 - confirms post-launch that the updated squad was loaded when the mech bay stays open

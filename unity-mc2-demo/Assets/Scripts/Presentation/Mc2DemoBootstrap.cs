@@ -4573,6 +4573,13 @@ namespace MC2Demo.Presentation
             bool outgoing)
         {
             MechBaySquadSelectionSlot[] safeSlots = slots ?? Array.Empty<MechBaySquadSelectionSlot>();
+            Color cueColor = outgoing
+                ? new Color(1f, 0.42f, 0.32f, 0.9f)
+                : new Color(0.42f, 0.82f, 1f, 0.9f);
+            Rect rowRect = new(x, y - 3f, width, 24f);
+            DrawColorRect(rowRect, new Color(cueColor.r, cueColor.g, cueColor.b, 0.13f));
+            DrawRectBorder(rowRect, new Color(cueColor.r, cueColor.g, cueColor.b, 0.55f), 1f);
+
             bool canCycle = safeSlots.Length > 1;
             bool previousEnabled = GUI.enabled;
             GUI.enabled = previousEnabled && canCycle;
@@ -4593,13 +4600,10 @@ namespace MC2Demo.Presentation
                 ? " (" + (selectedIndex + 1).ToString(CultureInfo.InvariantCulture) + "/"
                   + safeSlots.Length.ToString(CultureInfo.InvariantCulture) + ")"
                 : " (0/0)";
-            Color cueColor = outgoing
-                ? new Color(1f, 0.42f, 0.32f, 0.9f)
-                : new Color(0.42f, 0.82f, 1f, 0.9f);
             string cueLabel = string.IsNullOrWhiteSpace(label)
                 ? (outgoing ? "OUT" : "IN")
                 : label.ToUpperInvariant();
-            string direction = outgoing ? " leaves squad  " : " joins squad  ";
+            string direction = outgoing ? " leaves next mission  " : " joins next mission  ";
             DrawColorRect(new Rect(x + 70f, y + 4f, 10f, 10f), cueColor);
             GUI.Label(
                 new Rect(x + 86f, y, width - 86f, 18f),
@@ -4621,7 +4625,7 @@ namespace MC2Demo.Presentation
                 string incoming = string.IsNullOrWhiteSpace(draft.IncomingDisplayName)
                     ? "depot mech"
                     : draft.IncomingDisplayName;
-                text = "Plan  Replace " + outgoing + " with " + incoming + "  Confirm updates next mission";
+                text = "Replacement  " + outgoing + " -> " + incoming + "  Set for next launch";
             }
             else
             {
@@ -4644,7 +4648,7 @@ namespace MC2Demo.Presentation
             bool previousEnabled = GUI.enabled;
             bool canConfirm = draft?.Ready == true;
             GUI.enabled = previousEnabled && canConfirm;
-            if (DrawActionButton(new Rect(x, y - 2f, 72f, 22f), "Confirm", canConfirm))
+            if (DrawActionButton(new Rect(x, y - 2f, 72f, 22f), "Set", canConfirm))
             {
                 MechBaySquadSelectionApplyResult result =
                     MechBaySquadSelectionPreviewService.TryApplyPendingSwap(demoInventory, draft);
@@ -4701,7 +4705,7 @@ namespace MC2Demo.Presentation
         {
             if (draft?.Ready == true)
             {
-                return "Ready  confirm replacement";
+                return "Ready  set next mission squad";
             }
 
             if (preview?.HasRefreshedMissionSlot == true)
