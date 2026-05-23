@@ -458,6 +458,12 @@ namespace MC2Demo.Presentation
                     case StartupCommanderScriptActionKind.SavedAccountSaveLoadPreview:
                         RunStartupSavedAccountSaveLoadPreview();
                         break;
+                    case StartupCommanderScriptActionKind.SavedAccountExport:
+                        RunStartupSavedAccountExport(action.FilePath);
+                        break;
+                    case StartupCommanderScriptActionKind.SavedAccountImportPreview:
+                        RunStartupSavedAccountImportPreview(action.FilePath);
+                        break;
                     case StartupCommanderScriptActionKind.PrepareDepotCandidate:
                         RunStartupPrepareDepotCandidate();
                         break;
@@ -490,6 +496,16 @@ namespace MC2Demo.Presentation
             if (File.Exists(streamingAssetPath))
             {
                 return streamingAssetPath;
+            }
+
+            return Path.GetFullPath(path);
+        }
+
+        private static string ResolveStartupCommanderDataFilePath(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path) || Path.IsPathRooted(path))
+            {
+                return path;
             }
 
             return Path.GetFullPath(path);
@@ -624,6 +640,73 @@ namespace MC2Demo.Presentation
             string reason = preview.Message ?? "preview failed";
             AddCombatLogLine("CLI saved account save/load preview failed: " + reason);
             Debug.LogError("MC2 saved account save/load preview failed: " + reason + " " + line);
+        }
+
+        private void RunStartupSavedAccountExport(string requestedPath)
+        {
+            string resolvedPath = ResolveStartupCommanderDataFilePath(requestedPath);
+            MechBaySavedAccountFileResult export =
+                MechBaySavedAccountService.ExportJsonFile(CurrentSavedAccountSnapshot(), resolvedPath);
+            string summary = MechBaySavedAccountService.SummaryText(CurrentSavedAccountSnapshot());
+            string line = "path="
+                + resolvedPath
+                + " jsonChars="
+                + export.JsonCharCount.ToString(CultureInfo.InvariantCulture)
+                + " message="
+                + export.Message;
+
+            if (export.Accepted)
+            {
+                statusText = "Account export ready";
+                AddCombatLogLine("CLI saved account export OK: " + summary);
+                Debug.Log("MC2 saved account export: " + line);
+                return;
+            }
+
+            startupSmokeFailed = true;
+            statusText = "Account export failed";
+            string reason = export.Message ?? "export failed";
+            AddCombatLogLine("CLI saved account export failed: " + reason);
+            Debug.LogError("MC2 saved account export failed: " + reason + " " + line);
+        }
+
+        private void RunStartupSavedAccountImportPreview(string requestedPath)
+        {
+            int sourceTokenBalance = Math.Max(0, demoInventory?.tokenBalance ?? 0);
+            string resolvedPath = ResolveStartupCommanderDataFilePath(requestedPath);
+            MechBaySavedAccountFileResult importPreview =
+                MechBaySavedAccountService.PreviewImportJsonFile(
+                    resolvedPath,
+                    CurrentSavedAccountSnapshot());
+            bool sourceUnchanged = Math.Max(0, demoInventory?.tokenBalance ?? 0) == sourceTokenBalance;
+            string summary = MechBaySavedAccountService.SummaryText(importPreview.LoadedAccount ?? CurrentSavedAccountSnapshot());
+            string deltaText = MechBaySavedAccountService.DeltaText(importPreview.Delta);
+            string line = "path="
+                + resolvedPath
+                + " summary="
+                + summary
+                + " jsonChars="
+                + importPreview.JsonCharCount.ToString(CultureInfo.InvariantCulture)
+                + " delta="
+                + deltaText
+                + " unchanged="
+                + sourceUnchanged
+                + " message="
+                + importPreview.Message;
+
+            if (importPreview.Accepted && sourceUnchanged)
+            {
+                statusText = "Account import preview ready";
+                AddCombatLogLine("CLI saved account import preview OK: " + deltaText);
+                Debug.Log("MC2 saved account import preview: " + line);
+                return;
+            }
+
+            startupSmokeFailed = true;
+            statusText = "Account import preview failed";
+            string reason = importPreview.Message ?? "import preview failed";
+            AddCombatLogLine("CLI saved account import preview failed: " + reason);
+            Debug.LogError("MC2 saved account import preview failed: " + reason + " " + line);
         }
 
         private static string FirstSavedAccountValidationError(MechBaySavedAccountValidationResult validation)

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using UnityEngine;
 
 namespace MC2Demo.BattleCore
@@ -60,6 +61,17 @@ namespace MC2Demo.BattleCore
     {
         public bool Accepted { get; internal set; }
         public string Message { get; internal set; }
+        public int JsonCharCount { get; internal set; }
+        public MechBaySavedAccountContract LoadedAccount { get; internal set; }
+        public MechBaySavedAccountValidationResult Validation { get; internal set; }
+        public MechBaySavedAccountDelta Delta { get; internal set; }
+    }
+
+    public sealed class MechBaySavedAccountFileResult
+    {
+        public bool Accepted { get; internal set; }
+        public string Message { get; internal set; }
+        public string FilePath { get; internal set; }
         public int JsonCharCount { get; internal set; }
         public MechBaySavedAccountContract LoadedAccount { get; internal set; }
         public MechBaySavedAccountValidationResult Validation { get; internal set; }
@@ -218,6 +230,112 @@ namespace MC2Demo.BattleCore
             {
                 result.Validation = sourceValidation;
                 result.Message = "JSON preview exception: " + exception.Message;
+                return result;
+            }
+        }
+
+        public static MechBaySavedAccountFileResult ExportJsonFile(
+            MechBaySavedAccountContract account,
+            string filePath)
+        {
+            MechBaySavedAccountFileResult result = new()
+            {
+                FilePath = filePath
+            };
+
+            if (string.IsNullOrWhiteSpace(filePath))
+            {
+                result.Message = "Export path missing";
+                return result;
+            }
+
+            MechBaySavedAccountValidationResult sourceValidation = Validate(account);
+            result.Validation = sourceValidation;
+            if (!sourceValidation.IsValid)
+            {
+                result.Message = "Source invalid: " + FirstValidationError(sourceValidation);
+                return result;
+            }
+
+            try
+            {
+                string json = JsonUtility.ToJson(account);
+                result.JsonCharCount = json?.Length ?? 0;
+                if (string.IsNullOrWhiteSpace(json) || !json.Contains(Schema))
+                {
+                    result.Message = "Export JSON missing schema";
+                    return result;
+                }
+
+                string directory = Path.GetDirectoryName(filePath);
+                if (!string.IsNullOrWhiteSpace(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
+
+                File.WriteAllText(filePath, json);
+                result.Accepted = File.Exists(filePath);
+                result.Message = result.Accepted ? "JSON export OK" : "JSON export failed";
+                return result;
+            }
+            catch (Exception exception)
+            {
+                result.Message = "JSON export exception: " + exception.Message;
+                return result;
+            }
+        }
+
+        public static MechBaySavedAccountFileResult PreviewImportJsonFile(
+            string filePath,
+            MechBaySavedAccountContract currentAccount)
+        {
+            MechBaySavedAccountFileResult result = new()
+            {
+                FilePath = filePath
+            };
+
+            if (string.IsNullOrWhiteSpace(filePath))
+            {
+                result.Message = "Import path missing";
+                return result;
+            }
+
+            if (!File.Exists(filePath))
+            {
+                result.Message = "Import file missing";
+                return result;
+            }
+
+            MechBaySavedAccountValidationResult currentValidation = Validate(currentAccount);
+            if (!currentValidation.IsValid)
+            {
+                result.Validation = currentValidation;
+                result.Message = "Current account invalid: " + FirstValidationError(currentValidation);
+                return result;
+            }
+
+            try
+            {
+                string json = File.ReadAllText(filePath);
+                result.JsonCharCount = json?.Length ?? 0;
+                if (string.IsNullOrWhiteSpace(json) || !json.Contains(Schema))
+                {
+                    result.Message = "Import JSON missing schema";
+                    return result;
+                }
+
+                result.LoadedAccount = JsonUtility.FromJson<MechBaySavedAccountContract>(json);
+                result.Validation = Validate(result.LoadedAccount);
+                result.Delta = BuildDelta(currentAccount, result.LoadedAccount);
+                result.Accepted = result.Validation.IsValid;
+                result.Message = result.Accepted
+                    ? "JSON import preview OK"
+                    : "Loaded invalid: " + FirstValidationError(result.Validation);
+                return result;
+            }
+            catch (Exception exception)
+            {
+                result.Message = "JSON import exception: " + exception.Message;
                 return result;
             }
         }

@@ -238,6 +238,10 @@ ready, depot, and item-stack count changes before persistent save/load is added.
 The explicit `saved-account-save-load-preview` command serializes and loads that
 snapshot in memory, validates the loaded account, and requires a zero-delta
 round trip before the future file export/import path exists.
+The explicit `saved-account-export <path>` and `saved-account-import-preview
+<path>` commands now move that same JSON boundary onto disk only when a command
+file provides a path; import preview validates and reports the delta without
+applying the loaded account to the live mech bay.
 Current draft fits are now checked against that starter inventory, so extra
 armor plate or heat sink choices show a shortage and cannot be applied.
 The same starter inventory now owns the demo token balance used by the mech bay:

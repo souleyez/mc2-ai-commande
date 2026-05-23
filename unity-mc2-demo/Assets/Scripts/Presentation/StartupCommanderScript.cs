@@ -157,6 +157,30 @@ namespace MC2Demo.Presentation
                 return true;
             }
 
+            if (string.Equals(verb, "saved-account-export", StringComparison.OrdinalIgnoreCase))
+            {
+                if (string.IsNullOrWhiteSpace(payload))
+                {
+                    error = "Saved account export action needs a file path.";
+                    return false;
+                }
+
+                action = StartupCommanderScriptAction.SavedAccountExport(lineNumber, rawLine, payload);
+                return true;
+            }
+
+            if (string.Equals(verb, "saved-account-import-preview", StringComparison.OrdinalIgnoreCase))
+            {
+                if (string.IsNullOrWhiteSpace(payload))
+                {
+                    error = "Saved account import preview action needs a file path.";
+                    return false;
+                }
+
+                action = StartupCommanderScriptAction.SavedAccountImportPreview(lineNumber, rawLine, payload);
+                return true;
+            }
+
             if (string.Equals(verb, "prepare-depot-candidate", StringComparison.OrdinalIgnoreCase))
             {
                 if (!string.IsNullOrWhiteSpace(payload))
@@ -211,7 +235,7 @@ namespace MC2Demo.Presentation
                 return true;
             }
 
-            error = "Command file action must be command, advance, report, restart, mech-bay-launch, hide-squad-preview, saved-account-report, saved-account-save-load-preview, prepare-depot-candidate, prepare-local-candidate, squad-swap, or assert-restart-identity.";
+            error = "Command file action must be command, advance, report, restart, mech-bay-launch, hide-squad-preview, saved-account-report, saved-account-save-load-preview, saved-account-export, saved-account-import-preview, prepare-depot-candidate, prepare-local-candidate, squad-swap, or assert-restart-identity.";
             return false;
         }
     }
@@ -222,6 +246,7 @@ namespace MC2Demo.Presentation
         public int LineNumber { get; private set; }
         public string SourceLine { get; private set; }
         public string CommandText { get; private set; }
+        public string FilePath { get; private set; }
         public float AdvanceSeconds { get; private set; }
         public bool RequireDepotIdentity { get; private set; }
 
@@ -321,6 +346,28 @@ namespace MC2Demo.Presentation
             };
         }
 
+        public static StartupCommanderScriptAction SavedAccountExport(int lineNumber, string sourceLine, string filePath)
+        {
+            return new StartupCommanderScriptAction
+            {
+                Kind = StartupCommanderScriptActionKind.SavedAccountExport,
+                LineNumber = lineNumber,
+                SourceLine = sourceLine ?? string.Empty,
+                FilePath = filePath
+            };
+        }
+
+        public static StartupCommanderScriptAction SavedAccountImportPreview(int lineNumber, string sourceLine, string filePath)
+        {
+            return new StartupCommanderScriptAction
+            {
+                Kind = StartupCommanderScriptActionKind.SavedAccountImportPreview,
+                LineNumber = lineNumber,
+                SourceLine = sourceLine ?? string.Empty,
+                FilePath = filePath
+            };
+        }
+
         public static StartupCommanderScriptAction PrepareDepotCandidate(int lineNumber, string sourceLine)
         {
             return new StartupCommanderScriptAction
@@ -377,6 +424,8 @@ namespace MC2Demo.Presentation
         HideSquadPreview,
         SavedAccountReport,
         SavedAccountSaveLoadPreview,
+        SavedAccountExport,
+        SavedAccountImportPreview,
         PrepareDepotCandidate,
         PrepareLocalCandidate,
         SquadSwap,

@@ -597,6 +597,27 @@ namespace MC2Demo.EditorTools
             {
                 throw new InvalidDataException("Saved account JSON save/load preview did not round-trip cleanly.");
             }
+
+            string exportPath = Path.Combine(Path.GetTempPath(), "mc2-demo-saved-account-validator.json");
+            MechBaySavedAccountFileResult exportResult =
+                MechBaySavedAccountService.ExportJsonFile(afterDeltaAccount, exportPath);
+            if (exportResult == null
+                || !exportResult.Accepted
+                || exportResult.JsonCharCount <= 0
+                || !File.Exists(exportPath))
+            {
+                throw new InvalidDataException("Saved account JSON export did not write a valid preview file.");
+            }
+
+            MechBaySavedAccountFileResult importResult =
+                MechBaySavedAccountService.PreviewImportJsonFile(exportPath, afterDeltaAccount);
+            if (importResult == null
+                || !importResult.Accepted
+                || importResult.LoadedAccount == null
+                || MechBaySavedAccountService.DeltaText(importResult.Delta) != "Delta none")
+            {
+                throw new InvalidDataException("Saved account JSON import preview did not validate the exported file.");
+            }
         }
 
         private static string FirstSavedAccountError(MechBaySavedAccountValidationResult result)
@@ -2613,11 +2634,13 @@ namespace MC2Demo.EditorTools
                     "command unit player-1 attack structure structure-1",
                     "hide-squad-preview",
                     "saved-account-report",
-                    "saved-account-save-load-preview"
+                    "saved-account-save-load-preview",
+                    "saved-account-export ..\\analysis-output\\validator-command-file-account.json",
+                    "saved-account-import-preview ..\\analysis-output\\validator-command-file-account.json"
                 },
                 "validator-command-file");
 
-            if (actions.Length != 12
+            if (actions.Length != 14
                 || actions[0].Kind != StartupCommanderScriptActionKind.Command
                 || actions[1].Kind != StartupCommanderScriptActionKind.Advance
                 || actions[2].Kind != StartupCommanderScriptActionKind.Restart
@@ -2627,9 +2650,13 @@ namespace MC2Demo.EditorTools
                 || actions[8].CommandText != "unit player-1 attack structure structure-1"
                 || actions[9].Kind != StartupCommanderScriptActionKind.HideSquadPreview
                 || actions[10].Kind != StartupCommanderScriptActionKind.SavedAccountReport
-                || actions[11].Kind != StartupCommanderScriptActionKind.SavedAccountSaveLoadPreview)
+                || actions[11].Kind != StartupCommanderScriptActionKind.SavedAccountSaveLoadPreview
+                || actions[12].Kind != StartupCommanderScriptActionKind.SavedAccountExport
+                || actions[13].Kind != StartupCommanderScriptActionKind.SavedAccountImportPreview
+                || string.IsNullOrWhiteSpace(actions[12].FilePath)
+                || actions[12].FilePath != actions[13].FilePath)
             {
-                throw new InvalidDataException("Expected command file parser to preserve command, advance, restart, report, hide-squad-preview, saved-account-report, and saved-account-save-load-preview actions.");
+                throw new InvalidDataException("Expected command file parser to preserve command, advance, restart, report, hide-squad-preview, saved account, and file preview actions.");
             }
 
             if (Math.Abs(actions[1].AdvanceSeconds - 0.5f) > 0.001f)
@@ -2675,6 +2702,28 @@ namespace MC2Demo.EditorTools
                 || savedAccountSaveLoadAction.Kind != StartupCommanderScriptActionKind.SavedAccountSaveLoadPreview)
             {
                 throw new InvalidDataException("Expected command file parser to read saved-account-save-load-preview actions.");
+            }
+
+            if (!StartupCommanderScript.TryParseLine(
+                    "saved-account-export ..\\analysis-output\\validator-account.json",
+                    1,
+                    out StartupCommanderScriptAction savedAccountExportAction,
+                    out _)
+                || savedAccountExportAction.Kind != StartupCommanderScriptActionKind.SavedAccountExport
+                || string.IsNullOrWhiteSpace(savedAccountExportAction.FilePath))
+            {
+                throw new InvalidDataException("Expected command file parser to read saved-account-export actions.");
+            }
+
+            if (!StartupCommanderScript.TryParseLine(
+                    "saved-account-import-preview ..\\analysis-output\\validator-account.json",
+                    1,
+                    out StartupCommanderScriptAction savedAccountImportAction,
+                    out _)
+                || savedAccountImportAction.Kind != StartupCommanderScriptActionKind.SavedAccountImportPreview
+                || string.IsNullOrWhiteSpace(savedAccountImportAction.FilePath))
+            {
+                throw new InvalidDataException("Expected command file parser to read saved-account-import-preview actions.");
             }
 
             BattleMission mission = new(MakeCommandPortContract(), CombatProfileCatalog.Empty);
@@ -2738,6 +2787,26 @@ namespace MC2Demo.EditorTools
                             throw new InvalidDataException("Expected saved-account-save-load-preview action to round-trip a valid local account snapshot.");
                         }
                         break;
+                    case StartupCommanderScriptActionKind.SavedAccountExport:
+                        MechBaySavedAccountFileResult export =
+                            MechBaySavedAccountService.ExportJsonFile(
+                                MechBaySavedAccountService.BuildDemoSnapshot(MechBayInventoryBuilder.BuildDemoInventory(mission.PlayerUnits())),
+                                action.FilePath);
+                        if (export == null || !export.Accepted || !File.Exists(action.FilePath))
+                        {
+                            throw new InvalidDataException("Expected saved-account-export action to write a valid account JSON file.");
+                        }
+                        break;
+                    case StartupCommanderScriptActionKind.SavedAccountImportPreview:
+                        MechBaySavedAccountFileResult import =
+                            MechBaySavedAccountService.PreviewImportJsonFile(
+                                action.FilePath,
+                                MechBaySavedAccountService.BuildDemoSnapshot(MechBayInventoryBuilder.BuildDemoInventory(mission.PlayerUnits())));
+                        if (import == null || !import.Accepted)
+                        {
+                            throw new InvalidDataException("Expected saved-account-import-preview action to validate an account JSON file.");
+                        }
+                        break;
                 }
             }
 
@@ -2765,7 +2834,9 @@ namespace MC2Demo.EditorTools
                 || StartupCommanderScript.TryParseLine("prepare-local-candidate now", 1, out _, out _)
                 || StartupCommanderScript.TryParseLine("hide-squad-preview now", 1, out _, out _)
                 || StartupCommanderScript.TryParseLine("saved-account-report now", 1, out _, out _)
-                || StartupCommanderScript.TryParseLine("saved-account-save-load-preview now", 1, out _, out _))
+                || StartupCommanderScript.TryParseLine("saved-account-save-load-preview now", 1, out _, out _)
+                || StartupCommanderScript.TryParseLine("saved-account-export", 1, out _, out _)
+                || StartupCommanderScript.TryParseLine("saved-account-import-preview", 1, out _, out _))
             {
                 throw new InvalidDataException("Expected malformed command file lines to be rejected.");
             }

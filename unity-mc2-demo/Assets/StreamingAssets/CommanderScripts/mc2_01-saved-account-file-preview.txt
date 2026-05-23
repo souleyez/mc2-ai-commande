@@ -1,0 +1,7 @@
+# Exports and previews a local saved-account JSON file only when explicitly requested.
+saved-account-export ..\analysis-output\mc2_01-saved-account-file-preview.json
+saved-account-import-preview ..\analysis-output\mc2_01-saved-account-file-preview.json
+prepare-local-candidate
+saved-account-export ..\analysis-output\mc2_01-saved-account-file-preview.json
+saved-account-import-preview ..\analysis-output\mc2_01-saved-account-file-preview.json
+report

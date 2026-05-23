@@ -70,6 +70,8 @@ analysis-output/mission-analysis/
 analysis-output/mission-packet-audit/
 analysis-output/unity-demo-contract/
 analysis-output/unity-combat-data/
+analysis-output/*saved-account*.json
+analysis-output/*validator*.json
 
 # Unity demo generated state
 unity-mc2-demo/Library/
