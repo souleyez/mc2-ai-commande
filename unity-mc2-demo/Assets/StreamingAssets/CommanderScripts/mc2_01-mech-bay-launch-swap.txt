@@ -1,0 +1,6 @@
+# Proves the mech-bay Launch path loads the swapped squad and keeps the bay open.
+prepare-depot-candidate
+squad-swap
+mech-bay-launch
+assert-restart-identity depot
+report

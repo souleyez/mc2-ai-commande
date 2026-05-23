@@ -71,6 +71,7 @@ Current demo behavior:
 - shows a compact completed-swap lineup before next-mission Launch
 - labels completed-swap Launch as a restart with the updated squad
 - confirms post-launch that the updated squad was loaded when the mech bay stays open
+- supports a command-file `mech-bay-launch` smoke action for the mech-bay Launch handoff
 - applies pending squad swap confirmation by exchanging local mission availability flags
 - refreshes squad-selection status after confirmation so the joined depot mech is no longer shown as a candidate
 - keeps the squad-selection preview visible inside the mech bay and exposes the guarded next-mission Launch handoff there
@@ -177,6 +178,15 @@ Run the player with a startup command file that applies a demo depot squad swap,
   -logFile "$PWD\..\analysis-output\unity-player-restart-identity-swap.log"
 ```
 
+Run the player with a startup command file that applies a demo depot squad swap, uses the mech-bay Launch path, and asserts the updated squad was loaded while the bay stayed open:
+
+```powershell
+& .\Builds\Windows\MC2UnityDemo.exe `
+  -batchmode -nographics -mc2SmokeTest `
+  -mc2CommandFile ".\Assets\StreamingAssets\CommanderScripts\mc2_01-mech-bay-launch-swap.txt" `
+  -logFile "$PWD\..\analysis-output\unity-player-mech-bay-launch-swap.log"
+```
+
 Run the player with a direct startup restart:
 
 ```powershell
@@ -216,7 +226,7 @@ command unit unit-1 move 3221 -277
 
 Relative command-file paths are checked from the current working directory first, then from the player `StreamingAssets` folder.
 
-Command files also support `prepare-depot-candidate`, `squad-swap`, and `assert-restart-identity depot` for the demo-only restart identity smoke path.
+Command files also support `prepare-depot-candidate`, `squad-swap`, `mech-bay-launch`, and `assert-restart-identity depot` for the demo-only restart identity and mech-bay Launch smoke paths.
 
 Commander observation reports include `reportIndex` and `missionTimeSeconds` so future AI adapters can correlate decisions with elapsed battle time.
 

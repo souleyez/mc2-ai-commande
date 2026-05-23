@@ -1,7 +1,8 @@
-using System.Collections.Generic;
-using System.IO;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using MC2Demo.BattleCore;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -69,6 +70,7 @@ namespace MC2Demo.Presentation
         private string statusText = "Loading";
         private bool startupSmokeFailed;
         private const string StartupSmokeDepotOwnedMechId = "assembled-smoke-depot";
+        private const string UpdatedSquadLoadedStatusText = "Updated squad loaded - Mech bay open";
 
         private void Start()
         {
@@ -253,7 +255,7 @@ namespace MC2Demo.Presentation
         {
             if (keepMechBayOpen && result?.IncludesDepotMissionSlot == true)
             {
-                return "Updated squad loaded - Mech bay open";
+                return UpdatedSquadLoadedStatusText;
             }
 
             if (keepMechBayOpen)
@@ -313,10 +315,16 @@ namespace MC2Demo.Presentation
             {
                 if (args[index] == "-mc2SmokeTest")
                 {
-                    Invoke(nameof(QuitSmokeTest), 0.25f);
+                    StartCoroutine(QuitSmokeTestAfterRealtimeDelay());
                     return;
                 }
             }
+        }
+
+        private IEnumerator QuitSmokeTestAfterRealtimeDelay()
+        {
+            yield return new WaitForSecondsRealtime(0.25f);
+            QuitSmokeTest();
         }
 
         private void RunStartupCommanderSequence()
@@ -426,6 +434,9 @@ namespace MC2Demo.Presentation
                     case StartupCommanderScriptActionKind.Restart:
                         RunStartupMissionRestart();
                         break;
+                    case StartupCommanderScriptActionKind.MechBayLaunch:
+                        RunStartupMechBayLaunch();
+                        break;
                     case StartupCommanderScriptActionKind.PrepareDepotCandidate:
                         RunStartupPrepareDepotCandidate();
                         break;
@@ -481,6 +492,38 @@ namespace MC2Demo.Presentation
                 + (mission == null ? "none" : mission.Result.ToString())
                 + " status="
                 + statusText);
+        }
+
+        private void RunStartupMechBayLaunch()
+        {
+            MechBayMissionRestartDryRun dryRun = MechBayMissionHandoffPreviewService.BuildRestartDryRun(demoInventory);
+            bool expectsUpdatedSquadStatus = dryRun?.IncludesDepotMissionSlot == true;
+            bool accepted = TryApplyMissionRestartRuntimeSwap(keepMechBayOpen: true);
+            bool bayOpen = showLoadoutPanel;
+            bool paused = isPaused;
+            bool statusOk = !expectsUpdatedSquadStatus
+                || string.Equals(statusText, UpdatedSquadLoadedStatusText, StringComparison.Ordinal);
+            string summary = "accepted="
+                + accepted
+                + " bayOpen="
+                + bayOpen
+                + " paused="
+                + paused
+                + " depot="
+                + expectsUpdatedSquadStatus
+                + " status="
+                + statusText;
+
+            if (accepted && bayOpen && paused && statusOk)
+            {
+                AddCombatLogLine("CLI mech bay launch OK: " + statusText);
+                Debug.Log("MC2 commander mech bay launch: " + summary);
+                return;
+            }
+
+            startupSmokeFailed = true;
+            AddCombatLogLine("CLI mech bay launch failed: " + summary);
+            Debug.LogError("MC2 commander mech bay launch failed: " + summary);
         }
 
         private void RunStartupPrepareDepotCandidate()

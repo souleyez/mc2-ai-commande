@@ -109,6 +109,18 @@ namespace MC2Demo.Presentation
                 return true;
             }
 
+            if (string.Equals(verb, "mech-bay-launch", StringComparison.OrdinalIgnoreCase))
+            {
+                if (!string.IsNullOrWhiteSpace(payload))
+                {
+                    error = "Mech bay launch action does not accept arguments.";
+                    return false;
+                }
+
+                action = StartupCommanderScriptAction.MechBayLaunch(lineNumber, rawLine);
+                return true;
+            }
+
             if (string.Equals(verb, "prepare-depot-candidate", StringComparison.OrdinalIgnoreCase))
             {
                 if (!string.IsNullOrWhiteSpace(payload))
@@ -151,7 +163,7 @@ namespace MC2Demo.Presentation
                 return true;
             }
 
-            error = "Command file action must be command, advance, report, restart, prepare-depot-candidate, squad-swap, or assert-restart-identity.";
+            error = "Command file action must be command, advance, report, restart, mech-bay-launch, prepare-depot-candidate, squad-swap, or assert-restart-identity.";
             return false;
         }
     }
@@ -221,6 +233,16 @@ namespace MC2Demo.Presentation
             };
         }
 
+        public static StartupCommanderScriptAction MechBayLaunch(int lineNumber, string sourceLine)
+        {
+            return new StartupCommanderScriptAction
+            {
+                Kind = StartupCommanderScriptActionKind.MechBayLaunch,
+                LineNumber = lineNumber,
+                SourceLine = sourceLine ?? string.Empty
+            };
+        }
+
         public static StartupCommanderScriptAction PrepareDepotCandidate(int lineNumber, string sourceLine)
         {
             return new StartupCommanderScriptAction
@@ -263,6 +285,7 @@ namespace MC2Demo.Presentation
         Advance,
         Report,
         Restart,
+        MechBayLaunch,
         PrepareDepotCandidate,
         SquadSwap,
         AssertRestartIdentity

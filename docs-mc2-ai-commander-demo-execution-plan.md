@@ -79,6 +79,7 @@ The Unity demo currently supports:
 - squad-selection completed-swap state shows a compact done lineup before next-mission Launch
 - squad-selection completed-swap Launch row says it restarts with the updated squad
 - post-launch mech bay status confirms when the updated squad was loaded
+- command-file `mech-bay-launch` smoke hook exercises the mech-bay Launch handoff
 - squad-selection preview refreshes after confirmation so the joined depot mech becomes a mission slot and no longer appears as a candidate
 - next-mission handoff preview reads `availableForMission` roster slots without mutating the active combat mission
 - next-mission handoff area shows a player-facing Ready/Blocked summary, guarded Launch action, and selected lineup
@@ -447,5 +448,6 @@ Reason:
 - The completed-swap squad-selection state now hides the Out/In picker noise and shows a compact done lineup before next-mission Launch.
 - The completed-swap Launch row now says it restarts with the updated squad, making the button consequence explicit before applying the handoff.
 - Post-launch mech bay status now confirms when the updated squad was loaded after a completed swap Launch.
-- The next low-risk step is to add a lightweight command/smoke hook for the mech-bay Launch path so this UI handoff can be exercised without manual clicking.
+- A lightweight command-file `mech-bay-launch` smoke hook now exercises the mech-bay Launch path, checks the bay stays open and paused, and confirms the updated-squad status before identity assertion.
+- The next low-risk step is to start turning this smoke-only depot replacement into the first player-facing assembled-mech selection path for future missions.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.
