@@ -74,6 +74,7 @@ The Unity demo currently supports:
 - squad-selection draft controls can cycle outgoing mission slots and incoming depot candidates while staying local-only
 - squad-selection preview shows a single replace plan with a Confirm row before roster mutation
 - squad-selection Out/In rows show direction cues before Confirm
+- squad-selection Confirm and next-mission Launch rows use short player-facing status text
 - squad-selection preview refreshes after confirmation so the joined depot mech becomes a mission slot and no longer appears as a candidate
 - next-mission handoff preview reads `availableForMission` roster slots without mutating the active combat mission
 - next-mission handoff area shows a player-facing Ready/Blocked summary, guarded Launch action, and selected lineup
@@ -437,5 +438,6 @@ Reason:
 - The squad-selection preview now appears inline in the mech bay when opened, hides lower roster detail to avoid being buried, and exposes the same guarded next-mission Launch handoff after the staged swap row.
 - The mech bay next-mission area now collapses the old Launch, dry-run, contract, clone, and construction rows into a player-facing Ready/Blocked summary, guarded Launch button, and lineup preview while preserving the validated restart guards.
 - The squad-selection Out/In rows now carry compact direction cues, so the selected replacement direction is visible before Confirm.
-- The next low-risk step is to make Confirm and Launch status text shorter and more player-facing after a swap is applied.
+- Squad-selection Confirm and next-mission Launch rows now use short player-facing status text after swaps while keeping technical summaries in logs and guards.
+- The next low-risk step is to give Confirm and Launch ready/blocked button states stronger visual cues.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.

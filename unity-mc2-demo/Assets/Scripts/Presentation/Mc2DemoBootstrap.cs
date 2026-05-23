@@ -3455,20 +3455,43 @@ namespace MC2Demo.Presentation
         {
             if (guard == null)
             {
-                return "Launch unavailable";
+                return "Blocked  launch unavailable";
             }
 
             if (guard.ApplyEnabled)
             {
-                string depot = preview?.IncludesDepotMissionSlot == true ? "depot mech ready" : "squad ready";
-                return "Ready to start  "
+                string depot = preview?.IncludesDepotMissionSlot == true ? "depot in squad" : "current squad";
+                return "Ready  "
                     + guard.SpawnIntentCount.ToString(CultureInfo.InvariantCulture)
                     + " mechs  "
                     + depot;
             }
 
-            string reason = string.IsNullOrWhiteSpace(guard.Reason) ? "Need a ready mission squad" : guard.Reason;
-            return "Blocked  " + reason;
+            return "Blocked  " + MissionHandoffPlayerBlockedReason(guard.Reason);
+        }
+
+        private static string MissionHandoffPlayerBlockedReason(string reason)
+        {
+            if (string.IsNullOrWhiteSpace(reason))
+            {
+                return "need ready squad";
+            }
+
+            if (reason.IndexOf("available mission slot", StringComparison.OrdinalIgnoreCase) >= 0
+                || reason.IndexOf("ready mission squad", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return "need ready squad";
+            }
+
+            if (reason.IndexOf("BattleMission", StringComparison.OrdinalIgnoreCase) >= 0
+                || reason.IndexOf("contract", StringComparison.OrdinalIgnoreCase) >= 0
+                || reason.IndexOf("template", StringComparison.OrdinalIgnoreCase) >= 0
+                || reason.IndexOf("dry run", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return "mission setup not ready";
+            }
+
+            return reason;
         }
 
         private static void DrawMissionHandoffLineup(
@@ -4202,12 +4225,15 @@ namespace MC2Demo.Presentation
             {
                 MechBaySquadSelectionApplyResult result =
                     MechBaySquadSelectionPreviewService.TryApplyPendingSwap(demoInventory, draft);
-                statusText = result?.Message ?? "Squad swap unavailable";
-                AddCombatLogLine("Squad selection " + statusText);
+                statusText = SquadSelectionApplyStatusText(result);
                 if (result?.Accepted == true)
                 {
                     ClearSquadSelectionDraft();
-                    AddCombatLogLine("Next mission handoff updated: " + result.Summary);
+                    AddCombatLogLine(statusText + ": " + result.Summary);
+                }
+                else
+                {
+                    AddCombatLogLine("Squad selection " + statusText);
                 }
 
                 demoInventoryValidation = MechBayInventoryValidator.Validate(demoInventory);
@@ -4221,13 +4247,85 @@ namespace MC2Demo.Presentation
             }
 
             GUI.enabled = previousEnabled;
-            string status = string.IsNullOrWhiteSpace(preview?.PendingSwapStatus)
-                ? "No pending swap"
-                : preview.PendingSwapStatus;
-            string summary = string.IsNullOrWhiteSpace(preview?.PendingSwapSummary)
-                ? "Need mission slot + fitted depot candidate"
-                : preview.PendingSwapSummary;
-            GUI.Label(new Rect(x + 80f, y, width - 80f, 18f), TruncateText(status + "  " + summary, 64));
+            GUI.Label(
+                new Rect(x + 80f, y, width - 80f, 18f),
+                TruncateText(SquadSelectionConfirmLineText(preview, draft), 64));
+        }
+
+        private static string SquadSelectionApplyStatusText(MechBaySquadSelectionApplyResult result)
+        {
+            if (result?.Accepted == true)
+            {
+                return "Squad updated";
+            }
+
+            if (result == null)
+            {
+                return "Swap blocked";
+            }
+
+            string reason = string.IsNullOrWhiteSpace(result.Reason) ? result.Message : result.Reason;
+            return "Swap blocked: " + SquadSelectionPlayerBlockedReason(reason);
+        }
+
+        private static string SquadSelectionConfirmLineText(
+            MechBaySquadSelectionPreview preview,
+            MechBaySquadSelectionDraftState draft)
+        {
+            if (draft?.Ready == true)
+            {
+                return "Ready  confirm replacement";
+            }
+
+            if (preview?.HasRefreshedMissionSlot == true)
+            {
+                return "Done  next mission updated";
+            }
+
+            int missionSlots = preview?.MissionSlotCount ?? 0;
+            int candidates = preview?.CandidateCount ?? 0;
+            if (missionSlots <= 0)
+            {
+                return "Blocked  no mission mech";
+            }
+
+            if (candidates <= 0)
+            {
+                return "Blocked  no depot mech ready";
+            }
+
+            return "Blocked  choose Out and In";
+        }
+
+        private static string SquadSelectionPlayerBlockedReason(string reason)
+        {
+            if (string.IsNullOrWhiteSpace(reason))
+            {
+                return "choose Out and In";
+            }
+
+            if (reason.IndexOf("mission slot", StringComparison.OrdinalIgnoreCase) >= 0
+                && reason.IndexOf("depot", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return "choose Out and In";
+            }
+
+            if (reason.IndexOf("Selected mech missing", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return "selection missing";
+            }
+
+            if (reason.IndexOf("Inventory", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return "inventory unavailable";
+            }
+
+            if (reason.IndexOf("No pending", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return "choose Out and In";
+            }
+
+            return reason;
         }
 
         private void DrawSquadSelectionRestartHandoff(float x, float y, float width)

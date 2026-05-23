@@ -354,3 +354,6 @@ The next-mission area now hides the earlier technical dry-run ladder from the
 player-facing mech bay. It shows a Ready/Blocked summary, a guarded Launch
 button, and the selected lineup, while still using the same cloned-contract and
 replacement-`BattleMission` validation path before any live restart is allowed.
+The Confirm and Launch rows now use shorter player-facing status text after a
+swap, while the technical roster and restart summaries remain in logs and guard
+state.
