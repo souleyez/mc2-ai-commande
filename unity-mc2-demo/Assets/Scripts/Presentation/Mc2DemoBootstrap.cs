@@ -451,6 +451,9 @@ namespace MC2Demo.Presentation
                     case StartupCommanderScriptActionKind.HideSquadPreview:
                         RunStartupHideSquadPreview();
                         break;
+                    case StartupCommanderScriptActionKind.SavedAccountReport:
+                        RunStartupSavedAccountReport();
+                        break;
                     case StartupCommanderScriptActionKind.PrepareDepotCandidate:
                         RunStartupPrepareDepotCandidate();
                         break;
@@ -541,6 +544,53 @@ namespace MC2Demo.Presentation
             startupSmokeFailed = true;
             AddCombatLogLine("CLI mech bay launch failed: " + summary);
             Debug.LogError("MC2 commander mech bay launch failed: " + summary);
+        }
+
+        private void RunStartupSavedAccountReport()
+        {
+            int sourceTokenBalance = Math.Max(0, demoInventory?.tokenBalance ?? 0);
+            MechBaySavedAccountContract account = MechBaySavedAccountService.BuildDemoSnapshot(demoInventory);
+            MechBaySavedAccountValidationResult validation = MechBaySavedAccountService.Validate(account);
+            string json = JsonUtility.ToJson(account);
+            bool jsonOk = !string.IsNullOrWhiteSpace(json)
+                && json.Contains(MechBaySavedAccountService.Schema)
+                && json.Contains(account?.accountId ?? "");
+            bool sourceUnchanged = Math.Max(0, demoInventory?.tokenBalance ?? 0) == sourceTokenBalance;
+            bool accepted = validation.IsValid && jsonOk && sourceUnchanged;
+            MechBaySavedAccountCounters counters = validation.Counters ?? new MechBaySavedAccountCounters();
+            string summary = MechBaySavedAccountService.SummaryText(account);
+            string line = "summary="
+                + summary
+                + " tokens="
+                + counters.tokenBalance.ToString(CultureInfo.InvariantCulture)
+                + " mechs="
+                + counters.ownedMechCount.ToString(CultureInfo.InvariantCulture)
+                + " ready="
+                + counters.readyMissionMechCount.ToString(CultureInfo.InvariantCulture)
+                + " jsonChars="
+                + (json?.Length ?? 0).ToString(CultureInfo.InvariantCulture)
+                + " unchanged="
+                + sourceUnchanged;
+
+            if (accepted)
+            {
+                statusText = "Account report ready";
+                AddCombatLogLine("CLI saved account report OK: " + summary);
+                Debug.Log("MC2 saved account report: " + line);
+                return;
+            }
+
+            startupSmokeFailed = true;
+            statusText = "Account report failed";
+            string reason = validation.IsValid ? "json or mutation check failed" : FirstSavedAccountValidationError(validation);
+            AddCombatLogLine("CLI saved account report failed: " + reason);
+            Debug.LogError("MC2 saved account report failed: " + reason + " " + line);
+        }
+
+        private static string FirstSavedAccountValidationError(MechBaySavedAccountValidationResult validation)
+        {
+            string[] errors = validation?.Errors ?? Array.Empty<string>();
+            return errors.Length == 0 ? "unknown" : errors[0];
         }
 
         private void RunStartupHideSquadPreview()

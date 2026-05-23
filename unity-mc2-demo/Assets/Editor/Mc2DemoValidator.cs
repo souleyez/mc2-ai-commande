@@ -2550,11 +2550,12 @@ namespace MC2Demo.EditorTools
                     "restart",
                     "report",
                     "command unit player-1 attack structure structure-1",
-                    "hide-squad-preview"
+                    "hide-squad-preview",
+                    "saved-account-report"
                 },
                 "validator-command-file");
 
-            if (actions.Length != 10
+            if (actions.Length != 11
                 || actions[0].Kind != StartupCommanderScriptActionKind.Command
                 || actions[1].Kind != StartupCommanderScriptActionKind.Advance
                 || actions[2].Kind != StartupCommanderScriptActionKind.Restart
@@ -2562,9 +2563,10 @@ namespace MC2Demo.EditorTools
                 || actions[6].Kind != StartupCommanderScriptActionKind.Restart
                 || actions[7].Kind != StartupCommanderScriptActionKind.Report
                 || actions[8].CommandText != "unit player-1 attack structure structure-1"
-                || actions[9].Kind != StartupCommanderScriptActionKind.HideSquadPreview)
+                || actions[9].Kind != StartupCommanderScriptActionKind.HideSquadPreview
+                || actions[10].Kind != StartupCommanderScriptActionKind.SavedAccountReport)
             {
-                throw new InvalidDataException("Expected command file parser to preserve command, advance, restart, report, and hide-squad-preview actions.");
+                throw new InvalidDataException("Expected command file parser to preserve command, advance, restart, report, hide-squad-preview, and saved-account-report actions.");
             }
 
             if (Math.Abs(actions[1].AdvanceSeconds - 0.5f) > 0.001f)
@@ -2590,6 +2592,16 @@ namespace MC2Demo.EditorTools
                 || hidePreviewAction.Kind != StartupCommanderScriptActionKind.HideSquadPreview)
             {
                 throw new InvalidDataException("Expected command file parser to read hide-squad-preview actions.");
+            }
+
+            if (!StartupCommanderScript.TryParseLine(
+                    "saved-account-report",
+                    1,
+                    out StartupCommanderScriptAction savedAccountAction,
+                    out _)
+                || savedAccountAction.Kind != StartupCommanderScriptActionKind.SavedAccountReport)
+            {
+                throw new InvalidDataException("Expected command file parser to read saved-account-report actions.");
             }
 
             BattleMission mission = new(MakeCommandPortContract(), CombatProfileCatalog.Empty);
@@ -2636,6 +2648,14 @@ namespace MC2Demo.EditorTools
                         break;
                     case StartupCommanderScriptActionKind.HideSquadPreview:
                         break;
+                    case StartupCommanderScriptActionKind.SavedAccountReport:
+                        MechBaySavedAccountContract account =
+                            MechBaySavedAccountService.BuildDemoSnapshot(MechBayInventoryBuilder.BuildDemoInventory(mission.PlayerUnits()));
+                        if (!MechBaySavedAccountService.Validate(account).IsValid)
+                        {
+                            throw new InvalidDataException("Expected saved-account-report command file action to build a valid dry-run snapshot.");
+                        }
+                        break;
                 }
             }
 
@@ -2661,7 +2681,8 @@ namespace MC2Demo.EditorTools
                 || StartupCommanderScript.TryParseLine("report now", 1, out _, out _)
                 || StartupCommanderScript.TryParseLine("restart now", 1, out _, out _)
                 || StartupCommanderScript.TryParseLine("prepare-local-candidate now", 1, out _, out _)
-                || StartupCommanderScript.TryParseLine("hide-squad-preview now", 1, out _, out _))
+                || StartupCommanderScript.TryParseLine("hide-squad-preview now", 1, out _, out _)
+                || StartupCommanderScript.TryParseLine("saved-account-report now", 1, out _, out _))
             {
                 throw new InvalidDataException("Expected malformed command file lines to be rejected.");
             }

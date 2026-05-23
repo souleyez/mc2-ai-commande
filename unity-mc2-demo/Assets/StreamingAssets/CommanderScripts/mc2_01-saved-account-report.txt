@@ -1,0 +1,5 @@
+# Proves saved-account snapshots can be reported as JSON dry-runs without writing persistent data.
+saved-account-report
+prepare-local-candidate
+saved-account-report
+report
