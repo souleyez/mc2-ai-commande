@@ -2476,20 +2476,22 @@ namespace MC2Demo.EditorTools
                     "advance 0.25",
                     "restart",
                     "report",
-                    "command unit player-1 attack structure structure-1"
+                    "command unit player-1 attack structure structure-1",
+                    "hide-squad-preview"
                 },
                 "validator-command-file");
 
-            if (actions.Length != 9
+            if (actions.Length != 10
                 || actions[0].Kind != StartupCommanderScriptActionKind.Command
                 || actions[1].Kind != StartupCommanderScriptActionKind.Advance
                 || actions[2].Kind != StartupCommanderScriptActionKind.Restart
                 || actions[3].Kind != StartupCommanderScriptActionKind.Report
                 || actions[6].Kind != StartupCommanderScriptActionKind.Restart
                 || actions[7].Kind != StartupCommanderScriptActionKind.Report
-                || actions[8].CommandText != "unit player-1 attack structure structure-1")
+                || actions[8].CommandText != "unit player-1 attack structure structure-1"
+                || actions[9].Kind != StartupCommanderScriptActionKind.HideSquadPreview)
             {
-                throw new InvalidDataException("Expected command file parser to preserve command, advance, restart, and report actions.");
+                throw new InvalidDataException("Expected command file parser to preserve command, advance, restart, report, and hide-squad-preview actions.");
             }
 
             if (Math.Abs(actions[1].AdvanceSeconds - 0.5f) > 0.001f)
@@ -2505,6 +2507,16 @@ namespace MC2Demo.EditorTools
                 || localCandidateAction.Kind != StartupCommanderScriptActionKind.PrepareLocalCandidate)
             {
                 throw new InvalidDataException("Expected command file parser to read prepare-local-candidate actions.");
+            }
+
+            if (!StartupCommanderScript.TryParseLine(
+                    "hide-squad-preview",
+                    1,
+                    out StartupCommanderScriptAction hidePreviewAction,
+                    out _)
+                || hidePreviewAction.Kind != StartupCommanderScriptActionKind.HideSquadPreview)
+            {
+                throw new InvalidDataException("Expected command file parser to read hide-squad-preview actions.");
             }
 
             BattleMission mission = new(MakeCommandPortContract(), CombatProfileCatalog.Empty);
@@ -2549,6 +2561,8 @@ namespace MC2Demo.EditorTools
                             throw new InvalidDataException("Expected command file report action to produce commander observation JSON.");
                         }
                         break;
+                    case StartupCommanderScriptActionKind.HideSquadPreview:
+                        break;
                 }
             }
 
@@ -2573,7 +2587,8 @@ namespace MC2Demo.EditorTools
                 || StartupCommanderScript.TryParseLine("command", 1, out _, out _)
                 || StartupCommanderScript.TryParseLine("report now", 1, out _, out _)
                 || StartupCommanderScript.TryParseLine("restart now", 1, out _, out _)
-                || StartupCommanderScript.TryParseLine("prepare-local-candidate now", 1, out _, out _))
+                || StartupCommanderScript.TryParseLine("prepare-local-candidate now", 1, out _, out _)
+                || StartupCommanderScript.TryParseLine("hide-squad-preview now", 1, out _, out _))
             {
                 throw new InvalidDataException("Expected malformed command file lines to be rejected.");
             }

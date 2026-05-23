@@ -382,4 +382,7 @@ next-mission handoff summary and Launch row preserve that replacement cue.
 After that launch path runs with the mech bay kept open, the combat log repeats
 the completed replacement summary.
 The startup command-file smoke path now has a `mech-bay-launch` action that
-exercises that same handoff without manual clicking.
+exercises that same handoff without manual clicking. A second
+`hide-squad-preview` smoke action hides the completed squad panel first, then
+checks that the general next-mission handoff still names the updated squad
+before Launch.

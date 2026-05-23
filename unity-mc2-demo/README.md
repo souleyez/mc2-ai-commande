@@ -74,6 +74,7 @@ Current demo behavior:
 - carries that completed replacement cue into the general next-mission summary and Launch row after the squad preview is hidden
 - logs the completed replacement summary after post-launch restart when the mech bay stays open
 - supports a command-file `mech-bay-launch` smoke action for the mech-bay Launch handoff
+- supports a command-file `hide-squad-preview` smoke action that proves the general next-mission handoff keeps the completed replacement cue before Launch
 - applies pending squad swap confirmation by exchanging local mission availability flags
 - refreshes squad-selection status after confirmation so the joined depot mech is no longer shown as a candidate
 - keeps the squad-selection preview visible inside the mech bay and exposes the guarded next-mission Launch handoff there
@@ -189,6 +190,15 @@ Run the player with a startup command file that applies a demo depot squad swap,
   -logFile "$PWD\..\analysis-output\unity-player-mech-bay-launch-swap.log"
 ```
 
+Run the player with a startup command file that applies a demo depot squad swap, hides the squad preview, then launches from the general next-mission handoff:
+
+```powershell
+& .\Builds\Windows\MC2UnityDemo.exe `
+  -batchmode -nographics -mc2SmokeTest `
+  -mc2CommandFile ".\Assets\StreamingAssets\CommanderScripts\mc2_01-hidden-handoff-launch-swap.txt" `
+  -logFile "$PWD\..\analysis-output\unity-player-hidden-handoff-launch-swap.log"
+```
+
 Run the player with a direct startup restart:
 
 ```powershell
@@ -228,7 +238,7 @@ command unit unit-1 move 3221 -277
 
 Relative command-file paths are checked from the current working directory first, then from the player `StreamingAssets` folder.
 
-Command files also support `prepare-local-candidate`, `prepare-depot-candidate`, `squad-swap`, `mech-bay-launch`, and `assert-restart-identity depot`. `prepare-local-candidate` runs the demo receipt, assembly, NPC hire, weapon shop, and warehouse draft-fit services before the swap; `prepare-depot-candidate` remains a direct smoke fallback.
+Command files also support `prepare-local-candidate`, `prepare-depot-candidate`, `squad-swap`, `hide-squad-preview`, `mech-bay-launch`, and `assert-restart-identity depot`. `prepare-local-candidate` runs the demo receipt, assembly, NPC hire, weapon shop, and warehouse draft-fit services before the swap; `hide-squad-preview` verifies the completed replacement cue survives into the general next-mission handoff; `prepare-depot-candidate` remains a direct smoke fallback.
 
 Commander observation reports include `reportIndex` and `missionTimeSeconds` so future AI adapters can correlate decisions with elapsed battle time.
 

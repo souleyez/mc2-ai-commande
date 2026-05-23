@@ -1,0 +1,7 @@
+# Proves the completed swap cue survives hiding the squad preview before Launch.
+prepare-local-candidate
+squad-swap
+hide-squad-preview
+mech-bay-launch
+assert-restart-identity depot
+report

@@ -82,6 +82,7 @@ The Unity demo currently supports:
 - general next-mission summary and Launch rows preserve the completed replacement cue after hiding the squad-selection panel
 - post-launch mech bay log confirms which completed replacement was loaded
 - command-file `mech-bay-launch` smoke hook exercises the mech-bay Launch handoff
+- command-file `hide-squad-preview` smoke hook proves the completed replacement cue survives into the general next-mission handoff before Launch
 - squad-selection preview refreshes after confirmation so the joined depot mech becomes a mission slot and no longer appears as a candidate
 - next-mission handoff preview reads `availableForMission` roster slots without mutating the active combat mission
 - next-mission handoff area shows a player-facing Ready/Blocked summary, guarded Launch action, and selected lineup
@@ -453,7 +454,8 @@ Reason:
 - The general next-mission summary and Launch row now preserve that completed replacement cue after hiding the squad-selection panel.
 - Post-launch mech bay log now repeats the completed replacement summary after a completed swap Launch.
 - A lightweight command-file `mech-bay-launch` smoke hook now exercises the mech-bay Launch path, checks the bay stays open and paused, and confirms the updated-squad status before identity assertion.
+- A lightweight command-file `hide-squad-preview` smoke hook now hides the completed squad preview, checks the general handoff summary still names the updated squad, and launches from that path.
 - The smoke-only depot replacement remains as a command-file fallback, but the primary command smoke now produces a ready depot candidate through the local receipt, assembly, NPC hire, weapon shop, and warehouse draft-fit services.
 - The mech bay summary now exposes that same ready-candidate service chain as a compact Candidate Prep action, and it opens Next Squad with the prepared depot candidate preselected.
-- The next low-risk step is to add a tiny command-file smoke hook for hiding the completed squad preview before Launch, proving the general handoff path without manual clicks.
+- The next low-risk step is to start a tiny saved-account boundary for demo inventory state, without changing battle rules or requiring backend services.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.

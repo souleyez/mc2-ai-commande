@@ -121,6 +121,18 @@ namespace MC2Demo.Presentation
                 return true;
             }
 
+            if (string.Equals(verb, "hide-squad-preview", StringComparison.OrdinalIgnoreCase))
+            {
+                if (!string.IsNullOrWhiteSpace(payload))
+                {
+                    error = "Hide squad preview action does not accept arguments.";
+                    return false;
+                }
+
+                action = StartupCommanderScriptAction.HideSquadPreview(lineNumber, rawLine);
+                return true;
+            }
+
             if (string.Equals(verb, "prepare-depot-candidate", StringComparison.OrdinalIgnoreCase))
             {
                 if (!string.IsNullOrWhiteSpace(payload))
@@ -175,7 +187,7 @@ namespace MC2Demo.Presentation
                 return true;
             }
 
-            error = "Command file action must be command, advance, report, restart, mech-bay-launch, prepare-depot-candidate, prepare-local-candidate, squad-swap, or assert-restart-identity.";
+            error = "Command file action must be command, advance, report, restart, mech-bay-launch, hide-squad-preview, prepare-depot-candidate, prepare-local-candidate, squad-swap, or assert-restart-identity.";
             return false;
         }
     }
@@ -255,6 +267,16 @@ namespace MC2Demo.Presentation
             };
         }
 
+        public static StartupCommanderScriptAction HideSquadPreview(int lineNumber, string sourceLine)
+        {
+            return new StartupCommanderScriptAction
+            {
+                Kind = StartupCommanderScriptActionKind.HideSquadPreview,
+                LineNumber = lineNumber,
+                SourceLine = sourceLine ?? string.Empty
+            };
+        }
+
         public static StartupCommanderScriptAction PrepareDepotCandidate(int lineNumber, string sourceLine)
         {
             return new StartupCommanderScriptAction
@@ -308,6 +330,7 @@ namespace MC2Demo.Presentation
         Report,
         Restart,
         MechBayLaunch,
+        HideSquadPreview,
         PrepareDepotCandidate,
         PrepareLocalCandidate,
         SquadSwap,

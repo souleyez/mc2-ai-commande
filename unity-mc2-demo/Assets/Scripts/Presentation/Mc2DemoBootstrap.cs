@@ -448,6 +448,9 @@ namespace MC2Demo.Presentation
                     case StartupCommanderScriptActionKind.MechBayLaunch:
                         RunStartupMechBayLaunch();
                         break;
+                    case StartupCommanderScriptActionKind.HideSquadPreview:
+                        RunStartupHideSquadPreview();
+                        break;
                     case StartupCommanderScriptActionKind.PrepareDepotCandidate:
                         RunStartupPrepareDepotCandidate();
                         break;
@@ -538,6 +541,64 @@ namespace MC2Demo.Presentation
             startupSmokeFailed = true;
             AddCombatLogLine("CLI mech bay launch failed: " + summary);
             Debug.LogError("MC2 commander mech bay launch failed: " + summary);
+        }
+
+        private void RunStartupHideSquadPreview()
+        {
+            MechBaySquadSelectionPreview squadPreview = MechBaySquadSelectionPreviewService.BuildPreview(demoInventory);
+            bool completed = SquadSelectionCompleted(squadPreview);
+            bool hadCue = HasSquadSelectionCompletedReplacement();
+            string replacementText = hadCue ? SquadSelectionCompletedReplacementText() : "no replacement cue";
+            showLoadoutPanel = true;
+            showSquadSelectionPreview = false;
+            ClearSquadSelectionDraft();
+            if (!completed)
+            {
+                ClearSquadSelectionCompletedReplacement();
+            }
+
+            MechBayMissionHandoffPreview handoffPreview =
+                MechBayMissionHandoffPreviewService.BuildPreview(demoInventory);
+            MechBayMissionRestartApplyGuard guard =
+                MechBayMissionHandoffPreviewService.BuildRestartApplyGuard(
+                    demoInventory,
+                    mission?.Contract,
+                    combatProfiles);
+            bool keptCue = HasSquadSelectionCompletedReplacement();
+            string summary = keptCue
+                ? MissionHandoffCompletedSummaryText(handoffPreview, guard)
+                : MissionHandoffPlayerSummaryText(handoffPreview, guard);
+            string launchText = keptCue
+                ? MissionHandoffCompletedLaunchText(guard)
+                : MissionHandoffLaunchActionText(guard, handoffPreview);
+            bool summaryOk = keptCue
+                && summary.IndexOf("updated squad", StringComparison.OrdinalIgnoreCase) >= 0
+                && summary.IndexOf(replacementText, StringComparison.OrdinalIgnoreCase) >= 0;
+            bool launchOk = keptCue
+                && launchText.IndexOf("launch updated squad", StringComparison.OrdinalIgnoreCase) >= 0;
+            bool accepted = completed && hadCue && !showSquadSelectionPreview && summaryOk && launchOk;
+            string line = "hidden="
+                + (!showSquadSelectionPreview)
+                + " completed="
+                + completed
+                + " cue="
+                + keptCue
+                + " summary="
+                + summary
+                + " launch="
+                + launchText;
+            if (accepted)
+            {
+                statusText = "Next mission squad set";
+                AddCombatLogLine("CLI squad preview hide OK: " + replacementText);
+                Debug.Log("MC2 commander squad preview hide: " + line);
+                return;
+            }
+
+            startupSmokeFailed = true;
+            statusText = "Squad preview hide failed";
+            AddCombatLogLine("CLI squad preview hide failed: " + line);
+            Debug.LogError("MC2 commander squad preview hide failed: " + line);
         }
 
         private void RunStartupPrepareDepotCandidate()
@@ -885,8 +946,16 @@ namespace MC2Demo.Presentation
                 MechBaySquadSelectionPreviewService.TryApplyPendingSwap(demoInventory, draft);
             if (result?.Accepted == true)
             {
+                RecordSquadSelectionCompletedReplacement(draft);
                 ClearSquadSelectionDraft();
                 demoInventoryValidation = MechBayInventoryValidator.Validate(demoInventory);
+                showLoadoutPanel = true;
+                showSquadSelectionPreview = true;
+                if (mission?.Result == MissionResultState.InProgress)
+                {
+                    SetPaused(true);
+                }
+
                 statusText = "CLI squad swap applied";
                 AddCombatLogLine("CLI squad swap: " + result.Summary);
                 Debug.Log("MC2 commander squad swap: accepted summary=" + result.Summary);
