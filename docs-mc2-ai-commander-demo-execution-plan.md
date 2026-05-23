@@ -62,7 +62,7 @@ The Unity demo currently supports:
 - mech bay summary previews an ordinary weapon shop as the future source of spare depot weapons
 - mech bay summary supports a demo ordinary weapon purchase that spends local tokens and adds one spare weapon
 - mech bay summary and roster detail support demo NPC pilot hiring that spends local tokens and assigns a warehouse pilot
-- mech bay summary exposes a compact Candidate Prep action that builds, hires, buys, and draft-fits a next-squad depot mech through the same local services used by command files
+- mech bay summary exposes a compact Candidate Prep action that builds, hires, buys, draft-fits, and opens the next-squad preview for a depot mech through the same local services used by command files
 - depot Draft Fit affordance becomes a readiness gate once spare weapon stock and a pilot are both present
 - warehouse Draft Fit opens a read-only preview showing the selected pilot and spare weapon without changing inventory
 - warehouse Draft Fit preview can apply a demo placeholder fit that consumes one spare weapon and keeps the mech non-deployable
@@ -452,6 +452,6 @@ Reason:
 - Post-launch mech bay status now confirms when the updated squad was loaded after a completed swap Launch.
 - A lightweight command-file `mech-bay-launch` smoke hook now exercises the mech-bay Launch path, checks the bay stays open and paused, and confirms the updated-squad status before identity assertion.
 - The smoke-only depot replacement remains as a command-file fallback, but the primary command smoke now produces a ready depot candidate through the local receipt, assembly, NPC hire, weapon shop, and warehouse draft-fit services.
-- The mech bay summary now exposes that same ready-candidate service chain as a compact Candidate Prep action, so the player path and command-file path keep converging.
-- The next low-risk step is to make this prepared candidate flow easier to inspect after clicking it, such as auto-opening the Next Squad preview or highlighting the new depot candidate row.
+- The mech bay summary now exposes that same ready-candidate service chain as a compact Candidate Prep action, and it opens Next Squad with the prepared depot candidate preselected.
+- The next low-risk step is to make the opened Next Squad state more legible, such as highlighting the selected incoming candidate row or tightening the replacement confirm text.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.

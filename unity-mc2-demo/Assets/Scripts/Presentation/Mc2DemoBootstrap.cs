@@ -4071,16 +4071,20 @@ namespace MC2Demo.Presentation
         {
             string readyCandidate = FirstStartupDepotCandidateOwnedMechId();
             bool ready = !string.IsNullOrWhiteSpace(readyCandidate);
-            bool canPrepare = demoInventory != null && !ready;
+            bool canAct = demoInventory != null;
             bool previousEnabled = GUI.enabled;
-            GUI.enabled = previousEnabled && canPrepare;
-            if (DrawActionButton(new Rect(x, y - 2f, 58f, 22f), ready ? "Ready" : "Prep", canPrepare || ready))
+            GUI.enabled = previousEnabled && canAct;
+            if (DrawActionButton(new Rect(x, y - 2f, 58f, 22f), ready ? "Open" : "Prep", canAct))
             {
-                string ownedMechId = EnsureLocalReadyCandidate("Mech bay candidate", false);
+                string ownedMechId = readyCandidate;
+                if (string.IsNullOrWhiteSpace(ownedMechId))
+                {
+                    ownedMechId = EnsureLocalReadyCandidate("Mech bay candidate", false);
+                }
+
                 if (!string.IsNullOrWhiteSpace(ownedMechId))
                 {
-                    statusText = "Candidate ready";
-                    AddCombatLogLine("Mech bay candidate ready: " + ownedMechId);
+                    OpenSquadSelectionPreviewIncoming(ownedMechId, "Candidate prep");
                 }
             }
 
@@ -4090,7 +4094,7 @@ namespace MC2Demo.Presentation
                 y,
                 width - 66f,
                 "Candidate " + LocalCandidatePrepText(readyCandidate),
-                canPrepare || ready,
+                canAct,
                 56);
         }
 
@@ -4443,6 +4447,30 @@ namespace MC2Demo.Presentation
 
             statusText = "Next squad preview: " + TruncateText(name, 18);
             AddCombatLogLine("Next mission squad preview opened");
+        }
+
+        private void OpenSquadSelectionPreviewIncoming(string incomingOwnedMechId, string sourceLabel)
+        {
+            showSquadSelectionPreview = true;
+            showWarehouseDraftFitPreview = false;
+            warehouseDraftFitPreviewMechId = null;
+            ClearSquadSelectionDraft();
+            squadSelectionDraftIncomingOwnedMechId = incomingOwnedMechId;
+
+            string name = StartupRosterDisplayName(incomingOwnedMechId);
+            statusText = "Next squad in: " + TruncateText(name, 20);
+            AddCombatLogLine((sourceLabel ?? "Next mission squad") + " opened with incoming " + name);
+        }
+
+        private string StartupRosterDisplayName(string ownedMechId)
+        {
+            MechBayOwnedRosterEntry entry = StartupRosterEntryByOwnedMechId(ownedMechId);
+            if (!string.IsNullOrWhiteSpace(entry?.displayName))
+            {
+                return entry.displayName;
+            }
+
+            return string.IsNullOrWhiteSpace(ownedMechId) ? "owned mech" : ownedMechId;
         }
 
         private void DrawSquadSelectionPreview(float x, float y, float width)

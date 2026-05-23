@@ -55,7 +55,7 @@ Current demo behavior:
 - previews an ordinary weapon shop as the future source of spare depot weapons
 - supports a demo ordinary weapon purchase that spends local tokens and adds one spare weapon
 - supports demo NPC pilot hiring that spends local tokens and assigns a warehouse pilot
-- exposes a compact Candidate Prep action that builds, hires, buys, and draft-fits a next-squad depot mech
+- exposes a compact Candidate Prep action that builds, hires, buys, draft-fits, and opens the next-squad preview for a depot mech
 - enables a Draft Fit readiness gate when a warehouse mech has both spare weapon stock and a pilot
 - opens a read-only warehouse draft-fit preview showing the selected pilot and spare weapon before real fitting exists
 - applies a demo warehouse draft fit that consumes one spare weapon and keeps the mech non-deployable
