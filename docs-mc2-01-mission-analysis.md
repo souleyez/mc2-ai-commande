@@ -351,6 +351,9 @@ The harness also has a less smoke-only setup path:
 `prepare-local-candidate` applies a local receipt, assembles a warehouse mech,
 hires an NPC pilot, buys an ordinary weapon, applies the warehouse draft fit,
 and then lets the same `squad-swap` path consume that ready depot candidate.
+The visible mech bay summary now has a compact Candidate Prep action that calls
+the same local setup chain, so the player-facing path can produce a ready depot
+candidate before opening Next Squad.
 The visible mech bay path now mirrors that handoff more closely: opening Squad
 selection replaces the lower roster detail with an inline preview, keeps the
 staged swap visible, and adds the same guarded next-mission Launch action inside

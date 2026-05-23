@@ -539,7 +539,7 @@ namespace MC2Demo.Presentation
 
         private void RunStartupPrepareLocalCandidate()
         {
-            string ownedMechId = EnsureStartupLocalReadyCandidate();
+            string ownedMechId = EnsureLocalReadyCandidate("CLI local", true);
             if (!string.IsNullOrWhiteSpace(ownedMechId))
             {
                 AddCombatLogLine("CLI local candidate ready: " + ownedMechId);
@@ -551,11 +551,11 @@ namespace MC2Demo.Presentation
             Debug.LogError("MC2 commander local candidate blocked: status=" + statusText);
         }
 
-        private string EnsureStartupLocalReadyCandidate()
+        private string EnsureLocalReadyCandidate(string logPrefix, bool markStartupSmokeFailure)
         {
             if (demoInventory == null)
             {
-                return BlockStartupLocalCandidate("Inventory missing");
+                return BlockLocalCandidate("Inventory missing", logPrefix, markStartupSmokeFailure);
             }
 
             string existingCandidate = FirstStartupDepotCandidateOwnedMechId();
@@ -582,7 +582,7 @@ namespace MC2Demo.Presentation
                     }
                 });
             AddCombatLogLine(
-                "CLI local receipt: +" + FormatTokens(receipt.TokenDelta)
+                logPrefix + " receipt: +" + FormatTokens(receipt.TokenDelta)
                 + " token fragments +" + receipt.SalvageFragmentCount
                 + ReceiptAssemblyLogText(receipt));
             RefreshDemoInventoryValidation();
@@ -590,13 +590,13 @@ namespace MC2Demo.Presentation
             string targetOwnedMechId = FirstStartupPendingWarehouseMechId();
             if (string.IsNullOrWhiteSpace(targetOwnedMechId))
             {
-                return BlockStartupLocalCandidate("No assembled warehouse mech");
+                return BlockLocalCandidate("No assembled warehouse mech", logPrefix, markStartupSmokeFailure);
             }
 
             MechBayOwnedRosterEntry target = StartupRosterEntryByOwnedMechId(targetOwnedMechId);
             if (target == null)
             {
-                return BlockStartupLocalCandidate("Assembled mech missing");
+                return BlockLocalCandidate("Assembled mech missing", logPrefix, markStartupSmokeFailure);
             }
 
             if (!target.hasPilotAssignment)
@@ -605,24 +605,24 @@ namespace MC2Demo.Presentation
                     FirstPilotHireCandidate(MechBayPilotHirePreviewService.BuildPreview(demoInventory));
                 if (candidate == null)
                 {
-                    return BlockStartupLocalCandidate("No NPC pilot candidate");
+                    return BlockLocalCandidate("No NPC pilot candidate", logPrefix, markStartupSmokeFailure);
                 }
 
                 MechBayPilotHireResult result =
                     MechBayPilotHirePreviewService.TryApplyDemoHire(demoInventory, targetOwnedMechId, candidate.pilotId);
                 if (result == null || !result.Accepted)
                 {
-                    return BlockStartupLocalCandidate(result?.Message ?? "Pilot hire unavailable");
+                    return BlockLocalCandidate(result?.Message ?? "Pilot hire unavailable", logPrefix, markStartupSmokeFailure);
                 }
 
-                AddCombatLogLine("CLI local pilot: " + result.Message);
+                AddCombatLogLine(logPrefix + " pilot: " + result.Message);
                 RefreshDemoInventoryValidation();
             }
 
             target = StartupRosterEntryByOwnedMechId(targetOwnedMechId);
             if (target == null)
             {
-                return BlockStartupLocalCandidate("Assembled mech missing after pilot hire");
+                return BlockLocalCandidate("Assembled mech missing after pilot hire", logPrefix, markStartupSmokeFailure);
             }
 
             if (!target.hasSpareWeaponStock)
@@ -631,24 +631,24 @@ namespace MC2Demo.Presentation
                     FirstWeaponShopEntry(MechBayWeaponShopPreviewService.BuildPreview(demoInventory));
                 if (entry == null)
                 {
-                    return BlockStartupLocalCandidate("No ordinary weapon shop entry");
+                    return BlockLocalCandidate("No ordinary weapon shop entry", logPrefix, markStartupSmokeFailure);
                 }
 
                 MechBayWeaponPurchasePreviewResult result =
                     MechBayWeaponShopPreviewService.TryApplyDemoPurchase(demoInventory, entry.itemId);
                 if (result == null || !result.Accepted)
                 {
-                    return BlockStartupLocalCandidate(result?.Message ?? "Weapon purchase unavailable");
+                    return BlockLocalCandidate(result?.Message ?? "Weapon purchase unavailable", logPrefix, markStartupSmokeFailure);
                 }
 
-                AddCombatLogLine("CLI local weapon: " + result.Message);
+                AddCombatLogLine(logPrefix + " weapon: " + result.Message);
                 RefreshDemoInventoryValidation();
             }
 
             target = StartupRosterEntryByOwnedMechId(targetOwnedMechId);
             if (target == null)
             {
-                return BlockStartupLocalCandidate("Assembled mech missing before draft fit");
+                return BlockLocalCandidate("Assembled mech missing before draft fit", logPrefix, markStartupSmokeFailure);
             }
 
             if (target.hasDraftFitStub)
@@ -657,28 +657,32 @@ namespace MC2Demo.Presentation
                     MechBayWarehouseDraftFitPreviewService.TryApplyDemoFit(demoInventory, targetOwnedMechId);
                 if (result == null || !result.Accepted)
                 {
-                    return BlockStartupLocalCandidate(result?.Message ?? "Draft fit unavailable");
+                    return BlockLocalCandidate(result?.Message ?? "Draft fit unavailable", logPrefix, markStartupSmokeFailure);
                 }
 
-                AddCombatLogLine("CLI local fit: " + result.Message);
+                AddCombatLogLine(logPrefix + " fit: " + result.Message);
                 RefreshDemoInventoryValidation();
             }
 
             string readyCandidate = FirstStartupDepotCandidateOwnedMechId();
             if (string.IsNullOrWhiteSpace(readyCandidate))
             {
-                return BlockStartupLocalCandidate("No next-squad candidate after local setup");
+                return BlockLocalCandidate("No next-squad candidate after local setup", logPrefix, markStartupSmokeFailure);
             }
 
             statusText = "Local candidate ready";
             return readyCandidate;
         }
 
-        private string BlockStartupLocalCandidate(string reason)
+        private string BlockLocalCandidate(string reason, string logPrefix, bool markStartupSmokeFailure)
         {
-            startupSmokeFailed = true;
+            if (markStartupSmokeFailure)
+            {
+                startupSmokeFailed = true;
+            }
+
             statusText = "Local candidate blocked";
-            Debug.LogError("MC2 commander local candidate blocked: " + reason);
+            Debug.LogError("MC2 commander local candidate blocked: " + logPrefix + " " + reason);
             return null;
         }
 
@@ -3236,21 +3240,22 @@ namespace MC2Demo.Presentation
             GUI.Label(
                 new Rect(x, y + 40f, width, 18f),
                 "Assembly " + AssemblyPreviewText(MechBayAssemblyPreviewService.BestAssemblyProgress(demoInventory)));
+            DrawLocalCandidatePrepAction(x, y + 62f, width);
             MechBayWeaponShopPreview shopPreview = MechBayWeaponShopPreviewService.BuildPreview(demoInventory);
             GUI.Label(
-                new Rect(x, y + 60f, width, 18f),
+                new Rect(x, y + 82f, width, 18f),
                 "Shop " + WeaponShopPreviewText(shopPreview));
-            DrawWeaponShopPurchaseStub(x, y + 82f, width, shopPreview, demoInventory);
+            DrawWeaponShopPurchaseStub(x, y + 104f, width, shopPreview, demoInventory);
             MechBayPilotHirePreview pilotHirePreview = MechBayPilotHirePreviewService.BuildPreview(demoInventory);
             GUI.Label(
-                new Rect(x, y + 104f, width, 18f),
+                new Rect(x, y + 126f, width, 18f),
                 "Pilot Hire " + PilotHirePreviewText(pilotHirePreview));
             MechBayOwnedRosterEntry[] roster = MechBayOwnedRosterService.BuildRosterPreview(demoInventory);
             ClampSelectedRosterIndex(roster);
             GUI.Label(
-                new Rect(x, y + 126f, width, 18f),
+                new Rect(x, y + 148f, width, 18f),
                 "Roster " + TruncateText(OwnedRosterText(roster), 62));
-            DrawRosterMissionStateLine(x, y + 148f, width, roster);
+            DrawRosterMissionStateLine(x, y + 170f, width, roster);
             MechBayMissionHandoffPreview handoffPreview =
                 MechBayMissionHandoffPreviewService.BuildPreview(demoInventory);
             MechBayMissionRestartApplyGuard restartGuard =
@@ -3259,13 +3264,13 @@ namespace MC2Demo.Presentation
                     mission?.Contract,
                     combatProfiles);
             GUI.Label(
-                new Rect(x, y + 170f, width, 18f),
+                new Rect(x, y + 192f, width, 18f),
                 "Next Mission " + TruncateText(MissionHandoffPlayerSummaryText(handoffPreview, restartGuard), 58));
-            DrawMissionHandoffLaunchAction(x, y + 192f, width, handoffPreview, restartGuard);
-            DrawMissionHandoffLineup(x, y + 214f, width, handoffPreview);
+            DrawMissionHandoffLaunchAction(x, y + 214f, width, handoffPreview, restartGuard);
+            DrawMissionHandoffLineup(x, y + 236f, width, handoffPreview);
             if (showRosterDetail)
             {
-                DrawOwnedRosterDetail(x, y + 236f, width, roster, pilotHirePreview);
+                DrawOwnedRosterDetail(x, y + 258f, width, roster, pilotHirePreview);
             }
         }
 
@@ -4060,6 +4065,54 @@ namespace MC2Demo.Presentation
 
             string cost = FormatTokens(purchasePreview.TokenCost) + " token";
             return purchasePreview.displayName + " " + cost + "  " + purchasePreview.Message;
+        }
+
+        private void DrawLocalCandidatePrepAction(float x, float y, float width)
+        {
+            string readyCandidate = FirstStartupDepotCandidateOwnedMechId();
+            bool ready = !string.IsNullOrWhiteSpace(readyCandidate);
+            bool canPrepare = demoInventory != null && !ready;
+            bool previousEnabled = GUI.enabled;
+            GUI.enabled = previousEnabled && canPrepare;
+            if (DrawActionButton(new Rect(x, y - 2f, 58f, 22f), ready ? "Ready" : "Prep", canPrepare || ready))
+            {
+                string ownedMechId = EnsureLocalReadyCandidate("Mech bay candidate", false);
+                if (!string.IsNullOrWhiteSpace(ownedMechId))
+                {
+                    statusText = "Candidate ready";
+                    AddCombatLogLine("Mech bay candidate ready: " + ownedMechId);
+                }
+            }
+
+            GUI.enabled = previousEnabled;
+            DrawActionStateLabel(
+                x + 66f,
+                y,
+                width - 66f,
+                "Candidate " + LocalCandidatePrepText(readyCandidate),
+                canPrepare || ready,
+                56);
+        }
+
+        private string LocalCandidatePrepText(string readyCandidate)
+        {
+            if (!string.IsNullOrWhiteSpace(readyCandidate))
+            {
+                return "Ready " + readyCandidate;
+            }
+
+            if (demoInventory == null)
+            {
+                return "Unavailable";
+            }
+
+            string pendingOwnedMechId = FirstStartupPendingWarehouseMechId();
+            if (!string.IsNullOrWhiteSpace(pendingOwnedMechId))
+            {
+                return "Prep pending depot mech";
+            }
+
+            return "Build + pilot + weapon + fit";
         }
 
         private static string PilotHirePreviewText(MechBayPilotHirePreview preview)

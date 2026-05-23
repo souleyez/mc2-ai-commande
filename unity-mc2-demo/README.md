@@ -55,6 +55,7 @@ Current demo behavior:
 - previews an ordinary weapon shop as the future source of spare depot weapons
 - supports a demo ordinary weapon purchase that spends local tokens and adds one spare weapon
 - supports demo NPC pilot hiring that spends local tokens and assigns a warehouse pilot
+- exposes a compact Candidate Prep action that builds, hires, buys, and draft-fits a next-squad depot mech
 - enables a Draft Fit readiness gate when a warehouse mech has both spare weapon stock and a pilot
 - opens a read-only warehouse draft-fit preview showing the selected pilot and spare weapon before real fitting exists
 - applies a demo warehouse draft fit that consumes one spare weapon and keeps the mech non-deployable
@@ -78,7 +79,7 @@ Current demo behavior:
 - previews the next-mission handoff roster from `availableForMission` without restarting the current battle
 - shows a player-facing next-mission Ready/Blocked summary with a guarded Launch action and lineup preview
 - maps the handoff roster into restart spawn intents behind the Launch guard
-- supports command-file local candidate setup that runs receipt assembly, NPC hiring, weapon purchase, draft fit, squad swap, and restart identity assertions
+- supports shared UI and command-file local candidate setup that runs receipt assembly, NPC hiring, weapon purchase, draft fit, squad swap, and restart identity assertions
 - enables Launch only after a validated BattleMission construction path is available
 - keeps MissionContract clone and BattleMission construction validation behind that guarded Launch path
 - can restart the active battle by building a replacement BattleMission, immediately disabling old runtime scene roots, and rebuilding Unity views from the guarded path
