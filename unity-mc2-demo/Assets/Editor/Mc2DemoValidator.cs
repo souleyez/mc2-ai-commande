@@ -54,6 +54,7 @@ namespace MC2Demo.EditorTools
             string contractJson = File.ReadAllText(contractPath);
             BattleMission mission = BattleMission.FromJson(contractJson, combatProfiles);
             ValidateMechBayInventoryContract(mission);
+            ValidateMechBaySavedAccountBoundary(mission);
             if (mission.Units.Count != 29)
             {
                 throw new InvalidDataException("Expected 29 units, got " + mission.Units.Count);
@@ -469,6 +470,78 @@ namespace MC2Demo.EditorTools
             {
                 throw new InvalidDataException("Starter repair affordance did not restore player mech condition.");
             }
+        }
+
+        private static void ValidateMechBaySavedAccountBoundary(BattleMission mission)
+        {
+            MechBayInventoryContract inventory = MechBayInventoryBuilder.BuildDemoInventory(mission.PlayerUnits());
+            MechBaySavedAccountContract account = MechBaySavedAccountService.BuildDemoSnapshot(inventory);
+            MechBaySavedAccountValidationResult result = MechBaySavedAccountService.Validate(account);
+            if (!result.IsValid)
+            {
+                throw new InvalidDataException("Saved account snapshot is invalid: " + FirstSavedAccountError(result));
+            }
+
+            if (account.inventory == inventory)
+            {
+                throw new InvalidDataException("Saved account snapshot must clone inventory instead of sharing the source contract.");
+            }
+
+            if (account.inventory.ownedMechs == inventory.ownedMechs
+                || account.inventory.itemStacks == inventory.itemStacks)
+            {
+                throw new InvalidDataException("Saved account snapshot must clone inventory arrays.");
+            }
+
+            if (account.inventory.ownedMechs.Length != 3
+                || account.counters.ownedMechCount != 3
+                || account.counters.readyMissionMechCount != 3
+                || account.counters.itemStackCount <= 0
+                || account.counters.tokenBalance != inventory.tokenBalance)
+            {
+                throw new InvalidDataException("Saved account snapshot did not preserve starter inventory counters.");
+            }
+
+            string savedFirstMechName = account.inventory.ownedMechs[0].displayName;
+            int savedWeaponCount = account.inventory.itemStacks[0].quantity;
+            inventory.tokenBalance += 500;
+            inventory.ownedMechs[0].displayName = "Mutated Source Mech";
+            inventory.itemStacks[0].quantity += 1;
+            if (account.inventory.tokenBalance == inventory.tokenBalance
+                || account.inventory.ownedMechs[0].displayName != savedFirstMechName
+                || account.inventory.itemStacks[0].quantity != savedWeaponCount)
+            {
+                throw new InvalidDataException("Saved account snapshot changed after mutating the source inventory.");
+            }
+
+            string json = JsonUtility.ToJson(account);
+            if (string.IsNullOrWhiteSpace(json)
+                || !json.Contains(MechBaySavedAccountService.Schema)
+                || !json.Contains("demo-local-commander"))
+            {
+                throw new InvalidDataException("Saved account snapshot did not serialize its schema and account id.");
+            }
+
+            MechBaySavedAccountContract roundTrip = JsonUtility.FromJson<MechBaySavedAccountContract>(json);
+            MechBaySavedAccountValidationResult roundTripResult = MechBaySavedAccountService.Validate(roundTrip);
+            if (!roundTripResult.IsValid)
+            {
+                throw new InvalidDataException("Saved account snapshot did not validate after JSON round trip: " + FirstSavedAccountError(roundTripResult));
+            }
+
+            string summary = MechBaySavedAccountService.SummaryText(roundTrip);
+            if (string.IsNullOrWhiteSpace(summary)
+                || !summary.Contains("Demo Commander")
+                || !summary.Contains("3 mechs"))
+            {
+                throw new InvalidDataException("Saved account snapshot summary did not expose commander and mech counts.");
+            }
+        }
+
+        private static string FirstSavedAccountError(MechBaySavedAccountValidationResult result)
+        {
+            string[] errors = result?.Errors ?? Array.Empty<string>();
+            return errors.Length == 0 ? "unknown" : errors[0];
         }
 
         private static MechBayInventoryUsage BuildMechBayInventoryUsage(BattleMission mission)

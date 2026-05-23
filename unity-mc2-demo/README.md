@@ -52,6 +52,7 @@ Current demo behavior:
 - previews depot fitting requirements such as spare weapon stock and pilot assignment
 - shows a read-only pilot placeholder for depot mechs before the future pilot/social loop exists
 - previews spare weapon stock counts for future depot fitting
+- shows a read-only local demo account snapshot summary built from the current mech bay inventory
 - previews an ordinary weapon shop as the future source of spare depot weapons
 - supports a demo ordinary weapon purchase that spends local tokens and adds one spare weapon
 - supports demo NPC pilot hiring that spends local tokens and assigns a warehouse pilot

@@ -3263,7 +3263,7 @@ namespace MC2Demo.Presentation
             y += 30f;
             bool showInlineMechBayPreview = showWarehouseDraftFitPreview || showSquadSelectionPreview;
             DrawMechBayInventorySummary(x, y, width, !showInlineMechBayPreview);
-            y += showInlineMechBayPreview ? 260f : 456f;
+            y += showInlineMechBayPreview ? 282f : 480f;
             if (showWarehouseDraftFitPreview)
             {
                 DrawWarehouseDraftFitPreview(x, y, width);
@@ -3320,25 +3320,29 @@ namespace MC2Demo.Presentation
                 + "  Armor " + InventoryUseText(availability?.Usage?.ArmorPlateCount ?? 0, availability?.AvailableArmorPlateCount ?? summary.ArmorPlateCount)
                 + "  Sinks " + InventoryUseText(availability?.Usage?.HeatSinkCount ?? 0, availability?.AvailableHeatSinkCount ?? summary.HeatSinkCount)
                 + "  Frags " + summary.MechFragmentCount.ToString(CultureInfo.InvariantCulture));
+            MechBaySavedAccountContract accountSnapshot = MechBaySavedAccountService.BuildDemoSnapshot(demoInventory);
             GUI.Label(
                 new Rect(x, y + 40f, width, 18f),
+                "Account " + TruncateText(MechBaySavedAccountService.SummaryText(accountSnapshot), 70));
+            GUI.Label(
+                new Rect(x, y + 60f, width, 18f),
                 "Assembly " + AssemblyPreviewText(MechBayAssemblyPreviewService.BestAssemblyProgress(demoInventory)));
-            DrawLocalCandidatePrepAction(x, y + 62f, width);
+            DrawLocalCandidatePrepAction(x, y + 82f, width);
             MechBayWeaponShopPreview shopPreview = MechBayWeaponShopPreviewService.BuildPreview(demoInventory);
             GUI.Label(
-                new Rect(x, y + 82f, width, 18f),
+                new Rect(x, y + 102f, width, 18f),
                 "Shop " + WeaponShopPreviewText(shopPreview));
-            DrawWeaponShopPurchaseStub(x, y + 104f, width, shopPreview, demoInventory);
+            DrawWeaponShopPurchaseStub(x, y + 124f, width, shopPreview, demoInventory);
             MechBayPilotHirePreview pilotHirePreview = MechBayPilotHirePreviewService.BuildPreview(demoInventory);
             GUI.Label(
-                new Rect(x, y + 126f, width, 18f),
+                new Rect(x, y + 146f, width, 18f),
                 "Pilot Hire " + PilotHirePreviewText(pilotHirePreview));
             MechBayOwnedRosterEntry[] roster = MechBayOwnedRosterService.BuildRosterPreview(demoInventory);
             ClampSelectedRosterIndex(roster);
             GUI.Label(
-                new Rect(x, y + 148f, width, 18f),
+                new Rect(x, y + 168f, width, 18f),
                 "Roster " + TruncateText(OwnedRosterText(roster), 62));
-            DrawRosterMissionStateLine(x, y + 170f, width, roster);
+            DrawRosterMissionStateLine(x, y + 190f, width, roster);
             MechBayMissionHandoffPreview handoffPreview =
                 MechBayMissionHandoffPreviewService.BuildPreview(demoInventory);
             MechBayMissionRestartApplyGuard restartGuard =
@@ -3350,13 +3354,13 @@ namespace MC2Demo.Presentation
                 ? MissionHandoffCompletedSummaryText(handoffPreview, restartGuard)
                 : MissionHandoffPlayerSummaryText(handoffPreview, restartGuard);
             GUI.Label(
-                new Rect(x, y + 192f, width, 18f),
+                new Rect(x, y + 212f, width, 18f),
                 "Next Mission " + TruncateText(handoffSummary, 58));
-            DrawMissionHandoffLaunchAction(x, y + 214f, width, handoffPreview, restartGuard);
-            DrawMissionHandoffLineup(x, y + 236f, width, handoffPreview);
+            DrawMissionHandoffLaunchAction(x, y + 234f, width, handoffPreview, restartGuard);
+            DrawMissionHandoffLineup(x, y + 256f, width, handoffPreview);
             if (showRosterDetail)
             {
-                DrawOwnedRosterDetail(x, y + 258f, width, roster, pilotHirePreview);
+                DrawOwnedRosterDetail(x, y + 278f, width, roster, pilotHirePreview);
             }
         }
 

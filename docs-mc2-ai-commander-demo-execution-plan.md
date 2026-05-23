@@ -92,6 +92,7 @@ The Unity demo currently supports:
 - starter mech condition and one-click demo repair spend local token balance and restore damaged mechs
 - starter mission receipt applies completed bounty tokens and salvaged mech fragments to local inventory
 - starter fragment assembly preview shows progress toward the demo mech assembly threshold and auto-assembles ready sets into local warehouse mechs
+- starter mech bay inventory can now be wrapped in a read-only local demo saved-account snapshot with cloned inventory, counters, validation, and JSON round-trip coverage
 - command-file `prepare-local-candidate` can now produce a ready depot candidate through local receipt assembly, NPC hiring, weapon purchase, and warehouse draft-fit services
 - CLI/AI loop pieces:
   - `-mc2Command`
@@ -457,5 +458,6 @@ Reason:
 - A lightweight command-file `hide-squad-preview` smoke hook now hides the completed squad preview, checks the general handoff summary still names the updated squad, and launches from that path.
 - The smoke-only depot replacement remains as a command-file fallback, but the primary command smoke now produces a ready depot candidate through the local receipt, assembly, NPC hire, weapon shop, and warehouse draft-fit services.
 - The mech bay summary now exposes that same ready-candidate service chain as a compact Candidate Prep action, and it opens Next Squad with the prepared depot candidate preselected.
-- The next low-risk step is to start a tiny saved-account boundary for demo inventory state, without changing battle rules or requiring backend services.
+- A tiny saved-account boundary now wraps demo inventory state as a cloned local account snapshot, validates cached counters, and round-trips through JSON without changing battle rules or requiring backend services.
+- The next low-risk step is to expose a compact account snapshot command-file report or local JSON dry-run, still without writing persistent user data by default.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.

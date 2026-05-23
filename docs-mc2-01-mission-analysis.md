@@ -214,9 +214,10 @@ status without touching live battle damage yet. Spare load is now projected into
 free cells as simple armor plates and heat sinks, exposing hardness and cooling
 totals before full inventory editing exists. Those projected filler cells can
 also be cycled between armor, heat sink, and empty so the first fitting tradeoff
-is interactive without committing to a saved inventory format yet. The UI now
+is interactive without committing to a persistent loadout format yet. The UI now
 separates draft edits from the last applied demo fit, with reset returning to
-that applied state; this is still a runtime preview boundary, not saved inventory.
+that applied state; this is still a runtime preview boundary, not a persistent
+saved loadout.
 Applied demo fits now hand effective weapon range, damage, cooldown, heat, and
 cooling into combat and commander observation without changing source profile data.
 Armor hardness uses a single incoming-damage multiplier, while heat sinks add to
@@ -226,6 +227,10 @@ events carry blocked damage so the log can explain why a hit landed for less.
 The mech bay now builds a starter runtime inventory from the player squad, source
 weapons, projected armor plates, projected heat sinks, and a demo token balance,
 giving later shop/salvage/repair work a small contract to grow from.
+That inventory can now be wrapped in a local demo saved-account snapshot with
+schema, account id, cloned inventory data, cached counters, validation, and JSON
+round-trip coverage; the mech bay surfaces it only as a read-only account
+summary, not a persistent user-data write.
 Current draft fits are now checked against that starter inventory, so extra
 armor plate or heat sink choices show a shortage and cannot be applied.
 The same starter inventory now owns the demo token balance used by the mech bay:
