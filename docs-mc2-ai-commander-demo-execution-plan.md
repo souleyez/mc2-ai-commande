@@ -89,6 +89,7 @@ The Unity demo currently supports:
 - starter mech condition and one-click demo repair spend local token balance and restore damaged mechs
 - starter mission receipt applies completed bounty tokens and salvaged mech fragments to local inventory
 - starter fragment assembly preview shows progress toward the demo mech assembly threshold and auto-assembles ready sets into local warehouse mechs
+- command-file `prepare-local-candidate` can now produce a ready depot candidate through local receipt assembly, NPC hiring, weapon purchase, and warehouse draft-fit services
 - CLI/AI loop pieces:
   - `-mc2Command`
   - `-mc2AdvanceSeconds`
@@ -449,6 +450,6 @@ Reason:
 - The completed-swap Launch row now says it restarts with the updated squad, making the button consequence explicit before applying the handoff.
 - Post-launch mech bay status now confirms when the updated squad was loaded after a completed swap Launch.
 - A lightweight command-file `mech-bay-launch` smoke hook now exercises the mech-bay Launch path, checks the bay stays open and paused, and confirms the updated-squad status before identity assertion.
-- The smoke-only depot replacement is now surfaced as the first player-facing Next Squad selection path for future missions.
-- The next low-risk step is to make the assembled-mech candidate source less smoke-only by letting the local demo flow produce a ready candidate without relying on command-file setup.
+- The smoke-only depot replacement remains as a command-file fallback, but the primary command smoke now produces a ready depot candidate through the local receipt, assembly, NPC hire, weapon shop, and warehouse draft-fit services.
+- The next low-risk step is to surface that same ready-candidate service chain as a tiny visible mech-bay checklist or guided action, so the player path and command-file path keep converging.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.

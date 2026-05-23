@@ -1,5 +1,5 @@
-# Proves the mech-bay Launch path loads the swapped squad and keeps the bay open.
-prepare-depot-candidate
+# Proves local receipt/hire/shop/fit setup feeds the mech-bay Launch squad swap.
+prepare-local-candidate
 squad-swap
 mech-bay-launch
 assert-restart-identity depot

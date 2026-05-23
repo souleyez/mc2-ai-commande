@@ -78,7 +78,7 @@ Current demo behavior:
 - previews the next-mission handoff roster from `availableForMission` without restarting the current battle
 - shows a player-facing next-mission Ready/Blocked summary with a guarded Launch action and lineup preview
 - maps the handoff roster into restart spawn intents behind the Launch guard
-- supports command-file depot swap smoke actions for preparing a demo depot candidate, applying the swap, and asserting restart identity
+- supports command-file local candidate setup that runs receipt assembly, NPC hiring, weapon purchase, draft fit, squad swap, and restart identity assertions
 - enables Launch only after a validated BattleMission construction path is available
 - keeps MissionContract clone and BattleMission construction validation behind that guarded Launch path
 - can restart the active battle by building a replacement BattleMission, immediately disabling old runtime scene roots, and rebuilding Unity views from the guarded path
@@ -226,7 +226,7 @@ command unit unit-1 move 3221 -277
 
 Relative command-file paths are checked from the current working directory first, then from the player `StreamingAssets` folder.
 
-Command files also support `prepare-depot-candidate`, `squad-swap`, `mech-bay-launch`, and `assert-restart-identity depot` for the demo-only restart identity and mech-bay Launch smoke paths.
+Command files also support `prepare-local-candidate`, `prepare-depot-candidate`, `squad-swap`, `mech-bay-launch`, and `assert-restart-identity depot`. `prepare-local-candidate` runs the demo receipt, assembly, NPC hire, weapon shop, and warehouse draft-fit services before the swap; `prepare-depot-candidate` remains a direct smoke fallback.
 
 Commander observation reports include `reportIndex` and `missionTimeSeconds` so future AI adapters can correlate decisions with elapsed battle time.
 

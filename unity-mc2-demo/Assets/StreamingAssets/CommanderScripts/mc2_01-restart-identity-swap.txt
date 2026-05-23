@@ -1,5 +1,5 @@
-# Proves depot squad-swap identity survives a runtime mission restart.
-prepare-depot-candidate
+# Proves locally assembled/fitted squad-swap identity survives a runtime mission restart.
+prepare-local-candidate
 squad-swap
 restart
 assert-restart-identity depot

@@ -133,6 +133,18 @@ namespace MC2Demo.Presentation
                 return true;
             }
 
+            if (string.Equals(verb, "prepare-local-candidate", StringComparison.OrdinalIgnoreCase))
+            {
+                if (!string.IsNullOrWhiteSpace(payload))
+                {
+                    error = "Prepare local candidate action does not accept arguments.";
+                    return false;
+                }
+
+                action = StartupCommanderScriptAction.PrepareLocalCandidate(lineNumber, rawLine);
+                return true;
+            }
+
             if (string.Equals(verb, "squad-swap", StringComparison.OrdinalIgnoreCase))
             {
                 if (!string.IsNullOrWhiteSpace(payload))
@@ -163,7 +175,7 @@ namespace MC2Demo.Presentation
                 return true;
             }
 
-            error = "Command file action must be command, advance, report, restart, mech-bay-launch, prepare-depot-candidate, squad-swap, or assert-restart-identity.";
+            error = "Command file action must be command, advance, report, restart, mech-bay-launch, prepare-depot-candidate, prepare-local-candidate, squad-swap, or assert-restart-identity.";
             return false;
         }
     }
@@ -253,6 +265,16 @@ namespace MC2Demo.Presentation
             };
         }
 
+        public static StartupCommanderScriptAction PrepareLocalCandidate(int lineNumber, string sourceLine)
+        {
+            return new StartupCommanderScriptAction
+            {
+                Kind = StartupCommanderScriptActionKind.PrepareLocalCandidate,
+                LineNumber = lineNumber,
+                SourceLine = sourceLine ?? string.Empty
+            };
+        }
+
         public static StartupCommanderScriptAction SquadSwap(int lineNumber, string sourceLine)
         {
             return new StartupCommanderScriptAction
@@ -287,6 +309,7 @@ namespace MC2Demo.Presentation
         Restart,
         MechBayLaunch,
         PrepareDepotCandidate,
+        PrepareLocalCandidate,
         SquadSwap,
         AssertRestartIdentity
     }

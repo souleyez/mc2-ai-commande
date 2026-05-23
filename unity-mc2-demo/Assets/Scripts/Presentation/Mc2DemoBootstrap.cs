@@ -440,6 +440,9 @@ namespace MC2Demo.Presentation
                     case StartupCommanderScriptActionKind.PrepareDepotCandidate:
                         RunStartupPrepareDepotCandidate();
                         break;
+                    case StartupCommanderScriptActionKind.PrepareLocalCandidate:
+                        RunStartupPrepareLocalCandidate();
+                        break;
                     case StartupCommanderScriptActionKind.SquadSwap:
                         RunStartupSquadSwap();
                         break;
@@ -534,6 +537,151 @@ namespace MC2Demo.Presentation
             Debug.Log("MC2 commander depot candidate: " + message);
         }
 
+        private void RunStartupPrepareLocalCandidate()
+        {
+            string ownedMechId = EnsureStartupLocalReadyCandidate();
+            if (!string.IsNullOrWhiteSpace(ownedMechId))
+            {
+                AddCombatLogLine("CLI local candidate ready: " + ownedMechId);
+                Debug.Log("MC2 commander local candidate: ready ownedMechId=" + ownedMechId);
+                return;
+            }
+
+            AddCombatLogLine("CLI local candidate blocked");
+            Debug.LogError("MC2 commander local candidate blocked: status=" + statusText);
+        }
+
+        private string EnsureStartupLocalReadyCandidate()
+        {
+            if (demoInventory == null)
+            {
+                return BlockStartupLocalCandidate("Inventory missing");
+            }
+
+            string existingCandidate = FirstStartupDepotCandidateOwnedMechId();
+            if (!string.IsNullOrWhiteSpace(existingCandidate))
+            {
+                statusText = "Local candidate ready";
+                return existingCandidate;
+            }
+
+            string unitType = FirstRuntimePlayerUnitType();
+            MechBayMissionReceipt receipt = MechBayMissionReceiptService.ApplyMissionReceipt(
+                demoInventory,
+                new MissionResultSummary
+                {
+                    destroyedEnemyUnits = 3,
+                    completedRewardResourcePoints = 3000,
+                    visibleRewardResourcePoints = 3000,
+                    salvageClaimCount = 3,
+                    destroyedEnemyUnitLabels = new[]
+                    {
+                        "enemy-1 " + unitType,
+                        "enemy-2 " + unitType,
+                        "enemy-3 " + unitType
+                    }
+                });
+            AddCombatLogLine(
+                "CLI local receipt: +" + FormatTokens(receipt.TokenDelta)
+                + " token fragments +" + receipt.SalvageFragmentCount
+                + ReceiptAssemblyLogText(receipt));
+            RefreshDemoInventoryValidation();
+
+            string targetOwnedMechId = FirstStartupPendingWarehouseMechId();
+            if (string.IsNullOrWhiteSpace(targetOwnedMechId))
+            {
+                return BlockStartupLocalCandidate("No assembled warehouse mech");
+            }
+
+            MechBayOwnedRosterEntry target = StartupRosterEntryByOwnedMechId(targetOwnedMechId);
+            if (target == null)
+            {
+                return BlockStartupLocalCandidate("Assembled mech missing");
+            }
+
+            if (!target.hasPilotAssignment)
+            {
+                MechBayPilotHireCandidate candidate =
+                    FirstPilotHireCandidate(MechBayPilotHirePreviewService.BuildPreview(demoInventory));
+                if (candidate == null)
+                {
+                    return BlockStartupLocalCandidate("No NPC pilot candidate");
+                }
+
+                MechBayPilotHireResult result =
+                    MechBayPilotHirePreviewService.TryApplyDemoHire(demoInventory, targetOwnedMechId, candidate.pilotId);
+                if (result == null || !result.Accepted)
+                {
+                    return BlockStartupLocalCandidate(result?.Message ?? "Pilot hire unavailable");
+                }
+
+                AddCombatLogLine("CLI local pilot: " + result.Message);
+                RefreshDemoInventoryValidation();
+            }
+
+            target = StartupRosterEntryByOwnedMechId(targetOwnedMechId);
+            if (target == null)
+            {
+                return BlockStartupLocalCandidate("Assembled mech missing after pilot hire");
+            }
+
+            if (!target.hasSpareWeaponStock)
+            {
+                MechBayWeaponShopEntry entry =
+                    FirstWeaponShopEntry(MechBayWeaponShopPreviewService.BuildPreview(demoInventory));
+                if (entry == null)
+                {
+                    return BlockStartupLocalCandidate("No ordinary weapon shop entry");
+                }
+
+                MechBayWeaponPurchasePreviewResult result =
+                    MechBayWeaponShopPreviewService.TryApplyDemoPurchase(demoInventory, entry.itemId);
+                if (result == null || !result.Accepted)
+                {
+                    return BlockStartupLocalCandidate(result?.Message ?? "Weapon purchase unavailable");
+                }
+
+                AddCombatLogLine("CLI local weapon: " + result.Message);
+                RefreshDemoInventoryValidation();
+            }
+
+            target = StartupRosterEntryByOwnedMechId(targetOwnedMechId);
+            if (target == null)
+            {
+                return BlockStartupLocalCandidate("Assembled mech missing before draft fit");
+            }
+
+            if (target.hasDraftFitStub)
+            {
+                MechBayWarehouseDraftFitApplyResult result =
+                    MechBayWarehouseDraftFitPreviewService.TryApplyDemoFit(demoInventory, targetOwnedMechId);
+                if (result == null || !result.Accepted)
+                {
+                    return BlockStartupLocalCandidate(result?.Message ?? "Draft fit unavailable");
+                }
+
+                AddCombatLogLine("CLI local fit: " + result.Message);
+                RefreshDemoInventoryValidation();
+            }
+
+            string readyCandidate = FirstStartupDepotCandidateOwnedMechId();
+            if (string.IsNullOrWhiteSpace(readyCandidate))
+            {
+                return BlockStartupLocalCandidate("No next-squad candidate after local setup");
+            }
+
+            statusText = "Local candidate ready";
+            return readyCandidate;
+        }
+
+        private string BlockStartupLocalCandidate(string reason)
+        {
+            startupSmokeFailed = true;
+            statusText = "Local candidate blocked";
+            Debug.LogError("MC2 commander local candidate blocked: " + reason);
+            return null;
+        }
+
         private bool EnsureStartupDepotSwapCandidate()
         {
             if (demoInventory == null)
@@ -609,6 +757,66 @@ namespace MC2Demo.Presentation
             return false;
         }
 
+        private string FirstStartupDepotCandidateOwnedMechId()
+        {
+            return FirstStartupDepotCandidateOwnedMechId(
+                MechBaySquadSelectionPreviewService.BuildPreview(demoInventory));
+        }
+
+        private static string FirstStartupDepotCandidateOwnedMechId(MechBaySquadSelectionPreview preview)
+        {
+            MechBaySquadSelectionSlot[] candidates = preview?.DepotCandidates ?? Array.Empty<MechBaySquadSelectionSlot>();
+            for (int index = 0; index < candidates.Length; index++)
+            {
+                if (!string.IsNullOrWhiteSpace(candidates[index]?.ownedMechId))
+                {
+                    return candidates[index].ownedMechId;
+                }
+            }
+
+            return null;
+        }
+
+        private string FirstStartupPendingWarehouseMechId()
+        {
+            MechBayOwnedRosterEntry[] roster = MechBayOwnedRosterService.BuildRosterPreview(demoInventory);
+            for (int index = 0; index < roster.Length; index++)
+            {
+                MechBayOwnedRosterEntry entry = roster[index];
+                if (entry != null
+                    && entry.isWarehouseMech
+                    && !entry.availableForMission
+                    && (entry.hasDraftFitStub || entry.squadSelectionCandidate)
+                    && !string.IsNullOrWhiteSpace(entry.ownedMechId))
+                {
+                    return entry.ownedMechId;
+                }
+            }
+
+            return null;
+        }
+
+        private MechBayOwnedRosterEntry StartupRosterEntryByOwnedMechId(string ownedMechId)
+        {
+            if (string.IsNullOrWhiteSpace(ownedMechId))
+            {
+                return null;
+            }
+
+            MechBayOwnedRosterEntry[] roster = MechBayOwnedRosterService.BuildRosterPreview(demoInventory);
+            for (int index = 0; index < roster.Length; index++)
+            {
+                MechBayOwnedRosterEntry entry = roster[index];
+                if (entry != null
+                    && string.Equals(entry.ownedMechId, ownedMechId, StringComparison.OrdinalIgnoreCase))
+                {
+                    return entry;
+                }
+            }
+
+            return null;
+        }
+
         private string FirstRuntimePlayerUnitType()
         {
             if (mission != null)
@@ -636,13 +844,28 @@ namespace MC2Demo.Presentation
 
         private void RunStartupSquadSwap()
         {
-            if (!EnsureStartupDepotSwapCandidate())
+            string incomingOwnedMechId = FirstStartupDepotCandidateOwnedMechId();
+            if (string.IsNullOrWhiteSpace(incomingOwnedMechId))
             {
+                if (!EnsureStartupDepotSwapCandidate())
+                {
+                    return;
+                }
+
+                incomingOwnedMechId = FirstStartupDepotCandidateOwnedMechId();
+            }
+
+            if (string.IsNullOrWhiteSpace(incomingOwnedMechId))
+            {
+                startupSmokeFailed = true;
+                statusText = "CLI squad swap blocked";
+                AddCombatLogLine("CLI squad swap blocked: no depot candidate");
+                Debug.LogError("MC2 commander squad swap blocked: no depot candidate");
                 return;
             }
 
             MechBaySquadSelectionDraftState draft =
-                MechBaySquadSelectionPreviewService.BuildDraftState(demoInventory, null, StartupSmokeDepotOwnedMechId);
+                MechBaySquadSelectionPreviewService.BuildDraftState(demoInventory, null, incomingOwnedMechId);
             MechBaySquadSelectionApplyResult result =
                 MechBaySquadSelectionPreviewService.TryApplyPendingSwap(demoInventory, draft);
             if (result?.Accepted == true)

@@ -2497,6 +2497,16 @@ namespace MC2Demo.EditorTools
                 throw new InvalidDataException("Expected command file parser to read advance seconds.");
             }
 
+            if (!StartupCommanderScript.TryParseLine(
+                    "prepare-local-candidate",
+                    1,
+                    out StartupCommanderScriptAction localCandidateAction,
+                    out _)
+                || localCandidateAction.Kind != StartupCommanderScriptActionKind.PrepareLocalCandidate)
+            {
+                throw new InvalidDataException("Expected command file parser to read prepare-local-candidate actions.");
+            }
+
             BattleMission mission = new(MakeCommandPortContract(), CombatProfileCatalog.Empty);
             CommanderCommandPort port = new(mission, 520f, _ => true);
             int restartCount = 0;
@@ -2562,7 +2572,8 @@ namespace MC2Demo.EditorTools
             if (StartupCommanderScript.TryParseLine("advance nope", 1, out _, out _)
                 || StartupCommanderScript.TryParseLine("command", 1, out _, out _)
                 || StartupCommanderScript.TryParseLine("report now", 1, out _, out _)
-                || StartupCommanderScript.TryParseLine("restart now", 1, out _, out _))
+                || StartupCommanderScript.TryParseLine("restart now", 1, out _, out _)
+                || StartupCommanderScript.TryParseLine("prepare-local-candidate now", 1, out _, out _))
             {
                 throw new InvalidDataException("Expected malformed command file lines to be rejected.");
             }
