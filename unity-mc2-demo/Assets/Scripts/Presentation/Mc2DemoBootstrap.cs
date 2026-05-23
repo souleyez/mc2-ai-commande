@@ -235,7 +235,7 @@ namespace MC2Demo.Presentation
             BuildWorld();
             RefreshDemoInventoryValidation();
             SetPaused(keepMechBayOpen && mission.Result == MissionResultState.InProgress);
-            statusText = keepMechBayOpen ? "Mission restarted - Mech bay open" : (result?.Message ?? "Mission restarted");
+            statusText = MissionRestartStatusText(result, keepMechBayOpen);
             AddCombatLogLine(statusText + ": " + (result?.Summary ?? "replacement ready"));
             AddCombatLogLine("Identity map: " + RestartIdentityText(result));
             MechBayOwnedRosterEntry[] roster = MechBayOwnedRosterService.BuildRosterPreview(demoInventory);
@@ -245,6 +245,23 @@ namespace MC2Demo.Presentation
                 + clearedRoots.ToString(CultureInfo.InvariantCulture)
                 + " keepMechBayOpen="
                 + keepMechBayOpen);
+        }
+
+        private static string MissionRestartStatusText(
+            MechBayMissionRestartRuntimeSwapResult result,
+            bool keepMechBayOpen)
+        {
+            if (keepMechBayOpen && result?.IncludesDepotMissionSlot == true)
+            {
+                return "Updated squad loaded - Mech bay open";
+            }
+
+            if (keepMechBayOpen)
+            {
+                return "Mission restarted - Mech bay open";
+            }
+
+            return result?.Message ?? "Mission restarted";
         }
 
         private int ClearRuntimeWorld()

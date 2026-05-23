@@ -70,6 +70,7 @@ Current demo behavior:
 - marks Confirm and Launch rows with Ready/Blocked color cues
 - shows a compact completed-swap lineup before next-mission Launch
 - labels completed-swap Launch as a restart with the updated squad
+- confirms post-launch that the updated squad was loaded when the mech bay stays open
 - applies pending squad swap confirmation by exchanging local mission availability flags
 - refreshes squad-selection status after confirmation so the joined depot mech is no longer shown as a candidate
 - keeps the squad-selection preview visible inside the mech bay and exposes the guarded next-mission Launch handoff there
