@@ -239,7 +239,8 @@ the nearest mech type, current fragment count, demo threshold, and ready state.
 When a stack reaches the demo threshold, the local inventory now consumes the
 ready fragments and adds a 100% condition warehouse mech for later roster work.
 The mech bay now reads that same inventory as a compact owned-mech roster, so
-assembled warehouse mechs are visible before any future squad-selection flow.
+assembled warehouse mechs are visible before they are selected for a future
+mission squad.
 Roster entries can now be cycled into a read-only detail preview with source,
 condition, availability, chassis, loadout id, and inventory id.
 Assembled depot mechs are intentionally held with a pending-loadout placeholder,
@@ -274,14 +275,14 @@ The preview now has a demo-only Apply action: it consumes one spare weapon stack
 into the warehouse mech, swaps `pending-loadout` for a placeholder
 `warehouse-demo-fit`, and still keeps that mech out of mission deployment.
 Fitted warehouse mechs now show a deployment preview line in the roster detail,
-marking them as held for a future squad-selection flow instead of silently
+marking them as ready for next-mission squad selection instead of silently
 looking ready for the current mission.
-The same roster detail now exposes a Squad selection placeholder. It
-marks fitted depot mechs as candidates for a future squad-selection screen but
-does not change the current mission roster or deployment flags.
-That placeholder now opens a squad-selection preview, listing the current
-mission slots and any fitted depot candidates while keeping inventory and
-mission deployment unchanged until the user confirms.
+The same roster detail now exposes a player-facing Next Squad entry. It
+marks fitted depot mechs as candidates for the next mission while keeping the
+current mission roster and deployment flags unchanged until confirmation.
+That entry now opens a Next Mission Squad preview, listing the current mission
+slots and any fitted depot candidates while keeping inventory and mission
+deployment unchanged until the user confirms.
 If the user opens it from a current mission mech, that mech is preselected as
 the outgoing slot; opening it from a fitted depot candidate preselects that
 mech as the incoming slot.

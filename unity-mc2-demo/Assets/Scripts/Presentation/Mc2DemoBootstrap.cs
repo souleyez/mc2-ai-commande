@@ -4116,13 +4116,13 @@ namespace MC2Demo.Presentation
             bool canPreviewSquad = entry != null;
             bool previousEnabled = GUI.enabled;
             GUI.enabled = previousEnabled && canPreviewSquad;
-            if (GUI.Button(new Rect(x, y - 2f, 72f, 22f), "Squad"))
+            if (GUI.Button(new Rect(x, y - 2f, 92f, 22f), "Next Squad"))
             {
                 OpenSquadSelectionPreview(entry);
             }
 
             GUI.enabled = previousEnabled;
-            GUI.Label(new Rect(x + 80f, y, width - 80f, 18f), TruncateText(OwnedRosterSquadSelectionText(entry), 44));
+            GUI.Label(new Rect(x + 100f, y, width - 100f, 18f), TruncateText(OwnedRosterSquadSelectionText(entry), 42));
         }
 
         private static string OwnedRosterSquadSelectionText(MechBayOwnedRosterEntry entry)
@@ -4152,21 +4152,21 @@ namespace MC2Demo.Presentation
             if (entry?.availableForMission == true)
             {
                 squadSelectionDraftOutgoingOwnedMechId = entry.ownedMechId;
-                statusText = "Squad out: " + TruncateText(name, 24);
-                AddCombatLogLine("Mech bay squad selection opened with outgoing " + name);
+                statusText = "Next squad out: " + TruncateText(name, 20);
+                AddCombatLogLine("Next mission squad opened with outgoing " + name);
                 return;
             }
 
             if (entry?.squadSelectionCandidate == true)
             {
                 squadSelectionDraftIncomingOwnedMechId = entry.ownedMechId;
-                statusText = "Squad in: " + TruncateText(name, 24);
-                AddCombatLogLine("Mech bay squad selection opened with incoming " + name);
+                statusText = "Next squad in: " + TruncateText(name, 20);
+                AddCombatLogLine("Next mission squad opened with incoming " + name);
                 return;
             }
 
-            statusText = "Squad preview: " + TruncateText(name, 24);
-            AddCombatLogLine("Mech bay squad selection preview opened");
+            statusText = "Next squad preview: " + TruncateText(name, 18);
+            AddCombatLogLine("Next mission squad preview opened");
         }
 
         private void DrawSquadSelectionPreview(float x, float y, float width)
@@ -4180,7 +4180,7 @@ namespace MC2Demo.Presentation
             squadSelectionDraftOutgoingOwnedMechId = draft?.OutgoingOwnedMechId;
             squadSelectionDraftIncomingOwnedMechId = draft?.IncomingOwnedMechId;
 
-            GUI.Box(new Rect(x, y, width, 238f), "Squad Selection / Next Mission");
+            GUI.Box(new Rect(x, y, width, 238f), "Next Mission Squad");
             if (GUI.Button(new Rect(x + width - 58f, y + 4f, 48f, 22f), "Hide"))
             {
                 showSquadSelectionPreview = false;

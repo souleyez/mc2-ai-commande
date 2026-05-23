@@ -65,9 +65,9 @@ The Unity demo currently supports:
 - depot Draft Fit affordance becomes a readiness gate once spare weapon stock and a pilot are both present
 - warehouse Draft Fit opens a read-only preview showing the selected pilot and spare weapon without changing inventory
 - warehouse Draft Fit preview can apply a demo placeholder fit that consumes one spare weapon and keeps the mech non-deployable
-- fitted warehouse mechs show a deployment preview explaining that future squad selection is still required
-- roster detail shows a squad-selection placeholder without altering current mission deployment
-- squad-selection preview lists current mission slots and fitted depot candidates without changing inventory or deployment
+- fitted warehouse mechs show that they are ready for the next-mission squad selection path
+- roster detail shows a player-facing Next Squad entry without altering current mission deployment
+- Next Mission Squad preview lists current mission slots and fitted depot candidates without changing inventory or deployment
 - squad-selection opens with the clicked mission slot preselected as outgoing or clicked depot candidate preselected as incoming
 - squad-selection confirmation reads from a local draft state that stages outgoing and incoming mech IDs
 - squad-selection confirmation applies a guarded local roster swap by exchanging mission availability flags
@@ -420,8 +420,8 @@ Reason:
 - The depot Draft Fit affordance now becomes clickable once spare stock and a pilot are both present, giving feedback without changing loadouts.
 - The depot Draft Fit affordance now opens a read-only preview showing the selected pilot and spare weapon without changing inventory or loadouts.
 - The depot Draft Fit preview now has a demo-only Apply action that consumes one spare weapon and changes the warehouse mech from `pending-loadout` to `warehouse-demo-fit`, while keeping it non-deployable.
-- The roster now explains why fitted depot mechs are still held until a future squad-selection flow exists.
-- The roster now shows a squad-selection placeholder, so the deployment path is visible before it can alter mission rosters.
+- The roster now explains fitted depot mechs as ready for next-mission selection instead of a future-only flow.
+- The roster now shows a player-facing Next Squad entry, so the deployment path is visible before it alters mission rosters.
 - The squad-selection preview now lists current mission slots and fitted depot candidates without changing deployment.
 - The roster Squad button now preselects clicked mission mechs as outgoing and clicked depot candidates as incoming.
 - The squad-selection confirmation path now reads from a local draft state container that holds selected outgoing and incoming mech IDs.
@@ -449,5 +449,6 @@ Reason:
 - The completed-swap Launch row now says it restarts with the updated squad, making the button consequence explicit before applying the handoff.
 - Post-launch mech bay status now confirms when the updated squad was loaded after a completed swap Launch.
 - A lightweight command-file `mech-bay-launch` smoke hook now exercises the mech-bay Launch path, checks the bay stays open and paused, and confirms the updated-squad status before identity assertion.
-- The next low-risk step is to start turning this smoke-only depot replacement into the first player-facing assembled-mech selection path for future missions.
+- The smoke-only depot replacement is now surfaced as the first player-facing Next Squad selection path for future missions.
+- The next low-risk step is to make the assembled-mech candidate source less smoke-only by letting the local demo flow produce a ready candidate without relying on command-file setup.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.

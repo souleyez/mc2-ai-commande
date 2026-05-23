@@ -1031,7 +1031,7 @@ namespace MC2Demo.BattleCore
 
             if (string.Equals(mech?.activeLoadoutId, MechBayWarehouseDraftFitPreviewService.DemoWarehouseFitLoadoutId, StringComparison.OrdinalIgnoreCase))
             {
-                return "Held: future squad selection";
+                return "Ready: next squad select";
             }
 
             return string.IsNullOrWhiteSpace(mech?.activeLoadoutId) ? "Held: no loadout" : "Held: depot mech";
@@ -1056,7 +1056,7 @@ namespace MC2Demo.BattleCore
 
             if (string.Equals(mech?.activeLoadoutId, MechBayWarehouseDraftFitPreviewService.DemoWarehouseFitLoadoutId, StringComparison.OrdinalIgnoreCase))
             {
-                return "Future squad-selection flow";
+                return "Use Next Squad";
             }
 
             return "Future depot deployment flow";
@@ -1098,7 +1098,7 @@ namespace MC2Demo.BattleCore
 
             if (SquadSelectionCandidate(mech))
             {
-                return "Ready for future squad selection";
+                return "Ready for next mission squad";
             }
 
             return "Depot selection locked";
@@ -1121,7 +1121,7 @@ namespace MC2Demo.BattleCore
                 return DraftFitRequirements(mech, hasSpareWeaponStock);
             }
 
-            return SquadSelectionCandidate(mech) ? "Future squad-selection screen" : "Future deployment flow";
+            return SquadSelectionCandidate(mech) ? "Open Next Squad" : "Finish fit before selection";
         }
 
         private static string WeaponStockStatus(int spareWeaponStockCount, int totalWeaponStockCount)
@@ -1257,12 +1257,12 @@ namespace MC2Demo.BattleCore
             {
                 InventoryChanged = false,
                 Ready = ready,
-                Status = ready ? "Draft swap staged" : "Draft swap unavailable",
+                Status = ready ? "Next squad replacement staged" : "Next squad replacement unavailable",
                 Requirements = ready
-                    ? "Confirm staged roster swap"
+                    ? "Confirm next mission replacement"
                     : DraftUnavailableSummary(preview, outgoing, incoming),
                 Summary = ready
-                    ? "Draft " + SlotName(incoming) + " over " + SlotName(outgoing)
+                    ? "Stage " + SlotName(incoming) + " over " + SlotName(outgoing)
                     : DraftUnavailableSummary(preview, outgoing, incoming),
                 OutgoingOwnedMechId = outgoing?.ownedMechId,
                 IncomingOwnedMechId = incoming?.ownedMechId,
@@ -1376,7 +1376,7 @@ namespace MC2Demo.BattleCore
         {
             if (candidateCount > 0)
             {
-                return "Read-only squad selection preview";
+                return "Choose next mission replacement";
             }
 
             return hasRefreshedMissionSlot ? "Mission squad refreshed" : "No depot candidates ready";
@@ -1386,7 +1386,7 @@ namespace MC2Demo.BattleCore
         {
             return hasRefreshedMissionSlot
                 ? "Confirmed swap applied: mission squad updated"
-                : "Preview only: mission squad unchanged";
+                : "Current battle unchanged until Launch";
         }
 
         private static string SwapStatus(int missionSlotCount, int candidateCount, bool hasRefreshedMissionSlot)
@@ -1396,7 +1396,7 @@ namespace MC2Demo.BattleCore
                 return "Swap complete";
             }
 
-            return missionSlotCount > 0 && candidateCount > 0 ? "Swap guarded: use Confirm" : "Swap unavailable";
+            return missionSlotCount > 0 && candidateCount > 0 ? "Ready: use Confirm" : "Swap unavailable";
         }
 
         private static string SwapRequirements(int missionSlotCount, int candidateCount, bool hasRefreshedMissionSlot)
@@ -1545,9 +1545,9 @@ namespace MC2Demo.BattleCore
                 LaunchEnabled = false,
                 IncludesDepotMissionSlot = includesDepotMissionSlot,
                 MissionSlotCount = missionSlots.Count,
-                Status = ready ? "Future mission roster ready" : "No mission roster ready",
+                Status = ready ? "Next mission roster ready" : "No mission roster ready",
                 LaunchStatus = LaunchStatus(ready, includesDepotMissionSlot),
-                LaunchRequirements = ready ? "Future mission launch hook" : "Need available mission slot",
+                LaunchRequirements = ready ? "Guarded Launch path ready" : "Need available mission slot",
                 Summary = Summary(missionSlots, includesDepotMissionSlot),
                 PreviewNote = "Preview only: current battle state unchanged",
                 MissionSlots = missionSlots.ToArray()
@@ -1566,7 +1566,7 @@ namespace MC2Demo.BattleCore
                 IncludesDepotMissionSlot = preview?.IncludesDepotMissionSlot == true,
                 MissionSlotCount = preview?.MissionSlotCount ?? 0,
                 Message = ready ? "Mission launch guarded" : "Mission launch unavailable",
-                Reason = ready ? "Future mission restart hook not wired" : "Need available mission slot",
+                Reason = ready ? "Use guarded restart Launch path" : "Need available mission slot",
                 Summary = string.IsNullOrWhiteSpace(preview?.Summary)
                     ? "No available mission slots"
                     : preview.Summary

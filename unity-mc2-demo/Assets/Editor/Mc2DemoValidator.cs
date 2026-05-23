@@ -2941,7 +2941,7 @@ namespace MC2Demo.EditorTools
             if (lockedSquadPreview == null
                 || lockedSquadPreview.InventoryChanged
                 || lockedSquadPreview.Status != "No depot candidates ready"
-                || lockedSquadPreview.PreviewNote != "Preview only: mission squad unchanged"
+                || lockedSquadPreview.PreviewNote != "Current battle unchanged until Launch"
                 || lockedSquadPreview.HasRefreshedMissionSlot
                 || lockedSquadPreview.MissionSlotCount <= 0
                 || lockedSquadPreview.CandidateCount != 0
@@ -2974,9 +2974,9 @@ namespace MC2Demo.EditorTools
                 || lockedHandoffPreview.MissionSlotCount != lockedSquadPreview.MissionSlotCount
                 || lockedHandoffPreview.MissionSlots == null
                 || lockedHandoffPreview.MissionSlots.Length != lockedHandoffPreview.MissionSlotCount
-                || lockedHandoffPreview.Status != "Future mission roster ready"
+                || lockedHandoffPreview.Status != "Next mission roster ready"
                 || lockedHandoffPreview.LaunchStatus != "Launch preview uses current squad"
-                || lockedHandoffPreview.LaunchRequirements != "Future mission launch hook"
+                || lockedHandoffPreview.LaunchRequirements != "Guarded Launch path ready"
                 || lockedHandoffPreview.PreviewNote != "Preview only: current battle state unchanged"
                 || !lockedHandoffPreview.Summary.Contains("Next mission roster:", StringComparison.Ordinal)
                 || ContainsSquadSlot(lockedHandoffPreview.MissionSlots, assembledRaven.ownedMechId))
@@ -2993,7 +2993,7 @@ namespace MC2Demo.EditorTools
                 || lockedLaunchGuard.IncludesDepotMissionSlot
                 || lockedLaunchGuard.MissionSlotCount != lockedHandoffPreview.MissionSlotCount
                 || lockedLaunchGuard.Message != "Mission launch guarded"
-                || lockedLaunchGuard.Reason != "Future mission restart hook not wired"
+                || lockedLaunchGuard.Reason != "Use guarded restart Launch path"
                 || lockedLaunchGuard.Summary != lockedHandoffPreview.Summary
                 || receiptInventory.tokenBalance != receiptInventoryResult.Summary.TokenBalance)
             {
@@ -3198,7 +3198,7 @@ namespace MC2Demo.EditorTools
             if (lockedSquadDraft == null
                 || lockedSquadDraft.InventoryChanged
                 || lockedSquadDraft.Ready
-                || lockedSquadDraft.Status != "Draft swap unavailable"
+                || lockedSquadDraft.Status != "Next squad replacement unavailable"
                 || lockedSquadDraft.Requirements != "Need fitted depot candidate"
                 || lockedSquadDraft.Summary != "Need fitted depot candidate"
                 || lockedSquadDraft.OutgoingOwnedMechId != lockedSquadPreview.DryRunOutgoingOwnedMechId
@@ -3356,12 +3356,12 @@ namespace MC2Demo.EditorTools
                 || assembledRaven.spareWeaponStockCount != 0
                 || !assembledRaven.hasPilotAssignment
                 || assembledRaven.deployableForMission
-                || assembledRaven.deploymentStatus != "Held: future squad selection"
-                || assembledRaven.deploymentRequirements != "Future squad-selection flow"
+                || assembledRaven.deploymentStatus != "Ready: next squad select"
+                || assembledRaven.deploymentRequirements != "Use Next Squad"
                 || !assembledRaven.hasSquadSelectionStub
                 || !assembledRaven.squadSelectionCandidate
-                || assembledRaven.squadSelectionStatus != "Ready for future squad selection"
-                || assembledRaven.squadSelectionRequirements != "Future squad-selection screen")
+                || assembledRaven.squadSelectionStatus != "Ready for next mission squad"
+                || assembledRaven.squadSelectionRequirements != "Open Next Squad")
             {
                 throw new InvalidDataException("Expected warehouse draft-fit apply stub to consume one spare weapon and keep the mech non-deployable.");
             }
@@ -3375,8 +3375,8 @@ namespace MC2Demo.EditorTools
                     : null;
             if (squadPreview == null
                 || squadPreview.InventoryChanged
-                || squadPreview.Status != "Read-only squad selection preview"
-                || squadPreview.PreviewNote != "Preview only: mission squad unchanged"
+                || squadPreview.Status != "Choose next mission replacement"
+                || squadPreview.PreviewNote != "Current battle unchanged until Launch"
                 || squadPreview.HasRefreshedMissionSlot
                 || squadPreview.MissionSlotCount <= 0
                 || squadPreview.CandidateCount != 1
@@ -3388,13 +3388,13 @@ namespace MC2Demo.EditorTools
                 || squadCandidate.ownedMechId != assembledRaven.ownedMechId
                 || squadCandidate.displayName != assembledRaven.displayName
                 || squadCandidate.conditionPercent != 100
-                || squadCandidate.selectionStatus != "Ready for future squad selection"
+                || squadCandidate.selectionStatus != "Ready for next mission squad"
                 || !squadPreviewInventoryResult.IsValid
                 || squadPreviewInventoryResult.Summary.MechCount != draftFitApplyInventoryResult.Summary.MechCount
                 || squadPreviewInventoryResult.Summary.WeaponCount != draftFitApplyInventoryResult.Summary.WeaponCount
                 || receiptInventory.tokenBalance != tokenBeforeDraftFitPreview
                 || squadPreview.SwapEnabled
-                || squadPreview.SwapStatus != "Swap guarded: use Confirm"
+                || squadPreview.SwapStatus != "Ready: use Confirm"
                 || squadPreview.SwapRequirements != "Confirm staged roster swap"
                 || !squadPreview.DryRunAvailable
                 || squadPreview.DryRunStatus != "Dry run ready"
@@ -3409,7 +3409,7 @@ namespace MC2Demo.EditorTools
                 || !squadPreview.PendingSwapSummary.Contains(" for confirmation", StringComparison.Ordinal))
             {
                 throw new InvalidDataException(
-                    "Expected read-only squad-selection preview to show current slots and one fitted depot candidate without changing inventory. Got "
+                    "Expected Next Mission Squad preview to show current slots and one fitted depot candidate without changing inventory. Got "
                     + SquadPreviewDebugText(squadPreview));
             }
 
@@ -3418,9 +3418,9 @@ namespace MC2Demo.EditorTools
             if (squadDraft == null
                 || squadDraft.InventoryChanged
                 || !squadDraft.Ready
-                || squadDraft.Status != "Draft swap staged"
-                || squadDraft.Requirements != "Confirm staged roster swap"
-                || !squadDraft.Summary.Contains("Draft " + assembledRaven.displayName, StringComparison.Ordinal)
+                || squadDraft.Status != "Next squad replacement staged"
+                || squadDraft.Requirements != "Confirm next mission replacement"
+                || !squadDraft.Summary.Contains("Stage " + assembledRaven.displayName, StringComparison.Ordinal)
                 || squadDraft.OutgoingOwnedMechId != squadPreview.DryRunOutgoingOwnedMechId
                 || squadDraft.IncomingOwnedMechId != assembledRaven.ownedMechId
                 || string.IsNullOrWhiteSpace(squadDraft.OutgoingDisplayName)
@@ -3441,8 +3441,8 @@ namespace MC2Demo.EditorTools
             if (selectedSquadDraft == null
                 || selectedSquadDraft.InventoryChanged
                 || !selectedSquadDraft.Ready
-                || selectedSquadDraft.Status != "Draft swap staged"
-                || selectedSquadDraft.Requirements != "Confirm staged roster swap"
+                || selectedSquadDraft.Status != "Next squad replacement staged"
+                || selectedSquadDraft.Requirements != "Confirm next mission replacement"
                 || selectedSquadDraft.OutgoingOwnedMechId != selectedOutgoingSlot.ownedMechId
                 || selectedSquadDraft.IncomingOwnedMechId != assembledRaven.ownedMechId
                 || selectedSquadDraft.OutgoingDisplayName != selectedOutgoingSlot.displayName
@@ -3544,7 +3544,7 @@ namespace MC2Demo.EditorTools
                 || squadPostApplyDraft == null
                 || squadPostApplyDraft.InventoryChanged
                 || squadPostApplyDraft.Ready
-                || squadPostApplyDraft.Status != "Draft swap unavailable"
+                || squadPostApplyDraft.Status != "Next squad replacement unavailable"
                 || squadPostApplyDraft.Requirements != "Confirmed swap already applied"
                 || squadPostApplyDraft.Summary != "Confirmed swap already applied")
             {
@@ -3563,9 +3563,9 @@ namespace MC2Demo.EditorTools
                 || squadPostApplyHandoff.MissionSlotCount != squadPostApplyPreview.MissionSlotCount
                 || squadPostApplyHandoff.MissionSlots == null
                 || squadPostApplyHandoff.MissionSlots.Length != squadPostApplyHandoff.MissionSlotCount
-                || squadPostApplyHandoff.Status != "Future mission roster ready"
+                || squadPostApplyHandoff.Status != "Next mission roster ready"
                 || squadPostApplyHandoff.LaunchStatus != "Launch preview includes depot mech"
-                || squadPostApplyHandoff.LaunchRequirements != "Future mission launch hook"
+                || squadPostApplyHandoff.LaunchRequirements != "Guarded Launch path ready"
                 || squadPostApplyHandoff.PreviewNote != "Preview only: current battle state unchanged"
                 || !squadPostApplyHandoff.Summary.Contains("Next mission roster:", StringComparison.Ordinal)
                 || !squadPostApplyHandoff.Summary.Contains("depot included", StringComparison.Ordinal)
@@ -3584,7 +3584,7 @@ namespace MC2Demo.EditorTools
                 || !squadPostApplyLaunchGuard.IncludesDepotMissionSlot
                 || squadPostApplyLaunchGuard.MissionSlotCount != squadPostApplyHandoff.MissionSlotCount
                 || squadPostApplyLaunchGuard.Message != "Mission launch guarded"
-                || squadPostApplyLaunchGuard.Reason != "Future mission restart hook not wired"
+                || squadPostApplyLaunchGuard.Reason != "Use guarded restart Launch path"
                 || squadPostApplyLaunchGuard.Summary != squadPostApplyHandoff.Summary
                 || receiptInventory.tokenBalance != tokenBeforeDraftFitPreview)
             {
