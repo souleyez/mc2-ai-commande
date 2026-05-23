@@ -363,3 +363,5 @@ the full text.
 After a confirmed swap, the squad-selection preview now switches into a compact
 done state: it hides the Out/In picker rows, summarizes the updated lineup, and
 keeps only the confirmation status and next-mission Launch action visible.
+That completed-swap Launch row now states that it restarts with the updated
+squad, so the handoff consequence is visible before the mission is rebuilt.

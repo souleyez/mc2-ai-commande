@@ -77,6 +77,7 @@ The Unity demo currently supports:
 - squad-selection Confirm and next-mission Launch rows use short player-facing status text
 - squad-selection Confirm and next-mission Launch rows show Ready/Blocked color cues
 - squad-selection completed-swap state shows a compact done lineup before next-mission Launch
+- squad-selection completed-swap Launch row says it restarts with the updated squad
 - squad-selection preview refreshes after confirmation so the joined depot mech becomes a mission slot and no longer appears as a candidate
 - next-mission handoff preview reads `availableForMission` roster slots without mutating the active combat mission
 - next-mission handoff area shows a player-facing Ready/Blocked summary, guarded Launch action, and selected lineup
@@ -443,5 +444,6 @@ Reason:
 - Squad-selection Confirm and next-mission Launch rows now use short player-facing status text after swaps while keeping technical summaries in logs and guards.
 - Squad-selection Confirm and next-mission Launch rows now show Ready/Blocked color cues on the action button and status line.
 - The completed-swap squad-selection state now hides the Out/In picker noise and shows a compact done lineup before next-mission Launch.
-- The next low-risk step is to make the completed-swap Launch row mention that it restarts into the updated squad.
+- The completed-swap Launch row now says it restarts with the updated squad, making the button consequence explicit before applying the handoff.
+- The next low-risk step is to make the post-launch mech bay status line explicitly confirm the updated squad was loaded.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.

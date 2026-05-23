@@ -4144,7 +4144,11 @@ namespace MC2Demo.Presentation
                     new Rect(x + 12f, y + 84f, width - 24f, 18f),
                     "Depot candidate joined; replacement locked for launch");
                 DrawSquadSelectionPendingSwap(x + 12f, y + 106f, width - 24f, preview, draft);
-                DrawSquadSelectionRestartHandoff(x + 12f, y + 128f, width - 24f);
+                DrawSquadSelectionRestartHandoff(
+                    x + 12f,
+                    y + 128f,
+                    width - 24f,
+                    "Launch restarts with updated squad  ");
                 string completedNote = string.IsNullOrWhiteSpace(preview?.PreviewNote) ? "Swap complete" : preview.PreviewNote;
                 GUI.Label(new Rect(x + 12f, y + 150f, width - 24f, 18f), TruncateText(completedNote, 76));
                 return;
@@ -4165,7 +4169,7 @@ namespace MC2Demo.Presentation
             DrawSquadSelectionDraftPickers(x + 12f, y + 106f, width - 24f, preview, draft);
             DrawSquadSelectionSwapPlan(x + 12f, y + 154f, width - 24f, draft);
             DrawSquadSelectionPendingSwap(x + 12f, y + 176f, width - 24f, preview, draft);
-            DrawSquadSelectionRestartHandoff(x + 12f, y + 198f, width - 24f);
+            DrawSquadSelectionRestartHandoff(x + 12f, y + 198f, width - 24f, "Next Mission  ");
             string note = string.IsNullOrWhiteSpace(preview?.PreviewNote) ? "Preview only" : preview.PreviewNote;
             GUI.Label(new Rect(x + 12f, y + 220f, width - 24f, 18f), TruncateText(note, 76));
         }
@@ -4387,7 +4391,7 @@ namespace MC2Demo.Presentation
             return reason;
         }
 
-        private void DrawSquadSelectionRestartHandoff(float x, float y, float width)
+        private void DrawSquadSelectionRestartHandoff(float x, float y, float width, string labelPrefix)
         {
             MechBayMissionHandoffPreview preview =
                 MechBayMissionHandoffPreviewService.BuildPreview(demoInventory);
@@ -4406,7 +4410,8 @@ namespace MC2Demo.Presentation
 
             GUI.enabled = previousEnabled;
             string text = MissionHandoffLaunchActionText(guard, preview);
-            DrawActionStateLabel(x + 80f, y, width - 80f, "Next Mission  " + text, ready, 64);
+            string prefix = string.IsNullOrWhiteSpace(labelPrefix) ? "Next Mission  " : labelPrefix;
+            DrawActionStateLabel(x + 80f, y, width - 80f, prefix + text, ready, 64);
         }
 
         private static string SquadSelectionSlotSummary(MechBaySquadSelectionSlot[] slots, string emptyText)
