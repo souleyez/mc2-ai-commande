@@ -67,6 +67,8 @@ namespace MC2Demo.Presentation
         private string warehouseDraftFitPreviewMechId;
         private string squadSelectionDraftOutgoingOwnedMechId;
         private string squadSelectionDraftIncomingOwnedMechId;
+        private string squadSelectionLastOutgoingDisplayName;
+        private string squadSelectionLastIncomingDisplayName;
         private string statusText = "Loading";
         private bool startupSmokeFailed;
         private const string StartupSmokeDepotOwnedMechId = "assembled-smoke-depot";
@@ -232,6 +234,7 @@ namespace MC2Demo.Presentation
             showSquadSelectionPreview = false;
             warehouseDraftFitPreviewMechId = null;
             ClearSquadSelectionDraft();
+            ClearSquadSelectionCompletedReplacement();
             lastMissionResult = mission.Result;
 
             BuildWorld();
@@ -2683,6 +2686,7 @@ namespace MC2Demo.Presentation
                 showSquadSelectionPreview = false;
                 warehouseDraftFitPreviewMechId = null;
                 ClearSquadSelectionDraft();
+                ClearSquadSelectionCompletedReplacement();
                 showSystemPanel = false;
                 if (mission.Result == MissionResultState.InProgress)
                 {
@@ -2701,6 +2705,7 @@ namespace MC2Demo.Presentation
                     showSquadSelectionPreview = false;
                     warehouseDraftFitPreviewMechId = null;
                     ClearSquadSelectionDraft();
+                    ClearSquadSelectionCompletedReplacement();
                     if (mission.Result == MissionResultState.InProgress)
                     {
                         SetPaused(false);
@@ -3169,6 +3174,7 @@ namespace MC2Demo.Presentation
                 showSquadSelectionPreview = false;
                 warehouseDraftFitPreviewMechId = null;
                 ClearSquadSelectionDraft();
+                ClearSquadSelectionCompletedReplacement();
                 if (mission.Result == MissionResultState.InProgress)
                 {
                     SetPaused(false);
@@ -4374,6 +4380,7 @@ namespace MC2Demo.Presentation
                 showSquadSelectionPreview = false;
                 warehouseDraftFitPreviewMechId = entry?.ownedMechId;
                 ClearSquadSelectionDraft();
+                ClearSquadSelectionCompletedReplacement();
                 statusText = "Draft fit ready: " + TruncateText(name, 24);
                 AddCombatLogLine("Mech bay draft fit gate ready for " + name);
             }
@@ -4428,6 +4435,7 @@ namespace MC2Demo.Presentation
             showWarehouseDraftFitPreview = false;
             warehouseDraftFitPreviewMechId = null;
             ClearSquadSelectionDraft();
+            ClearSquadSelectionCompletedReplacement();
 
             if (entry?.availableForMission == true)
             {
@@ -4455,6 +4463,7 @@ namespace MC2Demo.Presentation
             showWarehouseDraftFitPreview = false;
             warehouseDraftFitPreviewMechId = null;
             ClearSquadSelectionDraft();
+            ClearSquadSelectionCompletedReplacement();
             squadSelectionDraftIncomingOwnedMechId = incomingOwnedMechId;
 
             string name = StartupRosterDisplayName(incomingOwnedMechId);
@@ -4489,6 +4498,7 @@ namespace MC2Demo.Presentation
             {
                 showSquadSelectionPreview = false;
                 ClearSquadSelectionDraft();
+                ClearSquadSelectionCompletedReplacement();
                 statusText = "Squad preview closed";
             }
 
@@ -4501,20 +4511,18 @@ namespace MC2Demo.Presentation
                     "Done  Next mission squad ready  "
                     + (preview?.MissionSlotCount ?? 0).ToString(CultureInfo.InvariantCulture)
                     + " mechs");
+                DrawSquadSelectionCompletedSetLine(x + 12f, y + 64f, width - 24f);
                 GUI.Label(
-                    new Rect(x + 12f, y + 64f, width - 24f, 18f),
+                    new Rect(x + 12f, y + 92f, width - 24f, 18f),
                     TruncateText("Lineup " + SquadSelectionCompactLineupSummary(preview?.MissionSlots, "none ready"), 76));
-                GUI.Label(
-                    new Rect(x + 12f, y + 84f, width - 24f, 18f),
-                    "Depot candidate joined; replacement locked for launch");
-                DrawSquadSelectionPendingSwap(x + 12f, y + 106f, width - 24f, preview, draft);
+                DrawSquadSelectionPendingSwap(x + 12f, y + 114f, width - 24f, preview, draft);
                 DrawSquadSelectionRestartHandoff(
                     x + 12f,
-                    y + 128f,
+                    y + 136f,
                     width - 24f,
                     "Launch restarts with updated squad  ");
                 string completedNote = string.IsNullOrWhiteSpace(preview?.PreviewNote) ? "Swap complete" : preview.PreviewNote;
-                GUI.Label(new Rect(x + 12f, y + 150f, width - 24f, 18f), TruncateText(completedNote, 76));
+                GUI.Label(new Rect(x + 12f, y + 158f, width - 24f, 18f), TruncateText(completedNote, 76));
                 return;
             }
 
@@ -4638,6 +4646,29 @@ namespace MC2Demo.Presentation
             GUI.Label(new Rect(x, y, width, 18f), TruncateText(text, 76));
         }
 
+        private void DrawSquadSelectionCompletedSetLine(float x, float y, float width)
+        {
+            Color cueColor = new(0.42f, 0.82f, 1f, 0.9f);
+            Rect rowRect = new(x, y - 3f, width, 24f);
+            DrawColorRect(rowRect, new Color(cueColor.r, cueColor.g, cueColor.b, 0.13f));
+            DrawRectBorder(rowRect, new Color(cueColor.r, cueColor.g, cueColor.b, 0.55f), 1f);
+            DrawColorRect(new Rect(x + 6f, y + 4f, 10f, 10f), cueColor);
+            GUI.Label(
+                new Rect(x + 22f, y, width - 22f, 18f),
+                TruncateText("SET  " + SquadSelectionCompletedReplacementText(), 72));
+        }
+
+        private string SquadSelectionCompletedReplacementText()
+        {
+            string incoming = string.IsNullOrWhiteSpace(squadSelectionLastIncomingDisplayName)
+                ? "Depot candidate"
+                : squadSelectionLastIncomingDisplayName;
+            string outgoing = string.IsNullOrWhiteSpace(squadSelectionLastOutgoingDisplayName)
+                ? "previous mission slot"
+                : squadSelectionLastOutgoingDisplayName;
+            return incoming + " replaces " + outgoing;
+        }
+
         private void DrawSquadSelectionPendingSwap(
             float x,
             float y,
@@ -4655,6 +4686,7 @@ namespace MC2Demo.Presentation
                 statusText = SquadSelectionApplyStatusText(result);
                 if (result?.Accepted == true)
                 {
+                    RecordSquadSelectionCompletedReplacement(draft);
                     ClearSquadSelectionDraft();
                     AddCombatLogLine(statusText + ": " + result.Summary);
                 }
@@ -4757,6 +4789,22 @@ namespace MC2Demo.Presentation
             }
 
             return reason;
+        }
+
+        private void RecordSquadSelectionCompletedReplacement(MechBaySquadSelectionDraftState draft)
+        {
+            squadSelectionLastOutgoingDisplayName = string.IsNullOrWhiteSpace(draft?.OutgoingDisplayName)
+                ? "mission slot"
+                : draft.OutgoingDisplayName;
+            squadSelectionLastIncomingDisplayName = string.IsNullOrWhiteSpace(draft?.IncomingDisplayName)
+                ? "depot mech"
+                : draft.IncomingDisplayName;
+        }
+
+        private void ClearSquadSelectionCompletedReplacement()
+        {
+            squadSelectionLastOutgoingDisplayName = null;
+            squadSelectionLastIncomingDisplayName = null;
         }
 
         private void DrawSquadSelectionRestartHandoff(float x, float y, float width, string labelPrefix)
@@ -6252,6 +6300,7 @@ namespace MC2Demo.Presentation
             showSquadSelectionPreview = false;
             warehouseDraftFitPreviewMechId = null;
             ClearSquadSelectionDraft();
+            ClearSquadSelectionCompletedReplacement();
             showMissionMap = false;
             if (mission.Result == MissionResultState.InProgress)
             {
@@ -6270,6 +6319,7 @@ namespace MC2Demo.Presentation
             showSquadSelectionPreview = false;
             warehouseDraftFitPreviewMechId = null;
             ClearSquadSelectionDraft();
+            ClearSquadSelectionCompletedReplacement();
             showMissionMap = false;
             showSystemPanel = false;
             if (mission.Result == MissionResultState.InProgress)

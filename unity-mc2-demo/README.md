@@ -69,7 +69,7 @@ Current demo behavior:
 - shows one replace plan that names the outgoing and incoming mechs before Set
 - uses short player-facing Set and Launch status text after squad swaps
 - marks Set and Launch rows with Ready/Blocked color cues
-- shows a compact completed-swap lineup before next-mission Launch
+- shows a compact completed-swap replacement summary and lineup before next-mission Launch
 - labels completed-swap Launch as a restart with the updated squad
 - confirms post-launch that the updated squad was loaded when the mech bay stays open
 - supports a command-file `mech-bay-launch` smoke action for the mech-bay Launch handoff
