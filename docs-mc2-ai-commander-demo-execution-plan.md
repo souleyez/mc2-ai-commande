@@ -78,8 +78,8 @@ The Unity demo currently supports:
 - squad-selection Set and next-mission Launch rows use short player-facing status text
 - squad-selection Set and next-mission Launch rows show Ready/Blocked color cues
 - squad-selection completed-swap state shows a compact replacement summary and done lineup before next-mission Launch
-- squad-selection completed-swap Launch row says it restarts with the updated squad
-- post-launch mech bay status confirms when the updated squad was loaded
+- squad-selection completed-swap Launch row says it launches the updated squad
+- post-launch mech bay log confirms which completed replacement was loaded
 - command-file `mech-bay-launch` smoke hook exercises the mech-bay Launch handoff
 - squad-selection preview refreshes after confirmation so the joined depot mech becomes a mission slot and no longer appears as a candidate
 - next-mission handoff preview reads `availableForMission` roster slots without mutating the active combat mission
@@ -448,10 +448,10 @@ Reason:
 - Squad-selection Set and next-mission Launch rows now use short player-facing status text after swaps while keeping technical summaries in logs and guards.
 - Squad-selection Set and next-mission Launch rows now show Ready/Blocked color cues on the action button and status line.
 - The completed-swap squad-selection state now hides the Out/In picker noise and shows a compact replacement summary plus done lineup before next-mission Launch.
-- The completed-swap Launch row now says it restarts with the updated squad, making the button consequence explicit before applying the handoff.
-- Post-launch mech bay status now confirms when the updated squad was loaded after a completed swap Launch.
+- The completed-swap Launch row now says it launches the updated squad, making the button consequence explicit before applying the handoff.
+- Post-launch mech bay log now repeats the completed replacement summary after a completed swap Launch.
 - A lightweight command-file `mech-bay-launch` smoke hook now exercises the mech-bay Launch path, checks the bay stays open and paused, and confirms the updated-squad status before identity assertion.
 - The smoke-only depot replacement remains as a command-file fallback, but the primary command smoke now produces a ready depot candidate through the local receipt, assembly, NPC hire, weapon shop, and warehouse draft-fit services.
 - The mech bay summary now exposes that same ready-candidate service chain as a compact Candidate Prep action, and it opens Next Squad with the prepared depot candidate preselected.
-- The next low-risk step is to make the launch lineup feel connected to the completed replacement summary, such as carrying the set-row highlight into the Launch lineup or post-launch status.
+- The next low-risk step is to carry the completed replacement cue into the general next-mission handoff summary outside the squad-selection panel.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.

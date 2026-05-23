@@ -217,6 +217,9 @@ namespace MC2Demo.Presentation
                 return;
             }
 
+            string completedReplacementText = HasSquadSelectionCompletedReplacement()
+                ? SquadSelectionCompletedReplacementText()
+                : null;
             Time.timeScale = 1f;
             int clearedRoots = ClearRuntimeWorld();
             mission = replacementMission;
@@ -242,6 +245,11 @@ namespace MC2Demo.Presentation
             SetPaused(keepMechBayOpen && mission.Result == MissionResultState.InProgress);
             statusText = MissionRestartStatusText(result, keepMechBayOpen);
             AddCombatLogLine(statusText + ": " + (result?.Summary ?? "replacement ready"));
+            if (!string.IsNullOrWhiteSpace(completedReplacementText))
+            {
+                AddCombatLogLine("Updated squad loaded: " + completedReplacementText);
+            }
+
             AddCombatLogLine("Identity map: " + RestartIdentityText(result));
             MechBayOwnedRosterEntry[] roster = MechBayOwnedRosterService.BuildRosterPreview(demoInventory);
             AddCombatLogLine("Roster state: " + RosterMissionStateText(BuildRosterMissionState(roster)));
@@ -4669,6 +4677,12 @@ namespace MC2Demo.Presentation
             return incoming + " replaces " + outgoing;
         }
 
+        private bool HasSquadSelectionCompletedReplacement()
+        {
+            return !string.IsNullOrWhiteSpace(squadSelectionLastIncomingDisplayName)
+                || !string.IsNullOrWhiteSpace(squadSelectionLastOutgoingDisplayName);
+        }
+
         private void DrawSquadSelectionPendingSwap(
             float x,
             float y,
@@ -4825,9 +4839,21 @@ namespace MC2Demo.Presentation
             }
 
             GUI.enabled = previousEnabled;
-            string text = MissionHandoffLaunchActionText(guard, preview);
+            string text = HasSquadSelectionCompletedReplacement()
+                ? MissionHandoffCompletedLaunchText(guard)
+                : MissionHandoffLaunchActionText(guard, preview);
             string prefix = string.IsNullOrWhiteSpace(labelPrefix) ? "Next Mission  " : labelPrefix;
             DrawActionStateLabel(x + 80f, y, width - 80f, prefix + text, ready, 64);
+        }
+
+        private string MissionHandoffCompletedLaunchText(MechBayMissionRestartApplyGuard guard)
+        {
+            if (guard == null || !guard.ApplyEnabled)
+            {
+                return "Blocked  " + MissionHandoffPlayerBlockedReason(guard?.Reason);
+            }
+
+            return "Ready  launch updated squad";
         }
 
         private static string SquadSelectionSlotSummary(MechBaySquadSelectionSlot[] slots, string emptyText)
