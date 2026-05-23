@@ -3277,9 +3277,12 @@ namespace MC2Demo.Presentation
                     demoInventory,
                     mission?.Contract,
                     combatProfiles);
+            string handoffSummary = HasSquadSelectionCompletedReplacement()
+                ? MissionHandoffCompletedSummaryText(handoffPreview, restartGuard)
+                : MissionHandoffPlayerSummaryText(handoffPreview, restartGuard);
             GUI.Label(
                 new Rect(x, y + 192f, width, 18f),
-                "Next Mission " + TruncateText(MissionHandoffPlayerSummaryText(handoffPreview, restartGuard), 58));
+                "Next Mission " + TruncateText(handoffSummary, 58));
             DrawMissionHandoffLaunchAction(x, y + 214f, width, handoffPreview, restartGuard);
             DrawMissionHandoffLineup(x, y + 236f, width, handoffPreview);
             if (showRosterDetail)
@@ -3733,6 +3736,19 @@ namespace MC2Demo.Presentation
                 + depot;
         }
 
+        private string MissionHandoffCompletedSummaryText(
+            MechBayMissionHandoffPreview preview,
+            MechBayMissionRestartApplyGuard guard)
+        {
+            string state = guard?.ApplyEnabled == true ? "Ready" : "Blocked";
+            int slotCount = preview?.MissionSlotCount ?? guard?.SpawnIntentCount ?? 0;
+            return state
+                + "  updated squad  "
+                + slotCount.ToString(CultureInfo.InvariantCulture)
+                + " mechs  "
+                + SquadSelectionCompletedReplacementText();
+        }
+
         private bool DrawActionButton(Rect rect, string label, bool ready)
         {
             Color cue = ready
@@ -3775,11 +3791,14 @@ namespace MC2Demo.Presentation
             }
 
             GUI.enabled = previousEnabled;
+            string text = HasSquadSelectionCompletedReplacement()
+                ? MissionHandoffCompletedLaunchText(guard)
+                : MissionHandoffLaunchActionText(guard, preview);
             DrawActionStateLabel(
                 x + 66f,
                 y,
                 width - 66f,
-                MissionHandoffLaunchActionText(guard, preview),
+                text,
                 ready,
                 56);
         }
@@ -4504,10 +4523,15 @@ namespace MC2Demo.Presentation
             GUI.Box(new Rect(x, y, width, 238f), "Next Mission Squad");
             if (GUI.Button(new Rect(x + width - 58f, y + 4f, 48f, 22f), "Hide"))
             {
+                bool keepCompletedReplacementCue = SquadSelectionCompleted(preview);
                 showSquadSelectionPreview = false;
                 ClearSquadSelectionDraft();
-                ClearSquadSelectionCompletedReplacement();
-                statusText = "Squad preview closed";
+                if (!keepCompletedReplacementCue)
+                {
+                    ClearSquadSelectionCompletedReplacement();
+                }
+
+                statusText = keepCompletedReplacementCue ? "Next mission squad set" : "Squad preview closed";
             }
 
             string status = string.IsNullOrWhiteSpace(preview?.Status) ? "Preview unavailable" : preview.Status;

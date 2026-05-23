@@ -71,6 +71,7 @@ Current demo behavior:
 - marks Set and Launch rows with Ready/Blocked color cues
 - shows a compact completed-swap replacement summary and lineup before next-mission Launch
 - labels completed-swap Launch as launching the updated squad
+- carries that completed replacement cue into the general next-mission summary and Launch row after the squad preview is hidden
 - logs the completed replacement summary after post-launch restart when the mech bay stays open
 - supports a command-file `mech-bay-launch` smoke action for the mech-bay Launch handoff
 - applies pending squad swap confirmation by exchanging local mission availability flags

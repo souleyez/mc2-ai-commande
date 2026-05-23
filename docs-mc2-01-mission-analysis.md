@@ -376,8 +376,10 @@ done state: it hides the Out/In picker rows, shows a `SET` replacement summary,
 summarizes the updated lineup, and keeps only the confirmation status and
 next-mission Launch action visible.
 That completed-swap Launch row now states that it launches the updated squad,
-so the handoff consequence is visible before the mission is rebuilt. After that
-launch path runs with the mech bay kept open, the combat log repeats the
-completed replacement summary.
+so the handoff consequence is visible before the mission is rebuilt. If the
+squad-selection preview is hidden after a completed swap, the general
+next-mission handoff summary and Launch row preserve that replacement cue.
+After that launch path runs with the mech bay kept open, the combat log repeats
+the completed replacement summary.
 The startup command-file smoke path now has a `mech-bay-launch` action that
 exercises that same handoff without manual clicking.
