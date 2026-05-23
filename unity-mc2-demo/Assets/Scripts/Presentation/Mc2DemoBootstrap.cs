@@ -69,6 +69,7 @@ namespace MC2Demo.Presentation
         private string squadSelectionDraftIncomingOwnedMechId;
         private string squadSelectionLastOutgoingDisplayName;
         private string squadSelectionLastIncomingDisplayName;
+        private string lastSavedAccountDeltaText;
         private string statusText = "Loading";
         private bool startupSmokeFailed;
         private const string StartupSmokeDepotOwnedMechId = "assembled-smoke-depot";
@@ -593,6 +594,24 @@ namespace MC2Demo.Presentation
             return errors.Length == 0 ? "unknown" : errors[0];
         }
 
+        private MechBaySavedAccountContract CurrentSavedAccountSnapshot()
+        {
+            return MechBaySavedAccountService.BuildDemoSnapshot(demoInventory);
+        }
+
+        private string RecordSavedAccountDelta(
+            MechBaySavedAccountContract beforeAccount,
+            MechBaySavedAccountContract afterAccount,
+            string logPrefix)
+        {
+            MechBaySavedAccountDelta delta = MechBaySavedAccountService.BuildDelta(beforeAccount, afterAccount);
+            string text = MechBaySavedAccountService.DeltaText(delta);
+            lastSavedAccountDeltaText = text;
+            AddCombatLogLine((logPrefix ?? "Saved account") + " account " + text);
+            Debug.Log("MC2 saved account delta: source=" + (logPrefix ?? "unknown") + " " + text);
+            return text;
+        }
+
         private void RunStartupHideSquadPreview()
         {
             MechBaySquadSelectionPreview squadPreview = MechBaySquadSelectionPreviewService.BuildPreview(demoInventory);
@@ -661,11 +680,16 @@ namespace MC2Demo.Presentation
 
         private void RunStartupPrepareLocalCandidate()
         {
+            MechBaySavedAccountContract beforeAccount = CurrentSavedAccountSnapshot();
             string ownedMechId = EnsureLocalReadyCandidate("CLI local", true);
             if (!string.IsNullOrWhiteSpace(ownedMechId))
             {
+                string deltaText = RecordSavedAccountDelta(
+                    beforeAccount,
+                    CurrentSavedAccountSnapshot(),
+                    "CLI local candidate");
                 AddCombatLogLine("CLI local candidate ready: " + ownedMechId);
-                Debug.Log("MC2 commander local candidate: ready ownedMechId=" + ownedMechId);
+                Debug.Log("MC2 commander local candidate: ready ownedMechId=" + ownedMechId + " " + deltaText);
                 return;
             }
 
@@ -4233,9 +4257,18 @@ namespace MC2Demo.Presentation
             if (DrawActionButton(new Rect(x, y - 2f, 58f, 22f), ready ? "Open" : "Prep", canAct))
             {
                 string ownedMechId = readyCandidate;
+                MechBaySavedAccountContract beforeAccount = null;
                 if (string.IsNullOrWhiteSpace(ownedMechId))
                 {
+                    beforeAccount = CurrentSavedAccountSnapshot();
                     ownedMechId = EnsureLocalReadyCandidate("Mech bay candidate", false);
+                    if (!string.IsNullOrWhiteSpace(ownedMechId))
+                    {
+                        RecordSavedAccountDelta(
+                            beforeAccount,
+                            CurrentSavedAccountSnapshot(),
+                            "Mech bay candidate");
+                    }
                 }
 
                 if (!string.IsNullOrWhiteSpace(ownedMechId))
@@ -4258,6 +4291,12 @@ namespace MC2Demo.Presentation
         {
             if (!string.IsNullOrWhiteSpace(readyCandidate))
             {
+                if (!string.IsNullOrWhiteSpace(lastSavedAccountDeltaText)
+                    && !string.Equals(lastSavedAccountDeltaText, "Delta none", StringComparison.Ordinal))
+                {
+                    return lastSavedAccountDeltaText;
+                }
+
                 return "Ready " + readyCandidate;
             }
 

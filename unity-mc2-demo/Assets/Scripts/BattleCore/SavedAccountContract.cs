@@ -26,6 +26,17 @@ namespace MC2Demo.BattleCore
         public int warehouseMechCount;
     }
 
+    [Serializable]
+    public sealed class MechBaySavedAccountDelta
+    {
+        public int tokenDelta;
+        public int ownedMechDelta;
+        public int itemStackDelta;
+        public int readyMissionMechDelta;
+        public int warehouseMechDelta;
+        public bool hasChanges;
+    }
+
     public sealed class MechBaySavedAccountValidationResult
     {
         private readonly List<string> errors = new();
@@ -114,6 +125,51 @@ namespace MC2Demo.BattleCore
                 + " ready";
         }
 
+        public static MechBaySavedAccountDelta BuildDelta(
+            MechBaySavedAccountContract before,
+            MechBaySavedAccountContract after)
+        {
+            MechBaySavedAccountCounters beforeCounters = Validate(before).Counters ?? new MechBaySavedAccountCounters();
+            MechBaySavedAccountCounters afterCounters = Validate(after).Counters ?? new MechBaySavedAccountCounters();
+            int tokenDelta = afterCounters.tokenBalance - beforeCounters.tokenBalance;
+            int ownedMechDelta = afterCounters.ownedMechCount - beforeCounters.ownedMechCount;
+            int itemStackDelta = afterCounters.itemStackCount - beforeCounters.itemStackCount;
+            int readyMissionMechDelta = afterCounters.readyMissionMechCount - beforeCounters.readyMissionMechCount;
+            int warehouseMechDelta = afterCounters.warehouseMechCount - beforeCounters.warehouseMechCount;
+            return new MechBaySavedAccountDelta
+            {
+                tokenDelta = tokenDelta,
+                ownedMechDelta = ownedMechDelta,
+                itemStackDelta = itemStackDelta,
+                readyMissionMechDelta = readyMissionMechDelta,
+                warehouseMechDelta = warehouseMechDelta,
+                hasChanges = tokenDelta != 0
+                    || ownedMechDelta != 0
+                    || itemStackDelta != 0
+                    || readyMissionMechDelta != 0
+                    || warehouseMechDelta != 0
+            };
+        }
+
+        public static string DeltaText(MechBaySavedAccountDelta delta)
+        {
+            if (delta == null || !delta.hasChanges)
+            {
+                return "Delta none";
+            }
+
+            return "Delta token "
+                + FormatSigned(delta.tokenDelta)
+                + "  mechs "
+                + FormatSigned(delta.ownedMechDelta)
+                + "  ready "
+                + FormatSigned(delta.readyMissionMechDelta)
+                + "  depot "
+                + FormatSigned(delta.warehouseMechDelta)
+                + "  stacks "
+                + FormatSigned(delta.itemStackDelta);
+        }
+
         private static void ValidateCounters(
             MechBaySavedAccountCounters expected,
             MechBaySavedAccountCounters actual,
@@ -181,6 +237,13 @@ namespace MC2Demo.BattleCore
                 && (!mech.availableForMission
                     || string.IsNullOrWhiteSpace(mech.unitId)
                     || mech.unitId.StartsWith("warehouse-", StringComparison.OrdinalIgnoreCase));
+        }
+
+        private static string FormatSigned(int value)
+        {
+            return value > 0
+                ? "+" + value.ToString(CultureInfo.InvariantCulture)
+                : value.ToString(CultureInfo.InvariantCulture);
         }
 
         private static MechBayInventoryContract CloneInventory(MechBayInventoryContract inventory)

@@ -77,6 +77,7 @@ Current demo behavior:
 - supports a command-file `mech-bay-launch` smoke action for the mech-bay Launch handoff
 - supports a command-file `hide-squad-preview` smoke action that proves the general next-mission handoff keeps the completed replacement cue before Launch
 - supports a command-file `saved-account-report` smoke action that validates and logs a JSON dry-run of the local account snapshot without writing persistent data
+- logs a read-only saved-account delta after local candidate prep so candidate inventory growth is inspectable before real save/load is wired
 - applies pending squad swap confirmation by exchanging local mission availability flags
 - refreshes squad-selection status after confirmation so the joined depot mech is no longer shown as a candidate
 - keeps the squad-selection preview visible inside the mech bay and exposes the guarded next-mission Launch handoff there
@@ -249,7 +250,7 @@ command unit unit-1 move 3221 -277
 
 Relative command-file paths are checked from the current working directory first, then from the player `StreamingAssets` folder.
 
-Command files also support `prepare-local-candidate`, `prepare-depot-candidate`, `squad-swap`, `hide-squad-preview`, `saved-account-report`, `mech-bay-launch`, and `assert-restart-identity depot`. `prepare-local-candidate` runs the demo receipt, assembly, NPC hire, weapon shop, and warehouse draft-fit services before the swap; `hide-squad-preview` verifies the completed replacement cue survives into the general next-mission handoff; `saved-account-report` validates and logs a JSON dry-run of the local account snapshot without writing a file; `prepare-depot-candidate` remains a direct smoke fallback.
+Command files also support `prepare-local-candidate`, `prepare-depot-candidate`, `squad-swap`, `hide-squad-preview`, `saved-account-report`, `mech-bay-launch`, and `assert-restart-identity depot`. `prepare-local-candidate` runs the demo receipt, assembly, NPC hire, weapon shop, and warehouse draft-fit services before the swap, then logs a read-only saved-account delta; `hide-squad-preview` verifies the completed replacement cue survives into the general next-mission handoff; `saved-account-report` validates and logs a JSON dry-run of the local account snapshot without writing a file; `prepare-depot-candidate` remains a direct smoke fallback.
 
 Commander observation reports include `reportIndex` and `missionTimeSeconds` so future AI adapters can correlate decisions with elapsed battle time.
 

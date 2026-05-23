@@ -536,6 +536,55 @@ namespace MC2Demo.EditorTools
             {
                 throw new InvalidDataException("Saved account snapshot summary did not expose commander and mech counts.");
             }
+
+            MechBayInventoryContract deltaInventory = MechBayInventoryBuilder.BuildDemoInventory(mission.PlayerUnits());
+            MechBaySavedAccountContract beforeDeltaAccount = MechBaySavedAccountService.BuildDemoSnapshot(deltaInventory);
+            deltaInventory.tokenBalance += 1500;
+            int ownedMechCount = deltaInventory.ownedMechs?.Length ?? 0;
+            Array.Resize(ref deltaInventory.ownedMechs, ownedMechCount + 1);
+            deltaInventory.ownedMechs[ownedMechCount] = new MechBayOwnedMechDefinition
+            {
+                ownedMechId = "delta-warehouse-01",
+                unitId = "warehouse-delta-warehouse-01",
+                unitType = "Werewolf",
+                chassisId = "Werewolf",
+                displayName = "Delta Warehouse Werewolf",
+                activeLoadoutId = MechBayWarehouseDraftFitPreviewService.DemoWarehouseFitLoadoutId,
+                availableForMission = false,
+                conditionPercent = 100,
+                pilotId = "pilot-delta-warehouse-01",
+                pilotDisplayName = "Delta Pilot",
+                pilotType = "NPC"
+            };
+            int itemStackCount = deltaInventory.itemStacks?.Length ?? 0;
+            Array.Resize(ref deltaInventory.itemStacks, itemStackCount + 1);
+            deltaInventory.itemStacks[itemStackCount] = new MechBayItemStackDefinition
+            {
+                itemId = "delta-heat-sink",
+                displayName = "Delta Heat Sink",
+                category = LoadoutItemCategory.HeatSink,
+                quantity = 1,
+                equippedQuantity = 0
+            };
+            MechBaySavedAccountContract afterDeltaAccount = MechBaySavedAccountService.BuildDemoSnapshot(deltaInventory);
+            MechBaySavedAccountDelta delta = MechBaySavedAccountService.BuildDelta(beforeDeltaAccount, afterDeltaAccount);
+            if (!delta.hasChanges
+                || delta.tokenDelta != 1500
+                || delta.ownedMechDelta != 1
+                || delta.itemStackDelta != 1
+                || delta.readyMissionMechDelta != 0
+                || delta.warehouseMechDelta != 1)
+            {
+                throw new InvalidDataException("Saved account delta did not capture local candidate inventory growth.");
+            }
+
+            string deltaText = MechBaySavedAccountService.DeltaText(delta);
+            if (string.IsNullOrWhiteSpace(deltaText)
+                || !deltaText.Contains("+1500")
+                || !deltaText.Contains("depot +1"))
+            {
+                throw new InvalidDataException("Saved account delta summary did not expose token and depot changes.");
+            }
         }
 
         private static string FirstSavedAccountError(MechBaySavedAccountValidationResult result)

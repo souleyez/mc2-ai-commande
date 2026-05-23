@@ -95,6 +95,7 @@ The Unity demo currently supports:
 - starter mech bay inventory can now be wrapped in a read-only local demo saved-account snapshot with cloned inventory, counters, validation, and JSON round-trip coverage
 - command-file `saved-account-report` can now validate and log a JSON dry-run of the local account snapshot without writing persistent data
 - command-file `prepare-local-candidate` can now produce a ready depot candidate through local receipt assembly, NPC hiring, weapon purchase, and warehouse draft-fit services
+- local candidate prep now records a read-only saved-account delta line so token, mech, ready, depot, and item-stack changes are visible before any real save file exists
 - CLI/AI loop pieces:
   - `-mc2Command`
   - `-mc2AdvanceSeconds`
@@ -461,5 +462,6 @@ Reason:
 - The mech bay summary now exposes that same ready-candidate service chain as a compact Candidate Prep action, and it opens Next Squad with the prepared depot candidate preselected.
 - A tiny saved-account boundary now wraps demo inventory state as a cloned local account snapshot, validates cached counters, and round-trips through JSON without changing battle rules or requiring backend services.
 - A lightweight command-file `saved-account-report` smoke hook now validates and logs a local saved-account JSON dry-run before and after candidate prep, without writing persistent user data by default.
-- The next low-risk step is to add a read-only account snapshot delta line after local receipt/candidate prep, so inventory growth is easier to inspect before real save/load work.
+- Local candidate prep now records a read-only saved-account delta line after the receipt/assembly/pilot/shop/fit chain, so inventory growth is visible before real save/load work.
+- The next low-risk step is to add a manual local JSON save/load preview path behind an explicit command, still keeping default startup and UI flows read-only.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.

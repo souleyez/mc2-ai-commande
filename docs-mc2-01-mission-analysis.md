@@ -232,7 +232,9 @@ schema, account id, cloned inventory data, cached counters, validation, and JSON
 round-trip coverage; the mech bay surfaces it only as a read-only account
 summary, not a persistent user-data write. The command-file harness can also run
 `saved-account-report`, which validates the snapshot and logs a JSON dry-run
-before and after local candidate prep without writing any save file.
+before and after local candidate prep without writing any save file. Candidate
+prep now also emits a read-only saved-account delta that names token, mech,
+ready, depot, and item-stack count changes before persistent save/load is added.
 Current draft fits are now checked against that starter inventory, so extra
 armor plate or heat sink choices show a shortage and cannot be applied.
 The same starter inventory now owns the demo token balance used by the mech bay:
