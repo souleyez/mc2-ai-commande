@@ -357,3 +357,6 @@ replacement-`BattleMission` validation path before any live restart is allowed.
 The Confirm and Launch rows now use shorter player-facing status text after a
 swap, while the technical roster and restart summaries remain in logs and guard
 state.
+Those rows now also carry Ready/Blocked color cues on the action button and
+status line, making disabled launch or confirm states visible without reading
+the full text.

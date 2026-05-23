@@ -3431,6 +3431,32 @@ namespace MC2Demo.Presentation
                 + depot;
         }
 
+        private bool DrawActionButton(Rect rect, string label, bool ready)
+        {
+            Color cue = ready
+                ? new Color(0.42f, 0.82f, 1f, 1f)
+                : new Color(1f, 0.62f, 0.26f, 0.75f);
+            Color previous = GUI.color;
+            GUI.color = cue;
+            bool clicked = GUI.Button(rect, label);
+            GUI.color = previous;
+            DrawRectBorder(rect, cue, 1f);
+            return clicked;
+        }
+
+        private void DrawActionStateLabel(float x, float y, float width, string text, bool ready, int maxLength)
+        {
+            Color cue = ready
+                ? new Color(0.42f, 0.82f, 1f, 0.92f)
+                : new Color(1f, 0.62f, 0.26f, 0.92f);
+            Rect cueRect = new(x, y + 4f, 10f, 10f);
+            DrawColorRect(cueRect, cue);
+            DrawRectBorder(cueRect, new Color(0.02f, 0.025f, 0.03f, 0.95f), 1f);
+            GUI.Label(
+                new Rect(x + 16f, y, Mathf.Max(0f, width - 16f), 18f),
+                TruncateText(text, maxLength));
+        }
+
         private void DrawMissionHandoffLaunchAction(
             float x,
             float y,
@@ -3439,14 +3465,21 @@ namespace MC2Demo.Presentation
             MechBayMissionRestartApplyGuard guard)
         {
             bool previousEnabled = GUI.enabled;
-            GUI.enabled = previousEnabled && guard?.ApplyEnabled == true;
-            if (GUI.Button(new Rect(x, y - 2f, 58f, 22f), "Launch"))
+            bool ready = guard?.ApplyEnabled == true;
+            GUI.enabled = previousEnabled && ready;
+            if (DrawActionButton(new Rect(x, y - 2f, 58f, 22f), "Launch", ready))
             {
                 TryApplyMissionRestartRuntimeSwap(keepMechBayOpen: true);
             }
 
             GUI.enabled = previousEnabled;
-            GUI.Label(new Rect(x + 66f, y, width - 66f, 18f), TruncateText(MissionHandoffLaunchActionText(guard, preview), 56));
+            DrawActionStateLabel(
+                x + 66f,
+                y,
+                width - 66f,
+                MissionHandoffLaunchActionText(guard, preview),
+                ready,
+                56);
         }
 
         private static string MissionHandoffLaunchActionText(
@@ -4221,7 +4254,7 @@ namespace MC2Demo.Presentation
             bool previousEnabled = GUI.enabled;
             bool canConfirm = draft?.Ready == true;
             GUI.enabled = previousEnabled && canConfirm;
-            if (GUI.Button(new Rect(x, y - 2f, 72f, 22f), "Confirm"))
+            if (DrawActionButton(new Rect(x, y - 2f, 72f, 22f), "Confirm", canConfirm))
             {
                 MechBaySquadSelectionApplyResult result =
                     MechBaySquadSelectionPreviewService.TryApplyPendingSwap(demoInventory, draft);
@@ -4247,9 +4280,13 @@ namespace MC2Demo.Presentation
             }
 
             GUI.enabled = previousEnabled;
-            GUI.Label(
-                new Rect(x + 80f, y, width - 80f, 18f),
-                TruncateText(SquadSelectionConfirmLineText(preview, draft), 64));
+            DrawActionStateLabel(
+                x + 80f,
+                y,
+                width - 80f,
+                SquadSelectionConfirmLineText(preview, draft),
+                canConfirm,
+                64);
         }
 
         private static string SquadSelectionApplyStatusText(MechBaySquadSelectionApplyResult result)
@@ -4338,15 +4375,16 @@ namespace MC2Demo.Presentation
                     mission?.Contract,
                     combatProfiles);
             bool previousEnabled = GUI.enabled;
-            GUI.enabled = previousEnabled && guard?.ApplyEnabled == true;
-            if (GUI.Button(new Rect(x, y - 2f, 72f, 22f), "Launch"))
+            bool ready = guard?.ApplyEnabled == true;
+            GUI.enabled = previousEnabled && ready;
+            if (DrawActionButton(new Rect(x, y - 2f, 72f, 22f), "Launch", ready))
             {
                 TryApplyMissionRestartRuntimeSwap(keepMechBayOpen: true);
             }
 
             GUI.enabled = previousEnabled;
             string text = MissionHandoffLaunchActionText(guard, preview);
-            GUI.Label(new Rect(x + 80f, y, width - 80f, 18f), TruncateText("Next Mission  " + text, 64));
+            DrawActionStateLabel(x + 80f, y, width - 80f, "Next Mission  " + text, ready, 64);
         }
 
         private static string SquadSelectionSlotSummary(MechBaySquadSelectionSlot[] slots, string emptyText)
