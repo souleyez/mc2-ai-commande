@@ -94,6 +94,7 @@ The Unity demo currently supports:
 - starter fragment assembly preview shows progress toward the demo mech assembly threshold and auto-assembles ready sets into local warehouse mechs
 - starter mech bay inventory can now be wrapped in a read-only local demo saved-account snapshot with cloned inventory, counters, validation, and JSON round-trip coverage
 - command-file `saved-account-report` can now validate and log a JSON dry-run of the local account snapshot without writing persistent data
+- command-file `saved-account-save-load-preview` can now explicitly exercise JSON serialization and load validation without writing a save file
 - command-file `prepare-local-candidate` can now produce a ready depot candidate through local receipt assembly, NPC hiring, weapon purchase, and warehouse draft-fit services
 - local candidate prep now records a read-only saved-account delta line so token, mech, ready, depot, and item-stack changes are visible before any real save file exists
 - CLI/AI loop pieces:
@@ -463,5 +464,6 @@ Reason:
 - A tiny saved-account boundary now wraps demo inventory state as a cloned local account snapshot, validates cached counters, and round-trips through JSON without changing battle rules or requiring backend services.
 - A lightweight command-file `saved-account-report` smoke hook now validates and logs a local saved-account JSON dry-run before and after candidate prep, without writing persistent user data by default.
 - Local candidate prep now records a read-only saved-account delta line after the receipt/assembly/pilot/shop/fit chain, so inventory growth is visible before real save/load work.
-- The next low-risk step is to add a manual local JSON save/load preview path behind an explicit command, still keeping default startup and UI flows read-only.
+- A manual command-file `saved-account-save-load-preview` hook now exercises JSON serialization, load validation, and zero-delta round-trip checks while keeping default startup and UI flows read-only.
+- The next low-risk step is to add an explicit manual save-file export/import path guarded behind startup args or command-file parameters, with no automatic writes.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.

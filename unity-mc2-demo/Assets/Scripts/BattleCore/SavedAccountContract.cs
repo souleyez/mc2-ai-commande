@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using UnityEngine;
 
 namespace MC2Demo.BattleCore
 {
@@ -53,6 +54,16 @@ namespace MC2Demo.BattleCore
                 errors.Add(error);
             }
         }
+    }
+
+    public sealed class MechBaySavedAccountJsonPreviewResult
+    {
+        public bool Accepted { get; internal set; }
+        public string Message { get; internal set; }
+        public int JsonCharCount { get; internal set; }
+        public MechBaySavedAccountContract LoadedAccount { get; internal set; }
+        public MechBaySavedAccountValidationResult Validation { get; internal set; }
+        public MechBaySavedAccountDelta Delta { get; internal set; }
     }
 
     public static class MechBaySavedAccountService
@@ -170,6 +181,47 @@ namespace MC2Demo.BattleCore
                 + FormatSigned(delta.itemStackDelta);
         }
 
+        public static MechBaySavedAccountJsonPreviewResult PreviewJsonSaveLoad(MechBaySavedAccountContract account)
+        {
+            MechBaySavedAccountJsonPreviewResult result = new();
+            MechBaySavedAccountValidationResult sourceValidation = Validate(account);
+            if (!sourceValidation.IsValid)
+            {
+                result.Validation = sourceValidation;
+                result.Message = "Source invalid: " + FirstValidationError(sourceValidation);
+                return result;
+            }
+
+            try
+            {
+                string json = JsonUtility.ToJson(account);
+                result.JsonCharCount = json?.Length ?? 0;
+                if (string.IsNullOrWhiteSpace(json) || !json.Contains(Schema))
+                {
+                    result.Validation = sourceValidation;
+                    result.Message = "JSON preview missing schema";
+                    return result;
+                }
+
+                result.LoadedAccount = JsonUtility.FromJson<MechBaySavedAccountContract>(json);
+                result.Validation = Validate(result.LoadedAccount);
+                result.Delta = BuildDelta(account, result.LoadedAccount);
+                result.Accepted = result.Validation.IsValid && result.Delta?.hasChanges == false;
+                result.Message = result.Accepted
+                    ? "JSON save/load preview OK"
+                    : result.Validation.IsValid
+                        ? "JSON save/load preview changed counters"
+                        : "Loaded invalid: " + FirstValidationError(result.Validation);
+                return result;
+            }
+            catch (Exception exception)
+            {
+                result.Validation = sourceValidation;
+                result.Message = "JSON preview exception: " + exception.Message;
+                return result;
+            }
+        }
+
         private static void ValidateCounters(
             MechBaySavedAccountCounters expected,
             MechBaySavedAccountCounters actual,
@@ -244,6 +296,12 @@ namespace MC2Demo.BattleCore
             return value > 0
                 ? "+" + value.ToString(CultureInfo.InvariantCulture)
                 : value.ToString(CultureInfo.InvariantCulture);
+        }
+
+        private static string FirstValidationError(MechBaySavedAccountValidationResult validation)
+        {
+            string[] errors = validation?.Errors ?? Array.Empty<string>();
+            return errors.Length == 0 ? "unknown" : errors[0];
         }
 
         private static MechBayInventoryContract CloneInventory(MechBayInventoryContract inventory)

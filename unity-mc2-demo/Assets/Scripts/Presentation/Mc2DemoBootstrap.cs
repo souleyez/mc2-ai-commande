@@ -455,6 +455,9 @@ namespace MC2Demo.Presentation
                     case StartupCommanderScriptActionKind.SavedAccountReport:
                         RunStartupSavedAccountReport();
                         break;
+                    case StartupCommanderScriptActionKind.SavedAccountSaveLoadPreview:
+                        RunStartupSavedAccountSaveLoadPreview();
+                        break;
                     case StartupCommanderScriptActionKind.PrepareDepotCandidate:
                         RunStartupPrepareDepotCandidate();
                         break;
@@ -586,6 +589,41 @@ namespace MC2Demo.Presentation
             string reason = validation.IsValid ? "json or mutation check failed" : FirstSavedAccountValidationError(validation);
             AddCombatLogLine("CLI saved account report failed: " + reason);
             Debug.LogError("MC2 saved account report failed: " + reason + " " + line);
+        }
+
+        private void RunStartupSavedAccountSaveLoadPreview()
+        {
+            int sourceTokenBalance = Math.Max(0, demoInventory?.tokenBalance ?? 0);
+            MechBaySavedAccountContract account = CurrentSavedAccountSnapshot();
+            MechBaySavedAccountJsonPreviewResult preview =
+                MechBaySavedAccountService.PreviewJsonSaveLoad(account);
+            bool sourceUnchanged = Math.Max(0, demoInventory?.tokenBalance ?? 0) == sourceTokenBalance;
+            string summary = MechBaySavedAccountService.SummaryText(preview.LoadedAccount ?? account);
+            string deltaText = MechBaySavedAccountService.DeltaText(preview.Delta);
+            string line = "summary="
+                + summary
+                + " jsonChars="
+                + preview.JsonCharCount.ToString(CultureInfo.InvariantCulture)
+                + " delta="
+                + deltaText
+                + " unchanged="
+                + sourceUnchanged
+                + " message="
+                + preview.Message;
+
+            if (preview.Accepted && sourceUnchanged)
+            {
+                statusText = "Account save/load preview ready";
+                AddCombatLogLine("CLI saved account save/load preview OK: " + summary);
+                Debug.Log("MC2 saved account save/load preview: " + line);
+                return;
+            }
+
+            startupSmokeFailed = true;
+            statusText = "Account save/load preview failed";
+            string reason = preview.Message ?? "preview failed";
+            AddCombatLogLine("CLI saved account save/load preview failed: " + reason);
+            Debug.LogError("MC2 saved account save/load preview failed: " + reason + " " + line);
         }
 
         private static string FirstSavedAccountValidationError(MechBaySavedAccountValidationResult validation)

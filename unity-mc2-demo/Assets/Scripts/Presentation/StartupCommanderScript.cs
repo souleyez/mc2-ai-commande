@@ -145,6 +145,18 @@ namespace MC2Demo.Presentation
                 return true;
             }
 
+            if (string.Equals(verb, "saved-account-save-load-preview", StringComparison.OrdinalIgnoreCase))
+            {
+                if (!string.IsNullOrWhiteSpace(payload))
+                {
+                    error = "Saved account save/load preview action does not accept arguments.";
+                    return false;
+                }
+
+                action = StartupCommanderScriptAction.SavedAccountSaveLoadPreview(lineNumber, rawLine);
+                return true;
+            }
+
             if (string.Equals(verb, "prepare-depot-candidate", StringComparison.OrdinalIgnoreCase))
             {
                 if (!string.IsNullOrWhiteSpace(payload))
@@ -199,7 +211,7 @@ namespace MC2Demo.Presentation
                 return true;
             }
 
-            error = "Command file action must be command, advance, report, restart, mech-bay-launch, hide-squad-preview, saved-account-report, prepare-depot-candidate, prepare-local-candidate, squad-swap, or assert-restart-identity.";
+            error = "Command file action must be command, advance, report, restart, mech-bay-launch, hide-squad-preview, saved-account-report, saved-account-save-load-preview, prepare-depot-candidate, prepare-local-candidate, squad-swap, or assert-restart-identity.";
             return false;
         }
     }
@@ -299,6 +311,16 @@ namespace MC2Demo.Presentation
             };
         }
 
+        public static StartupCommanderScriptAction SavedAccountSaveLoadPreview(int lineNumber, string sourceLine)
+        {
+            return new StartupCommanderScriptAction
+            {
+                Kind = StartupCommanderScriptActionKind.SavedAccountSaveLoadPreview,
+                LineNumber = lineNumber,
+                SourceLine = sourceLine ?? string.Empty
+            };
+        }
+
         public static StartupCommanderScriptAction PrepareDepotCandidate(int lineNumber, string sourceLine)
         {
             return new StartupCommanderScriptAction
@@ -354,6 +376,7 @@ namespace MC2Demo.Presentation
         MechBayLaunch,
         HideSquadPreview,
         SavedAccountReport,
+        SavedAccountSaveLoadPreview,
         PrepareDepotCandidate,
         PrepareLocalCandidate,
         SquadSwap,

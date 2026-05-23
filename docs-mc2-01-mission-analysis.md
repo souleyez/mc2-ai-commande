@@ -235,6 +235,9 @@ summary, not a persistent user-data write. The command-file harness can also run
 before and after local candidate prep without writing any save file. Candidate
 prep now also emits a read-only saved-account delta that names token, mech,
 ready, depot, and item-stack count changes before persistent save/load is added.
+The explicit `saved-account-save-load-preview` command serializes and loads that
+snapshot in memory, validates the loaded account, and requires a zero-delta
+round trip before the future file export/import path exists.
 Current draft fits are now checked against that starter inventory, so extra
 armor plate or heat sink choices show a shortage and cannot be applied.
 The same starter inventory now owns the demo token balance used by the mech bay:
