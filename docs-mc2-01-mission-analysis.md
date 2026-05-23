@@ -242,6 +242,10 @@ The explicit `saved-account-export <path>` and `saved-account-import-preview
 <path>` commands now move that same JSON boundary onto disk only when a command
 file provides a path; import preview validates and reports the delta without
 applying the loaded account to the live mech bay.
+The explicit `saved-account-import-apply-preview <path>` command adds the future
+apply gate: it requires the loaded account to match the current account identity
+and then reports the token/mech/depot delta that would be applied, while still
+leaving the live mech bay unchanged.
 Current draft fits are now checked against that starter inventory, so extra
 armor plate or heat sink choices show a shortage and cannot be applied.
 The same starter inventory now owns the demo token balance used by the mech bay:

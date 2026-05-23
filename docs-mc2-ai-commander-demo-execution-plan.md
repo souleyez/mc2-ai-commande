@@ -96,6 +96,7 @@ The Unity demo currently supports:
 - command-file `saved-account-report` can now validate and log a JSON dry-run of the local account snapshot without writing persistent data
 - command-file `saved-account-save-load-preview` can now explicitly exercise JSON serialization and load validation without writing a save file
 - command-file `saved-account-export <path>` and `saved-account-import-preview <path>` can now manually write and validate local account JSON files when explicitly requested
+- command-file `saved-account-import-apply-preview <path>` can now guard account identity and show the delta that a future import apply would make without applying it
 - command-file `prepare-local-candidate` can now produce a ready depot candidate through local receipt assembly, NPC hiring, weapon purchase, and warehouse draft-fit services
 - local candidate prep now records a read-only saved-account delta line so token, mech, ready, depot, and item-stack changes are visible before any real save file exists
 - CLI/AI loop pieces:
@@ -467,5 +468,6 @@ Reason:
 - Local candidate prep now records a read-only saved-account delta line after the receipt/assembly/pilot/shop/fit chain, so inventory growth is visible before real save/load work.
 - A manual command-file `saved-account-save-load-preview` hook now exercises JSON serialization, load validation, and zero-delta round-trip checks while keeping default startup and UI flows read-only.
 - A manual command-file save-file path now supports `saved-account-export <path>` and `saved-account-import-preview <path>`, so test runs can write and validate local account JSON only when a script asks for it.
-- The next low-risk step is to add a guarded import-apply preview that can show what would change in the mech bay before any loaded account is applied.
+- A guarded `saved-account-import-apply-preview <path>` command now checks account identity and reports what token/mech/depot deltas a future apply would make, without mutating the live mech bay.
+- The next low-risk step is to expose the latest import apply preview in the mech bay UI as a read-only confirmation row before adding any actual apply command.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.

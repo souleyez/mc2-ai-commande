@@ -76,6 +76,7 @@ namespace MC2Demo.BattleCore
         public MechBaySavedAccountContract LoadedAccount { get; internal set; }
         public MechBaySavedAccountValidationResult Validation { get; internal set; }
         public MechBaySavedAccountDelta Delta { get; internal set; }
+        public bool WouldChange { get; internal set; }
     }
 
     public static class MechBaySavedAccountService
@@ -327,6 +328,7 @@ namespace MC2Demo.BattleCore
                 result.LoadedAccount = JsonUtility.FromJson<MechBaySavedAccountContract>(json);
                 result.Validation = Validate(result.LoadedAccount);
                 result.Delta = BuildDelta(currentAccount, result.LoadedAccount);
+                result.WouldChange = result.Delta?.hasChanges == true;
                 result.Accepted = result.Validation.IsValid;
                 result.Message = result.Accepted
                     ? "JSON import preview OK"
@@ -338,6 +340,29 @@ namespace MC2Demo.BattleCore
                 result.Message = "JSON import exception: " + exception.Message;
                 return result;
             }
+        }
+
+        public static MechBaySavedAccountFileResult PreviewImportApplyJsonFile(
+            string filePath,
+            MechBaySavedAccountContract currentAccount)
+        {
+            MechBaySavedAccountFileResult result = PreviewImportJsonFile(filePath, currentAccount);
+            if (!result.Accepted)
+            {
+                return result;
+            }
+
+            if (!SameAccountIdentity(currentAccount, result.LoadedAccount))
+            {
+                result.Accepted = false;
+                result.Message = "Import apply preview blocked: account identity mismatch";
+                return result;
+            }
+
+            result.Message = result.WouldChange
+                ? "JSON import apply preview ready"
+                : "JSON import apply preview no changes";
+            return result;
         }
 
         private static void ValidateCounters(
@@ -420,6 +445,17 @@ namespace MC2Demo.BattleCore
         {
             string[] errors = validation?.Errors ?? Array.Empty<string>();
             return errors.Length == 0 ? "unknown" : errors[0];
+        }
+
+        private static bool SameAccountIdentity(
+            MechBaySavedAccountContract currentAccount,
+            MechBaySavedAccountContract loadedAccount)
+        {
+            return currentAccount != null
+                && loadedAccount != null
+                && string.Equals(currentAccount.schema, loadedAccount.schema, StringComparison.Ordinal)
+                && string.Equals(currentAccount.accountId, loadedAccount.accountId, StringComparison.Ordinal)
+                && string.Equals(currentAccount.accountType, loadedAccount.accountType, StringComparison.Ordinal);
         }
 
         private static MechBayInventoryContract CloneInventory(MechBayInventoryContract inventory)

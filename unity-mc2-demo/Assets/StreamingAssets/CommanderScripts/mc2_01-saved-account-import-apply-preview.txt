@@ -1,0 +1,7 @@
+# Exports a baseline account, changes local inventory, then previews what applying the old account would change.
+saved-account-export ..\analysis-output\mc2_01-saved-account-import-apply-before.json
+prepare-local-candidate
+saved-account-import-apply-preview ..\analysis-output\mc2_01-saved-account-import-apply-before.json
+saved-account-export ..\analysis-output\mc2_01-saved-account-import-apply-after.json
+saved-account-import-apply-preview ..\analysis-output\mc2_01-saved-account-import-apply-after.json
+report

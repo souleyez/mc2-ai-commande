@@ -79,6 +79,7 @@ Current demo behavior:
 - supports a command-file `saved-account-report` smoke action that validates and logs a JSON dry-run of the local account snapshot without writing persistent data
 - supports a command-file `saved-account-save-load-preview` smoke action that explicitly round-trips the local account JSON without writing a save file
 - supports explicit command-file `saved-account-export <path>` and `saved-account-import-preview <path>` actions for manual local account JSON file checks
+- supports explicit command-file `saved-account-import-apply-preview <path>` to show what a future import apply would change without mutating the mech bay
 - logs a read-only saved-account delta after local candidate prep so candidate inventory growth is inspectable before real save/load is wired
 - applies pending squad swap confirmation by exchanging local mission availability flags
 - refreshes squad-selection status after confirmation so the joined depot mech is no longer shown as a candidate
@@ -231,6 +232,15 @@ Run the player with a startup command file that explicitly exports and imports a
   -logFile "$PWD\..\analysis-output\unity-player-saved-account-file-preview.log"
 ```
 
+Run the player with a startup command file that previews what applying an imported saved-account JSON file would change:
+
+```powershell
+& .\Builds\Windows\MC2UnityDemo.exe `
+  -batchmode -nographics -mc2SmokeTest `
+  -mc2CommandFile ".\Assets\StreamingAssets\CommanderScripts\mc2_01-saved-account-import-apply-preview.txt" `
+  -logFile "$PWD\..\analysis-output\unity-player-saved-account-import-apply-preview.log"
+```
+
 Run the player with a direct startup restart:
 
 ```powershell
@@ -270,7 +280,7 @@ command unit unit-1 move 3221 -277
 
 Relative command-file paths are checked from the current working directory first, then from the player `StreamingAssets` folder.
 
-Command files also support `prepare-local-candidate`, `prepare-depot-candidate`, `squad-swap`, `hide-squad-preview`, `saved-account-report`, `saved-account-save-load-preview`, `saved-account-export <path>`, `saved-account-import-preview <path>`, `mech-bay-launch`, and `assert-restart-identity depot`. `prepare-local-candidate` runs the demo receipt, assembly, NPC hire, weapon shop, and warehouse draft-fit services before the swap, then logs a read-only saved-account delta; `hide-squad-preview` verifies the completed replacement cue survives into the general next-mission handoff; `saved-account-report` validates and logs a JSON dry-run of the local account snapshot without writing a file; `saved-account-save-load-preview` serializes and loads that snapshot in memory to prove the future save/load boundary; `saved-account-export` writes a JSON file only when the script provides a path, and `saved-account-import-preview` validates a file without applying it to the mech bay; `prepare-depot-candidate` remains a direct smoke fallback.
+Command files also support `prepare-local-candidate`, `prepare-depot-candidate`, `squad-swap`, `hide-squad-preview`, `saved-account-report`, `saved-account-save-load-preview`, `saved-account-export <path>`, `saved-account-import-preview <path>`, `saved-account-import-apply-preview <path>`, `mech-bay-launch`, and `assert-restart-identity depot`. `prepare-local-candidate` runs the demo receipt, assembly, NPC hire, weapon shop, and warehouse draft-fit services before the swap, then logs a read-only saved-account delta; `hide-squad-preview` verifies the completed replacement cue survives into the general next-mission handoff; `saved-account-report` validates and logs a JSON dry-run of the local account snapshot without writing a file; `saved-account-save-load-preview` serializes and loads that snapshot in memory to prove the future save/load boundary; `saved-account-export` writes a JSON file only when the script provides a path, `saved-account-import-preview` validates a file without applying it to the mech bay, and `saved-account-import-apply-preview` adds the identity guard plus would-change delta for a future apply; `prepare-depot-candidate` remains a direct smoke fallback.
 
 Commander observation reports include `reportIndex` and `missionTimeSeconds` so future AI adapters can correlate decisions with elapsed battle time.
 

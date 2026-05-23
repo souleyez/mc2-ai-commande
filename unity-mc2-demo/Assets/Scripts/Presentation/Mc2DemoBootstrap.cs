@@ -464,6 +464,9 @@ namespace MC2Demo.Presentation
                     case StartupCommanderScriptActionKind.SavedAccountImportPreview:
                         RunStartupSavedAccountImportPreview(action.FilePath);
                         break;
+                    case StartupCommanderScriptActionKind.SavedAccountImportApplyPreview:
+                        RunStartupSavedAccountImportApplyPreview(action.FilePath);
+                        break;
                     case StartupCommanderScriptActionKind.PrepareDepotCandidate:
                         RunStartupPrepareDepotCandidate();
                         break;
@@ -707,6 +710,47 @@ namespace MC2Demo.Presentation
             string reason = importPreview.Message ?? "import preview failed";
             AddCombatLogLine("CLI saved account import preview failed: " + reason);
             Debug.LogError("MC2 saved account import preview failed: " + reason + " " + line);
+        }
+
+        private void RunStartupSavedAccountImportApplyPreview(string requestedPath)
+        {
+            int sourceTokenBalance = Math.Max(0, demoInventory?.tokenBalance ?? 0);
+            string resolvedPath = ResolveStartupCommanderDataFilePath(requestedPath);
+            MechBaySavedAccountFileResult applyPreview =
+                MechBaySavedAccountService.PreviewImportApplyJsonFile(
+                    resolvedPath,
+                    CurrentSavedAccountSnapshot());
+            bool sourceUnchanged = Math.Max(0, demoInventory?.tokenBalance ?? 0) == sourceTokenBalance;
+            string summary = MechBaySavedAccountService.SummaryText(applyPreview.LoadedAccount ?? CurrentSavedAccountSnapshot());
+            string deltaText = MechBaySavedAccountService.DeltaText(applyPreview.Delta);
+            string line = "path="
+                + resolvedPath
+                + " summary="
+                + summary
+                + " jsonChars="
+                + applyPreview.JsonCharCount.ToString(CultureInfo.InvariantCulture)
+                + " wouldChange="
+                + applyPreview.WouldChange
+                + " delta="
+                + deltaText
+                + " unchanged="
+                + sourceUnchanged
+                + " message="
+                + applyPreview.Message;
+
+            if (applyPreview.Accepted && sourceUnchanged)
+            {
+                statusText = "Account import apply preview ready";
+                AddCombatLogLine("CLI saved account import apply preview OK: " + deltaText);
+                Debug.Log("MC2 saved account import apply preview: " + line);
+                return;
+            }
+
+            startupSmokeFailed = true;
+            statusText = "Account import apply preview failed";
+            string reason = applyPreview.Message ?? "import apply preview failed";
+            AddCombatLogLine("CLI saved account import apply preview failed: " + reason);
+            Debug.LogError("MC2 saved account import apply preview failed: " + reason + " " + line);
         }
 
         private static string FirstSavedAccountValidationError(MechBaySavedAccountValidationResult validation)
