@@ -100,6 +100,7 @@ The Unity demo currently supports:
 - mech bay summary now shows the latest import apply preview as a read-only confirmation row
 - command-file `saved-account-import-apply <path>` can now apply a matching accepted preview to the local mech bay through a guarded cloned-inventory path
 - mech bay summary now exposes that same guarded import apply path as a disabled-until-ready manual Apply action
+- mech bay summary now includes a manual saved-account JSON path field plus Preview action, so the guarded apply flow can start from UI
 - command-file `prepare-local-candidate` can now produce a ready depot candidate through local receipt assembly, NPC hiring, weapon purchase, and warehouse draft-fit services
 - local candidate prep now records a read-only saved-account delta line so token, mech, ready, depot, and item-stack changes are visible before any real save file exists
 - CLI/AI loop pieces:
@@ -475,5 +476,6 @@ Reason:
 - The mech bay summary now exposes the latest guarded import apply preview as a read-only confirmation row, keeping the future apply path visible without mutating live data.
 - A guarded `saved-account-import-apply <path>` command now requires the latest accepted preview to match path, JSON length, and delta before replacing the local mech bay with a cloned loaded inventory.
 - The mech bay summary now exposes the same guarded import apply path as a manual Apply action that stays disabled unless a matching preview is ready.
-- The next low-risk step is to add a manual saved-account import preview UI affordance so users can choose a file path without relying on startup command files.
+- The mech bay summary now includes a manual saved-account JSON path field and Preview action, so users can generate a guarded import apply preview without relying on startup command files.
+- The next low-risk step is to add a small recent-path/default export-path helper so the manual save/load UI is less dependent on typing paths.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.

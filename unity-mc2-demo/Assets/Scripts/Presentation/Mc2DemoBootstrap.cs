@@ -75,6 +75,7 @@ namespace MC2Demo.Presentation
         private string lastSavedAccountImportApplyPreviewDeltaText;
         private int lastSavedAccountImportApplyPreviewJsonCharCount;
         private bool lastSavedAccountImportApplyPreviewReady;
+        private string savedAccountImportPreviewInputPath;
         private string statusText = "Loading";
         private bool startupSmokeFailed;
         private const string StartupSmokeDepotOwnedMechId = "assembled-smoke-depot";
@@ -722,6 +723,14 @@ namespace MC2Demo.Presentation
 
         private void RunStartupSavedAccountImportApplyPreview(string requestedPath)
         {
+            TryPreviewSavedAccountImportApply(requestedPath, true, "CLI");
+        }
+
+        private bool TryPreviewSavedAccountImportApply(
+            string requestedPath,
+            bool markStartupSmokeFailure,
+            string logPrefix)
+        {
             int sourceTokenBalance = Math.Max(0, demoInventory?.tokenBalance ?? 0);
             string resolvedPath = ResolveStartupCommanderDataFilePath(requestedPath);
             MechBaySavedAccountFileResult applyPreview =
@@ -735,6 +744,7 @@ namespace MC2Demo.Presentation
             lastSavedAccountImportApplyPreviewPath = resolvedPath;
             lastSavedAccountImportApplyPreviewDeltaText = deltaText;
             lastSavedAccountImportApplyPreviewJsonCharCount = applyPreview.JsonCharCount;
+            savedAccountImportPreviewInputPath = resolvedPath;
             lastSavedAccountImportApplyPreviewText =
                 SavedAccountImportApplyPreviewText(applyPreview, deltaText, sourceUnchanged);
             string line = "path="
@@ -755,16 +765,27 @@ namespace MC2Demo.Presentation
             if (applyPreview.Accepted && sourceUnchanged)
             {
                 statusText = "Account import apply preview ready";
-                AddCombatLogLine("CLI saved account import apply preview OK: " + deltaText);
-                Debug.Log("MC2 saved account import apply preview: " + line);
-                return;
+                AddCombatLogLine((logPrefix ?? "Saved account") + " saved account import apply preview OK: " + deltaText);
+                Debug.Log("MC2 saved account import apply preview: source=" + (logPrefix ?? "unknown") + " " + line);
+                return true;
             }
 
-            startupSmokeFailed = true;
+            if (markStartupSmokeFailure)
+            {
+                startupSmokeFailed = true;
+            }
+
             statusText = "Account import apply preview failed";
             string reason = applyPreview.Message ?? "import apply preview failed";
-            AddCombatLogLine("CLI saved account import apply preview failed: " + reason);
-            Debug.LogError("MC2 saved account import apply preview failed: " + reason + " " + line);
+            AddCombatLogLine((logPrefix ?? "Saved account") + " saved account import apply preview failed: " + reason);
+            Debug.LogError(
+                "MC2 saved account import apply preview failed: source="
+                + (logPrefix ?? "unknown")
+                + " "
+                + reason
+                + " "
+                + line);
+            return false;
         }
 
         private void RunStartupSavedAccountImportApply(string requestedPath)
@@ -3677,7 +3698,7 @@ namespace MC2Demo.Presentation
             y += 30f;
             bool showInlineMechBayPreview = showWarehouseDraftFitPreview || showSquadSelectionPreview;
             DrawMechBayInventorySummary(x, y, width, !showInlineMechBayPreview);
-            y += showInlineMechBayPreview ? 282f : 480f;
+            y += showInlineMechBayPreview ? 304f : 502f;
             if (showWarehouseDraftFitPreview)
             {
                 DrawWarehouseDraftFitPreview(x, y, width);
@@ -3742,22 +3763,23 @@ namespace MC2Demo.Presentation
                 new Rect(x, y + 60f, width, 18f),
                 "Assembly " + AssemblyPreviewText(MechBayAssemblyPreviewService.BestAssemblyProgress(demoInventory)));
             DrawLocalCandidatePrepAction(x, y + 82f, width);
-            DrawSavedAccountImportApplyPreviewLine(x, y + 104f, width);
+            DrawSavedAccountImportPreviewPathLine(x, y + 104f, width);
+            DrawSavedAccountImportApplyPreviewLine(x, y + 126f, width);
             MechBayWeaponShopPreview shopPreview = MechBayWeaponShopPreviewService.BuildPreview(demoInventory);
             GUI.Label(
-                new Rect(x, y + 124f, width, 18f),
+                new Rect(x, y + 146f, width, 18f),
                 "Shop " + WeaponShopPreviewText(shopPreview));
-            DrawWeaponShopPurchaseStub(x, y + 146f, width, shopPreview, demoInventory);
+            DrawWeaponShopPurchaseStub(x, y + 168f, width, shopPreview, demoInventory);
             MechBayPilotHirePreview pilotHirePreview = MechBayPilotHirePreviewService.BuildPreview(demoInventory);
             GUI.Label(
-                new Rect(x, y + 168f, width, 18f),
+                new Rect(x, y + 190f, width, 18f),
                 "Pilot Hire " + PilotHirePreviewText(pilotHirePreview));
             MechBayOwnedRosterEntry[] roster = MechBayOwnedRosterService.BuildRosterPreview(demoInventory);
             ClampSelectedRosterIndex(roster);
             GUI.Label(
-                new Rect(x, y + 190f, width, 18f),
+                new Rect(x, y + 212f, width, 18f),
                 "Roster " + TruncateText(OwnedRosterText(roster), 62));
-            DrawRosterMissionStateLine(x, y + 212f, width, roster);
+            DrawRosterMissionStateLine(x, y + 234f, width, roster);
             MechBayMissionHandoffPreview handoffPreview =
                 MechBayMissionHandoffPreviewService.BuildPreview(demoInventory);
             MechBayMissionRestartApplyGuard restartGuard =
@@ -3769,13 +3791,13 @@ namespace MC2Demo.Presentation
                 ? MissionHandoffCompletedSummaryText(handoffPreview, restartGuard)
                 : MissionHandoffPlayerSummaryText(handoffPreview, restartGuard);
             GUI.Label(
-                new Rect(x, y + 234f, width, 18f),
+                new Rect(x, y + 256f, width, 18f),
                 "Next Mission " + TruncateText(handoffSummary, 58));
-            DrawMissionHandoffLaunchAction(x, y + 256f, width, handoffPreview, restartGuard);
-            DrawMissionHandoffLineup(x, y + 278f, width, handoffPreview);
+            DrawMissionHandoffLaunchAction(x, y + 278f, width, handoffPreview, restartGuard);
+            DrawMissionHandoffLineup(x, y + 300f, width, handoffPreview);
             if (showRosterDetail)
             {
-                DrawOwnedRosterDetail(x, y + 300f, width, roster, pilotHirePreview);
+                DrawOwnedRosterDetail(x, y + 322f, width, roster, pilotHirePreview);
             }
         }
 
@@ -4586,6 +4608,31 @@ namespace MC2Demo.Presentation
 
             string cost = FormatTokens(purchasePreview.TokenCost) + " token";
             return purchasePreview.displayName + " " + cost + "  " + purchasePreview.Message;
+        }
+
+        private void DrawSavedAccountImportPreviewPathLine(float x, float y, float width)
+        {
+            GUI.Label(new Rect(x, y, 52f, 18f), "Import");
+            float buttonWidth = 72f;
+            float fieldX = x + 56f;
+            float fieldWidth = Mathf.Max(48f, width - 56f - buttonWidth - 8f);
+            savedAccountImportPreviewInputPath = GUI.TextField(
+                new Rect(fieldX, y - 2f, fieldWidth, 22f),
+                savedAccountImportPreviewInputPath ?? string.Empty,
+                260);
+
+            bool canPreview = !string.IsNullOrWhiteSpace(savedAccountImportPreviewInputPath);
+            bool previousEnabled = GUI.enabled;
+            GUI.enabled = previousEnabled && canPreview;
+            if (DrawActionButton(
+                    new Rect(fieldX + fieldWidth + 8f, y - 2f, buttonWidth, 22f),
+                    "Preview",
+                    canPreview))
+            {
+                TryPreviewSavedAccountImportApply(savedAccountImportPreviewInputPath, false, "Mech bay");
+            }
+
+            GUI.enabled = previousEnabled;
         }
 
         private void DrawSavedAccountImportApplyPreviewLine(float x, float y, float width)
