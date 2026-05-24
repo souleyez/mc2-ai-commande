@@ -261,6 +261,9 @@ of only from startup command files.
 the current local account snapshot there before preview/apply.
 The same summary also keeps a compact `Last Save` result line, so the latest
 export, preview, apply, or blocked save/load outcome stays visible.
+Guarded account-changing actions now auto-save the current local account
+snapshot to that persistent demo save file after successful receipts, imports,
+candidate prep, purchases, hires, fits, squad selection, or repairs.
 Current draft fits are now checked against that starter inventory, so extra
 armor plate or heat sink choices show a shortage and cannot be applied.
 The same starter inventory now owns the demo token balance used by the mech bay:

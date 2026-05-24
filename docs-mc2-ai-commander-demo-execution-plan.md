@@ -103,6 +103,7 @@ The Unity demo currently supports:
 - mech bay summary now includes a manual saved-account JSON path field plus Preview action, so the guarded apply flow can start from UI
 - mech bay summary now provides Default and Export helpers that point at a persistent demo save file and write the current account snapshot there
 - mech bay summary now keeps a compact Last Save line for the latest export, preview, apply, or blocked save/load result
+- guarded account-changing actions now auto-save the current local account snapshot to the persistent demo save file
 - command-file `prepare-local-candidate` can now produce a ready depot candidate through local receipt assembly, NPC hiring, weapon purchase, and warehouse draft-fit services
 - local candidate prep now records a read-only saved-account delta line so token, mech, ready, depot, and item-stack changes are visible before any real save file exists
 - CLI/AI loop pieces:
@@ -481,5 +482,6 @@ Reason:
 - The mech bay summary now includes a manual saved-account JSON path field and Preview action, so users can generate a guarded import apply preview without relying on startup command files.
 - The mech bay summary now provides Default and Export helpers that point at a persistent demo save file and write the current local account snapshot before preview/apply.
 - The mech bay summary now keeps a compact Last Save result line for export, preview, apply, and blocked save/load outcomes.
-- The next low-risk step is to add a true local auto-save hook after guarded account-changing actions so the demo can persist progress without command files.
+- Guarded account-changing actions now auto-save the current local account snapshot to the persistent demo save file, including mission receipts, import apply, candidate prep, shop purchases, pilot hires, warehouse fits, squad selection, and repairs.
+- The next low-risk step is to add startup load-from-default-save preview/apply so a local demo run can restore the last persisted mech bay state.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.

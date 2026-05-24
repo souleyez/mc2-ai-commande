@@ -902,6 +902,7 @@ namespace MC2Demo.Presentation
             statusText = "Account import applied";
             RecordSavedAccountFileResult("Apply OK", true, deltaText);
             AddCombatLogLine((logPrefix ?? "Saved account") + " saved account import apply OK: " + deltaText);
+            TryAutoSaveSavedAccount("import apply " + deltaText);
             Debug.Log(
                 "MC2 saved account import apply: path="
                 + resolvedPath
@@ -1011,6 +1012,37 @@ namespace MC2Demo.Presentation
             lastSavedAccountFileResultReady = ready;
         }
 
+        private bool TryAutoSaveSavedAccount(string reason)
+        {
+            string resolvedPath = DefaultSavedAccountFilePath();
+            MechBaySavedAccountContract account = CurrentSavedAccountSnapshot();
+            MechBaySavedAccountFileResult export =
+                MechBaySavedAccountService.ExportJsonFile(account, resolvedPath);
+            string safeReason = string.IsNullOrWhiteSpace(reason) ? "account change" : reason.Trim();
+            string line = "reason="
+                + safeReason
+                + " path="
+                + resolvedPath
+                + " jsonChars="
+                + export.JsonCharCount.ToString(CultureInfo.InvariantCulture)
+                + " message="
+                + export.Message;
+
+            if (export.Accepted)
+            {
+                RecordSavedAccountFileResult("Auto Save OK", true, SavedAccountFileName(resolvedPath) + "  " + safeReason);
+                Debug.Log("MC2 saved account auto-save: " + line);
+                return true;
+            }
+
+            statusText = "Auto-save failed";
+            string failure = export.Message ?? "auto-save failed";
+            RecordSavedAccountFileResult("Auto Save failed", false, failure);
+            AddCombatLogLine("Auto-save failed: " + failure);
+            Debug.LogError("MC2 saved account auto-save failed: " + failure + " " + line);
+            return false;
+        }
+
         private static string SavedAccountFileName(string path)
         {
             if (string.IsNullOrWhiteSpace(path))
@@ -1107,6 +1139,7 @@ namespace MC2Demo.Presentation
                     beforeAccount,
                     CurrentSavedAccountSnapshot(),
                     "CLI local candidate");
+                TryAutoSaveSavedAccount("local candidate " + deltaText);
                 AddCombatLogLine("CLI local candidate ready: " + ownedMechId);
                 Debug.Log("MC2 commander local candidate: ready ownedMechId=" + ownedMechId + " " + deltaText);
                 return;
@@ -2044,6 +2077,7 @@ namespace MC2Demo.Presentation
                     "Receipt token +" + FormatTokens(missionReceipt.TokenDelta)
                     + " fragments +" + missionReceipt.SalvageFragmentCount
                     + ReceiptAssemblyLogText(missionReceipt));
+                TryAutoSaveSavedAccount("mission receipt");
             }
         }
 
@@ -4637,6 +4671,7 @@ namespace MC2Demo.Presentation
                 {
                     AddCombatLogLine("Shop " + result.Message);
                     RefreshDemoInventoryValidation();
+                    TryAutoSaveSavedAccount("weapon purchase");
                     purchasePreview = MechBayWeaponShopPreviewService.PreviewPurchase(inventory, firstEntry.itemId);
                 }
             }
@@ -4787,6 +4822,7 @@ namespace MC2Demo.Presentation
                             beforeAccount,
                             CurrentSavedAccountSnapshot(),
                             "Mech bay candidate");
+                        TryAutoSaveSavedAccount("local candidate");
                     }
                 }
 
@@ -5019,6 +5055,7 @@ namespace MC2Demo.Presentation
                 {
                     AddCombatLogLine("Pilot " + result.Message);
                     RefreshDemoInventoryValidation();
+                    TryAutoSaveSavedAccount("pilot hire");
                     hirePreview = MechBayPilotHirePreviewService.PreviewHire(demoInventory, entry.ownedMechId, candidate.pilotId);
                 }
             }
@@ -5408,6 +5445,7 @@ namespace MC2Demo.Presentation
                     RecordSquadSelectionCompletedReplacement(draft);
                     ClearSquadSelectionDraft();
                     AddCombatLogLine(statusText + ": " + result.Summary);
+                    TryAutoSaveSavedAccount("squad selection");
                 }
                 else
                 {
@@ -5720,6 +5758,7 @@ namespace MC2Demo.Presentation
                 if (result != null && result.Accepted)
                 {
                     AddCombatLogLine("Mech bay " + result.Message + " for " + result.displayName);
+                    TryAutoSaveSavedAccount("warehouse draft fit");
                     showWarehouseDraftFitPreview = false;
                     warehouseDraftFitPreviewMechId = null;
                 }
@@ -5804,6 +5843,10 @@ namespace MC2Demo.Presentation
                 MechBayRepairResult result = MechBayRepairService.TryRepair(demoInventory, unit);
                 RefreshDemoInventoryValidation();
                 statusText = result.Message;
+                if (result.Accepted)
+                {
+                    TryAutoSaveSavedAccount("repair " + unit.UnitType);
+                }
             }
 
             GUI.enabled = previousEnabled;
