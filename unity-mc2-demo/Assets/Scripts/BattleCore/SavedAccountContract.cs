@@ -74,6 +74,7 @@ namespace MC2Demo.BattleCore
         public string FilePath { get; internal set; }
         public int JsonCharCount { get; internal set; }
         public MechBaySavedAccountContract LoadedAccount { get; internal set; }
+        public MechBayInventoryContract AppliedInventory { get; internal set; }
         public MechBaySavedAccountValidationResult Validation { get; internal set; }
         public MechBaySavedAccountDelta Delta { get; internal set; }
         public bool WouldChange { get; internal set; }
@@ -365,6 +366,32 @@ namespace MC2Demo.BattleCore
             return result;
         }
 
+        public static MechBaySavedAccountFileResult ApplyImportJsonFile(
+            string filePath,
+            MechBaySavedAccountContract currentAccount)
+        {
+            MechBaySavedAccountFileResult result = PreviewImportApplyJsonFile(filePath, currentAccount);
+            if (!result.Accepted)
+            {
+                return result;
+            }
+
+            result.AppliedInventory = CloneInventory(result.LoadedAccount?.inventory);
+            MechBayInventoryValidationResult inventoryValidation =
+                MechBayInventoryValidator.Validate(result.AppliedInventory);
+            if (inventoryValidation == null || !inventoryValidation.IsValid)
+            {
+                result.Accepted = false;
+                result.Message = "JSON import apply blocked: loaded inventory invalid";
+                return result;
+            }
+
+            result.Message = result.WouldChange
+                ? "JSON import apply OK"
+                : "JSON import apply no changes";
+            return result;
+        }
+
         private static void ValidateCounters(
             MechBaySavedAccountCounters expected,
             MechBaySavedAccountCounters actual,
@@ -458,7 +485,7 @@ namespace MC2Demo.BattleCore
                 && string.Equals(currentAccount.accountType, loadedAccount.accountType, StringComparison.Ordinal);
         }
 
-        private static MechBayInventoryContract CloneInventory(MechBayInventoryContract inventory)
+        public static MechBayInventoryContract CloneInventory(MechBayInventoryContract inventory)
         {
             return new MechBayInventoryContract
             {

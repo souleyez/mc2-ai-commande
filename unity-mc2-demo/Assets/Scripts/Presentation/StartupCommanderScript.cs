@@ -193,6 +193,18 @@ namespace MC2Demo.Presentation
                 return true;
             }
 
+            if (string.Equals(verb, "saved-account-import-apply", StringComparison.OrdinalIgnoreCase))
+            {
+                if (string.IsNullOrWhiteSpace(payload))
+                {
+                    error = "Saved account import apply action needs a file path.";
+                    return false;
+                }
+
+                action = StartupCommanderScriptAction.SavedAccountImportApply(lineNumber, rawLine, payload);
+                return true;
+            }
+
             if (string.Equals(verb, "prepare-depot-candidate", StringComparison.OrdinalIgnoreCase))
             {
                 if (!string.IsNullOrWhiteSpace(payload))
@@ -247,7 +259,7 @@ namespace MC2Demo.Presentation
                 return true;
             }
 
-            error = "Command file action must be command, advance, report, restart, mech-bay-launch, hide-squad-preview, saved-account-report, saved-account-save-load-preview, saved-account-export, saved-account-import-preview, saved-account-import-apply-preview, prepare-depot-candidate, prepare-local-candidate, squad-swap, or assert-restart-identity.";
+            error = "Command file action must be command, advance, report, restart, mech-bay-launch, hide-squad-preview, saved-account-report, saved-account-save-load-preview, saved-account-export, saved-account-import-preview, saved-account-import-apply-preview, saved-account-import-apply, prepare-depot-candidate, prepare-local-candidate, squad-swap, or assert-restart-identity.";
             return false;
         }
     }
@@ -391,6 +403,17 @@ namespace MC2Demo.Presentation
             };
         }
 
+        public static StartupCommanderScriptAction SavedAccountImportApply(int lineNumber, string sourceLine, string filePath)
+        {
+            return new StartupCommanderScriptAction
+            {
+                Kind = StartupCommanderScriptActionKind.SavedAccountImportApply,
+                LineNumber = lineNumber,
+                SourceLine = sourceLine ?? string.Empty,
+                FilePath = filePath
+            };
+        }
+
         public static StartupCommanderScriptAction PrepareDepotCandidate(int lineNumber, string sourceLine)
         {
             return new StartupCommanderScriptAction
@@ -450,6 +473,7 @@ namespace MC2Demo.Presentation
         SavedAccountExport,
         SavedAccountImportPreview,
         SavedAccountImportApplyPreview,
+        SavedAccountImportApply,
         PrepareDepotCandidate,
         PrepareLocalCandidate,
         SquadSwap,

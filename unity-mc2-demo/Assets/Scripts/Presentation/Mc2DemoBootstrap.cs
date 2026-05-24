@@ -71,6 +71,9 @@ namespace MC2Demo.Presentation
         private string squadSelectionLastIncomingDisplayName;
         private string lastSavedAccountDeltaText;
         private string lastSavedAccountImportApplyPreviewText;
+        private string lastSavedAccountImportApplyPreviewPath;
+        private string lastSavedAccountImportApplyPreviewDeltaText;
+        private int lastSavedAccountImportApplyPreviewJsonCharCount;
         private bool lastSavedAccountImportApplyPreviewReady;
         private string statusText = "Loading";
         private bool startupSmokeFailed;
@@ -469,6 +472,9 @@ namespace MC2Demo.Presentation
                     case StartupCommanderScriptActionKind.SavedAccountImportApplyPreview:
                         RunStartupSavedAccountImportApplyPreview(action.FilePath);
                         break;
+                    case StartupCommanderScriptActionKind.SavedAccountImportApply:
+                        RunStartupSavedAccountImportApply(action.FilePath);
+                        break;
                     case StartupCommanderScriptActionKind.PrepareDepotCandidate:
                         RunStartupPrepareDepotCandidate();
                         break;
@@ -726,6 +732,9 @@ namespace MC2Demo.Presentation
             string summary = MechBaySavedAccountService.SummaryText(applyPreview.LoadedAccount ?? CurrentSavedAccountSnapshot());
             string deltaText = MechBaySavedAccountService.DeltaText(applyPreview.Delta);
             lastSavedAccountImportApplyPreviewReady = applyPreview.Accepted && sourceUnchanged;
+            lastSavedAccountImportApplyPreviewPath = resolvedPath;
+            lastSavedAccountImportApplyPreviewDeltaText = deltaText;
+            lastSavedAccountImportApplyPreviewJsonCharCount = applyPreview.JsonCharCount;
             lastSavedAccountImportApplyPreviewText =
                 SavedAccountImportApplyPreviewText(applyPreview, deltaText, sourceUnchanged);
             string line = "path="
@@ -756,6 +765,107 @@ namespace MC2Demo.Presentation
             string reason = applyPreview.Message ?? "import apply preview failed";
             AddCombatLogLine("CLI saved account import apply preview failed: " + reason);
             Debug.LogError("MC2 saved account import apply preview failed: " + reason + " " + line);
+        }
+
+        private void RunStartupSavedAccountImportApply(string requestedPath)
+        {
+            string resolvedPath = ResolveStartupCommanderDataFilePath(requestedPath);
+            MechBaySavedAccountContract currentAccount = CurrentSavedAccountSnapshot();
+            MechBaySavedAccountFileResult preview =
+                MechBaySavedAccountService.PreviewImportApplyJsonFile(resolvedPath, currentAccount);
+            string deltaText = MechBaySavedAccountService.DeltaText(preview.Delta);
+            string blockReason =
+                SavedAccountImportApplyBlockReason(resolvedPath, preview, deltaText);
+            if (!string.IsNullOrWhiteSpace(blockReason))
+            {
+                startupSmokeFailed = true;
+                statusText = "Account import apply blocked";
+                lastSavedAccountImportApplyPreviewReady = false;
+                lastSavedAccountImportApplyPreviewText = "Blocked  " + blockReason;
+                AddCombatLogLine("CLI saved account import apply blocked: " + blockReason);
+                Debug.LogError(
+                    "MC2 saved account import apply blocked: path="
+                    + resolvedPath
+                    + " delta="
+                    + deltaText
+                    + " message="
+                    + (preview?.Message ?? blockReason));
+                return;
+            }
+
+            MechBaySavedAccountFileResult apply =
+                MechBaySavedAccountService.ApplyImportJsonFile(resolvedPath, currentAccount);
+            if (apply == null || !apply.Accepted || apply.AppliedInventory == null)
+            {
+                startupSmokeFailed = true;
+                statusText = "Account import apply failed";
+                string reason = apply?.Message ?? "apply failed";
+                lastSavedAccountImportApplyPreviewReady = false;
+                lastSavedAccountImportApplyPreviewText = "Blocked  " + reason;
+                AddCombatLogLine("CLI saved account import apply failed: " + reason);
+                Debug.LogError("MC2 saved account import apply failed: path=" + resolvedPath + " message=" + reason);
+                return;
+            }
+
+            demoInventory = apply.AppliedInventory;
+            RefreshDemoInventoryValidation();
+            CloseTransientMechBayDrafts();
+            lastSavedAccountDeltaText = deltaText;
+            lastSavedAccountImportApplyPreviewReady = false;
+            lastSavedAccountImportApplyPreviewPath = resolvedPath;
+            lastSavedAccountImportApplyPreviewDeltaText = deltaText;
+            lastSavedAccountImportApplyPreviewJsonCharCount = apply.JsonCharCount;
+            lastSavedAccountImportApplyPreviewText = "Applied  " + deltaText;
+            statusText = "Account import applied";
+            AddCombatLogLine("CLI saved account import apply OK: " + deltaText);
+            Debug.Log(
+                "MC2 saved account import apply: path="
+                + resolvedPath
+                + " jsonChars="
+                + apply.JsonCharCount.ToString(CultureInfo.InvariantCulture)
+                + " delta="
+                + deltaText
+                + " message="
+                + apply.Message);
+        }
+
+        private string SavedAccountImportApplyBlockReason(
+            string resolvedPath,
+            MechBaySavedAccountFileResult preview,
+            string deltaText)
+        {
+            if (!lastSavedAccountImportApplyPreviewReady)
+            {
+                return "preview not ready";
+            }
+
+            if (!string.Equals(
+                    lastSavedAccountImportApplyPreviewPath,
+                    resolvedPath,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return "preview path mismatch";
+            }
+
+            if (preview == null || !preview.Accepted)
+            {
+                return preview?.Message ?? "preview rejected";
+            }
+
+            if (preview.JsonCharCount != lastSavedAccountImportApplyPreviewJsonCharCount)
+            {
+                return "preview file changed";
+            }
+
+            if (!string.Equals(
+                    lastSavedAccountImportApplyPreviewDeltaText,
+                    deltaText,
+                    StringComparison.Ordinal))
+            {
+                return "preview delta changed";
+            }
+
+            return null;
         }
 
         private static string SavedAccountImportApplyPreviewText(
@@ -804,6 +914,15 @@ namespace MC2Demo.Presentation
             AddCombatLogLine((logPrefix ?? "Saved account") + " account " + text);
             Debug.Log("MC2 saved account delta: source=" + (logPrefix ?? "unknown") + " " + text);
             return text;
+        }
+
+        private void CloseTransientMechBayDrafts()
+        {
+            showWarehouseDraftFitPreview = false;
+            showSquadSelectionPreview = false;
+            warehouseDraftFitPreviewMechId = null;
+            ClearSquadSelectionDraft();
+            ClearSquadSelectionCompletedReplacement();
         }
 
         private void RunStartupHideSquadPreview()
