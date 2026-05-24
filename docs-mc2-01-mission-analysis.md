@@ -275,7 +275,9 @@ when the persistent default save file exists, and skips cleanly on first run.
 Manual demo startup now shows a lightweight Continue/New Game panel when that
 persistent default save exists and no automation startup args are present. The
 panel previews account summary, token/depot/item counts, delta, and save
-timestamp before enabling Continue.
+timestamp before enabling Continue. The pause/system panel can reopen the same
+Save Choices entry, and New Game resets the active demo run without deleting
+the persistent default save.
 Current draft fits are now checked against that starter inventory, so extra
 armor plate or heat sink choices show a shortage and cannot be applied.
 The same starter inventory now owns the demo token balance used by the mech bay:

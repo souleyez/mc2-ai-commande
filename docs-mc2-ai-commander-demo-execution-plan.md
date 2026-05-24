@@ -108,6 +108,7 @@ The Unity demo currently supports:
 - guarded account-changing actions now auto-save the current local account snapshot to the persistent demo save file
 - manual demo startup now shows a lightweight Continue/New Game panel when the persistent demo save exists and no automation startup args are used
 - that startup panel now previews the loaded account summary, token/depot/item counts, delta, and save timestamp before enabling Continue
+- the pause/system panel now exposes the same Save Choices entry, and New Game resets the active demo run without deleting the persistent default save
 - command-file `prepare-local-candidate` can now produce a ready depot candidate through local receipt assembly, NPC hiring, weapon purchase, and warehouse draft-fit services
 - local candidate prep now records a read-only saved-account delta line so token, mech, ready, depot, and item-stack changes are visible before any real save file exists
 - CLI/AI loop pieces:
@@ -492,5 +493,6 @@ Reason:
 - Startup command files can now run `saved-account-load-default-preview` and `saved-account-load-default-apply`, restoring the persistent demo save path through the existing import-apply guard.
 - The explicit `-mc2LoadDefaultSave` startup flag now restores the persistent demo save path through the existing import-apply guard when the file exists, and skips cleanly when it does not.
 - Manual demo startup now shows a lightweight Continue/New Game panel when the persistent demo save exists and no automation startup args are used, with account summary, token/depot/item counts, delta, and save timestamp visible before Continue is enabled.
-- The next low-risk step is to fold the same choice into the future title/system shell, then add a real profile-slot reset/export confirmation when the UI moves beyond IMGUI.
+- The pause/system panel now exposes the same Save Choices entry, so testers can reopen Continue/New Game after launch; New Game resets the active demo run while keeping the persistent default save untouched.
+- The next low-risk step is to add a real profile-slot reset/export confirmation when the UI moves beyond IMGUI, then migrate these save choices into the future title shell.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.

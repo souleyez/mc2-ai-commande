@@ -223,6 +223,48 @@ namespace MC2Demo.Presentation
             return true;
         }
 
+        private bool TryStartFreshDemoRun(string resultStatus)
+        {
+            Time.timeScale = 1f;
+            int clearedRoots = ClearRuntimeWorld();
+            missionReceipt = null;
+            missionReceiptApplied = false;
+            pendingDetachedUnitId = null;
+            pendingJumpOrder = false;
+            showStartupContinuePanel = false;
+            showMissionMap = false;
+            showLoadoutPanel = false;
+            showSystemPanel = false;
+            CloseTransientMechBayDrafts();
+
+            mission = null;
+            scriptBridge = null;
+            commandPort = null;
+            observationPort = null;
+            demoInventory = null;
+            demoInventoryValidation = null;
+            LoadMission();
+            if (mission == null)
+            {
+                statusText = "New game failed";
+                Debug.LogError("MC2 new game failed: mission missing after reset");
+                return false;
+            }
+
+            BuildWorld();
+            lastMissionResult = mission.Result;
+            SetPaused(false);
+            statusText = string.IsNullOrWhiteSpace(resultStatus) ? "New game started" : resultStatus;
+            RecordSavedAccountFileResult("New Game", false, "default save kept");
+            AddCombatLogLine("New game started: default save kept");
+            Debug.Log(
+                "MC2 new game started: clearedRoots="
+                + clearedRoots.ToString(CultureInfo.InvariantCulture)
+                + " defaultSave="
+                + DefaultSavedAccountFilePath());
+            return true;
+        }
+
         private void ApplyRestartedMission(
             BattleMission replacementMission,
             MechBayMissionRestartRuntimeSwapResult result,
@@ -3469,14 +3511,7 @@ namespace MC2Demo.Presentation
             y += 38f;
             if (GUI.Button(new Rect(x, y, width, 30f), "New Game"))
             {
-                showStartupContinuePanel = false;
-                RecordSavedAccountFileResult("New Game", false, "default save kept");
-                if (mission.Result == MissionResultState.InProgress)
-                {
-                    SetPaused(false);
-                }
-
-                statusText = "New game started";
+                TryStartFreshDemoRun("New game started");
             }
         }
 
@@ -7149,12 +7184,21 @@ namespace MC2Demo.Presentation
                 TryApplyMissionRestartRuntimeSwap();
             }
 
-            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 146f, panel.width - 36f, 30f), "End Demo"))
+            string saveChoiceText = startupContinueSaveReady
+                ? startupContinueSummaryText
+                : File.Exists(DefaultSavedAccountFilePath()) ? "Save needs review" : "No default save";
+            GUI.Label(new Rect(panel.x + 18f, panel.y + 146f, panel.width - 36f, 20f), "Save " + TruncateText(saveChoiceText, 48));
+            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 172f, panel.width - 36f, 30f), "Save Choices"))
+            {
+                OpenSaveChoicePanelFromSystem();
+            }
+
+            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 210f, panel.width - 36f, 30f), "End Demo"))
             {
                 Application.Quit(0);
             }
 
-            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 184f, panel.width - 36f, 30f), "Close"))
+            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 248f, panel.width - 36f, 30f), "Close"))
             {
                 showSystemPanel = false;
                 if (mission.Result == MissionResultState.InProgress)
@@ -7296,6 +7340,7 @@ namespace MC2Demo.Presentation
         private void OpenSystemPanel()
         {
             showSystemPanel = true;
+            RefreshStartupContinueSavePreview();
             showLoadoutPanel = false;
             showWarehouseDraftFitPreview = false;
             showSquadSelectionPreview = false;
@@ -7311,6 +7356,25 @@ namespace MC2Demo.Presentation
             pendingDetachedUnitId = null;
             pendingJumpOrder = false;
             statusText = "System open";
+        }
+
+        private void OpenSaveChoicePanelFromSystem()
+        {
+            RefreshStartupContinueSavePreview();
+            showStartupContinuePanel = true;
+            showSystemPanel = false;
+            showLoadoutPanel = false;
+            showMissionMap = false;
+            CloseTransientMechBayDrafts();
+            if (mission.Result == MissionResultState.InProgress)
+            {
+                SetPaused(true);
+            }
+
+            pendingDetachedUnitId = null;
+            pendingJumpOrder = false;
+            statusText = startupContinueSaveReady ? "Save choices open" : "New game available";
+            RecordSavedAccountFileResult("Save choices", startupContinueSaveReady, startupContinueSummaryText);
         }
 
         private void OpenLoadoutPanel()
@@ -7390,8 +7454,8 @@ namespace MC2Demo.Presentation
 
         private Rect SystemPanelRect()
         {
-            float width = 260f;
-            float height = 232f;
+            float width = 330f;
+            float height = 296f;
             return new Rect((Screen.width - width) * 0.5f, (Screen.height - height) * 0.5f, width, height);
         }
 
