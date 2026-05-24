@@ -140,6 +140,7 @@ namespace MC2Demo.Presentation
             observationPort = new CommanderObservationPort(mission);
             demoInventory = MechBayInventoryBuilder.BuildDemoInventory(mission.PlayerUnits());
             RefreshDemoInventoryValidation();
+            savedAccountImportPreviewInputPath = DefaultSavedAccountFilePath();
             if (!demoInventoryValidation.IsValid)
             {
                 Debug.LogWarning("MC2 mech bay inventory review: " + FirstInventoryError(demoInventoryValidation));
@@ -523,6 +524,11 @@ namespace MC2Demo.Presentation
             return Path.GetFullPath(path);
         }
 
+        private static string DefaultSavedAccountFilePath()
+        {
+            return Path.Combine(Application.persistentDataPath, "mc2-demo-saved-account.json");
+        }
+
         private void LogStartupCommanderCommand(string commandLine, CommanderCommandResult result)
         {
             string line = "CLI command: " + (string.IsNullOrWhiteSpace(commandLine) ? "<empty>" : commandLine);
@@ -656,6 +662,11 @@ namespace MC2Demo.Presentation
 
         private void RunStartupSavedAccountExport(string requestedPath)
         {
+            TryExportSavedAccount(requestedPath, true, "CLI");
+        }
+
+        private bool TryExportSavedAccount(string requestedPath, bool markStartupSmokeFailure, string logPrefix)
+        {
             string resolvedPath = ResolveStartupCommanderDataFilePath(requestedPath);
             MechBaySavedAccountFileResult export =
                 MechBaySavedAccountService.ExportJsonFile(CurrentSavedAccountSnapshot(), resolvedPath);
@@ -670,16 +681,28 @@ namespace MC2Demo.Presentation
             if (export.Accepted)
             {
                 statusText = "Account export ready";
-                AddCombatLogLine("CLI saved account export OK: " + summary);
-                Debug.Log("MC2 saved account export: " + line);
-                return;
+                savedAccountImportPreviewInputPath = resolvedPath;
+                AddCombatLogLine((logPrefix ?? "Saved account") + " saved account export OK: " + summary);
+                Debug.Log("MC2 saved account export: source=" + (logPrefix ?? "unknown") + " " + line);
+                return true;
             }
 
-            startupSmokeFailed = true;
+            if (markStartupSmokeFailure)
+            {
+                startupSmokeFailed = true;
+            }
+
             statusText = "Account export failed";
             string reason = export.Message ?? "export failed";
-            AddCombatLogLine("CLI saved account export failed: " + reason);
-            Debug.LogError("MC2 saved account export failed: " + reason + " " + line);
+            AddCombatLogLine((logPrefix ?? "Saved account") + " saved account export failed: " + reason);
+            Debug.LogError(
+                "MC2 saved account export failed: source="
+                + (logPrefix ?? "unknown")
+                + " "
+                + reason
+                + " "
+                + line);
+            return false;
         }
 
         private void RunStartupSavedAccountImportPreview(string requestedPath)
@@ -3698,7 +3721,7 @@ namespace MC2Demo.Presentation
             y += 30f;
             bool showInlineMechBayPreview = showWarehouseDraftFitPreview || showSquadSelectionPreview;
             DrawMechBayInventorySummary(x, y, width, !showInlineMechBayPreview);
-            y += showInlineMechBayPreview ? 304f : 502f;
+            y += showInlineMechBayPreview ? 326f : 524f;
             if (showWarehouseDraftFitPreview)
             {
                 DrawWarehouseDraftFitPreview(x, y, width);
@@ -3763,23 +3786,24 @@ namespace MC2Demo.Presentation
                 new Rect(x, y + 60f, width, 18f),
                 "Assembly " + AssemblyPreviewText(MechBayAssemblyPreviewService.BestAssemblyProgress(demoInventory)));
             DrawLocalCandidatePrepAction(x, y + 82f, width);
-            DrawSavedAccountImportPreviewPathLine(x, y + 104f, width);
-            DrawSavedAccountImportApplyPreviewLine(x, y + 126f, width);
+            DrawSavedAccountImportPathToolsLine(x, y + 104f, width);
+            DrawSavedAccountImportPreviewPathLine(x, y + 126f, width);
+            DrawSavedAccountImportApplyPreviewLine(x, y + 148f, width);
             MechBayWeaponShopPreview shopPreview = MechBayWeaponShopPreviewService.BuildPreview(demoInventory);
             GUI.Label(
-                new Rect(x, y + 146f, width, 18f),
+                new Rect(x, y + 168f, width, 18f),
                 "Shop " + WeaponShopPreviewText(shopPreview));
-            DrawWeaponShopPurchaseStub(x, y + 168f, width, shopPreview, demoInventory);
+            DrawWeaponShopPurchaseStub(x, y + 190f, width, shopPreview, demoInventory);
             MechBayPilotHirePreview pilotHirePreview = MechBayPilotHirePreviewService.BuildPreview(demoInventory);
             GUI.Label(
-                new Rect(x, y + 190f, width, 18f),
+                new Rect(x, y + 212f, width, 18f),
                 "Pilot Hire " + PilotHirePreviewText(pilotHirePreview));
             MechBayOwnedRosterEntry[] roster = MechBayOwnedRosterService.BuildRosterPreview(demoInventory);
             ClampSelectedRosterIndex(roster);
             GUI.Label(
-                new Rect(x, y + 212f, width, 18f),
+                new Rect(x, y + 234f, width, 18f),
                 "Roster " + TruncateText(OwnedRosterText(roster), 62));
-            DrawRosterMissionStateLine(x, y + 234f, width, roster);
+            DrawRosterMissionStateLine(x, y + 256f, width, roster);
             MechBayMissionHandoffPreview handoffPreview =
                 MechBayMissionHandoffPreviewService.BuildPreview(demoInventory);
             MechBayMissionRestartApplyGuard restartGuard =
@@ -3791,13 +3815,13 @@ namespace MC2Demo.Presentation
                 ? MissionHandoffCompletedSummaryText(handoffPreview, restartGuard)
                 : MissionHandoffPlayerSummaryText(handoffPreview, restartGuard);
             GUI.Label(
-                new Rect(x, y + 256f, width, 18f),
+                new Rect(x, y + 278f, width, 18f),
                 "Next Mission " + TruncateText(handoffSummary, 58));
-            DrawMissionHandoffLaunchAction(x, y + 278f, width, handoffPreview, restartGuard);
-            DrawMissionHandoffLineup(x, y + 300f, width, handoffPreview);
+            DrawMissionHandoffLaunchAction(x, y + 300f, width, handoffPreview, restartGuard);
+            DrawMissionHandoffLineup(x, y + 322f, width, handoffPreview);
             if (showRosterDetail)
             {
-                DrawOwnedRosterDetail(x, y + 322f, width, roster, pilotHirePreview);
+                DrawOwnedRosterDetail(x, y + 344f, width, roster, pilotHirePreview);
             }
         }
 
@@ -4608,6 +4632,36 @@ namespace MC2Demo.Presentation
 
             string cost = FormatTokens(purchasePreview.TokenCost) + " token";
             return purchasePreview.displayName + " " + cost + "  " + purchasePreview.Message;
+        }
+
+        private void DrawSavedAccountImportPathToolsLine(float x, float y, float width)
+        {
+            bool previousEnabled = GUI.enabled;
+            if (DrawActionButton(new Rect(x, y - 2f, 62f, 22f), "Default", true))
+            {
+                savedAccountImportPreviewInputPath = DefaultSavedAccountFilePath();
+                statusText = "Default account path ready";
+            }
+
+            bool canExport = demoInventory != null
+                && !string.IsNullOrWhiteSpace(savedAccountImportPreviewInputPath);
+            GUI.enabled = previousEnabled && canExport;
+            if (DrawActionButton(new Rect(x + 70f, y - 2f, 58f, 22f), "Export", canExport))
+            {
+                TryExportSavedAccount(savedAccountImportPreviewInputPath, false, "Mech bay");
+            }
+
+            GUI.enabled = previousEnabled;
+            string pathText = string.IsNullOrWhiteSpace(savedAccountImportPreviewInputPath)
+                ? "No path"
+                : savedAccountImportPreviewInputPath;
+            DrawActionStateLabel(
+                x + 136f,
+                y,
+                width - 136f,
+                "Save " + pathText,
+                canExport,
+                48);
         }
 
         private void DrawSavedAccountImportPreviewPathLine(float x, float y, float width)
