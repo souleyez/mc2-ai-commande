@@ -3503,6 +3503,16 @@ namespace MC2Demo.Presentation
             GUI.Label(new Rect(x, y, width, 20f), TruncateText(startupContinueDeltaText, 60));
             y += 22f;
             GUI.Label(new Rect(x, y, width, 20f), TruncateText(startupContinueFileText, 60));
+            y += 22f;
+            if (startupSaveChoicesOpenedFromSystem)
+            {
+                string lastSave = string.IsNullOrWhiteSpace(lastSavedAccountFileResultText)
+                    ? "Idle  no save/load result"
+                    : lastSavedAccountFileResultText;
+                GUI.Label(new Rect(x, y, width, 20f), "Last " + TruncateText(lastSave, 58));
+                y += 22f;
+            }
+
             y += 32f;
 
             bool previousEnabled = GUI.enabled;
@@ -7535,7 +7545,7 @@ namespace MC2Demo.Presentation
         private Rect StartupContinuePanelRect()
         {
             float width = Mathf.Clamp(Screen.width - 48f, 360f, 460f);
-            float height = startupSaveChoicesOpenedFromSystem ? 318f : 242f;
+            float height = startupSaveChoicesOpenedFromSystem ? 362f : 264f;
             return new Rect((Screen.width - width) * 0.5f, (Screen.height - height) * 0.5f, width, height);
         }
 

@@ -282,7 +282,7 @@ Save Choices entry, and New Game resets the active demo run without deleting
 the persistent default save. New Game now requires an explicit confirmation,
 system-opened Save Choices can return with Back, and Save Current writes the
 active account to the persistent default save before refreshing the Continue
-summary.
+summary. The same panel now shows the latest save/load result inline.
 Current draft fits are now checked against that starter inventory, so extra
 armor plate or heat sink choices show a shortage and cannot be applied.
 The same starter inventory now owns the demo token balance used by the mech bay:
