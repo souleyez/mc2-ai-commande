@@ -3517,6 +3517,16 @@ namespace MC2Demo.Presentation
 
             GUI.enabled = previousEnabled;
             y += 38f;
+            if (startupSaveChoicesOpenedFromSystem)
+            {
+                if (GUI.Button(new Rect(x, y, width, 30f), "Save Current"))
+                {
+                    TrySaveCurrentFromSaveChoices();
+                }
+
+                y += 38f;
+            }
+
             if (startupNewGameConfirmPending)
             {
                 GUI.Label(new Rect(x, y - 2f, width, 18f), "New game resets this run; default save is kept.");
@@ -7415,6 +7425,14 @@ namespace MC2Demo.Presentation
             RecordSavedAccountFileResult("Save choices", startupContinueSaveReady, startupContinueSummaryText);
         }
 
+        private void TrySaveCurrentFromSaveChoices()
+        {
+            bool saved = TryExportSavedAccount(DefaultSavedAccountFilePath(), false, "Save choices");
+            RefreshStartupContinueSavePreview();
+            startupNewGameConfirmPending = false;
+            statusText = saved ? "Current progress saved" : "Save failed";
+        }
+
         private void ReturnFromSaveChoicesToSystem()
         {
             showStartupContinuePanel = false;
@@ -7509,7 +7527,7 @@ namespace MC2Demo.Presentation
         private Rect StartupContinuePanelRect()
         {
             float width = Mathf.Clamp(Screen.width - 48f, 360f, 460f);
-            float height = startupSaveChoicesOpenedFromSystem ? 280f : 242f;
+            float height = startupSaveChoicesOpenedFromSystem ? 318f : 242f;
             return new Rect((Screen.width - width) * 0.5f, (Screen.height - height) * 0.5f, width, height);
         }
 
