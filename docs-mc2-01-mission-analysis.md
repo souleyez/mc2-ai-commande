@@ -259,6 +259,8 @@ action, so a manual import apply preview can be generated from the UI instead
 of only from startup command files.
 `Default` and `Export` helpers now fill a persistent demo save path and write
 the current local account snapshot there before preview/apply.
+A guarded `Load` helper now previews and applies that persistent demo save path
+when the default save file exists.
 The same summary also keeps a compact `Last Save` result line, so the latest
 export, preview, apply, or blocked save/load outcome stays visible.
 Guarded account-changing actions now auto-save the current local account

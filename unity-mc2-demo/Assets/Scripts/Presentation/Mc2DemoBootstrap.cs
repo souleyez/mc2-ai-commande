@@ -845,6 +845,14 @@ namespace MC2Demo.Presentation
             TryApplySavedAccountImport(DefaultSavedAccountFilePath(), true, "CLI default load");
         }
 
+        private bool TryLoadDefaultSavedAccount(string logPrefix)
+        {
+            string defaultPath = DefaultSavedAccountFilePath();
+            savedAccountImportPreviewInputPath = defaultPath;
+            return TryPreviewSavedAccountImportApply(defaultPath, false, logPrefix)
+                && TryApplySavedAccountImport(defaultPath, false, logPrefix);
+        }
+
         private bool TryApplySavedAccountImport(
             string requestedPath,
             bool markStartupSmokeFailure,
@@ -4753,17 +4761,25 @@ namespace MC2Demo.Presentation
                 TryExportSavedAccount(savedAccountImportPreviewInputPath, false, "Mech bay");
             }
 
+            string defaultPath = DefaultSavedAccountFilePath();
+            bool canLoadDefault = demoInventory != null && File.Exists(defaultPath);
+            GUI.enabled = previousEnabled && canLoadDefault;
+            if (DrawActionButton(new Rect(x + 136f, y - 2f, 48f, 22f), "Load", canLoadDefault))
+            {
+                TryLoadDefaultSavedAccount("Mech bay default load");
+            }
+
             GUI.enabled = previousEnabled;
             string pathText = string.IsNullOrWhiteSpace(savedAccountImportPreviewInputPath)
                 ? "No path"
                 : savedAccountImportPreviewInputPath;
             DrawActionStateLabel(
-                x + 136f,
+                x + 192f,
                 y,
-                width - 136f,
+                width - 192f,
                 "Save " + pathText,
-                canExport,
-                48);
+                canExport || canLoadDefault,
+                42);
         }
 
         private void DrawSavedAccountImportPreviewPathLine(float x, float y, float width)
