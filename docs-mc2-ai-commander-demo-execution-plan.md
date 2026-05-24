@@ -99,6 +99,7 @@ The Unity demo currently supports:
 - command-file `saved-account-import-apply-preview <path>` can now guard account identity and show the delta that a future import apply would make without applying it
 - mech bay summary now shows the latest import apply preview as a read-only confirmation row
 - command-file `saved-account-import-apply <path>` can now apply a matching accepted preview to the local mech bay through a guarded cloned-inventory path
+- mech bay summary now exposes that same guarded import apply path as a disabled-until-ready manual Apply action
 - command-file `prepare-local-candidate` can now produce a ready depot candidate through local receipt assembly, NPC hiring, weapon purchase, and warehouse draft-fit services
 - local candidate prep now records a read-only saved-account delta line so token, mech, ready, depot, and item-stack changes are visible before any real save file exists
 - CLI/AI loop pieces:
@@ -473,5 +474,6 @@ Reason:
 - A guarded `saved-account-import-apply-preview <path>` command now checks account identity and reports what token/mech/depot deltas a future apply would make, without mutating the live mech bay.
 - The mech bay summary now exposes the latest guarded import apply preview as a read-only confirmation row, keeping the future apply path visible without mutating live data.
 - A guarded `saved-account-import-apply <path>` command now requires the latest accepted preview to match path, JSON length, and delta before replacing the local mech bay with a cloned loaded inventory.
-- The next low-risk step is to expose the guarded apply path as a manual mech bay UI action, still disabled unless a matching preview is ready.
+- The mech bay summary now exposes the same guarded import apply path as a manual Apply action that stays disabled unless a matching preview is ready.
+- The next low-risk step is to add a manual saved-account import preview UI affordance so users can choose a file path without relying on startup command files.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.

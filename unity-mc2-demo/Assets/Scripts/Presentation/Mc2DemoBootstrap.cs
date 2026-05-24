@@ -769,6 +769,14 @@ namespace MC2Demo.Presentation
 
         private void RunStartupSavedAccountImportApply(string requestedPath)
         {
+            TryApplySavedAccountImport(requestedPath, true, "CLI");
+        }
+
+        private bool TryApplySavedAccountImport(
+            string requestedPath,
+            bool markStartupSmokeFailure,
+            string logPrefix)
+        {
             string resolvedPath = ResolveStartupCommanderDataFilePath(requestedPath);
             MechBaySavedAccountContract currentAccount = CurrentSavedAccountSnapshot();
             MechBaySavedAccountFileResult preview =
@@ -778,33 +786,49 @@ namespace MC2Demo.Presentation
                 SavedAccountImportApplyBlockReason(resolvedPath, preview, deltaText);
             if (!string.IsNullOrWhiteSpace(blockReason))
             {
-                startupSmokeFailed = true;
+                if (markStartupSmokeFailure)
+                {
+                    startupSmokeFailed = true;
+                }
+
                 statusText = "Account import apply blocked";
                 lastSavedAccountImportApplyPreviewReady = false;
                 lastSavedAccountImportApplyPreviewText = "Blocked  " + blockReason;
-                AddCombatLogLine("CLI saved account import apply blocked: " + blockReason);
+                AddCombatLogLine((logPrefix ?? "Saved account") + " saved account import apply blocked: " + blockReason);
                 Debug.LogError(
                     "MC2 saved account import apply blocked: path="
                     + resolvedPath
+                    + " source="
+                    + (logPrefix ?? "unknown")
                     + " delta="
                     + deltaText
                     + " message="
                     + (preview?.Message ?? blockReason));
-                return;
+                return false;
             }
 
             MechBaySavedAccountFileResult apply =
                 MechBaySavedAccountService.ApplyImportJsonFile(resolvedPath, currentAccount);
             if (apply == null || !apply.Accepted || apply.AppliedInventory == null)
             {
-                startupSmokeFailed = true;
+                if (markStartupSmokeFailure)
+                {
+                    startupSmokeFailed = true;
+                }
+
                 statusText = "Account import apply failed";
                 string reason = apply?.Message ?? "apply failed";
                 lastSavedAccountImportApplyPreviewReady = false;
                 lastSavedAccountImportApplyPreviewText = "Blocked  " + reason;
-                AddCombatLogLine("CLI saved account import apply failed: " + reason);
-                Debug.LogError("MC2 saved account import apply failed: path=" + resolvedPath + " message=" + reason);
-                return;
+                AddCombatLogLine((logPrefix ?? "Saved account") + " saved account import apply failed: " + reason);
+                Debug.LogError(
+                    "MC2 saved account import apply failed: path="
+                    + resolvedPath
+                    + " source="
+                    + (logPrefix ?? "unknown")
+                    + " message="
+                    + reason);
+                return false;
             }
 
             demoInventory = apply.AppliedInventory;
@@ -817,16 +841,19 @@ namespace MC2Demo.Presentation
             lastSavedAccountImportApplyPreviewJsonCharCount = apply.JsonCharCount;
             lastSavedAccountImportApplyPreviewText = "Applied  " + deltaText;
             statusText = "Account import applied";
-            AddCombatLogLine("CLI saved account import apply OK: " + deltaText);
+            AddCombatLogLine((logPrefix ?? "Saved account") + " saved account import apply OK: " + deltaText);
             Debug.Log(
                 "MC2 saved account import apply: path="
                 + resolvedPath
+                + " source="
+                + (logPrefix ?? "unknown")
                 + " jsonChars="
                 + apply.JsonCharCount.ToString(CultureInfo.InvariantCulture)
                 + " delta="
                 + deltaText
                 + " message="
                 + apply.Message);
+            return true;
         }
 
         private string SavedAccountImportApplyBlockReason(
@@ -4564,16 +4591,27 @@ namespace MC2Demo.Presentation
         private void DrawSavedAccountImportApplyPreviewLine(float x, float y, float width)
         {
             bool hasPreview = !string.IsNullOrWhiteSpace(lastSavedAccountImportApplyPreviewText);
+            bool ready = hasPreview
+                && lastSavedAccountImportApplyPreviewReady
+                && !string.IsNullOrWhiteSpace(lastSavedAccountImportApplyPreviewPath);
             string text = hasPreview
                 ? lastSavedAccountImportApplyPreviewText
                 : "Idle  no import apply preview";
+            bool previousEnabled = GUI.enabled;
+            GUI.enabled = previousEnabled && ready;
+            if (DrawActionButton(new Rect(x, y - 2f, 58f, 22f), "Apply", ready))
+            {
+                TryApplySavedAccountImport(lastSavedAccountImportApplyPreviewPath, false, "Mech bay");
+            }
+
+            GUI.enabled = previousEnabled;
             DrawActionStateLabel(
-                x,
+                x + 66f,
                 y,
-                width,
+                width - 66f,
                 "Import Apply " + text,
-                hasPreview && lastSavedAccountImportApplyPreviewReady,
-                68);
+                ready,
+                56);
         }
 
         private void DrawLocalCandidatePrepAction(float x, float y, float width)

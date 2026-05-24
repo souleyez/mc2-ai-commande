@@ -252,6 +252,8 @@ apply command exists.
 The explicit `saved-account-import-apply <path>` command now consumes that guard:
 it only applies when the latest preview still matches the same path, JSON length,
 and delta, then swaps the live demo mech bay to a cloned loaded inventory.
+The mech bay summary exposes the same guard as an `Apply` action that stays
+disabled until a matching import apply preview is ready.
 Current draft fits are now checked against that starter inventory, so extra
 armor plate or heat sink choices show a shortage and cannot be applied.
 The same starter inventory now owns the demo token balance used by the mech bay:
