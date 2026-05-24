@@ -643,6 +643,9 @@ namespace MC2Demo.Presentation
                     case StartupCommanderScriptActionKind.SavedAccountLoadDefaultPreview:
                         RunStartupSavedAccountLoadDefaultPreview();
                         break;
+                    case StartupCommanderScriptActionKind.SavedAccountSaveCurrentDefault:
+                        RunStartupSavedAccountSaveCurrentDefault();
+                        break;
                     case StartupCommanderScriptActionKind.SavedAccountLoadDefaultApply:
                         RunStartupSavedAccountLoadDefaultApply();
                         break;
@@ -999,6 +1002,11 @@ namespace MC2Demo.Presentation
         private void RunStartupSavedAccountLoadDefaultPreview()
         {
             TryPreviewSavedAccountImportApply(DefaultSavedAccountFilePath(), true, "CLI default load");
+        }
+
+        private void RunStartupSavedAccountSaveCurrentDefault()
+        {
+            TryExportSavedAccount(DefaultSavedAccountFilePath(), true, "CLI default save current");
         }
 
         private void RunStartupSavedAccountLoadDefaultApply()

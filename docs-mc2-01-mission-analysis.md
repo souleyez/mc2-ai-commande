@@ -270,6 +270,8 @@ Startup command files can also preview and apply that persistent default save
 through `saved-account-load-default-preview` and
 `saved-account-load-default-apply`, reusing the same identity and file-change
 guard as manual imports.
+They can now also run `saved-account-save-current-default` to write the active
+account to that same persistent default save path before preview/apply checks.
 The explicit `-mc2LoadDefaultSave` startup flag now uses that same guarded path
 when the persistent default save file exists, and skips cleanly on first run.
 Manual demo startup now shows a lightweight Continue/New Game panel when that

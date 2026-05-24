@@ -217,6 +217,18 @@ namespace MC2Demo.Presentation
                 return true;
             }
 
+            if (string.Equals(verb, "saved-account-save-current-default", StringComparison.OrdinalIgnoreCase))
+            {
+                if (!string.IsNullOrWhiteSpace(payload))
+                {
+                    error = "Saved account default current save action does not accept arguments.";
+                    return false;
+                }
+
+                action = StartupCommanderScriptAction.SavedAccountSaveCurrentDefault(lineNumber, rawLine);
+                return true;
+            }
+
             if (string.Equals(verb, "saved-account-load-default-apply", StringComparison.OrdinalIgnoreCase))
             {
                 if (!string.IsNullOrWhiteSpace(payload))
@@ -283,7 +295,7 @@ namespace MC2Demo.Presentation
                 return true;
             }
 
-            error = "Command file action must be command, advance, report, restart, mech-bay-launch, hide-squad-preview, saved-account-report, saved-account-save-load-preview, saved-account-export, saved-account-import-preview, saved-account-import-apply-preview, saved-account-import-apply, saved-account-load-default-preview, saved-account-load-default-apply, prepare-depot-candidate, prepare-local-candidate, squad-swap, or assert-restart-identity.";
+            error = "Command file action must be command, advance, report, restart, mech-bay-launch, hide-squad-preview, saved-account-report, saved-account-save-load-preview, saved-account-export, saved-account-import-preview, saved-account-import-apply-preview, saved-account-import-apply, saved-account-load-default-preview, saved-account-save-current-default, saved-account-load-default-apply, prepare-depot-candidate, prepare-local-candidate, squad-swap, or assert-restart-identity.";
             return false;
         }
     }
@@ -448,6 +460,16 @@ namespace MC2Demo.Presentation
             };
         }
 
+        public static StartupCommanderScriptAction SavedAccountSaveCurrentDefault(int lineNumber, string sourceLine)
+        {
+            return new StartupCommanderScriptAction
+            {
+                Kind = StartupCommanderScriptActionKind.SavedAccountSaveCurrentDefault,
+                LineNumber = lineNumber,
+                SourceLine = sourceLine ?? string.Empty
+            };
+        }
+
         public static StartupCommanderScriptAction SavedAccountLoadDefaultApply(int lineNumber, string sourceLine)
         {
             return new StartupCommanderScriptAction
@@ -519,6 +541,7 @@ namespace MC2Demo.Presentation
         SavedAccountImportApplyPreview,
         SavedAccountImportApply,
         SavedAccountLoadDefaultPreview,
+        SavedAccountSaveCurrentDefault,
         SavedAccountLoadDefaultApply,
         PrepareDepotCandidate,
         PrepareLocalCandidate,

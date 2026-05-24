@@ -100,6 +100,7 @@ The Unity demo currently supports:
 - mech bay summary now shows the latest import apply preview as a read-only confirmation row
 - command-file `saved-account-import-apply <path>` can now apply a matching accepted preview to the local mech bay through a guarded cloned-inventory path
 - command-file `saved-account-load-default-preview` and `saved-account-load-default-apply` can now preview/apply the persistent demo save file through the same guard
+- command-file `saved-account-save-current-default` now writes the active account to the persistent demo save path for Save Current smoke coverage
 - mech bay summary now exposes that same guarded import apply path as a disabled-until-ready manual Apply action
 - mech bay summary now includes a manual saved-account JSON path field plus Preview action, so the guarded apply flow can start from UI
 - mech bay summary now provides Default and Export helpers that point at a persistent demo save file and write the current account snapshot there
@@ -493,6 +494,7 @@ Reason:
 - The mech bay summary now keeps a compact Last Save result line for export, preview, apply, and blocked save/load outcomes.
 - Guarded account-changing actions now auto-save the current local account snapshot to the persistent demo save file, including mission receipts, import apply, candidate prep, shop purchases, pilot hires, warehouse fits, squad selection, and repairs.
 - Startup command files can now run `saved-account-load-default-preview` and `saved-account-load-default-apply`, restoring the persistent demo save path through the existing import-apply guard.
+- Startup command files can now run `saved-account-save-current-default`, explicitly covering the Save Current default export path before preview/apply smoke checks.
 - The explicit `-mc2LoadDefaultSave` startup flag now restores the persistent demo save path through the existing import-apply guard when the file exists, and skips cleanly when it does not.
 - Manual demo startup now shows a lightweight Continue/New Game panel when the persistent demo save exists and no automation startup args are used, with account summary, token/depot/item counts, delta, and save timestamp visible before Continue is enabled.
 - The pause/system panel now exposes the same Save Choices entry, so testers can reopen Continue/New Game after launch; New Game requires an explicit confirmation and resets the active demo run while keeping the persistent default save untouched.
