@@ -58,6 +58,8 @@ namespace MC2Demo.Presentation
         private bool showLoadoutPanel;
         private bool showSystemPanel;
         private bool showStartupContinuePanel;
+        private bool startupSaveChoicesOpenedFromSystem;
+        private bool startupNewGameConfirmPending;
         private bool startupContinueSaveReady;
         private string startupContinueSummaryText;
         private string startupContinueRosterText;
@@ -232,6 +234,8 @@ namespace MC2Demo.Presentation
             pendingDetachedUnitId = null;
             pendingJumpOrder = false;
             showStartupContinuePanel = false;
+            startupSaveChoicesOpenedFromSystem = false;
+            startupNewGameConfirmPending = false;
             showMissionMap = false;
             showLoadoutPanel = false;
             showSystemPanel = false;
@@ -437,6 +441,8 @@ namespace MC2Demo.Presentation
         private void ConfigureStartupContinuePanel(string[] args)
         {
             showStartupContinuePanel = false;
+            startupSaveChoicesOpenedFromSystem = false;
+            startupNewGameConfirmPending = false;
             if (HasStartupAutomationArgs(args) || !RefreshStartupContinueSavePreview())
             {
                 return;
@@ -3498,6 +3504,8 @@ namespace MC2Demo.Presentation
                 if (TryLoadDefaultSavedAccount("Startup continue"))
                 {
                     showStartupContinuePanel = false;
+                    startupSaveChoicesOpenedFromSystem = false;
+                    startupNewGameConfirmPending = false;
                     if (mission.Result == MissionResultState.InProgress)
                     {
                         SetPaused(false);
@@ -3509,9 +3517,37 @@ namespace MC2Demo.Presentation
 
             GUI.enabled = previousEnabled;
             y += 38f;
-            if (GUI.Button(new Rect(x, y, width, 30f), "New Game"))
+            if (startupNewGameConfirmPending)
             {
-                TryStartFreshDemoRun("New game started");
+                GUI.Label(new Rect(x, y - 2f, width, 18f), "New game resets this run; default save is kept.");
+                y += 24f;
+                float halfWidth = (width - 8f) * 0.5f;
+                if (GUI.Button(new Rect(x, y, halfWidth, 30f), "Confirm New"))
+                {
+                    TryStartFreshDemoRun("New game started");
+                }
+
+                if (GUI.Button(new Rect(x + halfWidth + 8f, y, halfWidth, 30f), "Cancel"))
+                {
+                    startupNewGameConfirmPending = false;
+                    statusText = "New game canceled";
+                }
+            }
+            else
+            {
+                if (GUI.Button(new Rect(x, y, width, 30f), "New Game"))
+                {
+                    startupNewGameConfirmPending = true;
+                    statusText = "Confirm new game";
+                    RecordSavedAccountFileResult("New Game confirm", false, "default save kept");
+                }
+
+                y += 38f;
+                if (startupSaveChoicesOpenedFromSystem
+                    && GUI.Button(new Rect(x, y, width, 30f), "Back"))
+                {
+                    ReturnFromSaveChoicesToSystem();
+                }
             }
         }
 
@@ -7362,6 +7398,8 @@ namespace MC2Demo.Presentation
         {
             RefreshStartupContinueSavePreview();
             showStartupContinuePanel = true;
+            startupSaveChoicesOpenedFromSystem = true;
+            startupNewGameConfirmPending = false;
             showSystemPanel = false;
             showLoadoutPanel = false;
             showMissionMap = false;
@@ -7375,6 +7413,15 @@ namespace MC2Demo.Presentation
             pendingJumpOrder = false;
             statusText = startupContinueSaveReady ? "Save choices open" : "New game available";
             RecordSavedAccountFileResult("Save choices", startupContinueSaveReady, startupContinueSummaryText);
+        }
+
+        private void ReturnFromSaveChoicesToSystem()
+        {
+            showStartupContinuePanel = false;
+            startupSaveChoicesOpenedFromSystem = false;
+            startupNewGameConfirmPending = false;
+            OpenSystemPanel();
+            statusText = "System open";
         }
 
         private void OpenLoadoutPanel()
@@ -7462,7 +7509,7 @@ namespace MC2Demo.Presentation
         private Rect StartupContinuePanelRect()
         {
             float width = Mathf.Clamp(Screen.width - 48f, 360f, 460f);
-            float height = 242f;
+            float height = startupSaveChoicesOpenedFromSystem ? 280f : 242f;
             return new Rect((Screen.width - width) * 0.5f, (Screen.height - height) * 0.5f, width, height);
         }
 
