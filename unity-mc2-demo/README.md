@@ -83,6 +83,7 @@ Current demo behavior:
 - shows the latest import apply preview in the mech bay summary as a read-only confirmation row
 - supports explicit command-file `saved-account-import-apply <path>` to apply a matching accepted preview to the local mech bay through a cloned-inventory guard
 - supports explicit command-file `saved-account-load-default-preview` and `saved-account-load-default-apply` actions for the persistent demo save file
+- supports `-mc2LoadDefaultSave` to explicitly restore the persistent demo save during startup when that file exists
 - exposes that same guarded import apply path as a mech bay Apply action that stays disabled until a matching preview is ready
 - includes a mech bay JSON path field and Preview action for manually generating the guarded import apply preview
 - includes Default and Export helpers that use a persistent demo save path for the current local account snapshot
@@ -266,6 +267,16 @@ Run the player with a startup command file that creates a default saved account,
   -batchmode -nographics -mc2SmokeTest `
   -mc2CommandFile ".\Assets\StreamingAssets\CommanderScripts\mc2_01-saved-account-load-default.txt" `
   -logFile "$PWD\..\analysis-output\unity-player-saved-account-load-default.log"
+```
+
+Run the player with a startup flag that explicitly restores the persistent default saved account if it exists:
+
+```powershell
+& .\Builds\Windows\MC2UnityDemo.exe `
+  -batchmode -nographics -mc2SmokeTest `
+  -mc2LoadDefaultSave `
+  -mc2ReportState `
+  -logFile "$PWD\..\analysis-output\unity-player-load-default-save-arg.log"
 ```
 
 Run the player with a direct startup restart:

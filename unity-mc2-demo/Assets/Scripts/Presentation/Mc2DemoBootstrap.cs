@@ -375,6 +375,9 @@ namespace MC2Demo.Presentation
                     case "-mc2RestartMission":
                         RunStartupMissionRestart();
                         break;
+                    case "-mc2LoadDefaultSave":
+                        RunStartupLoadDefaultSave();
+                        break;
                     case "-mc2MinimaxCommanderSteps":
                         index = RunStartupMiniMaxCommander(args, index);
                         break;
@@ -843,6 +846,25 @@ namespace MC2Demo.Presentation
         private void RunStartupSavedAccountLoadDefaultApply()
         {
             TryApplySavedAccountImport(DefaultSavedAccountFilePath(), true, "CLI default load");
+        }
+
+        private void RunStartupLoadDefaultSave()
+        {
+            string defaultPath = DefaultSavedAccountFilePath();
+            savedAccountImportPreviewInputPath = defaultPath;
+            if (!File.Exists(defaultPath))
+            {
+                statusText = "Default save missing";
+                RecordSavedAccountFileResult("Load skipped", false, SavedAccountFileName(defaultPath));
+                AddCombatLogLine("CLI default save load skipped: no default save");
+                Debug.Log("MC2 saved account default load skipped: path=" + defaultPath);
+                return;
+            }
+
+            if (TryPreviewSavedAccountImportApply(defaultPath, true, "CLI default load"))
+            {
+                TryApplySavedAccountImport(defaultPath, true, "CLI default load");
+            }
         }
 
         private bool TryLoadDefaultSavedAccount(string logPrefix)

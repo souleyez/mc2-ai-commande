@@ -113,6 +113,7 @@ The Unity demo currently supports:
   - `-mc2AdvanceSeconds`
   - `-mc2ReportState`
   - `-mc2RestartMission`
+  - `-mc2LoadDefaultSave`
   - ordered startup command execution
 
 ## Guardrails
@@ -487,5 +488,6 @@ Reason:
 - The mech bay summary now keeps a compact Last Save result line for export, preview, apply, and blocked save/load outcomes.
 - Guarded account-changing actions now auto-save the current local account snapshot to the persistent demo save file, including mission receipts, import apply, candidate prep, shop purchases, pilot hires, warehouse fits, squad selection, and repairs.
 - Startup command files can now run `saved-account-load-default-preview` and `saved-account-load-default-apply`, restoring the persistent demo save path through the existing import-apply guard.
-- The next low-risk step is to add a guarded automatic startup flag so manual demo runs can opt into restoring progress without opening the mech bay first.
+- The explicit `-mc2LoadDefaultSave` startup flag now restores the persistent demo save path through the existing import-apply guard when the file exists, and skips cleanly when it does not.
+- The next low-risk step is to add a player-facing startup/continue affordance around this restore path, so manual demo runs can choose Continue without remembering command-line flags.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.

@@ -270,6 +270,8 @@ Startup command files can also preview and apply that persistent default save
 through `saved-account-load-default-preview` and
 `saved-account-load-default-apply`, reusing the same identity and file-change
 guard as manual imports.
+The explicit `-mc2LoadDefaultSave` startup flag now uses that same guarded path
+when the persistent default save file exists, and skips cleanly on first run.
 Current draft fits are now checked against that starter inventory, so extra
 armor plate or heat sink choices show a shortage and cannot be applied.
 The same starter inventory now owns the demo token balance used by the mech bay:
