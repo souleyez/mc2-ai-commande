@@ -112,6 +112,7 @@ The Unity demo currently supports:
 - the pause/system panel now exposes the same Save Choices entry, and New Game resets the active demo run without deleting the persistent default save
 - New Game now requires an explicit confirmation inside Save Choices, and system-opened Save Choices can return with Back
 - system-opened Save Choices now has a Save Current action that writes the active account to the persistent default save and refreshes the Continue summary
+- system-opened Save Choices now has Export Copy and Reset Slot actions; Reset Slot requires confirmation, copies the old default save first, then overwrites the default slot with a fresh demo snapshot
 - command-file `prepare-local-candidate` can now produce a ready depot candidate through local receipt assembly, NPC hiring, weapon purchase, and warehouse draft-fit services
 - local candidate prep now records a read-only saved-account delta line so token, mech, ready, depot, and item-stack changes are visible before any real save file exists
 - CLI/AI loop pieces:
@@ -501,5 +502,6 @@ Reason:
 - System-opened Save Choices can now return with Back, keeping the panel useful as an in-run save/title shell rather than a one-way modal.
 - System-opened Save Choices now has a Save Current action that writes the active account to the persistent default save and refreshes the displayed Continue summary.
 - System-opened Save Choices now shows the latest save/load result inline, so Save Current feedback stays visible inside the same panel.
-- The next low-risk step is to add a real profile-slot reset/export confirmation when the UI moves beyond IMGUI, then migrate these save choices into the future title shell.
+- System-opened Save Choices now has Export Copy and Reset Slot controls; Reset Slot requires confirmation, copies the old default save first, then replaces the default slot with a fresh demo snapshot.
+- The next low-risk step is to migrate these save choices into the future title shell once the UI moves beyond IMGUI.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.

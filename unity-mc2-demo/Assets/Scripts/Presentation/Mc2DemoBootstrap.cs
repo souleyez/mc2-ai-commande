@@ -60,6 +60,7 @@ namespace MC2Demo.Presentation
         private bool showStartupContinuePanel;
         private bool startupSaveChoicesOpenedFromSystem;
         private bool startupNewGameConfirmPending;
+        private bool startupResetSlotConfirmPending;
         private bool startupContinueSaveReady;
         private string startupContinueSummaryText;
         private string startupContinueRosterText;
@@ -236,6 +237,7 @@ namespace MC2Demo.Presentation
             showStartupContinuePanel = false;
             startupSaveChoicesOpenedFromSystem = false;
             startupNewGameConfirmPending = false;
+            startupResetSlotConfirmPending = false;
             showMissionMap = false;
             showLoadoutPanel = false;
             showSystemPanel = false;
@@ -443,6 +445,7 @@ namespace MC2Demo.Presentation
             showStartupContinuePanel = false;
             startupSaveChoicesOpenedFromSystem = false;
             startupNewGameConfirmPending = false;
+            startupResetSlotConfirmPending = false;
             if (HasStartupAutomationArgs(args) || !RefreshStartupContinueSavePreview())
             {
                 return;
@@ -701,6 +704,14 @@ namespace MC2Demo.Presentation
             return Path.Combine(Application.persistentDataPath, "mc2-demo-saved-account.json");
         }
 
+        private static string DefaultSavedAccountExportCopyPath()
+        {
+            string defaultPath = DefaultSavedAccountFilePath();
+            string directory = Path.GetDirectoryName(defaultPath);
+            string stamp = DateTime.Now.ToString("yyyyMMdd-HHmmss-fff", CultureInfo.InvariantCulture);
+            return Path.Combine(directory ?? string.Empty, "mc2-demo-saved-account-export-" + stamp + ".json");
+        }
+
         private void LogStartupCommanderCommand(string commandLine, CommanderCommandResult result)
         {
             string line = "CLI command: " + (string.IsNullOrWhiteSpace(commandLine) ? "<empty>" : commandLine);
@@ -879,6 +890,43 @@ namespace MC2Demo.Presentation
                 + " "
                 + line);
             return false;
+        }
+
+        private bool TryCopyDefaultSavedAccountFile(out string copyPath, out string reason)
+        {
+            string defaultPath = DefaultSavedAccountFilePath();
+            copyPath = string.Empty;
+            reason = string.Empty;
+            if (!File.Exists(defaultPath))
+            {
+                reason = "No default save to copy";
+                return true;
+            }
+
+            copyPath = DefaultSavedAccountExportCopyPath();
+            try
+            {
+                string directory = Path.GetDirectoryName(copyPath);
+                if (!string.IsNullOrWhiteSpace(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
+
+                File.Copy(defaultPath, copyPath, false);
+                if (File.Exists(copyPath))
+                {
+                    reason = "Copy " + SavedAccountFileName(copyPath);
+                    return true;
+                }
+
+                reason = "Copy file missing";
+                return false;
+            }
+            catch (Exception exception)
+            {
+                reason = "Copy exception: " + exception.Message;
+                return false;
+            }
         }
 
         private void RunStartupSavedAccountImportPreview(string requestedPath)
@@ -3524,6 +3572,7 @@ namespace MC2Demo.Presentation
                     showStartupContinuePanel = false;
                     startupSaveChoicesOpenedFromSystem = false;
                     startupNewGameConfirmPending = false;
+                    startupResetSlotConfirmPending = false;
                     if (mission.Result == MissionResultState.InProgress)
                     {
                         SetPaused(false);
@@ -3537,15 +3586,37 @@ namespace MC2Demo.Presentation
             y += 38f;
             if (startupSaveChoicesOpenedFromSystem)
             {
-                if (GUI.Button(new Rect(x, y, width, 30f), "Save Current"))
+                float halfWidth = (width - 8f) * 0.5f;
+                if (GUI.Button(new Rect(x, y, halfWidth, 30f), "Save Current"))
                 {
                     TrySaveCurrentFromSaveChoices();
+                }
+
+                if (GUI.Button(new Rect(x + halfWidth + 8f, y, halfWidth, 30f), "Export Copy"))
+                {
+                    TryExportCopyFromSaveChoices();
                 }
 
                 y += 38f;
             }
 
-            if (startupNewGameConfirmPending)
+            if (startupResetSlotConfirmPending)
+            {
+                GUI.Label(new Rect(x, y - 2f, width, 18f), "Reset slot starts fresh; old default is copied first.");
+                y += 24f;
+                float halfWidth = (width - 8f) * 0.5f;
+                if (GUI.Button(new Rect(x, y, halfWidth, 30f), "Confirm Reset"))
+                {
+                    TryResetDefaultSaveSlotFromSaveChoices();
+                }
+
+                if (GUI.Button(new Rect(x + halfWidth + 8f, y, halfWidth, 30f), "Cancel"))
+                {
+                    startupResetSlotConfirmPending = false;
+                    statusText = "Reset canceled";
+                }
+            }
+            else if (startupNewGameConfirmPending)
             {
                 GUI.Label(new Rect(x, y - 2f, width, 18f), "New game resets this run; default save is kept.");
                 y += 24f;
@@ -3563,9 +3634,29 @@ namespace MC2Demo.Presentation
             }
             else
             {
-                if (GUI.Button(new Rect(x, y, width, 30f), "New Game"))
+                if (startupSaveChoicesOpenedFromSystem)
+                {
+                    float halfWidth = (width - 8f) * 0.5f;
+                    if (GUI.Button(new Rect(x, y, halfWidth, 30f), "New Game"))
+                    {
+                        startupNewGameConfirmPending = true;
+                        startupResetSlotConfirmPending = false;
+                        statusText = "Confirm new game";
+                        RecordSavedAccountFileResult("New Game confirm", false, "default save kept");
+                    }
+
+                    if (GUI.Button(new Rect(x + halfWidth + 8f, y, halfWidth, 30f), "Reset Slot"))
+                    {
+                        startupResetSlotConfirmPending = true;
+                        startupNewGameConfirmPending = false;
+                        statusText = "Confirm slot reset";
+                        RecordSavedAccountFileResult("Reset Slot confirm", false, "old save will be copied first");
+                    }
+                }
+                else if (GUI.Button(new Rect(x, y, width, 30f), "New Game"))
                 {
                     startupNewGameConfirmPending = true;
+                    startupResetSlotConfirmPending = false;
                     statusText = "Confirm new game";
                     RecordSavedAccountFileResult("New Game confirm", false, "default save kept");
                 }
@@ -7428,6 +7519,7 @@ namespace MC2Demo.Presentation
             showStartupContinuePanel = true;
             startupSaveChoicesOpenedFromSystem = true;
             startupNewGameConfirmPending = false;
+            startupResetSlotConfirmPending = false;
             showSystemPanel = false;
             showLoadoutPanel = false;
             showMissionMap = false;
@@ -7448,7 +7540,46 @@ namespace MC2Demo.Presentation
             bool saved = TryExportSavedAccount(DefaultSavedAccountFilePath(), false, "Save choices");
             RefreshStartupContinueSavePreview();
             startupNewGameConfirmPending = false;
+            startupResetSlotConfirmPending = false;
             statusText = saved ? "Current progress saved" : "Save failed";
+        }
+
+        private void TryExportCopyFromSaveChoices()
+        {
+            bool saved = TryExportSavedAccount(DefaultSavedAccountExportCopyPath(), false, "Save choices copy");
+            RefreshStartupContinueSavePreview();
+            startupNewGameConfirmPending = false;
+            startupResetSlotConfirmPending = false;
+            statusText = saved ? "Save copy exported" : "Export copy failed";
+        }
+
+        private void TryResetDefaultSaveSlotFromSaveChoices()
+        {
+            if (!TryCopyDefaultSavedAccountFile(out string copyPath, out string copyReason))
+            {
+                startupResetSlotConfirmPending = false;
+                statusText = "Reset blocked";
+                RecordSavedAccountFileResult("Reset blocked", false, copyReason);
+                AddCombatLogLine("Save slot reset blocked: " + copyReason);
+                Debug.LogError("MC2 save slot reset blocked: " + copyReason);
+                return;
+            }
+
+            bool started = TryStartFreshDemoRun("New save slot started");
+            if (!started)
+            {
+                RecordSavedAccountFileResult("Reset failed", false, "fresh run failed");
+                return;
+            }
+
+            bool saved = TryExportSavedAccount(DefaultSavedAccountFilePath(), false, "Save choices reset");
+            string detail = File.Exists(copyPath)
+                ? "fresh default; old " + SavedAccountFileName(copyPath)
+                : "fresh default";
+            RecordSavedAccountFileResult(saved ? "Reset Slot OK" : "Reset Slot failed", saved, saved ? detail : "fresh export failed");
+            statusText = saved ? "Save slot reset" : "Reset save failed";
+            AddCombatLogLine(saved ? "Save slot reset: " + detail : "Save slot reset failed");
+            Debug.Log("MC2 save slot reset: saved=" + saved + " " + detail + " copy=" + copyReason);
         }
 
         private void ReturnFromSaveChoicesToSystem()
@@ -7456,6 +7587,7 @@ namespace MC2Demo.Presentation
             showStartupContinuePanel = false;
             startupSaveChoicesOpenedFromSystem = false;
             startupNewGameConfirmPending = false;
+            startupResetSlotConfirmPending = false;
             OpenSystemPanel();
             statusText = "System open";
         }
@@ -7545,7 +7677,7 @@ namespace MC2Demo.Presentation
         private Rect StartupContinuePanelRect()
         {
             float width = Mathf.Clamp(Screen.width - 48f, 360f, 460f);
-            float height = startupSaveChoicesOpenedFromSystem ? 362f : 264f;
+            float height = startupSaveChoicesOpenedFromSystem ? 392f : 264f;
             return new Rect((Screen.width - width) * 0.5f, (Screen.height - height) * 0.5f, width, height);
         }
 

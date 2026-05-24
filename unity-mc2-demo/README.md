@@ -86,7 +86,7 @@ Current demo behavior:
 - supports explicit command-file `saved-account-save-current-default` to write the active account to the persistent demo save file
 - supports `-mc2LoadDefaultSave` to explicitly restore the persistent demo save during startup when that file exists
 - shows a lightweight Continue/New Game startup panel for manual runs when the persistent demo save exists, including account summary, token/depot/item counts, delta, and save timestamp
-- exposes the same Save Choices entry from the pause/system panel, with Save Current, inline Last Save feedback, Back support, and an explicit New Game confirmation that resets the active demo run while keeping the persistent default save
+- exposes the same Save Choices entry from the pause/system panel, with Save Current, Export Copy, Reset Slot confirmation, inline Last Save feedback, Back support, and an explicit New Game confirmation that resets the active demo run while keeping the persistent default save
 - exposes that same guarded import apply path as a mech bay Apply action that stays disabled until a matching preview is ready
 - includes a mech bay JSON path field and Preview action for manually generating the guarded import apply preview
 - includes Default and Export helpers that use a persistent demo save path for the current local account snapshot
