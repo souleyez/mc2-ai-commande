@@ -57,6 +57,7 @@ namespace MC2Demo.Presentation
         private bool showMissionMap;
         private bool showLoadoutPanel;
         private bool showSystemPanel;
+        private bool showStartupContinuePanel;
         private bool isPaused;
         private MissionResultState lastMissionResult = MissionResultState.InProgress;
         private Camera mainCamera;
@@ -88,6 +89,7 @@ namespace MC2Demo.Presentation
             LoadMission();
             BuildWorld();
             RunStartupCommanderSequence();
+            ConfigureStartupContinuePanel(Environment.GetCommandLineArgs());
             ScheduleSmokeTestQuitIfRequested();
         }
 
@@ -383,6 +385,54 @@ namespace MC2Demo.Presentation
                         break;
                 }
             }
+        }
+
+        private void ConfigureStartupContinuePanel(string[] args)
+        {
+            showStartupContinuePanel = false;
+            if (HasStartupAutomationArgs(args) || !File.Exists(DefaultSavedAccountFilePath()))
+            {
+                return;
+            }
+
+            showStartupContinuePanel = true;
+            showLoadoutPanel = false;
+            showSystemPanel = false;
+            showMissionMap = false;
+            CloseTransientMechBayDrafts();
+            if (mission?.Result == MissionResultState.InProgress)
+            {
+                SetPaused(true);
+            }
+
+            statusText = "Continue available";
+            RecordSavedAccountFileResult("Continue available", true, SavedAccountFileName(DefaultSavedAccountFilePath()));
+        }
+
+        private static bool HasStartupAutomationArgs(string[] args)
+        {
+            if (args == null)
+            {
+                return false;
+            }
+
+            for (int index = 0; index < args.Length; index++)
+            {
+                string arg = args[index];
+                if (string.Equals(arg, "-mc2SmokeTest", StringComparison.Ordinal)
+                    || string.Equals(arg, "-mc2Command", StringComparison.Ordinal)
+                    || string.Equals(arg, "-mc2CommandFile", StringComparison.Ordinal)
+                    || string.Equals(arg, "-mc2AdvanceSeconds", StringComparison.Ordinal)
+                    || string.Equals(arg, "-mc2ReportState", StringComparison.Ordinal)
+                    || string.Equals(arg, "-mc2RestartMission", StringComparison.Ordinal)
+                    || string.Equals(arg, "-mc2LoadDefaultSave", StringComparison.Ordinal)
+                    || string.Equals(arg, "-mc2MinimaxCommanderSteps", StringComparison.Ordinal))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private int RunStartupCommanderCommand(string[] args, int index)
@@ -3298,6 +3348,12 @@ namespace MC2Demo.Presentation
                 return;
             }
 
+            if (showStartupContinuePanel)
+            {
+                DrawStartupContinuePanel();
+                return;
+            }
+
             DrawUnitPanel();
             DrawCombatPanel();
             DrawMissionBriefPanel();
@@ -3305,6 +3361,56 @@ namespace MC2Demo.Presentation
             DrawLoadoutPanel();
             DrawSystemPanel();
             DrawMissionResultPanel();
+        }
+
+        private void DrawStartupContinuePanel()
+        {
+            if (!showStartupContinuePanel)
+            {
+                return;
+            }
+
+            Rect panel = StartupContinuePanelRect();
+            GUI.Box(panel, "Demo Save");
+            float x = panel.x + 18f;
+            float y = panel.y + 36f;
+            float width = panel.width - 36f;
+            string defaultPath = DefaultSavedAccountFilePath();
+            bool canContinue = File.Exists(defaultPath);
+            GUI.Label(new Rect(x, y, width, 20f), canContinue ? "Continue previous mech bay progress" : "No saved progress found");
+            y += 24f;
+            GUI.Label(new Rect(x, y, width, 20f), "Save " + TruncateText(SavedAccountFileName(defaultPath), 42));
+            y += 34f;
+
+            bool previousEnabled = GUI.enabled;
+            GUI.enabled = previousEnabled && canContinue;
+            if (GUI.Button(new Rect(x, y, width, 30f), "Continue"))
+            {
+                if (TryLoadDefaultSavedAccount("Startup continue"))
+                {
+                    showStartupContinuePanel = false;
+                    if (mission.Result == MissionResultState.InProgress)
+                    {
+                        SetPaused(false);
+                    }
+
+                    statusText = "Continue loaded";
+                }
+            }
+
+            GUI.enabled = previousEnabled;
+            y += 38f;
+            if (GUI.Button(new Rect(x, y, width, 30f), "New Game"))
+            {
+                showStartupContinuePanel = false;
+                RecordSavedAccountFileResult("New Game", false, "default save kept");
+                if (mission.Result == MissionResultState.InProgress)
+                {
+                    SetPaused(false);
+                }
+
+                statusText = "New game started";
+            }
         }
 
         private void DrawUnitPanel()
@@ -7200,6 +7306,11 @@ namespace MC2Demo.Presentation
                 return true;
             }
 
+            if (showStartupContinuePanel && StartupContinuePanelRect().Contains(guiPoint))
+            {
+                return true;
+            }
+
             return showSystemPanel && SystemPanelRect().Contains(guiPoint);
         }
 
@@ -7214,6 +7325,13 @@ namespace MC2Demo.Presentation
         {
             float width = 260f;
             float height = 232f;
+            return new Rect((Screen.width - width) * 0.5f, (Screen.height - height) * 0.5f, width, height);
+        }
+
+        private Rect StartupContinuePanelRect()
+        {
+            float width = 300f;
+            float height = 176f;
             return new Rect((Screen.width - width) * 0.5f, (Screen.height - height) * 0.5f, width, height);
         }
 
