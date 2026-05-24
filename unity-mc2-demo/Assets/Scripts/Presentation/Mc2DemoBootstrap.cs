@@ -58,6 +58,11 @@ namespace MC2Demo.Presentation
         private bool showLoadoutPanel;
         private bool showSystemPanel;
         private bool showStartupContinuePanel;
+        private bool startupContinueSaveReady;
+        private string startupContinueSummaryText;
+        private string startupContinueRosterText;
+        private string startupContinueDeltaText;
+        private string startupContinueFileText;
         private bool isPaused;
         private MissionResultState lastMissionResult = MissionResultState.InProgress;
         private Camera mainCamera;
@@ -390,7 +395,7 @@ namespace MC2Demo.Presentation
         private void ConfigureStartupContinuePanel(string[] args)
         {
             showStartupContinuePanel = false;
-            if (HasStartupAutomationArgs(args) || !File.Exists(DefaultSavedAccountFilePath()))
+            if (HasStartupAutomationArgs(args) || !RefreshStartupContinueSavePreview())
             {
                 return;
             }
@@ -406,7 +411,62 @@ namespace MC2Demo.Presentation
             }
 
             statusText = "Continue available";
-            RecordSavedAccountFileResult("Continue available", true, SavedAccountFileName(DefaultSavedAccountFilePath()));
+            RecordSavedAccountFileResult("Continue available", startupContinueSaveReady, startupContinueSummaryText);
+        }
+
+        private bool RefreshStartupContinueSavePreview()
+        {
+            string defaultPath = DefaultSavedAccountFilePath();
+            startupContinueSaveReady = false;
+            startupContinueSummaryText = "No saved progress found";
+            startupContinueRosterText = "New Game starts the fresh demo state";
+            startupContinueDeltaText = string.Empty;
+            startupContinueFileText = "Save " + SavedAccountFileName(defaultPath);
+            if (!File.Exists(defaultPath))
+            {
+                return false;
+            }
+
+            startupContinueFileText = SavedAccountFileSummaryText(defaultPath);
+            MechBaySavedAccountFileResult preview =
+                MechBaySavedAccountService.PreviewImportApplyJsonFile(defaultPath, CurrentSavedAccountSnapshot());
+            if (preview == null || !preview.Accepted)
+            {
+                startupContinueSummaryText = "Save needs review";
+                startupContinueRosterText = preview?.Message ?? "Preview failed";
+                startupContinueDeltaText = "Continue disabled";
+                return true;
+            }
+
+            startupContinueSaveReady = true;
+            startupContinueSummaryText = MechBaySavedAccountService.SummaryText(preview.LoadedAccount);
+            MechBaySavedAccountCounters counters =
+                preview.Validation?.Counters ?? new MechBaySavedAccountCounters();
+            startupContinueRosterText =
+                "Tokens "
+                + counters.tokenBalance.ToString(CultureInfo.InvariantCulture)
+                + "  Depot "
+                + counters.warehouseMechCount.ToString(CultureInfo.InvariantCulture)
+                + "  Items "
+                + counters.itemStackCount.ToString(CultureInfo.InvariantCulture);
+            startupContinueDeltaText = MechBaySavedAccountService.DeltaText(preview.Delta);
+            return true;
+        }
+
+        private static string SavedAccountFileSummaryText(string path)
+        {
+            try
+            {
+                FileInfo file = new(path);
+                return "File "
+                    + SavedAccountFileName(path)
+                    + "  Saved "
+                    + file.LastWriteTime.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
+            }
+            catch (Exception exception)
+            {
+                return "File " + SavedAccountFileName(path) + "  " + exception.Message;
+            }
         }
 
         private static bool HasStartupAutomationArgs(string[] args)
@@ -3376,11 +3436,18 @@ namespace MC2Demo.Presentation
             float y = panel.y + 36f;
             float width = panel.width - 36f;
             string defaultPath = DefaultSavedAccountFilePath();
-            bool canContinue = File.Exists(defaultPath);
-            GUI.Label(new Rect(x, y, width, 20f), canContinue ? "Continue previous mech bay progress" : "No saved progress found");
+            bool fileExists = File.Exists(defaultPath);
+            bool canContinue = fileExists && startupContinueSaveReady;
+            GUI.Label(new Rect(x, y, width, 20f), canContinue ? "Continue saved mech bay progress" : "Saved progress needs review");
             y += 24f;
-            GUI.Label(new Rect(x, y, width, 20f), "Save " + TruncateText(SavedAccountFileName(defaultPath), 42));
-            y += 34f;
+            GUI.Label(new Rect(x, y, width, 20f), TruncateText(startupContinueSummaryText, 60));
+            y += 22f;
+            GUI.Label(new Rect(x, y, width, 20f), TruncateText(startupContinueRosterText, 60));
+            y += 22f;
+            GUI.Label(new Rect(x, y, width, 20f), TruncateText(startupContinueDeltaText, 60));
+            y += 22f;
+            GUI.Label(new Rect(x, y, width, 20f), TruncateText(startupContinueFileText, 60));
+            y += 32f;
 
             bool previousEnabled = GUI.enabled;
             GUI.enabled = previousEnabled && canContinue;
@@ -7330,8 +7397,8 @@ namespace MC2Demo.Presentation
 
         private Rect StartupContinuePanelRect()
         {
-            float width = 300f;
-            float height = 176f;
+            float width = Mathf.Clamp(Screen.width - 48f, 360f, 460f);
+            float height = 242f;
             return new Rect((Screen.width - width) * 0.5f, (Screen.height - height) * 0.5f, width, height);
         }
 

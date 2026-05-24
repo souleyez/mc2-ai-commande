@@ -273,7 +273,9 @@ guard as manual imports.
 The explicit `-mc2LoadDefaultSave` startup flag now uses that same guarded path
 when the persistent default save file exists, and skips cleanly on first run.
 Manual demo startup now shows a lightweight Continue/New Game panel when that
-persistent default save exists and no automation startup args are present.
+persistent default save exists and no automation startup args are present. The
+panel previews account summary, token/depot/item counts, delta, and save
+timestamp before enabling Continue.
 Current draft fits are now checked against that starter inventory, so extra
 armor plate or heat sink choices show a shortage and cannot be applied.
 The same starter inventory now owns the demo token balance used by the mech bay:
