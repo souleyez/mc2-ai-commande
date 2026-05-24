@@ -259,6 +259,8 @@ action, so a manual import apply preview can be generated from the UI instead
 of only from startup command files.
 `Default` and `Export` helpers now fill a persistent demo save path and write
 the current local account snapshot there before preview/apply.
+The same summary also keeps a compact `Last Save` result line, so the latest
+export, preview, apply, or blocked save/load outcome stays visible.
 Current draft fits are now checked against that starter inventory, so extra
 armor plate or heat sink choices show a shortage and cannot be applied.
 The same starter inventory now owns the demo token balance used by the mech bay:

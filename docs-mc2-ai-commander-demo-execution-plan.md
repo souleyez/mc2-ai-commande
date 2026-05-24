@@ -102,6 +102,7 @@ The Unity demo currently supports:
 - mech bay summary now exposes that same guarded import apply path as a disabled-until-ready manual Apply action
 - mech bay summary now includes a manual saved-account JSON path field plus Preview action, so the guarded apply flow can start from UI
 - mech bay summary now provides Default and Export helpers that point at a persistent demo save file and write the current account snapshot there
+- mech bay summary now keeps a compact Last Save line for the latest export, preview, apply, or blocked save/load result
 - command-file `prepare-local-candidate` can now produce a ready depot candidate through local receipt assembly, NPC hiring, weapon purchase, and warehouse draft-fit services
 - local candidate prep now records a read-only saved-account delta line so token, mech, ready, depot, and item-stack changes are visible before any real save file exists
 - CLI/AI loop pieces:
@@ -479,5 +480,6 @@ Reason:
 - The mech bay summary now exposes the same guarded import apply path as a manual Apply action that stays disabled unless a matching preview is ready.
 - The mech bay summary now includes a manual saved-account JSON path field and Preview action, so users can generate a guarded import apply preview without relying on startup command files.
 - The mech bay summary now provides Default and Export helpers that point at a persistent demo save file and write the current local account snapshot before preview/apply.
-- The next low-risk step is to add a compact import/apply result line or recent-path memory so manual save/load feedback stays readable after more inventory UI grows.
+- The mech bay summary now keeps a compact Last Save result line for export, preview, apply, and blocked save/load outcomes.
+- The next low-risk step is to add a true local auto-save hook after guarded account-changing actions so the demo can persist progress without command files.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.
