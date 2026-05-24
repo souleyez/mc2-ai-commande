@@ -82,6 +82,7 @@ Current demo behavior:
 - supports explicit command-file `saved-account-import-apply-preview <path>` to show what a future import apply would change without mutating the mech bay
 - shows the latest import apply preview in the mech bay summary as a read-only confirmation row
 - supports explicit command-file `saved-account-import-apply <path>` to apply a matching accepted preview to the local mech bay through a cloned-inventory guard
+- supports explicit command-file `saved-account-load-default-preview` and `saved-account-load-default-apply` actions for the persistent demo save file
 - exposes that same guarded import apply path as a mech bay Apply action that stays disabled until a matching preview is ready
 - includes a mech bay JSON path field and Preview action for manually generating the guarded import apply preview
 - includes Default and Export helpers that use a persistent demo save path for the current local account snapshot
@@ -257,6 +258,15 @@ Run the player with a startup command file that previews and then explicitly app
   -logFile "$PWD\..\analysis-output\unity-player-saved-account-import-apply.log"
 ```
 
+Run the player with a startup command file that creates a default saved account, previews loading that persistent default save, applies it through the same guard, and previews again:
+
+```powershell
+& .\Builds\Windows\MC2UnityDemo.exe `
+  -batchmode -nographics -mc2SmokeTest `
+  -mc2CommandFile ".\Assets\StreamingAssets\CommanderScripts\mc2_01-saved-account-load-default.txt" `
+  -logFile "$PWD\..\analysis-output\unity-player-saved-account-load-default.log"
+```
+
 Run the player with a direct startup restart:
 
 ```powershell
@@ -296,7 +306,7 @@ command unit unit-1 move 3221 -277
 
 Relative command-file paths are checked from the current working directory first, then from the player `StreamingAssets` folder.
 
-Command files also support `prepare-local-candidate`, `prepare-depot-candidate`, `squad-swap`, `hide-squad-preview`, `saved-account-report`, `saved-account-save-load-preview`, `saved-account-export <path>`, `saved-account-import-preview <path>`, `saved-account-import-apply-preview <path>`, `saved-account-import-apply <path>`, `mech-bay-launch`, and `assert-restart-identity depot`. `prepare-local-candidate` runs the demo receipt, assembly, NPC hire, weapon shop, and warehouse draft-fit services before the swap, then logs a read-only saved-account delta and auto-saves the account snapshot; `hide-squad-preview` verifies the completed replacement cue survives into the general next-mission handoff; `saved-account-report` validates and logs a JSON dry-run of the local account snapshot without writing a file; `saved-account-save-load-preview` serializes and loads that snapshot in memory to prove the future save/load boundary; `saved-account-export` writes a JSON file only when the script provides a path, `saved-account-import-preview` validates a file without applying it to the mech bay, `saved-account-import-apply-preview` adds the identity guard plus would-change delta for a future apply, then exposes the latest preview as a guarded mech bay Apply row with a manual JSON path Preview field, Default/Export helpers, and a compact Last Save result line, and `saved-account-import-apply` requires that matching accepted preview before replacing the local mech bay with a cloned loaded inventory, then auto-saves the resulting local account; `prepare-depot-candidate` remains a direct smoke fallback.
+Command files also support `prepare-local-candidate`, `prepare-depot-candidate`, `squad-swap`, `hide-squad-preview`, `saved-account-report`, `saved-account-save-load-preview`, `saved-account-export <path>`, `saved-account-import-preview <path>`, `saved-account-import-apply-preview <path>`, `saved-account-import-apply <path>`, `saved-account-load-default-preview`, `saved-account-load-default-apply`, `mech-bay-launch`, and `assert-restart-identity depot`. `prepare-local-candidate` runs the demo receipt, assembly, NPC hire, weapon shop, and warehouse draft-fit services before the swap, then logs a read-only saved-account delta and auto-saves the account snapshot; `hide-squad-preview` verifies the completed replacement cue survives into the general next-mission handoff; `saved-account-report` validates and logs a JSON dry-run of the local account snapshot without writing a file; `saved-account-save-load-preview` serializes and loads that snapshot in memory to prove the future save/load boundary; `saved-account-export` writes a JSON file only when the script provides a path, `saved-account-import-preview` validates a file without applying it to the mech bay, `saved-account-import-apply-preview` adds the identity guard plus would-change delta for a future apply, then exposes the latest preview as a guarded mech bay Apply row with a manual JSON path Preview field, Default/Export helpers, and a compact Last Save result line, `saved-account-import-apply` requires that matching accepted preview before replacing the local mech bay with a cloned loaded inventory, then auto-saves the resulting local account, and the default-load commands reuse the same guard against the persistent demo save path; `prepare-depot-candidate` remains a direct smoke fallback.
 
 Commander observation reports include `reportIndex` and `missionTimeSeconds` so future AI adapters can correlate decisions with elapsed battle time.
 

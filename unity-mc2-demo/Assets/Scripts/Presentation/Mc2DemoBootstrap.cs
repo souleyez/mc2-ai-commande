@@ -479,6 +479,12 @@ namespace MC2Demo.Presentation
                     case StartupCommanderScriptActionKind.SavedAccountImportApply:
                         RunStartupSavedAccountImportApply(action.FilePath);
                         break;
+                    case StartupCommanderScriptActionKind.SavedAccountLoadDefaultPreview:
+                        RunStartupSavedAccountLoadDefaultPreview();
+                        break;
+                    case StartupCommanderScriptActionKind.SavedAccountLoadDefaultApply:
+                        RunStartupSavedAccountLoadDefaultApply();
+                        break;
                     case StartupCommanderScriptActionKind.PrepareDepotCandidate:
                         RunStartupPrepareDepotCandidate();
                         break;
@@ -827,6 +833,16 @@ namespace MC2Demo.Presentation
         private void RunStartupSavedAccountImportApply(string requestedPath)
         {
             TryApplySavedAccountImport(requestedPath, true, "CLI");
+        }
+
+        private void RunStartupSavedAccountLoadDefaultPreview()
+        {
+            TryPreviewSavedAccountImportApply(DefaultSavedAccountFilePath(), true, "CLI default load");
+        }
+
+        private void RunStartupSavedAccountLoadDefaultApply()
+        {
+            TryApplySavedAccountImport(DefaultSavedAccountFilePath(), true, "CLI default load");
         }
 
         private bool TryApplySavedAccountImport(

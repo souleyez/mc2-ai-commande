@@ -264,6 +264,10 @@ export, preview, apply, or blocked save/load outcome stays visible.
 Guarded account-changing actions now auto-save the current local account
 snapshot to that persistent demo save file after successful receipts, imports,
 candidate prep, purchases, hires, fits, squad selection, or repairs.
+Startup command files can also preview and apply that persistent default save
+through `saved-account-load-default-preview` and
+`saved-account-load-default-apply`, reusing the same identity and file-change
+guard as manual imports.
 Current draft fits are now checked against that starter inventory, so extra
 armor plate or heat sink choices show a shortage and cannot be applied.
 The same starter inventory now owns the demo token balance used by the mech bay:
