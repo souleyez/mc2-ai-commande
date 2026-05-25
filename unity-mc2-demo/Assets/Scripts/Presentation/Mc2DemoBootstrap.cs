@@ -4894,6 +4894,28 @@ namespace MC2Demo.Presentation
                 "Heat " + FormatDecimal(result.TotalHeat) + "/" + FormatDecimal(preview.HeatLimit)
                 + "  Load " + FormatDecimal(result.TotalWeight) + "/" + FormatDecimal(preview.WeightLimit)
                 + "  Grid " + result.OccupiedGridCells + "/" + preview.GridCapacity);
+            float meterWidth = width * 0.46f;
+            float meterGap = 6f;
+            float halfMeter = Mathf.Max(36f, (meterWidth - meterGap) * 0.5f);
+            DrawLoadoutUsageBar(
+                new Rect(right, y + 17f, halfMeter, 5f),
+                result.TotalHeat,
+                preview.HeatLimit,
+                UiCyanColor);
+            DrawLoadoutUsageBar(
+                new Rect(right + halfMeter + meterGap, y + 17f, halfMeter, 5f),
+                result.TotalWeight,
+                preview.WeightLimit,
+                UiAmberColor);
+        }
+
+        private void DrawLoadoutUsageBar(Rect rect, float value, float limit, Color normalColor)
+        {
+            DrawColorRect(rect, UiTrackColor);
+            float ratio = limit <= 0f ? 0f : Mathf.Clamp01(value / limit);
+            Color fillColor = value <= limit ? normalColor : new Color(1f, 0.22f, 0.12f, 0.96f);
+            DrawColorRect(new Rect(rect.x, rect.y, rect.width * ratio, rect.height), fillColor);
+            DrawRectBorder(rect, new Color(0.18f, 0.28f, 0.30f, 0.92f), 1f);
         }
 
         private CombatLoadoutPreview LoadoutPreviewFor(UnitState unit)
