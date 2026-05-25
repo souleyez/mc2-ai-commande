@@ -27,6 +27,7 @@ Current demo behavior:
 - applies a first graphite/cyan/amber UI skin pass to the HUD, buttons, top status strip, and squad command panel
 - extends that UI direction to save choices, system, mission list, debrief, and mech bay flow panels with shared framed surfaces
 - tightens the title save panel with an inset account summary and side-by-side Continue/New Game actions
+- frames the battle Combat/Mission HUD and shifts the mech bay into a right-side focused drawer with a dimmed backdrop
 - lets map clicks on hostile units or targetable buildings issue focused attack orders
 - renders command rings for selected units, order destinations, and focused targets
 - shows world objective area hints only for the current active objective

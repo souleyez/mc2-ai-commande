@@ -3588,9 +3588,13 @@ namespace MC2Demo.Presentation
                 }
 
                 DrawUnitPanel();
-                DrawCombatPanel();
-                DrawMissionBriefPanel();
-                DrawMissionMap();
+                if (!showLoadoutPanel)
+                {
+                    DrawCombatPanel();
+                    DrawMissionBriefPanel();
+                    DrawMissionMap();
+                }
+
                 DrawLoadoutPanel();
                 DrawSystemPanel();
                 DrawMissionResultPanel();
@@ -3748,6 +3752,11 @@ namespace MC2Demo.Presentation
             DrawColorRect(panel, new Color(0.018f, 0.026f, 0.032f, 0.86f));
             DrawRectBorder(panel, new Color(accent.r, accent.g, accent.b, 0.5f), 1f);
             DrawColorRect(new Rect(panel.x, panel.y, 3f, panel.height), accent);
+        }
+
+        private void DrawModalBackdrop()
+        {
+            DrawColorRect(new Rect(0f, 46f, Screen.width, Mathf.Max(0f, Screen.height - 46f)), new Color(0f, 0f, 0f, 0.46f));
         }
 
         private void DrawStartupContinuePanel()
@@ -4215,7 +4224,7 @@ namespace MC2Demo.Presentation
             }
 
             Rect panel = MissionBriefPanelRect();
-            GUI.Box(panel, "Mission");
+            DrawDesignPanelFrame(panel, "Mission / 任务", UiAmberColor);
             float x = panel.x + 12f;
             float y = panel.y + 32f;
             float width = panel.width - 24f;
@@ -4352,12 +4361,18 @@ namespace MC2Demo.Presentation
         {
             Rect panel = CombatPanelRect();
             float x = panel.x;
-            GUI.Box(panel, "Combat");
-            GUI.Label(new Rect(x + 12, 38, 320, 22), "Active units: " + CountLiveUnits() + " / " + mission.Units.Count);
-            float y = 64f;
+            DrawDesignPanelFrame(panel, "Combat / 战况", UiCyanColor);
+            GUI.Label(new Rect(x + 12f, panel.y + 36f, 320f, 22f), "Active units: " + CountLiveUnits() + " / " + mission.Units.Count);
+            float y = panel.y + 62f;
             foreach (string line in combatLog)
             {
-                GUI.Label(new Rect(x + 12, y, 320, 20), line);
+                if (y > panel.yMax - 22f)
+                {
+                    GUI.Label(new Rect(x + 12f, y, 320f, 20f), "...");
+                    break;
+                }
+
+                GUI.Label(new Rect(x + 12f, y, 320f, 20f), TruncateText(line, 58));
                 y += 20f;
             }
         }
@@ -4452,6 +4467,7 @@ namespace MC2Demo.Presentation
             }
 
             Rect panel = LoadoutPanelRect();
+            DrawModalBackdrop();
             DrawDesignPanelFrame(panel, "Mech Bay / 机库", UiAmberColor);
             float x = panel.x + 14f;
             float y = panel.y + 34f;
@@ -8325,7 +8341,10 @@ namespace MC2Demo.Presentation
         {
             float width = Mathf.Clamp(Screen.width * 0.54f, 560f, 760f);
             float height = Mathf.Clamp(Screen.height * 0.88f, 420f, 720f);
-            return new Rect((Screen.width - width) * 0.5f, (Screen.height - height) * 0.5f, width, height);
+            float x = Screen.width >= 1050f
+                ? Screen.width - width - 24f
+                : (Screen.width - width) * 0.5f;
+            return new Rect(Mathf.Max(12f, x), (Screen.height - height) * 0.5f, width, height);
         }
 
         private Rect CombatPanelRect()

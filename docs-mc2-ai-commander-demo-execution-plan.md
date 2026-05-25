@@ -514,5 +514,6 @@ Reason:
 - The first design-image-inspired UI pass now applies a graphite/cyan/amber skin, top status strip, and framed squad command panel while keeping the existing IMGUI behavior stable.
 - The same design pass now extends across Save Choices, System, Mission List, Debrief, and Mech Bay panels with shared framed surfaces and highlighted flow lanes.
 - The first in-window visual inspection pass tightened the title save panel with an inset account summary, shorter top status strip, and side-by-side Continue/New Game actions.
-- The next low-risk step is to visually inspect battle and mech-bay states in-window, tune spacing, then migrate these flow screens beyond IMGUI once the layout direction feels right.
+- The battle/mech-bay inspection pass now frames the Combat/Mission HUD and shifts the mech bay into a right-side focused drawer with a dimmed backdrop.
+- The next low-risk step is to tune the mech bay content density and then migrate these flow screens beyond IMGUI once the layout direction feels right.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.
