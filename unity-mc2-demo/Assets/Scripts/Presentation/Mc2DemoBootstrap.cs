@@ -31,6 +31,13 @@ namespace MC2Demo.Presentation
         private const float MiniMaxCommanderAdvanceSeconds = 8f;
         private const float LoadoutCardHeight = 396f;
         private const float LoadoutCardStride = 408f;
+        private static readonly Color UiPanelColor = new(0.035f, 0.045f, 0.055f, 0.92f);
+        private static readonly Color UiButtonColor = new(0.075f, 0.105f, 0.125f, 0.96f);
+        private static readonly Color UiTrackColor = new(0.015f, 0.02f, 0.025f, 0.9f);
+        private static readonly Color UiBorderColor = new(0.22f, 0.34f, 0.38f, 0.75f);
+        private static readonly Color UiCyanColor = new(0.25f, 0.82f, 1f, 0.95f);
+        private static readonly Color UiAmberColor = new(1f, 0.62f, 0.18f, 0.95f);
+        private static readonly Color UiTextColor = new(0.82f, 0.9f, 0.92f, 1f);
 
         private readonly Dictionary<string, DemoUnitView> unitViews = new();
         private readonly Dictionary<string, DemoStructureView> structureViews = new();
@@ -103,6 +110,17 @@ namespace MC2Demo.Presentation
         private DemoFlowScreen demoFlowScreen = DemoFlowScreen.Battle;
         private string statusText = "Loading";
         private bool startupSmokeFailed;
+        private GUIStyle uiBoxStyle;
+        private GUIStyle uiLabelStyle;
+        private GUIStyle uiButtonStyle;
+        private GUIStyle uiTextFieldStyle;
+        private GUIStyle uiToggleStyle;
+        private GUIStyle uiHeaderStyle;
+        private GUIStyle uiStatusStyle;
+        private Texture2D uiPanelTexture;
+        private Texture2D uiButtonTexture;
+        private Texture2D uiButtonHoverTexture;
+        private Texture2D uiTextFieldTexture;
         private const string StartupSmokeDepotOwnedMechId = "assembled-smoke-depot";
         private const string UpdatedSquadLoadedStatusText = "Updated squad loaded - Mech bay open";
 
@@ -147,6 +165,11 @@ namespace MC2Demo.Presentation
             {
                 Destroy(material);
             }
+
+            DestroyUiTexture(ref uiPanelTexture);
+            DestroyUiTexture(ref uiButtonTexture);
+            DestroyUiTexture(ref uiButtonHoverTexture);
+            DestroyUiTexture(ref uiTextFieldTexture);
         }
 
         private void LoadMission()
@@ -3531,29 +3554,193 @@ namespace MC2Demo.Presentation
 
         private void OnGUI()
         {
-            GUI.Box(
-                new Rect(12, 12, 440, 34),
-                "Flow " + DemoFlowScreenName(demoFlowScreen) + "  " + TruncateText(statusText, 54));
+            EnsureUiSkin();
+            GUIStyle previousBox = GUI.skin.box;
+            GUIStyle previousLabel = GUI.skin.label;
+            GUIStyle previousButton = GUI.skin.button;
+            GUIStyle previousTextField = GUI.skin.textField;
+            GUIStyle previousToggle = GUI.skin.toggle;
+            Color previousColor = GUI.color;
+            Color previousBackgroundColor = GUI.backgroundColor;
+            Color previousContentColor = GUI.contentColor;
 
-            if (mission == null)
+            GUI.skin.box = uiBoxStyle;
+            GUI.skin.label = uiLabelStyle;
+            GUI.skin.button = uiButtonStyle;
+            GUI.skin.textField = uiTextFieldStyle;
+            GUI.skin.toggle = uiToggleStyle;
+            GUI.backgroundColor = Color.white;
+            GUI.contentColor = UiTextColor;
+
+            try
+            {
+                DrawTopStatusStrip();
+
+                if (mission == null)
+                {
+                    return;
+                }
+
+                if (showStartupContinuePanel)
+                {
+                    DrawStartupContinuePanel();
+                    return;
+                }
+
+                DrawUnitPanel();
+                DrawCombatPanel();
+                DrawMissionBriefPanel();
+                DrawMissionMap();
+                DrawLoadoutPanel();
+                DrawSystemPanel();
+                DrawMissionResultPanel();
+                DrawMissionListPanel();
+            }
+            finally
+            {
+                GUI.skin.box = previousBox;
+                GUI.skin.label = previousLabel;
+                GUI.skin.button = previousButton;
+                GUI.skin.textField = previousTextField;
+                GUI.skin.toggle = previousToggle;
+                GUI.color = previousColor;
+                GUI.backgroundColor = previousBackgroundColor;
+                GUI.contentColor = previousContentColor;
+            }
+        }
+
+        private void EnsureUiSkin()
+        {
+            if (uiBoxStyle != null)
             {
                 return;
             }
 
-            if (showStartupContinuePanel)
+            uiPanelTexture = CreateUiTexture(UiPanelColor);
+            uiButtonTexture = CreateUiTexture(UiButtonColor);
+            uiButtonHoverTexture = CreateUiTexture(new Color(0.10f, 0.16f, 0.19f, 0.98f));
+            uiTextFieldTexture = CreateUiTexture(new Color(0.02f, 0.027f, 0.034f, 0.96f));
+
+            uiBoxStyle = new GUIStyle(GUI.skin.box)
             {
-                DrawStartupContinuePanel();
+                alignment = TextAnchor.UpperLeft,
+                fontStyle = FontStyle.Bold,
+                padding = new RectOffset(10, 10, 7, 7),
+                border = new RectOffset(1, 1, 1, 1)
+            };
+            uiBoxStyle.normal.background = uiPanelTexture;
+            uiBoxStyle.normal.textColor = UiTextColor;
+
+            uiLabelStyle = new GUIStyle(GUI.skin.label)
+            {
+                fontSize = 12,
+                padding = new RectOffset(0, 0, 0, 0)
+            };
+            uiLabelStyle.normal.textColor = UiTextColor;
+
+            uiButtonStyle = new GUIStyle(GUI.skin.button)
+            {
+                fontSize = 12,
+                fontStyle = FontStyle.Bold,
+                alignment = TextAnchor.MiddleCenter,
+                padding = new RectOffset(6, 6, 3, 3),
+                border = new RectOffset(1, 1, 1, 1)
+            };
+            uiButtonStyle.normal.background = uiButtonTexture;
+            uiButtonStyle.hover.background = uiButtonHoverTexture;
+            uiButtonStyle.active.background = uiButtonHoverTexture;
+            uiButtonStyle.focused.background = uiButtonHoverTexture;
+            uiButtonStyle.normal.textColor = UiTextColor;
+            uiButtonStyle.hover.textColor = Color.white;
+            uiButtonStyle.active.textColor = Color.white;
+            uiButtonStyle.focused.textColor = Color.white;
+
+            uiTextFieldStyle = new GUIStyle(GUI.skin.textField)
+            {
+                fontSize = 12,
+                padding = new RectOffset(6, 6, 3, 3),
+                border = new RectOffset(1, 1, 1, 1)
+            };
+            uiTextFieldStyle.normal.background = uiTextFieldTexture;
+            uiTextFieldStyle.focused.background = uiTextFieldTexture;
+            uiTextFieldStyle.normal.textColor = UiTextColor;
+            uiTextFieldStyle.focused.textColor = Color.white;
+
+            uiToggleStyle = new GUIStyle(GUI.skin.toggle)
+            {
+                fontSize = 12
+            };
+            uiToggleStyle.normal.textColor = UiTextColor;
+            uiToggleStyle.hover.textColor = Color.white;
+            uiToggleStyle.onNormal.textColor = UiCyanColor;
+            uiToggleStyle.onHover.textColor = UiCyanColor;
+
+            uiHeaderStyle = new GUIStyle(uiLabelStyle)
+            {
+                fontSize = 13,
+                fontStyle = FontStyle.Bold
+            };
+            uiHeaderStyle.normal.textColor = UiCyanColor;
+
+            uiStatusStyle = new GUIStyle(uiLabelStyle)
+            {
+                fontSize = 12,
+                fontStyle = FontStyle.Bold,
+                alignment = TextAnchor.MiddleLeft
+            };
+            uiStatusStyle.normal.textColor = UiTextColor;
+        }
+
+        private static Texture2D CreateUiTexture(Color color)
+        {
+            Texture2D texture = new(1, 1, TextureFormat.RGBA32, false)
+            {
+                hideFlags = HideFlags.HideAndDontSave
+            };
+            texture.SetPixel(0, 0, color);
+            texture.Apply();
+            return texture;
+        }
+
+        private void DestroyUiTexture(ref Texture2D texture)
+        {
+            if (texture == null)
+            {
                 return;
             }
 
-            DrawUnitPanel();
-            DrawCombatPanel();
-            DrawMissionBriefPanel();
-            DrawMissionMap();
-            DrawLoadoutPanel();
-            DrawSystemPanel();
-            DrawMissionResultPanel();
-            DrawMissionListPanel();
+            Destroy(texture);
+            texture = null;
+        }
+
+        private void DrawTopStatusStrip()
+        {
+            float stripWidth = Mathf.Min(Mathf.Max(440f, Screen.width - 24f), 760f);
+            Rect strip = new(12f, 12f, stripWidth, 34f);
+            DrawColorRect(strip, UiPanelColor);
+            DrawRectBorder(strip, UiBorderColor, 1f);
+            DrawColorRect(new Rect(strip.x, strip.y, 4f, strip.height), UiCyanColor);
+
+            string flow = "FLOW " + DemoFlowScreenName(demoFlowScreen);
+            string token = demoInventory == null
+                ? "TOKEN --"
+                : "TOKEN " + FormatTokens(Mathf.Max(0, demoInventory.tokenBalance));
+            GUI.Label(
+                new Rect(strip.x + 14f, strip.y + 8f, strip.width - 170f, 18f),
+                flow + "  " + TruncateText(statusText, 58),
+                uiStatusStyle);
+            GUI.Label(
+                new Rect(strip.xMax - 142f, strip.y + 8f, 126f, 18f),
+                token,
+                uiStatusStyle);
+        }
+
+        private void DrawDesignPanelFrame(Rect panel, string title, Color accent)
+        {
+            DrawColorRect(panel, UiPanelColor);
+            DrawRectBorder(panel, UiBorderColor, 1f);
+            DrawColorRect(new Rect(panel.x, panel.y, 4f, panel.height), accent);
+            GUI.Label(new Rect(panel.x + 12f, panel.y + 8f, panel.width - 24f, 18f), title, uiHeaderStyle);
         }
 
         private void DrawStartupContinuePanel()
@@ -3702,18 +3889,23 @@ namespace MC2Demo.Presentation
 
         private void DrawUnitPanel()
         {
-            float y = 54f;
-            GUI.Label(new Rect(18, y, 320, 22), "Lance");
-            y += 24f;
+            float panelX = 12f;
+            float panelY = 54f;
+            float panelWidth = 320f;
+            float panelHeight = 74f + (CountPlayerUnits() * 78f);
+            DrawDesignPanelFrame(new Rect(panelX, panelY, panelWidth, panelHeight), "Squad Command", UiCyanColor);
 
-            if (GUI.Button(new Rect(18, y, 54, 28), "All"))
+            float x = panelX + 10f;
+            float y = panelY + 34f;
+
+            if (GUI.Button(new Rect(x, y, 50f, 28f), "All"))
             {
                 pendingDetachedUnitId = null;
                 pendingJumpOrder = false;
                 statusText = "Squad selected";
             }
 
-            if (GUI.Button(new Rect(78, y, 54, 28), pendingJumpOrder ? "Jet..." : "Jet"))
+            if (GUI.Button(new Rect(x + 56f, y, 50f, 28f), pendingJumpOrder ? "Jet..." : "Jet"))
             {
                 pendingJumpOrder = true;
                 statusText = string.IsNullOrEmpty(pendingDetachedUnitId)
@@ -3721,7 +3913,7 @@ namespace MC2Demo.Presentation
                     : "Select jet destination for " + pendingDetachedUnitId;
             }
 
-            if (GUI.Button(new Rect(138, y, 54, 28), showMissionMap ? "Map-" : "Map"))
+            if (GUI.Button(new Rect(x + 112f, y, 50f, 28f), showMissionMap ? "Map-" : "Map"))
             {
                 showMissionMap = !showMissionMap;
                 showLoadoutPanel = false;
@@ -3741,7 +3933,7 @@ namespace MC2Demo.Presentation
                 SetDemoFlowScreen(DemoFlowScreen.Battle);
             }
 
-            if (GUI.Button(new Rect(198, y, 54, 28), showLoadoutPanel ? "Bay-" : "Bay"))
+            if (GUI.Button(new Rect(x + 168f, y, 50f, 28f), showLoadoutPanel ? "Bay-" : "Bay"))
             {
                 if (showLoadoutPanel)
                 {
@@ -3765,7 +3957,7 @@ namespace MC2Demo.Presentation
                 }
             }
 
-            if (GUI.Button(new Rect(258, y, 64, 28), "System"))
+            if (GUI.Button(new Rect(x + 224f, y, 76f, 28f), "System"))
             {
                 OpenSystemPanel();
             }
@@ -3810,7 +4002,8 @@ namespace MC2Demo.Presentation
                     label += "  M" + Mathf.RoundToInt(unit.MobilityRatio * 100f) + "/F" + Mathf.RoundToInt(unit.FirepowerRatio * 100f);
                 }
 
-                if (GUI.Button(new Rect(18, y, 304, 34), label))
+                Rect rowRect = new(x, y, panelWidth - 20f, 34f);
+                if (GUI.Button(rowRect, label))
                 {
                     pendingDetachedUnitId = unit.Id;
                     statusText = pendingJumpOrder
@@ -3818,25 +4011,28 @@ namespace MC2Demo.Presentation
                         : "Select destination for " + unit.UnitType;
                 }
 
-                Rect barBack = new(24, y + 24, 292, 4);
-                GUI.DrawTexture(barBack, Texture2D.grayTexture);
+                Color rowCue = unit.IsDetached ? UiAmberColor : unit.IsDestroyed ? Color.red : UiBorderColor;
+                DrawRectBorder(rowRect, rowCue, unit.IsDetached ? 2f : 1f);
+
+                Rect barBack = new(x + 6f, y + 24f, panelWidth - 32f, 4f);
+                DrawColorRect(barBack, UiTrackColor);
                 Rect bar = new(barBack.x, barBack.y, barBack.width * unit.Structure, barBack.height);
-                DrawColorRect(bar, unit.IsDestroyed ? Color.red : Color.green);
+                DrawColorRect(bar, unit.IsDestroyed ? Color.red : new Color(0.35f, 0.88f, 0.46f, 0.96f));
 
                 if (unit.CombatHeatPerShot > 0f)
                 {
-                    Rect heatBack = new(24, y + 31, 292, 4);
-                    GUI.DrawTexture(heatBack, Texture2D.grayTexture);
+                    Rect heatBack = new(x + 6f, y + 31f, panelWidth - 32f, 4f);
+                    DrawColorRect(heatBack, UiTrackColor);
                     Rect heatBar = new(heatBack.x, heatBack.y, heatBack.width * Mathf.Clamp01(unit.HeatRatio), heatBack.height);
-                    DrawColorRect(heatBar, unit.IsHeatLocked ? Color.red : new Color(1f, 0.62f, 0.12f));
+                    DrawColorRect(heatBar, unit.IsHeatLocked ? Color.red : UiAmberColor);
                 }
 
-                Rect readyBack = new(24, y + 38, 292, 3);
-                GUI.DrawTexture(readyBack, Texture2D.grayTexture);
+                Rect readyBack = new(x + 6f, y + 38f, panelWidth - 32f, 3f);
+                DrawColorRect(readyBack, UiTrackColor);
                 Rect readyBar = new(readyBack.x, readyBack.y, readyBack.width * unit.WeaponReadinessRatio, readyBack.height);
-                DrawColorRect(readyBar, unit.IsHeatLocked ? Color.red : new Color(0.24f, 0.72f, 1f));
+                DrawColorRect(readyBar, unit.IsHeatLocked ? Color.red : UiCyanColor);
 
-                GUI.Label(new Rect(24, y + 42, 300, 16), WeaponStatusText(unit));
+                GUI.Label(new Rect(x + 6f, y + 42f, panelWidth - 26f, 16f), WeaponStatusText(unit));
                 DrawSectionLine(unit, y + 58);
                 y += 78f;
             }

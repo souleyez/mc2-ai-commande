@@ -24,6 +24,7 @@ Current demo behavior:
 - opens a Mission List shell from the system panel with the current `mc2_01` contract, launch, mech bay, back-system, and return-battle actions
 - routes the post-battle debrief through Continue Bay or Mission List, hiding the debrief overlay before repair, save, or relaunch work
 - shows a compact mech-bay flow lane for Repair All, Save, Missions, and Launch after battle or during pre-mission prep
+- applies a first graphite/cyan/amber UI skin pass to the HUD, buttons, top status strip, and squad command panel
 - lets map clicks on hostile units or targetable buildings issue focused attack orders
 - renders command rings for selected units, order destinations, and focused targets
 - shows world objective area hints only for the current active objective

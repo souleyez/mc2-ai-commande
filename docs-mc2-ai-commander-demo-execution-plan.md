@@ -511,5 +511,6 @@ Reason:
 - The debrief panel now routes post-battle flow through Continue Bay or Mission List, hiding the debrief overlay before the player repairs, saves, or chooses the next launch.
 - The Mission List return action now goes back to Debrief after a completed mission, keeping the post-battle flow reversible.
 - The mech bay summary now has a compact post-battle/prep lane with Repair All, Save, Missions, and Launch, so the main playable loop is visible in one row.
-- The next low-risk step is to migrate these flow screens beyond IMGUI while keeping the new title, debrief, mission list, and mech bay lane behavior intact.
+- The first design-image-inspired UI pass now applies a graphite/cyan/amber skin, top status strip, and framed squad command panel while keeping the existing IMGUI behavior stable.
+- The next low-risk step is to extend that design pass across the debrief, mission list, and mech bay panels before migrating these flow screens beyond IMGUI.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.
