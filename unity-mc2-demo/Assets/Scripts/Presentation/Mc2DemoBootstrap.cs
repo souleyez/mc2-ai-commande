@@ -3715,7 +3715,7 @@ namespace MC2Demo.Presentation
 
         private void DrawTopStatusStrip()
         {
-            float stripWidth = Mathf.Min(Mathf.Max(440f, Screen.width - 24f), 760f);
+            float stripWidth = Mathf.Min(Mathf.Max(440f, Screen.width * 0.52f), 660f);
             Rect strip = new(12f, 12f, stripWidth, 34f);
             DrawColorRect(strip, UiPanelColor);
             DrawRectBorder(strip, UiBorderColor, 1f);
@@ -3770,6 +3770,8 @@ namespace MC2Demo.Presentation
             bool canContinue = fileExists && startupContinueSaveReady;
             GUI.Label(new Rect(x, y, width, 20f), canContinue ? "Continue saved mech bay progress" : "Saved progress needs review");
             y += 24f;
+            float summaryHeight = startupSaveChoicesOpenedFromSystem ? 112f : 88f;
+            DrawDesignInsetFrame(new Rect(x - 8f, y - 6f, width + 16f, summaryHeight), UiCyanColor);
             GUI.Label(new Rect(x, y, width, 20f), TruncateText(startupContinueSummaryText, 60));
             y += 22f;
             GUI.Label(new Rect(x, y, width, 20f), TruncateText(startupContinueRosterText, 60));
@@ -3790,6 +3792,43 @@ namespace MC2Demo.Presentation
             y += 32f;
 
             bool previousEnabled = GUI.enabled;
+            bool titleActions = !startupSaveChoicesOpenedFromSystem
+                && !startupResetSlotConfirmPending
+                && !startupNewGameConfirmPending;
+            if (titleActions)
+            {
+                float halfWidth = (width - 8f) * 0.5f;
+                GUI.enabled = previousEnabled && canContinue;
+                if (GUI.Button(new Rect(x, y, halfWidth, 30f), "Continue"))
+                {
+                    if (TryLoadDefaultSavedAccount("Startup continue"))
+                    {
+                        showStartupContinuePanel = false;
+                        startupSaveChoicesOpenedFromSystem = false;
+                        startupNewGameConfirmPending = false;
+                        startupResetSlotConfirmPending = false;
+                        if (mission.Result == MissionResultState.InProgress)
+                        {
+                            SetPaused(false);
+                        }
+
+                        statusText = "Continue loaded";
+                        SetDemoFlowScreen(DemoFlowScreen.Battle);
+                    }
+                }
+
+                GUI.enabled = previousEnabled;
+                if (GUI.Button(new Rect(x + halfWidth + 8f, y, halfWidth, 30f), "New Game"))
+                {
+                    startupNewGameConfirmPending = true;
+                    startupResetSlotConfirmPending = false;
+                    statusText = "Confirm new game";
+                    RecordSavedAccountFileResult("New Game confirm", false, "default save kept");
+                }
+
+                return;
+            }
+
             GUI.enabled = previousEnabled && canContinue;
             if (GUI.Button(new Rect(x, y, width, 30f), "Continue"))
             {
