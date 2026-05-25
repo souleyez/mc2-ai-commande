@@ -219,7 +219,8 @@ and yellow components. The grid also exposes selected or hovered block details
 for weapon heat, weight, damage, range, cooldown, and component bonuses, with a
 clear hover frame around whole blocks or open cells. Clicked component and open
 cells stay selected, keeping armor/sink tradeoff details visible after the pointer
-moves away. Spare load is now projected into
+moves away; slot and draft reset actions clear that UI selection so restored fits
+do not keep pointing at stale grid coordinates. Spare load is now projected into
 free cells as simple armor plates and heat sinks, exposing hardness and cooling
 totals before full inventory editing exists. Those projected filler cells can
 also be cycled between armor, heat sink, and empty so the first fitting tradeoff

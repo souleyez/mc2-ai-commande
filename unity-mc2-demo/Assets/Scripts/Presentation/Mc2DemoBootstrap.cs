@@ -7753,6 +7753,7 @@ namespace MC2Demo.Presentation
             }
 
             placementOverrides[selectedWeaponIndex] = null;
+            selectedLoadoutGridCellByUnit.Remove(unit.Id ?? "");
             statusText = "Reset temporary slot";
         }
 
@@ -7809,6 +7810,7 @@ namespace MC2Demo.Presentation
             string key = unit.Id ?? "";
             int weaponCount = unit.Profile?.Weapons?.Length ?? 0;
             bool hasAppliedState = HasAppliedLoadoutState(key);
+            selectedLoadoutGridCellByUnit.Remove(key);
             loadoutWeaponEnabledByUnit[key] = CloneWeaponState(AppliedWeaponStateFor(key), weaponCount);
             loadoutPlacementOverridesByUnit[key] = ClonePlacementOverrides(AppliedPlacementStateFor(key), weaponCount);
             CombatLoadoutFillerOverride[] appliedFillers = AppliedFillerStateFor(key);

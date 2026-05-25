@@ -520,5 +520,6 @@ Reason:
 - The payload grid now adds selected/hovered item detail text so each block exposes heat, weight, damage, range, cooldown, or component bonuses without opening another panel.
 - The payload grid now adds a hover frame for whole blocks and open cells, making the original-style block editing target clearer before a dedicated loadout UI replaces IMGUI.
 - Clicked component or open payload cells now remain selected, so armor/sink tradeoffs keep their visible frame and detail line after hover leaves.
+- Slot Reset and draft Reset now clear stale selected grid coordinates, keeping the detail line aligned with the restored fit.
 - The next low-risk step is to tune the mech bay content density and then migrate these flow screens beyond IMGUI once the layout direction feels right.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.
