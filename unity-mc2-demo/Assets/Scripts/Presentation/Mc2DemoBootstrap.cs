@@ -3743,6 +3743,13 @@ namespace MC2Demo.Presentation
             GUI.Label(new Rect(panel.x + 12f, panel.y + 8f, panel.width - 24f, 18f), title, uiHeaderStyle);
         }
 
+        private void DrawDesignInsetFrame(Rect panel, Color accent)
+        {
+            DrawColorRect(panel, new Color(0.018f, 0.026f, 0.032f, 0.86f));
+            DrawRectBorder(panel, new Color(accent.r, accent.g, accent.b, 0.5f), 1f);
+            DrawColorRect(new Rect(panel.x, panel.y, 3f, panel.height), accent);
+        }
+
         private void DrawStartupContinuePanel()
         {
             if (!showStartupContinuePanel)
@@ -3751,7 +3758,10 @@ namespace MC2Demo.Presentation
             }
 
             Rect panel = StartupContinuePanelRect();
-            GUI.Box(panel, "Demo Save");
+            DrawDesignPanelFrame(
+                panel,
+                startupSaveChoicesOpenedFromSystem ? "Save Choices / 存档" : "Demo Save / 继续",
+                UiCyanColor);
             float x = panel.x + 18f;
             float y = panel.y + 36f;
             float width = panel.width - 36f;
@@ -4403,13 +4413,13 @@ namespace MC2Demo.Presentation
             }
 
             Rect panel = LoadoutPanelRect();
-            GUI.Box(panel, "Mech Bay");
+            DrawDesignPanelFrame(panel, "Mech Bay / 机库", UiAmberColor);
             float x = panel.x + 14f;
             float y = panel.y + 34f;
             float width = panel.width - 28f;
 
-            GUI.Label(new Rect(x, y, width - 76f, 22f), "Squad loadout");
-            if (GUI.Button(new Rect(panel.xMax - 66f, panel.y + 6f, 52f, 24f), "Close"))
+            GUI.Label(new Rect(x, y, width - 76f, 22f), "Post battle prep  /  小队整备", uiHeaderStyle);
+            if (GUI.Button(new Rect(panel.xMax - 70f, panel.y + 7f, 56f, 24f), "Close"))
             {
                 showLoadoutPanel = false;
                 showWarehouseDraftFitPreview = false;
@@ -4551,6 +4561,9 @@ namespace MC2Demo.Presentation
             bool saveReady = demoInventory != null;
             bool launchReady = restartGuard?.ApplyEnabled == true;
             bool previousEnabled = GUI.enabled;
+            Rect laneRect = new(x - 4f, y - 5f, width + 8f, 30f);
+            DrawColorRect(laneRect, new Color(0.015f, 0.025f, 0.03f, 0.82f));
+            DrawRectBorder(laneRect, new Color(UiAmberColor.r, UiAmberColor.g, UiAmberColor.b, 0.45f), 1f);
 
             GUI.enabled = previousEnabled && repairReady;
             if (DrawActionButton(new Rect(x, y - 2f, 78f, 22f), "Repair All", repairReady))
@@ -7745,7 +7758,7 @@ namespace MC2Demo.Presentation
             }
 
             Rect panel = SystemPanelRect();
-            GUI.Box(panel, "System");
+            DrawDesignPanelFrame(panel, "System / 系统", UiAmberColor);
             GUI.Label(new Rect(panel.x + 18f, panel.y + 36f, panel.width - 36f, 24f), isPaused ? "Paused" : "Running");
 
             if (GUI.Button(new Rect(panel.x + 18f, panel.y + 70f, panel.width - 36f, 30f), isPaused ? "Resume" : "Pause"))
@@ -7806,16 +7819,16 @@ namespace MC2Demo.Presentation
             }
 
             Rect panel = MissionListPanelRect();
-            GUI.Box(panel, "Mission List");
+            DrawDesignPanelFrame(panel, "Mission List / 任务", UiCyanColor);
             float x = panel.x + 18f;
             float y = panel.y + 36f;
             float width = panel.width - 36f;
             string missionId = mission?.Contract?.mission?.id ?? "mc2_01";
             int objectiveCount = mission?.Objectives?.Count ?? 0;
             int playerCount = CountPlayerUnits();
-            GUI.Label(new Rect(x, y, width, 20f), "Available contracts");
+            GUI.Label(new Rect(x, y, width, 20f), "Available contracts / 可接任务", uiHeaderStyle);
             y += 26f;
-            GUI.Box(new Rect(x, y, width, 86f), "");
+            DrawDesignInsetFrame(new Rect(x, y, width, 86f), UiCyanColor);
             GUI.Label(new Rect(x + 12f, y + 10f, width - 24f, 20f), missionId + "  Prototype Raid");
             GUI.Label(new Rect(x + 12f, y + 34f, width - 24f, 20f), "Current reference map  Objectives " + objectiveCount.ToString(CultureInfo.InvariantCulture));
             GUI.Label(new Rect(x + 12f, y + 58f, width - 24f, 20f), "Squad slots " + playerCount.ToString(CultureInfo.InvariantCulture) + "  Status ready");
@@ -7887,28 +7900,32 @@ namespace MC2Demo.Presentation
                 return;
             }
 
-            Rect panel = new((Screen.width - 420f) * 0.5f, 72f, 420f, 380f);
-            GUI.Box(panel, MissionResultText());
+            Rect panel = new((Screen.width - 460f) * 0.5f, 72f, 460f, 380f);
+            Color resultAccent = mission.Result == MissionResultState.Victory
+                ? UiCyanColor
+                : new Color(1f, 0.28f, 0.14f, 0.95f);
+            DrawDesignPanelFrame(panel, MissionResultText() + " / 战报", resultAccent);
             GUI.Label(new Rect(panel.x + 18f, panel.y + 36f, panel.width - 36f, 42f), mission.ResultReason);
             DrawMissionResultSummary(panel, mission.ResultSummary);
 
             GUI.Label(new Rect(panel.x + 18f, panel.y + 270f, panel.width - 36f, 20f), "Next: repair, save, then launch again.");
-            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 296f, 182f, 30f), "Continue Bay"))
+            float actionWidth = (panel.width - 44f) * 0.5f;
+            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 296f, actionWidth, 30f), "Continue Bay"))
             {
                 OpenPostMissionMechBay();
             }
 
-            if (GUI.Button(new Rect(panel.x + 220f, panel.y + 296f, 182f, 30f), "Mission List"))
+            if (GUI.Button(new Rect(panel.x + 26f + actionWidth, panel.y + 296f, actionWidth, 30f), "Mission List"))
             {
                 OpenPostMissionListPanel();
             }
 
-            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 334f, 182f, 30f), "Restart"))
+            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 334f, actionWidth, 30f), "Restart"))
             {
                 TryApplyMissionRestartRuntimeSwap();
             }
 
-            if (GUI.Button(new Rect(panel.x + 220f, panel.y + 334f, 182f, 30f), "End Demo"))
+            if (GUI.Button(new Rect(panel.x + 26f + actionWidth, panel.y + 334f, actionWidth, 30f), "End Demo"))
             {
                 Application.Quit(0);
             }
