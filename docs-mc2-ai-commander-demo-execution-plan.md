@@ -109,6 +109,9 @@ The Unity demo currently supports:
 - guarded account-changing actions now auto-save the current local account snapshot to the persistent demo save file
 - manual demo startup now shows a lightweight Continue/New Game panel when the persistent demo save exists and no automation startup args are used
 - that startup panel now previews the loaded account summary, token/depot/item counts, delta, and save timestamp before enabling Continue
+- the runtime now tracks a lightweight demo flow screen across title, battle, mech bay, mission selection, save choices, system, and debrief states
+- the top status strip now exposes the current flow state, giving the future title shell a visible state boundary before the IMGUI migration
+- the system panel now opens a Mission List shell with the current `mc2_01` contract, launch, mech bay, back-system, and return-battle actions
 - the pause/system panel now exposes the same Save Choices entry, and New Game resets the active demo run without deleting the persistent default save
 - New Game now requires an explicit confirmation inside Save Choices, and system-opened Save Choices can return with Back
 - system-opened Save Choices now has a Save Current action that writes the active account to the persistent default save and refreshes the Continue summary
@@ -503,5 +506,7 @@ Reason:
 - System-opened Save Choices now has a Save Current action that writes the active account to the persistent default save and refreshes the displayed Continue summary.
 - System-opened Save Choices now shows the latest save/load result inline, so Save Current feedback stays visible inside the same panel.
 - System-opened Save Choices now has Export Copy and Reset Slot controls; Reset Slot requires confirmation, copies the old default save first, then replaces the default slot with a fresh demo snapshot.
-- The next low-risk step is to migrate these save choices into the future title shell once the UI moves beyond IMGUI.
+- A first lightweight demo-flow state now tracks title, battle, mech bay, mission selection, save choices, system, and debrief, with the current state visible in the top status strip.
+- The system panel now opens a Mission List shell for `mc2_01`, with current-mission launch, mech bay, back-system, and return-battle actions.
+- The next low-risk step is to make mission completion route through the mission list or mech bay as the default post-battle path, then migrate these flow screens beyond IMGUI.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.

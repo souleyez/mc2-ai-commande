@@ -9,6 +9,17 @@ using UnityEngine.SceneManagement;
 
 namespace MC2Demo.Presentation
 {
+    internal enum DemoFlowScreen
+    {
+        Title,
+        Battle,
+        MechBay,
+        MissionSelect,
+        SaveChoices,
+        System,
+        Debrief
+    }
+
     public sealed class Mc2DemoBootstrap : MonoBehaviour
     {
         [SerializeField] private string missionContractRelativePath = "Missions/mc2_01/mission-contract.json";
@@ -58,6 +69,7 @@ namespace MC2Demo.Presentation
         private bool showLoadoutPanel;
         private bool showSystemPanel;
         private bool showStartupContinuePanel;
+        private bool showMissionListPanel;
         private bool startupSaveChoicesOpenedFromSystem;
         private bool startupNewGameConfirmPending;
         private bool startupResetSlotConfirmPending;
@@ -87,6 +99,7 @@ namespace MC2Demo.Presentation
         private int lastSavedAccountImportApplyPreviewJsonCharCount;
         private bool lastSavedAccountImportApplyPreviewReady;
         private string savedAccountImportPreviewInputPath;
+        private DemoFlowScreen demoFlowScreen = DemoFlowScreen.Battle;
         private string statusText = "Loading";
         private bool startupSmokeFailed;
         private const string StartupSmokeDepotOwnedMechId = "assembled-smoke-depot";
@@ -158,6 +171,7 @@ namespace MC2Demo.Presentation
                 Debug.LogWarning("MC2 mech bay inventory review: " + FirstInventoryError(demoInventoryValidation));
             }
 
+            SetDemoFlowScreen(DemoFlowScreen.Battle);
             statusText = "Loaded " + mission.Contract.mission.id;
             Debug.Log("MC2 demo loaded mission contract: " + mission.Contract.mission.id);
         }
@@ -241,6 +255,7 @@ namespace MC2Demo.Presentation
             showMissionMap = false;
             showLoadoutPanel = false;
             showSystemPanel = false;
+            showMissionListPanel = false;
             CloseTransientMechBayDrafts();
 
             mission = null;
@@ -260,6 +275,7 @@ namespace MC2Demo.Presentation
             BuildWorld();
             lastMissionResult = mission.Result;
             SetPaused(false);
+            SetDemoFlowScreen(DemoFlowScreen.Battle);
             statusText = string.IsNullOrWhiteSpace(resultStatus) ? "New game started" : resultStatus;
             RecordSavedAccountFileResult("New Game", false, "default save kept");
             AddCombatLogLine("New game started: default save kept");
@@ -298,6 +314,7 @@ namespace MC2Demo.Presentation
             showMissionMap = false;
             showLoadoutPanel = keepMechBayOpen;
             showSystemPanel = false;
+            showMissionListPanel = false;
             showWarehouseDraftFitPreview = false;
             showSquadSelectionPreview = false;
             warehouseDraftFitPreviewMechId = null;
@@ -308,6 +325,7 @@ namespace MC2Demo.Presentation
             BuildWorld();
             RefreshDemoInventoryValidation();
             SetPaused(keepMechBayOpen && mission.Result == MissionResultState.InProgress);
+            SetDemoFlowScreen(keepMechBayOpen ? DemoFlowScreen.MechBay : DemoFlowScreen.Battle);
             statusText = MissionRestartStatusText(result, keepMechBayOpen);
             AddCombatLogLine(statusText + ": " + (result?.Summary ?? "replacement ready"));
             if (!string.IsNullOrWhiteSpace(completedReplacementText))
@@ -456,6 +474,7 @@ namespace MC2Demo.Presentation
             showSystemPanel = false;
             showMissionMap = false;
             CloseTransientMechBayDrafts();
+            SetDemoFlowScreen(DemoFlowScreen.Title);
             if (mission?.Result == MissionResultState.InProgress)
             {
                 SetPaused(true);
@@ -2306,6 +2325,7 @@ namespace MC2Demo.Presentation
             if (mission.Result == MissionResultState.Victory)
             {
                 ApplyMissionReceiptOnce();
+                SetDemoFlowScreen(DemoFlowScreen.Debrief);
                 statusText = "Mission complete";
                 AddCombatLogLine("Mission complete");
                 Debug.Log("MC2 mission complete: " + mission.ResultReason);
@@ -2314,6 +2334,7 @@ namespace MC2Demo.Presentation
             else if (mission.Result == MissionResultState.Defeat)
             {
                 ApplyMissionReceiptOnce();
+                SetDemoFlowScreen(DemoFlowScreen.Debrief);
                 statusText = "Mission failed";
                 AddCombatLogLine("Mission failed");
                 Debug.Log("MC2 mission failed: " + mission.ResultReason);
@@ -3505,7 +3526,9 @@ namespace MC2Demo.Presentation
 
         private void OnGUI()
         {
-            GUI.Box(new Rect(12, 12, 330, 34), statusText);
+            GUI.Box(
+                new Rect(12, 12, 440, 34),
+                "Flow " + DemoFlowScreenName(demoFlowScreen) + "  " + TruncateText(statusText, 54));
 
             if (mission == null)
             {
@@ -3525,6 +3548,7 @@ namespace MC2Demo.Presentation
             DrawLoadoutPanel();
             DrawSystemPanel();
             DrawMissionResultPanel();
+            DrawMissionListPanel();
         }
 
         private void DrawStartupContinuePanel()
@@ -3579,6 +3603,7 @@ namespace MC2Demo.Presentation
                     }
 
                     statusText = "Continue loaded";
+                    SetDemoFlowScreen(DemoFlowScreen.Battle);
                 }
             }
 
@@ -3701,12 +3726,14 @@ namespace MC2Demo.Presentation
                 ClearSquadSelectionDraft();
                 ClearSquadSelectionCompletedReplacement();
                 showSystemPanel = false;
+                showMissionListPanel = false;
                 if (mission.Result == MissionResultState.InProgress)
                 {
                     SetPaused(false);
                 }
 
                 statusText = showMissionMap ? "Mission map open" : "Mission map closed";
+                SetDemoFlowScreen(DemoFlowScreen.Battle);
             }
 
             if (GUI.Button(new Rect(198, y, 54, 28), showLoadoutPanel ? "Bay-" : "Bay"))
@@ -3725,6 +3752,7 @@ namespace MC2Demo.Presentation
                     }
 
                     statusText = "Mech bay closed";
+                    SetDemoFlowScreen(DemoFlowScreen.Battle);
                 }
                 else
                 {
@@ -4194,6 +4222,7 @@ namespace MC2Demo.Presentation
                 }
 
                 statusText = "Mech bay closed";
+                SetDemoFlowScreen(DemoFlowScreen.Battle);
             }
 
             y += 30f;
@@ -7348,12 +7377,17 @@ namespace MC2Demo.Presentation
                 OpenSaveChoicePanelFromSystem();
             }
 
-            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 210f, panel.width - 36f, 30f), "End Demo"))
+            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 210f, panel.width - 36f, 30f), "Mission List"))
+            {
+                OpenMissionListPanelFromSystem();
+            }
+
+            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 248f, panel.width - 36f, 30f), "End Demo"))
             {
                 Application.Quit(0);
             }
 
-            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 248f, panel.width - 36f, 30f), "Close"))
+            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 286f, panel.width - 36f, 30f), "Close"))
             {
                 showSystemPanel = false;
                 if (mission.Result == MissionResultState.InProgress)
@@ -7361,7 +7395,72 @@ namespace MC2Demo.Presentation
                     SetPaused(false);
                 }
 
+                SetDemoFlowScreen(mission.Result == MissionResultState.InProgress ? DemoFlowScreen.Battle : DemoFlowScreen.Debrief);
                 statusText = "System closed";
+            }
+        }
+
+        private void DrawMissionListPanel()
+        {
+            if (!showMissionListPanel)
+            {
+                return;
+            }
+
+            Rect panel = MissionListPanelRect();
+            GUI.Box(panel, "Mission List");
+            float x = panel.x + 18f;
+            float y = panel.y + 36f;
+            float width = panel.width - 36f;
+            string missionId = mission?.Contract?.mission?.id ?? "mc2_01";
+            int objectiveCount = mission?.Objectives?.Count ?? 0;
+            int playerCount = CountPlayerUnits();
+            GUI.Label(new Rect(x, y, width, 20f), "Available contracts");
+            y += 26f;
+            GUI.Box(new Rect(x, y, width, 86f), "");
+            GUI.Label(new Rect(x + 12f, y + 10f, width - 24f, 20f), missionId + "  Prototype Raid");
+            GUI.Label(new Rect(x + 12f, y + 34f, width - 24f, 20f), "Current reference map  Objectives " + objectiveCount.ToString(CultureInfo.InvariantCulture));
+            GUI.Label(new Rect(x + 12f, y + 58f, width - 24f, 20f), "Squad slots " + playerCount.ToString(CultureInfo.InvariantCulture) + "  Status ready");
+            y += 102f;
+
+            if (GUI.Button(new Rect(x, y, width, 30f), "Launch Current Mission"))
+            {
+                bool launched = TryApplyMissionRestartRuntimeSwap();
+                showMissionListPanel = !launched;
+                SetDemoFlowScreen(launched ? DemoFlowScreen.Battle : DemoFlowScreen.MissionSelect);
+                statusText = launched ? "Mission launched" : statusText;
+            }
+
+            y += 38f;
+            float halfWidth = (width - 8f) * 0.5f;
+            if (GUI.Button(new Rect(x, y, halfWidth, 30f), "Open Mech Bay"))
+            {
+                showMissionListPanel = false;
+                OpenLoadoutPanel();
+            }
+
+            if (GUI.Button(new Rect(x + halfWidth + 8f, y, halfWidth, 30f), "Back System"))
+            {
+                showMissionListPanel = false;
+                OpenSystemPanel();
+                statusText = "System open";
+            }
+
+            y += 38f;
+            if (GUI.Button(new Rect(x, y, width, 30f), "Return Battle"))
+            {
+                showMissionListPanel = false;
+                if (mission.Result == MissionResultState.InProgress)
+                {
+                    SetPaused(false);
+                    SetDemoFlowScreen(DemoFlowScreen.Battle);
+                }
+                else
+                {
+                    SetDemoFlowScreen(DemoFlowScreen.Debrief);
+                }
+
+                statusText = mission.Result == MissionResultState.InProgress ? "Battle resumed" : MissionResultText();
             }
         }
 
@@ -7377,12 +7476,17 @@ namespace MC2Demo.Presentation
             GUI.Label(new Rect(panel.x + 18f, panel.y + 36f, panel.width - 36f, 42f), mission.ResultReason);
             DrawMissionResultSummary(panel, mission.ResultSummary);
 
-            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 278f, 172f, 30f), "Restart"))
+            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 278f, 112f, 30f), "Restart"))
             {
                 TryApplyMissionRestartRuntimeSwap();
             }
 
-            if (GUI.Button(new Rect(panel.x + 210f, panel.y + 278f, 172f, 30f), "End Demo"))
+            if (GUI.Button(new Rect(panel.x + 144f, panel.y + 278f, 112f, 30f), "Mech Bay"))
+            {
+                OpenLoadoutPanel();
+            }
+
+            if (GUI.Button(new Rect(panel.x + 270f, panel.y + 278f, 112f, 30f), "End Demo"))
             {
                 Application.Quit(0);
             }
@@ -7497,6 +7601,7 @@ namespace MC2Demo.Presentation
             showSystemPanel = true;
             RefreshStartupContinueSavePreview();
             showLoadoutPanel = false;
+            showMissionListPanel = false;
             showWarehouseDraftFitPreview = false;
             showSquadSelectionPreview = false;
             warehouseDraftFitPreviewMechId = null;
@@ -7510,6 +7615,7 @@ namespace MC2Demo.Presentation
 
             pendingDetachedUnitId = null;
             pendingJumpOrder = false;
+            SetDemoFlowScreen(DemoFlowScreen.System);
             statusText = "System open";
         }
 
@@ -7522,6 +7628,7 @@ namespace MC2Demo.Presentation
             startupResetSlotConfirmPending = false;
             showSystemPanel = false;
             showLoadoutPanel = false;
+            showMissionListPanel = false;
             showMissionMap = false;
             CloseTransientMechBayDrafts();
             if (mission.Result == MissionResultState.InProgress)
@@ -7531,8 +7638,28 @@ namespace MC2Demo.Presentation
 
             pendingDetachedUnitId = null;
             pendingJumpOrder = false;
+            SetDemoFlowScreen(DemoFlowScreen.SaveChoices);
             statusText = startupContinueSaveReady ? "Save choices open" : "New game available";
             RecordSavedAccountFileResult("Save choices", startupContinueSaveReady, startupContinueSummaryText);
+        }
+
+        private void OpenMissionListPanelFromSystem()
+        {
+            showMissionListPanel = true;
+            showSystemPanel = false;
+            showLoadoutPanel = false;
+            showStartupContinuePanel = false;
+            showMissionMap = false;
+            CloseTransientMechBayDrafts();
+            if (mission.Result == MissionResultState.InProgress)
+            {
+                SetPaused(true);
+            }
+
+            pendingDetachedUnitId = null;
+            pendingJumpOrder = false;
+            SetDemoFlowScreen(DemoFlowScreen.MissionSelect);
+            statusText = "Mission list open";
         }
 
         private void TrySaveCurrentFromSaveChoices()
@@ -7589,12 +7716,14 @@ namespace MC2Demo.Presentation
             startupNewGameConfirmPending = false;
             startupResetSlotConfirmPending = false;
             OpenSystemPanel();
+            SetDemoFlowScreen(DemoFlowScreen.System);
             statusText = "System open";
         }
 
         private void OpenLoadoutPanel()
         {
             showLoadoutPanel = true;
+            showMissionListPanel = false;
             showWarehouseDraftFitPreview = false;
             showSquadSelectionPreview = false;
             warehouseDraftFitPreviewMechId = null;
@@ -7610,6 +7739,7 @@ namespace MC2Demo.Presentation
             pendingDetachedUnitId = null;
             pendingJumpOrder = false;
             RefreshDemoInventoryValidation();
+            SetDemoFlowScreen(DemoFlowScreen.MechBay);
             statusText = "Mech bay open";
         }
 
@@ -7623,6 +7753,26 @@ namespace MC2Demo.Presentation
         {
             isPaused = paused;
             Time.timeScale = paused ? 0f : 1f;
+        }
+
+        private void SetDemoFlowScreen(DemoFlowScreen screen)
+        {
+            demoFlowScreen = screen;
+        }
+
+        private static string DemoFlowScreenName(DemoFlowScreen screen)
+        {
+            return screen switch
+            {
+                DemoFlowScreen.Title => "Title",
+                DemoFlowScreen.Battle => "Battle",
+                DemoFlowScreen.MechBay => "Mech Bay",
+                DemoFlowScreen.MissionSelect => "Missions",
+                DemoFlowScreen.SaveChoices => "Saves",
+                DemoFlowScreen.System => "System",
+                DemoFlowScreen.Debrief => "Debrief",
+                _ => "Unknown"
+            };
         }
 
         private bool IsGuiPointBlocked(Vector2 guiPoint)
@@ -7652,6 +7802,11 @@ namespace MC2Demo.Presentation
                 return true;
             }
 
+            if (showMissionListPanel && MissionListPanelRect().Contains(guiPoint))
+            {
+                return true;
+            }
+
             if (showStartupContinuePanel && StartupContinuePanelRect().Contains(guiPoint))
             {
                 return true;
@@ -7670,7 +7825,14 @@ namespace MC2Demo.Presentation
         private Rect SystemPanelRect()
         {
             float width = 330f;
-            float height = 296f;
+            float height = 334f;
+            return new Rect((Screen.width - width) * 0.5f, (Screen.height - height) * 0.5f, width, height);
+        }
+
+        private Rect MissionListPanelRect()
+        {
+            float width = Mathf.Clamp(Screen.width - 48f, 380f, 520f);
+            float height = 292f;
             return new Rect((Screen.width - width) * 0.5f, (Screen.height - height) * 0.5f, width, height);
         }
 
