@@ -45,7 +45,7 @@ Current demo behavior:
 - defines the first BattleCore loadout contract for chassis grids, item shapes, heat, weight, and special equipment slots
 - validates loadout grid placement, rotation, blocked cells, overlap, heat, weight, and equipment slot compatibility
 - shows projected source loadout validation status, heat/load limits, and occupied grid cells in the mech bay
-- draws compact heat and load usage bars so fitting pressure is visible before reading the numeric limits
+- draws compact heat, load, and grid usage bars so fitting pressure is visible before reading the numeric limits
 - lets the mech bay temporarily toggle stock weapons on or off and immediately recompute validation readouts
 - visualizes the projected mech bay slot grid with placeholder multi-cell weapon shapes
 - renders projected payload items as larger whole-block grid pieces with original-style empty/short/mid/long/component color bands

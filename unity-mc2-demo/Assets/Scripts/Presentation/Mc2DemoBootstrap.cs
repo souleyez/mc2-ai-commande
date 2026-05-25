@@ -4896,17 +4896,22 @@ namespace MC2Demo.Presentation
                 + "  Grid " + result.OccupiedGridCells + "/" + preview.GridCapacity);
             float meterWidth = width * 0.46f;
             float meterGap = 6f;
-            float halfMeter = Mathf.Max(36f, (meterWidth - meterGap) * 0.5f);
+            float thirdMeter = Mathf.Max(26f, (meterWidth - meterGap * 2f) / 3f);
             DrawLoadoutUsageBar(
-                new Rect(right, y + 17f, halfMeter, 5f),
+                new Rect(right, y + 17f, thirdMeter, 5f),
                 result.TotalHeat,
                 preview.HeatLimit,
                 UiCyanColor);
             DrawLoadoutUsageBar(
-                new Rect(right + halfMeter + meterGap, y + 17f, halfMeter, 5f),
+                new Rect(right + thirdMeter + meterGap, y + 17f, thirdMeter, 5f),
                 result.TotalWeight,
                 preview.WeightLimit,
                 UiAmberColor);
+            DrawLoadoutUsageBar(
+                new Rect(right + (thirdMeter + meterGap) * 2f, y + 17f, thirdMeter, 5f),
+                result.OccupiedGridCells,
+                preview.GridCapacity,
+                LoadoutComponentColor);
         }
 
         private void DrawLoadoutUsageBar(Rect rect, float value, float limit, Color normalColor)
