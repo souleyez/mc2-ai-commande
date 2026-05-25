@@ -49,6 +49,7 @@ Current demo behavior:
 - visualizes the projected mech bay slot grid with placeholder multi-cell weapon shapes
 - renders projected payload items as larger whole-block grid pieces with original-style empty/short/mid/long/component color bands
 - shows selected or hovered payload details for weapon heat, weight, damage, range, cooldown, and component bonuses
+- highlights hovered payload blocks and empty cells so the grid reads as direct block editing instead of tiny cell picking
 - lets the mech bay select and nudge projected weapons to preview overlap and bounds validation
 - projects spare-load armor plates and heat sinks into free cells with hardness and cooling readouts
 - lets projected filler cells cycle between armor, heat sink, and empty to preview loadout tradeoffs

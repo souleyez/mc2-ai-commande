@@ -7030,6 +7030,8 @@ namespace MC2Demo.Presentation
                 }
             }
 
+            DrawLoadoutHoverFrame(preview, occupiedCells, hoveredCell, hoveredColumn, hoveredRow, x + 1f, y + 1f, cellSize, gap);
+
             GUI.Label(
                 new Rect(x + gridWidth + 10f, y + 2f, Mathf.Max(120f, width - gridWidth - 10f), 18f),
                 "Payload Grid  " + preview.Validation.OccupiedGridCells + "/" + preview.GridCapacity);
@@ -7043,6 +7045,37 @@ namespace MC2Demo.Presentation
                 TruncateText(LoadoutBlockDetailText(unit, preview, hoveredCell, hoveredColumn, hoveredRow, selectedWeaponIndex), 64));
             DrawLoadoutPlacementControls(unit, preview, x + gridWidth + 10f, y + 96f, Mathf.Max(160f, width - gridWidth - 10f));
             return Mathf.Max(gridHeight + 2f, 162f);
+        }
+
+        private void DrawLoadoutHoverFrame(
+            CombatLoadoutPreview preview,
+            CombatLoadoutPreviewGridCell[] occupiedCells,
+            CombatLoadoutPreviewGridCell hoveredCell,
+            int hoveredColumn,
+            int hoveredRow,
+            float gridOriginX,
+            float gridOriginY,
+            float cellSize,
+            float gap)
+        {
+            if (preview == null || hoveredColumn < 0 || hoveredRow < 0)
+            {
+                return;
+            }
+
+            if (hoveredCell != null)
+            {
+                Rect block = LoadoutBlockRect(occupiedCells, hoveredCell, gridOriginX, gridOriginY, cellSize, gap);
+                DrawRectBorder(new Rect(block.x - 1f, block.y - 1f, block.width + 2f, block.height + 2f), UiCyanColor, 2f);
+                return;
+            }
+
+            Rect cell = new(
+                gridOriginX + hoveredColumn * (cellSize + gap),
+                gridOriginY + hoveredRow * (cellSize + gap),
+                cellSize,
+                cellSize);
+            DrawRectBorder(cell, UiAmberColor, 2f);
         }
 
         private static CombatLoadoutPreviewGridCell LoadoutCellAt(CombatLoadoutPreview preview, int x, int y)
