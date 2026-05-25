@@ -64,6 +64,7 @@ namespace MC2Demo.Presentation
         private readonly Dictionary<string, CombatLoadoutPlacementOverride[]> appliedLoadoutPlacementOverridesByUnit = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, CombatLoadoutFillerOverride[]> appliedLoadoutFillerOverridesByUnit = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, int> selectedLoadoutWeaponByUnit = new(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, Vector2Int> selectedLoadoutGridCellByUnit = new(StringComparer.OrdinalIgnoreCase);
         private readonly List<Material> ownedMaterials = new();
         private readonly List<string> combatLog = new();
         private BattleMission mission;
@@ -412,6 +413,7 @@ namespace MC2Demo.Presentation
             appliedLoadoutPlacementOverridesByUnit.Clear();
             appliedLoadoutFillerOverridesByUnit.Clear();
             selectedLoadoutWeaponByUnit.Clear();
+            selectedLoadoutGridCellByUnit.Clear();
             combatLog.Clear();
             mainCamera = null;
 
@@ -6951,6 +6953,7 @@ namespace MC2Demo.Presentation
             float gridWidth = preview.GridWidth * cellSize + (preview.GridWidth - 1) * gap;
             float gridHeight = preview.GridHeight * cellSize + (preview.GridHeight - 1) * gap;
             int selectedWeaponIndex = SelectedLoadoutWeaponIndexFor(unit, preview);
+            bool hasSelectedGridCell = TryGetSelectedLoadoutGridCell(unit, preview, out Vector2Int selectedGridCell);
             Rect gridRect = new(x, y, gridWidth + 2f, gridHeight + 2f);
             DrawColorRect(gridRect, new Color(0.035f, 0.042f, 0.048f, 0.98f));
             DrawRectBorder(gridRect, new Color(0.52f, 0.34f, 0.12f, 0.92f), 1f);
@@ -6980,10 +6983,12 @@ namespace MC2Demo.Presentation
                         if (occupiedCell != null && occupiedCell.SourceWeaponIndex >= 0)
                         {
                             SetSelectedLoadoutWeapon(unit, occupiedCell.SourceWeaponIndex);
+                            SetSelectedLoadoutGridCell(unit, column, row);
                             statusText = "Selected " + TruncateText(occupiedCell.DisplayName, 24);
                         }
                         else if (CountLoadoutCellsAt(preview, column, row) <= 1)
                         {
+                            SetSelectedLoadoutGridCell(unit, column, row);
                             CycleFillerOverride(unit, column, row, occupiedCell?.Category);
                         }
 
@@ -7030,6 +7035,7 @@ namespace MC2Demo.Presentation
                 }
             }
 
+            DrawLoadoutSelectedGridCellFrame(preview, occupiedCells, hasSelectedGridCell, selectedGridCell, x + 1f, y + 1f, cellSize, gap);
             DrawLoadoutHoverFrame(preview, occupiedCells, hoveredCell, hoveredColumn, hoveredRow, x + 1f, y + 1f, cellSize, gap);
 
             GUI.Label(
@@ -7042,7 +7048,16 @@ namespace MC2Demo.Presentation
             DrawLoadoutLegend(x + gridWidth + 10f, y + 42f, Mathf.Max(160f, width - gridWidth - 10f));
             GUI.Label(
                 new Rect(x + gridWidth + 10f, y + 62f, Mathf.Max(160f, width - gridWidth - 10f), 18f),
-                TruncateText(LoadoutBlockDetailText(unit, preview, hoveredCell, hoveredColumn, hoveredRow, selectedWeaponIndex), 64));
+                TruncateText(LoadoutBlockDetailText(
+                    unit,
+                    preview,
+                    hoveredCell,
+                    hoveredColumn,
+                    hoveredRow,
+                    hasSelectedGridCell,
+                    selectedGridCell,
+                    selectedWeaponIndex),
+                    64));
             DrawLoadoutPlacementControls(unit, preview, x + gridWidth + 10f, y + 96f, Mathf.Max(160f, width - gridWidth - 10f));
             return Mathf.Max(gridHeight + 2f, 162f);
         }
@@ -7076,6 +7091,37 @@ namespace MC2Demo.Presentation
                 cellSize,
                 cellSize);
             DrawRectBorder(cell, UiAmberColor, 2f);
+        }
+
+        private void DrawLoadoutSelectedGridCellFrame(
+            CombatLoadoutPreview preview,
+            CombatLoadoutPreviewGridCell[] occupiedCells,
+            bool hasSelectedGridCell,
+            Vector2Int selectedGridCell,
+            float gridOriginX,
+            float gridOriginY,
+            float cellSize,
+            float gap)
+        {
+            if (preview == null || !hasSelectedGridCell)
+            {
+                return;
+            }
+
+            CombatLoadoutPreviewGridCell selectedCell = LoadoutCellAt(preview, selectedGridCell.x, selectedGridCell.y);
+            if (selectedCell != null)
+            {
+                Rect block = LoadoutBlockRect(occupiedCells, selectedCell, gridOriginX, gridOriginY, cellSize, gap);
+                DrawRectBorder(new Rect(block.x - 1f, block.y - 1f, block.width + 2f, block.height + 2f), new Color(1f, 0.95f, 0.22f, 1f), 2f);
+                return;
+            }
+
+            Rect cell = new(
+                gridOriginX + selectedGridCell.x * (cellSize + gap),
+                gridOriginY + selectedGridCell.y * (cellSize + gap),
+                cellSize,
+                cellSize);
+            DrawRectBorder(cell, new Color(1f, 0.95f, 0.22f, 1f), 2f);
         }
 
         private static CombatLoadoutPreviewGridCell LoadoutCellAt(CombatLoadoutPreview preview, int x, int y)
@@ -7274,6 +7320,8 @@ namespace MC2Demo.Presentation
             CombatLoadoutPreviewGridCell hoveredCell,
             int hoveredColumn,
             int hoveredRow,
+            bool hasSelectedGridCell,
+            Vector2Int selectedGridCell,
             int selectedWeaponIndex)
         {
             if (hoveredColumn >= 0 && hoveredRow >= 0 && hoveredCell == null)
@@ -7283,7 +7331,19 @@ namespace MC2Demo.Presentation
                     + "  open";
             }
 
-            CombatLoadoutPreviewGridCell detailCell = hoveredCell ?? LoadoutCellForSelectedWeapon(preview, selectedWeaponIndex);
+            CombatLoadoutPreviewGridCell detailCell = hoveredCell;
+            if (detailCell == null && hasSelectedGridCell)
+            {
+                detailCell = LoadoutCellAt(preview, selectedGridCell.x, selectedGridCell.y);
+                if (detailCell == null)
+                {
+                    return "Selected Slot " + selectedGridCell.x.ToString(CultureInfo.InvariantCulture)
+                        + "," + selectedGridCell.y.ToString(CultureInfo.InvariantCulture)
+                        + "  open";
+                }
+            }
+
+            detailCell ??= LoadoutCellForSelectedWeapon(preview, selectedWeaponIndex);
             if (detailCell == null)
             {
                 return "Payload detail unavailable";
@@ -7600,7 +7660,39 @@ namespace MC2Demo.Presentation
                 return;
             }
 
-            selectedLoadoutWeaponByUnit[unit.Id ?? ""] = sourceWeaponIndex;
+            string key = unit.Id ?? "";
+            selectedLoadoutWeaponByUnit[key] = sourceWeaponIndex;
+            selectedLoadoutGridCellByUnit.Remove(key);
+        }
+
+        private bool TryGetSelectedLoadoutGridCell(UnitState unit, CombatLoadoutPreview preview, out Vector2Int selectedGridCell)
+        {
+            selectedGridCell = default;
+            if (unit == null || preview == null)
+            {
+                return false;
+            }
+
+            string key = unit.Id ?? "";
+            if (!selectedLoadoutGridCellByUnit.TryGetValue(key, out selectedGridCell))
+            {
+                return false;
+            }
+
+            return selectedGridCell.x >= 0
+                && selectedGridCell.y >= 0
+                && selectedGridCell.x < preview.GridWidth
+                && selectedGridCell.y < preview.GridHeight;
+        }
+
+        private void SetSelectedLoadoutGridCell(UnitState unit, int gridX, int gridY)
+        {
+            if (unit == null)
+            {
+                return;
+            }
+
+            selectedLoadoutGridCellByUnit[unit.Id ?? ""] = new Vector2Int(gridX, gridY);
         }
 
         private void MoveSelectedLoadoutWeapon(UnitState unit, CombatLoadoutPreview preview, int deltaX, int deltaY)
@@ -7620,6 +7712,7 @@ namespace MC2Demo.Presentation
                 gridX = selectedItem.GridX + deltaX,
                 gridY = selectedItem.GridY + deltaY
             };
+            SetSelectedLoadoutGridCell(unit, selectedItem.GridX + deltaX, selectedItem.GridY + deltaY);
             statusText = "Moved " + TruncateText(selectedItem.DisplayName, 20);
         }
 
