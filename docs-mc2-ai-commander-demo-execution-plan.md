@@ -516,5 +516,6 @@ Reason:
 - The first in-window visual inspection pass tightened the title save panel with an inset account summary, shorter top status strip, and side-by-side Continue/New Game actions.
 - The battle/mech-bay inspection pass now frames the Combat/Mission HUD and shifts the mech bay into a right-side focused drawer with a dimmed backdrop.
 - The mech bay payload grid now presents weapons, armor, and heat sinks as larger whole-block grid pieces using original-style empty/short/mid/long/component color cues.
+- The payload grid now adds selected/hovered item detail text so each block exposes heat, weight, damage, range, cooldown, or component bonuses without opening another panel.
 - The next low-risk step is to tune the mech bay content density and then migrate these flow screens beyond IMGUI once the layout direction feels right.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.

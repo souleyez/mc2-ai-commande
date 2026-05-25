@@ -213,7 +213,8 @@ immediately recompute heat, load, grid occupancy, overlap, bounds, and validator
 status without touching live battle damage yet. The payload preview now draws
 those projected items as larger whole-block grid pieces, following the original
 payload-model color idea of orange empty cells, green/blue/red weapon range bands,
-and yellow components. Spare load is now projected into
+and yellow components. The grid also exposes selected or hovered block details
+for weapon heat, weight, damage, range, cooldown, and component bonuses. Spare load is now projected into
 free cells as simple armor plates and heat sinks, exposing hardness and cooling
 totals before full inventory editing exists. Those projected filler cells can
 also be cycled between armor, heat sink, and empty so the first fitting tradeoff

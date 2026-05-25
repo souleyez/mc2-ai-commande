@@ -6954,6 +6954,9 @@ namespace MC2Demo.Presentation
             Rect gridRect = new(x, y, gridWidth + 2f, gridHeight + 2f);
             DrawColorRect(gridRect, new Color(0.035f, 0.042f, 0.048f, 0.98f));
             DrawRectBorder(gridRect, new Color(0.52f, 0.34f, 0.12f, 0.92f), 1f);
+            CombatLoadoutPreviewGridCell hoveredCell = null;
+            int hoveredColumn = -1;
+            int hoveredRow = -1;
 
             for (int row = 0; row < preview.GridHeight; row++)
             {
@@ -6963,6 +6966,12 @@ namespace MC2Demo.Presentation
                     CombatLoadoutPreviewGridCell occupiedCell = LoadoutCellAt(preview, column, row);
                     DrawColorRect(cell, occupiedCell == null ? LoadoutEmptySlotColor : new Color(0.07f, 0.075f, 0.075f, 1f));
                     DrawRectBorder(cell, new Color(0.05f, 0.08f, 0.085f, 0.95f), 1f);
+                    if (cell.Contains(Event.current.mousePosition))
+                    {
+                        hoveredCell = occupiedCell;
+                        hoveredColumn = column;
+                        hoveredRow = row;
+                    }
 
                     if (Event.current.type == EventType.MouseDown
                         && Event.current.button == 0
@@ -7029,8 +7038,11 @@ namespace MC2Demo.Presentation
                 "Armor +" + FormatDecimal(preview.Validation.TotalArmorHardnessBonus)
                 + "  Sink +" + FormatDecimal(preview.Validation.TotalHeatDissipationBonus));
             DrawLoadoutLegend(x + gridWidth + 10f, y + 42f, Mathf.Max(160f, width - gridWidth - 10f));
-            DrawLoadoutPlacementControls(unit, preview, x + gridWidth + 10f, y + 76f, Mathf.Max(160f, width - gridWidth - 10f));
-            return Mathf.Max(gridHeight + 2f, 142f);
+            GUI.Label(
+                new Rect(x + gridWidth + 10f, y + 62f, Mathf.Max(160f, width - gridWidth - 10f), 18f),
+                TruncateText(LoadoutBlockDetailText(unit, preview, hoveredCell, hoveredColumn, hoveredRow, selectedWeaponIndex), 64));
+            DrawLoadoutPlacementControls(unit, preview, x + gridWidth + 10f, y + 96f, Mathf.Max(160f, width - gridWidth - 10f));
+            return Mathf.Max(gridHeight + 2f, 162f);
         }
 
         private static CombatLoadoutPreviewGridCell LoadoutCellAt(CombatLoadoutPreview preview, int x, int y)
@@ -7040,6 +7052,21 @@ namespace MC2Demo.Presentation
             {
                 CombatLoadoutPreviewGridCell cell = occupiedCells[index];
                 if (cell != null && cell.X == x && cell.Y == y)
+                {
+                    return cell;
+                }
+            }
+
+            return null;
+        }
+
+        private static CombatLoadoutPreviewGridCell LoadoutCellForSelectedWeapon(CombatLoadoutPreview preview, int selectedWeaponIndex)
+        {
+            CombatLoadoutPreviewGridCell[] occupiedCells = preview?.OccupiedCells ?? Array.Empty<CombatLoadoutPreviewGridCell>();
+            for (int index = 0; index < occupiedCells.Length; index++)
+            {
+                CombatLoadoutPreviewGridCell cell = occupiedCells[index];
+                if (cell != null && cell.SourceWeaponIndex == selectedWeaponIndex)
                 {
                     return cell;
                 }
@@ -7206,6 +7233,71 @@ namespace MC2Demo.Presentation
                 ? (cell.SourceWeaponIndex + 1).ToString(CultureInfo.InvariantCulture) + " "
                 : "";
             return prefix + ShortLoadoutItemName(name);
+        }
+
+        private static string LoadoutBlockDetailText(
+            UnitState unit,
+            CombatLoadoutPreview preview,
+            CombatLoadoutPreviewGridCell hoveredCell,
+            int hoveredColumn,
+            int hoveredRow,
+            int selectedWeaponIndex)
+        {
+            if (hoveredColumn >= 0 && hoveredRow >= 0 && hoveredCell == null)
+            {
+                return "Empty Slot " + hoveredColumn.ToString(CultureInfo.InvariantCulture)
+                    + "," + hoveredRow.ToString(CultureInfo.InvariantCulture)
+                    + "  open";
+            }
+
+            CombatLoadoutPreviewGridCell detailCell = hoveredCell ?? LoadoutCellForSelectedWeapon(preview, selectedWeaponIndex);
+            if (detailCell == null)
+            {
+                return "Payload detail unavailable";
+            }
+
+            int cells = CountLoadoutBlockCells(preview, detailCell);
+            if (detailCell.Category == LoadoutItemCategory.ArmorPlate)
+            {
+                return "Armor Plate  Hardness +1  Load 0.5  Cells " + cells.ToString(CultureInfo.InvariantCulture);
+            }
+
+            if (detailCell.Category == LoadoutItemCategory.HeatSink)
+            {
+                return "Heat Sink  Cooling +1.5  Load 1  Cells " + cells.ToString(CultureInfo.InvariantCulture);
+            }
+
+            CombatWeaponDefinition weapon = LoadoutWeaponForCell(unit, detailCell);
+            if (weapon == null)
+            {
+                return (detailCell.DisplayName ?? "Payload")
+                    + "  Cells "
+                    + cells.ToString(CultureInfo.InvariantCulture);
+            }
+
+            return (detailCell.SourceWeaponIndex + 1).ToString(CultureInfo.InvariantCulture)
+                + " " + TruncateText(weapon.name, 16)
+                + "  H" + FormatDecimal(weapon.heat)
+                + " W" + FormatDecimal(weapon.weight)
+                + " D" + FormatDecimal(weapon.damage)
+                + " R" + Mathf.RoundToInt(weapon.rangeMax).ToString(CultureInfo.InvariantCulture)
+                + " CD" + FormatDecimal(weapon.recycleTime)
+                + " Cells " + cells.ToString(CultureInfo.InvariantCulture);
+        }
+
+        private static int CountLoadoutBlockCells(CombatLoadoutPreview preview, CombatLoadoutPreviewGridCell blockCell)
+        {
+            int count = 0;
+            CombatLoadoutPreviewGridCell[] cells = preview?.OccupiedCells ?? Array.Empty<CombatLoadoutPreviewGridCell>();
+            for (int index = 0; index < cells.Length; index++)
+            {
+                if (SameLoadoutBlock(cells[index], blockCell))
+                {
+                    count++;
+                }
+            }
+
+            return count;
         }
 
         private static CombatWeaponDefinition LoadoutWeaponForCell(UnitState unit, CombatLoadoutPreviewGridCell cell)
