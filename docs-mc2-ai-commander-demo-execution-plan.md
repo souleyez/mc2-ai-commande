@@ -510,5 +510,6 @@ Reason:
 - The system panel now opens a Mission List shell for `mc2_01`, with current-mission launch, mech bay, back-system, and return-battle actions.
 - The debrief panel now routes post-battle flow through Continue Bay or Mission List, hiding the debrief overlay before the player repairs, saves, or chooses the next launch.
 - The Mission List return action now goes back to Debrief after a completed mission, keeping the post-battle flow reversible.
-- The next low-risk step is to make the mech bay show a clearer post-battle repair/save/launch lane, then migrate these flow screens beyond IMGUI.
+- The mech bay summary now has a compact post-battle/prep lane with Repair All, Save, Missions, and Launch, so the main playable loop is visible in one row.
+- The next low-risk step is to migrate these flow screens beyond IMGUI while keeping the new title, debrief, mission list, and mech bay lane behavior intact.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.

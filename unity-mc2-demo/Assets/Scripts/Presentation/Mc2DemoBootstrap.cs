@@ -4233,7 +4233,7 @@ namespace MC2Demo.Presentation
             y += 30f;
             bool showInlineMechBayPreview = showWarehouseDraftFitPreview || showSquadSelectionPreview;
             DrawMechBayInventorySummary(x, y, width, !showInlineMechBayPreview);
-            y += showInlineMechBayPreview ? 348f : 546f;
+            y += showInlineMechBayPreview ? 372f : 570f;
             if (showWarehouseDraftFitPreview)
             {
                 DrawWarehouseDraftFitPreview(x, y, width);
@@ -4298,25 +4298,6 @@ namespace MC2Demo.Presentation
                 new Rect(x, y + 60f, width, 18f),
                 "Assembly " + AssemblyPreviewText(MechBayAssemblyPreviewService.BestAssemblyProgress(demoInventory)));
             DrawSavedAccountFileResultLine(x, y + 82f, width);
-            DrawLocalCandidatePrepAction(x, y + 104f, width);
-            DrawSavedAccountImportPathToolsLine(x, y + 126f, width);
-            DrawSavedAccountImportPreviewPathLine(x, y + 148f, width);
-            DrawSavedAccountImportApplyPreviewLine(x, y + 170f, width);
-            MechBayWeaponShopPreview shopPreview = MechBayWeaponShopPreviewService.BuildPreview(demoInventory);
-            GUI.Label(
-                new Rect(x, y + 190f, width, 18f),
-                "Shop " + WeaponShopPreviewText(shopPreview));
-            DrawWeaponShopPurchaseStub(x, y + 212f, width, shopPreview, demoInventory);
-            MechBayPilotHirePreview pilotHirePreview = MechBayPilotHirePreviewService.BuildPreview(demoInventory);
-            GUI.Label(
-                new Rect(x, y + 234f, width, 18f),
-                "Pilot Hire " + PilotHirePreviewText(pilotHirePreview));
-            MechBayOwnedRosterEntry[] roster = MechBayOwnedRosterService.BuildRosterPreview(demoInventory);
-            ClampSelectedRosterIndex(roster);
-            GUI.Label(
-                new Rect(x, y + 256f, width, 18f),
-                "Roster " + TruncateText(OwnedRosterText(roster), 62));
-            DrawRosterMissionStateLine(x, y + 278f, width, roster);
             MechBayMissionHandoffPreview handoffPreview =
                 MechBayMissionHandoffPreviewService.BuildPreview(demoInventory);
             MechBayMissionRestartApplyGuard restartGuard =
@@ -4324,18 +4305,234 @@ namespace MC2Demo.Presentation
                     demoInventory,
                     mission?.Contract,
                     combatProfiles);
+            DrawPostBattleMechBayLane(x, y + 104f, width, handoffPreview, restartGuard);
+            DrawLocalCandidatePrepAction(x, y + 128f, width);
+            DrawSavedAccountImportPathToolsLine(x, y + 150f, width);
+            DrawSavedAccountImportPreviewPathLine(x, y + 172f, width);
+            DrawSavedAccountImportApplyPreviewLine(x, y + 194f, width);
+            MechBayWeaponShopPreview shopPreview = MechBayWeaponShopPreviewService.BuildPreview(demoInventory);
+            GUI.Label(
+                new Rect(x, y + 214f, width, 18f),
+                "Shop " + WeaponShopPreviewText(shopPreview));
+            DrawWeaponShopPurchaseStub(x, y + 236f, width, shopPreview, demoInventory);
+            MechBayPilotHirePreview pilotHirePreview = MechBayPilotHirePreviewService.BuildPreview(demoInventory);
+            GUI.Label(
+                new Rect(x, y + 258f, width, 18f),
+                "Pilot Hire " + PilotHirePreviewText(pilotHirePreview));
+            MechBayOwnedRosterEntry[] roster = MechBayOwnedRosterService.BuildRosterPreview(demoInventory);
+            ClampSelectedRosterIndex(roster);
+            GUI.Label(
+                new Rect(x, y + 280f, width, 18f),
+                "Roster " + TruncateText(OwnedRosterText(roster), 62));
+            DrawRosterMissionStateLine(x, y + 302f, width, roster);
             string handoffSummary = HasSquadSelectionCompletedReplacement()
                 ? MissionHandoffCompletedSummaryText(handoffPreview, restartGuard)
                 : MissionHandoffPlayerSummaryText(handoffPreview, restartGuard);
             GUI.Label(
-                new Rect(x, y + 300f, width, 18f),
+                new Rect(x, y + 324f, width, 18f),
                 "Next Mission " + TruncateText(handoffSummary, 58));
-            DrawMissionHandoffLaunchAction(x, y + 322f, width, handoffPreview, restartGuard);
-            DrawMissionHandoffLineup(x, y + 344f, width, handoffPreview);
+            DrawMissionHandoffLaunchAction(x, y + 346f, width, handoffPreview, restartGuard);
+            DrawMissionHandoffLineup(x, y + 368f, width, handoffPreview);
             if (showRosterDetail)
             {
-                DrawOwnedRosterDetail(x, y + 366f, width, roster, pilotHirePreview);
+                DrawOwnedRosterDetail(x, y + 390f, width, roster, pilotHirePreview);
             }
+        }
+
+        private void DrawPostBattleMechBayLane(
+            float x,
+            float y,
+            float width,
+            MechBayMissionHandoffPreview handoffPreview,
+            MechBayMissionRestartApplyGuard restartGuard)
+        {
+            int repairCount = CountRepairNeededPlayerMechs();
+            int repairCost = EstimateRepairAllPlayerMechCost();
+            bool repairReady = repairCount > 0
+                && repairCost > 0
+                && demoInventory != null
+                && demoInventory.tokenBalance >= repairCost;
+            bool saveReady = demoInventory != null;
+            bool launchReady = restartGuard?.ApplyEnabled == true;
+            bool previousEnabled = GUI.enabled;
+
+            GUI.enabled = previousEnabled && repairReady;
+            if (DrawActionButton(new Rect(x, y - 2f, 78f, 22f), "Repair All", repairReady))
+            {
+                TryRepairAllPlayerMechs();
+            }
+
+            GUI.enabled = previousEnabled && saveReady;
+            if (DrawActionButton(new Rect(x + 86f, y - 2f, 48f, 22f), "Save", saveReady))
+            {
+                TrySaveCurrentFromMechBayLane();
+            }
+
+            GUI.enabled = previousEnabled;
+            if (DrawActionButton(new Rect(x + 142f, y - 2f, 68f, 22f), "Missions", true))
+            {
+                OpenMissionListFromMechBayLane();
+            }
+
+            GUI.enabled = previousEnabled && launchReady;
+            if (DrawActionButton(new Rect(x + 218f, y - 2f, 58f, 22f), "Launch", launchReady))
+            {
+                TryApplyMissionRestartRuntimeSwap(keepMechBayOpen: true);
+            }
+
+            GUI.enabled = previousEnabled;
+            bool laneReady = repairCount > 0 ? repairReady : launchReady;
+            DrawActionStateLabel(
+                x + 286f,
+                y,
+                width - 286f,
+                PostBattleMechBayLaneText(repairCount, repairCost, handoffPreview, restartGuard),
+                laneReady,
+                54);
+        }
+
+        private string PostBattleMechBayLaneText(
+            int repairCount,
+            int repairCost,
+            MechBayMissionHandoffPreview handoffPreview,
+            MechBayMissionRestartApplyGuard restartGuard)
+        {
+            string prefix = mission != null && mission.Result != MissionResultState.InProgress
+                ? "Post Battle"
+                : "Prep";
+            if (demoInventory == null)
+            {
+                return prefix + "  inventory missing";
+            }
+
+            if (repairCount > 0)
+            {
+                if (demoInventory.tokenBalance < repairCost)
+                {
+                    return prefix + "  repair " + repairCount.ToString(CultureInfo.InvariantCulture)
+                        + " need " + FormatTokens(repairCost);
+                }
+
+                return prefix + "  repair " + repairCount.ToString(CultureInfo.InvariantCulture)
+                    + " cost " + FormatTokens(repairCost)
+                    + "  save then launch";
+            }
+
+            if (restartGuard?.ApplyEnabled == true)
+            {
+                int slotCount = handoffPreview?.MissionSlotCount ?? restartGuard.SpawnIntentCount;
+                return prefix + "  repaired  "
+                    + slotCount.ToString(CultureInfo.InvariantCulture)
+                    + " mechs ready";
+            }
+
+            return prefix + "  launch blocked " + MissionHandoffPlayerBlockedReason(restartGuard?.Reason);
+        }
+
+        private int CountRepairNeededPlayerMechs()
+        {
+            int count = 0;
+            if (mission == null)
+            {
+                return count;
+            }
+
+            foreach (UnitState unit in mission.PlayerUnits())
+            {
+                if (MechBayRepairService.EstimateRepairCostResourcePoints(unit) > 0)
+                {
+                    count++;
+                }
+            }
+
+            return count;
+        }
+
+        private int EstimateRepairAllPlayerMechCost()
+        {
+            int total = 0;
+            if (mission == null)
+            {
+                return total;
+            }
+
+            foreach (UnitState unit in mission.PlayerUnits())
+            {
+                total += MechBayRepairService.EstimateRepairCostResourcePoints(unit);
+            }
+
+            return total;
+        }
+
+        private void TryRepairAllPlayerMechs()
+        {
+            if (demoInventory == null)
+            {
+                statusText = "Inventory missing";
+                AddCombatLogLine(statusText);
+                return;
+            }
+
+            int repairCount = CountRepairNeededPlayerMechs();
+            int repairCost = EstimateRepairAllPlayerMechCost();
+            if (repairCount <= 0 || repairCost <= 0)
+            {
+                statusText = "No repairs needed";
+                AddCombatLogLine(statusText);
+                return;
+            }
+
+            if (demoInventory.tokenBalance < repairCost)
+            {
+                statusText = "Need " + FormatTokens(repairCost) + " token for all repairs";
+                AddCombatLogLine(statusText);
+                return;
+            }
+
+            int repaired = 0;
+            int spent = 0;
+            foreach (UnitState unit in mission.PlayerUnits())
+            {
+                int unitCost = MechBayRepairService.EstimateRepairCostResourcePoints(unit);
+                if (unitCost <= 0)
+                {
+                    continue;
+                }
+
+                MechBayRepairResult result = MechBayRepairService.TryRepair(demoInventory, unit);
+                if (!result.Accepted)
+                {
+                    statusText = result.Message;
+                    AddCombatLogLine("Repair all stopped: " + result.Message);
+                    break;
+                }
+
+                repaired++;
+                spent += unitCost;
+            }
+
+            RefreshDemoInventoryValidation();
+            bool saved = TryAutoSaveSavedAccount("repair all");
+            if (saved)
+            {
+                statusText = "Repaired " + repaired.ToString(CultureInfo.InvariantCulture)
+                    + " mechs for " + FormatTokens(spent);
+            }
+
+            AddCombatLogLine(statusText);
+        }
+
+        private void TrySaveCurrentFromMechBayLane()
+        {
+            bool saved = TryExportSavedAccount(DefaultSavedAccountFilePath(), false, "Mech bay lane");
+            statusText = saved ? "Progress saved" : "Save failed";
+        }
+
+        private void OpenMissionListFromMechBayLane()
+        {
+            showLoadoutPanel = false;
+            OpenMissionListPanelFromSystem();
+            statusText = "Mission list open from mech bay";
         }
 
         private void DrawLoadoutUnit(UnitState unit, float x, float y, float width)
