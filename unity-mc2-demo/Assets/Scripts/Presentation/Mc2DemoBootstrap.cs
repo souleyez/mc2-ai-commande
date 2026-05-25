@@ -70,6 +70,7 @@ namespace MC2Demo.Presentation
         private bool showSystemPanel;
         private bool showStartupContinuePanel;
         private bool showMissionListPanel;
+        private bool showMissionResultPanel;
         private bool startupSaveChoicesOpenedFromSystem;
         private bool startupNewGameConfirmPending;
         private bool startupResetSlotConfirmPending;
@@ -256,6 +257,7 @@ namespace MC2Demo.Presentation
             showLoadoutPanel = false;
             showSystemPanel = false;
             showMissionListPanel = false;
+            showMissionResultPanel = false;
             CloseTransientMechBayDrafts();
 
             mission = null;
@@ -315,6 +317,7 @@ namespace MC2Demo.Presentation
             showLoadoutPanel = keepMechBayOpen;
             showSystemPanel = false;
             showMissionListPanel = false;
+            showMissionResultPanel = false;
             showWarehouseDraftFitPreview = false;
             showSquadSelectionPreview = false;
             warehouseDraftFitPreviewMechId = null;
@@ -2325,6 +2328,7 @@ namespace MC2Demo.Presentation
             if (mission.Result == MissionResultState.Victory)
             {
                 ApplyMissionReceiptOnce();
+                showMissionResultPanel = true;
                 SetDemoFlowScreen(DemoFlowScreen.Debrief);
                 statusText = "Mission complete";
                 AddCombatLogLine("Mission complete");
@@ -2334,6 +2338,7 @@ namespace MC2Demo.Presentation
             else if (mission.Result == MissionResultState.Defeat)
             {
                 ApplyMissionReceiptOnce();
+                showMissionResultPanel = true;
                 SetDemoFlowScreen(DemoFlowScreen.Debrief);
                 statusText = "Mission failed";
                 AddCombatLogLine("Mission failed");
@@ -7447,7 +7452,8 @@ namespace MC2Demo.Presentation
             }
 
             y += 38f;
-            if (GUI.Button(new Rect(x, y, width, 30f), "Return Battle"))
+            string returnText = mission.Result == MissionResultState.InProgress ? "Return Battle" : "Return Debrief";
+            if (GUI.Button(new Rect(x, y, width, 30f), returnText))
             {
                 showMissionListPanel = false;
                 if (mission.Result == MissionResultState.InProgress)
@@ -7457,36 +7463,59 @@ namespace MC2Demo.Presentation
                 }
                 else
                 {
+                    showMissionResultPanel = true;
                     SetDemoFlowScreen(DemoFlowScreen.Debrief);
                 }
 
-                statusText = mission.Result == MissionResultState.InProgress ? "Battle resumed" : MissionResultText();
+                statusText = mission.Result == MissionResultState.InProgress ? "Battle resumed" : "Debrief open";
             }
+        }
+
+        private void OpenPostMissionMechBay()
+        {
+            showMissionResultPanel = false;
+            AddCombatLogLine("Debrief accepted: open mech bay");
+            OpenLoadoutPanel();
+            statusText = "Post-mission mech bay";
+        }
+
+        private void OpenPostMissionListPanel()
+        {
+            showMissionResultPanel = false;
+            AddCombatLogLine("Debrief accepted: open mission list");
+            OpenMissionListPanelFromSystem();
+            statusText = "Post-mission list";
         }
 
         private void DrawMissionResultPanel()
         {
-            if (mission.Result == MissionResultState.InProgress)
+            if (mission.Result == MissionResultState.InProgress || !showMissionResultPanel)
             {
                 return;
             }
 
-            Rect panel = new((Screen.width - 400f) * 0.5f, 72f, 400f, 338f);
+            Rect panel = new((Screen.width - 420f) * 0.5f, 72f, 420f, 380f);
             GUI.Box(panel, MissionResultText());
             GUI.Label(new Rect(panel.x + 18f, panel.y + 36f, panel.width - 36f, 42f), mission.ResultReason);
             DrawMissionResultSummary(panel, mission.ResultSummary);
 
-            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 278f, 112f, 30f), "Restart"))
+            GUI.Label(new Rect(panel.x + 18f, panel.y + 270f, panel.width - 36f, 20f), "Next: repair, save, then launch again.");
+            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 296f, 182f, 30f), "Continue Bay"))
+            {
+                OpenPostMissionMechBay();
+            }
+
+            if (GUI.Button(new Rect(panel.x + 220f, panel.y + 296f, 182f, 30f), "Mission List"))
+            {
+                OpenPostMissionListPanel();
+            }
+
+            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 334f, 182f, 30f), "Restart"))
             {
                 TryApplyMissionRestartRuntimeSwap();
             }
 
-            if (GUI.Button(new Rect(panel.x + 144f, panel.y + 278f, 112f, 30f), "Mech Bay"))
-            {
-                OpenLoadoutPanel();
-            }
-
-            if (GUI.Button(new Rect(panel.x + 270f, panel.y + 278f, 112f, 30f), "End Demo"))
+            if (GUI.Button(new Rect(panel.x + 220f, panel.y + 334f, 182f, 30f), "End Demo"))
             {
                 Application.Quit(0);
             }

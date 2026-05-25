@@ -508,5 +508,7 @@ Reason:
 - System-opened Save Choices now has Export Copy and Reset Slot controls; Reset Slot requires confirmation, copies the old default save first, then replaces the default slot with a fresh demo snapshot.
 - A first lightweight demo-flow state now tracks title, battle, mech bay, mission selection, save choices, system, and debrief, with the current state visible in the top status strip.
 - The system panel now opens a Mission List shell for `mc2_01`, with current-mission launch, mech bay, back-system, and return-battle actions.
-- The next low-risk step is to make mission completion route through the mission list or mech bay as the default post-battle path, then migrate these flow screens beyond IMGUI.
+- The debrief panel now routes post-battle flow through Continue Bay or Mission List, hiding the debrief overlay before the player repairs, saves, or chooses the next launch.
+- The Mission List return action now goes back to Debrief after a completed mission, keeping the post-battle flow reversible.
+- The next low-risk step is to make the mech bay show a clearer post-battle repair/save/launch lane, then migrate these flow screens beyond IMGUI.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.
