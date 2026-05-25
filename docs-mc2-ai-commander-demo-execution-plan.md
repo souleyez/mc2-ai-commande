@@ -43,7 +43,7 @@ The Unity demo currently supports:
 - initial BattleCore loadout contract for chassis grids, item shapes, heat, weight, armor plates, heat sinks, radar slots, and jump jet slots
 - deterministic BattleCore loadout validator for grid bounds, blocked cells, overlap, rotation, heat caps, weight caps, and special-slot compatibility
 - source weapon loadout projection in the mech bay with validator status, heat/load limits, and occupied grid cell counts
-- temporary mech bay weapon toggles that immediately recompute projected heat, load, grid occupancy, and fitting status
+- fitted weapons are always active; the mech bay weapon list selects mounted weapons for slot editing instead of exposing weapon switches
 - projected mech bay slot grid visualization with placeholder multi-cell weapon shapes exposed from BattleCore preview data
 - temporary projected weapon placement edits with overlap and out-of-bounds validator feedback
 - spare-load armor plate and heat sink filler projection with hardness and cooling totals
@@ -521,6 +521,7 @@ Reason:
 - The payload grid now adds a hover frame for whole blocks and open cells, making the original-style block editing target clearer before a dedicated loadout UI replaces IMGUI.
 - Clicked component or open payload cells now remain selected, so armor/sink tradeoffs keep their visible frame and detail line after hover leaves.
 - Slot Reset and draft Reset now clear stale selected grid coordinates, keeping the detail line aligned with the restored fit.
-- Disabled weapons can no longer stay selected for slot editing; selection falls back to the next enabled preview weapon.
+- Per-weapon switch controls were removed from the fitting UI: fitted weapons are treated as active, and the list only selects mounted weapons for slot movement.
+- The fitting weapon list still highlights the selected mounted weapon, reducing reliance on grid-only feedback.
 - The next low-risk step is to tune the mech bay content density and then migrate these flow screens beyond IMGUI once the layout direction feels right.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.

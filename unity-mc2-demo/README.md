@@ -46,8 +46,8 @@ Current demo behavior:
 - validates loadout grid placement, rotation, blocked cells, overlap, heat, weight, and equipment slot compatibility
 - shows projected source loadout validation status, heat/load limits, and occupied grid cells in the mech bay
 - draws compact heat, load, and grid usage bars so fitting pressure is visible before reading the numeric limits
-- lets the mech bay temporarily toggle stock weapons on or off and immediately recompute validation readouts
-- prevents disabled weapons from staying selected for slot editing, falling back to the next enabled weapon
+- treats fitted weapons as always active and uses the weapon list only to select mounted weapons for slot editing
+- highlights the selected mounted weapon row in the fitting list
 - visualizes the projected mech bay slot grid with placeholder multi-cell weapon shapes
 - renders projected payload items as larger whole-block grid pieces with original-style empty/short/mid/long/component color bands
 - shows selected or hovered payload details for weapon heat, weight, damage, range, cooldown, and component bonuses

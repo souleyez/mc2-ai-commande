@@ -57,10 +57,8 @@ namespace MC2Demo.Presentation
         private readonly Dictionary<string, GameObject> structureHealthBarBacks = new();
         private readonly Dictionary<string, GameObject> structureHealthBarFills = new();
         private readonly Dictionary<string, Material> materialCache = new(StringComparer.Ordinal);
-        private readonly Dictionary<string, bool[]> loadoutWeaponEnabledByUnit = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, CombatLoadoutPlacementOverride[]> loadoutPlacementOverridesByUnit = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, List<CombatLoadoutFillerOverride>> loadoutFillerOverridesByUnit = new(StringComparer.OrdinalIgnoreCase);
-        private readonly Dictionary<string, bool[]> appliedLoadoutWeaponEnabledByUnit = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, CombatLoadoutPlacementOverride[]> appliedLoadoutPlacementOverridesByUnit = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, CombatLoadoutFillerOverride[]> appliedLoadoutFillerOverridesByUnit = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, int> selectedLoadoutWeaponByUnit = new(StringComparer.OrdinalIgnoreCase);
@@ -406,10 +404,8 @@ namespace MC2Demo.Presentation
             objectiveAreaMarkers.Clear();
             structureHealthBarBacks.Clear();
             structureHealthBarFills.Clear();
-            loadoutWeaponEnabledByUnit.Clear();
             loadoutPlacementOverridesByUnit.Clear();
             loadoutFillerOverridesByUnit.Clear();
-            appliedLoadoutWeaponEnabledByUnit.Clear();
             appliedLoadoutPlacementOverridesByUnit.Clear();
             appliedLoadoutFillerOverridesByUnit.Clear();
             selectedLoadoutWeaponByUnit.Clear();
@@ -4852,7 +4848,7 @@ namespace MC2Demo.Presentation
             float gridHeight = DrawProjectedLoadoutGrid(unit, loadoutPreview, left, lineY, width - 24f);
 
             lineY += gridHeight + 8f;
-            float weaponHeight = DrawWeaponLoadoutLines(unit, left, lineY, width - 24f);
+            float weaponHeight = DrawWeaponLoadoutLines(unit, loadoutPreview, left, lineY, width - 24f);
 
             lineY += weaponHeight + 6f;
             DrawLoadoutEditControls(unit, loadoutPreview, left, lineY, width - 24f);
@@ -4929,7 +4925,7 @@ namespace MC2Demo.Presentation
             return CombatLoadoutPreviewBuilder.Build(
                 key,
                 unit?.Profile,
-                WeaponEnabledStateFor(unit),
+                AllMountedWeaponsStateFor(unit),
                 LoadoutPlacementOverridesFor(unit),
                 LoadoutFillerOverridesFor(unit));
         }
@@ -7471,7 +7467,7 @@ namespace MC2Demo.Presentation
             CombatLoadoutPreviewItem selectedItem = LoadoutPreviewItemForWeapon(preview, selectedWeaponIndex);
             if (selectedItem == null)
             {
-                GUI.Label(new Rect(x, y, width, 18f), "Select an enabled weapon");
+                GUI.Label(new Rect(x, y, width, 18f), "Select a mounted weapon");
                 return;
             }
 
@@ -7528,7 +7524,7 @@ namespace MC2Demo.Presentation
             return null;
         }
 
-        private float DrawWeaponLoadoutLines(UnitState unit, float x, float y, float width)
+        private float DrawWeaponLoadoutLines(UnitState unit, CombatLoadoutPreview preview, float x, float y, float width)
         {
             CombatWeaponDefinition[] weapons = unit?.Profile?.Weapons;
             if (weapons == null || weapons.Length == 0)
@@ -7541,7 +7537,7 @@ namespace MC2Demo.Presentation
             int columns = Mathf.Min(4, count);
             int rows = Mathf.CeilToInt(count / (float)columns);
             float columnWidth = width / columns;
-            bool[] enabledWeapons = WeaponEnabledStateFor(unit);
+            int selectedWeaponIndex = SelectedLoadoutWeaponIndexFor(unit, preview);
             for (int index = 0; index < count; index++)
             {
                 CombatWeaponDefinition weapon = weapons[index];
@@ -7557,29 +7553,15 @@ namespace MC2Demo.Presentation
                 string label = (index + 1).ToString(CultureInfo.InvariantCulture) + " " + TruncateText(weapon.name, 7)
                     + " H" + FormatDecimal(weapon.heat)
                     + " W" + FormatDecimal(weapon.weight);
-                if (GUI.Button(new Rect(columnX, rowY - 2f, columnWidth - 52f, 22f), label))
+                bool isSelected = index == selectedWeaponIndex;
+                Color previousColor = GUI.color;
+                GUI.color = isSelected ? new Color(1f, 0.95f, 0.22f, 1f) : previousColor;
+                if (GUI.Button(new Rect(columnX, rowY - 2f, columnWidth - 4f, 22f), label))
                 {
-                    if (enabledWeapons[index])
-                    {
-                        SetSelectedLoadoutWeapon(unit, index);
-                        statusText = "Selected " + TruncateText(weapon.name, 24);
-                    }
-                    else
-                    {
-                        statusText = "Enable " + TruncateText(weapon.name, 20) + " before edit";
-                    }
+                    SetSelectedLoadoutWeapon(unit, index);
+                    statusText = "Selected " + TruncateText(weapon.name, 24);
                 }
-
-                if (GUI.Button(new Rect(columnX + columnWidth - 46f, rowY - 2f, 42f, 22f), enabledWeapons[index] ? "On" : "Off"))
-                {
-                    enabledWeapons[index] = !enabledWeapons[index];
-                    if (!enabledWeapons[index])
-                    {
-                        ClearSelectedLoadoutWeaponIf(unit, index);
-                    }
-
-                    statusText = (enabledWeapons[index] ? "Enabled " : "Disabled ") + TruncateText(weapon.name, 20);
-                }
+                GUI.color = previousColor;
             }
 
             return rows * 26f;
@@ -7619,22 +7601,16 @@ namespace MC2Demo.Presentation
             GUI.enabled = previousEnabled;
         }
 
-        private bool[] WeaponEnabledStateFor(UnitState unit)
+        private static bool[] AllMountedWeaponsStateFor(UnitState unit)
         {
-            string key = unit?.Id ?? "";
             int weaponCount = unit?.Profile?.Weapons?.Length ?? 0;
-            if (!loadoutWeaponEnabledByUnit.TryGetValue(key, out bool[] enabledWeapons) || enabledWeapons.Length != weaponCount)
+            bool[] mountedWeapons = new bool[weaponCount];
+            for (int index = 0; index < mountedWeapons.Length; index++)
             {
-                enabledWeapons = new bool[weaponCount];
-                for (int index = 0; index < enabledWeapons.Length; index++)
-                {
-                    enabledWeapons[index] = true;
-                }
-
-                loadoutWeaponEnabledByUnit[key] = enabledWeapons;
+                mountedWeapons[index] = true;
             }
 
-            return enabledWeapons;
+            return mountedWeapons;
         }
 
         private CombatLoadoutPlacementOverride[] LoadoutPlacementOverridesFor(UnitState unit)
@@ -7705,22 +7681,6 @@ namespace MC2Demo.Presentation
             selectedLoadoutGridCellByUnit.Remove(key);
         }
 
-        private void ClearSelectedLoadoutWeaponIf(UnitState unit, int sourceWeaponIndex)
-        {
-            if (unit == null || sourceWeaponIndex < 0)
-            {
-                return;
-            }
-
-            string key = unit.Id ?? "";
-            if (selectedLoadoutWeaponByUnit.TryGetValue(key, out int selectedWeaponIndex)
-                && selectedWeaponIndex == sourceWeaponIndex)
-            {
-                selectedLoadoutWeaponByUnit.Remove(key);
-                selectedLoadoutGridCellByUnit.Remove(key);
-            }
-        }
-
         private static int FirstPreviewWeaponIndex(CombatLoadoutPreview preview)
         {
             CombatLoadoutPreviewItem[] items = preview?.Items ?? Array.Empty<CombatLoadoutPreviewItem>();
@@ -7772,7 +7732,7 @@ namespace MC2Demo.Presentation
             CombatLoadoutPreviewItem selectedItem = LoadoutPreviewItemForWeapon(preview, selectedWeaponIndex);
             if (selectedItem == null)
             {
-                statusText = "Select an enabled weapon first";
+                statusText = "Select mounted weapon first";
                 return;
             }
 
@@ -7810,8 +7770,7 @@ namespace MC2Demo.Presentation
 
             string key = unit.Id ?? "";
             int weaponCount = unit.Profile?.Weapons?.Length ?? 0;
-            return !WeaponStatesEqual(WeaponEnabledStateFor(unit), AppliedWeaponStateFor(key), weaponCount)
-                || !PlacementStatesEqual(LoadoutPlacementOverridesFor(unit), AppliedPlacementStateFor(key), weaponCount)
+            return !PlacementStatesEqual(LoadoutPlacementOverridesFor(unit), AppliedPlacementStateFor(key), weaponCount)
                 || !FillerStatesEqual(LoadoutFillerOverridesFor(unit), AppliedFillerStateFor(key));
         }
 
@@ -7837,7 +7796,6 @@ namespace MC2Demo.Presentation
 
             string key = unit.Id ?? "";
             int weaponCount = unit.Profile?.Weapons?.Length ?? 0;
-            appliedLoadoutWeaponEnabledByUnit[key] = CloneWeaponState(WeaponEnabledStateFor(unit), weaponCount);
             appliedLoadoutPlacementOverridesByUnit[key] = ClonePlacementOverrides(LoadoutPlacementOverridesFor(unit), weaponCount);
             appliedLoadoutFillerOverridesByUnit[key] = CloneFillerOverrides(LoadoutFillerOverridesFor(unit));
             unit.ApplyDemoLoadout(BuildAppliedLoadoutCombatOverride(unit, preview));
@@ -7855,7 +7813,6 @@ namespace MC2Demo.Presentation
             int weaponCount = unit.Profile?.Weapons?.Length ?? 0;
             bool hasAppliedState = HasAppliedLoadoutState(key);
             selectedLoadoutGridCellByUnit.Remove(key);
-            loadoutWeaponEnabledByUnit[key] = CloneWeaponState(AppliedWeaponStateFor(key), weaponCount);
             loadoutPlacementOverridesByUnit[key] = ClonePlacementOverrides(AppliedPlacementStateFor(key), weaponCount);
             CombatLoadoutFillerOverride[] appliedFillers = AppliedFillerStateFor(key);
             if (appliedFillers == null || appliedFillers.Length == 0)
@@ -7888,16 +7845,8 @@ namespace MC2Demo.Presentation
             }
 
             CombatWeaponDefinition[] weapons = profile.Weapons ?? Array.Empty<CombatWeaponDefinition>();
-            bool[] enabledWeapons = WeaponEnabledStateFor(unit);
-            int enabledCount = 0;
-            bool allWeaponsEnabled = weapons.Length > 0;
-            float enabledDamage = 0f;
-            float totalDamage = 0f;
-            float enabledHeat = 0f;
-            float enabledWeight = 0f;
-            float enabledRange = 0f;
-            float cooldownWeightedTotal = 0f;
-            float cooldownWeight = 0f;
+            int mountedCount = 0;
+            float mountedWeight = 0f;
             CombatWeaponDefinition primaryWeapon = null;
             float primaryScore = float.MinValue;
             for (int index = 0; index < weapons.Length; index++)
@@ -7908,26 +7857,8 @@ namespace MC2Demo.Presentation
                     continue;
                 }
 
-                totalDamage += Mathf.Max(0f, weapon.damage);
-                bool enabled = WeaponEnabledAt(enabledWeapons, index);
-                if (!enabled)
-                {
-                    allWeaponsEnabled = false;
-                    continue;
-                }
-
-                enabledCount++;
-                enabledDamage += Mathf.Max(0f, weapon.damage);
-                enabledHeat += Mathf.Max(0f, weapon.heat);
-                enabledWeight += Mathf.Max(0f, weapon.weight);
-                enabledRange = Mathf.Max(enabledRange, Mathf.Max(0f, weapon.rangeMax));
-                float weight = Mathf.Max(1f, weapon.damage);
-                if (weapon.recycleTime > 0f)
-                {
-                    cooldownWeightedTotal += weapon.recycleTime * weight;
-                    cooldownWeight += weight;
-                }
-
+                mountedCount++;
+                mountedWeight += Mathf.Max(0f, weapon.weight);
                 float score = weapon.damagePerTenSeconds > 0f
                     ? weapon.damagePerTenSeconds
                     : weapon.damage;
@@ -7941,7 +7872,7 @@ namespace MC2Demo.Presentation
 
             float heatSinkBonus = preview?.Validation.TotalHeatDissipationBonus ?? 0f;
             float armorHardnessBonus = preview?.Validation.TotalArmorHardnessBonus ?? 0f;
-            if (enabledCount <= 0)
+            if (mountedCount <= 0)
             {
                 return new UnitLoadoutCombatOverride
                 {
@@ -7958,27 +7889,22 @@ namespace MC2Demo.Presentation
                 };
             }
 
-            float weaponDamage = allWeaponsEnabled || totalDamage <= 0f
-                ? profile.WeaponDamage
-                : profile.WeaponDamage * Mathf.Clamp01(enabledDamage / totalDamage);
             return new UnitLoadoutCombatOverride
             {
-                weaponRange = allWeaponsEnabled ? profile.WeaponRange : enabledRange,
-                weaponDamage = weaponDamage,
-                weaponCooldown = allWeaponsEnabled || cooldownWeight <= 0f
-                    ? profile.WeaponCooldown
-                    : cooldownWeightedTotal / cooldownWeight,
-                heatPerShot = allWeaponsEnabled ? profile.HeatPerShot : enabledHeat,
+                weaponRange = profile.WeaponRange,
+                weaponDamage = profile.WeaponDamage,
+                weaponCooldown = profile.WeaponCooldown,
+                heatPerShot = profile.HeatPerShot,
                 heatDissipationPerSecond = profile.HeatDissipationPerSecond + heatSinkBonus,
                 armorHardnessBonus = armorHardnessBonus,
-                totalWeaponWeight = preview?.Validation.TotalWeight ?? enabledWeight,
-                primaryWeaponName = allWeaponsEnabled
-                    ? profile.PrimaryWeaponName
-                    : string.IsNullOrEmpty(primaryWeapon?.name) ? "Enabled Weapons" : primaryWeapon.name,
-                primaryWeaponType = allWeaponsEnabled
-                    ? profile.PrimaryWeaponType
-                    : string.IsNullOrEmpty(primaryWeapon?.type) ? "Generic" : primaryWeapon.type,
-                primarySpecialEffect = allWeaponsEnabled
+                totalWeaponWeight = preview?.Validation.TotalWeight ?? mountedWeight,
+                primaryWeaponName = string.IsNullOrEmpty(profile.PrimaryWeaponName)
+                    ? string.IsNullOrEmpty(primaryWeapon?.name) ? "Mounted Weapons" : primaryWeapon.name
+                    : profile.PrimaryWeaponName,
+                primaryWeaponType = string.IsNullOrEmpty(profile.PrimaryWeaponType)
+                    ? string.IsNullOrEmpty(primaryWeapon?.type) ? "Generic" : primaryWeapon.type
+                    : profile.PrimaryWeaponType,
+                primarySpecialEffect = profile.PrimarySpecialEffect != 0
                     ? profile.PrimarySpecialEffect
                     : primaryWeapon?.specialEffect ?? 0
             };
@@ -7987,16 +7913,8 @@ namespace MC2Demo.Presentation
         private bool HasAppliedLoadoutState(string key)
         {
             key ??= "";
-            return appliedLoadoutWeaponEnabledByUnit.ContainsKey(key)
-                || appliedLoadoutPlacementOverridesByUnit.ContainsKey(key)
+            return appliedLoadoutPlacementOverridesByUnit.ContainsKey(key)
                 || appliedLoadoutFillerOverridesByUnit.ContainsKey(key);
-        }
-
-        private bool[] AppliedWeaponStateFor(string key)
-        {
-            return appliedLoadoutWeaponEnabledByUnit.TryGetValue(key ?? "", out bool[] appliedWeapons)
-                ? appliedWeapons
-                : null;
         }
 
         private CombatLoadoutPlacementOverride[] AppliedPlacementStateFor(string key)
@@ -8011,24 +7929,6 @@ namespace MC2Demo.Presentation
             return appliedLoadoutFillerOverridesByUnit.TryGetValue(key ?? "", out CombatLoadoutFillerOverride[] appliedFillers)
                 ? appliedFillers
                 : null;
-        }
-
-        private static bool WeaponStatesEqual(bool[] currentState, bool[] appliedState, int weaponCount)
-        {
-            for (int index = 0; index < weaponCount; index++)
-            {
-                if (WeaponEnabledAt(currentState, index) != WeaponEnabledAt(appliedState, index))
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        private static bool WeaponEnabledAt(bool[] state, int index)
-        {
-            return state == null || index >= state.Length || state[index];
         }
 
         private static bool PlacementStatesEqual(
@@ -8098,17 +7998,6 @@ namespace MC2Demo.Presentation
             return current.gridX == applied.gridX
                 && current.gridY == applied.gridY
                 && current.category == applied.category;
-        }
-
-        private static bool[] CloneWeaponState(bool[] source, int weaponCount)
-        {
-            bool[] clone = new bool[weaponCount];
-            for (int index = 0; index < clone.Length; index++)
-            {
-                clone[index] = WeaponEnabledAt(source, index);
-            }
-
-            return clone;
         }
 
         private static CombatLoadoutPlacementOverride[] ClonePlacementOverrides(

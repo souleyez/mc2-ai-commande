@@ -209,12 +209,12 @@ compact occupied-slot grid before direct editing is added. Compact heat, load,
 and grid usage bars now sit under the numeric fit line, making over-limit pressure
 visible without opening another inspector. The projection now
 uses placeholder multi-cell shapes for source weapon families such as LRM racks,
-SRM packs, autocannons, PPCs, and large lasers. It also supports temporary weapon
-on/off toggles and projected weapon nudges, proving that fitting edits can
-immediately recompute heat, load, grid occupancy, overlap, bounds, and validator
-status without touching live battle damage yet. Disabled weapons no longer remain
-selected for slot editing; the UI falls back to the next enabled preview weapon or
-asks the player to re-enable the weapon before editing it. The payload preview now draws
+SRM packs, autocannons, PPCs, and large lasers. Fitted weapons are now always
+active, matching the original payload model more closely: the weapon list only
+selects mounted weapons for projected nudges, while fitting edits immediately
+recompute heat, load, grid occupancy, overlap, bounds, and validator status
+without touching live battle damage yet. The weapon list highlights the selected
+mounted weapon instead of adding a separate weapon switch layer. The payload preview now draws
 those projected items as larger whole-block grid pieces, following the original
 payload-model color idea of orange empty cells, green/blue/red weapon range bands,
 and yellow components. The grid also exposes selected or hovered block details
