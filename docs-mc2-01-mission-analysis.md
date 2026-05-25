@@ -212,7 +212,9 @@ uses placeholder multi-cell shapes for source weapon families such as LRM racks,
 SRM packs, autocannons, PPCs, and large lasers. It also supports temporary weapon
 on/off toggles and projected weapon nudges, proving that fitting edits can
 immediately recompute heat, load, grid occupancy, overlap, bounds, and validator
-status without touching live battle damage yet. The payload preview now draws
+status without touching live battle damage yet. Disabled weapons no longer remain
+selected for slot editing; the UI falls back to the next enabled preview weapon or
+asks the player to re-enable the weapon before editing it. The payload preview now draws
 those projected items as larger whole-block grid pieces, following the original
 payload-model color idea of orange empty cells, green/blue/red weapon range bands,
 and yellow components. The grid also exposes selected or hovered block details

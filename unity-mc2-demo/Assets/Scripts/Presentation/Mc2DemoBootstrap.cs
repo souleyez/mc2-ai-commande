@@ -7559,13 +7559,25 @@ namespace MC2Demo.Presentation
                     + " W" + FormatDecimal(weapon.weight);
                 if (GUI.Button(new Rect(columnX, rowY - 2f, columnWidth - 52f, 22f), label))
                 {
-                    SetSelectedLoadoutWeapon(unit, index);
-                    statusText = "Selected " + TruncateText(weapon.name, 24);
+                    if (enabledWeapons[index])
+                    {
+                        SetSelectedLoadoutWeapon(unit, index);
+                        statusText = "Selected " + TruncateText(weapon.name, 24);
+                    }
+                    else
+                    {
+                        statusText = "Enable " + TruncateText(weapon.name, 20) + " before edit";
+                    }
                 }
 
                 if (GUI.Button(new Rect(columnX + columnWidth - 46f, rowY - 2f, 42f, 22f), enabledWeapons[index] ? "On" : "Off"))
                 {
                     enabledWeapons[index] = !enabledWeapons[index];
+                    if (!enabledWeapons[index])
+                    {
+                        ClearSelectedLoadoutWeaponIf(unit, index);
+                    }
+
                     statusText = (enabledWeapons[index] ? "Enabled " : "Disabled ") + TruncateText(weapon.name, 20);
                 }
             }
@@ -7671,9 +7683,10 @@ namespace MC2Demo.Presentation
             int weaponCount = unit.Profile?.Weapons?.Length ?? 0;
             if (!selectedLoadoutWeaponByUnit.TryGetValue(key, out int selectedWeaponIndex)
                 || selectedWeaponIndex < 0
-                || selectedWeaponIndex >= weaponCount)
+                || selectedWeaponIndex >= weaponCount
+                || LoadoutPreviewItemForWeapon(preview, selectedWeaponIndex) == null)
             {
-                selectedWeaponIndex = preview.Items[0].SourceWeaponIndex;
+                selectedWeaponIndex = FirstPreviewWeaponIndex(preview);
                 selectedLoadoutWeaponByUnit[key] = selectedWeaponIndex;
             }
 
@@ -7690,6 +7703,37 @@ namespace MC2Demo.Presentation
             string key = unit.Id ?? "";
             selectedLoadoutWeaponByUnit[key] = sourceWeaponIndex;
             selectedLoadoutGridCellByUnit.Remove(key);
+        }
+
+        private void ClearSelectedLoadoutWeaponIf(UnitState unit, int sourceWeaponIndex)
+        {
+            if (unit == null || sourceWeaponIndex < 0)
+            {
+                return;
+            }
+
+            string key = unit.Id ?? "";
+            if (selectedLoadoutWeaponByUnit.TryGetValue(key, out int selectedWeaponIndex)
+                && selectedWeaponIndex == sourceWeaponIndex)
+            {
+                selectedLoadoutWeaponByUnit.Remove(key);
+                selectedLoadoutGridCellByUnit.Remove(key);
+            }
+        }
+
+        private static int FirstPreviewWeaponIndex(CombatLoadoutPreview preview)
+        {
+            CombatLoadoutPreviewItem[] items = preview?.Items ?? Array.Empty<CombatLoadoutPreviewItem>();
+            for (int index = 0; index < items.Length; index++)
+            {
+                CombatLoadoutPreviewItem item = items[index];
+                if (item != null && item.SourceWeaponIndex >= 0)
+                {
+                    return item.SourceWeaponIndex;
+                }
+            }
+
+            return -1;
         }
 
         private bool TryGetSelectedLoadoutGridCell(UnitState unit, CombatLoadoutPreview preview, out Vector2Int selectedGridCell)
