@@ -7415,6 +7415,19 @@ namespace MC2Demo.Presentation
             Vector2Int selectedGridCell,
             int selectedWeaponIndex)
         {
+            if (hasSelectedGridCell)
+            {
+                bool hoverMatchesSelectedTarget = hoveredColumn == selectedGridCell.x && hoveredRow == selectedGridCell.y;
+                if (hoverMatchesSelectedTarget || hoveredColumn < 0 || hoveredRow < 0)
+                {
+                    string targetPlacementText = LoadoutTargetPlacementDetailText(unit, preview, selectedWeaponIndex, selectedGridCell);
+                    if (!string.IsNullOrEmpty(targetPlacementText))
+                    {
+                        return targetPlacementText;
+                    }
+                }
+            }
+
             if (hoveredColumn >= 0 && hoveredRow >= 0 && hoveredCell == null)
             {
                 return "Empty Slot " + hoveredColumn.ToString(CultureInfo.InvariantCulture)
@@ -7467,6 +7480,38 @@ namespace MC2Demo.Presentation
                 + " R" + Mathf.RoundToInt(weapon.rangeMax).ToString(CultureInfo.InvariantCulture)
                 + " CD" + FormatDecimal(weapon.recycleTime)
                 + " Cells " + cells.ToString(CultureInfo.InvariantCulture);
+        }
+
+        private static string LoadoutTargetPlacementDetailText(
+            UnitState unit,
+            CombatLoadoutPreview preview,
+            int selectedWeaponIndex,
+            Vector2Int targetCell)
+        {
+            CombatLoadoutPreviewItem selectedItem = LoadoutPreviewItemForWeapon(preview, selectedWeaponIndex);
+            if (preview == null
+                || selectedItem == null
+                || (targetCell.x == selectedItem.GridX && targetCell.y == selectedItem.GridY))
+            {
+                return null;
+            }
+
+            CombatLoadoutPreviewGridCell selectedCell = LoadoutCellForSelectedWeapon(preview, selectedWeaponIndex);
+            int cells = Math.Max(1, CountLoadoutBlockCells(preview, selectedCell));
+            CombatWeaponDefinition weapon = LoadoutWeaponForCell(unit, selectedCell);
+            string weaponName = string.IsNullOrWhiteSpace(weapon?.name) ? selectedItem.DisplayName : weapon.name;
+            return "Target "
+                + targetCell.x.ToString(CultureInfo.InvariantCulture)
+                + ","
+                + targetCell.y.ToString(CultureInfo.InvariantCulture)
+                + " "
+                + (IsLoadoutTargetPlacementClear(preview, selectedWeaponIndex, targetCell) ? "clear" : "blocked")
+                + " for "
+                + (selectedWeaponIndex + 1).ToString(CultureInfo.InvariantCulture)
+                + " "
+                + TruncateText(weaponName, 14)
+                + " Cells "
+                + cells.ToString(CultureInfo.InvariantCulture);
         }
 
         private static int CountLoadoutBlockCells(CombatLoadoutPreview preview, CombatLoadoutPreviewGridCell blockCell)

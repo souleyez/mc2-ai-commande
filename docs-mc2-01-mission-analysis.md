@@ -225,12 +225,14 @@ moves away; the same selected target cell can now place the selected mounted
 weapon or cycle a spare filler cell through armor, heat sink, and empty. Before
 Place applies that draft move, the selected weapon now draws a target ghost over
 the destination cells, with green for a clear placement and red for overlap or
-out-of-bounds pressure. Slot and draft reset actions clear that UI selection so
-restored fits do not keep pointing at stale grid coordinates. Spare load is now
-projected into free cells as simple armor plates and heat sinks, exposing hardness
-and cooling totals before full inventory editing exists. Those projected filler
-cells can also be cycled between armor, heat sink, and empty so the first fitting
-tradeoff is interactive without committing to a persistent loadout format yet. The UI now
+out-of-bounds pressure. The detail line mirrors that signal with target
+clear/blocked text and the selected weapon footprint size, so the player does not
+have to infer the result from color alone. Slot and draft reset actions clear that
+UI selection so restored fits do not keep pointing at stale grid coordinates.
+Spare load is now projected into free cells as simple armor plates and heat sinks,
+exposing hardness and cooling totals before full inventory editing exists. Those
+projected filler cells can also be cycled between armor, heat sink, and empty so
+the first fitting tradeoff is interactive without committing to a persistent loadout format yet. The UI now
 separates draft edits from the last applied demo fit, with reset returning to
 that applied state; this is still a runtime preview boundary, not a persistent
 saved loadout.
