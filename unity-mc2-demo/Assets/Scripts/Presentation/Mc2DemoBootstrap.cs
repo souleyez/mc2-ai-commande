@@ -65,6 +65,7 @@ namespace MC2Demo.Presentation
         private readonly Dictionary<string, Vector2Int> selectedLoadoutGridCellByUnit = new(StringComparer.OrdinalIgnoreCase);
         private readonly List<Material> ownedMaterials = new();
         private readonly List<string> combatLog = new();
+        private string selectedMechBayLoadoutUnitId;
         private BattleMission mission;
         private MissionScriptBridge scriptBridge;
         private CommanderCommandPort commandPort;
@@ -4509,16 +4510,26 @@ namespace MC2Demo.Presentation
                 y += 250f;
             }
 
+            UnitState selectedLoadoutUnit = SelectedMechBayLoadoutUnit();
             int unitCount = CountPlayerUnits();
+            if (unitCount > 0)
+            {
+                DrawMechBayLoadoutUnitSelector(x, y, width, selectedLoadoutUnit);
+                y += 34f;
+            }
+
             float viewportHeight = Mathf.Max(40f, panel.yMax - y - 12f);
             Rect viewport = new(x, y, width, viewportHeight);
-            Rect content = new(0f, 0f, width - 20f, Mathf.Max(viewport.height, unitCount * LoadoutCardStride));
+            float contentHeight = selectedLoadoutUnit == null ? viewport.height : LoadoutCardStride;
+            Rect content = new(0f, 0f, width - 20f, Mathf.Max(viewport.height, contentHeight));
             loadoutScroll = GUI.BeginScrollView(viewport, loadoutScroll, content);
-            float itemY = 0f;
-            foreach (UnitState unit in mission.PlayerUnits())
+            if (selectedLoadoutUnit == null)
             {
-                DrawLoadoutUnit(unit, 0f, itemY, content.width);
-                itemY += LoadoutCardStride;
+                GUI.Label(new Rect(0f, 0f, content.width, 18f), "No player mechs available");
+            }
+            else
+            {
+                DrawLoadoutUnit(selectedLoadoutUnit, 0f, 0f, content.width);
             }
 
             GUI.EndScrollView();
@@ -4805,6 +4816,86 @@ namespace MC2Demo.Presentation
             showLoadoutPanel = false;
             OpenMissionListPanelFromSystem();
             statusText = "Mission list open from mech bay";
+        }
+
+        private UnitState SelectedMechBayLoadoutUnit()
+        {
+            if (mission == null)
+            {
+                selectedMechBayLoadoutUnitId = null;
+                return null;
+            }
+
+            UnitState firstUnit = null;
+            foreach (UnitState unit in mission.PlayerUnits())
+            {
+                firstUnit ??= unit;
+                if (unit != null
+                    && !string.IsNullOrEmpty(selectedMechBayLoadoutUnitId)
+                    && string.Equals(unit.Id, selectedMechBayLoadoutUnitId, StringComparison.OrdinalIgnoreCase))
+                {
+                    return unit;
+                }
+            }
+
+            selectedMechBayLoadoutUnitId = firstUnit?.Id;
+            return firstUnit;
+        }
+
+        private void DrawMechBayLoadoutUnitSelector(float x, float y, float width, UnitState selectedUnit)
+        {
+            Rect strip = new(x - 4f, y - 4f, width + 8f, 30f);
+            DrawColorRect(strip, new Color(0.015f, 0.025f, 0.03f, 0.82f));
+            DrawRectBorder(strip, new Color(UiCyanColor.r, UiCyanColor.g, UiCyanColor.b, 0.36f), 1f);
+            GUI.Label(new Rect(x, y, 68f, 18f), "Squad Fit");
+
+            int unitCount = CountPlayerUnits();
+            float gap = 5f;
+            float startX = x + 74f;
+            float buttonWidth = unitCount <= 0
+                ? 0f
+                : Mathf.Clamp((width - 74f - gap * (unitCount - 1)) / unitCount, 58f, 108f);
+            int index = 0;
+            foreach (UnitState unit in mission.PlayerUnits())
+            {
+                if (unit == null)
+                {
+                    continue;
+                }
+
+                bool selected = selectedUnit != null
+                    && string.Equals(unit.Id, selectedUnit.Id, StringComparison.OrdinalIgnoreCase);
+                bool draft = HasPendingLoadoutEdits(unit);
+                Color previous = GUI.color;
+                GUI.color = selected
+                    ? new Color(0.42f, 0.82f, 1f, 1f)
+                    : draft
+                        ? new Color(1f, 0.82f, 0.30f, 0.95f)
+                        : new Color(0.82f, 0.90f, 0.92f, 0.92f);
+
+                Rect button = new(startX + index * (buttonWidth + gap), y - 2f, buttonWidth, 22f);
+                string label = (index + 1).ToString(CultureInfo.InvariantCulture)
+                    + " "
+                    + TruncateText(unit.UnitType, buttonWidth < 74f ? 5 : 8);
+                if (GUI.Button(button, label))
+                {
+                    selectedMechBayLoadoutUnitId = unit.Id;
+                    loadoutScroll = Vector2.zero;
+                    statusText = "Mech bay focus: " + TruncateText(unit.UnitType, 24);
+                }
+
+                GUI.color = previous;
+                if (selected)
+                {
+                    DrawRectBorder(button, UiCyanColor, 2f);
+                }
+                else if (draft)
+                {
+                    DrawRectBorder(button, UiAmberColor, 1f);
+                }
+
+                index++;
+            }
         }
 
         private void DrawLoadoutUnit(UnitState unit, float x, float y, float width)

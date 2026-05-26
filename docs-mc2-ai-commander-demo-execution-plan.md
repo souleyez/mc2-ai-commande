@@ -40,6 +40,7 @@ The Unity demo currently supports:
 - player squad orders, detached unit orders, focused unit/structure attacks, and Jet orders
 - heat, cooldown, weapon range/readiness, simple section damage, section penalties, and animated breakoff/ejection effects
 - compact tactical UI with unit status, mech bay preview, mission brief, current-objective map, world objective hints, health bars, command rings, range rings, and target lines
+- focused mech bay fitting view with compact squad buttons so one selected mech's payload grid owns the drawer
 - initial BattleCore loadout contract for chassis grids, item shapes, heat, weight, armor plates, heat sinks, radar slots, and jump jet slots
 - deterministic BattleCore loadout validator for grid bounds, blocked cells, overlap, rotation, heat caps, weight caps, and special-slot compatibility
 - source weapon loadout projection in the mech bay with validator status, heat/load limits, and occupied grid cell counts
@@ -533,5 +534,6 @@ Reason:
 - The top status, target status, and payload detail line now echo that next filler transition, for example Empty > Armor, beside the weapon-placement state.
 - The payload grid now previews the selected mounted weapon as a green/red target ghost before Place applies the draft move.
 - The payload detail line now mirrors target placement state in text, including clear/blocked status, blocked reason, and selected weapon footprint cells.
-- The next low-risk step is to tune the mech bay content density and then migrate these flow screens beyond IMGUI once the layout direction feels right.
+- The mech bay now uses compact squad buttons and expands one selected fitting card at a time, reducing drawer scroll pressure before the future non-IMGUI rewrite.
+- The next low-risk step is to keep tuning the selected fitting card density and then migrate these flow screens beyond IMGUI once the layout direction feels right.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.

@@ -203,7 +203,8 @@ shape can express a 3 x 3 chassis grid, a vertical weapon, single-cell armor and
 heat-sink items, plus radar and jump-jet slots. BattleCore also validates
 placement overlap, blocked cells, rotation, bounds, heat caps, weight caps, and
 special-slot compatibility before the mech bay becomes editable. The current
-mech bay UI projects each source weapon loadout into a simple validator-backed
+mech bay UI focuses one selected squad mech at a time through compact squad
+buttons, then projects that source weapon loadout into a simple validator-backed
 preview so the player can see heat, load, grid occupancy, fitting status, and a
 compact occupied-slot grid before direct editing is added. Compact heat, load,
 and grid usage bars now sit under the numeric fit line, making over-limit pressure
