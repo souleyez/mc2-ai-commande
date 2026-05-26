@@ -7012,10 +7012,7 @@ namespace MC2Demo.Presentation
                         else if (CountLoadoutCellsAt(preview, column, row) <= 1)
                         {
                             SetSelectedLoadoutGridCell(unit, column, row);
-                            statusText = "Target slot "
-                                + column.ToString(CultureInfo.InvariantCulture)
-                                + ","
-                                + row.ToString(CultureInfo.InvariantCulture);
+                            statusText = LoadoutTargetSlotStatusText(preview, column, row);
                         }
 
                         Event.current.Use();
@@ -7708,6 +7705,26 @@ namespace MC2Demo.Presentation
             }
 
             return " / " + FillerTransitionLabel(occupiedCell?.Category);
+        }
+
+        private static string LoadoutTargetSlotStatusText(CombatLoadoutPreview preview, int column, int row)
+        {
+            string text = "Target slot "
+                + column.ToString(CultureInfo.InvariantCulture)
+                + ","
+                + row.ToString(CultureInfo.InvariantCulture);
+            CombatLoadoutPreviewGridCell occupiedCell = LoadoutCellAt(preview, column, row);
+            if (occupiedCell != null && occupiedCell.SourceWeaponIndex >= 0)
+            {
+                return text;
+            }
+
+            if (CountLoadoutCellsAt(preview, column, row) > 1)
+            {
+                return text;
+            }
+
+            return text + " " + FillerTransitionLabel(occupiedCell?.Category);
         }
 
         private static string LoadoutTargetPlacementIssueText(

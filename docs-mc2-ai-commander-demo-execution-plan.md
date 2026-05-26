@@ -49,7 +49,7 @@ The Unity demo currently supports:
 - spare-load armor plate and heat sink filler projection with hardness and cooling totals
 - toggleable projected filler cells that cycle between armor, heat sink, and empty
 - the filler button now labels its next action as Armor, Sink, or Clear for clearer original-style slot editing
-- selected target status and payload detail text now echo the filler transition beside weapon-placement state
+- top status, selected target status, and payload detail text now echo the filler transition beside weapon-placement state
 - selected payload target cells can now place the selected mounted weapon or cycle a filler cell, keeping grid edits closer to an original-style fitting table
 - selected mounted weapons draw green/red target ghosts before placement, making overlap or out-of-bounds pressure visible before applying a draft move
 - the payload detail line now reports target clear/blocked status, blocked reason, and selected weapon footprint cells
@@ -530,7 +530,7 @@ Reason:
 - The fitting weapon list still highlights the selected mounted weapon, reducing reliance on grid-only feedback.
 - The payload grid now treats clicked non-weapon cells as explicit targets, with Place and Fill actions for weapon placement and single-cell armor/sink cycling.
 - The filler action is now labeled by its next result, so an empty cell offers Armor, an armor plate offers Sink, and a heat sink offers Clear.
-- The target status and payload detail line now echo that next filler transition, for example Empty > Armor, beside the weapon-placement state.
+- The top status, target status, and payload detail line now echo that next filler transition, for example Empty > Armor, beside the weapon-placement state.
 - The payload grid now previews the selected mounted weapon as a green/red target ghost before Place applies the draft move.
 - The payload detail line now mirrors target placement state in text, including clear/blocked status, blocked reason, and selected weapon footprint cells.
 - The next low-risk step is to tune the mech bay content density and then migrate these flow screens beyond IMGUI once the layout direction feels right.
