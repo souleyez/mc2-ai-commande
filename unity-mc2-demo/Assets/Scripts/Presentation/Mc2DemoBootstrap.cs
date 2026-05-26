@@ -7061,6 +7061,15 @@ namespace MC2Demo.Presentation
                 }
             }
 
+            DrawLoadoutTargetPlacementPreview(
+                preview,
+                selectedWeaponIndex,
+                hasSelectedGridCell,
+                selectedGridCell,
+                x + 1f,
+                y + 1f,
+                cellSize,
+                gap);
             DrawLoadoutSelectedGridCellFrame(preview, occupiedCells, hasSelectedGridCell, selectedGridCell, x + 1f, y + 1f, cellSize, gap);
             DrawLoadoutHoverFrame(preview, occupiedCells, hoveredCell, hoveredColumn, hoveredRow, x + 1f, y + 1f, cellSize, gap);
 
@@ -7086,6 +7095,62 @@ namespace MC2Demo.Presentation
                     64));
             DrawLoadoutPlacementControls(unit, preview, x + gridWidth + 10f, y + 96f, Mathf.Max(160f, width - gridWidth - 10f));
             return Mathf.Max(gridHeight + 2f, 162f);
+        }
+
+        private void DrawLoadoutTargetPlacementPreview(
+            CombatLoadoutPreview preview,
+            int selectedWeaponIndex,
+            bool hasSelectedGridCell,
+            Vector2Int selectedGridCell,
+            float gridOriginX,
+            float gridOriginY,
+            float cellSize,
+            float gap)
+        {
+            if (preview == null || !hasSelectedGridCell || selectedWeaponIndex < 0)
+            {
+                return;
+            }
+
+            CombatLoadoutPreviewItem selectedItem = LoadoutPreviewItemForWeapon(preview, selectedWeaponIndex);
+            if (selectedItem == null
+                || (selectedGridCell.x == selectedItem.GridX && selectedGridCell.y == selectedItem.GridY))
+            {
+                return;
+            }
+
+            bool targetClear = IsLoadoutTargetPlacementClear(preview, selectedWeaponIndex, selectedGridCell);
+            Color fillColor = targetClear
+                ? new Color(0.28f, 0.92f, 0.72f, 0.24f)
+                : new Color(1f, 0.18f, 0.08f, 0.32f);
+            Color borderColor = targetClear
+                ? new Color(0.45f, 1f, 0.82f, 0.95f)
+                : new Color(1f, 0.20f, 0.08f, 0.98f);
+
+            CombatLoadoutPreviewGridCell[] occupiedCells = preview.OccupiedCells;
+            for (int index = 0; index < occupiedCells.Length; index++)
+            {
+                CombatLoadoutPreviewGridCell sourceCell = occupiedCells[index];
+                if (sourceCell == null || sourceCell.SourceWeaponIndex != selectedWeaponIndex)
+                {
+                    continue;
+                }
+
+                int targetX = selectedGridCell.x + sourceCell.X - selectedItem.GridX;
+                int targetY = selectedGridCell.y + sourceCell.Y - selectedItem.GridY;
+                if (targetX < 0 || targetY < 0 || targetX >= preview.GridWidth || targetY >= preview.GridHeight)
+                {
+                    continue;
+                }
+
+                Rect cell = new(
+                    gridOriginX + targetX * (cellSize + gap),
+                    gridOriginY + targetY * (cellSize + gap),
+                    cellSize,
+                    cellSize);
+                DrawColorRect(new Rect(cell.x + 2f, cell.y + 2f, cell.width - 4f, cell.height - 4f), fillColor);
+                DrawRectBorder(cell, borderColor, 2f);
+            }
         }
 
         private void DrawLoadoutHoverFrame(
@@ -7511,12 +7576,20 @@ namespace MC2Demo.Presentation
             {
                 bool previousEnabled = GUI.enabled;
                 bool canPlace = targetCell.x != selectedItem.GridX || targetCell.y != selectedItem.GridY;
+                bool targetClear = IsLoadoutTargetPlacementClear(preview, selectedWeaponIndex, targetCell);
                 GUI.enabled = previousEnabled && canPlace;
+                Color previousColor = GUI.color;
+                GUI.color = !canPlace
+                    ? previousColor
+                    : targetClear
+                        ? new Color(0.50f, 1f, 0.82f, 1f)
+                        : new Color(1f, 0.32f, 0.18f, 1f);
                 if (GUI.Button(new Rect(x + 148f, y + 24f, 62f, 22f), "Place"))
                 {
                     PlaceSelectedLoadoutWeaponAt(unit, preview, targetCell.x, targetCell.y);
                 }
 
+                GUI.color = previousColor;
                 CombatLoadoutPreviewGridCell occupiedCell = LoadoutCellAt(preview, targetCell.x, targetCell.y);
                 bool canFill = occupiedCell == null || occupiedCell.SourceWeaponIndex < 0;
                 GUI.enabled = previousEnabled && canFill && CountLoadoutCellsAt(preview, targetCell.x, targetCell.y) <= 1;
@@ -7526,6 +7599,9 @@ namespace MC2Demo.Presentation
                 }
 
                 GUI.enabled = previousEnabled;
+                GUI.Label(
+                    new Rect(x + 148f, y + 76f, Mathf.Max(80f, width - 148f), 18f),
+                    canPlace ? targetClear ? "Target clear" : "Target blocked" : "Current slot");
             }
         }
 
@@ -7543,6 +7619,43 @@ namespace MC2Demo.Presentation
 
             return " > " + targetCell.x.ToString(CultureInfo.InvariantCulture)
                 + "," + targetCell.y.ToString(CultureInfo.InvariantCulture);
+        }
+
+        private static bool IsLoadoutTargetPlacementClear(
+            CombatLoadoutPreview preview,
+            int selectedWeaponIndex,
+            Vector2Int targetCell)
+        {
+            CombatLoadoutPreviewItem selectedItem = LoadoutPreviewItemForWeapon(preview, selectedWeaponIndex);
+            if (preview == null || selectedItem == null)
+            {
+                return false;
+            }
+
+            CombatLoadoutPreviewGridCell[] occupiedCells = preview.OccupiedCells;
+            for (int index = 0; index < occupiedCells.Length; index++)
+            {
+                CombatLoadoutPreviewGridCell sourceCell = occupiedCells[index];
+                if (sourceCell == null || sourceCell.SourceWeaponIndex != selectedWeaponIndex)
+                {
+                    continue;
+                }
+
+                int targetX = targetCell.x + sourceCell.X - selectedItem.GridX;
+                int targetY = targetCell.y + sourceCell.Y - selectedItem.GridY;
+                if (targetX < 0 || targetY < 0 || targetX >= preview.GridWidth || targetY >= preview.GridHeight)
+                {
+                    return false;
+                }
+
+                CombatLoadoutPreviewGridCell targetOccupiedCell = LoadoutCellAt(preview, targetX, targetY);
+                if (targetOccupiedCell != null && targetOccupiedCell.SourceWeaponIndex != selectedWeaponIndex)
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         private static CombatLoadoutPreviewItem LoadoutPreviewItemForWeapon(CombatLoadoutPreview preview, int sourceWeaponIndex)

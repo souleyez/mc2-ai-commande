@@ -49,6 +49,7 @@ The Unity demo currently supports:
 - spare-load armor plate and heat sink filler projection with hardness and cooling totals
 - toggleable projected filler cells that cycle between armor, heat sink, and empty
 - selected payload target cells can now place the selected mounted weapon or cycle a filler cell, keeping grid edits closer to an original-style fitting table
+- selected mounted weapons draw green/red target ghosts before placement, making overlap or out-of-bounds pressure visible before applying a draft move
 - mech bay draft/apply/reset boundaries for temporary demo fits
 - applied demo fit handoff into combat readiness, range, heat, cooldown, and weapon display stats
 - applied armor hardness reduces incoming damage and applied heat sinks increase cooling
@@ -525,5 +526,6 @@ Reason:
 - Per-weapon switch controls were removed from the fitting UI: fitted weapons are treated as active, and the list only selects mounted weapons for slot movement.
 - The fitting weapon list still highlights the selected mounted weapon, reducing reliance on grid-only feedback.
 - The payload grid now treats clicked non-weapon cells as explicit targets, with Place and Fill actions for weapon placement and single-cell armor/sink cycling.
+- The payload grid now previews the selected mounted weapon as a green/red target ghost before Place applies the draft move.
 - The next low-risk step is to tune the mech bay content density and then migrate these flow screens beyond IMGUI once the layout direction feels right.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.
