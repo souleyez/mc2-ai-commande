@@ -222,7 +222,9 @@ for weapon heat, weight, damage, range, cooldown, and component bonuses, with a
 clear hover frame around whole blocks or open cells. Clicked component and open
 cells stay selected, keeping armor/sink tradeoff details visible after the pointer
 moves away; the same selected target cell can now place the selected mounted
-weapon or cycle a spare filler cell through armor, heat sink, and empty. Before
+weapon or cycle a spare filler cell through armor, heat sink, and empty. The
+single-cell filler action now labels the next action as Armor, Sink, or Clear
+instead of a generic Fill button. Before
 Place applies that draft move, the selected weapon now draws a target ghost over
 the destination cells, with green for a clear placement and red for overlap or
 out-of-bounds pressure. The detail line mirrors that signal with target

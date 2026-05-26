@@ -7641,7 +7641,8 @@ namespace MC2Demo.Presentation
                 CombatLoadoutPreviewGridCell occupiedCell = LoadoutCellAt(preview, targetCell.x, targetCell.y);
                 bool canFill = occupiedCell == null || occupiedCell.SourceWeaponIndex < 0;
                 GUI.enabled = previousEnabled && canFill && CountLoadoutCellsAt(preview, targetCell.x, targetCell.y) <= 1;
-                if (GUI.Button(new Rect(x + 148f, y + 50f, 62f, 22f), "Fill"))
+                string fillerAction = FillerActionLabel(occupiedCell?.Category);
+                if (GUI.Button(new Rect(x + 148f, y + 50f, 62f, 22f), fillerAction))
                 {
                     CycleFillerOverride(unit, targetCell.x, targetCell.y, occupiedCell?.Category);
                 }
@@ -8411,6 +8412,21 @@ namespace MC2Demo.Presentation
             }
 
             return "Empty";
+        }
+
+        private static string FillerActionLabel(string currentCategory)
+        {
+            if (currentCategory == LoadoutItemCategory.ArmorPlate)
+            {
+                return "Sink";
+            }
+
+            if (currentCategory == LoadoutItemCategory.HeatSink)
+            {
+                return "Clear";
+            }
+
+            return "Armor";
         }
 
         private void DrawSystemPanel()
