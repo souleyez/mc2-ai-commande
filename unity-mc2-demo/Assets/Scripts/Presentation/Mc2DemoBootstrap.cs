@@ -7655,7 +7655,7 @@ namespace MC2Demo.Presentation
                     : "Current slot";
                 if (canCycleFiller)
                 {
-                    targetStatus += " / " + fillerAction;
+                    targetStatus += " / " + FillerTransitionLabel(occupiedCell?.Category);
                 }
 
                 GUI.enabled = previousEnabled;
@@ -7707,7 +7707,7 @@ namespace MC2Demo.Presentation
                 return "";
             }
 
-            return " / " + FillerActionLabel(occupiedCell?.Category);
+            return " / " + FillerTransitionLabel(occupiedCell?.Category);
         }
 
         private static string LoadoutTargetPlacementIssueText(
@@ -8459,6 +8459,26 @@ namespace MC2Demo.Presentation
             }
 
             return "Armor";
+        }
+
+        private static string FillerTransitionLabel(string currentCategory)
+        {
+            return FillerCurrentLabel(currentCategory) + " > " + FillerActionLabel(currentCategory);
+        }
+
+        private static string FillerCurrentLabel(string currentCategory)
+        {
+            if (currentCategory == LoadoutItemCategory.ArmorPlate)
+            {
+                return "Armor";
+            }
+
+            if (currentCategory == LoadoutItemCategory.HeatSink)
+            {
+                return "Sink";
+            }
+
+            return "Empty";
         }
 
         private void DrawSystemPanel()

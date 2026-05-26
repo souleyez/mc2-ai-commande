@@ -56,7 +56,7 @@ Current demo behavior:
 - lets the mech bay select and nudge projected weapons to preview overlap and bounds validation
 - lets a clicked target cell place the selected mounted weapon or cycle the selected filler cell through armor, heat sink, and empty
 - labels the filler action as Armor, Sink, or Clear so the next single-cell change is visible before clicking
-- echoes the filler action in the target status and payload detail text when the selected cell can be filled
+- echoes the filler transition, such as Empty > Armor, in the target status and payload detail text
 - draws a green/red target ghost for the selected mounted weapon before Place applies the draft move
 - reports target clear/blocked status, blocked reason, and selected weapon footprint in the payload detail line
 - projects spare-load armor plates and heat sinks into free cells with hardness and cooling readouts
