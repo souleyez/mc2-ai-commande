@@ -7012,7 +7012,10 @@ namespace MC2Demo.Presentation
                         else if (CountLoadoutCellsAt(preview, column, row) <= 1)
                         {
                             SetSelectedLoadoutGridCell(unit, column, row);
-                            CycleFillerOverride(unit, column, row, occupiedCell?.Category);
+                            statusText = "Target slot "
+                                + column.ToString(CultureInfo.InvariantCulture)
+                                + ","
+                                + row.ToString(CultureInfo.InvariantCulture);
                         }
 
                         Event.current.Use();
@@ -7476,7 +7479,8 @@ namespace MC2Demo.Presentation
                 "Edit " + (selectedWeaponIndex + 1).ToString(CultureInfo.InvariantCulture)
                 + " " + TruncateText(selectedItem.DisplayName, 18)
                 + " @ " + selectedItem.GridX.ToString(CultureInfo.InvariantCulture)
-                + "," + selectedItem.GridY.ToString(CultureInfo.InvariantCulture));
+                + "," + selectedItem.GridY.ToString(CultureInfo.InvariantCulture)
+                + LoadoutTargetSuffix(unit, preview, selectedItem));
 
             if (GUI.Button(new Rect(x + 32f, y + 24f, 40f, 22f), "N"))
             {
@@ -7502,6 +7506,43 @@ namespace MC2Demo.Presentation
             {
                 MoveSelectedLoadoutWeapon(unit, preview, 0, 1);
             }
+
+            if (TryGetSelectedLoadoutGridCell(unit, preview, out Vector2Int targetCell))
+            {
+                bool previousEnabled = GUI.enabled;
+                bool canPlace = targetCell.x != selectedItem.GridX || targetCell.y != selectedItem.GridY;
+                GUI.enabled = previousEnabled && canPlace;
+                if (GUI.Button(new Rect(x + 148f, y + 24f, 62f, 22f), "Place"))
+                {
+                    PlaceSelectedLoadoutWeaponAt(unit, preview, targetCell.x, targetCell.y);
+                }
+
+                CombatLoadoutPreviewGridCell occupiedCell = LoadoutCellAt(preview, targetCell.x, targetCell.y);
+                bool canFill = occupiedCell == null || occupiedCell.SourceWeaponIndex < 0;
+                GUI.enabled = previousEnabled && canFill && CountLoadoutCellsAt(preview, targetCell.x, targetCell.y) <= 1;
+                if (GUI.Button(new Rect(x + 148f, y + 50f, 62f, 22f), "Fill"))
+                {
+                    CycleFillerOverride(unit, targetCell.x, targetCell.y, occupiedCell?.Category);
+                }
+
+                GUI.enabled = previousEnabled;
+            }
+        }
+
+        private string LoadoutTargetSuffix(UnitState unit, CombatLoadoutPreview preview, CombatLoadoutPreviewItem selectedItem)
+        {
+            if (!TryGetSelectedLoadoutGridCell(unit, preview, out Vector2Int targetCell))
+            {
+                return "";
+            }
+
+            if (selectedItem != null && targetCell.x == selectedItem.GridX && targetCell.y == selectedItem.GridY)
+            {
+                return "";
+            }
+
+            return " > " + targetCell.x.ToString(CultureInfo.InvariantCulture)
+                + "," + targetCell.y.ToString(CultureInfo.InvariantCulture);
         }
 
         private static CombatLoadoutPreviewItem LoadoutPreviewItemForWeapon(CombatLoadoutPreview preview, int sourceWeaponIndex)
@@ -7745,6 +7786,34 @@ namespace MC2Demo.Presentation
             };
             SetSelectedLoadoutGridCell(unit, selectedItem.GridX + deltaX, selectedItem.GridY + deltaY);
             statusText = "Moved " + TruncateText(selectedItem.DisplayName, 20);
+        }
+
+        private void PlaceSelectedLoadoutWeaponAt(UnitState unit, CombatLoadoutPreview preview, int gridX, int gridY)
+        {
+            int selectedWeaponIndex = SelectedLoadoutWeaponIndexFor(unit, preview);
+            CombatLoadoutPreviewItem selectedItem = LoadoutPreviewItemForWeapon(preview, selectedWeaponIndex);
+            CombatLoadoutPlacementOverride[] placementOverrides = LoadoutPlacementOverridesFor(unit);
+            if (selectedItem == null
+                || placementOverrides == null
+                || selectedWeaponIndex < 0
+                || selectedWeaponIndex >= placementOverrides.Length)
+            {
+                statusText = "Select mounted weapon first";
+                return;
+            }
+
+            placementOverrides[selectedWeaponIndex] = new CombatLoadoutPlacementOverride
+            {
+                sourceWeaponIndex = selectedWeaponIndex,
+                gridX = gridX,
+                gridY = gridY
+            };
+            SetSelectedLoadoutGridCell(unit, gridX, gridY);
+            statusText = "Placed " + TruncateText(selectedItem.DisplayName, 18)
+                + " @ "
+                + gridX.ToString(CultureInfo.InvariantCulture)
+                + ","
+                + gridY.ToString(CultureInfo.InvariantCulture);
         }
 
         private void ResetSelectedLoadoutWeapon(UnitState unit)

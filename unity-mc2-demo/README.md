@@ -54,6 +54,7 @@ Current demo behavior:
 - highlights hovered payload blocks and empty cells so the grid reads as direct block editing instead of tiny cell picking
 - keeps clicked component or empty cells selected so armor/sink tradeoffs can be inspected without holding the pointer still
 - lets the mech bay select and nudge projected weapons to preview overlap and bounds validation
+- lets a clicked target cell place the selected mounted weapon or cycle the selected filler cell through armor, heat sink, and empty
 - projects spare-load armor plates and heat sinks into free cells with hardness and cooling readouts
 - lets projected filler cells cycle between armor, heat sink, and empty to preview loadout tradeoffs
 - marks mech bay edits as draft/applied and can reset a draft back to the last applied demo fit
