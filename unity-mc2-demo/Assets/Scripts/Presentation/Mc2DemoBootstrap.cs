@@ -7500,12 +7500,14 @@ namespace MC2Demo.Presentation
             int cells = Math.Max(1, CountLoadoutBlockCells(preview, selectedCell));
             CombatWeaponDefinition weapon = LoadoutWeaponForCell(unit, selectedCell);
             string weaponName = string.IsNullOrWhiteSpace(weapon?.name) ? selectedItem.DisplayName : weapon.name;
+            string targetIssue = LoadoutTargetPlacementIssueText(preview, selectedWeaponIndex, targetCell);
+            string targetState = string.IsNullOrEmpty(targetIssue) ? "clear" : "blocked " + targetIssue;
             return "Target "
                 + targetCell.x.ToString(CultureInfo.InvariantCulture)
                 + ","
                 + targetCell.y.ToString(CultureInfo.InvariantCulture)
                 + " "
-                + (IsLoadoutTargetPlacementClear(preview, selectedWeaponIndex, targetCell) ? "clear" : "blocked")
+                + targetState
                 + " for "
                 + (selectedWeaponIndex + 1).ToString(CultureInfo.InvariantCulture)
                 + " "
@@ -7621,7 +7623,8 @@ namespace MC2Demo.Presentation
             {
                 bool previousEnabled = GUI.enabled;
                 bool canPlace = targetCell.x != selectedItem.GridX || targetCell.y != selectedItem.GridY;
-                bool targetClear = IsLoadoutTargetPlacementClear(preview, selectedWeaponIndex, targetCell);
+                string targetIssue = LoadoutTargetPlacementIssueText(preview, selectedWeaponIndex, targetCell);
+                bool targetClear = string.IsNullOrEmpty(targetIssue);
                 GUI.enabled = previousEnabled && canPlace;
                 Color previousColor = GUI.color;
                 GUI.color = !canPlace
@@ -7646,7 +7649,7 @@ namespace MC2Demo.Presentation
                 GUI.enabled = previousEnabled;
                 GUI.Label(
                     new Rect(x + 148f, y + 76f, Mathf.Max(80f, width - 148f), 18f),
-                    canPlace ? targetClear ? "Target clear" : "Target blocked" : "Current slot");
+                    canPlace ? targetClear ? "Target clear" : "Blocked " + TruncateText(targetIssue, 14) : "Current slot");
             }
         }
 
@@ -7671,10 +7674,18 @@ namespace MC2Demo.Presentation
             int selectedWeaponIndex,
             Vector2Int targetCell)
         {
+            return string.IsNullOrEmpty(LoadoutTargetPlacementIssueText(preview, selectedWeaponIndex, targetCell));
+        }
+
+        private static string LoadoutTargetPlacementIssueText(
+            CombatLoadoutPreview preview,
+            int selectedWeaponIndex,
+            Vector2Int targetCell)
+        {
             CombatLoadoutPreviewItem selectedItem = LoadoutPreviewItemForWeapon(preview, selectedWeaponIndex);
             if (preview == null || selectedItem == null)
             {
-                return false;
+                return "invalid target";
             }
 
             CombatLoadoutPreviewGridCell[] occupiedCells = preview.OccupiedCells;
@@ -7690,17 +7701,28 @@ namespace MC2Demo.Presentation
                 int targetY = targetCell.y + sourceCell.Y - selectedItem.GridY;
                 if (targetX < 0 || targetY < 0 || targetX >= preview.GridWidth || targetY >= preview.GridHeight)
                 {
-                    return false;
+                    return "outside grid";
                 }
 
                 CombatLoadoutPreviewGridCell targetOccupiedCell = LoadoutCellAt(preview, targetX, targetY);
                 if (targetOccupiedCell != null && targetOccupiedCell.SourceWeaponIndex != selectedWeaponIndex)
                 {
-                    return false;
+                    string label = targetOccupiedCell.DisplayName;
+                    if (string.IsNullOrWhiteSpace(label))
+                    {
+                        label = targetOccupiedCell.Category;
+                    }
+
+                    if (string.IsNullOrWhiteSpace(label))
+                    {
+                        label = "item";
+                    }
+
+                    return "overlap " + ShortLoadoutItemName(label);
                 }
             }
 
-            return true;
+            return "";
         }
 
         private static CombatLoadoutPreviewItem LoadoutPreviewItemForWeapon(CombatLoadoutPreview preview, int sourceWeaponIndex)
