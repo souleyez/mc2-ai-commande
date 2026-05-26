@@ -224,11 +224,12 @@ cells stay selected, keeping armor/sink tradeoff details visible after the point
 moves away; the same selected target cell can now place the selected mounted
 weapon or cycle a spare filler cell through armor, heat sink, and empty. The
 single-cell filler action now labels the next action as Armor, Sink, or Clear
-instead of a generic Fill button. Before
+instead of a generic Fill button, and the selected target status echoes that
+filler action beside the weapon-placement state. Before
 Place applies that draft move, the selected weapon now draws a target ghost over
 the destination cells, with green for a clear placement and red for overlap or
 out-of-bounds pressure. The detail line mirrors that signal with target
-clear/blocked text, blocked reason, and the selected weapon footprint size, so the player does not
+clear/blocked text, blocked reason, filler action, and the selected weapon footprint size, so the player does not
 have to infer the result from color alone. Slot and draft reset actions clear that
 UI selection so restored fits do not keep pointing at stale grid coordinates.
 Spare load is now projected into free cells as simple armor plates and heat sinks,

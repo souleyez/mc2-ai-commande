@@ -7502,12 +7502,14 @@ namespace MC2Demo.Presentation
             string weaponName = string.IsNullOrWhiteSpace(weapon?.name) ? selectedItem.DisplayName : weapon.name;
             string targetIssue = LoadoutTargetPlacementIssueText(preview, selectedWeaponIndex, targetCell);
             string targetState = string.IsNullOrEmpty(targetIssue) ? "clear" : "blocked " + targetIssue;
+            string fillerActionSuffix = LoadoutTargetFillerActionSuffix(preview, targetCell);
             return "Target "
                 + targetCell.x.ToString(CultureInfo.InvariantCulture)
                 + ","
                 + targetCell.y.ToString(CultureInfo.InvariantCulture)
                 + " "
                 + targetState
+                + fillerActionSuffix
                 + " for "
                 + (selectedWeaponIndex + 1).ToString(CultureInfo.InvariantCulture)
                 + " "
@@ -7640,17 +7642,26 @@ namespace MC2Demo.Presentation
                 GUI.color = previousColor;
                 CombatLoadoutPreviewGridCell occupiedCell = LoadoutCellAt(preview, targetCell.x, targetCell.y);
                 bool canFill = occupiedCell == null || occupiedCell.SourceWeaponIndex < 0;
-                GUI.enabled = previousEnabled && canFill && CountLoadoutCellsAt(preview, targetCell.x, targetCell.y) <= 1;
+                bool canCycleFiller = canFill && CountLoadoutCellsAt(preview, targetCell.x, targetCell.y) <= 1;
+                GUI.enabled = previousEnabled && canCycleFiller;
                 string fillerAction = FillerActionLabel(occupiedCell?.Category);
                 if (GUI.Button(new Rect(x + 148f, y + 50f, 62f, 22f), fillerAction))
                 {
                     CycleFillerOverride(unit, targetCell.x, targetCell.y, occupiedCell?.Category);
                 }
 
+                string targetStatus = canPlace
+                    ? targetClear ? "Target clear" : "Blocked " + TruncateText(targetIssue, 14)
+                    : "Current slot";
+                if (canCycleFiller)
+                {
+                    targetStatus += " / " + fillerAction;
+                }
+
                 GUI.enabled = previousEnabled;
                 GUI.Label(
                     new Rect(x + 148f, y + 76f, Mathf.Max(80f, width - 148f), 18f),
-                    canPlace ? targetClear ? "Target clear" : "Blocked " + TruncateText(targetIssue, 14) : "Current slot");
+                    targetStatus);
             }
         }
 
@@ -7676,6 +7687,27 @@ namespace MC2Demo.Presentation
             Vector2Int targetCell)
         {
             return string.IsNullOrEmpty(LoadoutTargetPlacementIssueText(preview, selectedWeaponIndex, targetCell));
+        }
+
+        private static string LoadoutTargetFillerActionSuffix(CombatLoadoutPreview preview, Vector2Int targetCell)
+        {
+            if (preview == null)
+            {
+                return "";
+            }
+
+            CombatLoadoutPreviewGridCell occupiedCell = LoadoutCellAt(preview, targetCell.x, targetCell.y);
+            if (occupiedCell != null && occupiedCell.SourceWeaponIndex >= 0)
+            {
+                return "";
+            }
+
+            if (CountLoadoutCellsAt(preview, targetCell.x, targetCell.y) > 1)
+            {
+                return "";
+            }
+
+            return " / " + FillerActionLabel(occupiedCell?.Category);
         }
 
         private static string LoadoutTargetPlacementIssueText(
