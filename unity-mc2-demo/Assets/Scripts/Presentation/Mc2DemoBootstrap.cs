@@ -8172,14 +8172,8 @@ namespace MC2Demo.Presentation
                 int column = index % columns;
                 float columnX = x + column * columnWidth;
                 float rowY = listY + row * 26f;
-                string label = (index + 1).ToString(CultureInfo.InvariantCulture)
-                    + " "
-                    + LoadoutWeaponRangeBandLabel(weapon)
-                    + " "
-                    + LoadoutWeaponShapeLabel(preview, index)
-                    + " "
-                    + TruncateText(weapon.name, 7);
                 bool isSelected = index == selectedWeaponIndex;
+                string label = LoadoutWeaponButtonLabel(weapon, preview, index, isSelected);
                 Color previousColor = GUI.color;
                 Color buttonCue = isSelected ? new Color(1f, 0.95f, 0.22f, 1f) : LoadoutWeaponRangeBandColor(weapon);
                 GUI.color = buttonCue;
@@ -8195,6 +8189,24 @@ namespace MC2Demo.Presentation
             }
 
             return 24f + rows * 26f;
+        }
+
+        private static string LoadoutWeaponButtonLabel(
+            CombatWeaponDefinition weapon,
+            CombatLoadoutPreview preview,
+            int sourceWeaponIndex,
+            bool isSelected)
+        {
+            string selector = isSelected
+                ? ">"
+                : (sourceWeaponIndex + 1).ToString(CultureInfo.InvariantCulture);
+            return selector
+                + " "
+                + LoadoutWeaponRangeBandLabel(weapon)
+                + " "
+                + LoadoutWeaponShapeLabel(preview, sourceWeaponIndex)
+                + " "
+                + TruncateText(weapon?.name, 7);
         }
 
         private static string LoadoutWeaponShapeLabel(CombatLoadoutPreview preview, int sourceWeaponIndex)

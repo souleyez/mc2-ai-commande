@@ -58,6 +58,7 @@ Current demo behavior:
 - highlights hovered payload blocks and empty cells so the grid reads as direct block editing instead of tiny cell picking
 - keeps clicked component or empty cells selected so armor/sink tradeoffs can be inspected without holding the pointer still
 - lets the mech bay select and nudge projected weapons to preview overlap and bounds validation
+- marks the selected mounted weapon button with a `>` selector so the active weapon is visible without relying only on color
 - lets a clicked target cell place the selected mounted weapon or cycle the selected filler cell through armor, heat sink, and empty
 - labels the filler action as Armor, Sink, or Clear so the next single-cell change is visible before clicking
 - echoes the filler transition, such as Empty > Armor, in the top status, target status, and payload detail text
