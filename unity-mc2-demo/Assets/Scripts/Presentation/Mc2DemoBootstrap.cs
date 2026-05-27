@@ -29,8 +29,8 @@ namespace MC2Demo.Presentation
         [SerializeField] private float cameraYaw = 45f;
         private const float JumpDistance = 520f;
         private const float MiniMaxCommanderAdvanceSeconds = 8f;
-        private const float LoadoutCardHeight = 480f;
-        private const float LoadoutCardStride = 492f;
+        private const float LoadoutCardHeight = 456f;
+        private const float LoadoutCardStride = 468f;
         private static readonly Color UiPanelColor = new(0.035f, 0.045f, 0.055f, 0.92f);
         private static readonly Color UiButtonColor = new(0.075f, 0.105f, 0.125f, 0.96f);
         private static readonly Color UiTrackColor = new(0.015f, 0.02f, 0.025f, 0.9f);
@@ -5171,24 +5171,7 @@ namespace MC2Demo.Presentation
             float right = x + width * 0.50f;
             float lineY = y + 24f;
             CombatLoadoutPreview loadoutPreview = LoadoutPreviewFor(unit);
-            GUI.Label(
-                new Rect(left, lineY, width * 0.46f, 18f),
-                "Structure " + Mathf.RoundToInt(unit.CurrentStructure) + "/" + Mathf.RoundToInt(unit.Profile.MaxStructure)
-                + "  Move " + Mathf.RoundToInt(unit.Profile.MoveSpeed));
-            GUI.Label(
-                new Rect(right, lineY, width * 0.46f, 18f),
-                "Heat " + FormatDecimal(unit.CurrentHeat) + "/" + FormatDecimal(unit.Profile.HeatCapacity)
-                + "  Load " + FormatDecimal(unit.CombatTotalWeaponWeight));
-
-            lineY += 20f;
-            GUI.Label(
-                new Rect(left, lineY, width * 0.46f, 18f),
-                "Primary " + TruncateText(unit.CombatPrimaryWeaponName, 28));
-            GUI.Label(
-                new Rect(right, lineY, width * 0.46f, 18f),
-                "Range " + Mathf.RoundToInt(unit.CombatWeaponRange)
-                + "  Damage " + FormatDecimal(unit.CombatWeaponDamage)
-                + "  CD " + FormatDecimal(unit.CombatWeaponCooldown));
+            DrawLoadoutUnitCombatSummary(unit, left, right, lineY, width);
 
             lineY += 20f;
             DrawMechConditionLine(unit, left, right, lineY, width);
@@ -5207,6 +5190,34 @@ namespace MC2Demo.Presentation
 
             lineY += weaponHeight + 6f;
             DrawLoadoutEditControls(unit, loadoutPreview, left, lineY, width - 24f);
+        }
+
+        private void DrawLoadoutUnitCombatSummary(UnitState unit, float left, float right, float y, float width)
+        {
+            GUI.Label(
+                new Rect(left, y, width * 0.46f, 18f),
+                "STR "
+                + Mathf.RoundToInt(unit.CurrentStructure).ToString(CultureInfo.InvariantCulture)
+                + "/"
+                + Mathf.RoundToInt(unit.Profile.MaxStructure).ToString(CultureInfo.InvariantCulture)
+                + "  MV "
+                + Mathf.RoundToInt(unit.Profile.MoveSpeed).ToString(CultureInfo.InvariantCulture)
+                + "  "
+                + TruncateText(unit.CombatPrimaryWeaponName, 18));
+            GUI.Label(
+                new Rect(right, y, width * 0.46f, 18f),
+                "D "
+                + FormatDecimal(unit.CombatWeaponDamage)
+                + "  R "
+                + Mathf.RoundToInt(unit.CombatWeaponRange).ToString(CultureInfo.InvariantCulture)
+                + "  CD "
+                + FormatDecimal(unit.CombatWeaponCooldown)
+                + "  H "
+                + FormatDecimal(unit.CurrentHeat)
+                + "/"
+                + FormatDecimal(unit.Profile.HeatCapacity)
+                + "  W "
+                + FormatDecimal(unit.CombatTotalWeaponWeight));
         }
 
         private static string LoadoutUnitTitle(UnitState unit)

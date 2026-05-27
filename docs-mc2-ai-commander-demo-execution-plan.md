@@ -656,5 +656,6 @@ Tasks:
 - The selected-weapon Reset control now reads Base, stays disabled, and uses the done-state color when there is no placement override, reducing no-op clicks in the fitting controls.
 - The fit Apply control now reads and colors itself as Done, Invalid, Stock, or Apply depending on draft, validation, and inventory state.
 - The draft Reset control now reads Clean and uses the done-state color when the current fit already matches the applied fit.
+- The selected fitting card now merges structure, movement, primary weapon, damage, range, cooldown, heat, and weight into one compact combat summary row, trimming duplicated header space.
 - The next low-risk step is to keep tuning the selected fitting card density and then migrate these flow screens beyond IMGUI once the layout direction feels right.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.
