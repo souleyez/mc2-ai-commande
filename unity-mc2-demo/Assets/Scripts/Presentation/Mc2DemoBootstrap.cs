@@ -9228,7 +9228,7 @@ namespace MC2Demo.Presentation
             }
 
             Rect panel = MissionListPanelRect();
-            DrawDesignPanelFrame(panel, "Mission List / 任务", UiCyanColor);
+            DrawDesignPanelFrame(panel, "Contracts / 任务", UiCyanColor);
             float x = panel.x + 18f;
             float y = panel.y + 36f;
             float width = panel.width - 36f;
@@ -9238,28 +9238,28 @@ namespace MC2Demo.Presentation
             GUI.Label(new Rect(x, y, width, 20f), "Available contracts / 可接任务", uiHeaderStyle);
             y += 26f;
             DrawDesignInsetFrame(new Rect(x, y, width, 86f), UiCyanColor);
-            GUI.Label(new Rect(x + 12f, y + 10f, width - 24f, 20f), missionId + "  Prototype Raid");
-            GUI.Label(new Rect(x + 12f, y + 34f, width - 24f, 20f), "Current reference map  Objectives " + objectiveCount.ToString(CultureInfo.InvariantCulture));
-            GUI.Label(new Rect(x + 12f, y + 58f, width - 24f, 20f), "Squad slots " + playerCount.ToString(CultureInfo.InvariantCulture) + "  Status ready");
+            GUI.Label(new Rect(x + 12f, y + 10f, width - 24f, 20f), missionId + "  Field Contract");
+            GUI.Label(new Rect(x + 12f, y + 34f, width - 24f, 20f), "Objectives " + objectiveCount.ToString(CultureInfo.InvariantCulture) + "  Recon map ready");
+            GUI.Label(new Rect(x + 12f, y + 58f, width - 24f, 20f), "Squad " + playerCount.ToString(CultureInfo.InvariantCulture) + " mechs  Ready");
             y += 102f;
 
-            if (GUI.Button(new Rect(x, y, width, 30f), "Launch Current Mission"))
+            if (GUI.Button(new Rect(x, y, width, 30f), "Launch Contract"))
             {
                 bool launched = TryApplyMissionRestartRuntimeSwap();
                 showMissionListPanel = !launched;
                 SetDemoFlowScreen(launched ? DemoFlowScreen.Battle : DemoFlowScreen.MissionSelect);
-                statusText = launched ? "Mission launched" : statusText;
+                statusText = launched ? "Contract launched" : statusText;
             }
 
             y += 38f;
             float halfWidth = (width - 8f) * 0.5f;
-            if (GUI.Button(new Rect(x, y, halfWidth, 30f), "Open Mech Bay"))
+            if (GUI.Button(new Rect(x, y, halfWidth, 30f), "Mech Bay"))
             {
                 showMissionListPanel = false;
                 OpenLoadoutPanel();
             }
 
-            if (GUI.Button(new Rect(x + halfWidth + 8f, y, halfWidth, 30f), "Back System"))
+            if (GUI.Button(new Rect(x + halfWidth + 8f, y, halfWidth, 30f), "System"))
             {
                 showMissionListPanel = false;
                 OpenSystemPanel();

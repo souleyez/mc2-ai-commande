@@ -21,7 +21,7 @@ Current demo behavior:
 - supports repeatable scriptable runtime restart from startup args or command files
 - tracks a lightweight demo flow state across title, battle, mech bay, mission selection, save choices, system, and debrief
 - shows the current flow state in the top status strip
-- opens a Mission List shell from the system panel with the current `mc2_01` contract, launch, mech bay, back-system, and return-battle actions
+- opens a Contracts shell from the system panel with the current `mc2_01` contract, launch, mech bay, system, and return-battle actions
 - routes the post-battle debrief through Continue Bay or Mission List, hiding the debrief overlay before repair, save, or relaunch work
 - shows a compact After Action or Ready Bay flow lane for Repair All, Save, Missions, and Launch after battle or during pre-mission prep
 - applies a first graphite/cyan/amber UI skin pass to the HUD, buttons, top status strip, and squad command panel

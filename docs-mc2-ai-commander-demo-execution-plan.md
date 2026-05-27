@@ -589,7 +589,7 @@ Tasks:
 - System-opened Save Choices now shows the latest save/load result inline, so Save Current feedback stays visible inside the same panel.
 - System-opened Save Choices now has Export Copy and Reset Slot controls; Reset Slot requires confirmation, copies the old default save first, then replaces the default slot with a fresh demo snapshot.
 - A first lightweight demo-flow state now tracks title, battle, mech bay, mission selection, save choices, system, and debrief, with the current state visible in the top status strip.
-- The system panel now opens a Mission List shell for `mc2_01`, with current-mission launch, mech bay, back-system, and return-battle actions.
+- The system panel now opens a player-facing Contracts shell for `mc2_01`, with launch, mech bay, system, and return-battle actions.
 - The debrief panel now routes post-battle flow through Continue Bay or Mission List, hiding the debrief overlay before the player repairs, saves, or chooses the next launch.
 - The Mission List return action now goes back to Debrief after a completed mission, keeping the post-battle flow reversible.
 - The mech bay summary now has a compact post-battle/prep lane with Repair All, Save, Missions, and Launch, so the main playable loop is visible in one row.
