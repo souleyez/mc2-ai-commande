@@ -216,7 +216,7 @@ selects mounted weapons for projected nudges, while fitting edits immediately
 recompute heat, load, grid occupancy, overlap, bounds, and validator status
 without touching live battle damage yet. The weapon list highlights the selected
 mounted weapon and repeats its damage, range, cooldown, heat, weight, and
-footprint cells above the selector instead of adding a separate weapon switch layer. The payload preview now draws
+footprint cells above compact S/M/L range-band buttons instead of adding a separate weapon switch layer. The payload preview now draws
 those projected items as larger whole-block grid pieces, following the original
 payload-model color idea of orange empty cells, green/blue/red weapon range bands,
 and yellow components. The grid also exposes selected or hovered block details

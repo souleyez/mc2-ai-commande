@@ -7993,21 +7993,59 @@ namespace MC2Demo.Presentation
                 int column = index % columns;
                 float columnX = x + column * columnWidth;
                 float rowY = listY + row * 26f;
-                string label = (index + 1).ToString(CultureInfo.InvariantCulture) + " " + TruncateText(weapon.name, 7)
-                    + " H" + FormatDecimal(weapon.heat)
-                    + " W" + FormatDecimal(weapon.weight);
+                string label = (index + 1).ToString(CultureInfo.InvariantCulture)
+                    + " "
+                    + LoadoutWeaponRangeBandLabel(weapon)
+                    + " "
+                    + TruncateText(weapon.name, 9);
                 bool isSelected = index == selectedWeaponIndex;
                 Color previousColor = GUI.color;
-                GUI.color = isSelected ? new Color(1f, 0.95f, 0.22f, 1f) : previousColor;
-                if (GUI.Button(new Rect(columnX, rowY - 2f, columnWidth - 4f, 22f), label))
+                Color buttonCue = isSelected ? new Color(1f, 0.95f, 0.22f, 1f) : LoadoutWeaponRangeBandColor(weapon);
+                GUI.color = buttonCue;
+                Rect buttonRect = new(columnX, rowY - 2f, columnWidth - 4f, 22f);
+                if (GUI.Button(buttonRect, label))
                 {
                     SetSelectedLoadoutWeapon(unit, index);
                     statusText = "Selected " + TruncateText(weapon.name, 24);
                 }
+
                 GUI.color = previousColor;
+                DrawRectBorder(buttonRect, buttonCue, isSelected ? 2f : 1f);
             }
 
             return 24f + rows * 26f;
+        }
+
+        private static string LoadoutWeaponRangeBandLabel(CombatWeaponDefinition weapon)
+        {
+            float range = weapon?.rangeMax ?? 0f;
+            if (range < 450f)
+            {
+                return "S";
+            }
+
+            if (range < 850f)
+            {
+                return "M";
+            }
+
+            return "L";
+        }
+
+        private static Color LoadoutWeaponRangeBandColor(CombatWeaponDefinition weapon)
+        {
+            float range = weapon?.rangeMax ?? 0f;
+            if (range < 450f)
+            {
+                return new Color(LoadoutShortWeaponColor.r, LoadoutShortWeaponColor.g, LoadoutShortWeaponColor.b, 0.92f);
+            }
+
+            if (range < 850f)
+            {
+                return new Color(LoadoutMediumWeaponColor.r, LoadoutMediumWeaponColor.g, LoadoutMediumWeaponColor.b, 0.92f);
+            }
+
+            return new Color(LoadoutLongWeaponColor.r, LoadoutLongWeaponColor.g, LoadoutLongWeaponColor.b, 0.92f);
         }
 
         private void DrawSelectedWeaponSummaryLine(
