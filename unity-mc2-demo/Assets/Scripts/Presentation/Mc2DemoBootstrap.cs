@@ -4610,7 +4610,7 @@ namespace MC2Demo.Presentation
                 : MissionHandoffPlayerSummaryText(handoffPreview, restartGuard);
             GUI.Label(
                 new Rect(x, y + 324f, width, 18f),
-                "Next Mission " + TruncateText(handoffSummary, 58));
+                "Next Contract " + TruncateText(handoffSummary, 58));
             DrawMissionHandoffLaunchAction(x, y + 346f, width, handoffPreview, restartGuard);
             DrawMissionHandoffLineup(x, y + 368f, width, handoffPreview);
             if (showRosterDetail)
@@ -4652,7 +4652,7 @@ namespace MC2Demo.Presentation
             }
 
             GUI.enabled = previousEnabled;
-            if (DrawActionButton(new Rect(x + 142f, y - 2f, 68f, 22f), "Missions", true))
+            if (DrawActionButton(new Rect(x + 142f, y - 2f, 68f, 22f), "Contracts", true))
             {
                 OpenMissionListFromMechBayLane();
             }

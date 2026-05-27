@@ -23,7 +23,7 @@ Current demo behavior:
 - shows the current flow state in the top status strip
 - opens a Contracts shell from the system panel with the current `mc2_01` contract, launch, mech bay, system, and return-battle actions
 - routes the post-battle debrief through Mech Bay or Contracts, hiding the debrief overlay before repair, save, or relaunch work
-- shows a compact After Action or Ready Bay flow lane for Repair All, Save, Missions, and Launch after battle or during pre-mission prep
+- shows a compact After Action or Ready Bay flow lane for Repair All, Save, Contracts, and Launch after battle or during pre-mission prep
 - applies a first graphite/cyan/amber UI skin pass to the HUD, buttons, top status strip, and squad command panel
 - extends that UI direction to Save Slot, System, Contracts, Debrief, and Mech Bay flow panels with shared framed surfaces
 - tightens the title save panel with an inset account summary and side-by-side Continue/New Company actions

@@ -594,7 +594,8 @@ Tasks:
 - The system panel now opens a player-facing Contracts shell for `mc2_01`, with launch, mech bay, system, and return-battle actions.
 - The debrief panel now routes post-battle flow through Mech Bay or Contracts, hiding the debrief overlay before the player repairs, saves, or chooses the next launch.
 - The Contracts return action now goes back to Debrief after a completed mission, keeping the post-battle flow reversible.
-- The mech bay summary now has a compact post-battle/prep lane with Repair All, Save, Missions, and Launch, so the main playable loop is visible in one row.
+- The mech bay summary now has a compact post-battle/prep lane with Repair All, Save, Contracts, and Launch, so the main playable loop is visible in one row.
+- The mech bay next-contract row now uses Contract wording to match the system and debrief flow.
 - The mech bay flow lane now uses player-facing After Action and Ready Bay status text, and the depot candidate shortcut now reads as a Reserve action rather than a debug-style prep hook.
 - The first design-image-inspired UI pass now applies a graphite/cyan/amber skin, top status strip, and framed squad command panel while keeping the existing IMGUI behavior stable.
 - The same design pass now extends across Save Slot, System, Contracts, Debrief, and Mech Bay panels with shared framed surfaces and highlighted flow lanes.
