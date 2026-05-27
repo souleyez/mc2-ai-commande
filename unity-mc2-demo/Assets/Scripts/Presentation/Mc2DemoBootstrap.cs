@@ -8387,7 +8387,7 @@ namespace MC2Demo.Presentation
             float columnWidth = width / columns;
             int selectedWeaponIndex = SelectedLoadoutWeaponIndexFor(unit, preview);
             DrawSelectedWeaponSummaryLine(unit, preview, selectedWeaponIndex, x, y, width);
-            float listY = y + 24f;
+            float listY = y + 22f;
             for (int index = 0; index < count; index++)
             {
                 CombatWeaponDefinition weapon = weapons[index];
@@ -8399,14 +8399,14 @@ namespace MC2Demo.Presentation
                 int row = index / columns;
                 int column = index % columns;
                 float columnX = x + column * columnWidth;
-                float rowY = listY + row * 26f;
+                float rowY = listY + row * 22f;
                 bool isSelected = index == selectedWeaponIndex;
                 bool hasPlacementOverride = HasLoadoutWeaponPlacementOverride(unit, index);
                 string label = LoadoutWeaponButtonLabel(weapon, preview, index, isSelected, hasPlacementOverride);
                 Color previousColor = GUI.color;
                 Color buttonCue = isSelected ? new Color(1f, 0.95f, 0.22f, 1f) : LoadoutWeaponRangeBandColor(weapon);
                 GUI.color = buttonCue;
-                Rect buttonRect = new(columnX, rowY - 2f, columnWidth - 4f, 22f);
+                Rect buttonRect = new(columnX, rowY - 1f, columnWidth - 4f, 20f);
                 if (GUI.Button(buttonRect, label))
                 {
                     SetSelectedLoadoutWeapon(unit, index);
@@ -8417,7 +8417,7 @@ namespace MC2Demo.Presentation
                 DrawRectBorder(buttonRect, buttonCue, isSelected ? 2f : 1f);
             }
 
-            return 24f + rows * 26f;
+            return 22f + rows * 22f;
         }
 
         private string LoadoutWeaponSelectionStatus(
@@ -8450,9 +8450,7 @@ namespace MC2Demo.Presentation
                 + " "
                 + LoadoutWeaponRangeBandLabel(weapon)
                 + " "
-                + LoadoutWeaponShapeLabel(preview, sourceWeaponIndex)
-                + " "
-                + TruncateText(weapon?.name, 7);
+                + LoadoutWeaponShapeLabel(preview, sourceWeaponIndex);
         }
 
         private static string LoadoutWeaponButtonSelector(

@@ -658,5 +658,6 @@ Tasks:
 - The draft Reset control now reads Clean and uses the done-state color when the current fit already matches the applied fit.
 - The selected fitting card now merges structure, movement, primary weapon, damage, range, cooldown, heat, and weight into one compact combat summary row, trimming duplicated header space.
 - The payload grid side rail now uses compact Grid/A/S readouts and E/S/M/L/C swatches, moving placement controls closer to the grid without changing the fitting rules.
+- Mounted weapon buttons now show only selector, range band, and `WxH` footprint, with tighter rows while the selected weapon summary keeps the full name and stats.
 - The next low-risk step is to keep tuning the selected fitting card density and then migrate these flow screens beyond IMGUI once the layout direction feels right.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.
