@@ -7818,11 +7818,15 @@ namespace MC2Demo.Presentation
                 MoveSelectedLoadoutWeapon(unit, preview, -1, 0);
             }
 
-            if (GUI.Button(new Rect(x + 44f, y + 50f, 50f, 22f), "Reset"))
+            bool canResetSelectedWeapon = HasSelectedLoadoutWeaponPlacementOverride(unit, selectedWeaponIndex);
+            bool previousResetEnabled = GUI.enabled;
+            GUI.enabled = previousResetEnabled && canResetSelectedWeapon;
+            if (GUI.Button(new Rect(x + 44f, y + 50f, 50f, 22f), canResetSelectedWeapon ? "Reset" : "Base"))
             {
                 ResetSelectedLoadoutWeapon(unit);
             }
 
+            GUI.enabled = previousResetEnabled;
             if (GUI.Button(new Rect(x + 98f, y + 50f, 44f, 22f), "E"))
             {
                 MoveSelectedLoadoutWeapon(unit, preview, 1, 0);
@@ -8402,6 +8406,12 @@ namespace MC2Demo.Presentation
             placementOverrides[selectedWeaponIndex] = null;
             selectedLoadoutGridCellByUnit.Remove(unit.Id ?? "");
             statusText = "Reset temporary slot";
+        }
+
+        private bool HasSelectedLoadoutWeaponPlacementOverride(UnitState unit, int selectedWeaponIndex)
+        {
+            CombatLoadoutPlacementOverride[] placementOverrides = LoadoutPlacementOverridesFor(unit);
+            return PlacementAt(placementOverrides, selectedWeaponIndex) != null;
         }
 
         private bool HasPendingLoadoutEdits(UnitState unit)

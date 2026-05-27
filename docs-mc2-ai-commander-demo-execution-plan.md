@@ -58,6 +58,7 @@ The Unity demo currently supports:
 - selected mounted weapons draw green/red target ghosts before placement, making overlap or out-of-bounds pressure visible before applying a draft move
 - blocked selected-weapon targets now disable the Place action and label it Blocked instead of letting a clearly invalid target be placed by accident
 - the payload detail line now reports target clear/blocked status, blocked reason, selected weapon footprint cells, and footprint shape
+- selected-weapon Reset stays disabled as Base until that weapon has a placement override to clear
 - mech bay draft/apply/reset boundaries for temporary demo fits
 - applied demo fit handoff into combat readiness, range, heat, cooldown, and weapon display stats
 - applied armor hardness reduces incoming damage and applied heat sinks increase cooling
@@ -546,5 +547,6 @@ Reason:
 - The selected weapon summary now echoes its current grid position and pending target position, so slot moves stay visible even before reaching the lower Place controls.
 - The selected weapon summary and payload detail now show the selected block as a concrete `WxH` footprint, making vertical and wide weapon shapes readable without counting cells.
 - The mounted weapon buttons also include that `WxH` footprint, so the selection list itself reads as block inventory instead of plain weapon toggles.
+- The selected-weapon Reset control now reads Base and stays disabled when there is no placement override, reducing no-op clicks in the fitting controls.
 - The next low-risk step is to keep tuning the selected fitting card density and then migrate these flow screens beyond IMGUI once the layout direction feels right.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.
