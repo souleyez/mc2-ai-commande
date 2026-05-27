@@ -29,8 +29,8 @@ namespace MC2Demo.Presentation
         [SerializeField] private float cameraYaw = 45f;
         private const float JumpDistance = 520f;
         private const float MiniMaxCommanderAdvanceSeconds = 8f;
-        private const float LoadoutCardHeight = 456f;
-        private const float LoadoutCardStride = 468f;
+        private const float LoadoutCardHeight = 480f;
+        private const float LoadoutCardStride = 492f;
         private static readonly Color UiPanelColor = new(0.035f, 0.045f, 0.055f, 0.92f);
         private static readonly Color UiButtonColor = new(0.075f, 0.105f, 0.125f, 0.96f);
         private static readonly Color UiTrackColor = new(0.015f, 0.02f, 0.025f, 0.9f);
@@ -7979,6 +7979,8 @@ namespace MC2Demo.Presentation
             int rows = Mathf.CeilToInt(count / (float)columns);
             float columnWidth = width / columns;
             int selectedWeaponIndex = SelectedLoadoutWeaponIndexFor(unit, preview);
+            DrawSelectedWeaponSummaryLine(unit, preview, selectedWeaponIndex, x, y, width);
+            float listY = y + 24f;
             for (int index = 0; index < count; index++)
             {
                 CombatWeaponDefinition weapon = weapons[index];
@@ -7990,7 +7992,7 @@ namespace MC2Demo.Presentation
                 int row = index / columns;
                 int column = index % columns;
                 float columnX = x + column * columnWidth;
-                float rowY = y + row * 26f;
+                float rowY = listY + row * 26f;
                 string label = (index + 1).ToString(CultureInfo.InvariantCulture) + " " + TruncateText(weapon.name, 7)
                     + " H" + FormatDecimal(weapon.heat)
                     + " W" + FormatDecimal(weapon.weight);
@@ -8005,7 +8007,54 @@ namespace MC2Demo.Presentation
                 GUI.color = previousColor;
             }
 
-            return rows * 26f;
+            return 24f + rows * 26f;
+        }
+
+        private void DrawSelectedWeaponSummaryLine(
+            UnitState unit,
+            CombatLoadoutPreview preview,
+            int selectedWeaponIndex,
+            float x,
+            float y,
+            float width)
+        {
+            CombatWeaponDefinition[] weapons = unit?.Profile?.Weapons;
+            if (weapons == null || selectedWeaponIndex < 0 || selectedWeaponIndex >= weapons.Length)
+            {
+                GUI.Label(new Rect(x, y, width, 18f), "Selected weapon unavailable");
+                return;
+            }
+
+            CombatWeaponDefinition weapon = weapons[selectedWeaponIndex];
+            if (weapon == null)
+            {
+                GUI.Label(new Rect(x, y, width, 18f), "Selected weapon unavailable");
+                return;
+            }
+
+            CombatLoadoutPreviewGridCell selectedCell = LoadoutCellForSelectedWeapon(preview, selectedWeaponIndex);
+            int cells = Math.Max(1, CountLoadoutBlockCells(preview, selectedCell));
+            Rect strip = new(x - 4f, y - 2f, width + 8f, 22f);
+            DrawColorRect(strip, new Color(0.015f, 0.025f, 0.03f, 0.76f));
+            DrawRectBorder(strip, new Color(UiAmberColor.r, UiAmberColor.g, UiAmberColor.b, 0.34f), 1f);
+            GUI.Label(
+                new Rect(x, y, width, 18f),
+                "Weapon "
+                + (selectedWeaponIndex + 1).ToString(CultureInfo.InvariantCulture)
+                + " "
+                + TruncateText(weapon.name, 18)
+                + "  D "
+                + FormatDecimal(weapon.damage)
+                + "  R "
+                + Mathf.RoundToInt(weapon.rangeMax).ToString(CultureInfo.InvariantCulture)
+                + "  CD "
+                + FormatDecimal(weapon.recycleTime)
+                + "  H "
+                + FormatDecimal(weapon.heat)
+                + "  W "
+                + FormatDecimal(weapon.weight)
+                + "  Cells "
+                + cells.ToString(CultureInfo.InvariantCulture));
         }
 
         private void DrawLoadoutEditControls(UnitState unit, CombatLoadoutPreview preview, float x, float y, float width)

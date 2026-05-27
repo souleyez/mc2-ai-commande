@@ -45,6 +45,7 @@ The Unity demo currently supports:
 - deterministic BattleCore loadout validator for grid bounds, blocked cells, overlap, rotation, heat caps, weight caps, and special-slot compatibility
 - source weapon loadout projection in the mech bay with validator status, heat/load limits, and occupied grid cell counts
 - fitted weapons are always active; the mech bay weapon list selects mounted weapons for slot editing instead of exposing weapon switches
+- selected fitting weapon summary line with damage, range, cooldown, heat, weight, and footprint cells above the mounted weapon buttons
 - projected mech bay slot grid visualization with placeholder multi-cell weapon shapes exposed from BattleCore preview data
 - temporary projected weapon placement edits with overlap and out-of-bounds validator feedback
 - spare-load armor plate and heat sink filler projection with hardness and cooling totals
@@ -536,5 +537,6 @@ Reason:
 - The payload detail line now mirrors target placement state in text, including clear/blocked status, blocked reason, and selected weapon footprint cells.
 - The mech bay now uses compact squad buttons and expands one selected fitting card at a time, reducing drawer scroll pressure before the future non-IMGUI rewrite.
 - The squad fitting selector now marks draft mechs and shows the selected mech's pilot, fit state, structure, plus H/W/G pressure bars in the same compact strip.
+- The selected fitting card now repeats the selected weapon's combat stats and footprint above the mounted weapon buttons, reducing trips between the grid detail line and weapon selector.
 - The next low-risk step is to keep tuning the selected fitting card density and then migrate these flow screens beyond IMGUI once the layout direction feels right.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.
