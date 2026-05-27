@@ -8206,12 +8206,16 @@ namespace MC2Demo.Presentation
 
             bool previousEnabled = GUI.enabled;
             bool canApply = hasPendingEdits && preview != null && preview.Validation.IsValid && hasInventory;
+            string applyLabel = LoadoutApplyButtonLabel(hasPendingEdits, preview, hasInventory);
+            Color previousButtonColor = GUI.color;
+            GUI.color = LoadoutApplyButtonColor(hasPendingEdits, preview, hasInventory);
             GUI.enabled = previousEnabled && canApply;
-            if (GUI.Button(new Rect(x + width - 144f, y - 2f, 66f, 22f), LoadoutApplyButtonLabel(hasPendingEdits, preview, hasInventory)))
+            if (GUI.Button(new Rect(x + width - 144f, y - 2f, 66f, 22f), applyLabel))
             {
                 ApplyLoadoutDraft(unit, preview);
             }
 
+            GUI.color = previousButtonColor;
             GUI.enabled = previousEnabled && hasPendingEdits;
             if (GUI.Button(new Rect(x + width - 72f, y - 2f, 64f, 22f), "Reset"))
             {
@@ -8234,6 +8238,23 @@ namespace MC2Demo.Presentation
             }
 
             return hasInventory ? "Apply" : "Stock";
+        }
+
+        private static Color LoadoutApplyButtonColor(bool hasPendingEdits, CombatLoadoutPreview preview, bool hasInventory)
+        {
+            if (!hasPendingEdits)
+            {
+                return new Color(0.58f, 0.82f, 1f, 1f);
+            }
+
+            if (preview == null || !preview.Validation.IsValid)
+            {
+                return new Color(1f, 0.34f, 0.22f, 1f);
+            }
+
+            return hasInventory
+                ? new Color(0.50f, 1f, 0.82f, 1f)
+                : new Color(1f, 0.78f, 0.28f, 1f);
         }
 
         private static bool[] AllMountedWeaponsStateFor(UnitState unit)
