@@ -7855,7 +7855,7 @@ namespace MC2Demo.Presentation
                     : targetClear
                         ? new Color(0.50f, 1f, 0.82f, 1f)
                         : new Color(1f, 0.32f, 0.18f, 1f);
-                string placeLabel = targetClear ? "Place" : "Blocked";
+                string placeLabel = targetClear ? "Place" : "Block";
                 if (GUI.Button(new Rect(x + 148f, y + 24f, 62f, 22f), placeLabel))
                 {
                     PlaceSelectedLoadoutWeaponAt(unit, preview, targetCell.x, targetCell.y);

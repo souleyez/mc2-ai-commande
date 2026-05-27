@@ -61,7 +61,7 @@ The Unity demo currently supports:
 - top status, selected target status, and payload detail text now echo compact filler actions beside weapon-placement state
 - selected payload target cells can now place the selected mounted weapon or cycle a filler cell, keeping grid edits closer to an original-style fitting table
 - selected mounted weapons draw green/red target ghosts before placement, making overlap or out-of-bounds pressure visible before applying a draft move
-- blocked selected-weapon targets now disable the Place action and label it Blocked instead of letting a clearly invalid target be placed by accident
+- blocked selected-weapon targets now disable the Place action and label it Block instead of letting a clearly invalid target be placed by accident
 - the payload detail line now reports target OK/Block/Same status, blocked reason, selected weapon footprint cells, and footprint shape, while the target status row colors those states
 - the compact target status row echoes the selected target coordinate beside OK/Block/Same state
 - clicked-slot status and the compact target status row use consistent +Armor, +Sink, or Clear filler hints
@@ -553,7 +553,8 @@ Reason:
 - The filler action is now labeled by its next result, so an empty cell offers Armor, an armor plate offers Sink, and a heat sink offers Clear.
 - The top status, target status, and payload detail line now echo compact filler actions, for example `+Armor`, beside the weapon-placement state.
 - The payload grid now previews the selected mounted weapon as a green/red target ghost before Place applies the draft move.
-- The Place action now stays disabled and reads Blocked for overlap or out-of-bounds targets, keeping the ghost preview informative without allowing accidental invalid placement.
+- The Place action now stays disabled and reads Block for overlap or out-of-bounds targets, keeping the ghost preview informative without allowing accidental invalid placement.
+- The blocked Place button now uses the same short Block wording as the compact target and movement status rows.
 - The payload detail line now mirrors target placement state in text, including clear/blocked status, blocked reason, selected weapon footprint cells, and footprint shape.
 - The target status row now colors OK, Same-slot, and Block states consistently with the Place button and target ghost.
 - The target status row now uses compact `T x,y OK/Same/Block` text, so Place/Fill feedback repeats the exact selected grid cell without long state words.

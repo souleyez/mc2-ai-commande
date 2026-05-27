@@ -67,7 +67,7 @@ Current demo behavior:
 - labels the filler action as Armor, Sink, or Clear so the next single-cell change is visible before clicking
 - echoes compact filler actions, such as +Armor, +Sink, or Clear, in the top status, target status, and payload detail text
 - draws a green/red target ghost for the selected mounted weapon before Place applies the draft move
-- disables the Place action and labels it Blocked while the selected weapon target overlaps another payload item or leaves the grid
+- disables the Place action and labels it Block while the selected weapon target overlaps another payload item or leaves the grid
 - reports and colors target OK/Block/Same status, blocked reason, and selected weapon footprint shape in the payload detail line
 - echoes the selected target coordinate in the compact OK/Block/Same target status row beside Place and Fill
 - uses +Armor, +Sink, or Clear filler hints consistently across target-row and clicked-slot feedback
