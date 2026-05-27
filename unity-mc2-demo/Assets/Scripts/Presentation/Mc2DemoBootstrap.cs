@@ -7688,7 +7688,7 @@ namespace MC2Demo.Presentation
             string targetIssue = LoadoutTargetPlacementIssueText(preview, selectedWeaponIndex, targetCell);
             string targetState = string.IsNullOrEmpty(targetIssue) ? "OK" : "Block " + targetIssue;
             string fillerActionSuffix = LoadoutTargetFillerActionSuffix(preview, targetCell);
-            return "Target "
+            return "T "
                 + targetCell.x.ToString(CultureInfo.InvariantCulture)
                 + ","
                 + targetCell.y.ToString(CultureInfo.InvariantCulture)
@@ -7699,9 +7699,9 @@ namespace MC2Demo.Presentation
                 + (selectedWeaponIndex + 1).ToString(CultureInfo.InvariantCulture)
                 + " "
                 + TruncateText(weaponName, 14)
-                + " Cells "
+                + " C"
                 + cells.ToString(CultureInfo.InvariantCulture)
-                + " Shape "
+                + " "
                 + shapeText;
         }
 
