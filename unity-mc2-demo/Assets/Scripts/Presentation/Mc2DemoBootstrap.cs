@@ -7938,7 +7938,7 @@ namespace MC2Demo.Presentation
             GUI.color = LoadoutNudgeStatusColor(hasBlockedDirections);
             GUI.Label(
                 new Rect(x, y, width, 18f),
-                hasBlockedDirections ? "Move blocked " + TruncateText(blockedSummary, 18) : "Move clear");
+                hasBlockedDirections ? "Block " + TruncateText(blockedSummary, 22) : "Move OK");
             GUI.color = previousColor;
         }
 
