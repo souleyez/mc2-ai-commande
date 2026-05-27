@@ -62,6 +62,7 @@ The Unity demo currently supports:
 - selected weapon nudge buttons now disable directions that would leave the grid or overlap another payload block
 - selected weapon controls now summarize which nudge directions are blocked with short outside/overlap reasons
 - the filler action button now colors Armor, Sink, and Clear states by the next cell action
+- disabled filler targets now label themselves Locked or Stack instead of showing a misleading next action
 - selected-weapon Reset stays disabled, labeled, and colored as Base until that weapon has a placement override to clear
 - the fit Apply action labels and colors itself Done, Invalid, Stock, or Apply so disabled apply states do not rely only on the status line
 - mech bay draft/apply/reset boundaries for temporary demo fits, with the draft reset button labeled and colored as Clean or Reset
@@ -550,6 +551,7 @@ Reason:
 - The selected weapon nudge buttons now disable illegal directions before they can create an invalid draft placement.
 - The selected weapon controls now show a compact nudge status line listing blocked directions plus short outside/overlap reasons beside the disabled direction buttons.
 - The filler action button now colors Armor, Sink, and Clear states so the next single-cell edit reads before clicking.
+- Disabled filler targets now read Locked or Stack, so weapon-filled or stacked cells do not look like editable armor/sink cells.
 - The mech bay now uses compact squad buttons and expands one selected fitting card at a time, reducing drawer scroll pressure before the future non-IMGUI rewrite.
 - The squad fitting selector now marks draft mechs and shows the selected mech's pilot, fit state, structure, plus H/W/G pressure bars in the same compact strip.
 - The selected fitting card now repeats the selected weapon's combat stats, footprint cells, and footprint shape above the mounted weapon buttons, reducing trips between the grid detail line and weapon selector.

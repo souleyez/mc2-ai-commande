@@ -7849,9 +7849,10 @@ namespace MC2Demo.Presentation
                 GUI.color = previousColor;
                 CombatLoadoutPreviewGridCell occupiedCell = LoadoutCellAt(preview, targetCell.x, targetCell.y);
                 bool canFill = occupiedCell == null || occupiedCell.SourceWeaponIndex < 0;
-                bool canCycleFiller = canFill && CountLoadoutCellsAt(preview, targetCell.x, targetCell.y) <= 1;
+                int targetCellStack = CountLoadoutCellsAt(preview, targetCell.x, targetCell.y);
+                bool canCycleFiller = canFill && targetCellStack <= 1;
                 GUI.enabled = previousEnabled && canCycleFiller;
-                string fillerAction = FillerActionLabel(occupiedCell?.Category);
+                string fillerAction = FillerActionLabel(occupiedCell?.Category, canFill, targetCellStack);
                 GUI.color = LoadoutFillerActionButtonColor(occupiedCell?.Category, canCycleFiller);
                 if (GUI.Button(new Rect(x + 148f, y + 50f, 62f, 22f), fillerAction))
                 {
@@ -9018,6 +9019,21 @@ namespace MC2Demo.Presentation
 
         private static string FillerActionLabel(string currentCategory)
         {
+            return FillerActionLabel(currentCategory, true, 1);
+        }
+
+        private static string FillerActionLabel(string currentCategory, bool canFill, int targetCellStack)
+        {
+            if (!canFill)
+            {
+                return "Locked";
+            }
+
+            if (targetCellStack > 1)
+            {
+                return "Stack";
+            }
+
             if (currentCategory == LoadoutItemCategory.ArmorPlate)
             {
                 return "Sink";

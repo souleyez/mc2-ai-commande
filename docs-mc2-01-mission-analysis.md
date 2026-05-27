@@ -237,7 +237,7 @@ clear/blocked text, blocked reason, filler transition, selected weapon footprint
 have to infer the result from color alone. The selected-weapon nudge buttons now disable directions that would leave the grid or overlap another payload block,
 so invalid draft placement is blocked before Apply; a compact nudge status line lists those blocked directions with short outside/overlap reasons beside the disabled buttons. The selected-weapon Reset control
 stays disabled as Base with a done-state color until that weapon has a placement override to clear. The
-draft reset button now reads Clean with the same done-state color when there is no draft to revert. The filler action button now colors Armor, Sink, and Clear states by the next single-cell edit. Slot
+draft reset button now reads Clean with the same done-state color when there is no draft to revert. The filler action button now colors Armor, Sink, and Clear states by the next single-cell edit, while disabled weapon-filled or stacked targets read Locked or Stack. Slot
 and draft reset actions clear that UI selection so restored fits do not keep pointing at stale grid coordinates.
 Spare load is now projected into free cells as simple armor plates and heat sinks,
 exposing hardness and cooling totals before full inventory editing exists. Those
