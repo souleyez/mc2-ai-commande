@@ -5227,15 +5227,19 @@ namespace MC2Demo.Presentation
                 return "Mech";
             }
 
-            string title = unit.UnitType + "  " + unit.Id;
+            string title = "Fit " + unit.UnitType;
             if (!string.IsNullOrWhiteSpace(unit.OwnedMechId))
             {
-                title += "  owned " + unit.OwnedMechId;
+                title += "  #" + TruncateText(unit.OwnedMechId, 12);
+            }
+            else if (!string.IsNullOrWhiteSpace(unit.Id))
+            {
+                title += "  #" + TruncateText(unit.Id, 8);
             }
 
             if (!string.IsNullOrWhiteSpace(unit.PilotDisplayName))
             {
-                title += "  pilot " + unit.PilotDisplayName;
+                title += "  " + TruncateText(unit.PilotDisplayName, 14);
             }
 
             return title;
