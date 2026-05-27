@@ -7913,13 +7913,13 @@ namespace MC2Demo.Presentation
             float y,
             float width)
         {
-            string blockedDirections = LoadoutNudgeBlockedDirections(preview, selectedItem);
-            bool hasBlockedDirections = !string.IsNullOrEmpty(blockedDirections);
+            string blockedSummary = LoadoutNudgeBlockedSummary(preview, selectedItem);
+            bool hasBlockedDirections = !string.IsNullOrEmpty(blockedSummary);
             Color previousColor = GUI.color;
             GUI.color = LoadoutNudgeStatusColor(hasBlockedDirections);
             GUI.Label(
                 new Rect(x, y, width, 18f),
-                hasBlockedDirections ? "Nudge blocked " + blockedDirections : "Nudge clear");
+                hasBlockedDirections ? "Nudge blocked " + TruncateText(blockedSummary, 18) : "Nudge clear");
             GUI.color = previousColor;
         }
 
@@ -7962,32 +7962,67 @@ namespace MC2Demo.Presentation
             return IsLoadoutTargetPlacementClear(preview, selectedItem.SourceWeaponIndex, targetCell);
         }
 
-        private static string LoadoutNudgeBlockedDirections(
+        private static string LoadoutNudgeBlockedSummary(
             CombatLoadoutPreview preview,
             CombatLoadoutPreviewItem selectedItem)
         {
             List<string> blockedDirections = new();
-            if (!IsLoadoutNudgeTargetClear(preview, selectedItem, 0, -1))
+            AddLoadoutNudgeBlock(blockedDirections, preview, selectedItem, "N", 0, -1);
+            AddLoadoutNudgeBlock(blockedDirections, preview, selectedItem, "W", -1, 0);
+            AddLoadoutNudgeBlock(blockedDirections, preview, selectedItem, "E", 1, 0);
+            AddLoadoutNudgeBlock(blockedDirections, preview, selectedItem, "S", 0, 1);
+
+            return blockedDirections.Count == 0 ? "" : string.Join(", ", blockedDirections);
+        }
+
+        private static void AddLoadoutNudgeBlock(
+            List<string> blockedDirections,
+            CombatLoadoutPreview preview,
+            CombatLoadoutPreviewItem selectedItem,
+            string direction,
+            int deltaX,
+            int deltaY)
+        {
+            string issue = LoadoutNudgeIssueText(preview, selectedItem, deltaX, deltaY);
+            if (!string.IsNullOrEmpty(issue))
             {
-                blockedDirections.Add("N");
+                blockedDirections.Add(direction + " " + ShortLoadoutNudgeIssue(issue));
+            }
+        }
+
+        private static string LoadoutNudgeIssueText(
+            CombatLoadoutPreview preview,
+            CombatLoadoutPreviewItem selectedItem,
+            int deltaX,
+            int deltaY)
+        {
+            if (preview == null || selectedItem == null)
+            {
+                return "invalid target";
             }
 
-            if (!IsLoadoutNudgeTargetClear(preview, selectedItem, -1, 0))
+            Vector2Int targetCell = new(selectedItem.GridX + deltaX, selectedItem.GridY + deltaY);
+            return LoadoutTargetPlacementIssueText(preview, selectedItem.SourceWeaponIndex, targetCell);
+        }
+
+        private static string ShortLoadoutNudgeIssue(string issue)
+        {
+            if (string.IsNullOrWhiteSpace(issue))
             {
-                blockedDirections.Add("W");
+                return "";
             }
 
-            if (!IsLoadoutNudgeTargetClear(preview, selectedItem, 1, 0))
+            if (issue.StartsWith("outside", StringComparison.OrdinalIgnoreCase))
             {
-                blockedDirections.Add("E");
+                return "outside";
             }
 
-            if (!IsLoadoutNudgeTargetClear(preview, selectedItem, 0, 1))
+            if (issue.StartsWith("overlap", StringComparison.OrdinalIgnoreCase))
             {
-                blockedDirections.Add("S");
+                return "overlap";
             }
 
-            return blockedDirections.Count == 0 ? "" : string.Join("/", blockedDirections);
+            return "blocked";
         }
 
         private static Color LoadoutNudgeStatusColor(bool hasBlockedDirections)
