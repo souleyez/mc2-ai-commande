@@ -4515,7 +4515,7 @@ namespace MC2Demo.Presentation
             if (unitCount > 0)
             {
                 DrawMechBayLoadoutUnitSelector(x, y, width, selectedLoadoutUnit);
-                y += 34f;
+                y += 52f;
             }
 
             float viewportHeight = Mathf.Max(40f, panel.yMax - y - 12f);
@@ -4844,7 +4844,7 @@ namespace MC2Demo.Presentation
 
         private void DrawMechBayLoadoutUnitSelector(float x, float y, float width, UnitState selectedUnit)
         {
-            Rect strip = new(x - 4f, y - 4f, width + 8f, 30f);
+            Rect strip = new(x - 4f, y - 4f, width + 8f, 48f);
             DrawColorRect(strip, new Color(0.015f, 0.025f, 0.03f, 0.82f));
             DrawRectBorder(strip, new Color(UiCyanColor.r, UiCyanColor.g, UiCyanColor.b, 0.36f), 1f);
             GUI.Label(new Rect(x, y, 68f, 18f), "Squad Fit");
@@ -4876,7 +4876,8 @@ namespace MC2Demo.Presentation
                 Rect button = new(startX + index * (buttonWidth + gap), y - 2f, buttonWidth, 22f);
                 string label = (index + 1).ToString(CultureInfo.InvariantCulture)
                     + " "
-                    + TruncateText(unit.UnitType, buttonWidth < 74f ? 5 : 8);
+                    + TruncateText(unit.UnitType, buttonWidth < 74f ? 5 : 8)
+                    + (draft ? "*" : "");
                 if (GUI.Button(button, label))
                 {
                     selectedMechBayLoadoutUnitId = unit.Id;
@@ -4895,6 +4896,30 @@ namespace MC2Demo.Presentation
                 }
 
                 index++;
+            }
+
+            if (selectedUnit != null)
+            {
+                string fitState = HasPendingLoadoutEdits(selectedUnit) ? "Draft" : "Applied";
+                string pilot = string.IsNullOrWhiteSpace(selectedUnit.PilotDisplayName)
+                    ? "No pilot"
+                    : selectedUnit.PilotDisplayName;
+                string identity = TruncateText(selectedUnit.UnitType, 18)
+                    + "  "
+                    + fitState
+                    + "  Pilot "
+                    + TruncateText(pilot, 18)
+                    + "  Structure "
+                    + Mathf.RoundToInt(selectedUnit.CurrentStructure).ToString(CultureInfo.InvariantCulture)
+                    + "/"
+                    + Mathf.RoundToInt(selectedUnit.Profile.MaxStructure).ToString(CultureInfo.InvariantCulture);
+                DrawActionStateLabel(
+                    x,
+                    y + 24f,
+                    width,
+                    identity,
+                    !HasPendingLoadoutEdits(selectedUnit),
+                    74);
             }
         }
 
