@@ -7867,7 +7867,7 @@ namespace MC2Demo.Presentation
                 int targetCellStack = CountLoadoutCellsAt(preview, targetCell.x, targetCell.y);
                 bool canCycleFiller = canFill && targetCellStack <= 1;
                 GUI.enabled = previousEnabled && canCycleFiller;
-                string fillerAction = FillerActionLabel(occupiedCell?.Category, canFill, targetCellStack);
+                string fillerAction = FillerButtonLabel(occupiedCell?.Category, canFill, targetCellStack);
                 GUI.color = LoadoutFillerActionButtonColor(occupiedCell?.Category, canCycleFiller);
                 if (GUI.Button(new Rect(x + 148f, y + 50f, 62f, 22f), fillerAction))
                 {
@@ -9096,6 +9096,21 @@ namespace MC2Demo.Presentation
             }
 
             return "Armor";
+        }
+
+        private static string FillerButtonLabel(string currentCategory, bool canFill, int targetCellStack)
+        {
+            if (!canFill)
+            {
+                return "Locked";
+            }
+
+            if (targetCellStack > 1)
+            {
+                return "Stack";
+            }
+
+            return FillerCompactActionLabel(currentCategory);
         }
 
         private static Color LoadoutFillerActionButtonColor(string currentCategory, bool canCycleFiller)

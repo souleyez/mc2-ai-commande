@@ -74,6 +74,7 @@ Current demo behavior:
 - disables nudge direction buttons when the selected weapon would leave the grid or overlap another payload block
 - summarizes blocked nudge directions with short outside/overlap reasons so disabled movement buttons explain themselves
 - colors the Armor, Sink, and Clear filler button by the next filler action
+- labels editable filler buttons with the same +Armor, +Sink, or Clear short actions used by the target row
 - labels disabled filler targets as Locked or Stack when the selected cell cannot cycle armor/sink/empty
 - projects spare-load armor plates and heat sinks into free cells with hardness and cooling readouts
 - lets projected filler cells cycle between armor, heat sink, and empty to preview loadout tradeoffs
