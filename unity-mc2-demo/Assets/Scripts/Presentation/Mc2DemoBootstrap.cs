@@ -7477,16 +7477,21 @@ namespace MC2Demo.Presentation
             DrawLoadoutSelectedGridCellFrame(preview, occupiedCells, hasSelectedGridCell, selectedGridCell, x + 1f, y + 1f, cellSize, gap);
             DrawLoadoutHoverFrame(preview, occupiedCells, hoveredCell, hoveredColumn, hoveredRow, x + 1f, y + 1f, cellSize, gap);
 
+            float railX = x + gridWidth + 10f;
+            float railWidth = Mathf.Max(160f, width - gridWidth - 10f);
             GUI.Label(
-                new Rect(x + gridWidth + 10f, y + 2f, Mathf.Max(120f, width - gridWidth - 10f), 18f),
-                "Payload Grid  " + preview.Validation.OccupiedGridCells + "/" + preview.GridCapacity);
+                new Rect(railX, y + 2f, railWidth, 18f),
+                "Grid "
+                + preview.Validation.OccupiedGridCells.ToString(CultureInfo.InvariantCulture)
+                + "/"
+                + preview.GridCapacity.ToString(CultureInfo.InvariantCulture)
+                + "  A+"
+                + FormatDecimal(preview.Validation.TotalArmorHardnessBonus)
+                + "  S+"
+                + FormatDecimal(preview.Validation.TotalHeatDissipationBonus));
+            DrawLoadoutLegend(railX, y + 24f, railWidth);
             GUI.Label(
-                new Rect(x + gridWidth + 10f, y + 20f, Mathf.Max(120f, width - gridWidth - 10f), 18f),
-                "Armor +" + FormatDecimal(preview.Validation.TotalArmorHardnessBonus)
-                + "  Sink +" + FormatDecimal(preview.Validation.TotalHeatDissipationBonus));
-            DrawLoadoutLegend(x + gridWidth + 10f, y + 42f, Mathf.Max(160f, width - gridWidth - 10f));
-            GUI.Label(
-                new Rect(x + gridWidth + 10f, y + 62f, Mathf.Max(160f, width - gridWidth - 10f), 18f),
+                new Rect(railX, y + 44f, railWidth, 18f),
                 TruncateText(LoadoutBlockDetailText(
                     unit,
                     preview,
@@ -7497,7 +7502,7 @@ namespace MC2Demo.Presentation
                     selectedGridCell,
                     selectedWeaponIndex),
                     64));
-            DrawLoadoutPlacementControls(unit, preview, x + gridWidth + 10f, y + 96f, Mathf.Max(160f, width - gridWidth - 10f));
+            DrawLoadoutPlacementControls(unit, preview, railX, y + 78f, railWidth);
             return Mathf.Max(gridHeight + 2f, 162f);
         }
 
@@ -7734,22 +7739,22 @@ namespace MC2Demo.Presentation
         {
             float swatch = 10f;
             float labelX = x;
-            DrawLoadoutLegendSwatch(ref labelX, y, swatch, LoadoutEmptySlotColor, "Empty");
-            DrawLoadoutLegendSwatch(ref labelX, y, swatch, LoadoutShortWeaponColor, "Short");
-            DrawLoadoutLegendSwatch(ref labelX, y, swatch, LoadoutMediumWeaponColor, "Mid");
-            DrawLoadoutLegendSwatch(ref labelX, y, swatch, LoadoutLongWeaponColor, "Long");
-            DrawLoadoutLegendSwatch(ref labelX, y, swatch, LoadoutComponentColor, "Comp");
+            DrawLoadoutLegendSwatch(ref labelX, y, swatch, LoadoutEmptySlotColor, "E");
+            DrawLoadoutLegendSwatch(ref labelX, y, swatch, LoadoutShortWeaponColor, "S");
+            DrawLoadoutLegendSwatch(ref labelX, y, swatch, LoadoutMediumWeaponColor, "M");
+            DrawLoadoutLegendSwatch(ref labelX, y, swatch, LoadoutLongWeaponColor, "L");
+            DrawLoadoutLegendSwatch(ref labelX, y, swatch, LoadoutComponentColor, "C");
             if (labelX > x + width)
             {
-                GUI.Label(new Rect(x, y + 14f, width, 18f), "Payload colors: Empty Short Mid Long Comp");
+                GUI.Label(new Rect(x, y + 14f, width, 18f), "E empty  S/M/L range  C comp");
             }
         }
 
         private void DrawLoadoutLegendSwatch(ref float x, float y, float swatchSize, Color color, string label)
         {
             DrawColorRect(new Rect(x, y + 4f, swatchSize, swatchSize), color);
-            GUI.Label(new Rect(x + swatchSize + 4f, y, 52f, 18f), label);
-            x += swatchSize + 44f;
+            GUI.Label(new Rect(x + swatchSize + 4f, y, 18f, 18f), label);
+            x += swatchSize + 26f;
         }
 
         private static Color LoadoutBlockColor(UnitState unit, CombatLoadoutPreviewGridCell cell)
