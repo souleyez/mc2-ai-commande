@@ -216,7 +216,7 @@ selects mounted weapons for projected nudges, while fitting edits immediately
 recompute heat, load, grid occupancy, overlap, bounds, and validator status
 without touching live battle damage yet. The weapon list highlights the selected
 mounted weapon and repeats its current or pending grid position, damage, range,
-cooldown, heat, weight, and footprint cells above compact S/M/L range-band buttons instead of adding a separate weapon switch layer. The payload preview now draws
+cooldown, heat, weight, footprint cells, and footprint shape above compact S/M/L range-band buttons instead of adding a separate weapon switch layer. The payload preview now draws
 those projected items as larger whole-block grid pieces, following the original
 payload-model color idea of orange empty cells, green/blue/red weapon range bands,
 and yellow components. The grid also exposes selected or hovered block details
@@ -231,7 +231,7 @@ echo a compact transition such as Empty > Armor beside the weapon-placement stat
 Place applies that draft move, the selected weapon now draws a target ghost over
 the destination cells, with green for a clear placement and red for overlap or
 out-of-bounds pressure. The detail line mirrors that signal with target
-clear/blocked text, blocked reason, filler transition, and the selected weapon footprint size, so the player does not
+clear/blocked text, blocked reason, filler transition, selected weapon footprint cells, and concrete footprint shape, so the player does not
 have to infer the result from color alone. Slot and draft reset actions clear that
 UI selection so restored fits do not keep pointing at stale grid coordinates.
 Spare load is now projected into free cells as simple armor plates and heat sinks,

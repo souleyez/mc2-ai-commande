@@ -45,7 +45,7 @@ The Unity demo currently supports:
 - deterministic BattleCore loadout validator for grid bounds, blocked cells, overlap, rotation, heat caps, weight caps, and special-slot compatibility
 - source weapon loadout projection in the mech bay with validator status, heat/load limits, and occupied grid cell counts
 - fitted weapons are always active; the mech bay weapon list selects mounted weapons for slot editing instead of exposing weapon switches
-- selected fitting weapon summary line with damage, range, cooldown, heat, weight, and footprint cells above the mounted weapon buttons
+- selected fitting weapon summary line with damage, range, cooldown, heat, weight, footprint cells, and footprint shape above the mounted weapon buttons
 - selected weapon summary echoes current and pending target grid positions when the player chooses a payload target cell
 - compact mounted weapon buttons use S/M/L range-band labels with the same color language as payload blocks
 - projected mech bay slot grid visualization with placeholder multi-cell weapon shapes exposed from BattleCore preview data
@@ -56,7 +56,7 @@ The Unity demo currently supports:
 - top status, selected target status, and payload detail text now echo the filler transition beside weapon-placement state
 - selected payload target cells can now place the selected mounted weapon or cycle a filler cell, keeping grid edits closer to an original-style fitting table
 - selected mounted weapons draw green/red target ghosts before placement, making overlap or out-of-bounds pressure visible before applying a draft move
-- the payload detail line now reports target clear/blocked status, blocked reason, and selected weapon footprint cells
+- the payload detail line now reports target clear/blocked status, blocked reason, selected weapon footprint cells, and footprint shape
 - mech bay draft/apply/reset boundaries for temporary demo fits
 - applied demo fit handoff into combat readiness, range, heat, cooldown, and weapon display stats
 - applied armor hardness reduces incoming damage and applied heat sinks increase cooling
@@ -536,11 +536,12 @@ Reason:
 - The filler action is now labeled by its next result, so an empty cell offers Armor, an armor plate offers Sink, and a heat sink offers Clear.
 - The top status, target status, and payload detail line now echo that next filler transition, for example Empty > Armor, beside the weapon-placement state.
 - The payload grid now previews the selected mounted weapon as a green/red target ghost before Place applies the draft move.
-- The payload detail line now mirrors target placement state in text, including clear/blocked status, blocked reason, and selected weapon footprint cells.
+- The payload detail line now mirrors target placement state in text, including clear/blocked status, blocked reason, selected weapon footprint cells, and footprint shape.
 - The mech bay now uses compact squad buttons and expands one selected fitting card at a time, reducing drawer scroll pressure before the future non-IMGUI rewrite.
 - The squad fitting selector now marks draft mechs and shows the selected mech's pilot, fit state, structure, plus H/W/G pressure bars in the same compact strip.
-- The selected fitting card now repeats the selected weapon's combat stats and footprint above the mounted weapon buttons, reducing trips between the grid detail line and weapon selector.
+- The selected fitting card now repeats the selected weapon's combat stats, footprint cells, and footprint shape above the mounted weapon buttons, reducing trips between the grid detail line and weapon selector.
 - Mounted weapon buttons now drop duplicate heat/load text in favor of compact S/M/L range labels and range-band colors matching the payload grid.
 - The selected weapon summary now echoes its current grid position and pending target position, so slot moves stay visible even before reaching the lower Place controls.
+- The selected weapon summary and payload detail now show the selected block as a concrete `WxH` footprint, making vertical and wide weapon shapes readable without counting cells.
 - The next low-risk step is to keep tuning the selected fitting card density and then migrate these flow screens beyond IMGUI once the layout direction feels right.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.

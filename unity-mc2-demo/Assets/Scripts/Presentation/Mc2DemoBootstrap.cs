@@ -7621,14 +7621,17 @@ namespace MC2Demo.Presentation
             }
 
             int cells = CountLoadoutBlockCells(preview, detailCell);
+            string shapeText = LoadoutBlockShapeText(preview, detailCell);
             if (detailCell.Category == LoadoutItemCategory.ArmorPlate)
             {
-                return "Armor Plate  Hardness +1  Load 0.5  Cells " + cells.ToString(CultureInfo.InvariantCulture);
+                return "Armor Plate  Hardness +1  Load 0.5  Cells " + cells.ToString(CultureInfo.InvariantCulture)
+                    + "  Shape " + shapeText;
             }
 
             if (detailCell.Category == LoadoutItemCategory.HeatSink)
             {
-                return "Heat Sink  Cooling +1.5  Load 1  Cells " + cells.ToString(CultureInfo.InvariantCulture);
+                return "Heat Sink  Cooling +1.5  Load 1  Cells " + cells.ToString(CultureInfo.InvariantCulture)
+                    + "  Shape " + shapeText;
             }
 
             CombatWeaponDefinition weapon = LoadoutWeaponForCell(unit, detailCell);
@@ -7636,7 +7639,9 @@ namespace MC2Demo.Presentation
             {
                 return (detailCell.DisplayName ?? "Payload")
                     + "  Cells "
-                    + cells.ToString(CultureInfo.InvariantCulture);
+                    + cells.ToString(CultureInfo.InvariantCulture)
+                    + "  Shape "
+                    + shapeText;
             }
 
             return (detailCell.SourceWeaponIndex + 1).ToString(CultureInfo.InvariantCulture)
@@ -7646,7 +7651,8 @@ namespace MC2Demo.Presentation
                 + " D" + FormatDecimal(weapon.damage)
                 + " R" + Mathf.RoundToInt(weapon.rangeMax).ToString(CultureInfo.InvariantCulture)
                 + " CD" + FormatDecimal(weapon.recycleTime)
-                + " Cells " + cells.ToString(CultureInfo.InvariantCulture);
+                + " Cells " + cells.ToString(CultureInfo.InvariantCulture)
+                + " Shape " + shapeText;
         }
 
         private static string LoadoutTargetPlacementDetailText(
@@ -7665,6 +7671,7 @@ namespace MC2Demo.Presentation
 
             CombatLoadoutPreviewGridCell selectedCell = LoadoutCellForSelectedWeapon(preview, selectedWeaponIndex);
             int cells = Math.Max(1, CountLoadoutBlockCells(preview, selectedCell));
+            string shapeText = LoadoutBlockShapeText(preview, selectedCell);
             CombatWeaponDefinition weapon = LoadoutWeaponForCell(unit, selectedCell);
             string weaponName = string.IsNullOrWhiteSpace(weapon?.name) ? selectedItem.DisplayName : weapon.name;
             string targetIssue = LoadoutTargetPlacementIssueText(preview, selectedWeaponIndex, targetCell);
@@ -7682,7 +7689,9 @@ namespace MC2Demo.Presentation
                 + " "
                 + TruncateText(weaponName, 14)
                 + " Cells "
-                + cells.ToString(CultureInfo.InvariantCulture);
+                + cells.ToString(CultureInfo.InvariantCulture)
+                + " Shape "
+                + shapeText;
         }
 
         private static int CountLoadoutBlockCells(CombatLoadoutPreview preview, CombatLoadoutPreviewGridCell blockCell)
@@ -7698,6 +7707,42 @@ namespace MC2Demo.Presentation
             }
 
             return count;
+        }
+
+        private static string LoadoutBlockShapeText(CombatLoadoutPreview preview, CombatLoadoutPreviewGridCell blockCell)
+        {
+            if (preview == null || blockCell == null)
+            {
+                return "1x1";
+            }
+
+            int minX = int.MaxValue;
+            int minY = int.MaxValue;
+            int maxX = int.MinValue;
+            int maxY = int.MinValue;
+            CombatLoadoutPreviewGridCell[] cells = preview.OccupiedCells;
+            for (int index = 0; index < cells.Length; index++)
+            {
+                CombatLoadoutPreviewGridCell cell = cells[index];
+                if (!SameLoadoutBlock(cell, blockCell))
+                {
+                    continue;
+                }
+
+                minX = Math.Min(minX, cell.X);
+                minY = Math.Min(minY, cell.Y);
+                maxX = Math.Max(maxX, cell.X);
+                maxY = Math.Max(maxY, cell.Y);
+            }
+
+            if (minX == int.MaxValue || minY == int.MaxValue)
+            {
+                return "1x1";
+            }
+
+            return (maxX - minX + 1).ToString(CultureInfo.InvariantCulture)
+                + "x"
+                + (maxY - minY + 1).ToString(CultureInfo.InvariantCulture);
         }
 
         private static CombatWeaponDefinition LoadoutWeaponForCell(UnitState unit, CombatLoadoutPreviewGridCell cell)
@@ -8073,6 +8118,7 @@ namespace MC2Demo.Presentation
             CombatLoadoutPreviewGridCell selectedCell = LoadoutCellForSelectedWeapon(preview, selectedWeaponIndex);
             CombatLoadoutPreviewItem selectedItem = LoadoutPreviewItemForWeapon(preview, selectedWeaponIndex);
             int cells = Math.Max(1, CountLoadoutBlockCells(preview, selectedCell));
+            string shapeText = LoadoutBlockShapeText(preview, selectedCell);
             string positionText = LoadoutWeaponPositionSummary(unit, preview, selectedItem);
             Rect strip = new(x - 4f, y - 2f, width + 8f, 22f);
             DrawColorRect(strip, new Color(0.015f, 0.025f, 0.03f, 0.76f));
@@ -8095,7 +8141,9 @@ namespace MC2Demo.Presentation
                 + "  W "
                 + FormatDecimal(weapon.weight)
                 + "  Cells "
-                + cells.ToString(CultureInfo.InvariantCulture));
+                + cells.ToString(CultureInfo.InvariantCulture)
+                + "  Shape "
+                + shapeText);
         }
 
         private string LoadoutWeaponPositionSummary(

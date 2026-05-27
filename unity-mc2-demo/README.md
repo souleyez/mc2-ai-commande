@@ -48,7 +48,7 @@ Current demo behavior:
 - shows projected source loadout validation status, heat/load limits, and occupied grid cells in the mech bay
 - draws compact heat, load, and grid usage bars so fitting pressure is visible before reading the numeric limits
 - treats fitted weapons as always active and uses the weapon list only to select mounted weapons for slot editing
-- shows a selected-weapon summary line with damage, range, cooldown, heat, weight, and footprint cells above the fitting weapon buttons
+- shows a selected-weapon summary line with damage, range, cooldown, heat, weight, footprint cells, and footprint shape above the fitting weapon buttons
 - echoes the selected weapon's current grid position and pending target position in that summary line
 - uses compact S/M/L range-band labels and matching colors on mounted weapon buttons
 - highlights the selected mounted weapon row in the fitting list
@@ -62,7 +62,7 @@ Current demo behavior:
 - labels the filler action as Armor, Sink, or Clear so the next single-cell change is visible before clicking
 - echoes the filler transition, such as Empty > Armor, in the top status, target status, and payload detail text
 - draws a green/red target ghost for the selected mounted weapon before Place applies the draft move
-- reports target clear/blocked status, blocked reason, and selected weapon footprint in the payload detail line
+- reports target clear/blocked status, blocked reason, and selected weapon footprint shape in the payload detail line
 - projects spare-load armor plates and heat sinks into free cells with hardness and cooling readouts
 - lets projected filler cells cycle between armor, heat sink, and empty to preview loadout tradeoffs
 - marks mech bay edits as draft/applied and can reset a draft back to the last applied demo fit
