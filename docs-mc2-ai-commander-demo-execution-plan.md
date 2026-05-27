@@ -62,8 +62,8 @@ The Unity demo currently supports:
 - selected payload target cells can now place the selected mounted weapon or cycle a filler cell, keeping grid edits closer to an original-style fitting table
 - selected mounted weapons draw green/red target ghosts before placement, making overlap or out-of-bounds pressure visible before applying a draft move
 - blocked selected-weapon targets now disable the Place action and label it Blocked instead of letting a clearly invalid target be placed by accident
-- the payload detail line now reports target clear/blocked status, blocked reason, selected weapon footprint cells, and footprint shape, while the target status row colors clear/current/blocked states
-- the compact target status row echoes the selected target coordinate beside clear/current/blocked state
+- the payload detail line now reports target OK/Block/Same status, blocked reason, selected weapon footprint cells, and footprint shape, while the target status row colors those states
+- the compact target status row echoes the selected target coordinate beside OK/Block/Same state
 - clicked-slot status and the compact target status row use consistent +Armor, +Sink, or Clear filler hints
 - completed filler clicks report `T x,y +Armor/+Sink/Clear` in the top status
 - selected mounted weapons now show a Pick slot hint until a target grid cell is selected
@@ -555,8 +555,9 @@ Reason:
 - The payload grid now previews the selected mounted weapon as a green/red target ghost before Place applies the draft move.
 - The Place action now stays disabled and reads Blocked for overlap or out-of-bounds targets, keeping the ghost preview informative without allowing accidental invalid placement.
 - The payload detail line now mirrors target placement state in text, including clear/blocked status, blocked reason, selected weapon footprint cells, and footprint shape.
-- The target status row now colors clear, current-slot, and blocked states consistently with the Place button and target ghost.
-- The target status row now uses compact `T x,y clear/current/blocked` text, so Place/Fill feedback repeats the exact selected grid cell.
+- The target status row now colors OK, Same-slot, and Block states consistently with the Place button and target ghost.
+- The target status row now uses compact `T x,y OK/Same/Block` text, so Place/Fill feedback repeats the exact selected grid cell without long state words.
+- The target row now uses shorter OK/Same/Block wording, matching the compact Move OK/Block nudge status style.
 - The clicked-slot status and target status row now both use `+Armor`, `+Sink`, or `Clear`, keeping filler feedback compact and consistent.
 - Completed filler clicks now report `T x,y +Armor/+Sink/Clear` in the top status instead of a separate filler wording.
 - The selected weapon controls now show a Pick slot hint when no target grid cell is selected yet.

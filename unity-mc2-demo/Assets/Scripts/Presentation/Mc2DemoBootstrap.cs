@@ -7877,8 +7877,8 @@ namespace MC2Demo.Presentation
                 GUI.color = previousColor;
                 string targetPosition = LoadoutGridPositionText(targetCell.x, targetCell.y);
                 string targetStatus = canPlace
-                    ? targetClear ? "T " + targetPosition + " clear" : "T " + targetPosition + " blocked " + TruncateText(targetIssue, 10)
-                    : "T " + targetPosition + " current";
+                    ? targetClear ? "T " + targetPosition + " OK" : "T " + targetPosition + " Block " + TruncateText(targetIssue, 12)
+                    : "T " + targetPosition + " Same";
                 if (canCycleFiller)
                 {
                     targetStatus += " / " + FillerCompactActionLabel(occupiedCell?.Category);

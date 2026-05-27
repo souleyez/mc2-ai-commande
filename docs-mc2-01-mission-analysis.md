@@ -234,9 +234,9 @@ status reports completed filler clicks as `T x,y +Armor`, `+Sink`, or `Clear`
 while selected target status echoes the same compact action beside the
 weapon-placement state. Before
 Place applies that draft move, the selected weapon now draws a target ghost over
-the destination cells, with green for a clear placement and red for overlap or
+the destination cells, with green for an OK placement and red for overlap or
 out-of-bounds pressure; blocked targets also disable the Place action and label
-it Blocked, and the target status row now carries matching clear/current/blocked colors. When no destination cell has
+it Blocked, and the target status row now uses matching `OK`, `Same`, or `Block` states. When no destination cell has
 been selected yet, the same control area prompts Pick slot instead of going blank. The detail line mirrors that signal with target
 clear/blocked text, blocked reason, filler transition, selected weapon footprint cells, and concrete footprint shape, so the player does not
 have to infer the result from color alone. The selected-weapon nudge buttons now disable directions that would leave the grid or overlap another payload block,
