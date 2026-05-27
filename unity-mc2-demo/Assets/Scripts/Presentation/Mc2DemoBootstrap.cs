@@ -8610,6 +8610,15 @@ namespace MC2Demo.Presentation
             bool hasPendingEdits = HasPendingLoadoutEdits(unit);
             MechBayInventoryAvailabilityResult availability = CurrentDraftInventoryAvailability();
             bool hasInventory = availability != null && availability.IsValid;
+            bool canApply = hasPendingEdits && preview != null && preview.Validation.IsValid && hasInventory;
+            Rect lane = new(x - 4f, y - 5f, width + 8f, 30f);
+            Color laneCue = canApply
+                ? new Color(0.50f, 1f, 0.82f, 0.62f)
+                : hasPendingEdits
+                    ? new Color(1f, 0.78f, 0.28f, 0.58f)
+                    : new Color(0.42f, 0.82f, 1f, 0.42f);
+            DrawColorRect(lane, new Color(0.015f, 0.025f, 0.03f, 0.82f));
+            DrawRectBorder(lane, laneCue, 1f);
             Color previousColor = GUI.color;
             GUI.color = !hasInventory
                 ? new Color(1f, 0.78f, 0.28f, 1f)
@@ -8619,12 +8628,11 @@ namespace MC2Demo.Presentation
             GUI.Label(
                 new Rect(x, y, width - 146f, 18f),
                 !hasInventory
-                    ? "Inventory short: " + TruncateText(FirstInventoryAvailabilityError(availability), 24)
+                    ? "Stock " + TruncateText(FirstInventoryAvailabilityError(availability), 28)
                     : hasPendingEdits ? "Draft fit" : "Applied fit");
             GUI.color = previousColor;
 
             bool previousEnabled = GUI.enabled;
-            bool canApply = hasPendingEdits && preview != null && preview.Validation.IsValid && hasInventory;
             string applyLabel = LoadoutApplyButtonLabel(hasPendingEdits, preview, hasInventory);
             Color previousButtonColor = GUI.color;
             GUI.color = LoadoutApplyButtonColor(hasPendingEdits, preview, hasInventory);
