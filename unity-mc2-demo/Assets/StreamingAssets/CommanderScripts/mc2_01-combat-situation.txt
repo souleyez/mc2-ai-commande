@@ -1,0 +1,5 @@
+# Proves the combat HUD situation row reports squad, hostiles, targets, and recent-contact tempo.
+assert-combat-situation
+advance 1
+assert-combat-situation
+report

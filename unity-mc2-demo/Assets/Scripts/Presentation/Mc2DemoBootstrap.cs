@@ -66,6 +66,7 @@ namespace MC2Demo.Presentation
         private readonly List<Material> ownedMaterials = new();
         private readonly List<string> combatLog = new();
         private string selectedMechBayLoadoutUnitId;
+        private float lastCombatEventTimeSeconds = -999f;
         private BattleMission mission;
         private MissionScriptBridge scriptBridge;
         private CommanderCommandPort commandPort;
@@ -412,6 +413,7 @@ namespace MC2Demo.Presentation
             selectedLoadoutWeaponByUnit.Clear();
             selectedLoadoutGridCellByUnit.Clear();
             combatLog.Clear();
+            lastCombatEventTimeSeconds = -999f;
             mainCamera = null;
 
             int clearedRoots = 0;
@@ -715,6 +717,9 @@ namespace MC2Demo.Presentation
                         break;
                     case StartupCommanderScriptActionKind.AssertDebriefSummary:
                         RunStartupDebriefSummaryAssertion();
+                        break;
+                    case StartupCommanderScriptActionKind.AssertCombatSituation:
+                        RunStartupCombatSituationAssertion();
                         break;
                 }
             }
@@ -1839,6 +1844,62 @@ namespace MC2Demo.Presentation
             Debug.LogError("MC2 debrief summary assertion failed: " + result.Summary);
         }
 
+        private void RunStartupCombatSituationAssertion()
+        {
+            CombatSituationAssertionResult result = BuildCombatSituationAssertion();
+            if (result.Accepted)
+            {
+                AddCombatLogLine("CLI combat situation assert OK: " + result.Summary);
+                Debug.Log("MC2 combat situation assertion OK: " + result.Summary);
+                return;
+            }
+
+            startupSmokeFailed = true;
+            statusText = "Combat situation assertion failed";
+            AddCombatLogLine("CLI combat situation assert failed: " + result.Summary);
+            Debug.LogError("MC2 combat situation assertion failed: " + result.Summary);
+        }
+
+        private CombatSituationAssertionResult BuildCombatSituationAssertion()
+        {
+            if (mission == null)
+            {
+                return CombatSituationAssertionResult.Blocked("No mission");
+            }
+
+            string text = CombatSituationText();
+            int playerReady = CountActivePlayerUnits();
+            int playerSlots = CountPlayerUnits();
+            int activeHostiles = CountActiveHostileUnits();
+            int liveTargets = CountLiveStructures();
+            bool textOk = text.IndexOf("Squad ", StringComparison.OrdinalIgnoreCase) >= 0
+                && text.IndexOf("Hostiles ", StringComparison.OrdinalIgnoreCase) >= 0
+                && text.IndexOf("Targets ", StringComparison.OrdinalIgnoreCase) >= 0
+                && (text.EndsWith("quiet", StringComparison.OrdinalIgnoreCase)
+                    || text.EndsWith("contact", StringComparison.OrdinalIgnoreCase));
+            bool countsOk = playerSlots > 0
+                && playerReady >= 0
+                && playerReady <= playerSlots
+                && activeHostiles >= 0
+                && liveTargets >= 0;
+            string summary = "squad="
+                + playerReady.ToString(CultureInfo.InvariantCulture)
+                + "/"
+                + playerSlots.ToString(CultureInfo.InvariantCulture)
+                + " hostiles="
+                + activeHostiles.ToString(CultureInfo.InvariantCulture)
+                + " targets="
+                + liveTargets.ToString(CultureInfo.InvariantCulture)
+                + " text="
+                + text;
+
+            return new CombatSituationAssertionResult
+            {
+                Accepted = textOk && countsOk,
+                Summary = summary
+            };
+        }
+
         private DebriefSummaryAssertionResult BuildDebriefSummaryAssertion()
         {
             MissionResultSummary summary = mission?.ResultSummary;
@@ -2104,6 +2165,7 @@ namespace MC2Demo.Presentation
                     line += " destroyed";
                 }
 
+                lastCombatEventTimeSeconds = mission?.MissionTimeSeconds ?? Time.time;
                 AddCombatLogLine(line);
                 SpawnCombatEffect(combatEvent);
                 Debug.Log("MC2 combat: " + line);
@@ -4477,7 +4539,7 @@ namespace MC2Demo.Presentation
             int playerSlots = CountPlayerUnits();
             int activeHostiles = CountActiveHostileUnits();
             int liveTargets = CountLiveStructures();
-            string tempo = combatLog.Count > 0 ? "contact" : "quiet";
+            string tempo = HasRecentCombatEvent() ? "contact" : "quiet";
             return "Squad "
                 + playerReady.ToString(CultureInfo.InvariantCulture)
                 + "/"
@@ -4488,6 +4550,16 @@ namespace MC2Demo.Presentation
                 + liveTargets.ToString(CultureInfo.InvariantCulture)
                 + "  "
                 + tempo;
+        }
+
+        private bool HasRecentCombatEvent()
+        {
+            if (mission == null || lastCombatEventTimeSeconds < 0f)
+            {
+                return false;
+            }
+
+            return mission.MissionTimeSeconds - lastCombatEventTimeSeconds <= 4f;
         }
 
         private void DrawMissionMap()
@@ -5502,6 +5574,21 @@ namespace MC2Demo.Presentation
             public static DebriefSummaryAssertionResult Blocked(string summary)
             {
                 return new DebriefSummaryAssertionResult
+                {
+                    Accepted = false,
+                    Summary = summary ?? "blocked"
+                };
+            }
+        }
+
+        private struct CombatSituationAssertionResult
+        {
+            public bool Accepted { get; set; }
+            public string Summary { get; set; }
+
+            public static CombatSituationAssertionResult Blocked(string summary)
+            {
+                return new CombatSituationAssertionResult
                 {
                     Accepted = false,
                     Summary = summary ?? "blocked"
