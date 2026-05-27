@@ -8330,9 +8330,9 @@ namespace MC2Demo.Presentation
                 + FormatDecimal(weapon.heat)
                 + "  W "
                 + FormatDecimal(weapon.weight)
-                + "  Cells "
+                + "  C "
                 + cells.ToString(CultureInfo.InvariantCulture)
-                + "  Shape "
+                + "  "
                 + shapeText);
         }
 

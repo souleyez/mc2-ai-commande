@@ -48,7 +48,7 @@ Current demo behavior:
 - shows projected source loadout validation status, heat/load limits, and occupied grid cells in the mech bay
 - draws compact heat, load, and grid usage bars so fitting pressure is visible before reading the numeric limits
 - treats fitted weapons as always active and uses the weapon list only to select mounted weapons for slot editing
-- shows a selected-weapon summary line with damage, range, cooldown, heat, weight, footprint cells, and footprint shape above the fitting weapon buttons
+- shows a selected-weapon summary line with damage, range, cooldown, heat, weight, compact cell count, and `WxH` footprint above the fitting weapon buttons
 - echoes the selected weapon's base, current, and pending target grid positions in that summary line
 - labels the selected weapon summary as Base or Moved with matching cyan/amber border cues
 - mirrors the same Base or Moved grid-position chain in the selected weapon edit controls

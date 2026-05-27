@@ -45,7 +45,7 @@ The Unity demo currently supports:
 - deterministic BattleCore loadout validator for grid bounds, blocked cells, overlap, rotation, heat caps, weight caps, and special-slot compatibility
 - source weapon loadout projection in the mech bay with validator status, heat/load limits, and occupied grid cell counts
 - fitted weapons are always active; the mech bay weapon list selects mounted weapons for slot editing instead of exposing weapon switches
-- selected fitting weapon summary line with damage, range, cooldown, heat, weight, footprint cells, and footprint shape above the mounted weapon buttons
+- selected fitting weapon summary line with damage, range, cooldown, heat, weight, compact cell count, and `WxH` footprint above the mounted weapon buttons
 - selected weapon summary echoes base, current, and pending target grid positions when the player moves a payload block or chooses a target cell
 - selected weapon summary labels Base or Moved with cyan/amber border cues for draft placement state
 - selected weapon edit controls mirror the same Base or Moved grid-position chain as the summary
@@ -567,7 +567,8 @@ Reason:
 - Disabled filler targets now read Locked or Stack, so weapon-filled or stacked cells do not look like editable armor/sink cells.
 - The mech bay now uses compact squad buttons and expands one selected fitting card at a time, reducing drawer scroll pressure before the future non-IMGUI rewrite.
 - The squad fitting selector now marks draft mechs and shows the selected mech's pilot, fit state, structure, plus H/W/G pressure bars in the same compact strip.
-- The selected fitting card now repeats the selected weapon's combat stats, footprint cells, and footprint shape above the mounted weapon buttons, reducing trips between the grid detail line and weapon selector.
+- The selected fitting card now repeats the selected weapon's combat stats, compact cell count, and `WxH` footprint above the mounted weapon buttons, reducing trips between the grid detail line and weapon selector.
+- The selected weapon summary now drops verbose `Cells` and `Shape` words in favor of compact `C` plus `WxH` readouts, reducing right-drawer overflow pressure.
 - Mounted weapon buttons now replace the active weapon number with `>`, making the move target readable even without relying on color.
 - Mounted weapon buttons now show `*` for weapons with unapplied slot moves, so draft placement edits are visible from the list.
 - Mounted weapon buttons now drop duplicate heat/load text in favor of compact S/M/L range labels, `WxH` shape labels, and range-band colors matching the payload grid.
