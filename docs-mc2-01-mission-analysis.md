@@ -235,7 +235,7 @@ it Blocked, and the target status row now carries matching clear/current/blocked
 been selected yet, the same control area prompts Pick slot instead of going blank. The detail line mirrors that signal with target
 clear/blocked text, blocked reason, filler transition, selected weapon footprint cells, and concrete footprint shape, so the player does not
 have to infer the result from color alone. The selected-weapon nudge buttons now disable directions that would leave the grid or overlap another payload block,
-so invalid draft placement is blocked before Apply. The selected-weapon Reset control
+so invalid draft placement is blocked before Apply; a compact nudge status line lists those blocked directions beside the disabled buttons. The selected-weapon Reset control
 stays disabled as Base with a done-state color until that weapon has a placement override to clear. The
 draft reset button now reads Clean with the same done-state color when there is no draft to revert. Slot
 and draft reset actions clear that UI selection so restored fits do not keep pointing at stale grid coordinates.

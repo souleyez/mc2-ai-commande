@@ -60,6 +60,7 @@ The Unity demo currently supports:
 - the payload detail line now reports target clear/blocked status, blocked reason, selected weapon footprint cells, and footprint shape, while the target status row colors clear/current/blocked states
 - selected mounted weapons now show a Pick slot hint until a target grid cell is selected
 - selected weapon nudge buttons now disable directions that would leave the grid or overlap another payload block
+- selected weapon controls now summarize which nudge directions are blocked
 - selected-weapon Reset stays disabled, labeled, and colored as Base until that weapon has a placement override to clear
 - the fit Apply action labels and colors itself Done, Invalid, Stock, or Apply so disabled apply states do not rely only on the status line
 - mech bay draft/apply/reset boundaries for temporary demo fits, with the draft reset button labeled and colored as Clean or Reset
@@ -546,6 +547,7 @@ Reason:
 - The target status row now colors clear, current-slot, and blocked states consistently with the Place button and target ghost.
 - The selected weapon controls now show a Pick slot hint when no target grid cell is selected yet.
 - The selected weapon nudge buttons now disable illegal directions before they can create an invalid draft placement.
+- The selected weapon controls now show a compact nudge status line listing blocked directions beside the disabled direction buttons.
 - The mech bay now uses compact squad buttons and expands one selected fitting card at a time, reducing drawer scroll pressure before the future non-IMGUI rewrite.
 - The squad fitting selector now marks draft mechs and shows the selected mech's pilot, fit state, structure, plus H/W/G pressure bars in the same compact strip.
 - The selected fitting card now repeats the selected weapon's combat stats, footprint cells, and footprint shape above the mounted weapon buttons, reducing trips between the grid detail line and weapon selector.

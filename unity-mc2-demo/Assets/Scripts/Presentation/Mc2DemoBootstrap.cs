@@ -7825,6 +7825,7 @@ namespace MC2Demo.Presentation
             GUI.enabled = previousResetEnabled;
             DrawLoadoutNudgeButton(unit, preview, selectedItem, new Rect(x + 98f, y + 50f, 44f, 22f), "E", 1, 0);
             DrawLoadoutNudgeButton(unit, preview, selectedItem, new Rect(x + 32f, y + 76f, 40f, 22f), "S", 0, 1);
+            DrawLoadoutNudgeStatus(preview, selectedItem, x, y + 102f, 142f);
 
             if (TryGetSelectedLoadoutGridCell(unit, preview, out Vector2Int targetCell))
             {
@@ -7905,6 +7906,23 @@ namespace MC2Demo.Presentation
             GUI.enabled = previousEnabled;
         }
 
+        private void DrawLoadoutNudgeStatus(
+            CombatLoadoutPreview preview,
+            CombatLoadoutPreviewItem selectedItem,
+            float x,
+            float y,
+            float width)
+        {
+            string blockedDirections = LoadoutNudgeBlockedDirections(preview, selectedItem);
+            bool hasBlockedDirections = !string.IsNullOrEmpty(blockedDirections);
+            Color previousColor = GUI.color;
+            GUI.color = LoadoutNudgeStatusColor(hasBlockedDirections);
+            GUI.Label(
+                new Rect(x, y, width, 18f),
+                hasBlockedDirections ? "Nudge blocked " + blockedDirections : "Nudge clear");
+            GUI.color = previousColor;
+        }
+
         private string LoadoutTargetSuffix(UnitState unit, CombatLoadoutPreview preview, CombatLoadoutPreviewItem selectedItem)
         {
             if (!TryGetSelectedLoadoutGridCell(unit, preview, out Vector2Int targetCell))
@@ -7942,6 +7960,41 @@ namespace MC2Demo.Presentation
 
             Vector2Int targetCell = new(selectedItem.GridX + deltaX, selectedItem.GridY + deltaY);
             return IsLoadoutTargetPlacementClear(preview, selectedItem.SourceWeaponIndex, targetCell);
+        }
+
+        private static string LoadoutNudgeBlockedDirections(
+            CombatLoadoutPreview preview,
+            CombatLoadoutPreviewItem selectedItem)
+        {
+            List<string> blockedDirections = new();
+            if (!IsLoadoutNudgeTargetClear(preview, selectedItem, 0, -1))
+            {
+                blockedDirections.Add("N");
+            }
+
+            if (!IsLoadoutNudgeTargetClear(preview, selectedItem, -1, 0))
+            {
+                blockedDirections.Add("W");
+            }
+
+            if (!IsLoadoutNudgeTargetClear(preview, selectedItem, 1, 0))
+            {
+                blockedDirections.Add("E");
+            }
+
+            if (!IsLoadoutNudgeTargetClear(preview, selectedItem, 0, 1))
+            {
+                blockedDirections.Add("S");
+            }
+
+            return blockedDirections.Count == 0 ? "" : string.Join("/", blockedDirections);
+        }
+
+        private static Color LoadoutNudgeStatusColor(bool hasBlockedDirections)
+        {
+            return hasBlockedDirections
+                ? new Color(1f, 0.78f, 0.28f, 1f)
+                : new Color(0.50f, 1f, 0.82f, 1f);
         }
 
         private static string LoadoutTargetFillerActionSuffix(CombatLoadoutPreview preview, Vector2Int targetCell)
