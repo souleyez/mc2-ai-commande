@@ -18,6 +18,7 @@ This is the first unified execution plan for the project. Earlier planning is sp
 - `docs-mc2-01-mission-analysis.md`: documents the reference mission layout, objective graph, enemy brain names, and BattleCore/Unity boundary notes.
 - `docs-content-replacement-plan.md`: defines content replacement milestones for copyright-safe public builds.
 - `docs-content-pack.md`: defines the replaceable content-pack contract and runtime shell flow.
+- `docs-platform-ecosystem-plan.md`: defines the long-term map-server, certified reward, web ranking, creator, and optional blockchain architecture.
 - `unity-mc2-demo/README.md`: records current Unity demo behavior and validation commands.
 
 Use this file as the living execution plan. When scope changes, update this file in the same commit as the feature or in a small planning-only commit.
@@ -514,8 +515,9 @@ Tasks:
 1. Continue using original MC2 assets only as private reference-linked validation content.
 2. Build a project-owned content pack for public captures when the local loop and battle readability are strong enough.
 3. Keep AI commander work to opening plan, directive token, capability window, and optional high-level refresh.
-4. Defer multiplayer, support hiring, friend pilots, activity wages, deeper economy, and paper battles until the single-player loop is convincing.
-5. Keep each new system reachable from command files or CLI smoke paths before making it visually richer.
+4. Use `docs-platform-ecosystem-plan.md` for later map-server, certified reward, creator economy, web ranking, and optional blockchain decisions.
+5. Defer multiplayer, support hiring, friend pilots, activity wages, deeper economy, and paper battles until the single-player loop is convincing.
+6. Keep each new system reachable from command files or CLI smoke paths before making it visually richer.
 
 ### Completed Context
 
