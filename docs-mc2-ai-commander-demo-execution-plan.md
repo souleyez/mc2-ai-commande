@@ -66,7 +66,7 @@ The Unity demo currently supports:
 - the compact target status row shortens filler hints to +Armor, +Sink, or Clear while detailed slot status keeps the full transition
 - selected mounted weapons now show a Pick slot hint until a target grid cell is selected
 - selected weapon nudge buttons now disable directions that would leave the grid or overlap another payload block
-- selected weapon controls now summarize which nudge directions are blocked with short outside/overlap reasons
+- selected weapon controls now summarize which move directions are blocked with short outside/overlap reasons
 - the filler action button now colors Armor, Sink, and Clear states by the next cell action
 - editable filler buttons now use the same +Armor, +Sink, or Clear short actions as the target row
 - disabled filler targets now label themselves Locked or Stack instead of showing a misleading next action
@@ -558,7 +558,7 @@ Reason:
 - The target status row now shortens filler hints to `+Armor`, `+Sink`, or `Clear`, preserving the full transition text only in detailed slot status.
 - The selected weapon controls now show a Pick slot hint when no target grid cell is selected yet.
 - The selected weapon nudge buttons now disable illegal directions before they can create an invalid draft placement.
-- The selected weapon controls now show a compact nudge status line listing blocked directions plus short outside/overlap reasons beside the disabled direction buttons.
+- The selected weapon controls now show a compact `Move clear/blocked` status line listing blocked directions plus short outside/overlap reasons beside the disabled direction buttons.
 - The filler action button now colors Armor, Sink, and Clear states so the next single-cell edit reads before clicking.
 - The editable filler button now uses the same `+Armor`, `+Sink`, or `Clear` short action text as the compact target row.
 - Disabled filler targets now read Locked or Stack, so weapon-filled or stacked cells do not look like editable armor/sink cells.

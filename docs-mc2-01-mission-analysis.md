@@ -227,7 +227,8 @@ clear hover frame around whole blocks or open cells. Clicked component and open
 cells stay selected, keeping armor/sink tradeoff details visible after the pointer
 moves away; the same selected target cell can now place the selected mounted
 weapon or cycle a spare filler cell through armor, heat sink, and empty. The
-single-cell filler action now labels the next action as Armor, Sink, or Clear
+weapon-block move status reports clear or blocked nudge directions beside the
+direction buttons. The single-cell filler action now labels the next action as Armor, Sink, or Clear
 instead of a generic Fill button, and the top status plus selected target status
 echo a compact transition such as Empty > Armor beside the weapon-placement state. Before
 Place applies that draft move, the selected weapon now draws a target ghost over

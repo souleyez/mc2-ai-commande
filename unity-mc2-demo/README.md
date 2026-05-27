@@ -72,7 +72,7 @@ Current demo behavior:
 - shortens target-row filler hints to +Armor, +Sink, or Clear while keeping full transition text in detailed slot status
 - shows a Pick slot hint when a mounted weapon is selected but no target grid cell is selected yet
 - disables nudge direction buttons when the selected weapon would leave the grid or overlap another payload block
-- summarizes blocked nudge directions with short outside/overlap reasons so disabled movement buttons explain themselves
+- summarizes blocked weapon-block movement directions with short outside/overlap reasons so disabled movement buttons explain themselves
 - colors the Armor, Sink, and Clear filler button by the next filler action
 - labels editable filler buttons with the same +Armor, +Sink, or Clear short actions used by the target row
 - labels disabled filler targets as Locked or Stack when the selected cell cannot cycle armor/sink/empty
