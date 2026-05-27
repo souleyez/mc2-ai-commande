@@ -5100,6 +5100,17 @@ namespace MC2Demo.Presentation
                 LoadoutFillerOverridesFor(unit));
         }
 
+        private CombatLoadoutPreview LoadoutBasePreviewFor(UnitState unit)
+        {
+            string key = unit?.UnitType ?? "";
+            return CombatLoadoutPreviewBuilder.Build(
+                key,
+                unit?.Profile,
+                AllMountedWeaponsStateFor(unit),
+                null,
+                null);
+        }
+
         private static string FirstLoadoutError(LoadoutValidationResult result)
         {
             string[] errors = result.Errors;
@@ -8286,9 +8297,10 @@ namespace MC2Demo.Presentation
 
             CombatLoadoutPreviewGridCell selectedCell = LoadoutCellForSelectedWeapon(preview, selectedWeaponIndex);
             CombatLoadoutPreviewItem selectedItem = LoadoutPreviewItemForWeapon(preview, selectedWeaponIndex);
+            CombatLoadoutPreviewItem baseItem = LoadoutPreviewItemForWeapon(LoadoutBasePreviewFor(unit), selectedWeaponIndex);
             int cells = Math.Max(1, CountLoadoutBlockCells(preview, selectedCell));
             string shapeText = LoadoutBlockShapeText(preview, selectedCell);
-            string positionText = LoadoutWeaponPositionSummary(unit, preview, selectedItem);
+            string positionText = LoadoutWeaponPositionSummary(unit, preview, selectedItem, baseItem);
             bool hasPlacementOverride = HasLoadoutWeaponPlacementOverride(unit, selectedWeaponIndex);
             string placementState = hasPlacementOverride ? "Moved" : "Base";
             Rect strip = new(x - 4f, y - 2f, width + 8f, 22f);
@@ -8323,17 +8335,25 @@ namespace MC2Demo.Presentation
         private string LoadoutWeaponPositionSummary(
             UnitState unit,
             CombatLoadoutPreview preview,
-            CombatLoadoutPreviewItem selectedItem)
+            CombatLoadoutPreviewItem selectedItem,
+            CombatLoadoutPreviewItem baseItem)
         {
             if (selectedItem == null)
             {
                 return "";
             }
 
-            string position = " @"
-                + selectedItem.GridX.ToString(CultureInfo.InvariantCulture)
-                + ","
-                + selectedItem.GridY.ToString(CultureInfo.InvariantCulture);
+            string currentPosition = LoadoutGridPositionText(selectedItem.GridX, selectedItem.GridY);
+            string position = " @" + currentPosition;
+            if (baseItem != null
+                && (baseItem.GridX != selectedItem.GridX || baseItem.GridY != selectedItem.GridY))
+            {
+                position = " @"
+                    + LoadoutGridPositionText(baseItem.GridX, baseItem.GridY)
+                    + ">"
+                    + currentPosition;
+            }
+
             if (!TryGetSelectedLoadoutGridCell(unit, preview, out Vector2Int targetCell)
                 || (targetCell.x == selectedItem.GridX && targetCell.y == selectedItem.GridY))
             {
@@ -8342,9 +8362,14 @@ namespace MC2Demo.Presentation
 
             return position
                 + " >"
-                + targetCell.x.ToString(CultureInfo.InvariantCulture)
+                + LoadoutGridPositionText(targetCell.x, targetCell.y);
+        }
+
+        private static string LoadoutGridPositionText(int gridX, int gridY)
+        {
+            return gridX.ToString(CultureInfo.InvariantCulture)
                 + ","
-                + targetCell.y.ToString(CultureInfo.InvariantCulture);
+                + gridY.ToString(CultureInfo.InvariantCulture);
         }
 
         private void DrawLoadoutEditControls(UnitState unit, CombatLoadoutPreview preview, float x, float y, float width)

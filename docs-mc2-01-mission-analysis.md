@@ -215,7 +215,7 @@ active, matching the original payload model more closely: the weapon list only
 selects mounted weapons for projected nudges, while fitting edits immediately
 recompute heat, load, grid occupancy, overlap, bounds, and validator status
 without touching live battle damage yet. The weapon list highlights the selected
-mounted weapon and repeats its current or pending grid position, damage, range,
+mounted weapon and repeats its base, current, or pending grid position, damage, range,
 cooldown, heat, weight, footprint cells, and footprint shape above compact S/M/L plus `WxH` range/shape buttons instead of adding a separate weapon switch layer; the summary prefixes the selection as `W# Base` or `W# Moved`, the active button also replaces its number with `>` for color-independent selection feedback, and moved-but-unapplied weapons show `*`. The payload preview now draws
 those projected items as larger whole-block grid pieces, following the original
 payload-model color idea of orange empty cells, green/blue/red weapon range bands,
