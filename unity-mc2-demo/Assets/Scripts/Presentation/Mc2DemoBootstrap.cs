@@ -4917,27 +4917,64 @@ namespace MC2Demo.Presentation
                     + "  S "
                     + Mathf.RoundToInt(selectedUnit.CurrentStructure).ToString(CultureInfo.InvariantCulture)
                     + "/"
-                    + Mathf.RoundToInt(selectedUnit.Profile.MaxStructure).ToString(CultureInfo.InvariantCulture)
-                    + "  H "
-                    + FormatDecimal(result.TotalHeat)
-                    + "/"
-                    + FormatDecimal(preview.HeatLimit)
-                    + "  W "
-                    + FormatDecimal(result.TotalWeight)
-                    + "/"
-                    + FormatDecimal(preview.WeightLimit)
-                    + "  G "
-                    + result.OccupiedGridCells.ToString(CultureInfo.InvariantCulture)
-                    + "/"
-                    + preview.GridCapacity.ToString(CultureInfo.InvariantCulture);
-                DrawActionStateLabel(
+                    + Mathf.RoundToInt(selectedUnit.Profile.MaxStructure).ToString(CultureInfo.InvariantCulture);
+                DrawSelectedMechBayFitPressureLine(
                     x,
                     y + 24f,
                     width,
                     identity,
                     result.IsValid && !HasPendingLoadoutEdits(selectedUnit),
-                    92);
+                    preview,
+                    result);
             }
+        }
+
+        private void DrawSelectedMechBayFitPressureLine(
+            float x,
+            float y,
+            float width,
+            string text,
+            bool ready,
+            CombatLoadoutPreview preview,
+            LoadoutValidationResult result)
+        {
+            Color cue = ready
+                ? new Color(0.42f, 0.82f, 1f, 0.92f)
+                : new Color(1f, 0.62f, 0.26f, 0.92f);
+            Rect cueRect = new(x, y + 4f, 10f, 10f);
+            DrawColorRect(cueRect, cue);
+            DrawRectBorder(cueRect, new Color(0.02f, 0.025f, 0.03f, 0.95f), 1f);
+
+            float barsWidth = Mathf.Clamp(width * 0.34f, 118f, 164f);
+            float textWidth = Mathf.Max(60f, width - barsWidth - 22f);
+            GUI.Label(new Rect(x + 16f, y, textWidth, 18f), TruncateText(text, 58));
+
+            float barX = x + width - barsWidth;
+            float barWidth = Mathf.Max(24f, (barsWidth - 42f) / 3f);
+            DrawMechBayFitPressureBar(ref barX, y, "H", result.TotalHeat, preview.HeatLimit, UiCyanColor, barWidth);
+            DrawMechBayFitPressureBar(ref barX, y, "W", result.TotalWeight, preview.WeightLimit, UiAmberColor, barWidth);
+            DrawMechBayFitPressureBar(
+                ref barX,
+                y,
+                "G",
+                result.OccupiedGridCells,
+                preview.GridCapacity,
+                LoadoutComponentColor,
+                barWidth);
+        }
+
+        private void DrawMechBayFitPressureBar(
+            ref float x,
+            float y,
+            string label,
+            float value,
+            float limit,
+            Color color,
+            float width)
+        {
+            GUI.Label(new Rect(x, y, 10f, 18f), label);
+            DrawLoadoutUsageBar(new Rect(x + 12f, y + 7f, width, 5f), value, limit, color);
+            x += width + 21f;
         }
 
         private void DrawLoadoutUnit(UnitState unit, float x, float y, float width)

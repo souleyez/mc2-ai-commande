@@ -40,7 +40,7 @@ The Unity demo currently supports:
 - player squad orders, detached unit orders, focused unit/structure attacks, and Jet orders
 - heat, cooldown, weapon range/readiness, simple section damage, section penalties, and animated breakoff/ejection effects
 - compact tactical UI with unit status, mech bay preview, mission brief, current-objective map, world objective hints, health bars, command rings, range rings, and target lines
-- focused mech bay fitting view with compact squad buttons, draft markers, and a selected-mech fit-pressure status line so one selected payload grid owns the drawer
+- focused mech bay fitting view with compact squad buttons, draft markers, and selected-mech fit-pressure bars so one selected payload grid owns the drawer
 - initial BattleCore loadout contract for chassis grids, item shapes, heat, weight, armor plates, heat sinks, radar slots, and jump jet slots
 - deterministic BattleCore loadout validator for grid bounds, blocked cells, overlap, rotation, heat caps, weight caps, and special-slot compatibility
 - source weapon loadout projection in the mech bay with validator status, heat/load limits, and occupied grid cell counts
@@ -535,6 +535,6 @@ Reason:
 - The payload grid now previews the selected mounted weapon as a green/red target ghost before Place applies the draft move.
 - The payload detail line now mirrors target placement state in text, including clear/blocked status, blocked reason, and selected weapon footprint cells.
 - The mech bay now uses compact squad buttons and expands one selected fitting card at a time, reducing drawer scroll pressure before the future non-IMGUI rewrite.
-- The squad fitting selector now marks draft mechs and shows the selected mech's pilot, fit state, structure, heat, weight, and grid pressure in the same compact strip.
+- The squad fitting selector now marks draft mechs and shows the selected mech's pilot, fit state, structure, plus H/W/G pressure bars in the same compact strip.
 - The next low-risk step is to keep tuning the selected fitting card density and then migrate these flow screens beyond IMGUI once the layout direction feels right.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.
