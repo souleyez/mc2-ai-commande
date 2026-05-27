@@ -7262,7 +7262,7 @@ namespace MC2Demo.Presentation
             int repairCost = MechBayRepairService.EstimateRepairCostResourcePoints(unit);
             GUI.Label(
                 new Rect(left, y, width * 0.46f, 18f),
-                "Condition " + condition.ToString(CultureInfo.InvariantCulture) + "%"
+                "Cond " + condition.ToString(CultureInfo.InvariantCulture) + "%"
                 + "  Repair " + FormatTokens(repairCost));
 
             bool previousEnabled = GUI.enabled;
@@ -7270,7 +7270,7 @@ namespace MC2Demo.Presentation
                 && repairCost > 0
                 && demoInventory != null
                 && demoInventory.tokenBalance >= repairCost;
-            if (GUI.Button(new Rect(right, y - 2f, 86f, 22f), "Repair"))
+            if (GUI.Button(new Rect(right, y - 2f, 64f, 22f), "Repair"))
             {
                 MechBayRepairResult result = MechBayRepairService.TryRepair(demoInventory, unit);
                 RefreshDemoInventoryValidation();
@@ -7284,11 +7284,11 @@ namespace MC2Demo.Presentation
             GUI.enabled = previousEnabled;
             if (repairCost > 0 && demoInventory != null && demoInventory.tokenBalance < repairCost)
             {
-                GUI.Label(new Rect(right + 92f, y, width * 0.46f - 92f, 18f), "Need " + FormatTokens(repairCost));
+                GUI.Label(new Rect(right + 70f, y, width * 0.46f - 70f, 18f), "Need " + FormatTokens(repairCost));
             }
             else
             {
-                GUI.Label(new Rect(right + 92f, y, width * 0.46f - 92f, 18f), UnitMissionStateText(unit));
+                GUI.Label(new Rect(right + 70f, y, width * 0.46f - 70f, 18f), UnitMissionStateText(unit));
             }
         }
 
