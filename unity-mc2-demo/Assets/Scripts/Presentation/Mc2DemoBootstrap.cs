@@ -297,7 +297,7 @@ namespace MC2Demo.Presentation
             LoadMission();
             if (mission == null)
             {
-                statusText = "New game failed";
+                statusText = "New company failed";
                 Debug.LogError("MC2 new game failed: mission missing after reset");
                 return false;
             }
@@ -306,9 +306,9 @@ namespace MC2Demo.Presentation
             lastMissionResult = mission.Result;
             SetPaused(false);
             SetDemoFlowScreen(DemoFlowScreen.Battle);
-            statusText = string.IsNullOrWhiteSpace(resultStatus) ? "New game started" : resultStatus;
-            RecordSavedAccountFileResult("New Game", false, "default save kept");
-            AddCombatLogLine("New game started: default save kept");
+            statusText = string.IsNullOrWhiteSpace(resultStatus) ? "New company started" : resultStatus;
+            RecordSavedAccountFileResult("New Company", false, "save slot kept");
+            AddCombatLogLine("New company started: save slot kept");
             Debug.Log(
                 "MC2 new game started: clearedRoots="
                 + clearedRoots.ToString(CultureInfo.InvariantCulture)
@@ -519,7 +519,7 @@ namespace MC2Demo.Presentation
             string defaultPath = DefaultSavedAccountFilePath();
             startupContinueSaveReady = false;
             startupContinueSummaryText = "No saved progress found";
-            startupContinueRosterText = "New Game starts the fresh demo state";
+            startupContinueRosterText = "New Company starts a fresh run";
             startupContinueDeltaText = string.Empty;
             startupContinueFileText = "Save " + SavedAccountFileName(defaultPath);
             if (!File.Exists(defaultPath))
@@ -3773,7 +3773,7 @@ namespace MC2Demo.Presentation
             Rect panel = StartupContinuePanelRect();
             DrawDesignPanelFrame(
                 panel,
-                startupSaveChoicesOpenedFromSystem ? "Save Choices / 存档" : "Demo Save / 继续",
+                startupSaveChoicesOpenedFromSystem ? "Save Slot / 存档" : "Save Slot / 继续",
                 UiCyanColor);
             float x = panel.x + 18f;
             float y = panel.y + 36f;
@@ -3781,7 +3781,7 @@ namespace MC2Demo.Presentation
             string defaultPath = DefaultSavedAccountFilePath();
             bool fileExists = File.Exists(defaultPath);
             bool canContinue = fileExists && startupContinueSaveReady;
-            GUI.Label(new Rect(x, y, width, 20f), canContinue ? "Continue saved mech bay progress" : "Saved progress needs review");
+            GUI.Label(new Rect(x, y, width, 20f), canContinue ? "Continue company progress" : "Save slot needs review");
             y += 24f;
             float summaryHeight = startupSaveChoicesOpenedFromSystem ? 112f : 88f;
             DrawDesignInsetFrame(new Rect(x - 8f, y - 6f, width + 16f, summaryHeight), UiCyanColor);
@@ -3831,12 +3831,12 @@ namespace MC2Demo.Presentation
                 }
 
                 GUI.enabled = previousEnabled;
-                if (GUI.Button(new Rect(x + halfWidth + 8f, y, halfWidth, 30f), "New Game"))
+                if (GUI.Button(new Rect(x + halfWidth + 8f, y, halfWidth, 30f), "New Company"))
                 {
                     startupNewGameConfirmPending = true;
                     startupResetSlotConfirmPending = false;
-                    statusText = "Confirm new game";
-                    RecordSavedAccountFileResult("New Game confirm", false, "default save kept");
+                    statusText = "Confirm new company";
+                    RecordSavedAccountFileResult("New Company confirm", false, "save slot kept");
                 }
 
                 return;
@@ -3897,18 +3897,18 @@ namespace MC2Demo.Presentation
             }
             else if (startupNewGameConfirmPending)
             {
-                GUI.Label(new Rect(x, y - 2f, width, 18f), "New game resets this run; default save is kept.");
+                GUI.Label(new Rect(x, y - 2f, width, 18f), "New company resets this run; save slot is kept.");
                 y += 24f;
                 float halfWidth = (width - 8f) * 0.5f;
                 if (GUI.Button(new Rect(x, y, halfWidth, 30f), "Confirm New"))
                 {
-                    TryStartFreshDemoRun("New game started");
+                    TryStartFreshDemoRun("New company started");
                 }
 
                 if (GUI.Button(new Rect(x + halfWidth + 8f, y, halfWidth, 30f), "Cancel"))
                 {
                     startupNewGameConfirmPending = false;
-                    statusText = "New game canceled";
+                    statusText = "New company canceled";
                 }
             }
             else
@@ -3916,12 +3916,12 @@ namespace MC2Demo.Presentation
                 if (startupSaveChoicesOpenedFromSystem)
                 {
                     float halfWidth = (width - 8f) * 0.5f;
-                    if (GUI.Button(new Rect(x, y, halfWidth, 30f), "New Game"))
+                    if (GUI.Button(new Rect(x, y, halfWidth, 30f), "New Company"))
                     {
                         startupNewGameConfirmPending = true;
                         startupResetSlotConfirmPending = false;
-                        statusText = "Confirm new game";
-                        RecordSavedAccountFileResult("New Game confirm", false, "default save kept");
+                        statusText = "Confirm new company";
+                        RecordSavedAccountFileResult("New Company confirm", false, "save slot kept");
                     }
 
                     if (GUI.Button(new Rect(x + halfWidth + 8f, y, halfWidth, 30f), "Reset Slot"))
@@ -3929,15 +3929,15 @@ namespace MC2Demo.Presentation
                         startupResetSlotConfirmPending = true;
                         startupNewGameConfirmPending = false;
                         statusText = "Confirm slot reset";
-                        RecordSavedAccountFileResult("Reset Slot confirm", false, "old save will be copied first");
+                        RecordSavedAccountFileResult("Reset Slot confirm", false, "old save copied first");
                     }
                 }
-                else if (GUI.Button(new Rect(x, y, width, 30f), "New Game"))
+                else if (GUI.Button(new Rect(x, y, width, 30f), "New Company"))
                 {
                     startupNewGameConfirmPending = true;
                     startupResetSlotConfirmPending = false;
-                    statusText = "Confirm new game";
-                    RecordSavedAccountFileResult("New Game confirm", false, "default save kept");
+                    statusText = "Confirm new company";
+                    RecordSavedAccountFileResult("New Company confirm", false, "save slot kept");
                 }
 
                 y += 38f;
@@ -9192,7 +9192,7 @@ namespace MC2Demo.Presentation
                 ? startupContinueSummaryText
                 : File.Exists(DefaultSavedAccountFilePath()) ? "Save needs review" : "No default save";
             GUI.Label(new Rect(panel.x + 18f, panel.y + 146f, panel.width - 36f, 20f), "Save " + TruncateText(saveChoiceText, 48));
-            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 172f, panel.width - 36f, 30f), "Save Choices"))
+            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 172f, panel.width - 36f, 30f), "Save Slot"))
             {
                 OpenSaveChoicePanelFromSystem();
             }
@@ -9487,8 +9487,8 @@ namespace MC2Demo.Presentation
             pendingDetachedUnitId = null;
             pendingJumpOrder = false;
             SetDemoFlowScreen(DemoFlowScreen.SaveChoices);
-            statusText = startupContinueSaveReady ? "Save choices open" : "New game available";
-            RecordSavedAccountFileResult("Save choices", startupContinueSaveReady, startupContinueSummaryText);
+            statusText = startupContinueSaveReady ? "Save slot open" : "New company available";
+            RecordSavedAccountFileResult("Save Slot", startupContinueSaveReady, startupContinueSummaryText);
         }
 
         private void OpenMissionListPanelFromSystem()
@@ -9512,7 +9512,7 @@ namespace MC2Demo.Presentation
 
         private void TrySaveCurrentFromSaveChoices()
         {
-            bool saved = TryExportSavedAccount(DefaultSavedAccountFilePath(), false, "Save choices");
+            bool saved = TryExportSavedAccount(DefaultSavedAccountFilePath(), false, "Save slot");
             RefreshStartupContinueSavePreview();
             startupNewGameConfirmPending = false;
             startupResetSlotConfirmPending = false;
@@ -9521,7 +9521,7 @@ namespace MC2Demo.Presentation
 
         private void TryExportCopyFromSaveChoices()
         {
-            bool saved = TryExportSavedAccount(DefaultSavedAccountExportCopyPath(), false, "Save choices copy");
+            bool saved = TryExportSavedAccount(DefaultSavedAccountExportCopyPath(), false, "Save slot copy");
             RefreshStartupContinueSavePreview();
             startupNewGameConfirmPending = false;
             startupResetSlotConfirmPending = false;
@@ -9547,7 +9547,7 @@ namespace MC2Demo.Presentation
                 return;
             }
 
-            bool saved = TryExportSavedAccount(DefaultSavedAccountFilePath(), false, "Save choices reset");
+            bool saved = TryExportSavedAccount(DefaultSavedAccountFilePath(), false, "Save slot reset");
             string detail = File.Exists(copyPath)
                 ? "fresh default; old " + SavedAccountFileName(copyPath)
                 : "fresh default";

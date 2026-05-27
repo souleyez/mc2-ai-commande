@@ -133,15 +133,15 @@ The Unity demo currently supports:
 - mech bay summary now provides a guarded Load helper for the persistent demo save file when that file exists
 - mech bay summary now keeps a compact Last Save line for the latest export, preview, apply, or blocked save/load result
 - guarded account-changing actions now auto-save the current local account snapshot to the persistent demo save file
-- manual demo startup now shows a lightweight Continue/New Game panel when the persistent demo save exists and no automation startup args are used
+- manual demo startup now shows a lightweight Continue/New Company panel when the persistent demo save exists and no automation startup args are used
 - that startup panel now previews the loaded account summary, token/depot/item counts, delta, and save timestamp before enabling Continue
 - the runtime now tracks a lightweight demo flow screen across title, battle, mech bay, mission selection, save choices, system, and debrief states
 - the top status strip now exposes the current flow state, giving the future title shell a visible state boundary before the IMGUI migration
 - the system panel now opens a Mission List shell with the current `mc2_01` contract, launch, mech bay, back-system, and return-battle actions
-- the pause/system panel now exposes the same Save Choices entry, and New Game resets the active demo run without deleting the persistent default save
-- New Game now requires an explicit confirmation inside Save Choices, and system-opened Save Choices can return with Back
-- system-opened Save Choices now has a Save Current action that writes the active account to the persistent default save and refreshes the Continue summary
-- system-opened Save Choices now has Export Copy and Reset Slot actions; Reset Slot requires confirmation, copies the old default save first, then overwrites the default slot with a fresh demo snapshot
+- the pause/system panel now exposes the same Save Slot entry, and New Company resets the active demo run without deleting the persistent save slot
+- New Company now requires an explicit confirmation inside Save Slot, and system-opened Save Slot can return with Back
+- system-opened Save Slot now has a Save Current action that writes the active account to the persistent save slot and refreshes the Continue summary
+- system-opened Save Slot now has Export Copy and Reset Slot actions; Reset Slot requires confirmation, copies the old save first, then overwrites the default slot with a fresh demo snapshot
 - command-file `prepare-local-candidate` can now produce a ready depot candidate through local receipt assembly, NPC hiring, weapon purchase, and warehouse draft-fit services
 - local candidate prep now records a read-only saved-account delta line so token, mech, ready, depot, and item-stack changes are visible before any real save file exists
 - CLI/AI loop pieces:
@@ -465,7 +465,7 @@ Reason:
 
 - The old starter mission restart polish, roster swap, persistent save shell, post-battle lane, and first design-image-inspired UI pass are now implemented.
 - The current risk is no longer raw feature absence; it is that the playable loop still depends on dense IMGUI prototype panels and too many debug-flavored rows.
-- The next demo milestone should make one private Windows build feel like a coherent local game: Continue/New Game, battle, debrief, repair/save, mission list, mech bay, squad swap, and relaunch.
+- The next demo milestone should make one private Windows build feel like a coherent local game: Continue/New Company, battle, debrief, repair/save, contracts, mech bay, squad swap, and relaunch.
 - AI remains intentionally bounded to high-level directives and capability preview; do not expand model-driven combat until the local loop feels good.
 - Content replacement remains a package boundary, not a blocker for private reference validation.
 
@@ -477,7 +477,7 @@ Tasks:
 
 1. Audit the visible flow from manual startup through battle, debrief, repair/save, mission list, mech bay, squad swap, and relaunch.
 2. Remove or hide debug-only rows from player-facing panels while preserving command-file and log coverage.
-3. Tighten button wording around Continue, New Game, Repair All, Save, Missions, Launch, Candidate Prep, Set, and squad replacement.
+3. Tighten button wording around Continue, New Company, Repair All, Save, Missions, Launch, Reserve, Set, and squad replacement.
 4. Keep every action guarded by the existing validated BattleCore paths.
 5. Add or update one command-file smoke path that proves the visible loop still works after each polish step.
 
@@ -582,12 +582,12 @@ Tasks:
 - Startup command files can now run `saved-account-load-default-preview` and `saved-account-load-default-apply`, restoring the persistent demo save path through the existing import-apply guard.
 - Startup command files can now run `saved-account-save-current-default`, explicitly covering the Save Current default export path before preview/apply smoke checks.
 - The explicit `-mc2LoadDefaultSave` startup flag now restores the persistent demo save path through the existing import-apply guard when the file exists, and skips cleanly when it does not.
-- Manual demo startup now shows a lightweight Continue/New Game panel when the persistent demo save exists and no automation startup args are used, with account summary, token/depot/item counts, delta, and save timestamp visible before Continue is enabled.
-- The pause/system panel now exposes the same Save Choices entry, so testers can reopen Continue/New Game after launch; New Game requires an explicit confirmation and resets the active demo run while keeping the persistent default save untouched.
-- System-opened Save Choices can now return with Back, keeping the panel useful as an in-run save/title shell rather than a one-way modal.
-- System-opened Save Choices now has a Save Current action that writes the active account to the persistent default save and refreshes the displayed Continue summary.
-- System-opened Save Choices now shows the latest save/load result inline, so Save Current feedback stays visible inside the same panel.
-- System-opened Save Choices now has Export Copy and Reset Slot controls; Reset Slot requires confirmation, copies the old default save first, then replaces the default slot with a fresh demo snapshot.
+- Manual demo startup now shows a lightweight Continue/New Company panel when the persistent demo save exists and no automation startup args are used, with account summary, token/depot/item counts, delta, and save timestamp visible before Continue is enabled.
+- The pause/system panel now exposes the same Save Slot entry, so testers can reopen Continue/New Company after launch; New Company requires an explicit confirmation and resets the active demo run while keeping the persistent save slot untouched.
+- System-opened Save Slot can now return with Back, keeping the panel useful as an in-run save/title shell rather than a one-way modal.
+- System-opened Save Slot now has a Save Current action that writes the active account to the persistent save slot and refreshes the displayed Continue summary.
+- System-opened Save Slot now shows the latest save/load result inline, so Save Current feedback stays visible inside the same panel.
+- System-opened Save Slot now has Export Copy and Reset Slot controls; Reset Slot requires confirmation, copies the old save first, then replaces the default slot with a fresh demo snapshot.
 - A first lightweight demo-flow state now tracks title, battle, mech bay, mission selection, save choices, system, and debrief, with the current state visible in the top status strip.
 - The system panel now opens a player-facing Contracts shell for `mc2_01`, with launch, mech bay, system, and return-battle actions.
 - The debrief panel now routes post-battle flow through Continue Bay or Mission List, hiding the debrief overlay before the player repairs, saves, or chooses the next launch.
@@ -595,8 +595,8 @@ Tasks:
 - The mech bay summary now has a compact post-battle/prep lane with Repair All, Save, Missions, and Launch, so the main playable loop is visible in one row.
 - The mech bay flow lane now uses player-facing After Action and Ready Bay status text, and the depot candidate shortcut now reads as a Reserve action rather than a debug-style prep hook.
 - The first design-image-inspired UI pass now applies a graphite/cyan/amber skin, top status strip, and framed squad command panel while keeping the existing IMGUI behavior stable.
-- The same design pass now extends across Save Choices, System, Mission List, Debrief, and Mech Bay panels with shared framed surfaces and highlighted flow lanes.
-- The first in-window visual inspection pass tightened the title save panel with an inset account summary, shorter top status strip, and side-by-side Continue/New Game actions.
+- The same design pass now extends across Save Slot, System, Contracts, Debrief, and Mech Bay panels with shared framed surfaces and highlighted flow lanes.
+- The first in-window visual inspection pass tightened the title save panel with an inset account summary, shorter top status strip, and side-by-side Continue/New Company actions.
 - The battle/mech-bay inspection pass now frames the Combat/Mission HUD and shifts the mech bay into a right-side focused drawer with a dimmed backdrop.
 - The mech bay payload grid now presents weapons, armor, and heat sinks as larger whole-block grid pieces using original-style empty/short/mid/long/component color cues.
 - The loadout status line now includes compact heat/load/grid usage bars, so fit pressure is visible before reading the numeric caps.
