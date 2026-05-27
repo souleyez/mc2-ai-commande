@@ -42,7 +42,7 @@ Current demo behavior:
 - carries source weapon type and special-effect metadata into combat visuals
 - shows weapon name, range, cooldown, heat lock, and range readiness in the unit panel
 - opens a mech bay preview with source weapon loadout, heat, weight, range, damage, and section status
-- focuses the mech bay fitting view on one selected squad mech at a time with compact squad buttons, draft markers, and a selected-mech status line
+- focuses the mech bay fitting view on one selected squad mech at a time with compact squad buttons, draft markers, and a selected-mech fit-pressure status line
 - defines the first BattleCore loadout contract for chassis grids, item shapes, heat, weight, and special equipment slots
 - validates loadout grid placement, rotation, blocked cells, overlap, heat, weight, and equipment slot compatibility
 - shows projected source loadout validation status, heat/load limits, and occupied grid cells in the mech bay

@@ -4901,25 +4901,42 @@ namespace MC2Demo.Presentation
             if (selectedUnit != null)
             {
                 string fitState = HasPendingLoadoutEdits(selectedUnit) ? "Draft" : "Applied";
+                CombatLoadoutPreview preview = LoadoutPreviewFor(selectedUnit);
+                LoadoutValidationResult result = preview.Validation;
+                string fitReview = result.IsValid ? "Fit OK" : "Review " + TruncateText(FirstLoadoutError(result), 12);
                 string pilot = string.IsNullOrWhiteSpace(selectedUnit.PilotDisplayName)
                     ? "No pilot"
                     : selectedUnit.PilotDisplayName;
                 string identity = TruncateText(selectedUnit.UnitType, 18)
                     + "  "
                     + fitState
+                    + "  "
+                    + fitReview
                     + "  Pilot "
-                    + TruncateText(pilot, 18)
-                    + "  Structure "
+                    + TruncateText(pilot, 12)
+                    + "  S "
                     + Mathf.RoundToInt(selectedUnit.CurrentStructure).ToString(CultureInfo.InvariantCulture)
                     + "/"
-                    + Mathf.RoundToInt(selectedUnit.Profile.MaxStructure).ToString(CultureInfo.InvariantCulture);
+                    + Mathf.RoundToInt(selectedUnit.Profile.MaxStructure).ToString(CultureInfo.InvariantCulture)
+                    + "  H "
+                    + FormatDecimal(result.TotalHeat)
+                    + "/"
+                    + FormatDecimal(preview.HeatLimit)
+                    + "  W "
+                    + FormatDecimal(result.TotalWeight)
+                    + "/"
+                    + FormatDecimal(preview.WeightLimit)
+                    + "  G "
+                    + result.OccupiedGridCells.ToString(CultureInfo.InvariantCulture)
+                    + "/"
+                    + preview.GridCapacity.ToString(CultureInfo.InvariantCulture);
                 DrawActionStateLabel(
                     x,
                     y + 24f,
                     width,
                     identity,
-                    !HasPendingLoadoutEdits(selectedUnit),
-                    74);
+                    result.IsValid && !HasPendingLoadoutEdits(selectedUnit),
+                    92);
             }
         }
 
