@@ -644,6 +644,7 @@ Tasks:
 - The selected weapon summary now echoes base, current, and pending target grid positions, so slot moves stay visible even before reaching the lower Place controls.
 - The selected weapon summary now uses a compact `W# Base/Moved` prefix and cyan/amber border cue, so draft placement state is visible without adding another row.
 - The selected weapon edit controls now mirror that same Base/Moved coordinate chain, keeping the nudge/place area consistent with the summary line.
+- Destroyed cockpit, arm, and leg sections now leave persistent tactical-view damage beacons in addition to the existing flashes, detached parts, and ejection effects.
 - Weapon selection, move, place, and selected-slot reset results now report `W# Moved @a,b>c,d` or `W# Base @a,b` in the top status.
 - The selected weapon summary and payload detail now show the selected block as a concrete `WxH` footprint, making vertical and wide weapon shapes readable without counting cells.
 - The mounted weapon buttons also include that `WxH` footprint, so the selection list itself reads as block inventory instead of plain weapon toggles.

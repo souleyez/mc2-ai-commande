@@ -185,6 +185,7 @@ namespace MC2Demo.Presentation
             if (string.Equals(sectionName, "Cockpit", StringComparison.OrdinalIgnoreCase))
             {
                 CreateDamageScar("Cockpit Breach", new Vector3(0f, 0.45f, 0.34f), new Vector3(0.32f, 0.08f, 0.24f), new Color(0.02f, 0.02f, 0.02f, 1f));
+                CreateDamageBeacon("Cockpit Ejection Beacon", new Vector3(0f, 0.98f, 0.36f), new Color(0.58f, 0.92f, 1f, 1f), 0.055f, 0.42f);
                 DetachPart("Cockpit", new Vector3(0f, 0.8f, 0.45f), new Color(1f, 0.65f, 0.18f, 0.72f));
                 SpawnCockpitEjection();
                 return;
@@ -193,6 +194,7 @@ namespace MC2Demo.Presentation
             if (string.Equals(sectionName, "Left Arm", StringComparison.OrdinalIgnoreCase))
             {
                 CreateDamageScar("Left Shoulder Breach", new Vector3(-0.44f, 0.10f, 0.02f), new Vector3(0.16f, 0.34f, 0.20f), new Color(0.06f, 0.04f, 0.02f, 1f));
+                CreateDamageBeacon("Left Arm Missing Beacon", new Vector3(-0.58f, 0.42f, 0.06f), new Color(1f, 0.34f, 0.08f, 1f), 0.045f, 0.32f);
                 DetachPart("Left Arm", new Vector3(-0.9f, 0.25f, 0.15f), new Color(1f, 0.42f, 0.08f, 0.68f));
                 SpawnDamageBurst(SectionWorldPoint(new Vector3(-0.62f, 0.08f, 0f)), 0.8f);
                 return;
@@ -201,6 +203,7 @@ namespace MC2Demo.Presentation
             if (string.Equals(sectionName, "Right Arm", StringComparison.OrdinalIgnoreCase))
             {
                 CreateDamageScar("Right Shoulder Breach", new Vector3(0.44f, 0.10f, 0.02f), new Vector3(0.16f, 0.34f, 0.20f), new Color(0.06f, 0.04f, 0.02f, 1f));
+                CreateDamageBeacon("Right Arm Missing Beacon", new Vector3(0.58f, 0.42f, 0.06f), new Color(1f, 0.34f, 0.08f, 1f), 0.045f, 0.32f);
                 DetachPart("Right Arm", new Vector3(0.9f, 0.25f, 0.15f), new Color(1f, 0.42f, 0.08f, 0.68f));
                 SpawnDamageBurst(SectionWorldPoint(new Vector3(0.62f, 0.08f, 0f)), 0.8f);
                 return;
@@ -209,6 +212,7 @@ namespace MC2Demo.Presentation
             if (string.Equals(sectionName, "Legs", StringComparison.OrdinalIgnoreCase))
             {
                 CreateDamageScar("Leg Failure Scorch", new Vector3(0f, -0.36f, 0.05f), new Vector3(0.52f, 0.12f, 0.26f), new Color(0.05f, 0.04f, 0.03f, 1f));
+                CreateDamageBeacon("Leg Failure Beacon", new Vector3(0f, -0.10f, 0.12f), new Color(1f, 0.22f, 0.10f, 1f), 0.06f, 0.30f);
                 DetachPart("Left Leg", new Vector3(-0.38f, 0.12f, -0.25f), new Color(0.82f, 0.32f, 0.12f, 0.66f));
                 DetachPart("Right Leg", new Vector3(0.38f, 0.12f, -0.25f), new Color(0.82f, 0.32f, 0.12f, 0.66f));
                 SpawnDamageBurst(SectionWorldPoint(new Vector3(0f, -0.45f, 0f)), 1.0f);
@@ -369,6 +373,26 @@ namespace MC2Demo.Presentation
             if (scarCollider != null)
             {
                 Destroy(scarCollider);
+            }
+        }
+
+        private void CreateDamageBeacon(string beaconName, Vector3 localPosition, Color color, float radius, float height)
+        {
+            GameObject beacon = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            beacon.name = Unit.Id + " " + beaconName;
+            beacon.transform.SetParent(transform, false);
+            beacon.transform.localPosition = localPosition;
+            beacon.transform.localScale = new Vector3(radius, height * 0.5f, radius);
+            Renderer beaconRenderer = beacon.GetComponent<Renderer>();
+            if (beaconRenderer != null)
+            {
+                beaconRenderer.sharedMaterial = CreateOwnedMaterial(color);
+            }
+
+            Collider beaconCollider = beacon.GetComponent<Collider>();
+            if (beaconCollider != null)
+            {
+                Destroy(beaconCollider);
             }
         }
 

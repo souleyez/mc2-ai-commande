@@ -159,6 +159,8 @@ Current demo behavior:
 - auto-acquires hostile units in weapon range
 - resolves temporary weapon cooldown, damage, cockpit/torso/arms/legs sections,
   and destruction
+- keeps destroyed cockpit, arm, and leg sections readable from the tactical view
+  with persistent damage beacons in addition to flashes and detached parts
 - shows player unit structure and section damage in the left status panel
 - prints recent combat events in the top-right combat panel
 
