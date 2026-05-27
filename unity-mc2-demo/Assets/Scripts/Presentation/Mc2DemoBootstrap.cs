@@ -7820,12 +7820,15 @@ namespace MC2Demo.Presentation
 
             bool canResetSelectedWeapon = HasSelectedLoadoutWeaponPlacementOverride(unit, selectedWeaponIndex);
             bool previousResetEnabled = GUI.enabled;
+            Color previousResetColor = GUI.color;
+            GUI.color = LoadoutSelectedResetButtonColor(canResetSelectedWeapon);
             GUI.enabled = previousResetEnabled && canResetSelectedWeapon;
             if (GUI.Button(new Rect(x + 44f, y + 50f, 50f, 22f), canResetSelectedWeapon ? "Reset" : "Base"))
             {
                 ResetSelectedLoadoutWeapon(unit);
             }
 
+            GUI.color = previousResetColor;
             GUI.enabled = previousResetEnabled;
             if (GUI.Button(new Rect(x + 98f, y + 50f, 44f, 22f), "E"))
             {
@@ -8255,6 +8258,13 @@ namespace MC2Demo.Presentation
             return hasInventory
                 ? new Color(0.50f, 1f, 0.82f, 1f)
                 : new Color(1f, 0.78f, 0.28f, 1f);
+        }
+
+        private static Color LoadoutSelectedResetButtonColor(bool hasPlacementOverride)
+        {
+            return hasPlacementOverride
+                ? new Color(1f, 0.78f, 0.28f, 1f)
+                : new Color(0.58f, 0.82f, 1f, 1f);
         }
 
         private static bool[] AllMountedWeaponsStateFor(UnitState unit)

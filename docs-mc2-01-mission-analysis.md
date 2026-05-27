@@ -234,7 +234,7 @@ out-of-bounds pressure; blocked targets also disable the Place action and label
 it Blocked. The detail line mirrors that signal with target
 clear/blocked text, blocked reason, filler transition, selected weapon footprint cells, and concrete footprint shape, so the player does not
 have to infer the result from color alone. The selected-weapon Reset control
-stays disabled as Base until that weapon has a placement override to clear. Slot
+stays disabled as Base with a done-state color until that weapon has a placement override to clear. Slot
 and draft reset actions clear that UI selection so restored fits do not keep pointing at stale grid coordinates.
 Spare load is now projected into free cells as simple armor plates and heat sinks,
 exposing hardness and cooling totals before full inventory editing exists. Those
