@@ -156,6 +156,7 @@ Current demo behavior:
 - provides a toggleable current-objective mission map and a pause/restart/end system panel
 - resolves mission victory or defeat through BattleCore result state
 - estimates contract bounty, repair cost, net token result, and salvage claims in mission debriefs
+- summarizes completed objectives, enemy kills, and damaged player mechs in the debrief without expanding the panel
 - auto-acquires hostile units in weapon range
 - gives missile, ballistic, and energy attacks distinct muzzle and trace accents
 - resolves temporary weapon cooldown, damage, cockpit/torso/arms/legs sections,

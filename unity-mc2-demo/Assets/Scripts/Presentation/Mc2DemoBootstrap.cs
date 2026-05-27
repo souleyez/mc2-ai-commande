@@ -9416,23 +9416,45 @@ namespace MC2Demo.Presentation
                 y += 22f;
             }
 
-            string completed = FirstSummaryItem(summary.completedVisibleObjectiveTitles);
+            string completed = SummaryItemsText(summary.completedVisibleObjectiveTitles, 2);
             if (!string.IsNullOrEmpty(completed))
             {
-                GUI.Label(new Rect(panel.x + 18f, y, panel.width - 36f, 20f), "Done: " + TruncateText(completed, 42));
+                GUI.Label(new Rect(panel.x + 18f, y, panel.width - 36f, 20f), "Done: " + TruncateText(completed, 58));
                 y += 20f;
             }
 
-            string damaged = FirstSummaryItem(summary.damagedPlayerUnitLabels);
-            if (!string.IsNullOrEmpty(damaged))
+            string kills = SummaryItemsText(summary.destroyedEnemyUnitLabels, 2);
+            string damaged = SummaryItemsText(summary.damagedPlayerUnitLabels, 2);
+            if (!string.IsNullOrEmpty(kills) || !string.IsNullOrEmpty(damaged))
             {
-                GUI.Label(new Rect(panel.x + 18f, y, panel.width - 36f, 20f), "Damage: " + TruncateText(damaged, 40));
+                string killText = string.IsNullOrEmpty(kills) ? "none" : TruncateText(kills, 26);
+                string damageText = string.IsNullOrEmpty(damaged) ? "none" : TruncateText(damaged, 24);
+                GUI.Label(new Rect(panel.x + 18f, y, panel.width - 36f, 20f), "Combat: Kills " + killText + "    Damage " + damageText);
             }
         }
 
-        private static string FirstSummaryItem(string[] values)
+        private static string SummaryItemsText(string[] values, int maxItems)
         {
-            return values == null || values.Length == 0 ? "" : values[0];
+            if (values == null || values.Length == 0 || maxItems <= 0)
+            {
+                return "";
+            }
+
+            int count = Math.Min(maxItems, values.Length);
+            string[] shown = new string[count];
+            for (int index = 0; index < count; index++)
+            {
+                shown[index] = values[index] ?? "";
+            }
+
+            string text = string.Join(", ", shown);
+            int remaining = values.Length - count;
+            if (remaining > 0)
+            {
+                text += " +" + remaining.ToString(CultureInfo.InvariantCulture);
+            }
+
+            return text;
         }
 
         private static string FormatTokens(int value)
