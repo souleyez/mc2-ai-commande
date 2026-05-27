@@ -8606,7 +8606,13 @@ namespace MC2Demo.Presentation
                 gridY = selectedItem.GridY + deltaY
             };
             SetSelectedLoadoutGridCell(unit, selectedItem.GridX + deltaX, selectedItem.GridY + deltaY);
-            statusText = "Moved " + TruncateText(selectedItem.DisplayName, 20);
+            statusText = LoadoutWeaponEditStatus(
+                selectedWeaponIndex,
+                "Moved",
+                selectedItem.GridX,
+                selectedItem.GridY,
+                selectedItem.GridX + deltaX,
+                selectedItem.GridY + deltaY);
         }
 
         private void PlaceSelectedLoadoutWeaponAt(UnitState unit, CombatLoadoutPreview preview, int gridX, int gridY)
@@ -8630,11 +8636,13 @@ namespace MC2Demo.Presentation
                 gridY = gridY
             };
             SetSelectedLoadoutGridCell(unit, gridX, gridY);
-            statusText = "Placed " + TruncateText(selectedItem.DisplayName, 18)
-                + " @ "
-                + gridX.ToString(CultureInfo.InvariantCulture)
-                + ","
-                + gridY.ToString(CultureInfo.InvariantCulture);
+            statusText = LoadoutWeaponEditStatus(
+                selectedWeaponIndex,
+                "Moved",
+                selectedItem.GridX,
+                selectedItem.GridY,
+                gridX,
+                gridY);
         }
 
         private void ResetSelectedLoadoutWeapon(UnitState unit)
@@ -8648,7 +8656,35 @@ namespace MC2Demo.Presentation
 
             placementOverrides[selectedWeaponIndex] = null;
             selectedLoadoutGridCellByUnit.Remove(unit.Id ?? "");
-            statusText = "Reset temporary slot";
+            CombatLoadoutPreviewItem baseItem = LoadoutPreviewItemForWeapon(LoadoutBasePreviewFor(unit), selectedWeaponIndex);
+            statusText = baseItem == null
+                ? LoadoutWeaponStateLabel(selectedWeaponIndex, "Base")
+                : LoadoutWeaponStateLabel(selectedWeaponIndex, "Base")
+                    + " @"
+                    + LoadoutGridPositionText(baseItem.GridX, baseItem.GridY);
+        }
+
+        private static string LoadoutWeaponEditStatus(
+            int selectedWeaponIndex,
+            string state,
+            int fromGridX,
+            int fromGridY,
+            int toGridX,
+            int toGridY)
+        {
+            return LoadoutWeaponStateLabel(selectedWeaponIndex, state)
+                + " @"
+                + LoadoutGridPositionText(fromGridX, fromGridY)
+                + ">"
+                + LoadoutGridPositionText(toGridX, toGridY);
+        }
+
+        private static string LoadoutWeaponStateLabel(int selectedWeaponIndex, string state)
+        {
+            return "W"
+                + (selectedWeaponIndex + 1).ToString(CultureInfo.InvariantCulture)
+                + " "
+                + state;
         }
 
         private bool HasSelectedLoadoutWeaponPlacementOverride(UnitState unit, int selectedWeaponIndex)
