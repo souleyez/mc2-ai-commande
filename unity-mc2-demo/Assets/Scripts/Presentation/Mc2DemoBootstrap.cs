@@ -7503,7 +7503,7 @@ namespace MC2Demo.Presentation
                     selectedWeaponIndex),
                     64));
             DrawLoadoutPlacementControls(unit, preview, railX, y + 78f, railWidth);
-            return Mathf.Max(gridHeight + 2f, 162f);
+            return Mathf.Max(gridHeight + 2f, 204f);
         }
 
         private void DrawLoadoutTargetPlacementPreview(
