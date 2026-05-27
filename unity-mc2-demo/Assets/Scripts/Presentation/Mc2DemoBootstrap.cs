@@ -8179,7 +8179,7 @@ namespace MC2Demo.Presentation
                 if (GUI.Button(buttonRect, label))
                 {
                     SetSelectedLoadoutWeapon(unit, index);
-                    statusText = "Selected " + TruncateText(weapon.name, 24);
+                    statusText = LoadoutWeaponSelectionStatus(unit, preview, index, weapon);
                 }
 
                 GUI.color = previousColor;
@@ -8187,6 +8187,24 @@ namespace MC2Demo.Presentation
             }
 
             return 24f + rows * 26f;
+        }
+
+        private string LoadoutWeaponSelectionStatus(
+            UnitState unit,
+            CombatLoadoutPreview preview,
+            int selectedWeaponIndex,
+            CombatWeaponDefinition weapon)
+        {
+            CombatLoadoutPreviewItem selectedItem = LoadoutPreviewItemForWeapon(preview, selectedWeaponIndex);
+            CombatLoadoutPreviewItem baseItem = LoadoutPreviewItemForWeapon(LoadoutBasePreviewFor(unit), selectedWeaponIndex);
+            string placementState = HasLoadoutWeaponPlacementOverride(unit, selectedWeaponIndex) ? "Moved" : "Base";
+            string positionText = selectedItem == null
+                ? ""
+                : LoadoutWeaponPositionSummary(unit, preview, selectedItem, baseItem);
+            return LoadoutWeaponStateLabel(selectedWeaponIndex, placementState)
+                + positionText
+                + " "
+                + TruncateText(weapon?.name ?? "Weapon", 18);
         }
 
         private static string LoadoutWeaponButtonLabel(
