@@ -7881,7 +7881,7 @@ namespace MC2Demo.Presentation
                     : "T " + targetPosition + " current";
                 if (canCycleFiller)
                 {
-                    targetStatus += " / " + FillerTransitionLabel(occupiedCell?.Category);
+                    targetStatus += " / " + FillerCompactActionLabel(occupiedCell?.Category);
                 }
 
                 GUI.enabled = previousEnabled;
@@ -8053,7 +8053,7 @@ namespace MC2Demo.Presentation
                 return "";
             }
 
-            return " / " + FillerTransitionLabel(occupiedCell?.Category);
+            return " / " + FillerCompactActionLabel(occupiedCell?.Category);
         }
 
         private static string LoadoutTargetSlotStatusText(CombatLoadoutPreview preview, int column, int row)
@@ -9121,6 +9121,21 @@ namespace MC2Demo.Presentation
         private static string FillerTransitionLabel(string currentCategory)
         {
             return FillerCurrentLabel(currentCategory) + " > " + FillerActionLabel(currentCategory);
+        }
+
+        private static string FillerCompactActionLabel(string currentCategory)
+        {
+            if (currentCategory == LoadoutItemCategory.ArmorPlate)
+            {
+                return "+Sink";
+            }
+
+            if (currentCategory == LoadoutItemCategory.HeatSink)
+            {
+                return "Clear";
+            }
+
+            return "+Armor";
         }
 
         private static string FillerCurrentLabel(string currentCategory)
