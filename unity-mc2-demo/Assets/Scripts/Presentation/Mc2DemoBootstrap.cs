@@ -9114,7 +9114,7 @@ namespace MC2Demo.Presentation
 
             if (targetCellStack > 1)
             {
-                return "Stack";
+                return "Stk";
             }
 
             return FillerCompactActionLabel(currentCategory);
