@@ -40,6 +40,9 @@ namespace MC2Demo.Presentation
         private const float LoadoutResetButtonRightOffset = 72f;
         private const float LoadoutResetButtonWidth = 64f;
         private const float LoadoutSelectedResetButtonWidth = 50f;
+        private const float LoadoutTargetControlOffset = 148f;
+        private const float LoadoutTargetButtonWidth = 62f;
+        private const float LoadoutTargetStatusMinWidth = 80f;
         private const string LoadoutConditionPrefix = "Cond ";
         private static readonly Color UiPanelColor = new(0.035f, 0.045f, 0.055f, 0.92f);
         private static readonly Color UiButtonColor = new(0.075f, 0.105f, 0.125f, 0.96f);
@@ -1986,6 +1989,25 @@ namespace MC2Demo.Presentation
             bool selectedResetOk = string.Equals(selectedResetBaseLabel, "Base", StringComparison.Ordinal)
                 && string.Equals(selectedResetDirtyLabel, "Reset", StringComparison.Ordinal)
                 && LoadoutSelectedResetButtonWidth <= 50f;
+            string targetPlaceLabel = LoadoutPlaceButtonLabel(true);
+            string targetBlockLabel = LoadoutPlaceButtonLabel(false);
+            string targetPickLabel = LoadoutTargetPickLabel();
+            string fillerArmorLabel = FillerButtonLabel(null, true, 0);
+            string fillerSinkLabel = FillerButtonLabel(LoadoutItemCategory.ArmorPlate, true, 1);
+            string fillerClearLabel = FillerButtonLabel(LoadoutItemCategory.HeatSink, true, 1);
+            string fillerLockLabel = FillerButtonLabel(null, false, 0);
+            string fillerStackLabel = FillerButtonLabel(null, true, 2);
+            bool targetControlsOk = string.Equals(targetPlaceLabel, "Place", StringComparison.Ordinal)
+                && string.Equals(targetBlockLabel, "Block", StringComparison.Ordinal)
+                && string.Equals(targetPickLabel, "Pick", StringComparison.Ordinal)
+                && string.Equals(fillerArmorLabel, "+Armor", StringComparison.Ordinal)
+                && string.Equals(fillerSinkLabel, "+Sink", StringComparison.Ordinal)
+                && string.Equals(fillerClearLabel, "Clear", StringComparison.Ordinal)
+                && string.Equals(fillerLockLabel, "Lock", StringComparison.Ordinal)
+                && string.Equals(fillerStackLabel, "Stk", StringComparison.Ordinal)
+                && LoadoutTargetControlOffset <= 148f
+                && LoadoutTargetButtonWidth <= 62f
+                && LoadoutTargetStatusMinWidth <= 80f;
             string summary = "title="
                 + title
                 + " button="
@@ -2013,11 +2035,35 @@ namespace MC2Demo.Presentation
                 + "/"
                 + selectedResetDirtyLabel
                 + " selectedResetW="
-                + LoadoutSelectedResetButtonWidth.ToString(CultureInfo.InvariantCulture);
+                + LoadoutSelectedResetButtonWidth.ToString(CultureInfo.InvariantCulture)
+                + " target="
+                + targetPlaceLabel
+                + "/"
+                + targetBlockLabel
+                + "/"
+                + targetPickLabel
+                + " filler="
+                + fillerArmorLabel
+                + "/"
+                + fillerSinkLabel
+                + "/"
+                + fillerClearLabel
+                + "/"
+                + fillerLockLabel
+                + "/"
+                + fillerStackLabel
+                + " targetW="
+                + LoadoutTargetButtonWidth.ToString(CultureInfo.InvariantCulture);
 
             return new LoadoutCompactAssertionResult
             {
-                Accepted = titleOk && buttonOk && heightOk && conditionOk && editControlsOk && selectedResetOk,
+                Accepted = titleOk
+                    && buttonOk
+                    && heightOk
+                    && conditionOk
+                    && editControlsOk
+                    && selectedResetOk
+                    && targetControlsOk,
                 Summary = summary
             };
         }
@@ -8241,8 +8287,8 @@ namespace MC2Demo.Presentation
                     : targetClear
                         ? new Color(0.50f, 1f, 0.82f, 1f)
                         : new Color(1f, 0.32f, 0.18f, 1f);
-                string placeLabel = targetClear ? "Place" : "Block";
-                if (GUI.Button(new Rect(x + 148f, y + 24f, 62f, 22f), placeLabel))
+                string placeLabel = LoadoutPlaceButtonLabel(targetClear);
+                if (GUI.Button(new Rect(x + LoadoutTargetControlOffset, y + 24f, LoadoutTargetButtonWidth, 22f), placeLabel))
                 {
                     PlaceSelectedLoadoutWeaponAt(unit, preview, targetCell.x, targetCell.y);
                 }
@@ -8255,7 +8301,9 @@ namespace MC2Demo.Presentation
                 GUI.enabled = previousEnabled && canCycleFiller;
                 string fillerAction = FillerButtonLabel(occupiedCell?.Category, canFill, targetCellStack);
                 GUI.color = LoadoutFillerActionButtonColor(occupiedCell?.Category, canCycleFiller);
-                if (GUI.Button(new Rect(x + 148f, y + 50f, 62f, 22f), fillerAction))
+                if (GUI.Button(
+                    new Rect(x + LoadoutTargetControlOffset, y + 50f, LoadoutTargetButtonWidth, 22f),
+                    fillerAction))
                 {
                     CycleFillerOverride(unit, targetCell.x, targetCell.y, occupiedCell?.Category);
                 }
@@ -8273,7 +8321,11 @@ namespace MC2Demo.Presentation
                 GUI.enabled = previousEnabled;
                 GUI.color = LoadoutTargetStatusColor(canPlace, targetClear);
                 GUI.Label(
-                    new Rect(x + 148f, y + 76f, Mathf.Max(80f, width - 148f), 18f),
+                    new Rect(
+                        x + LoadoutTargetControlOffset,
+                        y + 76f,
+                        Mathf.Max(LoadoutTargetStatusMinWidth, width - LoadoutTargetControlOffset),
+                        18f),
                     targetStatus);
                 GUI.color = previousColor;
             }
@@ -8281,9 +8333,25 @@ namespace MC2Demo.Presentation
             {
                 Color previousColor = GUI.color;
                 GUI.color = LoadoutTargetStatusColor(false, true);
-                GUI.Label(new Rect(x + 148f, y + 24f, Mathf.Max(80f, width - 148f), 18f), "Pick");
+                GUI.Label(
+                    new Rect(
+                        x + LoadoutTargetControlOffset,
+                        y + 24f,
+                        Mathf.Max(LoadoutTargetStatusMinWidth, width - LoadoutTargetControlOffset),
+                        18f),
+                    LoadoutTargetPickLabel());
                 GUI.color = previousColor;
             }
+        }
+
+        private static string LoadoutPlaceButtonLabel(bool targetClear)
+        {
+            return targetClear ? "Place" : "Block";
+        }
+
+        private static string LoadoutTargetPickLabel()
+        {
+            return "Pick";
         }
 
         private void DrawLoadoutNudgeButton(
