@@ -31,6 +31,7 @@ namespace MC2Demo.Presentation
         private const float MiniMaxCommanderAdvanceSeconds = 8f;
         private const float LoadoutCardHeight = 456f;
         private const float LoadoutCardStride = 468f;
+        private const float LoadoutGridSectionMinHeight = 204f;
         private static readonly Color UiPanelColor = new(0.035f, 0.045f, 0.055f, 0.92f);
         private static readonly Color UiButtonColor = new(0.075f, 0.105f, 0.125f, 0.96f);
         private static readonly Color UiTrackColor = new(0.015f, 0.02f, 0.025f, 0.9f);
@@ -720,6 +721,9 @@ namespace MC2Demo.Presentation
                         break;
                     case StartupCommanderScriptActionKind.AssertCombatSituation:
                         RunStartupCombatSituationAssertion();
+                        break;
+                    case StartupCommanderScriptActionKind.AssertLoadoutCompact:
+                        RunStartupLoadoutCompactAssertion();
                         break;
                 }
             }
@@ -1896,6 +1900,61 @@ namespace MC2Demo.Presentation
             return new CombatSituationAssertionResult
             {
                 Accepted = textOk && countsOk,
+                Summary = summary
+            };
+        }
+
+        private void RunStartupLoadoutCompactAssertion()
+        {
+            LoadoutCompactAssertionResult result = BuildLoadoutCompactAssertion();
+            if (result.Accepted)
+            {
+                AddCombatLogLine("CLI loadout compact assert OK: " + result.Summary);
+                Debug.Log("MC2 loadout compact assertion OK: " + result.Summary);
+                return;
+            }
+
+            startupSmokeFailed = true;
+            statusText = "Loadout compact assertion failed";
+            AddCombatLogLine("CLI loadout compact assert failed: " + result.Summary);
+            Debug.LogError("MC2 loadout compact assertion failed: " + result.Summary);
+        }
+
+        private LoadoutCompactAssertionResult BuildLoadoutCompactAssertion()
+        {
+            UnitState unit = SelectedMechBayLoadoutUnit();
+            if (unit == null)
+            {
+                return LoadoutCompactAssertionResult.Blocked("No selected loadout unit");
+            }
+
+            CombatLoadoutPreview preview = LoadoutPreviewFor(unit);
+            CombatWeaponDefinition[] weapons = unit.Profile?.Weapons ?? Array.Empty<CombatWeaponDefinition>();
+            if (preview == null || weapons.Length == 0 || weapons[0] == null)
+            {
+                return LoadoutCompactAssertionResult.Blocked("No loadout preview weapon");
+            }
+
+            string title = LoadoutUnitTitle(unit);
+            string button = LoadoutWeaponButtonLabel(weapons[0], preview, 0, false, HasLoadoutWeaponPlacementOverride(unit, 0));
+            bool titleOk = title.StartsWith("Fit ", StringComparison.Ordinal)
+                && title.Length <= 46
+                && title.IndexOf(" owned ", StringComparison.OrdinalIgnoreCase) < 0
+                && title.IndexOf(" pilot ", StringComparison.OrdinalIgnoreCase) < 0;
+            bool buttonOk = button.Length <= 12
+                && button.IndexOf(" ", StringComparison.Ordinal) >= 0
+                && button.IndexOf(TruncateText(weapons[0].name, 4), StringComparison.OrdinalIgnoreCase) < 0;
+            bool heightOk = LoadoutGridSectionMinHeight >= 204f;
+            string summary = "title="
+                + title
+                + " button="
+                + button
+                + " gridMin="
+                + LoadoutGridSectionMinHeight.ToString(CultureInfo.InvariantCulture);
+
+            return new LoadoutCompactAssertionResult
+            {
+                Accepted = titleOk && buttonOk && heightOk,
                 Summary = summary
             };
         }
@@ -5611,6 +5670,21 @@ namespace MC2Demo.Presentation
             }
         }
 
+        private struct LoadoutCompactAssertionResult
+        {
+            public bool Accepted { get; set; }
+            public string Summary { get; set; }
+
+            public static LoadoutCompactAssertionResult Blocked(string summary)
+            {
+                return new LoadoutCompactAssertionResult
+                {
+                    Accepted = false,
+                    Summary = summary ?? "blocked"
+                };
+            }
+        }
+
         private string RestartIdentityText(MechBayMissionRestartRuntimeSwapResult result)
         {
             MechBayMissionRestartSpawnIntent[] intents = result?.SpawnIntents ?? Array.Empty<MechBayMissionRestartSpawnIntent>();
@@ -7507,7 +7581,7 @@ namespace MC2Demo.Presentation
                     selectedWeaponIndex),
                     64));
             DrawLoadoutPlacementControls(unit, preview, railX, y + 78f, railWidth);
-            return Mathf.Max(gridHeight + 2f, 204f);
+            return Mathf.Max(gridHeight + 2f, LoadoutGridSectionMinHeight);
         }
 
         private void DrawLoadoutTargetPlacementPreview(

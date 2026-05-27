@@ -662,5 +662,6 @@ Tasks:
 - The payload grid section now reserves height for the compact side-rail controls, preventing the weapon list from crowding the movement/status controls after the density pass.
 - The fitting Apply/Reset row now sits inside a compact status strip with stock/draft/applied cue borders, matching the rest of the right-drawer control language.
 - The selected fitting card title now uses a short `Fit` label with compact owned/runtime id and pilot text instead of repeating the full unit and owned-mech identity chain.
+- A command-file `assert-loadout-compact` hook and `mc2_01-loadout-compact.txt` smoke path now guard the compact fitting title, mounted-weapon button labels, and grid-section height contract.
 - The next low-risk step is to keep tuning the selected fitting card density and then migrate these flow screens beyond IMGUI once the layout direction feels right.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.

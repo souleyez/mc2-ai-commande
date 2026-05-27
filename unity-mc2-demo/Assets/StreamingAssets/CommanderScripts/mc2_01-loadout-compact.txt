@@ -1,0 +1,6 @@
+# Proves the mech bay fitting card keeps compact title, weapon button, and grid spacing contracts.
+prepare-local-candidate
+squad-swap
+mech-bay-launch
+assert-loadout-compact
+report
