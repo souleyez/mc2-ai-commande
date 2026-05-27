@@ -165,6 +165,7 @@ Current demo behavior:
   with persistent damage beacons in addition to flashes and detached parts
 - shows player unit structure and section damage in the left status panel
 - prints recent combat events in the top-right combat panel
+- shows a compact combat situation row for squad readiness, active hostiles, live targets, and contact tempo
 
 Local setup:
 

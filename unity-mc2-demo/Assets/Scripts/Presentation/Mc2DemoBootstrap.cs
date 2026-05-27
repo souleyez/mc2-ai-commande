@@ -4456,7 +4456,8 @@ namespace MC2Demo.Presentation
             float x = panel.x;
             DrawDesignPanelFrame(panel, "Combat / 战况", UiCyanColor);
             GUI.Label(new Rect(x + 12f, panel.y + 36f, 320f, 22f), "Active units: " + CountLiveUnits() + " / " + mission.Units.Count);
-            float y = panel.y + 62f;
+            GUI.Label(new Rect(x + 12f, panel.y + 56f, 320f, 18f), CombatSituationText());
+            float y = panel.y + 80f;
             foreach (string line in combatLog)
             {
                 if (y > panel.yMax - 22f)
@@ -4468,6 +4469,25 @@ namespace MC2Demo.Presentation
                 GUI.Label(new Rect(x + 12f, y, 320f, 20f), TruncateText(line, 58));
                 y += 20f;
             }
+        }
+
+        private string CombatSituationText()
+        {
+            int playerReady = CountActivePlayerUnits();
+            int playerSlots = CountPlayerUnits();
+            int activeHostiles = CountActiveHostileUnits();
+            int liveTargets = CountLiveStructures();
+            string tempo = combatLog.Count > 0 ? "contact" : "quiet";
+            return "Squad "
+                + playerReady.ToString(CultureInfo.InvariantCulture)
+                + "/"
+                + playerSlots.ToString(CultureInfo.InvariantCulture)
+                + "  Hostiles "
+                + activeHostiles.ToString(CultureInfo.InvariantCulture)
+                + "  Targets "
+                + liveTargets.ToString(CultureInfo.InvariantCulture)
+                + "  "
+                + tempo;
         }
 
         private void DrawMissionMap()
@@ -9988,6 +10008,25 @@ namespace MC2Demo.Presentation
             foreach (UnitState unit in mission.PlayerUnits())
             {
                 if (unit.IsActive && !unit.IsDestroyed)
+                {
+                    count++;
+                }
+            }
+
+            return count;
+        }
+
+        private int CountActiveHostileUnits()
+        {
+            int count = 0;
+            if (mission == null)
+            {
+                return count;
+            }
+
+            foreach (UnitState unit in mission.Units)
+            {
+                if (!unit.IsPlayerUnit && unit.IsActive && !unit.IsDestroyed)
                 {
                     count++;
                 }

@@ -648,6 +648,7 @@ Tasks:
 - Missile, ballistic, and energy attacks now have clearer muzzle and trace accents layered over the existing family-specific combat effects.
 - The debrief now compresses completed objectives, enemy kills, and damaged player mechs into readable summary rows with `+n` overflow counts.
 - A command-file `assert-debrief-summary` hook and `mc2_01-debrief-summary.txt` smoke path now verify result counters and the compact combat summary row.
+- The combat HUD now includes a compact situation row for squad readiness, active hostiles, live targets, and contact tempo above the recent event log.
 - Weapon selection, move, place, and selected-slot reset results now report `W# Moved @a,b>c,d` or `W# Base @a,b` in the top status.
 - The selected weapon summary and payload detail now show the selected block as a concrete `WxH` footprint, making vertical and wide weapon shapes readable without counting cells.
 - The mounted weapon buttons also include that `WxH` footprint, so the selection list itself reads as block inventory instead of plain weapon toggles.
