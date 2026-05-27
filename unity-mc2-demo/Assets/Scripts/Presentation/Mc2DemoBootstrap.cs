@@ -7879,9 +7879,11 @@ namespace MC2Demo.Presentation
                 }
 
                 GUI.enabled = previousEnabled;
+                GUI.color = LoadoutTargetStatusColor(canPlace, targetClear);
                 GUI.Label(
                     new Rect(x + 148f, y + 76f, Mathf.Max(80f, width - 148f), 18f),
                     targetStatus);
+                GUI.color = previousColor;
             }
         }
 
@@ -8280,6 +8282,18 @@ namespace MC2Demo.Presentation
             return hasPendingEdits
                 ? new Color(1f, 0.78f, 0.28f, 1f)
                 : new Color(0.58f, 0.82f, 1f, 1f);
+        }
+
+        private static Color LoadoutTargetStatusColor(bool canPlace, bool targetClear)
+        {
+            if (!canPlace)
+            {
+                return new Color(0.58f, 0.82f, 1f, 1f);
+            }
+
+            return targetClear
+                ? new Color(0.50f, 1f, 0.82f, 1f)
+                : new Color(1f, 0.34f, 0.22f, 1f);
         }
 
         private static bool[] AllMountedWeaponsStateFor(UnitState unit)

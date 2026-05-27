@@ -63,7 +63,7 @@ Current demo behavior:
 - echoes the filler transition, such as Empty > Armor, in the top status, target status, and payload detail text
 - draws a green/red target ghost for the selected mounted weapon before Place applies the draft move
 - disables the Place action and labels it Blocked while the selected weapon target overlaps another payload item or leaves the grid
-- reports target clear/blocked status, blocked reason, and selected weapon footprint shape in the payload detail line
+- reports and colors target clear/blocked/current status, blocked reason, and selected weapon footprint shape in the payload detail line
 - projects spare-load armor plates and heat sinks into free cells with hardness and cooling readouts
 - lets projected filler cells cycle between armor, heat sink, and empty to preview loadout tradeoffs
 - disables, labels, and colors the selected-weapon Reset action as Base until that weapon has a placement override to clear
