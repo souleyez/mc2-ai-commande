@@ -664,5 +664,6 @@ Tasks:
 - The selected fitting card title now uses a short `Fit` label with compact owned/runtime id and pilot text instead of repeating the full unit and owned-mech identity chain.
 - A command-file `assert-loadout-compact` hook and `mc2_01-loadout-compact.txt` smoke path now guard the compact fitting title, mounted-weapon button labels, and grid-section height contract.
 - The selected fitting card condition row now uses compact `Cond` text and a narrower Repair action, keeping the repair/state readout aligned with the denser loadout controls.
+- The loadout compact smoke now also asserts the condition row contract, including the short `Cond` label and narrow Repair action geometry.
 - The next low-risk step is to keep tuning the selected fitting card density and then migrate these flow screens beyond IMGUI once the layout direction feels right.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.

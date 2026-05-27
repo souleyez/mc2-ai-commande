@@ -32,6 +32,9 @@ namespace MC2Demo.Presentation
         private const float LoadoutCardHeight = 456f;
         private const float LoadoutCardStride = 468f;
         private const float LoadoutGridSectionMinHeight = 204f;
+        private const float LoadoutRepairButtonWidth = 64f;
+        private const float LoadoutRepairStateOffset = 70f;
+        private const string LoadoutConditionPrefix = "Cond ";
         private static readonly Color UiPanelColor = new(0.035f, 0.045f, 0.055f, 0.92f);
         private static readonly Color UiButtonColor = new(0.075f, 0.105f, 0.125f, 0.96f);
         private static readonly Color UiTrackColor = new(0.015f, 0.02f, 0.025f, 0.9f);
@@ -1945,16 +1948,26 @@ namespace MC2Demo.Presentation
                 && button.IndexOf(" ", StringComparison.Ordinal) >= 0
                 && button.IndexOf(TruncateText(weapons[0].name, 4), StringComparison.OrdinalIgnoreCase) < 0;
             bool heightOk = LoadoutGridSectionMinHeight >= 204f;
+            string conditionLine = MechConditionCompactText(unit);
+            bool conditionOk = conditionLine.StartsWith(LoadoutConditionPrefix, StringComparison.Ordinal)
+                && conditionLine.IndexOf("Condition", StringComparison.OrdinalIgnoreCase) < 0
+                && conditionLine.IndexOf("Repair ", StringComparison.OrdinalIgnoreCase) >= 0
+                && LoadoutRepairButtonWidth <= 64f
+                && LoadoutRepairStateOffset <= 70f;
             string summary = "title="
                 + title
                 + " button="
                 + button
                 + " gridMin="
-                + LoadoutGridSectionMinHeight.ToString(CultureInfo.InvariantCulture);
+                + LoadoutGridSectionMinHeight.ToString(CultureInfo.InvariantCulture)
+                + " condition="
+                + conditionLine
+                + " repairW="
+                + LoadoutRepairButtonWidth.ToString(CultureInfo.InvariantCulture);
 
             return new LoadoutCompactAssertionResult
             {
-                Accepted = titleOk && buttonOk && heightOk,
+                Accepted = titleOk && buttonOk && heightOk && conditionOk,
                 Summary = summary
             };
         }
@@ -7258,19 +7271,17 @@ namespace MC2Demo.Presentation
 
         private void DrawMechConditionLine(UnitState unit, float left, float right, float y, float width)
         {
-            int condition = MechConditionPercent(unit);
             int repairCost = MechBayRepairService.EstimateRepairCostResourcePoints(unit);
             GUI.Label(
                 new Rect(left, y, width * 0.46f, 18f),
-                "Cond " + condition.ToString(CultureInfo.InvariantCulture) + "%"
-                + "  Repair " + FormatTokens(repairCost));
+                MechConditionCompactText(unit));
 
             bool previousEnabled = GUI.enabled;
             GUI.enabled = previousEnabled
                 && repairCost > 0
                 && demoInventory != null
                 && demoInventory.tokenBalance >= repairCost;
-            if (GUI.Button(new Rect(right, y - 2f, 64f, 22f), "Repair"))
+            if (GUI.Button(new Rect(right, y - 2f, LoadoutRepairButtonWidth, 22f), "Repair"))
             {
                 MechBayRepairResult result = MechBayRepairService.TryRepair(demoInventory, unit);
                 RefreshDemoInventoryValidation();
@@ -7284,12 +7295,26 @@ namespace MC2Demo.Presentation
             GUI.enabled = previousEnabled;
             if (repairCost > 0 && demoInventory != null && demoInventory.tokenBalance < repairCost)
             {
-                GUI.Label(new Rect(right + 70f, y, width * 0.46f - 70f, 18f), "Need " + FormatTokens(repairCost));
+                GUI.Label(
+                    new Rect(right + LoadoutRepairStateOffset, y, width * 0.46f - LoadoutRepairStateOffset, 18f),
+                    "Need " + FormatTokens(repairCost));
             }
             else
             {
-                GUI.Label(new Rect(right + 70f, y, width * 0.46f - 70f, 18f), UnitMissionStateText(unit));
+                GUI.Label(
+                    new Rect(right + LoadoutRepairStateOffset, y, width * 0.46f - LoadoutRepairStateOffset, 18f),
+                    UnitMissionStateText(unit));
             }
+        }
+
+        private string MechConditionCompactText(UnitState unit)
+        {
+            int condition = MechConditionPercent(unit);
+            int repairCost = MechBayRepairService.EstimateRepairCostResourcePoints(unit);
+            return LoadoutConditionPrefix
+                + condition.ToString(CultureInfo.InvariantCulture)
+                + "%  Repair "
+                + FormatTokens(repairCost);
         }
 
         private static string UnitMissionStateText(UnitState unit)
