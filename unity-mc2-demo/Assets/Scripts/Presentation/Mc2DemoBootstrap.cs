@@ -1960,12 +1960,64 @@ namespace MC2Demo.Presentation
                 && button.IndexOf(" ", StringComparison.Ordinal) >= 0
                 && button.IndexOf(TruncateText(weapons[0].name, 4), StringComparison.OrdinalIgnoreCase) < 0;
             bool heightOk = LoadoutGridSectionMinHeight >= 204f;
+            LoadoutCompactCheck conditionCheck = BuildLoadoutConditionCompactCheck(unit);
+            LoadoutCompactCheck editCheck = BuildLoadoutEditControlsCompactCheck(preview);
+            LoadoutCompactCheck selectedResetCheck = BuildLoadoutSelectedResetCompactCheck();
+            LoadoutCompactCheck targetCheck = BuildLoadoutTargetControlsCompactCheck();
+            LoadoutCompactCheck nudgeCheck = BuildLoadoutNudgeCompactCheck();
+            LoadoutCompactCheck selectedSummaryCheck = BuildLoadoutSelectedSummaryCompactCheck(unit, preview, weapons[0]);
+            string summary = "title="
+                + title
+                + " button="
+                + button
+                + " gridMin="
+                + LoadoutGridSectionMinHeight.ToString(CultureInfo.InvariantCulture)
+                + " "
+                + conditionCheck.Summary
+                + " "
+                + editCheck.Summary
+                + " "
+                + selectedResetCheck.Summary
+                + " "
+                + targetCheck.Summary
+                + " "
+                + nudgeCheck.Summary
+                + " "
+                + selectedSummaryCheck.Summary;
+
+            return new LoadoutCompactAssertionResult
+            {
+                Accepted = titleOk
+                    && buttonOk
+                    && heightOk
+                    && conditionCheck.Accepted
+                    && editCheck.Accepted
+                    && selectedResetCheck.Accepted
+                    && targetCheck.Accepted
+                    && nudgeCheck.Accepted
+                    && selectedSummaryCheck.Accepted,
+                Summary = summary
+            };
+        }
+
+        private LoadoutCompactCheck BuildLoadoutConditionCompactCheck(UnitState unit)
+        {
             string conditionLine = MechConditionCompactText(unit);
-            bool conditionOk = conditionLine.StartsWith(LoadoutConditionPrefix, StringComparison.Ordinal)
+            bool accepted = conditionLine.StartsWith(LoadoutConditionPrefix, StringComparison.Ordinal)
                 && conditionLine.IndexOf("Condition", StringComparison.OrdinalIgnoreCase) < 0
                 && conditionLine.IndexOf("Repair ", StringComparison.OrdinalIgnoreCase) >= 0
                 && LoadoutRepairButtonWidth <= 64f
                 && LoadoutRepairStateOffset <= 70f;
+            return new LoadoutCompactCheck(
+                accepted,
+                "condition="
+                + conditionLine
+                + " repairW="
+                + LoadoutRepairButtonWidth.ToString(CultureInfo.InvariantCulture));
+        }
+
+        private static LoadoutCompactCheck BuildLoadoutEditControlsCompactCheck(CombatLoadoutPreview preview)
+        {
             string applyLabel = LoadoutApplyButtonLabel(false, preview, true);
             string readyApplyLabel = LoadoutApplyButtonLabel(true, preview, true);
             string invalidApplyLabel = LoadoutApplyButtonLabel(true, null, true);
@@ -1976,7 +2028,7 @@ namespace MC2Demo.Presentation
                 || string.Equals(readyApplyLabel, "Invalid", StringComparison.Ordinal);
             bool stockApplyOk = string.Equals(stockApplyLabel, "Stock", StringComparison.Ordinal)
                 || string.Equals(stockApplyLabel, "Invalid", StringComparison.Ordinal);
-            bool editControlsOk = string.Equals(applyLabel, "Done", StringComparison.Ordinal)
+            bool accepted = string.Equals(applyLabel, "Done", StringComparison.Ordinal)
                 && readyApplyOk
                 && string.Equals(invalidApplyLabel, "Invalid", StringComparison.Ordinal)
                 && stockApplyOk
@@ -1987,71 +2039,9 @@ namespace MC2Demo.Presentation
                 && LoadoutApplyButtonWidth <= 66f
                 && LoadoutResetButtonWidth <= 64f
                 && LoadoutEditStatusReservedWidth <= 146f;
-            string selectedResetBaseLabel = LoadoutSelectedResetButtonLabel(false);
-            string selectedResetDirtyLabel = LoadoutSelectedResetButtonLabel(true);
-            bool selectedResetOk = string.Equals(selectedResetBaseLabel, "Base", StringComparison.Ordinal)
-                && string.Equals(selectedResetDirtyLabel, "Reset", StringComparison.Ordinal)
-                && LoadoutSelectedResetButtonWidth <= 50f;
-            string targetPlaceLabel = LoadoutPlaceButtonLabel(true);
-            string targetBlockLabel = LoadoutPlaceButtonLabel(false);
-            string targetPickLabel = LoadoutTargetPickLabel();
-            string fillerArmorLabel = FillerButtonLabel(null, true, 0);
-            string fillerSinkLabel = FillerButtonLabel(LoadoutItemCategory.ArmorPlate, true, 1);
-            string fillerClearLabel = FillerButtonLabel(LoadoutItemCategory.HeatSink, true, 1);
-            string fillerLockLabel = FillerButtonLabel(null, false, 0);
-            string fillerStackLabel = FillerButtonLabel(null, true, 2);
-            bool targetControlsOk = string.Equals(targetPlaceLabel, "Place", StringComparison.Ordinal)
-                && string.Equals(targetBlockLabel, "Block", StringComparison.Ordinal)
-                && string.Equals(targetPickLabel, "Pick", StringComparison.Ordinal)
-                && string.Equals(fillerArmorLabel, "+Armor", StringComparison.Ordinal)
-                && string.Equals(fillerSinkLabel, "+Sink", StringComparison.Ordinal)
-                && string.Equals(fillerClearLabel, "Clear", StringComparison.Ordinal)
-                && string.Equals(fillerLockLabel, "Lock", StringComparison.Ordinal)
-                && string.Equals(fillerStackLabel, "Stk", StringComparison.Ordinal)
-                && LoadoutTargetControlOffset <= 148f
-                && LoadoutTargetButtonWidth <= 62f
-                && LoadoutTargetStatusMinWidth <= 80f;
-            string nudgeNorthLabel = LoadoutNudgeButtonLabel(0, -1);
-            string nudgeWestLabel = LoadoutNudgeButtonLabel(-1, 0);
-            string nudgeEastLabel = LoadoutNudgeButtonLabel(1, 0);
-            string nudgeSouthLabel = LoadoutNudgeButtonLabel(0, 1);
-            string nudgeReadyLabel = LoadoutNudgeStatusLabel("");
-            string nudgeBlockedLabel = LoadoutNudgeStatusLabel("N outside");
-            bool nudgeControlsOk = string.Equals(nudgeNorthLabel, "N", StringComparison.Ordinal)
-                && string.Equals(nudgeWestLabel, "W", StringComparison.Ordinal)
-                && string.Equals(nudgeEastLabel, "E", StringComparison.Ordinal)
-                && string.Equals(nudgeSouthLabel, "S", StringComparison.Ordinal)
-                && string.Equals(nudgeReadyLabel, "Move OK", StringComparison.Ordinal)
-                && nudgeBlockedLabel.StartsWith("Block ", StringComparison.Ordinal)
-                && LoadoutNudgeButtonWidth <= 40f
-                && LoadoutNudgeEastButtonWidth <= 44f
-                && LoadoutNudgeStatusWidth <= 142f;
-            CombatLoadoutPreviewItem selectedItem = LoadoutPreviewItemForWeapon(preview, 0);
-            CombatLoadoutPreviewItem baseItem = LoadoutPreviewItemForWeapon(LoadoutBasePreviewFor(unit), 0);
-            string selectedSummary = LoadoutSelectedWeaponSummaryText(unit, preview, 0, weapons[0], selectedItem, baseItem);
-            bool selectedSummaryOk = selectedSummary.StartsWith("W1 ", StringComparison.Ordinal)
-                && selectedSummary.IndexOf(" Base ", StringComparison.Ordinal) >= 0
-                && selectedSummary.IndexOf("  D ", StringComparison.Ordinal) >= 0
-                && selectedSummary.IndexOf("  R ", StringComparison.Ordinal) >= 0
-                && selectedSummary.IndexOf("  CD ", StringComparison.Ordinal) >= 0
-                && selectedSummary.IndexOf("  H ", StringComparison.Ordinal) >= 0
-                && selectedSummary.IndexOf("  W ", StringComparison.Ordinal) >= 0
-                && selectedSummary.IndexOf("  C ", StringComparison.Ordinal) >= 0
-                && selectedSummary.IndexOf("x", StringComparison.Ordinal) >= 0
-                && selectedSummary.IndexOf("Cells", StringComparison.OrdinalIgnoreCase) < 0
-                && selectedSummary.IndexOf("Shape", StringComparison.OrdinalIgnoreCase) < 0
-                && selectedSummary.Length <= 118;
-            string summary = "title="
-                + title
-                + " button="
-                + button
-                + " gridMin="
-                + LoadoutGridSectionMinHeight.ToString(CultureInfo.InvariantCulture)
-                + " condition="
-                + conditionLine
-                + " repairW="
-                + LoadoutRepairButtonWidth.ToString(CultureInfo.InvariantCulture)
-                + " edit="
+            return new LoadoutCompactCheck(
+                accepted,
+                "edit="
                 + applyLabel
                 + "/"
                 + resetLabel
@@ -2062,14 +2052,50 @@ namespace MC2Demo.Presentation
                 + " applyW="
                 + LoadoutApplyButtonWidth.ToString(CultureInfo.InvariantCulture)
                 + " resetW="
-                + LoadoutResetButtonWidth.ToString(CultureInfo.InvariantCulture)
-                + " selectedReset="
+                + LoadoutResetButtonWidth.ToString(CultureInfo.InvariantCulture));
+        }
+
+        private static LoadoutCompactCheck BuildLoadoutSelectedResetCompactCheck()
+        {
+            string selectedResetBaseLabel = LoadoutSelectedResetButtonLabel(false);
+            string selectedResetDirtyLabel = LoadoutSelectedResetButtonLabel(true);
+            bool accepted = string.Equals(selectedResetBaseLabel, "Base", StringComparison.Ordinal)
+                && string.Equals(selectedResetDirtyLabel, "Reset", StringComparison.Ordinal)
+                && LoadoutSelectedResetButtonWidth <= 50f;
+            return new LoadoutCompactCheck(
+                accepted,
+                "selectedReset="
                 + selectedResetBaseLabel
                 + "/"
                 + selectedResetDirtyLabel
                 + " selectedResetW="
-                + LoadoutSelectedResetButtonWidth.ToString(CultureInfo.InvariantCulture)
-                + " target="
+                + LoadoutSelectedResetButtonWidth.ToString(CultureInfo.InvariantCulture));
+        }
+
+        private static LoadoutCompactCheck BuildLoadoutTargetControlsCompactCheck()
+        {
+            string targetPlaceLabel = LoadoutPlaceButtonLabel(true);
+            string targetBlockLabel = LoadoutPlaceButtonLabel(false);
+            string targetPickLabel = LoadoutTargetPickLabel();
+            string fillerArmorLabel = FillerButtonLabel(null, true, 0);
+            string fillerSinkLabel = FillerButtonLabel(LoadoutItemCategory.ArmorPlate, true, 1);
+            string fillerClearLabel = FillerButtonLabel(LoadoutItemCategory.HeatSink, true, 1);
+            string fillerLockLabel = FillerButtonLabel(null, false, 0);
+            string fillerStackLabel = FillerButtonLabel(null, true, 2);
+            bool accepted = string.Equals(targetPlaceLabel, "Place", StringComparison.Ordinal)
+                && string.Equals(targetBlockLabel, "Block", StringComparison.Ordinal)
+                && string.Equals(targetPickLabel, "Pick", StringComparison.Ordinal)
+                && string.Equals(fillerArmorLabel, "+Armor", StringComparison.Ordinal)
+                && string.Equals(fillerSinkLabel, "+Sink", StringComparison.Ordinal)
+                && string.Equals(fillerClearLabel, "Clear", StringComparison.Ordinal)
+                && string.Equals(fillerLockLabel, "Lock", StringComparison.Ordinal)
+                && string.Equals(fillerStackLabel, "Stk", StringComparison.Ordinal)
+                && LoadoutTargetControlOffset <= 148f
+                && LoadoutTargetButtonWidth <= 62f
+                && LoadoutTargetStatusMinWidth <= 80f;
+            return new LoadoutCompactCheck(
+                accepted,
+                "target="
                 + targetPlaceLabel
                 + "/"
                 + targetBlockLabel
@@ -2086,8 +2112,29 @@ namespace MC2Demo.Presentation
                 + "/"
                 + fillerStackLabel
                 + " targetW="
-                + LoadoutTargetButtonWidth.ToString(CultureInfo.InvariantCulture)
-                + " nudge="
+                + LoadoutTargetButtonWidth.ToString(CultureInfo.InvariantCulture));
+        }
+
+        private static LoadoutCompactCheck BuildLoadoutNudgeCompactCheck()
+        {
+            string nudgeNorthLabel = LoadoutNudgeButtonLabel(0, -1);
+            string nudgeWestLabel = LoadoutNudgeButtonLabel(-1, 0);
+            string nudgeEastLabel = LoadoutNudgeButtonLabel(1, 0);
+            string nudgeSouthLabel = LoadoutNudgeButtonLabel(0, 1);
+            string nudgeReadyLabel = LoadoutNudgeStatusLabel("");
+            string nudgeBlockedLabel = LoadoutNudgeStatusLabel("N outside");
+            bool accepted = string.Equals(nudgeNorthLabel, "N", StringComparison.Ordinal)
+                && string.Equals(nudgeWestLabel, "W", StringComparison.Ordinal)
+                && string.Equals(nudgeEastLabel, "E", StringComparison.Ordinal)
+                && string.Equals(nudgeSouthLabel, "S", StringComparison.Ordinal)
+                && string.Equals(nudgeReadyLabel, "Move OK", StringComparison.Ordinal)
+                && nudgeBlockedLabel.StartsWith("Block ", StringComparison.Ordinal)
+                && LoadoutNudgeButtonWidth <= 40f
+                && LoadoutNudgeEastButtonWidth <= 44f
+                && LoadoutNudgeStatusWidth <= 142f;
+            return new LoadoutCompactCheck(
+                accepted,
+                "nudge="
                 + nudgeNorthLabel
                 + nudgeWestLabel
                 + nudgeEastLabel
@@ -2097,23 +2144,32 @@ namespace MC2Demo.Presentation
                 + " nudgeW="
                 + LoadoutNudgeButtonWidth.ToString(CultureInfo.InvariantCulture)
                 + "/"
-                + LoadoutNudgeEastButtonWidth.ToString(CultureInfo.InvariantCulture)
-                + " selectedSummary="
-                + selectedSummary;
+                + LoadoutNudgeEastButtonWidth.ToString(CultureInfo.InvariantCulture));
+        }
 
-            return new LoadoutCompactAssertionResult
-            {
-                Accepted = titleOk
-                    && buttonOk
-                    && heightOk
-                    && conditionOk
-                    && editControlsOk
-                    && selectedResetOk
-                    && targetControlsOk
-                    && nudgeControlsOk
-                    && selectedSummaryOk,
-                Summary = summary
-            };
+        private LoadoutCompactCheck BuildLoadoutSelectedSummaryCompactCheck(
+            UnitState unit,
+            CombatLoadoutPreview preview,
+            CombatWeaponDefinition weapon)
+        {
+            CombatLoadoutPreviewItem selectedItem = LoadoutPreviewItemForWeapon(preview, 0);
+            CombatLoadoutPreviewItem baseItem = LoadoutPreviewItemForWeapon(LoadoutBasePreviewFor(unit), 0);
+            string selectedSummary = LoadoutSelectedWeaponSummaryText(unit, preview, 0, weapon, selectedItem, baseItem);
+            bool accepted = selectedSummary.StartsWith("W1 ", StringComparison.Ordinal)
+                && selectedSummary.IndexOf(" Base ", StringComparison.Ordinal) >= 0
+                && selectedSummary.IndexOf("  D ", StringComparison.Ordinal) >= 0
+                && selectedSummary.IndexOf("  R ", StringComparison.Ordinal) >= 0
+                && selectedSummary.IndexOf("  CD ", StringComparison.Ordinal) >= 0
+                && selectedSummary.IndexOf("  H ", StringComparison.Ordinal) >= 0
+                && selectedSummary.IndexOf("  W ", StringComparison.Ordinal) >= 0
+                && selectedSummary.IndexOf("  C ", StringComparison.Ordinal) >= 0
+                && selectedSummary.IndexOf("x", StringComparison.Ordinal) >= 0
+                && selectedSummary.IndexOf("Cells", StringComparison.OrdinalIgnoreCase) < 0
+                && selectedSummary.IndexOf("Shape", StringComparison.OrdinalIgnoreCase) < 0
+                && selectedSummary.Length <= 118;
+            return new LoadoutCompactCheck(
+                accepted,
+                "selectedSummary=" + selectedSummary);
         }
 
         private DebriefSummaryAssertionResult BuildDebriefSummaryAssertion()
@@ -5840,6 +5896,18 @@ namespace MC2Demo.Presentation
                     Summary = summary ?? "blocked"
                 };
             }
+        }
+
+        private readonly struct LoadoutCompactCheck
+        {
+            public LoadoutCompactCheck(bool accepted, string summary)
+            {
+                Accepted = accepted;
+                Summary = summary ?? "";
+            }
+
+            public bool Accepted { get; }
+            public string Summary { get; }
         }
 
         private string RestartIdentityText(MechBayMissionRestartRuntimeSwapResult result)
