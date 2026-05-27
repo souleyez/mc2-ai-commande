@@ -555,7 +555,8 @@ Reason:
 - The payload grid now previews the selected mounted weapon as a green/red target ghost before Place applies the draft move.
 - The Place action now stays disabled and reads Block for overlap or out-of-bounds targets, keeping the ghost preview informative without allowing accidental invalid placement.
 - The blocked Place button now uses the same short Block wording as the compact target and movement status rows.
-- The payload detail line now mirrors target placement state in text, including clear/blocked status, blocked reason, selected weapon footprint cells, and footprint shape.
+- The payload detail line now mirrors target placement state in text, including OK/Block status, blocked reason, selected weapon footprint cells, and footprint shape.
+- The target detail text now uses the same OK/Block wording as the compact target row instead of the older clear/blocked words.
 - The target status row now colors OK, Same-slot, and Block states consistently with the Place button and target ghost.
 - The target status row now uses compact `T x,y OK/Same/Block` text, so Place/Fill feedback repeats the exact selected grid cell without long state words.
 - The target row now uses shorter OK/Same/Block wording, matching the compact Move OK/Block nudge status style.

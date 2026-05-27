@@ -7686,7 +7686,7 @@ namespace MC2Demo.Presentation
             CombatWeaponDefinition weapon = LoadoutWeaponForCell(unit, selectedCell);
             string weaponName = string.IsNullOrWhiteSpace(weapon?.name) ? selectedItem.DisplayName : weapon.name;
             string targetIssue = LoadoutTargetPlacementIssueText(preview, selectedWeaponIndex, targetCell);
-            string targetState = string.IsNullOrEmpty(targetIssue) ? "clear" : "blocked " + targetIssue;
+            string targetState = string.IsNullOrEmpty(targetIssue) ? "OK" : "Block " + targetIssue;
             string fillerActionSuffix = LoadoutTargetFillerActionSuffix(preview, targetCell);
             return "Target "
                 + targetCell.x.ToString(CultureInfo.InvariantCulture)
