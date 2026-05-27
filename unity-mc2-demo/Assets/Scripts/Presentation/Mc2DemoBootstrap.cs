@@ -34,6 +34,11 @@ namespace MC2Demo.Presentation
         private const float LoadoutGridSectionMinHeight = 204f;
         private const float LoadoutRepairButtonWidth = 64f;
         private const float LoadoutRepairStateOffset = 70f;
+        private const float LoadoutEditStatusReservedWidth = 146f;
+        private const float LoadoutApplyButtonRightOffset = 144f;
+        private const float LoadoutApplyButtonWidth = 66f;
+        private const float LoadoutResetButtonRightOffset = 72f;
+        private const float LoadoutResetButtonWidth = 64f;
         private const string LoadoutConditionPrefix = "Cond ";
         private static readonly Color UiPanelColor = new(0.035f, 0.045f, 0.055f, 0.92f);
         private static readonly Color UiButtonColor = new(0.075f, 0.105f, 0.125f, 0.96f);
@@ -1954,6 +1959,27 @@ namespace MC2Demo.Presentation
                 && conditionLine.IndexOf("Repair ", StringComparison.OrdinalIgnoreCase) >= 0
                 && LoadoutRepairButtonWidth <= 64f
                 && LoadoutRepairStateOffset <= 70f;
+            string applyLabel = LoadoutApplyButtonLabel(false, preview, true);
+            string readyApplyLabel = LoadoutApplyButtonLabel(true, preview, true);
+            string invalidApplyLabel = LoadoutApplyButtonLabel(true, null, true);
+            string stockApplyLabel = LoadoutApplyButtonLabel(true, preview, false);
+            string resetLabel = LoadoutDraftResetButtonLabel(false);
+            string dirtyResetLabel = LoadoutDraftResetButtonLabel(true);
+            bool readyApplyOk = string.Equals(readyApplyLabel, "Apply", StringComparison.Ordinal)
+                || string.Equals(readyApplyLabel, "Invalid", StringComparison.Ordinal);
+            bool stockApplyOk = string.Equals(stockApplyLabel, "Stock", StringComparison.Ordinal)
+                || string.Equals(stockApplyLabel, "Invalid", StringComparison.Ordinal);
+            bool editControlsOk = string.Equals(applyLabel, "Done", StringComparison.Ordinal)
+                && readyApplyOk
+                && string.Equals(invalidApplyLabel, "Invalid", StringComparison.Ordinal)
+                && stockApplyOk
+                && string.Equals(resetLabel, "Clean", StringComparison.Ordinal)
+                && string.Equals(dirtyResetLabel, "Reset", StringComparison.Ordinal)
+                && readyApplyLabel.Length <= 7
+                && stockApplyLabel.Length <= 7
+                && LoadoutApplyButtonWidth <= 66f
+                && LoadoutResetButtonWidth <= 64f
+                && LoadoutEditStatusReservedWidth <= 146f;
             string summary = "title="
                 + title
                 + " button="
@@ -1963,11 +1989,23 @@ namespace MC2Demo.Presentation
                 + " condition="
                 + conditionLine
                 + " repairW="
-                + LoadoutRepairButtonWidth.ToString(CultureInfo.InvariantCulture);
+                + LoadoutRepairButtonWidth.ToString(CultureInfo.InvariantCulture)
+                + " edit="
+                + applyLabel
+                + "/"
+                + resetLabel
+                + "/"
+                + readyApplyLabel
+                + "/"
+                + stockApplyLabel
+                + " applyW="
+                + LoadoutApplyButtonWidth.ToString(CultureInfo.InvariantCulture)
+                + " resetW="
+                + LoadoutResetButtonWidth.ToString(CultureInfo.InvariantCulture);
 
             return new LoadoutCompactAssertionResult
             {
-                Accepted = titleOk && buttonOk && heightOk && conditionOk,
+                Accepted = titleOk && buttonOk && heightOk && conditionOk && editControlsOk,
                 Summary = summary
             };
         }
@@ -8729,7 +8767,7 @@ namespace MC2Demo.Presentation
                     ? new Color(1f, 0.86f, 0.32f, 1f)
                     : new Color(0.58f, 0.82f, 1f, 1f);
             GUI.Label(
-                new Rect(x, y, width - 146f, 18f),
+                new Rect(x, y, width - LoadoutEditStatusReservedWidth, 18f),
                 !hasInventory
                     ? "Stock " + TruncateText(FirstInventoryAvailabilityError(availability), 28)
                     : hasPendingEdits ? "Draft fit" : "Applied fit");
@@ -8740,7 +8778,9 @@ namespace MC2Demo.Presentation
             Color previousButtonColor = GUI.color;
             GUI.color = LoadoutApplyButtonColor(hasPendingEdits, preview, hasInventory);
             GUI.enabled = previousEnabled && canApply;
-            if (GUI.Button(new Rect(x + width - 144f, y - 2f, 66f, 22f), applyLabel))
+            if (GUI.Button(
+                new Rect(x + width - LoadoutApplyButtonRightOffset, y - 2f, LoadoutApplyButtonWidth, 22f),
+                applyLabel))
             {
                 ApplyLoadoutDraft(unit, preview);
             }
@@ -8749,7 +8789,9 @@ namespace MC2Demo.Presentation
             string resetLabel = LoadoutDraftResetButtonLabel(hasPendingEdits);
             GUI.color = LoadoutDraftResetButtonColor(hasPendingEdits);
             GUI.enabled = previousEnabled && hasPendingEdits;
-            if (GUI.Button(new Rect(x + width - 72f, y - 2f, 64f, 22f), resetLabel))
+            if (GUI.Button(
+                new Rect(x + width - LoadoutResetButtonRightOffset, y - 2f, LoadoutResetButtonWidth, 22f),
+                resetLabel))
             {
                 ResetLoadoutDraft(unit);
             }
