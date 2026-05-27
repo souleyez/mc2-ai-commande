@@ -228,9 +228,10 @@ cells stay selected, keeping armor/sink tradeoff details visible after the point
 moves away; the same selected target cell can now place the selected mounted
 weapon or cycle a spare filler cell through armor, heat sink, and empty. The
 weapon-block move status reports clear or blocked nudge directions beside the
-direction buttons. The single-cell filler action now labels the next action as Armor, Sink, or Clear
-instead of a generic Fill button, and the top status plus selected target status
-echo a compact transition such as Empty > Armor beside the weapon-placement state. Before
+direction buttons. The single-cell filler action now labels the next action as
+`+Armor`, `+Sink`, or `Clear` instead of a generic Fill button, and the top
+status plus selected target status echo the same compact action beside the
+weapon-placement state. Before
 Place applies that draft move, the selected weapon now draws a target ghost over
 the destination cells, with green for a clear placement and red for overlap or
 out-of-bounds pressure; blocked targets also disable the Place action and label

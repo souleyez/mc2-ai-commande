@@ -8058,10 +8058,7 @@ namespace MC2Demo.Presentation
 
         private static string LoadoutTargetSlotStatusText(CombatLoadoutPreview preview, int column, int row)
         {
-            string text = "Target slot "
-                + column.ToString(CultureInfo.InvariantCulture)
-                + ","
-                + row.ToString(CultureInfo.InvariantCulture);
+            string text = "T " + LoadoutGridPositionText(column, row);
             CombatLoadoutPreviewGridCell occupiedCell = LoadoutCellAt(preview, column, row);
             if (occupiedCell != null && occupiedCell.SourceWeaponIndex >= 0)
             {
@@ -8073,7 +8070,7 @@ namespace MC2Demo.Presentation
                 return text;
             }
 
-            return text + " " + FillerTransitionLabel(occupiedCell?.Category);
+            return text + " " + FillerCompactActionLabel(occupiedCell?.Category);
         }
 
         private static string LoadoutTargetPlacementIssueText(
@@ -9068,36 +9065,6 @@ namespace MC2Demo.Presentation
             return "Empty";
         }
 
-        private static string FillerActionLabel(string currentCategory)
-        {
-            return FillerActionLabel(currentCategory, true, 1);
-        }
-
-        private static string FillerActionLabel(string currentCategory, bool canFill, int targetCellStack)
-        {
-            if (!canFill)
-            {
-                return "Locked";
-            }
-
-            if (targetCellStack > 1)
-            {
-                return "Stack";
-            }
-
-            if (currentCategory == LoadoutItemCategory.ArmorPlate)
-            {
-                return "Sink";
-            }
-
-            if (currentCategory == LoadoutItemCategory.HeatSink)
-            {
-                return "Clear";
-            }
-
-            return "Armor";
-        }
-
         private static string FillerButtonLabel(string currentCategory, bool canFill, int targetCellStack)
         {
             if (!canFill)
@@ -9133,11 +9100,6 @@ namespace MC2Demo.Presentation
             return new Color(1f, 0.78f, 0.28f, 1f);
         }
 
-        private static string FillerTransitionLabel(string currentCategory)
-        {
-            return FillerCurrentLabel(currentCategory) + " > " + FillerActionLabel(currentCategory);
-        }
-
         private static string FillerCompactActionLabel(string currentCategory)
         {
             if (currentCategory == LoadoutItemCategory.ArmorPlate)
@@ -9151,21 +9113,6 @@ namespace MC2Demo.Presentation
             }
 
             return "+Armor";
-        }
-
-        private static string FillerCurrentLabel(string currentCategory)
-        {
-            if (currentCategory == LoadoutItemCategory.ArmorPlate)
-            {
-                return "Armor";
-            }
-
-            if (currentCategory == LoadoutItemCategory.HeatSink)
-            {
-                return "Sink";
-            }
-
-            return "Empty";
         }
 
         private void DrawSystemPanel()
