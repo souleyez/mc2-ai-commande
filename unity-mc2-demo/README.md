@@ -101,9 +101,9 @@ Current demo behavior:
 - enables a Draft Fit readiness gate when a warehouse mech has both spare weapon stock and a pilot
 - opens a read-only warehouse draft-fit preview showing the selected pilot and spare weapon before real fitting exists
 - applies a demo warehouse draft fit that consumes one spare weapon and keeps the mech non-deployable
-- marks fitted warehouse mechs as ready for the next-mission squad selection path
-- shows a player-facing Next Squad entry for choosing future mission replacements
-- opens a Next Mission Squad preview listing current mission slots and fitted depot candidates
+- marks fitted warehouse mechs as ready for the next-contract squad selection path
+- shows a player-facing Next Squad entry for choosing future contract replacements
+- opens a Next Contract Squad preview listing current contract slots and fitted depot candidates
 - preselects the clicked mission mech as Out or clicked depot candidate as In when opening squad selection
 - stages the first current slot and fitted depot candidate in a local squad-selection draft state
 - lets the local squad-selection draft cycle outgoing mission slots and incoming depot candidates

@@ -1418,7 +1418,7 @@ namespace MC2Demo.Presentation
                 + launchText;
             if (accepted)
             {
-                statusText = "Next mission squad set";
+                statusText = "Next contract squad set";
                 AddCombatLogLine("CLI squad preview hide OK: " + replacementText);
                 Debug.Log("MC2 commander squad preview hide: " + line);
                 return;
@@ -6318,7 +6318,7 @@ namespace MC2Demo.Presentation
             {
                 squadSelectionDraftOutgoingOwnedMechId = entry.ownedMechId;
                 statusText = "Next squad out: " + TruncateText(name, 20);
-                AddCombatLogLine("Next mission squad opened with outgoing " + name);
+                AddCombatLogLine("Next contract squad opened with outgoing " + name);
                 return;
             }
 
@@ -6326,12 +6326,12 @@ namespace MC2Demo.Presentation
             {
                 squadSelectionDraftIncomingOwnedMechId = entry.ownedMechId;
                 statusText = "Next squad in: " + TruncateText(name, 20);
-                AddCombatLogLine("Next mission squad opened with incoming " + name);
+                AddCombatLogLine("Next contract squad opened with incoming " + name);
                 return;
             }
 
-            statusText = "Next squad preview: " + TruncateText(name, 18);
-            AddCombatLogLine("Next mission squad preview opened");
+            statusText = "Next contract preview: " + TruncateText(name, 18);
+            AddCombatLogLine("Next contract squad preview opened");
         }
 
         private void OpenSquadSelectionPreviewIncoming(string incomingOwnedMechId, string sourceLabel)
@@ -6345,7 +6345,7 @@ namespace MC2Demo.Presentation
 
             string name = StartupRosterDisplayName(incomingOwnedMechId);
             statusText = "Next squad in: " + TruncateText(name, 20);
-            AddCombatLogLine((sourceLabel ?? "Next mission squad") + " opened with incoming " + name);
+            AddCombatLogLine((sourceLabel ?? "Next contract squad") + " opened with incoming " + name);
         }
 
         private string StartupRosterDisplayName(string ownedMechId)
@@ -6370,7 +6370,7 @@ namespace MC2Demo.Presentation
             squadSelectionDraftOutgoingOwnedMechId = draft?.OutgoingOwnedMechId;
             squadSelectionDraftIncomingOwnedMechId = draft?.IncomingOwnedMechId;
 
-            GUI.Box(new Rect(x, y, width, 238f), "Next Mission Squad");
+            GUI.Box(new Rect(x, y, width, 238f), "Next Contract Squad");
             if (GUI.Button(new Rect(x + width - 58f, y + 4f, 48f, 22f), "Hide"))
             {
                 bool keepCompletedReplacementCue = SquadSelectionCompleted(preview);
@@ -6381,7 +6381,7 @@ namespace MC2Demo.Presentation
                     ClearSquadSelectionCompletedReplacement();
                 }
 
-                statusText = keepCompletedReplacementCue ? "Next mission squad set" : "Squad preview closed";
+                statusText = keepCompletedReplacementCue ? "Next contract squad set" : "Squad preview closed";
             }
 
             string status = string.IsNullOrWhiteSpace(preview?.Status) ? "Preview unavailable" : preview.Status;
@@ -6390,7 +6390,7 @@ namespace MC2Demo.Presentation
             {
                 GUI.Label(
                     new Rect(x + 12f, y + 44f, width - 24f, 18f),
-                    "Done  Next mission squad ready  "
+                    "Done  Next contract squad ready  "
                     + (preview?.MissionSlotCount ?? 0).ToString(CultureInfo.InvariantCulture)
                     + " mechs");
                 DrawSquadSelectionCompletedSetLine(x + 12f, y + 64f, width - 24f);
@@ -6423,7 +6423,7 @@ namespace MC2Demo.Presentation
             DrawSquadSelectionDraftPickers(x + 12f, y + 106f, width - 24f, preview, draft);
             DrawSquadSelectionSwapPlan(x + 12f, y + 154f, width - 24f, draft);
             DrawSquadSelectionPendingSwap(x + 12f, y + 176f, width - 24f, preview, draft);
-            DrawSquadSelectionRestartHandoff(x + 12f, y + 198f, width - 24f, "Next Mission  ");
+            DrawSquadSelectionRestartHandoff(x + 12f, y + 198f, width - 24f, "Next Contract  ");
             string note = string.IsNullOrWhiteSpace(preview?.PreviewNote) ? "Preview only" : preview.PreviewNote;
             GUI.Label(new Rect(x + 12f, y + 220f, width - 24f, 18f), TruncateText(note, 76));
         }
@@ -6493,7 +6493,7 @@ namespace MC2Demo.Presentation
             string cueLabel = string.IsNullOrWhiteSpace(label)
                 ? (outgoing ? "OUT" : "IN")
                 : label.ToUpperInvariant();
-            string direction = outgoing ? " leaves next mission  " : " joins next mission  ";
+            string direction = outgoing ? " leaves next contract  " : " joins next contract  ";
             DrawColorRect(new Rect(x + 70f, y + 4f, 10f, 10f), cueColor);
             GUI.Label(
                 new Rect(x + 86f, y, width - 86f, 18f),
@@ -6626,12 +6626,12 @@ namespace MC2Demo.Presentation
         {
             if (draft?.Ready == true)
             {
-                return "Ready  set next mission squad";
+                return "Ready  set next contract squad";
             }
 
             if (preview?.HasRefreshedMissionSlot == true)
             {
-                return "Done  next mission updated";
+                return "Done  next contract updated";
             }
 
             int missionSlots = preview?.MissionSlotCount ?? 0;
@@ -6717,7 +6717,7 @@ namespace MC2Demo.Presentation
             string text = HasSquadSelectionCompletedReplacement()
                 ? MissionHandoffCompletedLaunchText(guard)
                 : MissionHandoffLaunchActionText(guard, preview);
-            string prefix = string.IsNullOrWhiteSpace(labelPrefix) ? "Next Mission  " : labelPrefix;
+            string prefix = string.IsNullOrWhiteSpace(labelPrefix) ? "Next Contract  " : labelPrefix;
             DrawActionStateLabel(x + 80f, y, width - 80f, prefix + text, ready, 64);
         }
 
@@ -9615,7 +9615,7 @@ namespace MC2Demo.Presentation
                 DemoFlowScreen.Title => "Title",
                 DemoFlowScreen.Battle => "Battle",
                 DemoFlowScreen.MechBay => "Mech Bay",
-                DemoFlowScreen.MissionSelect => "Missions",
+                DemoFlowScreen.MissionSelect => "Contracts",
                 DemoFlowScreen.SaveChoices => "Saves",
                 DemoFlowScreen.System => "System",
                 DemoFlowScreen.Debrief => "Debrief",

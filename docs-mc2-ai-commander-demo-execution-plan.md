@@ -93,9 +93,9 @@ The Unity demo currently supports:
 - depot Draft Fit affordance becomes a readiness gate once spare weapon stock and a pilot are both present
 - warehouse Draft Fit opens a read-only preview showing the selected pilot and spare weapon without changing inventory
 - warehouse Draft Fit preview can apply a demo placeholder fit that consumes one spare weapon and keeps the mech non-deployable
-- fitted warehouse mechs show that they are ready for the next-mission squad selection path
-- roster detail shows a player-facing Next Squad entry without altering current mission deployment
-- Next Mission Squad preview lists current mission slots and fitted depot candidates without changing inventory or deployment
+- fitted warehouse mechs show that they are ready for the next-contract squad selection path
+- roster detail shows a player-facing Next Squad entry without altering current contract deployment
+- Next Contract Squad preview lists current contract slots and fitted depot candidates without changing inventory or deployment
 - squad-selection opens with the clicked mission slot preselected as outgoing or clicked depot candidate preselected as incoming
 - squad-selection confirmation reads from a local draft state that stages outgoing and incoming mech IDs
 - squad-selection confirmation applies a guarded local roster swap by exchanging mission availability flags
@@ -478,7 +478,7 @@ Tasks:
 
 1. Audit the visible flow from manual startup through battle, debrief, repair/save, contracts, mech bay, squad swap, and relaunch.
 2. Remove or hide debug-only rows from player-facing panels while preserving command-file and log coverage.
-3. Tighten button wording around Continue, New Company, Repair All, Save, Missions, Launch, Reserve, Set, and squad replacement.
+3. Tighten button wording around Continue, New Company, Repair All, Save, Contracts, Launch, Reserve, Set, and squad replacement.
 4. Keep every action guarded by the existing validated BattleCore paths.
 5. Add or update one command-file smoke path that proves the visible loop still works after each polish step.
 
@@ -542,7 +542,7 @@ Tasks:
 - The squad-selection draft controls now cycle mission slots and depot candidates while keeping the selected IDs local-only.
 - The squad-selection preview now collapses the old disabled Swap and Dry Run rows into one clear replace plan plus Confirm.
 - The squad-selection confirmation path now applies a guarded local roster swap by exchanging mission availability flags while preserving token and inventory counts.
-- The squad-selection preview now refreshes after confirmation, so the roster detail and preview stay readable after the only current depot candidate joins the mission squad.
+- The squad-selection preview now refreshes after confirmation, so the roster detail and preview stay readable after the only current depot candidate joins the contract squad.
 - The mech bay now has a next-mission handoff preview, so mission launch/restart code can consume the selected `availableForMission` roster without mutating token or item inventory state.
 - The next-mission handoff now shows a player-facing Ready/Blocked summary, guarded Launch action, and selected lineup.
 - The restart validation path maps handoff slots to spawn intents, clones the mission contract, and validates replacement `BattleMission` construction before Launch can apply.
@@ -596,6 +596,7 @@ Tasks:
 - The Contracts return action now goes back to Debrief after a completed mission, keeping the post-battle flow reversible.
 - The mech bay summary now has a compact post-battle/prep lane with Repair All, Save, Contracts, and Launch, so the main playable loop is visible in one row.
 - The mech bay next-contract row now uses Contract wording to match the system and debrief flow.
+- The squad replacement preview and top flow label now use Next Contract and Contracts wording while preserving internal mission-contract guards.
 - The mech bay flow lane now uses player-facing After Action and Ready Bay status text, and the depot candidate shortcut now reads as a Reserve action rather than a debug-style prep hook.
 - The first design-image-inspired UI pass now applies a graphite/cyan/amber skin, top status strip, and framed squad command panel while keeping the existing IMGUI behavior stable.
 - The same design pass now extends across Save Slot, System, Contracts, Debrief, and Mech Bay panels with shared framed surfaces and highlighted flow lanes.
