@@ -67,6 +67,7 @@ Current demo behavior:
 - projects spare-load armor plates and heat sinks into free cells with hardness and cooling readouts
 - lets projected filler cells cycle between armor, heat sink, and empty to preview loadout tradeoffs
 - disables the selected-weapon Reset action and labels it Base until that weapon has a placement override to clear
+- labels the fit Apply action as Done, Invalid, Stock, or Apply so disabled states are visible in the button itself
 - marks mech bay edits as draft/applied and can reset a draft back to the last applied demo fit
 - hands applied demo fits to combat readiness, range, heat, cooldown, and weapon display stats
 - applies armor hardness as simple incoming damage reduction and heat sinks as faster cooling

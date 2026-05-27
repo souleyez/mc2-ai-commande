@@ -8205,8 +8205,9 @@ namespace MC2Demo.Presentation
             GUI.color = previousColor;
 
             bool previousEnabled = GUI.enabled;
-            GUI.enabled = previousEnabled && hasPendingEdits && preview != null && preview.Validation.IsValid && hasInventory;
-            if (GUI.Button(new Rect(x + width - 144f, y - 2f, 66f, 22f), "Apply"))
+            bool canApply = hasPendingEdits && preview != null && preview.Validation.IsValid && hasInventory;
+            GUI.enabled = previousEnabled && canApply;
+            if (GUI.Button(new Rect(x + width - 144f, y - 2f, 66f, 22f), LoadoutApplyButtonLabel(hasPendingEdits, preview, hasInventory)))
             {
                 ApplyLoadoutDraft(unit, preview);
             }
@@ -8218,6 +8219,21 @@ namespace MC2Demo.Presentation
             }
 
             GUI.enabled = previousEnabled;
+        }
+
+        private static string LoadoutApplyButtonLabel(bool hasPendingEdits, CombatLoadoutPreview preview, bool hasInventory)
+        {
+            if (!hasPendingEdits)
+            {
+                return "Done";
+            }
+
+            if (preview == null || !preview.Validation.IsValid)
+            {
+                return "Invalid";
+            }
+
+            return hasInventory ? "Apply" : "Stock";
         }
 
         private static bool[] AllMountedWeaponsStateFor(UnitState unit)
