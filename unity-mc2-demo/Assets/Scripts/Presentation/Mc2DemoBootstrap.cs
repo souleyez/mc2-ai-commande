@@ -8976,7 +8976,8 @@ namespace MC2Demo.Presentation
                 fillerOverride.category = nextCategory;
             }
 
-            statusText = "Filler " + FillerStatusName(nextCategory);
+            statusText = "T " + LoadoutGridPositionText(gridX, gridY)
+                + " " + FillerCompactActionLabel(currentCategory);
         }
 
         private List<CombatLoadoutFillerOverride> MutableLoadoutFillerOverridesFor(UnitState unit)
@@ -9048,21 +9049,6 @@ namespace MC2Demo.Presentation
             }
 
             return LoadoutItemCategory.ArmorPlate;
-        }
-
-        private static string FillerStatusName(string category)
-        {
-            if (category == LoadoutItemCategory.ArmorPlate)
-            {
-                return "Armor";
-            }
-
-            if (category == LoadoutItemCategory.HeatSink)
-            {
-                return "Heat Sink";
-            }
-
-            return "Empty";
         }
 
         private static string FillerButtonLabel(string currentCategory, bool canFill, int targetCellStack)

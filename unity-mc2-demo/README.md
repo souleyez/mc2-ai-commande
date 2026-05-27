@@ -70,6 +70,7 @@ Current demo behavior:
 - reports and colors target clear/blocked/current status, blocked reason, and selected weapon footprint shape in the payload detail line
 - echoes the selected target coordinate in the compact target status row beside Place and Fill
 - uses +Armor, +Sink, or Clear filler hints consistently across target-row and clicked-slot feedback
+- reports completed filler clicks as T x,y +Armor, +Sink, or Clear in the top status
 - shows a Pick slot hint when a mounted weapon is selected but no target grid cell is selected yet
 - disables nudge direction buttons when the selected weapon would leave the grid or overlap another payload block
 - summarizes blocked weapon-block movement directions with short outside/overlap reasons so disabled movement buttons explain themselves

@@ -64,6 +64,7 @@ The Unity demo currently supports:
 - the payload detail line now reports target clear/blocked status, blocked reason, selected weapon footprint cells, and footprint shape, while the target status row colors clear/current/blocked states
 - the compact target status row echoes the selected target coordinate beside clear/current/blocked state
 - clicked-slot status and the compact target status row use consistent +Armor, +Sink, or Clear filler hints
+- completed filler clicks report `T x,y +Armor/+Sink/Clear` in the top status
 - selected mounted weapons now show a Pick slot hint until a target grid cell is selected
 - selected weapon nudge buttons now disable directions that would leave the grid or overlap another payload block
 - selected weapon controls now summarize which move directions are blocked with short outside/overlap reasons
@@ -556,6 +557,7 @@ Reason:
 - The target status row now colors clear, current-slot, and blocked states consistently with the Place button and target ghost.
 - The target status row now uses compact `T x,y clear/current/blocked` text, so Place/Fill feedback repeats the exact selected grid cell.
 - The clicked-slot status and target status row now both use `+Armor`, `+Sink`, or `Clear`, keeping filler feedback compact and consistent.
+- Completed filler clicks now report `T x,y +Armor/+Sink/Clear` in the top status instead of a separate filler wording.
 - The selected weapon controls now show a Pick slot hint when no target grid cell is selected yet.
 - The selected weapon nudge buttons now disable illegal directions before they can create an invalid draft placement.
 - The selected weapon controls now show a compact `Move clear/blocked` status line listing blocked directions plus short outside/overlap reasons beside the disabled direction buttons.
