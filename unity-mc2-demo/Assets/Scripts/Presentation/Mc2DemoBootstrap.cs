@@ -7852,11 +7852,13 @@ namespace MC2Demo.Presentation
                 bool canCycleFiller = canFill && CountLoadoutCellsAt(preview, targetCell.x, targetCell.y) <= 1;
                 GUI.enabled = previousEnabled && canCycleFiller;
                 string fillerAction = FillerActionLabel(occupiedCell?.Category);
+                GUI.color = LoadoutFillerActionButtonColor(occupiedCell?.Category, canCycleFiller);
                 if (GUI.Button(new Rect(x + 148f, y + 50f, 62f, 22f), fillerAction))
                 {
                     CycleFillerOverride(unit, targetCell.x, targetCell.y, occupiedCell?.Category);
                 }
 
+                GUI.color = previousColor;
                 string targetStatus = canPlace
                     ? targetClear ? "Target clear" : "Blocked " + TruncateText(targetIssue, 14)
                     : "Current slot";
@@ -9027,6 +9029,26 @@ namespace MC2Demo.Presentation
             }
 
             return "Armor";
+        }
+
+        private static Color LoadoutFillerActionButtonColor(string currentCategory, bool canCycleFiller)
+        {
+            if (!canCycleFiller)
+            {
+                return new Color(1f, 0.34f, 0.22f, 1f);
+            }
+
+            if (currentCategory == LoadoutItemCategory.ArmorPlate)
+            {
+                return new Color(0.35f, 0.95f, 1f, 1f);
+            }
+
+            if (currentCategory == LoadoutItemCategory.HeatSink)
+            {
+                return new Color(1f, 0.42f, 0.28f, 1f);
+            }
+
+            return new Color(1f, 0.78f, 0.28f, 1f);
         }
 
         private static string FillerTransitionLabel(string currentCategory)
