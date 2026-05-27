@@ -9109,7 +9109,7 @@ namespace MC2Demo.Presentation
         {
             if (!canFill)
             {
-                return "Locked";
+                return "Lock";
             }
 
             if (targetCellStack > 1)
