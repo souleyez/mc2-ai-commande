@@ -666,5 +666,6 @@ Tasks:
 - The selected fitting card condition row now uses compact `Cond` text and a narrower Repair action, keeping the repair/state readout aligned with the denser loadout controls.
 - The loadout compact smoke now also asserts the condition row contract, including the short `Cond` label and narrow Repair action geometry.
 - The loadout compact smoke now also asserts the Apply/Reset strip's short label set and narrow button geometry, guarding the `Done/Apply/Invalid/Stock` plus `Clean/Reset` language without assuming every current fit can apply.
+- The loadout compact smoke now also asserts the selected-weapon Base/Reset control, keeping that no-op/dirty-state button short and narrow beside the nudge pad.
 - The next low-risk step is to keep tuning the selected fitting card density and then migrate these flow screens beyond IMGUI once the layout direction feels right.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.

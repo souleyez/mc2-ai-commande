@@ -39,6 +39,7 @@ namespace MC2Demo.Presentation
         private const float LoadoutApplyButtonWidth = 66f;
         private const float LoadoutResetButtonRightOffset = 72f;
         private const float LoadoutResetButtonWidth = 64f;
+        private const float LoadoutSelectedResetButtonWidth = 50f;
         private const string LoadoutConditionPrefix = "Cond ";
         private static readonly Color UiPanelColor = new(0.035f, 0.045f, 0.055f, 0.92f);
         private static readonly Color UiButtonColor = new(0.075f, 0.105f, 0.125f, 0.96f);
@@ -1980,6 +1981,11 @@ namespace MC2Demo.Presentation
                 && LoadoutApplyButtonWidth <= 66f
                 && LoadoutResetButtonWidth <= 64f
                 && LoadoutEditStatusReservedWidth <= 146f;
+            string selectedResetBaseLabel = LoadoutSelectedResetButtonLabel(false);
+            string selectedResetDirtyLabel = LoadoutSelectedResetButtonLabel(true);
+            bool selectedResetOk = string.Equals(selectedResetBaseLabel, "Base", StringComparison.Ordinal)
+                && string.Equals(selectedResetDirtyLabel, "Reset", StringComparison.Ordinal)
+                && LoadoutSelectedResetButtonWidth <= 50f;
             string summary = "title="
                 + title
                 + " button="
@@ -2001,11 +2007,17 @@ namespace MC2Demo.Presentation
                 + " applyW="
                 + LoadoutApplyButtonWidth.ToString(CultureInfo.InvariantCulture)
                 + " resetW="
-                + LoadoutResetButtonWidth.ToString(CultureInfo.InvariantCulture);
+                + LoadoutResetButtonWidth.ToString(CultureInfo.InvariantCulture)
+                + " selectedReset="
+                + selectedResetBaseLabel
+                + "/"
+                + selectedResetDirtyLabel
+                + " selectedResetW="
+                + LoadoutSelectedResetButtonWidth.ToString(CultureInfo.InvariantCulture);
 
             return new LoadoutCompactAssertionResult
             {
-                Accepted = titleOk && buttonOk && heightOk && conditionOk && editControlsOk,
+                Accepted = titleOk && buttonOk && heightOk && conditionOk && editControlsOk && selectedResetOk,
                 Summary = summary
             };
         }
@@ -8203,7 +8215,9 @@ namespace MC2Demo.Presentation
             Color previousResetColor = GUI.color;
             GUI.color = LoadoutSelectedResetButtonColor(canResetSelectedWeapon);
             GUI.enabled = previousResetEnabled && canResetSelectedWeapon;
-            if (GUI.Button(new Rect(x + 44f, y + 50f, 50f, 22f), canResetSelectedWeapon ? "Reset" : "Base"))
+            if (GUI.Button(
+                new Rect(x + 44f, y + 50f, LoadoutSelectedResetButtonWidth, 22f),
+                LoadoutSelectedResetButtonLabel(canResetSelectedWeapon)))
             {
                 ResetSelectedLoadoutWeapon(unit);
             }
@@ -8837,6 +8851,11 @@ namespace MC2Demo.Presentation
             return hasPlacementOverride
                 ? new Color(1f, 0.78f, 0.28f, 1f)
                 : new Color(0.58f, 0.82f, 1f, 1f);
+        }
+
+        private static string LoadoutSelectedResetButtonLabel(bool hasPlacementOverride)
+        {
+            return hasPlacementOverride ? "Reset" : "Base";
         }
 
         private static string LoadoutDraftResetButtonLabel(bool hasPendingEdits)
