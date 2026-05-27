@@ -8173,7 +8173,8 @@ namespace MC2Demo.Presentation
                 float columnX = x + column * columnWidth;
                 float rowY = listY + row * 26f;
                 bool isSelected = index == selectedWeaponIndex;
-                string label = LoadoutWeaponButtonLabel(weapon, preview, index, isSelected);
+                bool hasPlacementOverride = HasLoadoutWeaponPlacementOverride(unit, index);
+                string label = LoadoutWeaponButtonLabel(weapon, preview, index, isSelected, hasPlacementOverride);
                 Color previousColor = GUI.color;
                 Color buttonCue = isSelected ? new Color(1f, 0.95f, 0.22f, 1f) : LoadoutWeaponRangeBandColor(weapon);
                 GUI.color = buttonCue;
@@ -8195,11 +8196,10 @@ namespace MC2Demo.Presentation
             CombatWeaponDefinition weapon,
             CombatLoadoutPreview preview,
             int sourceWeaponIndex,
-            bool isSelected)
+            bool isSelected,
+            bool hasPlacementOverride)
         {
-            string selector = isSelected
-                ? ">"
-                : (sourceWeaponIndex + 1).ToString(CultureInfo.InvariantCulture);
+            string selector = LoadoutWeaponButtonSelector(sourceWeaponIndex, isSelected, hasPlacementOverride);
             return selector
                 + " "
                 + LoadoutWeaponRangeBandLabel(weapon)
@@ -8207,6 +8207,21 @@ namespace MC2Demo.Presentation
                 + LoadoutWeaponShapeLabel(preview, sourceWeaponIndex)
                 + " "
                 + TruncateText(weapon?.name, 7);
+        }
+
+        private static string LoadoutWeaponButtonSelector(
+            int sourceWeaponIndex,
+            bool isSelected,
+            bool hasPlacementOverride)
+        {
+            if (isSelected)
+            {
+                return hasPlacementOverride ? ">*" : ">";
+            }
+
+            return hasPlacementOverride
+                ? "*"
+                : (sourceWeaponIndex + 1).ToString(CultureInfo.InvariantCulture);
         }
 
         private static string LoadoutWeaponShapeLabel(CombatLoadoutPreview preview, int sourceWeaponIndex)
@@ -8621,6 +8636,11 @@ namespace MC2Demo.Presentation
         }
 
         private bool HasSelectedLoadoutWeaponPlacementOverride(UnitState unit, int selectedWeaponIndex)
+        {
+            return HasLoadoutWeaponPlacementOverride(unit, selectedWeaponIndex);
+        }
+
+        private bool HasLoadoutWeaponPlacementOverride(UnitState unit, int selectedWeaponIndex)
         {
             CombatLoadoutPlacementOverride[] placementOverrides = LoadoutPlacementOverridesFor(unit);
             return PlacementAt(placementOverrides, selectedWeaponIndex) != null;
