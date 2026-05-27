@@ -8071,7 +8071,9 @@ namespace MC2Demo.Presentation
             }
 
             CombatLoadoutPreviewGridCell selectedCell = LoadoutCellForSelectedWeapon(preview, selectedWeaponIndex);
+            CombatLoadoutPreviewItem selectedItem = LoadoutPreviewItemForWeapon(preview, selectedWeaponIndex);
             int cells = Math.Max(1, CountLoadoutBlockCells(preview, selectedCell));
+            string positionText = LoadoutWeaponPositionSummary(unit, preview, selectedItem);
             Rect strip = new(x - 4f, y - 2f, width + 8f, 22f);
             DrawColorRect(strip, new Color(0.015f, 0.025f, 0.03f, 0.76f));
             DrawRectBorder(strip, new Color(UiAmberColor.r, UiAmberColor.g, UiAmberColor.b, 0.34f), 1f);
@@ -8081,6 +8083,7 @@ namespace MC2Demo.Presentation
                 + (selectedWeaponIndex + 1).ToString(CultureInfo.InvariantCulture)
                 + " "
                 + TruncateText(weapon.name, 18)
+                + positionText
                 + "  D "
                 + FormatDecimal(weapon.damage)
                 + "  R "
@@ -8093,6 +8096,33 @@ namespace MC2Demo.Presentation
                 + FormatDecimal(weapon.weight)
                 + "  Cells "
                 + cells.ToString(CultureInfo.InvariantCulture));
+        }
+
+        private string LoadoutWeaponPositionSummary(
+            UnitState unit,
+            CombatLoadoutPreview preview,
+            CombatLoadoutPreviewItem selectedItem)
+        {
+            if (selectedItem == null)
+            {
+                return "";
+            }
+
+            string position = " @"
+                + selectedItem.GridX.ToString(CultureInfo.InvariantCulture)
+                + ","
+                + selectedItem.GridY.ToString(CultureInfo.InvariantCulture);
+            if (!TryGetSelectedLoadoutGridCell(unit, preview, out Vector2Int targetCell)
+                || (targetCell.x == selectedItem.GridX && targetCell.y == selectedItem.GridY))
+            {
+                return position;
+            }
+
+            return position
+                + " >"
+                + targetCell.x.ToString(CultureInfo.InvariantCulture)
+                + ","
+                + targetCell.y.ToString(CultureInfo.InvariantCulture);
         }
 
         private void DrawLoadoutEditControls(UnitState unit, CombatLoadoutPreview preview, float x, float y, float width)

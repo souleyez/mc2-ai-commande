@@ -49,6 +49,7 @@ Current demo behavior:
 - draws compact heat, load, and grid usage bars so fitting pressure is visible before reading the numeric limits
 - treats fitted weapons as always active and uses the weapon list only to select mounted weapons for slot editing
 - shows a selected-weapon summary line with damage, range, cooldown, heat, weight, and footprint cells above the fitting weapon buttons
+- echoes the selected weapon's current grid position and pending target position in that summary line
 - uses compact S/M/L range-band labels and matching colors on mounted weapon buttons
 - highlights the selected mounted weapon row in the fitting list
 - visualizes the projected mech bay slot grid with placeholder multi-cell weapon shapes

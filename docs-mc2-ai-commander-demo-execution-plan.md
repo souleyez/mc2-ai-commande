@@ -46,6 +46,7 @@ The Unity demo currently supports:
 - source weapon loadout projection in the mech bay with validator status, heat/load limits, and occupied grid cell counts
 - fitted weapons are always active; the mech bay weapon list selects mounted weapons for slot editing instead of exposing weapon switches
 - selected fitting weapon summary line with damage, range, cooldown, heat, weight, and footprint cells above the mounted weapon buttons
+- selected weapon summary echoes current and pending target grid positions when the player chooses a payload target cell
 - compact mounted weapon buttons use S/M/L range-band labels with the same color language as payload blocks
 - projected mech bay slot grid visualization with placeholder multi-cell weapon shapes exposed from BattleCore preview data
 - temporary projected weapon placement edits with overlap and out-of-bounds validator feedback
@@ -540,5 +541,6 @@ Reason:
 - The squad fitting selector now marks draft mechs and shows the selected mech's pilot, fit state, structure, plus H/W/G pressure bars in the same compact strip.
 - The selected fitting card now repeats the selected weapon's combat stats and footprint above the mounted weapon buttons, reducing trips between the grid detail line and weapon selector.
 - Mounted weapon buttons now drop duplicate heat/load text in favor of compact S/M/L range labels and range-band colors matching the payload grid.
+- The selected weapon summary now echoes its current grid position and pending target position, so slot moves stay visible even before reaching the lower Place controls.
 - The next low-risk step is to keep tuning the selected fitting card density and then migrate these flow screens beyond IMGUI once the layout direction feels right.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.
