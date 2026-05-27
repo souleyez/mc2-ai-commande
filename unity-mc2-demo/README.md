@@ -51,6 +51,7 @@ Current demo behavior:
 - shows a selected-weapon summary line with damage, range, cooldown, heat, weight, footprint cells, and footprint shape above the fitting weapon buttons
 - echoes the selected weapon's base, current, and pending target grid positions in that summary line
 - labels the selected weapon summary as Base or Moved with matching cyan/amber border cues
+- mirrors the same Base or Moved grid-position chain in the selected weapon edit controls
 - uses compact S/M/L range-band and `WxH` shape labels with matching colors on mounted weapon buttons
 - highlights the selected mounted weapon row in the fitting list
 - visualizes the projected mech bay slot grid with placeholder multi-cell weapon shapes

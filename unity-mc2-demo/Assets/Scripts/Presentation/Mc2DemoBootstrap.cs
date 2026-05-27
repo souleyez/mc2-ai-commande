@@ -7811,13 +7811,17 @@ namespace MC2Demo.Presentation
                 return;
             }
 
+            bool hasPlacementOverride = HasLoadoutWeaponPlacementOverride(unit, selectedWeaponIndex);
+            string placementState = hasPlacementOverride ? "Moved" : "Base";
+            CombatLoadoutPreviewItem baseItem = LoadoutPreviewItemForWeapon(LoadoutBasePreviewFor(unit), selectedWeaponIndex);
+            string positionText = LoadoutWeaponPositionSummary(unit, preview, selectedItem, baseItem);
             GUI.Label(
                 new Rect(x, y, width, 18f),
-                "Edit " + (selectedWeaponIndex + 1).ToString(CultureInfo.InvariantCulture)
+                "Edit W" + (selectedWeaponIndex + 1).ToString(CultureInfo.InvariantCulture)
                 + " " + TruncateText(selectedItem.DisplayName, 18)
-                + " @ " + selectedItem.GridX.ToString(CultureInfo.InvariantCulture)
-                + "," + selectedItem.GridY.ToString(CultureInfo.InvariantCulture)
-                + LoadoutTargetSuffix(unit, preview, selectedItem));
+                + " "
+                + placementState
+                + positionText);
 
             DrawLoadoutNudgeButton(unit, preview, selectedItem, new Rect(x + 32f, y + 24f, 40f, 22f), "N", 0, -1);
             DrawLoadoutNudgeButton(unit, preview, selectedItem, new Rect(x, y + 50f, 40f, 22f), "W", -1, 0);
@@ -7935,22 +7939,6 @@ namespace MC2Demo.Presentation
                 new Rect(x, y, width, 18f),
                 hasBlockedDirections ? "Nudge blocked " + TruncateText(blockedSummary, 18) : "Nudge clear");
             GUI.color = previousColor;
-        }
-
-        private string LoadoutTargetSuffix(UnitState unit, CombatLoadoutPreview preview, CombatLoadoutPreviewItem selectedItem)
-        {
-            if (!TryGetSelectedLoadoutGridCell(unit, preview, out Vector2Int targetCell))
-            {
-                return "";
-            }
-
-            if (selectedItem != null && targetCell.x == selectedItem.GridX && targetCell.y == selectedItem.GridY)
-            {
-                return "";
-            }
-
-            return " > " + targetCell.x.ToString(CultureInfo.InvariantCulture)
-                + "," + targetCell.y.ToString(CultureInfo.InvariantCulture);
         }
 
         private static bool IsLoadoutTargetPlacementClear(
