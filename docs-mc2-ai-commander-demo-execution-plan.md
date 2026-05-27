@@ -47,7 +47,7 @@ The Unity demo currently supports:
 - fitted weapons are always active; the mech bay weapon list selects mounted weapons for slot editing instead of exposing weapon switches
 - selected fitting weapon summary line with damage, range, cooldown, heat, weight, footprint cells, and footprint shape above the mounted weapon buttons
 - selected weapon summary echoes current and pending target grid positions when the player chooses a payload target cell
-- compact mounted weapon buttons use S/M/L range-band labels with the same color language as payload blocks
+- compact mounted weapon buttons use S/M/L range-band labels and `WxH` shape labels with the same color language as payload blocks
 - projected mech bay slot grid visualization with placeholder multi-cell weapon shapes exposed from BattleCore preview data
 - temporary projected weapon placement edits with overlap and out-of-bounds validator feedback
 - spare-load armor plate and heat sink filler projection with hardness and cooling totals
@@ -540,8 +540,9 @@ Reason:
 - The mech bay now uses compact squad buttons and expands one selected fitting card at a time, reducing drawer scroll pressure before the future non-IMGUI rewrite.
 - The squad fitting selector now marks draft mechs and shows the selected mech's pilot, fit state, structure, plus H/W/G pressure bars in the same compact strip.
 - The selected fitting card now repeats the selected weapon's combat stats, footprint cells, and footprint shape above the mounted weapon buttons, reducing trips between the grid detail line and weapon selector.
-- Mounted weapon buttons now drop duplicate heat/load text in favor of compact S/M/L range labels and range-band colors matching the payload grid.
+- Mounted weapon buttons now drop duplicate heat/load text in favor of compact S/M/L range labels, `WxH` shape labels, and range-band colors matching the payload grid.
 - The selected weapon summary now echoes its current grid position and pending target position, so slot moves stay visible even before reaching the lower Place controls.
 - The selected weapon summary and payload detail now show the selected block as a concrete `WxH` footprint, making vertical and wide weapon shapes readable without counting cells.
+- The mounted weapon buttons also include that `WxH` footprint, so the selection list itself reads as block inventory instead of plain weapon toggles.
 - The next low-risk step is to keep tuning the selected fitting card density and then migrate these flow screens beyond IMGUI once the layout direction feels right.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.

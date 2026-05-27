@@ -50,7 +50,7 @@ Current demo behavior:
 - treats fitted weapons as always active and uses the weapon list only to select mounted weapons for slot editing
 - shows a selected-weapon summary line with damage, range, cooldown, heat, weight, footprint cells, and footprint shape above the fitting weapon buttons
 - echoes the selected weapon's current grid position and pending target position in that summary line
-- uses compact S/M/L range-band labels and matching colors on mounted weapon buttons
+- uses compact S/M/L range-band and `WxH` shape labels with matching colors on mounted weapon buttons
 - highlights the selected mounted weapon row in the fitting list
 - visualizes the projected mech bay slot grid with placeholder multi-cell weapon shapes
 - renders projected payload items as larger whole-block grid pieces with original-style empty/short/mid/long/component color bands

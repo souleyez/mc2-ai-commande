@@ -8042,7 +8042,9 @@ namespace MC2Demo.Presentation
                     + " "
                     + LoadoutWeaponRangeBandLabel(weapon)
                     + " "
-                    + TruncateText(weapon.name, 9);
+                    + LoadoutWeaponShapeLabel(preview, index)
+                    + " "
+                    + TruncateText(weapon.name, 7);
                 bool isSelected = index == selectedWeaponIndex;
                 Color previousColor = GUI.color;
                 Color buttonCue = isSelected ? new Color(1f, 0.95f, 0.22f, 1f) : LoadoutWeaponRangeBandColor(weapon);
@@ -8059,6 +8061,12 @@ namespace MC2Demo.Presentation
             }
 
             return 24f + rows * 26f;
+        }
+
+        private static string LoadoutWeaponShapeLabel(CombatLoadoutPreview preview, int sourceWeaponIndex)
+        {
+            CombatLoadoutPreviewGridCell selectedCell = LoadoutCellForSelectedWeapon(preview, sourceWeaponIndex);
+            return LoadoutBlockShapeText(preview, selectedCell);
         }
 
         private static string LoadoutWeaponRangeBandLabel(CombatWeaponDefinition weapon)
