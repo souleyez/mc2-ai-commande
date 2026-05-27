@@ -47,6 +47,7 @@ The Unity demo currently supports:
 - fitted weapons are always active; the mech bay weapon list selects mounted weapons for slot editing instead of exposing weapon switches
 - selected fitting weapon summary line with damage, range, cooldown, heat, weight, footprint cells, and footprint shape above the mounted weapon buttons
 - selected weapon summary echoes current and pending target grid positions when the player chooses a payload target cell
+- selected weapon summary labels Base or Moved with cyan/amber border cues for draft placement state
 - compact mounted weapon buttons use S/M/L range-band labels and `WxH` shape labels with the same color language as payload blocks
 - compact mounted weapon buttons replace the active weapon number with a `>` selector for color-independent selection feedback
 - compact mounted weapon buttons show `*` when a weapon has an unapplied slot move
@@ -561,6 +562,7 @@ Reason:
 - Mounted weapon buttons now show `*` for weapons with unapplied slot moves, so draft placement edits are visible from the list.
 - Mounted weapon buttons now drop duplicate heat/load text in favor of compact S/M/L range labels, `WxH` shape labels, and range-band colors matching the payload grid.
 - The selected weapon summary now echoes its current grid position and pending target position, so slot moves stay visible even before reaching the lower Place controls.
+- The selected weapon summary now uses a compact `W# Base/Moved` prefix and cyan/amber border cue, so draft placement state is visible without adding another row.
 - The selected weapon summary and payload detail now show the selected block as a concrete `WxH` footprint, making vertical and wide weapon shapes readable without counting cells.
 - The mounted weapon buttons also include that `WxH` footprint, so the selection list itself reads as block inventory instead of plain weapon toggles.
 - The selected-weapon Reset control now reads Base, stays disabled, and uses the done-state color when there is no placement override, reducing no-op clicks in the fitting controls.

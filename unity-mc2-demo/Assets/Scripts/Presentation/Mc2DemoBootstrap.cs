@@ -8289,13 +8289,18 @@ namespace MC2Demo.Presentation
             int cells = Math.Max(1, CountLoadoutBlockCells(preview, selectedCell));
             string shapeText = LoadoutBlockShapeText(preview, selectedCell);
             string positionText = LoadoutWeaponPositionSummary(unit, preview, selectedItem);
+            bool hasPlacementOverride = HasLoadoutWeaponPlacementOverride(unit, selectedWeaponIndex);
+            string placementState = hasPlacementOverride ? "Moved" : "Base";
             Rect strip = new(x - 4f, y - 2f, width + 8f, 22f);
             DrawColorRect(strip, new Color(0.015f, 0.025f, 0.03f, 0.76f));
-            DrawRectBorder(strip, new Color(UiAmberColor.r, UiAmberColor.g, UiAmberColor.b, 0.34f), 1f);
+            Color borderColor = hasPlacementOverride ? UiAmberColor : UiCyanColor;
+            DrawRectBorder(strip, new Color(borderColor.r, borderColor.g, borderColor.b, hasPlacementOverride ? 0.52f : 0.28f), 1f);
             GUI.Label(
                 new Rect(x, y, width, 18f),
-                "Weapon "
+                "W"
                 + (selectedWeaponIndex + 1).ToString(CultureInfo.InvariantCulture)
+                + " "
+                + placementState
                 + " "
                 + TruncateText(weapon.name, 18)
                 + positionText
