@@ -237,7 +237,7 @@ Place applies that draft move, the selected weapon now draws a target ghost over
 the destination cells, with green for an OK placement and red for overlap or
 out-of-bounds pressure; blocked targets also disable the Place action and label
 it `Block`, matching the `OK`, `Same`, or `Block` target status row. When no destination cell has
-been selected yet, the same control area prompts Pick slot instead of going blank. The detail line mirrors that signal with target
+been selected yet, the same control area prompts `Pick` instead of going blank. The detail line mirrors that signal with target
 clear/blocked text, blocked reason, filler transition, selected weapon footprint cells, and concrete footprint shape, so the player does not
 have to infer the result from color alone. The selected-weapon nudge buttons now disable directions that would leave the grid or overlap another payload block,
 so invalid draft placement is blocked before Apply; a compact nudge status line now reads `Move OK` or `Block ...` and lists blocked directions with short outside/overlap reasons beside the disabled buttons. The selected-weapon Reset control

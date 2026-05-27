@@ -72,7 +72,7 @@ Current demo behavior:
 - echoes the selected target coordinate in the compact OK/Block/Same target status row beside Place and Fill
 - uses +Armor, +Sink, or Clear filler hints consistently across target-row and clicked-slot feedback
 - reports completed filler clicks as T x,y +Armor, +Sink, or Clear in the top status
-- shows a Pick slot hint when a mounted weapon is selected but no target grid cell is selected yet
+- shows a compact Pick hint when a mounted weapon is selected but no target grid cell is selected yet
 - disables nudge direction buttons when the selected weapon would leave the grid or overlap another payload block
 - summarizes selected-weapon movement as compact Move OK or Block direction reasons so disabled movement buttons explain themselves
 - colors the Armor, Sink, and Clear filler button by the next filler action

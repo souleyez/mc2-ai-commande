@@ -66,7 +66,7 @@ The Unity demo currently supports:
 - the compact target status row echoes the selected target coordinate beside OK/Block/Same state
 - clicked-slot status and the compact target status row use consistent +Armor, +Sink, or Clear filler hints
 - completed filler clicks report `T x,y +Armor/+Sink/Clear` in the top status
-- selected mounted weapons now show a Pick slot hint until a target grid cell is selected
+- selected mounted weapons now show a compact Pick hint until a target grid cell is selected
 - selected weapon nudge buttons now disable directions that would leave the grid or overlap another payload block
 - selected weapon controls now summarize movement as compact Move OK or Block direction reasons
 - the filler action button now colors Armor, Sink, and Clear states by the next cell action
@@ -561,7 +561,8 @@ Reason:
 - The target row now uses shorter OK/Same/Block wording, matching the compact Move OK/Block nudge status style.
 - The clicked-slot status and target status row now both use `+Armor`, `+Sink`, or `Clear`, keeping filler feedback compact and consistent.
 - Completed filler clicks now report `T x,y +Armor/+Sink/Clear` in the top status instead of a separate filler wording.
-- The selected weapon controls now show a Pick slot hint when no target grid cell is selected yet.
+- The selected weapon controls now show a compact Pick hint when no target grid cell is selected yet.
+- The no-target hint now uses the shorter Pick label, matching the compact OK/Same/Block target row.
 - The selected weapon nudge buttons now disable illegal directions before they can create an invalid draft placement.
 - The selected weapon controls now show a compact `Move OK` or `Block ...` status line listing blocked directions plus short outside/overlap reasons beside the disabled direction buttons.
 - The selected-weapon nudge status now uses shorter Move OK/Block wording, keeping the direction-pad area readable in the right drawer.

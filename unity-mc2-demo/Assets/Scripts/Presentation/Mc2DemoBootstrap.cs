@@ -7895,7 +7895,7 @@ namespace MC2Demo.Presentation
             {
                 Color previousColor = GUI.color;
                 GUI.color = LoadoutTargetStatusColor(false, true);
-                GUI.Label(new Rect(x + 148f, y + 24f, Mathf.Max(80f, width - 148f), 18f), "Pick slot");
+                GUI.Label(new Rect(x + 148f, y + 24f, Mathf.Max(80f, width - 148f), 18f), "Pick");
                 GUI.color = previousColor;
             }
         }
