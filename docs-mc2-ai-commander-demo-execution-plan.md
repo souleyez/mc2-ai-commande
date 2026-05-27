@@ -136,9 +136,9 @@ The Unity demo currently supports:
 - guarded account-changing actions now auto-save the current local account snapshot to the persistent demo save file
 - manual demo startup now shows a lightweight Continue/New Company panel when the persistent demo save exists and no automation startup args are used
 - that startup panel now previews the loaded account summary, token/depot/item counts, delta, and save timestamp before enabling Continue
-- the runtime now tracks a lightweight demo flow screen across title, battle, mech bay, mission selection, save choices, system, and debrief states
+- the runtime now tracks a lightweight demo flow screen across title, battle, mech bay, contracts, Save Slot, system, and debrief states
 - the top status strip now exposes the current flow state, giving the future title shell a visible state boundary before the IMGUI migration
-- the system panel now opens a Mission List shell with the current `mc2_01` contract, launch, mech bay, back-system, and return-battle actions
+- the system panel now opens a Contracts shell with the current `mc2_01` contract, launch, mech bay, system, and return-battle actions
 - the pause/system panel now exposes the same Save Slot entry, and New Company resets the active demo run without deleting the persistent save slot
 - New Company now requires an explicit confirmation inside Save Slot, and system-opened Save Slot can return with Back
 - system-opened Save Slot now has a Save Current action that writes the active account to the persistent save slot and refreshes the Continue summary
@@ -476,7 +476,7 @@ Goal: make the current Windows demo understandable without developer narration.
 
 Tasks:
 
-1. Audit the visible flow from manual startup through battle, debrief, repair/save, mission list, mech bay, squad swap, and relaunch.
+1. Audit the visible flow from manual startup through battle, debrief, repair/save, contracts, mech bay, squad swap, and relaunch.
 2. Remove or hide debug-only rows from player-facing panels while preserving command-file and log coverage.
 3. Tighten button wording around Continue, New Company, Repair All, Save, Missions, Launch, Reserve, Set, and squad replacement.
 4. Keep every action guarded by the existing validated BattleCore paths.
@@ -590,10 +590,10 @@ Tasks:
 - System-opened Save Slot now has a Save Current action that writes the active account to the persistent save slot and refreshes the displayed Continue summary.
 - System-opened Save Slot now shows the latest save/load result inline, so Save Current feedback stays visible inside the same panel.
 - System-opened Save Slot now has Export Copy and Reset Slot controls; Reset Slot requires confirmation, copies the old save first, then replaces the default slot with a fresh demo snapshot.
-- A first lightweight demo-flow state now tracks title, battle, mech bay, mission selection, save choices, system, and debrief, with the current state visible in the top status strip.
+- A first lightweight demo-flow state now tracks title, battle, mech bay, contracts, Save Slot, system, and debrief, with the current state visible in the top status strip.
 - The system panel now opens a player-facing Contracts shell for `mc2_01`, with launch, mech bay, system, and return-battle actions.
-- The debrief panel now routes post-battle flow through Continue Bay or Mission List, hiding the debrief overlay before the player repairs, saves, or chooses the next launch.
-- The Mission List return action now goes back to Debrief after a completed mission, keeping the post-battle flow reversible.
+- The debrief panel now routes post-battle flow through Mech Bay or Contracts, hiding the debrief overlay before the player repairs, saves, or chooses the next launch.
+- The Contracts return action now goes back to Debrief after a completed mission, keeping the post-battle flow reversible.
 - The mech bay summary now has a compact post-battle/prep lane with Repair All, Save, Missions, and Launch, so the main playable loop is visible in one row.
 - The mech bay flow lane now uses player-facing After Action and Ready Bay status text, and the depot candidate shortcut now reads as a Reserve action rather than a debug-style prep hook.
 - The first design-image-inspired UI pass now applies a graphite/cyan/amber skin, top status strip, and framed squad command panel while keeping the existing IMGUI behavior stable.

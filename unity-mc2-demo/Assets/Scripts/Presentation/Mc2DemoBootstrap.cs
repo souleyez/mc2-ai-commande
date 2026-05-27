@@ -9183,7 +9183,7 @@ namespace MC2Demo.Presentation
                 }
             }
 
-            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 108f, panel.width - 36f, 30f), "Restart Mission"))
+            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 108f, panel.width - 36f, 30f), "Restart Contract"))
             {
                 TryApplyMissionRestartRuntimeSwap();
             }
@@ -9197,12 +9197,12 @@ namespace MC2Demo.Presentation
                 OpenSaveChoicePanelFromSystem();
             }
 
-            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 210f, panel.width - 36f, 30f), "Mission List"))
+            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 210f, panel.width - 36f, 30f), "Contracts"))
             {
                 OpenMissionListPanelFromSystem();
             }
 
-            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 248f, panel.width - 36f, 30f), "End Demo"))
+            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 248f, panel.width - 36f, 30f), "Exit Demo"))
             {
                 Application.Quit(0);
             }
@@ -9297,9 +9297,9 @@ namespace MC2Demo.Presentation
         private void OpenPostMissionListPanel()
         {
             showMissionResultPanel = false;
-            AddCombatLogLine("Debrief accepted: open mission list");
+            AddCombatLogLine("Debrief accepted: open contracts");
             OpenMissionListPanelFromSystem();
-            statusText = "Post-mission list";
+            statusText = "Post-mission contracts";
         }
 
         private void DrawMissionResultPanel()
@@ -9319,22 +9319,22 @@ namespace MC2Demo.Presentation
 
             GUI.Label(new Rect(panel.x + 18f, panel.y + 270f, panel.width - 36f, 20f), "Next: repair, save, then launch again.");
             float actionWidth = (panel.width - 44f) * 0.5f;
-            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 296f, actionWidth, 30f), "Continue Bay"))
+            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 296f, actionWidth, 30f), "Mech Bay"))
             {
                 OpenPostMissionMechBay();
             }
 
-            if (GUI.Button(new Rect(panel.x + 26f + actionWidth, panel.y + 296f, actionWidth, 30f), "Mission List"))
+            if (GUI.Button(new Rect(panel.x + 26f + actionWidth, panel.y + 296f, actionWidth, 30f), "Contracts"))
             {
                 OpenPostMissionListPanel();
             }
 
-            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 334f, actionWidth, 30f), "Restart"))
+            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 334f, actionWidth, 30f), "Restart Contract"))
             {
                 TryApplyMissionRestartRuntimeSwap();
             }
 
-            if (GUI.Button(new Rect(panel.x + 26f + actionWidth, panel.y + 334f, actionWidth, 30f), "End Demo"))
+            if (GUI.Button(new Rect(panel.x + 26f + actionWidth, panel.y + 334f, actionWidth, 30f), "Exit Demo"))
             {
                 Application.Quit(0);
             }

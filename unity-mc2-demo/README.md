@@ -19,13 +19,13 @@ Current demo behavior:
 - routes player commands through a CLI-ready commander command port for AI draft/directive tests
 - exposes a CLI-ready commander observation JSON for compact AI planning summaries
 - supports repeatable scriptable runtime restart from startup args or command files
-- tracks a lightweight demo flow state across title, battle, mech bay, mission selection, save choices, system, and debrief
+- tracks a lightweight demo flow state across title, battle, mech bay, contracts, Save Slot, system, and debrief
 - shows the current flow state in the top status strip
 - opens a Contracts shell from the system panel with the current `mc2_01` contract, launch, mech bay, system, and return-battle actions
-- routes the post-battle debrief through Continue Bay or Mission List, hiding the debrief overlay before repair, save, or relaunch work
+- routes the post-battle debrief through Mech Bay or Contracts, hiding the debrief overlay before repair, save, or relaunch work
 - shows a compact After Action or Ready Bay flow lane for Repair All, Save, Missions, and Launch after battle or during pre-mission prep
 - applies a first graphite/cyan/amber UI skin pass to the HUD, buttons, top status strip, and squad command panel
-- extends that UI direction to save choices, system, mission list, debrief, and mech bay flow panels with shared framed surfaces
+- extends that UI direction to Save Slot, System, Contracts, Debrief, and Mech Bay flow panels with shared framed surfaces
 - tightens the title save panel with an inset account summary and side-by-side Continue/New Company actions
 - frames the battle Combat/Mission HUD and shifts the mech bay into a right-side focused drawer with a dimmed backdrop
 - lets map clicks on hostile units or targetable buildings issue focused attack orders
