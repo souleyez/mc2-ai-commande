@@ -7808,15 +7808,8 @@ namespace MC2Demo.Presentation
                 + "," + selectedItem.GridY.ToString(CultureInfo.InvariantCulture)
                 + LoadoutTargetSuffix(unit, preview, selectedItem));
 
-            if (GUI.Button(new Rect(x + 32f, y + 24f, 40f, 22f), "N"))
-            {
-                MoveSelectedLoadoutWeapon(unit, preview, 0, -1);
-            }
-
-            if (GUI.Button(new Rect(x, y + 50f, 40f, 22f), "W"))
-            {
-                MoveSelectedLoadoutWeapon(unit, preview, -1, 0);
-            }
+            DrawLoadoutNudgeButton(unit, preview, selectedItem, new Rect(x + 32f, y + 24f, 40f, 22f), "N", 0, -1);
+            DrawLoadoutNudgeButton(unit, preview, selectedItem, new Rect(x, y + 50f, 40f, 22f), "W", -1, 0);
 
             bool canResetSelectedWeapon = HasSelectedLoadoutWeaponPlacementOverride(unit, selectedWeaponIndex);
             bool previousResetEnabled = GUI.enabled;
@@ -7830,15 +7823,8 @@ namespace MC2Demo.Presentation
 
             GUI.color = previousResetColor;
             GUI.enabled = previousResetEnabled;
-            if (GUI.Button(new Rect(x + 98f, y + 50f, 44f, 22f), "E"))
-            {
-                MoveSelectedLoadoutWeapon(unit, preview, 1, 0);
-            }
-
-            if (GUI.Button(new Rect(x + 32f, y + 76f, 40f, 22f), "S"))
-            {
-                MoveSelectedLoadoutWeapon(unit, preview, 0, 1);
-            }
+            DrawLoadoutNudgeButton(unit, preview, selectedItem, new Rect(x + 98f, y + 50f, 44f, 22f), "E", 1, 0);
+            DrawLoadoutNudgeButton(unit, preview, selectedItem, new Rect(x + 32f, y + 76f, 40f, 22f), "S", 0, 1);
 
             if (TryGetSelectedLoadoutGridCell(unit, preview, out Vector2Int targetCell))
             {
@@ -7894,6 +7880,31 @@ namespace MC2Demo.Presentation
             }
         }
 
+        private void DrawLoadoutNudgeButton(
+            UnitState unit,
+            CombatLoadoutPreview preview,
+            CombatLoadoutPreviewItem selectedItem,
+            Rect rect,
+            string label,
+            int deltaX,
+            int deltaY)
+        {
+            bool canNudge = IsLoadoutNudgeTargetClear(preview, selectedItem, deltaX, deltaY);
+            bool previousEnabled = GUI.enabled;
+            Color previousColor = GUI.color;
+            GUI.enabled = previousEnabled && canNudge;
+            GUI.color = canNudge
+                ? previousColor
+                : new Color(1f, 0.34f, 0.22f, 1f);
+            if (GUI.Button(rect, label))
+            {
+                MoveSelectedLoadoutWeapon(unit, preview, deltaX, deltaY);
+            }
+
+            GUI.color = previousColor;
+            GUI.enabled = previousEnabled;
+        }
+
         private string LoadoutTargetSuffix(UnitState unit, CombatLoadoutPreview preview, CombatLoadoutPreviewItem selectedItem)
         {
             if (!TryGetSelectedLoadoutGridCell(unit, preview, out Vector2Int targetCell))
@@ -7916,6 +7927,21 @@ namespace MC2Demo.Presentation
             Vector2Int targetCell)
         {
             return string.IsNullOrEmpty(LoadoutTargetPlacementIssueText(preview, selectedWeaponIndex, targetCell));
+        }
+
+        private static bool IsLoadoutNudgeTargetClear(
+            CombatLoadoutPreview preview,
+            CombatLoadoutPreviewItem selectedItem,
+            int deltaX,
+            int deltaY)
+        {
+            if (preview == null || selectedItem == null)
+            {
+                return false;
+            }
+
+            Vector2Int targetCell = new(selectedItem.GridX + deltaX, selectedItem.GridY + deltaY);
+            return IsLoadoutTargetPlacementClear(preview, selectedItem.SourceWeaponIndex, targetCell);
         }
 
         private static string LoadoutTargetFillerActionSuffix(CombatLoadoutPreview preview, Vector2Int targetCell)

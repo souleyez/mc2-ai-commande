@@ -65,6 +65,7 @@ Current demo behavior:
 - disables the Place action and labels it Blocked while the selected weapon target overlaps another payload item or leaves the grid
 - reports and colors target clear/blocked/current status, blocked reason, and selected weapon footprint shape in the payload detail line
 - shows a Pick slot hint when a mounted weapon is selected but no target grid cell is selected yet
+- disables nudge direction buttons when the selected weapon would leave the grid or overlap another payload block
 - projects spare-load armor plates and heat sinks into free cells with hardness and cooling readouts
 - lets projected filler cells cycle between armor, heat sink, and empty to preview loadout tradeoffs
 - disables, labels, and colors the selected-weapon Reset action as Base until that weapon has a placement override to clear
