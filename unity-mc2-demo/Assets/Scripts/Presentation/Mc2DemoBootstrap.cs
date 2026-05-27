@@ -2026,6 +2026,21 @@ namespace MC2Demo.Presentation
                 && LoadoutNudgeButtonWidth <= 40f
                 && LoadoutNudgeEastButtonWidth <= 44f
                 && LoadoutNudgeStatusWidth <= 142f;
+            CombatLoadoutPreviewItem selectedItem = LoadoutPreviewItemForWeapon(preview, 0);
+            CombatLoadoutPreviewItem baseItem = LoadoutPreviewItemForWeapon(LoadoutBasePreviewFor(unit), 0);
+            string selectedSummary = LoadoutSelectedWeaponSummaryText(unit, preview, 0, weapons[0], selectedItem, baseItem);
+            bool selectedSummaryOk = selectedSummary.StartsWith("W1 ", StringComparison.Ordinal)
+                && selectedSummary.IndexOf(" Base ", StringComparison.Ordinal) >= 0
+                && selectedSummary.IndexOf("  D ", StringComparison.Ordinal) >= 0
+                && selectedSummary.IndexOf("  R ", StringComparison.Ordinal) >= 0
+                && selectedSummary.IndexOf("  CD ", StringComparison.Ordinal) >= 0
+                && selectedSummary.IndexOf("  H ", StringComparison.Ordinal) >= 0
+                && selectedSummary.IndexOf("  W ", StringComparison.Ordinal) >= 0
+                && selectedSummary.IndexOf("  C ", StringComparison.Ordinal) >= 0
+                && selectedSummary.IndexOf("x", StringComparison.Ordinal) >= 0
+                && selectedSummary.IndexOf("Cells", StringComparison.OrdinalIgnoreCase) < 0
+                && selectedSummary.IndexOf("Shape", StringComparison.OrdinalIgnoreCase) < 0
+                && selectedSummary.Length <= 118;
             string summary = "title="
                 + title
                 + " button="
@@ -2082,7 +2097,9 @@ namespace MC2Demo.Presentation
                 + " nudgeW="
                 + LoadoutNudgeButtonWidth.ToString(CultureInfo.InvariantCulture)
                 + "/"
-                + LoadoutNudgeEastButtonWidth.ToString(CultureInfo.InvariantCulture);
+                + LoadoutNudgeEastButtonWidth.ToString(CultureInfo.InvariantCulture)
+                + " selectedSummary="
+                + selectedSummary;
 
             return new LoadoutCompactAssertionResult
             {
@@ -2093,7 +2110,8 @@ namespace MC2Demo.Presentation
                     && editControlsOk
                     && selectedResetOk
                     && targetControlsOk
-                    && nudgeControlsOk,
+                    && nudgeControlsOk
+                    && selectedSummaryOk,
                 Summary = summary
             };
         }
@@ -8836,41 +8854,52 @@ namespace MC2Demo.Presentation
                 return;
             }
 
-            CombatLoadoutPreviewGridCell selectedCell = LoadoutCellForSelectedWeapon(preview, selectedWeaponIndex);
             CombatLoadoutPreviewItem selectedItem = LoadoutPreviewItemForWeapon(preview, selectedWeaponIndex);
             CombatLoadoutPreviewItem baseItem = LoadoutPreviewItemForWeapon(LoadoutBasePreviewFor(unit), selectedWeaponIndex);
-            int cells = Math.Max(1, CountLoadoutBlockCells(preview, selectedCell));
-            string shapeText = LoadoutBlockShapeText(preview, selectedCell);
-            string positionText = LoadoutWeaponPositionSummary(unit, preview, selectedItem, baseItem);
             bool hasPlacementOverride = HasLoadoutWeaponPlacementOverride(unit, selectedWeaponIndex);
-            string placementState = hasPlacementOverride ? "Moved" : "Base";
             Rect strip = new(x - 4f, y - 2f, width + 8f, 22f);
             DrawColorRect(strip, new Color(0.015f, 0.025f, 0.03f, 0.76f));
             Color borderColor = hasPlacementOverride ? UiAmberColor : UiCyanColor;
             DrawRectBorder(strip, new Color(borderColor.r, borderColor.g, borderColor.b, hasPlacementOverride ? 0.52f : 0.28f), 1f);
             GUI.Label(
                 new Rect(x, y, width, 18f),
-                "W"
+                LoadoutSelectedWeaponSummaryText(unit, preview, selectedWeaponIndex, weapon, selectedItem, baseItem));
+        }
+
+        private string LoadoutSelectedWeaponSummaryText(
+            UnitState unit,
+            CombatLoadoutPreview preview,
+            int selectedWeaponIndex,
+            CombatWeaponDefinition weapon,
+            CombatLoadoutPreviewItem selectedItem,
+            CombatLoadoutPreviewItem baseItem)
+        {
+            CombatLoadoutPreviewGridCell selectedCell = LoadoutCellForSelectedWeapon(preview, selectedWeaponIndex);
+            int cells = Math.Max(1, CountLoadoutBlockCells(preview, selectedCell));
+            string shapeText = LoadoutBlockShapeText(preview, selectedCell);
+            string positionText = LoadoutWeaponPositionSummary(unit, preview, selectedItem, baseItem);
+            string placementState = HasLoadoutWeaponPlacementOverride(unit, selectedWeaponIndex) ? "Moved" : "Base";
+            return "W"
                 + (selectedWeaponIndex + 1).ToString(CultureInfo.InvariantCulture)
                 + " "
                 + placementState
                 + " "
-                + TruncateText(weapon.name, 18)
+                + TruncateText(weapon?.name ?? "Weapon", 18)
                 + positionText
                 + "  D "
-                + FormatDecimal(weapon.damage)
+                + FormatDecimal(weapon?.damage ?? 0f)
                 + "  R "
-                + Mathf.RoundToInt(weapon.rangeMax).ToString(CultureInfo.InvariantCulture)
+                + Mathf.RoundToInt(weapon?.rangeMax ?? 0f).ToString(CultureInfo.InvariantCulture)
                 + "  CD "
-                + FormatDecimal(weapon.recycleTime)
+                + FormatDecimal(weapon?.recycleTime ?? 0f)
                 + "  H "
-                + FormatDecimal(weapon.heat)
+                + FormatDecimal(weapon?.heat ?? 0f)
                 + "  W "
-                + FormatDecimal(weapon.weight)
+                + FormatDecimal(weapon?.weight ?? 0f)
                 + "  C "
                 + cells.ToString(CultureInfo.InvariantCulture)
                 + "  "
-                + shapeText);
+                + shapeText;
         }
 
         private string LoadoutWeaponPositionSummary(
