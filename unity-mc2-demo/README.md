@@ -23,7 +23,7 @@ Current demo behavior:
 - shows the current flow state in the top status strip
 - opens a Mission List shell from the system panel with the current `mc2_01` contract, launch, mech bay, back-system, and return-battle actions
 - routes the post-battle debrief through Continue Bay or Mission List, hiding the debrief overlay before repair, save, or relaunch work
-- shows a compact mech-bay flow lane for Repair All, Save, Missions, and Launch after battle or during pre-mission prep
+- shows a compact After Action or Ready Bay flow lane for Repair All, Save, Missions, and Launch after battle or during pre-mission prep
 - applies a first graphite/cyan/amber UI skin pass to the HUD, buttons, top status strip, and squad command panel
 - extends that UI direction to save choices, system, mission list, debrief, and mech bay flow panels with shared framed surfaces
 - tightens the title save panel with an inset account summary and side-by-side Continue/New Game actions
@@ -97,7 +97,7 @@ Current demo behavior:
 - previews an ordinary weapon shop as the future source of spare depot weapons
 - supports a demo ordinary weapon purchase that spends local tokens and adds one spare weapon
 - supports demo NPC pilot hiring that spends local tokens and assigns a warehouse pilot
-- exposes a compact Candidate Prep action that builds, hires, buys, draft-fits, and opens the next-squad preview for a depot mech
+- exposes a compact Reserve action that builds, hires, buys, draft-fits, and opens the next-squad preview for a depot mech
 - enables a Draft Fit readiness gate when a warehouse mech has both spare weapon stock and a pilot
 - opens a read-only warehouse draft-fit preview showing the selected pilot and spare weapon before real fitting exists
 - applies a demo warehouse draft fit that consumes one spare weapon and keeps the mech non-deployable

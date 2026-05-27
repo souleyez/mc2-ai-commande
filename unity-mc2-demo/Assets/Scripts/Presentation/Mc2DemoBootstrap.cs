@@ -4681,8 +4681,8 @@ namespace MC2Demo.Presentation
             MechBayMissionRestartApplyGuard restartGuard)
         {
             string prefix = mission != null && mission.Result != MissionResultState.InProgress
-                ? "Post Battle"
-                : "Prep";
+                ? "After Action"
+                : "Ready Bay";
             if (demoInventory == null)
             {
                 return prefix + "  inventory missing";
@@ -4692,24 +4692,28 @@ namespace MC2Demo.Presentation
             {
                 if (demoInventory.tokenBalance < repairCost)
                 {
-                    return prefix + "  repair " + repairCount.ToString(CultureInfo.InvariantCulture)
-                        + " need " + FormatTokens(repairCost);
+                    return prefix + "  repair needed  "
+                        + repairCount.ToString(CultureInfo.InvariantCulture)
+                        + " mechs  need "
+                        + FormatTokens(repairCost);
                 }
 
-                return prefix + "  repair " + repairCount.ToString(CultureInfo.InvariantCulture)
-                    + " cost " + FormatTokens(repairCost)
-                    + "  save then launch";
+                return prefix + "  repair "
+                    + repairCount.ToString(CultureInfo.InvariantCulture)
+                    + " mechs  "
+                    + FormatTokens(repairCost)
+                    + " then save";
             }
 
             if (restartGuard?.ApplyEnabled == true)
             {
                 int slotCount = handoffPreview?.MissionSlotCount ?? restartGuard.SpawnIntentCount;
-                return prefix + "  repaired  "
+                return prefix + "  squad ready  "
                     + slotCount.ToString(CultureInfo.InvariantCulture)
-                    + " mechs ready";
+                    + " mechs";
             }
 
-            return prefix + "  launch blocked " + MissionHandoffPlayerBlockedReason(restartGuard?.Reason);
+            return prefix + "  choose ready squad  " + MissionHandoffPlayerBlockedReason(restartGuard?.Reason);
         }
 
         private int CountRepairNeededPlayerMechs()
@@ -5936,7 +5940,7 @@ namespace MC2Demo.Presentation
             bool canAct = demoInventory != null;
             bool previousEnabled = GUI.enabled;
             GUI.enabled = previousEnabled && canAct;
-            if (DrawActionButton(new Rect(x, y - 2f, 58f, 22f), ready ? "Open" : "Prep", canAct))
+            if (DrawActionButton(new Rect(x, y - 2f, 58f, 22f), ready ? "Squad" : "Ready", canAct))
             {
                 string ownedMechId = readyCandidate;
                 MechBaySavedAccountContract beforeAccount = null;
@@ -5965,7 +5969,7 @@ namespace MC2Demo.Presentation
                 x + 66f,
                 y,
                 width - 66f,
-                "Candidate " + LocalCandidatePrepText(readyCandidate),
+                "Reserve " + LocalCandidatePrepText(readyCandidate),
                 canAct,
                 56);
         }
@@ -5980,7 +5984,7 @@ namespace MC2Demo.Presentation
                     return lastSavedAccountDeltaText;
                 }
 
-                return "Ready " + readyCandidate;
+                return "ready  " + readyCandidate;
             }
 
             if (demoInventory == null)
@@ -5991,10 +5995,10 @@ namespace MC2Demo.Presentation
             string pendingOwnedMechId = FirstStartupPendingWarehouseMechId();
             if (!string.IsNullOrWhiteSpace(pendingOwnedMechId))
             {
-                return "Prep pending depot mech";
+                return "needs pilot and weapon";
             }
 
-            return "Build + pilot + weapon + fit";
+            return "build mech, hire pilot, mount weapon";
         }
 
         private static string PilotHirePreviewText(MechBayPilotHirePreview preview)

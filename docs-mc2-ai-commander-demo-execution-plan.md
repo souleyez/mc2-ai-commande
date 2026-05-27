@@ -593,6 +593,7 @@ Tasks:
 - The debrief panel now routes post-battle flow through Continue Bay or Mission List, hiding the debrief overlay before the player repairs, saves, or chooses the next launch.
 - The Mission List return action now goes back to Debrief after a completed mission, keeping the post-battle flow reversible.
 - The mech bay summary now has a compact post-battle/prep lane with Repair All, Save, Missions, and Launch, so the main playable loop is visible in one row.
+- The mech bay flow lane now uses player-facing After Action and Ready Bay status text, and the depot candidate shortcut now reads as a Reserve action rather than a debug-style prep hook.
 - The first design-image-inspired UI pass now applies a graphite/cyan/amber skin, top status strip, and framed squad command panel while keeping the existing IMGUI behavior stable.
 - The same design pass now extends across Save Choices, System, Mission List, Debrief, and Mech Bay panels with shared framed surfaces and highlighted flow lanes.
 - The first in-window visual inspection pass tightened the title save panel with an inset account summary, shorter top status strip, and side-by-side Continue/New Game actions.
