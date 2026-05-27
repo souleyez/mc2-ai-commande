@@ -1,0 +1,4 @@
+# Proves the debrief summary rows and compact combat overflow helper stay valid.
+advance 1
+assert-debrief-summary
+report

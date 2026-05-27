@@ -713,6 +713,9 @@ namespace MC2Demo.Presentation
                     case StartupCommanderScriptActionKind.AssertRestartIdentity:
                         RunStartupRestartIdentityAssertion(action.RequireDepotIdentity);
                         break;
+                    case StartupCommanderScriptActionKind.AssertDebriefSummary:
+                        RunStartupDebriefSummaryAssertion();
+                        break;
                 }
             }
         }
@@ -1818,6 +1821,71 @@ namespace MC2Demo.Presentation
             statusText = "Restart identity assertion failed";
             AddCombatLogLine("CLI identity assert failed: " + result.Summary);
             Debug.LogError("MC2 restart identity assertion failed: " + result.Summary);
+        }
+
+        private void RunStartupDebriefSummaryAssertion()
+        {
+            DebriefSummaryAssertionResult result = BuildDebriefSummaryAssertion();
+            if (result.Accepted)
+            {
+                AddCombatLogLine("CLI debrief summary assert OK: " + result.Summary);
+                Debug.Log("MC2 debrief summary assertion OK: " + result.Summary);
+                return;
+            }
+
+            startupSmokeFailed = true;
+            statusText = "Debrief summary assertion failed";
+            AddCombatLogLine("CLI debrief summary assert failed: " + result.Summary);
+            Debug.LogError("MC2 debrief summary assertion failed: " + result.Summary);
+        }
+
+        private DebriefSummaryAssertionResult BuildDebriefSummaryAssertion()
+        {
+            MissionResultSummary summary = mission?.ResultSummary;
+            if (summary == null)
+            {
+                return DebriefSummaryAssertionResult.Blocked("No result summary");
+            }
+
+            int destroyedLabelCount = summary.destroyedEnemyUnitLabels?.Length ?? 0;
+            int damagedLabelCount = summary.damagedPlayerUnitLabels?.Length ?? 0;
+            int completedLabelCount = summary.completedVisibleObjectiveTitles?.Length ?? 0;
+            bool objectiveTotalsOk = summary.visibleObjectives > 0
+                && summary.completedVisibleObjectives >= 0
+                && summary.completedVisibleObjectives <= summary.visibleObjectives
+                && completedLabelCount == summary.completedVisibleObjectives;
+            bool combatTotalsOk = destroyedLabelCount == summary.destroyedEnemyUnits
+                && damagedLabelCount == summary.damagedPlayerUnits
+                && summary.salvageClaimCount == summary.destroyedEnemyUnits;
+            bool economyTotalsOk = summary.visibleRewardResourcePoints >= summary.completedRewardResourcePoints
+                && summary.repairCostResourcePoints >= 0
+                && summary.netResourcePoints == summary.completedRewardResourcePoints - summary.repairCostResourcePoints;
+            string combatLine = MissionResultCombatLine(summary);
+            bool combatLineOk = combatLine.IndexOf("Combat: Kills ", StringComparison.OrdinalIgnoreCase) >= 0
+                && combatLine.IndexOf("Damage ", StringComparison.OrdinalIgnoreCase) >= 0;
+            bool overflowOk = string.Equals(
+                SummaryItemsText(new[] { "A", "B", "C" }, 2),
+                "A, B +1",
+                StringComparison.Ordinal);
+
+            string result = "objectives="
+                + summary.completedVisibleObjectives.ToString(CultureInfo.InvariantCulture)
+                + "/"
+                + summary.visibleObjectives.ToString(CultureInfo.InvariantCulture)
+                + " kills="
+                + summary.destroyedEnemyUnits.ToString(CultureInfo.InvariantCulture)
+                + " damaged="
+                + summary.damagedPlayerUnits.ToString(CultureInfo.InvariantCulture)
+                + " net="
+                + summary.netResourcePoints.ToString(CultureInfo.InvariantCulture)
+                + " combatLine="
+                + combatLine;
+
+            return new DebriefSummaryAssertionResult
+            {
+                Accepted = objectiveTotalsOk && combatTotalsOk && economyTotalsOk && combatLineOk && overflowOk,
+                Summary = result
+            };
         }
 
         private RestartIdentityAssertionResult BuildRestartIdentityAssertion(bool requireDepotIdentity)
@@ -5399,6 +5467,21 @@ namespace MC2Demo.Presentation
             public static RestartIdentityAssertionResult Blocked(string summary)
             {
                 return new RestartIdentityAssertionResult
+                {
+                    Accepted = false,
+                    Summary = summary ?? "blocked"
+                };
+            }
+        }
+
+        private struct DebriefSummaryAssertionResult
+        {
+            public bool Accepted { get; set; }
+            public string Summary { get; set; }
+
+            public static DebriefSummaryAssertionResult Blocked(string summary)
+            {
+                return new DebriefSummaryAssertionResult
                 {
                     Accepted = false,
                     Summary = summary ?? "blocked"
@@ -9416,21 +9499,28 @@ namespace MC2Demo.Presentation
                 y += 22f;
             }
 
-            string completed = SummaryItemsText(summary.completedVisibleObjectiveTitles, 2);
+            string completed = MissionResultDoneText(summary);
             if (!string.IsNullOrEmpty(completed))
             {
                 GUI.Label(new Rect(panel.x + 18f, y, panel.width - 36f, 20f), "Done: " + TruncateText(completed, 58));
                 y += 20f;
             }
 
-            string kills = SummaryItemsText(summary.destroyedEnemyUnitLabels, 2);
-            string damaged = SummaryItemsText(summary.damagedPlayerUnitLabels, 2);
-            if (!string.IsNullOrEmpty(kills) || !string.IsNullOrEmpty(damaged))
-            {
-                string killText = string.IsNullOrEmpty(kills) ? "none" : TruncateText(kills, 26);
-                string damageText = string.IsNullOrEmpty(damaged) ? "none" : TruncateText(damaged, 24);
-                GUI.Label(new Rect(panel.x + 18f, y, panel.width - 36f, 20f), "Combat: Kills " + killText + "    Damage " + damageText);
-            }
+            GUI.Label(new Rect(panel.x + 18f, y, panel.width - 36f, 20f), MissionResultCombatLine(summary));
+        }
+
+        private static string MissionResultDoneText(MissionResultSummary summary)
+        {
+            return SummaryItemsText(summary?.completedVisibleObjectiveTitles, 2);
+        }
+
+        private static string MissionResultCombatLine(MissionResultSummary summary)
+        {
+            string kills = SummaryItemsText(summary?.destroyedEnemyUnitLabels, 2);
+            string damaged = SummaryItemsText(summary?.damagedPlayerUnitLabels, 2);
+            string killText = string.IsNullOrEmpty(kills) ? "none" : TruncateText(kills, 26);
+            string damageText = string.IsNullOrEmpty(damaged) ? "none" : TruncateText(damaged, 24);
+            return "Combat: Kills " + killText + "    Damage " + damageText;
         }
 
         private static string SummaryItemsText(string[] values, int maxItems)

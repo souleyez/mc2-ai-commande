@@ -295,7 +295,19 @@ namespace MC2Demo.Presentation
                 return true;
             }
 
-            error = "Command file action must be command, advance, report, restart, mech-bay-launch, hide-squad-preview, saved-account-report, saved-account-save-load-preview, saved-account-export, saved-account-import-preview, saved-account-import-apply-preview, saved-account-import-apply, saved-account-load-default-preview, saved-account-save-current-default, saved-account-load-default-apply, prepare-depot-candidate, prepare-local-candidate, squad-swap, or assert-restart-identity.";
+            if (string.Equals(verb, "assert-debrief-summary", StringComparison.OrdinalIgnoreCase))
+            {
+                if (!string.IsNullOrWhiteSpace(payload))
+                {
+                    error = "Assert debrief summary action does not accept arguments.";
+                    return false;
+                }
+
+                action = StartupCommanderScriptAction.AssertDebriefSummary(lineNumber, rawLine);
+                return true;
+            }
+
+            error = "Command file action must be command, advance, report, restart, mech-bay-launch, hide-squad-preview, saved-account-report, saved-account-save-load-preview, saved-account-export, saved-account-import-preview, saved-account-import-apply-preview, saved-account-import-apply, saved-account-load-default-preview, saved-account-save-current-default, saved-account-load-default-apply, prepare-depot-candidate, prepare-local-candidate, squad-swap, assert-restart-identity, or assert-debrief-summary.";
             return false;
         }
     }
@@ -523,6 +535,16 @@ namespace MC2Demo.Presentation
                 RequireDepotIdentity = requireDepotIdentity
             };
         }
+
+        public static StartupCommanderScriptAction AssertDebriefSummary(int lineNumber, string sourceLine)
+        {
+            return new StartupCommanderScriptAction
+            {
+                Kind = StartupCommanderScriptActionKind.AssertDebriefSummary,
+                LineNumber = lineNumber,
+                SourceLine = sourceLine ?? string.Empty
+            };
+        }
     }
 
     public enum StartupCommanderScriptActionKind
@@ -546,6 +568,7 @@ namespace MC2Demo.Presentation
         PrepareDepotCandidate,
         PrepareLocalCandidate,
         SquadSwap,
-        AssertRestartIdentity
+        AssertRestartIdentity,
+        AssertDebriefSummary
     }
 }
