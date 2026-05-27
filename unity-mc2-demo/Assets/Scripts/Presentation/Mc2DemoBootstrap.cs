@@ -7875,9 +7875,10 @@ namespace MC2Demo.Presentation
                 }
 
                 GUI.color = previousColor;
+                string targetPosition = LoadoutGridPositionText(targetCell.x, targetCell.y);
                 string targetStatus = canPlace
-                    ? targetClear ? "Target clear" : "Blocked " + TruncateText(targetIssue, 14)
-                    : "Current slot";
+                    ? targetClear ? "T " + targetPosition + " clear" : "T " + targetPosition + " blocked " + TruncateText(targetIssue, 10)
+                    : "T " + targetPosition + " current";
                 if (canCycleFiller)
                 {
                     targetStatus += " / " + FillerTransitionLabel(occupiedCell?.Category);

@@ -220,7 +220,8 @@ cooldown, heat, weight, footprint cells, and footprint shape above compact S/M/L
 those projected items as larger whole-block grid pieces, following the original
 payload-model color idea of orange empty cells, green/blue/red weapon range bands,
 and yellow components. The grid also exposes selected or hovered block details
-for weapon heat, weight, damage, range, cooldown, and component bonuses, with a
+for weapon heat, weight, damage, range, cooldown, and component bonuses, while
+the Place/Fill target row repeats the selected target coordinate and state, with a
 clear hover frame around whole blocks or open cells. Clicked component and open
 cells stay selected, keeping armor/sink tradeoff details visible after the pointer
 moves away; the same selected target cell can now place the selected mounted
