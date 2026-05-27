@@ -459,9 +459,65 @@ Tasks:
 
 ## Current Recommended Next Task
 
-Start with **starter mission restart state polish**.
+Start with **playable loop closure and flow polish**.
 
 Reason:
+
+- The old starter mission restart polish, roster swap, persistent save shell, post-battle lane, and first design-image-inspired UI pass are now implemented.
+- The current risk is no longer raw feature absence; it is that the playable loop still depends on dense IMGUI prototype panels and too many debug-flavored rows.
+- The next demo milestone should make one private Windows build feel like a coherent local game: Continue/New Game, battle, debrief, repair/save, mission list, mech bay, squad swap, and relaunch.
+- AI remains intentionally bounded to high-level directives and capability preview; do not expand model-driven combat until the local loop feels good.
+- Content replacement remains a package boundary, not a blocker for private reference validation.
+
+### Immediate Plan: Local Playable Loop
+
+Goal: make the current Windows demo understandable without developer narration.
+
+Tasks:
+
+1. Audit the visible flow from manual startup through battle, debrief, repair/save, mission list, mech bay, squad swap, and relaunch.
+2. Remove or hide debug-only rows from player-facing panels while preserving command-file and log coverage.
+3. Tighten button wording around Continue, New Game, Repair All, Save, Missions, Launch, Candidate Prep, Set, and squad replacement.
+4. Keep every action guarded by the existing validated BattleCore paths.
+5. Add or update one command-file smoke path that proves the visible loop still works after each polish step.
+
+### Next Plan: Battle Readability
+
+Goal: make the first mission feel closer to the original tactical rhythm before adding more systems.
+
+Tasks:
+
+1. Improve weapon-effect identity for missile, ballistic, and energy fire using primitive or generated Unity visuals.
+2. Make destroyed arms, destroyed legs, cockpit destruction, and ejection more visible on placeholder mechs.
+3. Tighten `mc2_01` enemy activation and encounter pacing against the mission-analysis notes.
+4. Add a compact mission result summary for destroyed enemies, player damage, completed objectives, token reward, and salvage fragments.
+5. Keep enemy AI lightweight and source-triggered; no strong AI director in this stage.
+
+### Next Plan: Mech Lab Experience
+
+Goal: turn the loadout prototype into a satisfying original-style fitting surface.
+
+Tasks:
+
+1. Move the fitting surface toward a dedicated Mech Lab panel instead of keeping all editing pressure inside the battle-side drawer.
+2. Preserve the current rule: fitted weapons are always enabled; the weapon list selects mounted blocks for movement only.
+3. Keep weapons, armor plates, and heat sinks as whole grid blocks with clear `WxH`, heat, weight, range, cooldown, and damage readouts.
+4. Keep armor calculation simple: armor plates raise overall hardness while section damage and cockpit risk remain visible.
+5. Use source-derived private reference values while preserving the replaceable content-pack boundary.
+
+### Later Plan: Public-Safe Content and AI
+
+Goal: keep the project investable without drifting into legal or technical traps.
+
+Tasks:
+
+1. Continue using original MC2 assets only as private reference-linked validation content.
+2. Build a project-owned content pack for public captures when the local loop and battle readability are strong enough.
+3. Keep AI commander work to opening plan, directive token, capability window, and optional high-level refresh.
+4. Defer multiplayer, support hiring, friend pilots, activity wages, deeper economy, and paper battles until the single-player loop is convincing.
+5. Keep each new system reachable from command files or CLI smoke paths before making it visually richer.
+
+### Completed Context
 
 - Mission rewards now add tokens and salvage fragments, and ready fragment sets become local warehouse mechs.
 - The mech bay now has a compact roster line and a read-only detail view for owned mechs.
