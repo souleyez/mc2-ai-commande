@@ -56,6 +56,7 @@ The Unity demo currently supports:
 - top status, selected target status, and payload detail text now echo the filler transition beside weapon-placement state
 - selected payload target cells can now place the selected mounted weapon or cycle a filler cell, keeping grid edits closer to an original-style fitting table
 - selected mounted weapons draw green/red target ghosts before placement, making overlap or out-of-bounds pressure visible before applying a draft move
+- blocked selected-weapon targets now disable the Place action and label it Blocked instead of letting a clearly invalid target be placed by accident
 - the payload detail line now reports target clear/blocked status, blocked reason, selected weapon footprint cells, and footprint shape
 - mech bay draft/apply/reset boundaries for temporary demo fits
 - applied demo fit handoff into combat readiness, range, heat, cooldown, and weapon display stats
@@ -536,6 +537,7 @@ Reason:
 - The filler action is now labeled by its next result, so an empty cell offers Armor, an armor plate offers Sink, and a heat sink offers Clear.
 - The top status, target status, and payload detail line now echo that next filler transition, for example Empty > Armor, beside the weapon-placement state.
 - The payload grid now previews the selected mounted weapon as a green/red target ghost before Place applies the draft move.
+- The Place action now stays disabled and reads Blocked for overlap or out-of-bounds targets, keeping the ghost preview informative without allowing accidental invalid placement.
 - The payload detail line now mirrors target placement state in text, including clear/blocked status, blocked reason, selected weapon footprint cells, and footprint shape.
 - The mech bay now uses compact squad buttons and expands one selected fitting card at a time, reducing drawer scroll pressure before the future non-IMGUI rewrite.
 - The squad fitting selector now marks draft mechs and shows the selected mech's pilot, fit state, structure, plus H/W/G pressure bars in the same compact strip.

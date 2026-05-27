@@ -230,7 +230,8 @@ instead of a generic Fill button, and the top status plus selected target status
 echo a compact transition such as Empty > Armor beside the weapon-placement state. Before
 Place applies that draft move, the selected weapon now draws a target ghost over
 the destination cells, with green for a clear placement and red for overlap or
-out-of-bounds pressure. The detail line mirrors that signal with target
+out-of-bounds pressure; blocked targets also disable the Place action and label
+it Blocked. The detail line mirrors that signal with target
 clear/blocked text, blocked reason, filler transition, selected weapon footprint cells, and concrete footprint shape, so the player does not
 have to infer the result from color alone. Slot and draft reset actions clear that
 UI selection so restored fits do not keep pointing at stale grid coordinates.

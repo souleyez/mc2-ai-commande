@@ -7839,14 +7839,15 @@ namespace MC2Demo.Presentation
                 bool canPlace = targetCell.x != selectedItem.GridX || targetCell.y != selectedItem.GridY;
                 string targetIssue = LoadoutTargetPlacementIssueText(preview, selectedWeaponIndex, targetCell);
                 bool targetClear = string.IsNullOrEmpty(targetIssue);
-                GUI.enabled = previousEnabled && canPlace;
+                GUI.enabled = previousEnabled && canPlace && targetClear;
                 Color previousColor = GUI.color;
                 GUI.color = !canPlace
                     ? previousColor
                     : targetClear
                         ? new Color(0.50f, 1f, 0.82f, 1f)
                         : new Color(1f, 0.32f, 0.18f, 1f);
-                if (GUI.Button(new Rect(x + 148f, y + 24f, 62f, 22f), "Place"))
+                string placeLabel = targetClear ? "Place" : "Blocked";
+                if (GUI.Button(new Rect(x + 148f, y + 24f, 62f, 22f), placeLabel))
                 {
                     PlaceSelectedLoadoutWeaponAt(unit, preview, targetCell.x, targetCell.y);
                 }
