@@ -8219,12 +8219,15 @@ namespace MC2Demo.Presentation
             }
 
             GUI.color = previousButtonColor;
+            string resetLabel = LoadoutDraftResetButtonLabel(hasPendingEdits);
+            GUI.color = LoadoutDraftResetButtonColor(hasPendingEdits);
             GUI.enabled = previousEnabled && hasPendingEdits;
-            if (GUI.Button(new Rect(x + width - 72f, y - 2f, 64f, 22f), "Reset"))
+            if (GUI.Button(new Rect(x + width - 72f, y - 2f, 64f, 22f), resetLabel))
             {
                 ResetLoadoutDraft(unit);
             }
 
+            GUI.color = previousButtonColor;
             GUI.enabled = previousEnabled;
         }
 
@@ -8263,6 +8266,18 @@ namespace MC2Demo.Presentation
         private static Color LoadoutSelectedResetButtonColor(bool hasPlacementOverride)
         {
             return hasPlacementOverride
+                ? new Color(1f, 0.78f, 0.28f, 1f)
+                : new Color(0.58f, 0.82f, 1f, 1f);
+        }
+
+        private static string LoadoutDraftResetButtonLabel(bool hasPendingEdits)
+        {
+            return hasPendingEdits ? "Reset" : "Clean";
+        }
+
+        private static Color LoadoutDraftResetButtonColor(bool hasPendingEdits)
+        {
+            return hasPendingEdits
                 ? new Color(1f, 0.78f, 0.28f, 1f)
                 : new Color(0.58f, 0.82f, 1f, 1f);
         }

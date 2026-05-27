@@ -60,7 +60,7 @@ The Unity demo currently supports:
 - the payload detail line now reports target clear/blocked status, blocked reason, selected weapon footprint cells, and footprint shape
 - selected-weapon Reset stays disabled, labeled, and colored as Base until that weapon has a placement override to clear
 - the fit Apply action labels and colors itself Done, Invalid, Stock, or Apply so disabled apply states do not rely only on the status line
-- mech bay draft/apply/reset boundaries for temporary demo fits
+- mech bay draft/apply/reset boundaries for temporary demo fits, with the draft reset button labeled and colored as Clean or Reset
 - applied demo fit handoff into combat readiness, range, heat, cooldown, and weapon display stats
 - applied armor hardness reduces incoming damage and applied heat sinks increase cooling
 - applied armor/cooling bonuses appear in unit weapon status and blocked damage appears in combat logs
@@ -550,5 +550,6 @@ Reason:
 - The mounted weapon buttons also include that `WxH` footprint, so the selection list itself reads as block inventory instead of plain weapon toggles.
 - The selected-weapon Reset control now reads Base, stays disabled, and uses the done-state color when there is no placement override, reducing no-op clicks in the fitting controls.
 - The fit Apply control now reads and colors itself as Done, Invalid, Stock, or Apply depending on draft, validation, and inventory state.
+- The draft Reset control now reads Clean and uses the done-state color when the current fit already matches the applied fit.
 - The next low-risk step is to keep tuning the selected fitting card density and then migrate these flow screens beyond IMGUI once the layout direction feels right.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.
