@@ -58,6 +58,7 @@ The Unity demo currently supports:
 - selected mounted weapons draw green/red target ghosts before placement, making overlap or out-of-bounds pressure visible before applying a draft move
 - blocked selected-weapon targets now disable the Place action and label it Blocked instead of letting a clearly invalid target be placed by accident
 - the payload detail line now reports target clear/blocked status, blocked reason, selected weapon footprint cells, and footprint shape, while the target status row colors clear/current/blocked states
+- selected mounted weapons now show a Pick slot hint until a target grid cell is selected
 - selected-weapon Reset stays disabled, labeled, and colored as Base until that weapon has a placement override to clear
 - the fit Apply action labels and colors itself Done, Invalid, Stock, or Apply so disabled apply states do not rely only on the status line
 - mech bay draft/apply/reset boundaries for temporary demo fits, with the draft reset button labeled and colored as Clean or Reset
@@ -542,6 +543,7 @@ Reason:
 - The Place action now stays disabled and reads Blocked for overlap or out-of-bounds targets, keeping the ghost preview informative without allowing accidental invalid placement.
 - The payload detail line now mirrors target placement state in text, including clear/blocked status, blocked reason, selected weapon footprint cells, and footprint shape.
 - The target status row now colors clear, current-slot, and blocked states consistently with the Place button and target ghost.
+- The selected weapon controls now show a Pick slot hint when no target grid cell is selected yet.
 - The mech bay now uses compact squad buttons and expands one selected fitting card at a time, reducing drawer scroll pressure before the future non-IMGUI rewrite.
 - The squad fitting selector now marks draft mechs and shows the selected mech's pilot, fit state, structure, plus H/W/G pressure bars in the same compact strip.
 - The selected fitting card now repeats the selected weapon's combat stats, footprint cells, and footprint shape above the mounted weapon buttons, reducing trips between the grid detail line and weapon selector.

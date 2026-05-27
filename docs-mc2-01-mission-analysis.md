@@ -231,7 +231,8 @@ echo a compact transition such as Empty > Armor beside the weapon-placement stat
 Place applies that draft move, the selected weapon now draws a target ghost over
 the destination cells, with green for a clear placement and red for overlap or
 out-of-bounds pressure; blocked targets also disable the Place action and label
-it Blocked, and the target status row now carries matching clear/current/blocked colors. The detail line mirrors that signal with target
+it Blocked, and the target status row now carries matching clear/current/blocked colors. When no destination cell has
+been selected yet, the same control area prompts Pick slot instead of going blank. The detail line mirrors that signal with target
 clear/blocked text, blocked reason, filler transition, selected weapon footprint cells, and concrete footprint shape, so the player does not
 have to infer the result from color alone. The selected-weapon Reset control
 stays disabled as Base with a done-state color until that weapon has a placement override to clear. The

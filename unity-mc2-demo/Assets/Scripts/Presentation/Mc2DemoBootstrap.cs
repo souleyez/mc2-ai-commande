@@ -7885,6 +7885,13 @@ namespace MC2Demo.Presentation
                     targetStatus);
                 GUI.color = previousColor;
             }
+            else
+            {
+                Color previousColor = GUI.color;
+                GUI.color = LoadoutTargetStatusColor(false, true);
+                GUI.Label(new Rect(x + 148f, y + 24f, Mathf.Max(80f, width - 148f), 18f), "Pick slot");
+                GUI.color = previousColor;
+            }
         }
 
         private string LoadoutTargetSuffix(UnitState unit, CombatLoadoutPreview preview, CombatLoadoutPreviewItem selectedItem)
