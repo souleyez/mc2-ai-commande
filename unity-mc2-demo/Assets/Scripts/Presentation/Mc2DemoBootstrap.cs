@@ -43,6 +43,9 @@ namespace MC2Demo.Presentation
         private const float LoadoutTargetControlOffset = 148f;
         private const float LoadoutTargetButtonWidth = 62f;
         private const float LoadoutTargetStatusMinWidth = 80f;
+        private const float LoadoutNudgeButtonWidth = 40f;
+        private const float LoadoutNudgeEastButtonWidth = 44f;
+        private const float LoadoutNudgeStatusWidth = 142f;
         private const string LoadoutConditionPrefix = "Cond ";
         private static readonly Color UiPanelColor = new(0.035f, 0.045f, 0.055f, 0.92f);
         private static readonly Color UiButtonColor = new(0.075f, 0.105f, 0.125f, 0.96f);
@@ -2008,6 +2011,21 @@ namespace MC2Demo.Presentation
                 && LoadoutTargetControlOffset <= 148f
                 && LoadoutTargetButtonWidth <= 62f
                 && LoadoutTargetStatusMinWidth <= 80f;
+            string nudgeNorthLabel = LoadoutNudgeButtonLabel(0, -1);
+            string nudgeWestLabel = LoadoutNudgeButtonLabel(-1, 0);
+            string nudgeEastLabel = LoadoutNudgeButtonLabel(1, 0);
+            string nudgeSouthLabel = LoadoutNudgeButtonLabel(0, 1);
+            string nudgeReadyLabel = LoadoutNudgeStatusLabel("");
+            string nudgeBlockedLabel = LoadoutNudgeStatusLabel("N outside");
+            bool nudgeControlsOk = string.Equals(nudgeNorthLabel, "N", StringComparison.Ordinal)
+                && string.Equals(nudgeWestLabel, "W", StringComparison.Ordinal)
+                && string.Equals(nudgeEastLabel, "E", StringComparison.Ordinal)
+                && string.Equals(nudgeSouthLabel, "S", StringComparison.Ordinal)
+                && string.Equals(nudgeReadyLabel, "Move OK", StringComparison.Ordinal)
+                && nudgeBlockedLabel.StartsWith("Block ", StringComparison.Ordinal)
+                && LoadoutNudgeButtonWidth <= 40f
+                && LoadoutNudgeEastButtonWidth <= 44f
+                && LoadoutNudgeStatusWidth <= 142f;
             string summary = "title="
                 + title
                 + " button="
@@ -2053,7 +2071,18 @@ namespace MC2Demo.Presentation
                 + "/"
                 + fillerStackLabel
                 + " targetW="
-                + LoadoutTargetButtonWidth.ToString(CultureInfo.InvariantCulture);
+                + LoadoutTargetButtonWidth.ToString(CultureInfo.InvariantCulture)
+                + " nudge="
+                + nudgeNorthLabel
+                + nudgeWestLabel
+                + nudgeEastLabel
+                + nudgeSouthLabel
+                + "/"
+                + nudgeReadyLabel
+                + " nudgeW="
+                + LoadoutNudgeButtonWidth.ToString(CultureInfo.InvariantCulture)
+                + "/"
+                + LoadoutNudgeEastButtonWidth.ToString(CultureInfo.InvariantCulture);
 
             return new LoadoutCompactAssertionResult
             {
@@ -2063,7 +2092,8 @@ namespace MC2Demo.Presentation
                     && conditionOk
                     && editControlsOk
                     && selectedResetOk
-                    && targetControlsOk,
+                    && targetControlsOk
+                    && nudgeControlsOk,
                 Summary = summary
             };
         }
@@ -8253,8 +8283,22 @@ namespace MC2Demo.Presentation
                 + placementState
                 + positionText);
 
-            DrawLoadoutNudgeButton(unit, preview, selectedItem, new Rect(x + 32f, y + 24f, 40f, 22f), "N", 0, -1);
-            DrawLoadoutNudgeButton(unit, preview, selectedItem, new Rect(x, y + 50f, 40f, 22f), "W", -1, 0);
+            DrawLoadoutNudgeButton(
+                unit,
+                preview,
+                selectedItem,
+                new Rect(x + 32f, y + 24f, LoadoutNudgeButtonWidth, 22f),
+                LoadoutNudgeButtonLabel(0, -1),
+                0,
+                -1);
+            DrawLoadoutNudgeButton(
+                unit,
+                preview,
+                selectedItem,
+                new Rect(x, y + 50f, LoadoutNudgeButtonWidth, 22f),
+                LoadoutNudgeButtonLabel(-1, 0),
+                -1,
+                0);
 
             bool canResetSelectedWeapon = HasSelectedLoadoutWeaponPlacementOverride(unit, selectedWeaponIndex);
             bool previousResetEnabled = GUI.enabled;
@@ -8270,9 +8314,23 @@ namespace MC2Demo.Presentation
 
             GUI.color = previousResetColor;
             GUI.enabled = previousResetEnabled;
-            DrawLoadoutNudgeButton(unit, preview, selectedItem, new Rect(x + 98f, y + 50f, 44f, 22f), "E", 1, 0);
-            DrawLoadoutNudgeButton(unit, preview, selectedItem, new Rect(x + 32f, y + 76f, 40f, 22f), "S", 0, 1);
-            DrawLoadoutNudgeStatus(preview, selectedItem, x, y + 102f, 142f);
+            DrawLoadoutNudgeButton(
+                unit,
+                preview,
+                selectedItem,
+                new Rect(x + 98f, y + 50f, LoadoutNudgeEastButtonWidth, 22f),
+                LoadoutNudgeButtonLabel(1, 0),
+                1,
+                0);
+            DrawLoadoutNudgeButton(
+                unit,
+                preview,
+                selectedItem,
+                new Rect(x + 32f, y + 76f, LoadoutNudgeButtonWidth, 22f),
+                LoadoutNudgeButtonLabel(0, 1),
+                0,
+                1);
+            DrawLoadoutNudgeStatus(preview, selectedItem, x, y + 102f, LoadoutNudgeStatusWidth);
 
             if (TryGetSelectedLoadoutGridCell(unit, preview, out Vector2Int targetCell))
             {
@@ -8354,6 +8412,26 @@ namespace MC2Demo.Presentation
             return "Pick";
         }
 
+        private static string LoadoutNudgeButtonLabel(int deltaX, int deltaY)
+        {
+            if (deltaY < 0)
+            {
+                return "N";
+            }
+
+            if (deltaX < 0)
+            {
+                return "W";
+            }
+
+            if (deltaX > 0)
+            {
+                return "E";
+            }
+
+            return "S";
+        }
+
         private void DrawLoadoutNudgeButton(
             UnitState unit,
             CombatLoadoutPreview preview,
@@ -8392,8 +8470,15 @@ namespace MC2Demo.Presentation
             GUI.color = LoadoutNudgeStatusColor(hasBlockedDirections);
             GUI.Label(
                 new Rect(x, y, width, 18f),
-                hasBlockedDirections ? "Block " + TruncateText(blockedSummary, 22) : "Move OK");
+                LoadoutNudgeStatusLabel(blockedSummary));
             GUI.color = previousColor;
+        }
+
+        private static string LoadoutNudgeStatusLabel(string blockedSummary)
+        {
+            return string.IsNullOrEmpty(blockedSummary)
+                ? "Move OK"
+                : "Block " + TruncateText(blockedSummary, 22);
         }
 
         private static bool IsLoadoutTargetPlacementClear(

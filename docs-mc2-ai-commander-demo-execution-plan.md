@@ -668,5 +668,6 @@ Tasks:
 - The loadout compact smoke now also asserts the Apply/Reset strip's short label set and narrow button geometry, guarding the `Done/Apply/Invalid/Stock` plus `Clean/Reset` language without assuming every current fit can apply.
 - The loadout compact smoke now also asserts the selected-weapon Base/Reset control, keeping that no-op/dirty-state button short and narrow beside the nudge pad.
 - The loadout compact smoke now also asserts target action labels and geometry, guarding compact `Place/Block/Pick` and `+Armor/+Sink/Clear/Lock/Stk` controls beside the payload grid.
+- The loadout compact smoke now also asserts the nudge pad labels and geometry, guarding `N/W/E/S` plus `Move OK/Block` feedback as compact selected-weapon movement controls.
 - The next low-risk step is to keep tuning the selected fitting card density and then migrate these flow screens beyond IMGUI once the layout direction feels right.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.
