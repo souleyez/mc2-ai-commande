@@ -39,6 +39,10 @@ namespace MC2Demo.Presentation
         private const float LoadoutApplyButtonWidth = 66f;
         private const string LoadoutPanelFrameTitle = "Mech Lab / 机库整备";
         private const string LoadoutPanelHeaderTitle = "Mech Lab  /  机库整备";
+        private const string MechLabReadyLabel = "Bay Ready";
+        private const string MechLabReviewPrefix = "Bay Review: ";
+        private const string MechLabCompanyPrefix = "Company ";
+        private const string SavedAccountIdleLabel = "Ready  no recent save action";
         private const float LoadoutResetButtonRightOffset = 72f;
         private const float LoadoutResetButtonWidth = 64f;
         private const float LoadoutSelectedResetButtonWidth = 50f;
@@ -1976,6 +1980,7 @@ namespace MC2Demo.Presentation
             LoadoutCompactCheck nudgeCheck = BuildLoadoutNudgeCompactCheck();
             LoadoutCompactCheck selectedSummaryCheck = BuildLoadoutSelectedSummaryCompactCheck(unit, preview, weapons[0]);
             LoadoutCompactCheck routeCheck = BuildLoadoutRouteCompactCheck();
+            LoadoutCompactCheck baySummaryCheck = BuildMechLabSummaryLabelCheck();
             string summary = "title="
                 + title
                 + " button="
@@ -1995,7 +2000,9 @@ namespace MC2Demo.Presentation
                 + " "
                 + selectedSummaryCheck.Summary
                 + " "
-                + routeCheck.Summary;
+                + routeCheck.Summary
+                + " "
+                + baySummaryCheck.Summary;
 
             return new LoadoutCompactAssertionResult
             {
@@ -2008,7 +2015,8 @@ namespace MC2Demo.Presentation
                     && targetCheck.Accepted
                     && nudgeCheck.Accepted
                     && selectedSummaryCheck.Accepted
-                    && routeCheck.Accepted,
+                    && routeCheck.Accepted
+                    && baySummaryCheck.Accepted,
                 Summary = summary
             };
         }
@@ -2029,6 +2037,23 @@ namespace MC2Demo.Presentation
                 + TruncateText(statusText ?? string.Empty, 30);
 
             return new LoadoutCompactCheck(panelOk && flowOk && statusOk && titleOk, summary);
+        }
+
+        private static LoadoutCompactCheck BuildMechLabSummaryLabelCheck()
+        {
+            bool accepted = string.Equals(MechLabReadyLabel, "Bay Ready", StringComparison.Ordinal)
+                && MechLabReviewPrefix.StartsWith("Bay Review", StringComparison.Ordinal)
+                && MechLabCompanyPrefix.StartsWith("Company", StringComparison.Ordinal)
+                && SavedAccountIdleLabel.IndexOf("save/load", StringComparison.OrdinalIgnoreCase) < 0
+                && SavedAccountIdleLabel.IndexOf("Idle", StringComparison.OrdinalIgnoreCase) < 0;
+            string summary = "bayLabels="
+                + MechLabReadyLabel
+                + "/"
+                + MechLabCompanyPrefix.Trim()
+                + "/"
+                + SavedAccountIdleLabel;
+
+            return new LoadoutCompactCheck(accepted, summary);
         }
 
         private LoadoutCompactCheck BuildLoadoutConditionCompactCheck(UnitState unit)
@@ -4250,7 +4275,7 @@ namespace MC2Demo.Presentation
             if (startupSaveChoicesOpenedFromSystem)
             {
                 string lastSave = string.IsNullOrWhiteSpace(lastSavedAccountFileResultText)
-                    ? "Idle  no save/load result"
+                    ? SavedAccountIdleLabel
                     : lastSavedAccountFileResultText;
                 GUI.Label(new Rect(x, y, width, 20f), "Last " + TruncateText(lastSave, 58));
                 y += 22f;
@@ -5056,8 +5081,8 @@ namespace MC2Demo.Presentation
             GUI.Label(
                 new Rect(x, y, width * 0.46f, 18f),
                 inventoryReady
-                    ? "Inventory OK"
-                    : "Inventory Review: " + TruncateText(InventoryStatusError(availability), 28));
+                    ? MechLabReadyLabel
+                    : MechLabReviewPrefix + TruncateText(InventoryStatusError(availability), 28));
             GUI.color = previous;
 
             GUI.Label(
@@ -5073,7 +5098,7 @@ namespace MC2Demo.Presentation
             MechBaySavedAccountContract accountSnapshot = MechBaySavedAccountService.BuildDemoSnapshot(demoInventory);
             GUI.Label(
                 new Rect(x, y + 40f, width, 18f),
-                "Account " + TruncateText(MechBaySavedAccountService.SummaryText(accountSnapshot), 70));
+                MechLabCompanyPrefix + TruncateText(MechBaySavedAccountService.SummaryText(accountSnapshot), 70));
             GUI.Label(
                 new Rect(x, y + 60f, width, 18f),
                 "Assembly " + AssemblyPreviewText(MechBayAssemblyPreviewService.BestAssemblyProgress(demoInventory)));
@@ -6409,7 +6434,7 @@ namespace MC2Demo.Presentation
         private void DrawSavedAccountFileResultLine(float x, float y, float width)
         {
             string text = string.IsNullOrWhiteSpace(lastSavedAccountFileResultText)
-                ? "Idle  no save/load result"
+                ? SavedAccountIdleLabel
                 : lastSavedAccountFileResultText;
             DrawActionStateLabel(
                 x,
