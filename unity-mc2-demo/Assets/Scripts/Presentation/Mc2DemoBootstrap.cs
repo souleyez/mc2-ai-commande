@@ -42,6 +42,8 @@ namespace MC2Demo.Presentation
         private const string MechLabReadyLabel = "Bay Ready";
         private const string MechLabReviewPrefix = "Bay Review: ";
         private const string MechLabCompanyPrefix = "Company ";
+        private const string MechLabPartsLabel = "Parts";
+        private const string MechLabBuildPrefix = "Build ";
         private const string SavedAccountIdleLabel = "Ready  no recent save action";
         private const float LoadoutResetButtonRightOffset = 72f;
         private const float LoadoutResetButtonWidth = 64f;
@@ -2044,12 +2046,18 @@ namespace MC2Demo.Presentation
             bool accepted = string.Equals(MechLabReadyLabel, "Bay Ready", StringComparison.Ordinal)
                 && MechLabReviewPrefix.StartsWith("Bay Review", StringComparison.Ordinal)
                 && MechLabCompanyPrefix.StartsWith("Company", StringComparison.Ordinal)
+                && string.Equals(MechLabPartsLabel, "Parts", StringComparison.Ordinal)
+                && MechLabBuildPrefix.StartsWith("Build", StringComparison.Ordinal)
                 && SavedAccountIdleLabel.IndexOf("save/load", StringComparison.OrdinalIgnoreCase) < 0
                 && SavedAccountIdleLabel.IndexOf("Idle", StringComparison.OrdinalIgnoreCase) < 0;
             string summary = "bayLabels="
                 + MechLabReadyLabel
                 + "/"
                 + MechLabCompanyPrefix.Trim()
+                + "/"
+                + MechLabPartsLabel
+                + "/"
+                + MechLabBuildPrefix.Trim()
                 + "/"
                 + SavedAccountIdleLabel;
 
@@ -5094,14 +5102,14 @@ namespace MC2Demo.Presentation
                 + "  Weapons " + summary.WeaponCount.ToString(CultureInfo.InvariantCulture)
                 + "  Armor " + InventoryUseText(availability?.Usage?.ArmorPlateCount ?? 0, availability?.AvailableArmorPlateCount ?? summary.ArmorPlateCount)
                 + "  Sinks " + InventoryUseText(availability?.Usage?.HeatSinkCount ?? 0, availability?.AvailableHeatSinkCount ?? summary.HeatSinkCount)
-                + "  Frags " + summary.MechFragmentCount.ToString(CultureInfo.InvariantCulture));
+                + "  " + MechLabPartsLabel + " " + summary.MechFragmentCount.ToString(CultureInfo.InvariantCulture));
             MechBaySavedAccountContract accountSnapshot = MechBaySavedAccountService.BuildDemoSnapshot(demoInventory);
             GUI.Label(
                 new Rect(x, y + 40f, width, 18f),
                 MechLabCompanyPrefix + TruncateText(MechBaySavedAccountService.SummaryText(accountSnapshot), 70));
             GUI.Label(
                 new Rect(x, y + 60f, width, 18f),
-                "Assembly " + AssemblyPreviewText(MechBayAssemblyPreviewService.BestAssemblyProgress(demoInventory)));
+                MechLabBuildPrefix + AssemblyPreviewText(MechBayAssemblyPreviewService.BestAssemblyProgress(demoInventory)));
             DrawSavedAccountFileResultLine(x, y + 82f, width);
             MechBayMissionHandoffPreview handoffPreview =
                 MechBayMissionHandoffPreviewService.BuildPreview(demoInventory);
@@ -5718,7 +5726,7 @@ namespace MC2Demo.Presentation
         {
             if (progress == null)
             {
-                return "No fragments";
+                return "No parts";
             }
 
             string text = progress.displayName
@@ -10158,7 +10166,7 @@ namespace MC2Demo.Presentation
                 GUI.Label(
                     new Rect(panel.x + 18f, y, panel.width - 36f, 20f),
                     "Receipt Token " + SignedTokens(missionReceipt.TokenDelta)
-                    + "    Frags +" + missionReceipt.SalvageFragmentCount
+                    + "    " + MechLabPartsLabel + " +" + missionReceipt.SalvageFragmentCount
                     + "    Balance " + FormatTokens(missionReceipt.TokenBalance));
                 y += 22f;
 
@@ -10171,7 +10179,7 @@ namespace MC2Demo.Presentation
 
                 GUI.Label(
                     new Rect(panel.x + 18f, y, panel.width - 36f, 20f),
-                    "Assembly " + AssemblyPreviewText(MechBayAssemblyPreviewService.BestAssemblyProgress(demoInventory)));
+                    MechLabBuildPrefix + AssemblyPreviewText(MechBayAssemblyPreviewService.BestAssemblyProgress(demoInventory)));
                 y += 22f;
             }
 
