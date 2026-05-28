@@ -6955,9 +6955,10 @@ namespace MC2Demo.Presentation
                     x + 12f,
                     y + 136f,
                     width - 24f,
-                    "Launch restarts with updated squad  ");
-                string completedNote = string.IsNullOrWhiteSpace(preview?.PreviewNote) ? "Swap complete" : preview.PreviewNote;
-                GUI.Label(new Rect(x + 12f, y + 158f, width - 24f, 18f), TruncateText(completedNote, 76));
+                    "Launch updated squad  ");
+                GUI.Label(
+                    new Rect(x + 12f, y + 158f, width - 24f, 18f),
+                    TruncateText(SquadSelectionPlayerNote(preview, completed: true), 76));
                 return;
             }
 
@@ -6965,20 +6966,38 @@ namespace MC2Demo.Presentation
                 new Rect(x + 12f, y + 44f, width - 24f, 18f),
                 "Current Slots "
                 + (preview?.MissionSlotCount ?? 0).ToString(CultureInfo.InvariantCulture)
-                + "  Depot Candidates "
+                + "  Reserve Ready "
                 + (preview?.CandidateCount ?? 0).ToString(CultureInfo.InvariantCulture));
             GUI.Label(
                 new Rect(x + 12f, y + 64f, width - 24f, 18f),
                 TruncateText("Slots " + SquadSelectionSlotSummary(preview?.MissionSlots, "none"), 76));
             GUI.Label(
                 new Rect(x + 12f, y + 84f, width - 24f, 18f),
-                TruncateText("Candidates " + SquadSelectionSlotSummary(preview?.DepotCandidates, "none ready"), 76));
+                TruncateText("Reserve " + SquadSelectionSlotSummary(preview?.DepotCandidates, "none ready"), 76));
             DrawSquadSelectionDraftPickers(x + 12f, y + 106f, width - 24f, preview, draft);
             DrawSquadSelectionSwapPlan(x + 12f, y + 154f, width - 24f, draft);
             DrawSquadSelectionPendingSwap(x + 12f, y + 176f, width - 24f, preview, draft);
             DrawSquadSelectionRestartHandoff(x + 12f, y + 198f, width - 24f, "Next Contract  ");
-            string note = string.IsNullOrWhiteSpace(preview?.PreviewNote) ? "Preview only" : preview.PreviewNote;
-            GUI.Label(new Rect(x + 12f, y + 220f, width - 24f, 18f), TruncateText(note, 76));
+            GUI.Label(
+                new Rect(x + 12f, y + 220f, width - 24f, 18f),
+                TruncateText(SquadSelectionPlayerNote(preview, completed: false), 76));
+        }
+
+        private static string SquadSelectionPlayerNote(MechBaySquadSelectionPreview preview, bool completed)
+        {
+            if (completed)
+            {
+                return "Squad ready for next contract";
+            }
+
+            if (preview?.CandidateCount > 0)
+            {
+                return "Review replacement, Set it, then Launch";
+            }
+
+            return preview?.MissionSlotCount > 0
+                ? "Prepare a reserve mech before replacing a slot"
+                : "No current squad slots available";
         }
 
         private void DrawSquadSelectionDraftPickers(
@@ -7066,16 +7085,16 @@ namespace MC2Demo.Presentation
                     ? "mission slot"
                     : draft.OutgoingDisplayName;
                 string incoming = string.IsNullOrWhiteSpace(draft.IncomingDisplayName)
-                    ? "depot mech"
+                    ? "reserve mech"
                     : draft.IncomingDisplayName;
                 text = "Replacement  " + outgoing + " -> " + incoming + "  Set for next launch";
             }
             else
             {
                 string requirements = string.IsNullOrWhiteSpace(draft?.Requirements)
-                    ? "Need mission slot + fitted depot candidate"
+                    ? "Need current slot + ready reserve"
                     : draft.Requirements;
-                text = "Plan blocked  " + requirements;
+                text = "Plan blocked  " + SquadSelectionPlayerBlockedReason(requirements);
             }
 
             GUI.Label(new Rect(x, y, width, 18f), TruncateText(text, 76));
@@ -7196,7 +7215,7 @@ namespace MC2Demo.Presentation
 
             if (candidates <= 0)
             {
-                return "Blocked  no depot mech ready";
+                return "Blocked  no reserve ready";
             }
 
             return "Blocked  choose Out and In";
@@ -7213,6 +7232,12 @@ namespace MC2Demo.Presentation
                 && reason.IndexOf("depot", StringComparison.OrdinalIgnoreCase) >= 0)
             {
                 return "choose Out and In";
+            }
+
+            if (reason.IndexOf("fitted depot", StringComparison.OrdinalIgnoreCase) >= 0
+                || reason.IndexOf("depot candidate", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return "need ready reserve";
             }
 
             if (reason.IndexOf("Selected mech missing", StringComparison.OrdinalIgnoreCase) >= 0)

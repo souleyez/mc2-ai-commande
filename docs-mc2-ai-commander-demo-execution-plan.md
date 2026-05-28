@@ -599,6 +599,7 @@ Tasks:
 - The mech bay next-contract row now uses Contract wording to match the system and debrief flow.
 - The squad replacement preview and top flow label now use Next Contract and Contracts wording while preserving internal mission-contract guards.
 - The mech bay flow lane now uses player-facing After Action and Ready Bay status text, and the depot candidate shortcut now reads as a Reserve action rather than a debug-style prep hook.
+- The Next Contract Squad panel now uses Reserve and review/launch wording instead of depot-candidate or preview-only phrasing, keeping the replacement flow player-facing while preserving the guarded launch path.
 - The first design-image-inspired UI pass now applies a graphite/cyan/amber skin, top status strip, and framed squad command panel while keeping the existing IMGUI behavior stable.
 - The same design pass now extends across Save Slot, System, Contracts, Debrief, and Mech Bay panels with shared framed surfaces and highlighted flow lanes.
 - The first in-window visual inspection pass tightened the title save panel with an inset account summary, shorter top status strip, and side-by-side Continue/New Company actions.
