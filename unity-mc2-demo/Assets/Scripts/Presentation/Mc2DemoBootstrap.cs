@@ -563,7 +563,7 @@ namespace MC2Demo.Presentation
             startupContinueRosterText =
                 "Tokens "
                 + counters.tokenBalance.ToString(CultureInfo.InvariantCulture)
-                + "  Depot "
+                + "  Reserve "
                 + counters.warehouseMechCount.ToString(CultureInfo.InvariantCulture)
                 + "  Items "
                 + counters.itemStackCount.ToString(CultureInfo.InvariantCulture);
@@ -6658,7 +6658,7 @@ namespace MC2Demo.Presentation
                 return "Detail unavailable";
             }
 
-            string source = entry.isWarehouseMech ? "Depot" : "Squad";
+            string source = entry.isWarehouseMech ? "Reserve" : "Squad";
             string state = entry.availableForMission ? "Ready" : UnavailableRosterText(entry);
             string name = string.IsNullOrWhiteSpace(entry.displayName) ? entry.unitType : entry.displayName;
             return source + " " + name
@@ -6803,23 +6803,23 @@ namespace MC2Demo.Presentation
             bool canOpenDraftFitGate = entry != null && entry.hasDraftFitStub && entry.draftFitReady;
             bool previousEnabled = GUI.enabled;
             GUI.enabled = previousEnabled && canOpenDraftFitGate;
-            if (GUI.Button(new Rect(x, y - 2f, 72f, 22f), "Draft Fit"))
+            if (GUI.Button(new Rect(x, y - 2f, 72f, 22f), "Review"))
             {
-                string name = entry == null || string.IsNullOrWhiteSpace(entry.displayName) ? "depot mech" : entry.displayName;
+                string name = entry == null || string.IsNullOrWhiteSpace(entry.displayName) ? "reserve mech" : entry.displayName;
                 showWarehouseDraftFitPreview = true;
                 showSquadSelectionPreview = false;
                 warehouseDraftFitPreviewMechId = entry?.ownedMechId;
                 ClearSquadSelectionDraft();
                 ClearSquadSelectionCompletedReplacement();
-                statusText = "Draft fit ready: " + TruncateText(name, 24);
-                AddCombatLogLine("Mech bay draft fit gate ready for " + name);
+                statusText = "Fit review ready: " + TruncateText(name, 24);
+                AddCombatLogLine("Mech bay reserve fit ready for " + name);
             }
 
             GUI.enabled = previousEnabled;
 
             string status = entry == null || string.IsNullOrWhiteSpace(entry.draftFitStatus)
-                ? "Fit draft unavailable"
-                : entry.draftFitStatus;
+                ? "Fit review unavailable"
+                : PlayerFitStatusText(entry.draftFitStatus);
             GUI.Label(new Rect(x + 80f, y, width - 80f, 18f), TruncateText(status, 44));
 
             string requirements = entry == null || string.IsNullOrWhiteSpace(entry.draftFitRequirements)
@@ -7115,7 +7115,7 @@ namespace MC2Demo.Presentation
         private string SquadSelectionCompletedReplacementText()
         {
             string incoming = string.IsNullOrWhiteSpace(squadSelectionLastIncomingDisplayName)
-                ? "Depot candidate"
+                ? "Reserve mech"
                 : squadSelectionLastIncomingDisplayName;
             string outgoing = string.IsNullOrWhiteSpace(squadSelectionLastOutgoingDisplayName)
                 ? "previous mission slot"
@@ -7456,7 +7456,7 @@ namespace MC2Demo.Presentation
         {
             MechBayWarehouseDraftFitPreview preview =
                 MechBayWarehouseDraftFitPreviewService.BuildPreview(demoInventory, warehouseDraftFitPreviewMechId);
-            GUI.Box(new Rect(x, y, width, 104f), "Warehouse Draft Fit Preview");
+            GUI.Box(new Rect(x, y, width, 104f), "Reserve Fit Review");
             bool previousEnabled = GUI.enabled;
             GUI.enabled = previousEnabled && preview != null && preview.Ready;
             if (GUI.Button(new Rect(x + width - 112f, y + 4f, 48f, 22f), "Apply"))
@@ -7464,7 +7464,7 @@ namespace MC2Demo.Presentation
                 MechBayWarehouseDraftFitApplyResult result =
                     MechBayWarehouseDraftFitPreviewService.TryApplyDemoFit(demoInventory, warehouseDraftFitPreviewMechId);
                 RefreshDemoInventoryValidation();
-                statusText = result?.Message ?? "Draft fit unavailable";
+                statusText = PlayerFitStatusText(result?.Message ?? "Fit review unavailable");
                 if (result != null && result.Accepted)
                 {
                     AddCombatLogLine("Mech bay " + result.Message + " for " + result.displayName);
@@ -7479,12 +7479,12 @@ namespace MC2Demo.Presentation
             {
                 showWarehouseDraftFitPreview = false;
                 warehouseDraftFitPreviewMechId = null;
-                statusText = "Draft fit preview closed";
+                statusText = "Fit review closed";
             }
 
             string mech = string.IsNullOrWhiteSpace(preview?.displayName) ? "Mech unavailable" : preview.displayName;
             string chassis = string.IsNullOrWhiteSpace(preview?.chassisId) ? "unknown" : preview.chassisId;
-            string status = string.IsNullOrWhiteSpace(preview?.Status) ? "Preview unavailable" : preview.Status;
+            string status = string.IsNullOrWhiteSpace(preview?.Status) ? "Review unavailable" : PlayerFitStatusText(preview.Status);
             GUI.Label(new Rect(x + 12f, y + 24f, width - 24f, 18f), TruncateText(mech + "  Chassis " + chassis + "  " + status, 76));
 
             string pilot = string.IsNullOrWhiteSpace(preview?.pilotDisplayName) ? "No pilot assigned" : preview.pilotDisplayName;
@@ -7496,8 +7496,37 @@ namespace MC2Demo.Presentation
             GUI.Label(new Rect(x + 12f, y + 64f, width - 24f, 18f), TruncateText("Weapon " + weapon + "  spare " + stock, 76));
 
             string requirements = string.IsNullOrWhiteSpace(preview?.Requirements) ? "Requirements unknown" : preview.Requirements;
-            string note = string.IsNullOrWhiteSpace(preview?.PreviewNote) ? "Preview only" : preview.PreviewNote;
-            GUI.Label(new Rect(x + 12f, y + 84f, width - 24f, 18f), TruncateText(requirements + "  " + note, 76));
+            GUI.Label(
+                new Rect(x + 12f, y + 84f, width - 24f, 18f),
+                TruncateText(requirements + "  " + ReserveFitReviewNote(preview), 76));
+        }
+
+        private static string ReserveFitReviewNote(MechBayWarehouseDraftFitPreview preview)
+        {
+            if (preview == null)
+            {
+                return "Review unavailable";
+            }
+
+            return preview.Ready ? "Ready to fit reserve mech" : "Resolve requirements before fitting";
+        }
+
+        private static string PlayerFitStatusText(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                return "Fit review unavailable";
+            }
+
+            string result = text;
+            result = result.Replace("Read-only draft fit preview", "Ready fit review");
+            result = result.Replace("Draft fit preview locked", "Reserve fit locked");
+            result = result.Replace("Draft fit preview unavailable", "Fit review unavailable");
+            result = result.Replace("Draft fitting", "Fit review");
+            result = result.Replace("draft fitting", "fit review");
+            result = result.Replace("Draft fit", "Fit review");
+            result = result.Replace("draft fit", "fit review");
+            return result;
         }
 
         private static string ReceiptAssemblyLogText(MechBayMissionReceipt receipt)
