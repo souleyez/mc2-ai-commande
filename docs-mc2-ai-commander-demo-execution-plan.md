@@ -81,26 +81,26 @@ The Unity demo currently supports:
 - applied armor hardness reduces incoming damage and applied heat sinks increase cooling
 - applied armor/cooling bonuses appear in unit weapon status and blocked damage appears in combat logs
 - starter mech bay inventory contract summarizes owned mechs, weapons, armor plates, heat sinks, and demo token balance
-- starter mech bay roster preview lists owned squad and assembled depot mechs with a read-only detail view
-- assembled depot mechs stay held with a pending-loadout placeholder until a future fitting flow equips them
-- depot roster detail shows a disabled Draft Fit affordance as a visible future fitting stub
-- depot fit stub previews missing spare weapon stock and pilot assignment requirements
-- depot roster detail shows a read-only pilot placeholder for the future pilot/social system
-- depot roster detail previews spare weapon stock counts before the shop or fitting flow exists
-- mech bay summary previews an ordinary weapon shop as the future source of spare depot weapons
+- starter mech bay roster preview lists owned squad and assembled reserve mechs with a read-only detail view
+- assembled reserve mechs stay held with a pending-loadout placeholder until a future fitting flow equips them
+- reserve roster detail shows a disabled Fit Review affordance as a visible future fitting stub
+- reserve fit stub previews missing spare weapon stock and pilot assignment requirements
+- reserve roster detail shows a read-only pilot placeholder for the future pilot/social system
+- reserve roster detail previews spare weapon stock counts before the shop or fitting flow exists
+- mech bay summary previews an ordinary weapon shop as the future source of spare reserve weapons
 - mech bay summary supports a demo ordinary weapon purchase that spends local tokens and adds one spare weapon
 - mech bay summary and roster detail support demo NPC pilot hiring that spends local tokens and assigns a warehouse pilot
-- mech bay summary exposes a compact Candidate Prep action that builds, hires, buys, draft-fits, and opens the next-squad preview for a depot mech through the same local services used by command files
-- depot Draft Fit affordance becomes a readiness gate once spare weapon stock and a pilot are both present
-- warehouse Draft Fit opens a read-only preview showing the selected pilot and spare weapon without changing inventory
-- warehouse Draft Fit preview can apply a demo placeholder fit that consumes one spare weapon and keeps the mech non-deployable
+- mech bay summary exposes a compact Reserve Prep action that builds, hires, buys, fit-reviews, and opens the next-squad preview for a reserve mech through the same local services used by command files
+- reserve Fit Review affordance becomes a readiness gate once spare weapon stock and a pilot are both present
+- reserve Fit Review opens a read-only review showing the selected pilot and spare weapon without changing inventory
+- reserve Fit Review can apply a demo placeholder fit that consumes one spare weapon and keeps the mech non-deployable
 - fitted warehouse mechs show that they are ready for the next-contract squad selection path
 - roster detail shows a player-facing Next Squad entry without altering current contract deployment
-- Next Contract Squad preview lists current contract slots and fitted depot candidates without changing inventory or deployment
-- squad-selection opens with the clicked mission slot preselected as outgoing or clicked depot candidate preselected as incoming
+- Next Contract Squad preview lists current contract slots and fitted reserve candidates without changing inventory or deployment
+- squad-selection opens with the clicked mission slot preselected as outgoing or clicked reserve candidate preselected as incoming
 - squad-selection confirmation reads from a local draft state that stages outgoing and incoming mech IDs
 - squad-selection confirmation applies a guarded local roster swap by exchanging mission availability flags
-- squad-selection draft controls can cycle outgoing mission slots and incoming depot candidates while staying local-only
+- squad-selection draft controls can cycle outgoing mission slots and incoming reserve candidates while staying local-only
 - squad-selection preview shows a single replace plan with a Confirm row before roster mutation
 - squad-selection Out/In rows show highlighted direction cues before Set
 - squad-selection Set and next-mission Launch rows use short player-facing status text
@@ -111,7 +111,7 @@ The Unity demo currently supports:
 - post-launch mech bay log confirms which completed replacement was loaded
 - command-file `mech-bay-launch` smoke hook exercises the mech-bay Launch handoff
 - command-file `hide-squad-preview` smoke hook proves the completed replacement cue survives into the general next-mission handoff before Launch
-- squad-selection preview refreshes after confirmation so the joined depot mech becomes a mission slot and no longer appears as a candidate
+- squad-selection preview refreshes after confirmation so the joined reserve mech becomes a mission slot and no longer appears as a candidate
 - next-mission handoff preview reads `availableForMission` roster slots without mutating the active combat mission
 - next-mission handoff area shows a player-facing Ready/Blocked summary, guarded Launch action, and selected lineup
 - restart spawn intent, contract clone, and BattleMission construction validation run behind the Launch guard
@@ -136,7 +136,7 @@ The Unity demo currently supports:
 - mech bay summary now keeps a compact Last Save line for the latest export, preview, apply, or blocked save/load result
 - guarded account-changing actions now auto-save the current local account snapshot to the persistent demo save file
 - manual demo startup now shows a lightweight Continue/New Company panel when the persistent demo save exists and no automation startup args are used
-- that startup panel now previews the loaded account summary, token/depot/item counts, delta, and save timestamp before enabling Continue
+- that startup panel now previews the loaded account summary, token/reserve/item counts, delta, and save timestamp before enabling Continue
 - the runtime now tracks a lightweight demo flow screen across title, battle, mech bay, contracts, Save Slot, system, and debrief states
 - the top status strip now exposes the current flow state, giving the future title shell a visible state boundary before the IMGUI migration
 - the system panel now opens a Contracts shell with the current `mc2_01` contract, launch, mech bay, system, and return-battle actions
@@ -144,8 +144,8 @@ The Unity demo currently supports:
 - New Company now requires an explicit confirmation inside Save Slot, and system-opened Save Slot can return with Back
 - system-opened Save Slot now has a Save Current action that writes the active account to the persistent save slot and refreshes the Continue summary
 - system-opened Save Slot now has Export Copy and Reset Slot actions; Reset Slot requires confirmation, copies the old save first, then overwrites the default slot with a fresh demo snapshot
-- command-file `prepare-local-candidate` can now produce a ready depot candidate through local receipt assembly, NPC hiring, weapon purchase, and warehouse draft-fit services
-- local candidate prep now records a read-only saved-account delta line so token, mech, ready, depot, and item-stack changes are visible before any real save file exists
+- command-file `prepare-local-candidate` can now produce a ready reserve candidate through local receipt assembly, NPC hiring, weapon purchase, and warehouse fit-review services
+- local candidate prep now records a read-only saved-account delta line so token, mech, ready, reserve, and item-stack changes are visible before any real save file exists
 - CLI/AI loop pieces:
   - `-mc2Command`
   - `-mc2AdvanceSeconds`
@@ -524,26 +524,26 @@ Tasks:
 
 - Mission rewards now add tokens and salvage fragments, and ready fragment sets become local warehouse mechs.
 - The mech bay now has a compact roster line and a read-only detail view for owned mechs.
-- Assembled depot mechs now stay held with `pending-loadout`, so they cannot be confused with deployable squad mechs.
-- The roster detail now shows a disabled Draft Fit affordance, making the future fitting workflow visible without enabling it yet.
-- The depot fit stub now previews missing spare weapon stock and pilot assignment requirements.
+- Assembled reserve mechs now stay held with `pending-loadout`, so they cannot be confused with deployable squad mechs.
+- The roster detail now shows a disabled Fit Review affordance, making the future fitting workflow visible without enabling it yet.
+- The reserve fit stub now previews missing spare weapon stock and pilot assignment requirements.
 - The roster detail now shows a read-only pilot placeholder, so the future pilot/social system has a clear UI slot.
-- The roster detail now previews spare weapon stock counts, confirming that starter source weapons are all mounted and no depot fitting weapon stock is free yet.
+- The roster detail now previews spare weapon stock counts, confirming that starter source weapons are all mounted and no reserve fitting weapon stock is free yet.
 - The mech bay summary now shows an ordinary weapon shop preview, so the future source of spare weapon stock is visible.
 - The mech bay summary now supports a tightly scoped demo-only ordinary weapon purchase that deducts tokens and adds one spare weapon stack.
 - The mech bay now supports demo-only NPC pilot hiring that deducts tokens and assigns a pilot to a warehouse mech.
-- The depot Draft Fit affordance now becomes clickable once spare stock and a pilot are both present, giving feedback without changing loadouts.
-- The depot Draft Fit affordance now opens a read-only preview showing the selected pilot and spare weapon without changing inventory or loadouts.
-- The depot Draft Fit preview now has a demo-only Apply action that consumes one spare weapon and changes the warehouse mech from `pending-loadout` to `warehouse-demo-fit`, while keeping it non-deployable.
-- The roster now explains fitted depot mechs as ready for next-mission selection instead of a future-only flow.
+- The reserve Fit Review affordance now becomes clickable once spare stock and a pilot are both present, giving feedback without changing loadouts.
+- The reserve Fit Review affordance now opens a read-only review showing the selected pilot and spare weapon without changing inventory or loadouts.
+- The reserve Fit Review now has a demo-only Apply action that consumes one spare weapon and changes the warehouse mech from `pending-loadout` to `warehouse-demo-fit`, while keeping it non-deployable.
+- The roster now explains fitted reserve mechs as ready for next-mission selection instead of a future-only flow.
 - The roster now shows a player-facing Next Squad entry, so the deployment path is visible before it alters mission rosters.
-- The squad-selection preview now lists current mission slots and fitted depot candidates without changing deployment.
-- The roster Squad button now preselects clicked mission mechs as outgoing and clicked depot candidates as incoming.
+- The squad-selection preview now lists current mission slots and fitted reserve candidates without changing deployment.
+- The roster Squad button now preselects clicked mission mechs as outgoing and clicked reserve candidates as incoming.
 - The squad-selection confirmation path now reads from a local draft state container that holds selected outgoing and incoming mech IDs.
-- The squad-selection draft controls now cycle mission slots and depot candidates while keeping the selected IDs local-only.
+- The squad-selection draft controls now cycle mission slots and reserve candidates while keeping the selected IDs local-only.
 - The squad-selection preview now collapses the old disabled Swap and Dry Run rows into one clear replace plan plus Confirm.
 - The squad-selection confirmation path now applies a guarded local roster swap by exchanging mission availability flags while preserving token and inventory counts.
-- The squad-selection preview now refreshes after confirmation, so the roster detail and preview stay readable after the only current depot candidate joins the contract squad.
+- The squad-selection preview now refreshes after confirmation, so the roster detail and preview stay readable after the only current reserve candidate joins the contract squad.
 - The mech bay now has a next-mission handoff preview, so mission launch/restart code can consume the selected `availableForMission` roster without mutating token or item inventory state.
 - The next-mission handoff now shows a player-facing Ready/Blocked summary, guarded Launch action, and selected lineup.
 - The restart validation path maps handoff slots to spawn intents, clones the mission contract, and validates replacement `BattleMission` construction before Launch can apply.
@@ -552,9 +552,9 @@ Tasks:
 - A dedicated `mc2_01-restart-demo.txt` command file now proves move, advance, report, repeated restart, and post-restart command playback in the built player.
 - Runtime restart now immediately disables old generated scene roots before queued destruction, reducing same-frame overlap risk while the replacement world is rebuilt.
 - Mech bay restart Apply now keeps the mech bay open and pauses the rebuilt mission, while system, result-panel, and CLI restarts still return directly to battle.
-- Post-restart roster/condition feedback now shows active player slots, deployed roster count, ready mechs, repair needs, held depot mechs, fit blockers, and unavailable mechs in the mech bay and restart combat log.
+- Post-restart roster/condition feedback now shows active player slots, deployed roster count, ready mechs, repair needs, held reserve mechs, fit blockers, and unavailable mechs in the mech bay and restart combat log.
 - Restart handoff identity now flows through `UnitSpawn` into runtime `UnitState`, commander observations, loadout card titles, restart identity logs, and inventory condition sync.
-- A dedicated `mc2_01-restart-identity-swap.txt` command file now prepares a demo depot candidate, applies a squad swap, restarts, and asserts that runtime owned-mech identity includes the depot slot.
+- A dedicated `mc2_01-restart-identity-swap.txt` command file now prepares a demo reserve candidate, applies a squad swap, restarts, and asserts that runtime owned-mech identity includes the reserve slot.
 - The squad-selection preview now appears inline in the mech bay when opened, hides lower roster detail to avoid being buried, and exposes the same guarded next-mission Launch handoff after the staged swap row.
 - The mech bay next-mission area now collapses the old Launch, dry-run, contract, clone, and construction rows into a player-facing Ready/Blocked summary, guarded Launch button, and lineup preview while preserving the validated restart guards.
 - The squad-selection Out/In rows now carry highlighted direction cues, so the selected replacement direction is visible before Set.
@@ -566,14 +566,14 @@ Tasks:
 - Post-launch mech bay log now repeats the completed replacement summary after a completed swap Launch.
 - A lightweight command-file `mech-bay-launch` smoke hook now exercises the mech-bay Launch path, checks the bay stays open and paused, and confirms the updated-squad status before identity assertion.
 - A lightweight command-file `hide-squad-preview` smoke hook now hides the completed squad preview, checks the general handoff summary still names the updated squad, and launches from that path.
-- The smoke-only depot replacement remains as a command-file fallback, but the primary command smoke now produces a ready depot candidate through the local receipt, assembly, NPC hire, weapon shop, and warehouse draft-fit services.
-- The mech bay summary now exposes that same ready-candidate service chain as a compact Candidate Prep action, and it opens Next Squad with the prepared depot candidate preselected.
+- The smoke-only reserve replacement remains as a command-file fallback, but the primary command smoke now produces a ready reserve candidate through the local receipt, assembly, NPC hire, weapon shop, and warehouse fit-review services.
+- The mech bay summary now exposes that same ready-candidate service chain as a compact Reserve Prep action, and it opens Next Squad with the prepared reserve candidate preselected.
 - A tiny saved-account boundary now wraps demo inventory state as a cloned local account snapshot, validates cached counters, and round-trips through JSON without changing battle rules or requiring backend services.
 - A lightweight command-file `saved-account-report` smoke hook now validates and logs a local saved-account JSON dry-run before and after candidate prep, without writing persistent user data by default.
 - Local candidate prep now records a read-only saved-account delta line after the receipt/assembly/pilot/shop/fit chain, so inventory growth is visible before real save/load work.
 - A manual command-file `saved-account-save-load-preview` hook now exercises JSON serialization, load validation, and zero-delta round-trip checks while keeping default startup and UI flows read-only.
 - A manual command-file save-file path now supports `saved-account-export <path>` and `saved-account-import-preview <path>`, so test runs can write and validate local account JSON only when a script asks for it.
-- A guarded `saved-account-import-apply-preview <path>` command now checks account identity and reports what token/mech/depot deltas a future apply would make, without mutating the live mech bay.
+- A guarded `saved-account-import-apply-preview <path>` command now checks account identity and reports what token/mech/reserve deltas a future apply would make, without mutating the live mech bay.
 - The mech bay summary now exposes the latest guarded import apply preview as a read-only confirmation row, keeping the future apply path visible without mutating live data.
 - A guarded `saved-account-import-apply <path>` command now requires the latest accepted preview to match path, JSON length, and delta before replacing the local mech bay with a cloned loaded inventory.
 - The mech bay summary now exposes the same guarded import apply path as a manual Apply action that stays disabled unless a matching preview is ready.
@@ -585,7 +585,7 @@ Tasks:
 - Startup command files can now run `saved-account-load-default-preview` and `saved-account-load-default-apply`, restoring the persistent demo save path through the existing import-apply guard.
 - Startup command files can now run `saved-account-save-current-default`, explicitly covering the Save Current default export path before preview/apply smoke checks.
 - The explicit `-mc2LoadDefaultSave` startup flag now restores the persistent demo save path through the existing import-apply guard when the file exists, and skips cleanly when it does not.
-- Manual demo startup now shows a lightweight Continue/New Company panel when the persistent demo save exists and no automation startup args are used, with account summary, token/depot/item counts, delta, and save timestamp visible before Continue is enabled.
+- Manual demo startup now shows a lightweight Continue/New Company panel when the persistent demo save exists and no automation startup args are used, with account summary, token/reserve/item counts, delta, and save timestamp visible before Continue is enabled.
 - The pause/system panel now exposes the same Save Slot entry, so testers can reopen Continue/New Company after launch; New Company requires an explicit confirmation and resets the active demo run while keeping the persistent save slot untouched.
 - System-opened Save Slot can now return with Back, keeping the panel useful as an in-run save/title shell rather than a one-way modal.
 - System-opened Save Slot now has a Save Current action that writes the active account to the persistent save slot and refreshes the displayed Continue summary.
@@ -598,9 +598,10 @@ Tasks:
 - The mech bay summary now has a compact post-battle/prep lane with Repair All, Save, Contracts, and Launch, so the main playable loop is visible in one row.
 - The mech bay next-contract row now uses Contract wording to match the system and debrief flow.
 - The squad replacement preview and top flow label now use Next Contract and Contracts wording while preserving internal mission-contract guards.
-- The mech bay flow lane now uses player-facing After Action and Ready Bay status text, and the depot candidate shortcut now reads as a Reserve action rather than a debug-style prep hook.
+- The mech bay flow lane now uses player-facing After Action and Ready Bay status text, and the candidate shortcut now reads as a Reserve action rather than a debug-style prep hook.
 - The Next Contract Squad panel now uses Reserve and review/launch wording instead of depot-candidate or preview-only phrasing, keeping the replacement flow player-facing while preserving the guarded launch path.
-- The roster and reserve fit review panel now use Reserve/Fit Review wording instead of Depot/Draft Fit/preview-only phrasing while preserving the same warehouse fitting services.
+- The roster and reserve fit review panel now use Reserve/Fit Review wording consistently while preserving the same warehouse fitting services.
+- Plan notes and smoke-facing reserve candidate logs now use Reserve/Fit Review wording consistently, leaving only internal service names and legacy command identifiers unchanged.
 - The first design-image-inspired UI pass now applies a graphite/cyan/amber skin, top status strip, and framed squad command panel while keeping the existing IMGUI behavior stable.
 - The same design pass now extends across Save Slot, System, Contracts, Debrief, and Mech Bay panels with shared framed surfaces and highlighted flow lanes.
 - The first in-window visual inspection pass tightened the title save panel with an inset account summary, shorter top status strip, and side-by-side Continue/New Company actions.

@@ -1461,8 +1461,8 @@ namespace MC2Demo.Presentation
         {
             bool accepted = EnsureStartupDepotSwapCandidate();
             string message = accepted ? "prepared" : "blocked";
-            AddCombatLogLine("CLI depot candidate " + message);
-            Debug.Log("MC2 commander depot candidate: " + message);
+            AddCombatLogLine("CLI reserve candidate " + message);
+            Debug.Log("MC2 commander reserve candidate: " + message);
         }
 
         private void RunStartupPrepareLocalCandidate()
@@ -1582,7 +1582,7 @@ namespace MC2Demo.Presentation
             target = StartupRosterEntryByOwnedMechId(targetOwnedMechId);
             if (target == null)
             {
-                return BlockLocalCandidate("Assembled mech missing before draft fit", logPrefix, markStartupSmokeFailure);
+                return BlockLocalCandidate("Assembled mech missing before fit review", logPrefix, markStartupSmokeFailure);
             }
 
             if (target.hasDraftFitStub)
@@ -1591,7 +1591,7 @@ namespace MC2Demo.Presentation
                     MechBayWarehouseDraftFitPreviewService.TryApplyDemoFit(demoInventory, targetOwnedMechId);
                 if (result == null || !result.Accepted)
                 {
-                    return BlockLocalCandidate(result?.Message ?? "Draft fit unavailable", logPrefix, markStartupSmokeFailure);
+                    return BlockLocalCandidate(result?.Message ?? "Fit review unavailable", logPrefix, markStartupSmokeFailure);
                 }
 
                 AddCombatLogLine(logPrefix + " fit: " + result.Message);
@@ -1625,7 +1625,7 @@ namespace MC2Demo.Presentation
             if (demoInventory == null)
             {
                 startupSmokeFailed = true;
-                statusText = "Depot candidate blocked";
+                statusText = "Reserve candidate blocked";
                 return false;
             }
 
@@ -1640,12 +1640,12 @@ namespace MC2Demo.Presentation
                     unitId = "warehouse-" + StartupSmokeDepotOwnedMechId,
                     unitType = unitType,
                     chassisId = unitType,
-                    displayName = unitType + " Smoke Depot",
+                    displayName = unitType + " Smoke Reserve",
                     activeLoadoutId = MechBayWarehouseDraftFitPreviewService.DemoWarehouseFitLoadoutId,
                     availableForMission = false,
                     conditionPercent = 100,
                     pilotId = "pilot-smoke-depot",
-                    pilotDisplayName = "Smoke Depot Pilot",
+                    pilotDisplayName = "Smoke Reserve Pilot",
                     pilotType = "NPC"
                 };
                 ownedMechs.Add(existing);
@@ -1658,7 +1658,7 @@ namespace MC2Demo.Presentation
             if (string.IsNullOrWhiteSpace(existing.pilotId))
             {
                 existing.pilotId = "pilot-smoke-depot";
-                existing.pilotDisplayName = "Smoke Depot Pilot";
+                existing.pilotDisplayName = "Smoke Reserve Pilot";
                 existing.pilotType = "NPC";
             }
 
@@ -1668,11 +1668,11 @@ namespace MC2Demo.Presentation
             if (!ready)
             {
                 startupSmokeFailed = true;
-                statusText = "Depot candidate blocked";
+                statusText = "Reserve candidate blocked";
             }
             else
             {
-                statusText = "Depot candidate ready";
+                statusText = "Reserve candidate ready";
             }
 
             return ready;
@@ -1797,8 +1797,8 @@ namespace MC2Demo.Presentation
             {
                 startupSmokeFailed = true;
                 statusText = "CLI squad swap blocked";
-                AddCombatLogLine("CLI squad swap blocked: no depot candidate");
-                Debug.LogError("MC2 commander squad swap blocked: no depot candidate");
+                AddCombatLogLine("CLI squad swap blocked: no reserve candidate");
+                Debug.LogError("MC2 commander squad swap blocked: no reserve candidate");
                 return;
             }
 
@@ -5705,7 +5705,7 @@ namespace MC2Demo.Presentation
                 string label = string.IsNullOrWhiteSpace(entry.unitType) ? "Mech" : entry.unitType;
                 if (entry.isWarehouseMech)
                 {
-                    label += " depot";
+                    label += " reserve";
                 }
 
                 label += " " + entry.conditionPercent.ToString(CultureInfo.InvariantCulture) + "%";
@@ -6009,7 +6009,7 @@ namespace MC2Demo.Presentation
 
             MechBaySquadSelectionSlot[] slots = preview.MissionSlots ?? Array.Empty<MechBaySquadSelectionSlot>();
             string state = guard?.ApplyEnabled == true ? "Ready" : "Blocked";
-            string depot = preview.IncludesDepotMissionSlot ? "depot included" : "current squad";
+            string depot = preview.IncludesDepotMissionSlot ? "reserve included" : "current squad";
             return state
                 + "  "
                 + slots.Length.ToString(CultureInfo.InvariantCulture)
@@ -6095,7 +6095,7 @@ namespace MC2Demo.Presentation
 
             if (guard.ApplyEnabled)
             {
-                string depot = preview?.IncludesDepotMissionSlot == true ? "depot in squad" : "current squad";
+                string depot = preview?.IncludesDepotMissionSlot == true ? "reserve in squad" : "current squad";
                 return "Ready  "
                     + guard.SpawnIntentCount.ToString(CultureInfo.InvariantCulture)
                     + " mechs  "
@@ -7264,7 +7264,7 @@ namespace MC2Demo.Presentation
                 ? "mission slot"
                 : draft.OutgoingDisplayName;
             squadSelectionLastIncomingDisplayName = string.IsNullOrWhiteSpace(draft?.IncomingDisplayName)
-                ? "depot mech"
+                ? "reserve mech"
                 : draft.IncomingDisplayName;
         }
 
@@ -7468,7 +7468,7 @@ namespace MC2Demo.Presentation
                 if (result != null && result.Accepted)
                 {
                     AddCombatLogLine("Mech bay " + result.Message + " for " + result.displayName);
-                    TryAutoSaveSavedAccount("warehouse draft fit");
+                    TryAutoSaveSavedAccount("warehouse fit review");
                     showWarehouseDraftFitPreview = false;
                     warehouseDraftFitPreviewMechId = null;
                 }
@@ -9521,7 +9521,7 @@ namespace MC2Demo.Presentation
                 unit.ClearDemoLoadout();
             }
 
-            statusText = "Reset draft fit";
+            statusText = "Reset fit review";
         }
 
         private UnitLoadoutCombatOverride BuildAppliedLoadoutCombatOverride(UnitState unit, CombatLoadoutPreview preview)
