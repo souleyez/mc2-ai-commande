@@ -53,6 +53,7 @@ The Unity demo currently supports:
 - selected weapon edit controls mirror the same Base or Moved grid-position chain as the summary
 - payload detail text uses compact `C` and `WxH` shape readouts and labels unapplied edits as Pending fit
 - mech bay selector and squad replacement status text now use Pending/Outgoing/Reserve wording instead of player-facing draft language
+- roster fit detail now shows Ready Bay or Reserve Bay instead of exposing internal owned-mech ids
 - weapon selection, move, place, and reset results report the same W# Base/Moved coordinate format in the top status
 - compact mounted weapon buttons use S/M/L range-band labels and `WxH` shape labels with the same color language as payload blocks
 - compact mounted weapon buttons replace the active weapon number with a `>` selector for color-independent selection feedback
@@ -653,6 +654,7 @@ Tasks:
 - The selected weapon edit controls now mirror that same Base/Moved coordinate chain, keeping the nudge/place area consistent with the summary line.
 - Payload detail rows now replace verbose `Cells`/`Shape` wording with compact `C` plus `WxH` readouts, and the edit lane now calls unapplied loadout changes `Pending fit`.
 - The mech bay selector and squad replacement cycling now use Pending, Outgoing set, and Reserve set status text instead of player-facing draft wording.
+- The roster fit detail now replaces internal owned-mech ids with Ready Bay or Reserve Bay labels, keeping the line player-facing.
 - Destroyed cockpit, arm, and leg sections now leave persistent tactical-view damage beacons in addition to the existing flashes, detached parts, and ejection effects.
 - Missile, ballistic, and energy attacks now have clearer muzzle and trace accents layered over the existing family-specific combat effects.
 - The debrief now compresses completed objectives, enemy kills, and damaged player mechs into readable summary rows with `+n` overflow counts.

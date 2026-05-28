@@ -6682,9 +6682,8 @@ namespace MC2Demo.Presentation
 
             string chassis = string.IsNullOrWhiteSpace(entry.chassisId) ? entry.unitType : entry.chassisId;
             string loadoutStatus = string.IsNullOrWhiteSpace(entry.loadoutStatus) ? "Unknown" : entry.loadoutStatus;
-            string loadout = string.IsNullOrWhiteSpace(entry.activeLoadoutId) ? "none" : entry.activeLoadoutId;
-            string id = string.IsNullOrWhiteSpace(entry.ownedMechId) ? "unknown" : entry.ownedMechId;
-            return "Chassis " + chassis + "  Fit " + loadoutStatus + " (" + loadout + ")  Id " + id;
+            string bay = entry.isWarehouseMech ? "Reserve Bay" : "Ready Bay";
+            return "Chassis " + chassis + "  Fit " + loadoutStatus + "  " + bay;
         }
 
         private static string OwnedRosterPilotText(MechBayOwnedRosterEntry entry)
