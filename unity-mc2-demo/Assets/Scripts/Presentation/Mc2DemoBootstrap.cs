@@ -45,6 +45,7 @@ namespace MC2Demo.Presentation
         private const string MechLabPartsLabel = "Parts";
         private const string MechLabBuildPrefix = "Build ";
         private const string SavedAccountIdleLabel = "Ready  no recent save action";
+        private const string EndRunButtonLabel = "End Run";
         private const float LoadoutResetButtonRightOffset = 72f;
         private const float LoadoutResetButtonWidth = 64f;
         private const float LoadoutSelectedResetButtonWidth = 50f;
@@ -2264,6 +2265,9 @@ namespace MC2Demo.Presentation
                 SummaryItemsText(new[] { "A", "B", "C" }, 2),
                 "A, B +1",
                 StringComparison.Ordinal);
+            bool endRunLabelOk = string.Equals(EndRunButtonLabel, "End Run", StringComparison.Ordinal)
+                && EndRunButtonLabel.IndexOf("Demo", StringComparison.OrdinalIgnoreCase) < 0
+                && EndRunButtonLabel.Length <= 8;
 
             string result = "objectives="
                 + summary.completedVisibleObjectives.ToString(CultureInfo.InvariantCulture)
@@ -2275,12 +2279,19 @@ namespace MC2Demo.Presentation
                 + summary.damagedPlayerUnits.ToString(CultureInfo.InvariantCulture)
                 + " net="
                 + summary.netResourcePoints.ToString(CultureInfo.InvariantCulture)
+                + " end="
+                + EndRunButtonLabel
                 + " combatLine="
                 + combatLine;
 
             return new DebriefSummaryAssertionResult
             {
-                Accepted = objectiveTotalsOk && combatTotalsOk && economyTotalsOk && combatLineOk && overflowOk,
+                Accepted = objectiveTotalsOk
+                    && combatTotalsOk
+                    && economyTotalsOk
+                    && combatLineOk
+                    && overflowOk
+                    && endRunLabelOk,
                 Summary = result
             };
         }
@@ -9990,7 +10001,7 @@ namespace MC2Demo.Presentation
                 OpenMissionListPanelFromSystem();
             }
 
-            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 248f, panel.width - 36f, 30f), "Exit Demo"))
+            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 248f, panel.width - 36f, 30f), EndRunButtonLabel))
             {
                 Application.Quit(0);
             }
@@ -10122,7 +10133,7 @@ namespace MC2Demo.Presentation
                 TryApplyMissionRestartRuntimeSwap();
             }
 
-            if (GUI.Button(new Rect(panel.x + 26f + actionWidth, panel.y + 334f, actionWidth, 30f), "Exit Demo"))
+            if (GUI.Button(new Rect(panel.x + 26f + actionWidth, panel.y + 334f, actionWidth, 30f), EndRunButtonLabel))
             {
                 Application.Quit(0);
             }
