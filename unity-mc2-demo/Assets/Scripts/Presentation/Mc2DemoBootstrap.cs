@@ -4958,7 +4958,7 @@ namespace MC2Demo.Presentation
             float y = panel.y + 34f;
             float width = panel.width - 28f;
 
-            GUI.Label(new Rect(x, y, width - 76f, 22f), "Post battle prep  /  小队整备", uiHeaderStyle);
+            GUI.Label(new Rect(x, y, width - 76f, 22f), "Mech Lab  /  机库整备", uiHeaderStyle);
             if (GUI.Button(new Rect(panel.xMax - 70f, panel.y + 7f, 56f, 24f), "Close"))
             {
                 showLoadoutPanel = false;
@@ -5332,7 +5332,7 @@ namespace MC2Demo.Presentation
             Rect strip = new(x - 4f, y - 4f, width + 8f, 48f);
             DrawColorRect(strip, new Color(0.015f, 0.025f, 0.03f, 0.82f));
             DrawRectBorder(strip, new Color(UiCyanColor.r, UiCyanColor.g, UiCyanColor.b, 0.36f), 1f);
-            GUI.Label(new Rect(x, y, 68f, 18f), "Squad Fit");
+            GUI.Label(new Rect(x, y, 68f, 18f), "Mech Lab");
 
             int unitCount = CountPlayerUnits();
             float gap = 5f;

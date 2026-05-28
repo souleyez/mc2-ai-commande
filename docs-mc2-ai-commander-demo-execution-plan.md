@@ -55,6 +55,7 @@ The Unity demo currently supports:
 - mech bay selector and squad replacement status text now use Pending/Outgoing/Reserve wording instead of player-facing draft language
 - roster fit detail now shows Ready Bay or Reserve Bay instead of exposing internal owned-mech ids
 - reserve prep logs and save-result labels now use Reserve Prep wording instead of local/candidate terminology
+- the post-battle fitting drawer now presents itself as Mech Lab instead of a generic prep/squad-fit panel
 - weapon selection, move, place, and reset results report the same W# Base/Moved coordinate format in the top status
 - compact mounted weapon buttons use S/M/L range-band labels and `WxH` shape labels with the same color language as payload blocks
 - compact mounted weapon buttons replace the active weapon number with a `>` selector for color-independent selection feedback
@@ -657,6 +658,7 @@ Tasks:
 - The mech bay selector and squad replacement cycling now use Pending, Outgoing set, and Reserve set status text instead of player-facing draft wording.
 - The roster fit detail now replaces internal owned-mech ids with Ready Bay or Reserve Bay labels, keeping the line player-facing.
 - Reserve prep logs and save-result labels now use Reserve Prep wording instead of local/candidate terminology while keeping existing command names stable.
+- The fitting drawer header and selector now use Mech Lab wording, nudging the current IMGUI drawer toward the dedicated Mech Lab surface planned next.
 - Destroyed cockpit, arm, and leg sections now leave persistent tactical-view damage beacons in addition to the existing flashes, detached parts, and ejection effects.
 - Missile, ballistic, and energy attacks now have clearer muzzle and trace accents layered over the existing family-specific combat effects.
 - The debrief now compresses completed objectives, enemy kills, and damaged player mechs into readable summary rows with `+n` overflow counts.
