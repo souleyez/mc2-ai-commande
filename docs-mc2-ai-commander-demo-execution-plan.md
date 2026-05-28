@@ -56,6 +56,7 @@ The Unity demo currently supports:
 - roster fit detail now shows Ready Bay or Reserve Bay instead of exposing internal owned-mech ids
 - reserve prep logs and save-result labels now use Reserve Prep wording instead of local/candidate terminology
 - the post-battle fitting drawer now presents itself as Mech Lab instead of a generic prep/squad-fit panel
+- contracts, debrief, flow breadcrumb, drawer frame, and top status now route fitting/editing entries through Mech Lab wording while keeping the underlying mech bay state stable
 - weapon selection, move, place, and reset results report the same W# Base/Moved coordinate format in the top status
 - compact mounted weapon buttons use S/M/L range-band labels and `WxH` shape labels with the same color language as payload blocks
 - compact mounted weapon buttons replace the active weapon number with a `>` selector for color-independent selection feedback

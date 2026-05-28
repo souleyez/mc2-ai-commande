@@ -144,7 +144,7 @@ namespace MC2Demo.Presentation
         private Texture2D uiButtonHoverTexture;
         private Texture2D uiTextFieldTexture;
         private const string StartupSmokeDepotOwnedMechId = "assembled-smoke-depot";
-        private const string UpdatedSquadLoadedStatusText = "Updated squad loaded - Mech bay open";
+        private const string UpdatedSquadLoadedStatusText = "Updated squad loaded - Mech Lab open";
 
         private void Start()
         {
@@ -402,7 +402,7 @@ namespace MC2Demo.Presentation
 
             if (keepMechBayOpen)
             {
-                return "Mission restarted - Mech bay open";
+                return "Mission restarted - Mech Lab open";
             }
 
             return result?.Message ?? "Mission restarted";
@@ -4440,7 +4440,7 @@ namespace MC2Demo.Presentation
                         SetPaused(false);
                     }
 
-                    statusText = "Mech bay closed";
+                    statusText = "Mech Lab closed";
                     SetDemoFlowScreen(DemoFlowScreen.Battle);
                 }
                 else
@@ -4953,7 +4953,7 @@ namespace MC2Demo.Presentation
 
             Rect panel = LoadoutPanelRect();
             DrawModalBackdrop();
-            DrawDesignPanelFrame(panel, "Mech Bay / 机库", UiAmberColor);
+            DrawDesignPanelFrame(panel, "Mech Lab / 机库整备", UiAmberColor);
             float x = panel.x + 14f;
             float y = panel.y + 34f;
             float width = panel.width - 28f;
@@ -4972,7 +4972,7 @@ namespace MC2Demo.Presentation
                     SetPaused(false);
                 }
 
-                statusText = "Mech bay closed";
+                statusText = "Mech Lab closed";
                 SetDemoFlowScreen(DemoFlowScreen.Battle);
             }
 
@@ -5292,7 +5292,7 @@ namespace MC2Demo.Presentation
 
         private void TrySaveCurrentFromMechBayLane()
         {
-            bool saved = TryExportSavedAccount(DefaultSavedAccountFilePath(), false, "Mech bay lane");
+            bool saved = TryExportSavedAccount(DefaultSavedAccountFilePath(), false, "Mech Lab lane");
             statusText = saved ? "Progress saved" : "Save failed";
         }
 
@@ -5300,7 +5300,7 @@ namespace MC2Demo.Presentation
         {
             showLoadoutPanel = false;
             OpenMissionListPanelFromSystem();
-            statusText = "Mission list open from mech bay";
+            statusText = "Mission list open from Mech Lab";
         }
 
         private UnitState SelectedMechBayLoadoutUnit()
@@ -5367,7 +5367,7 @@ namespace MC2Demo.Presentation
                 {
                     selectedMechBayLoadoutUnitId = unit.Id;
                     loadoutScroll = Vector2.zero;
-                    statusText = "Mech bay focus: " + TruncateText(unit.UnitType, 24);
+                    statusText = "Mech Lab focus: " + TruncateText(unit.UnitType, 24);
                 }
 
                 GUI.color = previous;
@@ -6411,7 +6411,7 @@ namespace MC2Demo.Presentation
             GUI.enabled = previousEnabled && canExport;
             if (DrawActionButton(new Rect(x + 70f, y - 2f, 58f, 22f), "Export", canExport))
             {
-                TryExportSavedAccount(savedAccountImportPreviewInputPath, false, "Mech bay");
+                TryExportSavedAccount(savedAccountImportPreviewInputPath, false, "Mech Lab");
             }
 
             string defaultPath = DefaultSavedAccountFilePath();
@@ -6419,7 +6419,7 @@ namespace MC2Demo.Presentation
             GUI.enabled = previousEnabled && canLoadDefault;
             if (DrawActionButton(new Rect(x + 136f, y - 2f, 48f, 22f), "Load", canLoadDefault))
             {
-                TryLoadDefaultSavedAccount("Mech bay default load");
+                TryLoadDefaultSavedAccount("Mech Lab default load");
             }
 
             GUI.enabled = previousEnabled;
@@ -6454,7 +6454,7 @@ namespace MC2Demo.Presentation
                     "Preview",
                     canPreview))
             {
-                TryPreviewSavedAccountImportApply(savedAccountImportPreviewInputPath, false, "Mech bay");
+                TryPreviewSavedAccountImportApply(savedAccountImportPreviewInputPath, false, "Mech Lab");
             }
 
             GUI.enabled = previousEnabled;
@@ -6473,7 +6473,7 @@ namespace MC2Demo.Presentation
             GUI.enabled = previousEnabled && ready;
             if (DrawActionButton(new Rect(x, y - 2f, 58f, 22f), "Apply", ready))
             {
-                TryApplySavedAccountImport(lastSavedAccountImportApplyPreviewPath, false, "Mech bay");
+                TryApplySavedAccountImport(lastSavedAccountImportApplyPreviewPath, false, "Mech Lab");
             }
 
             GUI.enabled = previousEnabled;
@@ -6500,13 +6500,13 @@ namespace MC2Demo.Presentation
                 if (string.IsNullOrWhiteSpace(ownedMechId))
                 {
                     beforeAccount = CurrentSavedAccountSnapshot();
-                    ownedMechId = EnsureLocalReadyCandidate("Mech bay reserve prep", false);
+                    ownedMechId = EnsureLocalReadyCandidate("Mech Lab reserve prep", false);
                     if (!string.IsNullOrWhiteSpace(ownedMechId))
                     {
                         RecordSavedAccountDelta(
                             beforeAccount,
                             CurrentSavedAccountSnapshot(),
-                            "Mech bay reserve prep");
+                            "Mech Lab reserve prep");
                         TryAutoSaveSavedAccount("reserve prep");
                     }
                 }
@@ -6811,7 +6811,7 @@ namespace MC2Demo.Presentation
                 ClearSquadSelectionDraft();
                 ClearSquadSelectionCompletedReplacement();
                 statusText = "Fit review ready: " + TruncateText(name, 24);
-                AddCombatLogLine("Mech bay reserve fit ready for " + name);
+                AddCombatLogLine("Mech Lab reserve fit ready for " + name);
             }
 
             GUI.enabled = previousEnabled;
@@ -7466,7 +7466,7 @@ namespace MC2Demo.Presentation
                 statusText = PlayerFitStatusText(result?.Message ?? "Fit review unavailable");
                 if (result != null && result.Accepted)
                 {
-                    AddCombatLogLine("Mech bay " + result.Message + " for " + result.displayName);
+                    AddCombatLogLine("Mech Lab " + result.Message + " for " + result.displayName);
                     TryAutoSaveSavedAccount("warehouse fit review");
                     showWarehouseDraftFitPreview = false;
                     warehouseDraftFitPreviewMechId = null;
@@ -9984,7 +9984,7 @@ namespace MC2Demo.Presentation
 
             y += 38f;
             float halfWidth = (width - 8f) * 0.5f;
-            if (GUI.Button(new Rect(x, y, halfWidth, 30f), "Mech Bay"))
+            if (GUI.Button(new Rect(x, y, halfWidth, 30f), "Mech Lab"))
             {
                 showMissionListPanel = false;
                 OpenLoadoutPanel();
@@ -10020,9 +10020,9 @@ namespace MC2Demo.Presentation
         private void OpenPostMissionMechBay()
         {
             showMissionResultPanel = false;
-            AddCombatLogLine("Debrief accepted: open mech bay");
+            AddCombatLogLine("Debrief accepted: open mech lab");
             OpenLoadoutPanel();
-            statusText = "Post-mission mech bay";
+            statusText = "Post-mission mech lab";
         }
 
         private void OpenPostMissionListPanel()
@@ -10050,7 +10050,7 @@ namespace MC2Demo.Presentation
 
             GUI.Label(new Rect(panel.x + 18f, panel.y + 270f, panel.width - 36f, 20f), "Next: repair, save, then launch again.");
             float actionWidth = (panel.width - 44f) * 0.5f;
-            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 296f, actionWidth, 30f), "Mech Bay"))
+            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 296f, actionWidth, 30f), "Mech Lab"))
             {
                 OpenPostMissionMechBay();
             }
@@ -10348,7 +10348,7 @@ namespace MC2Demo.Presentation
             pendingJumpOrder = false;
             RefreshDemoInventoryValidation();
             SetDemoFlowScreen(DemoFlowScreen.MechBay);
-            statusText = "Mech bay open";
+            statusText = "Mech Lab open";
         }
 
         private void ClearSquadSelectionDraft()
@@ -10374,7 +10374,7 @@ namespace MC2Demo.Presentation
             {
                 DemoFlowScreen.Title => "Title",
                 DemoFlowScreen.Battle => "Battle",
-                DemoFlowScreen.MechBay => "Mech Bay",
+                DemoFlowScreen.MechBay => "Mech Lab",
                 DemoFlowScreen.MissionSelect => "Contracts",
                 DemoFlowScreen.SaveChoices => "Saves",
                 DemoFlowScreen.System => "System",
