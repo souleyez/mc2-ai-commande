@@ -37,6 +37,8 @@ namespace MC2Demo.Presentation
         private const float LoadoutEditStatusReservedWidth = 146f;
         private const float LoadoutApplyButtonRightOffset = 144f;
         private const float LoadoutApplyButtonWidth = 66f;
+        private const string LoadoutPanelFrameTitle = "Mech Lab / 机库整备";
+        private const string LoadoutPanelHeaderTitle = "Mech Lab  /  机库整备";
         private const float LoadoutResetButtonRightOffset = 72f;
         private const float LoadoutResetButtonWidth = 64f;
         private const float LoadoutSelectedResetButtonWidth = 50f;
@@ -1973,6 +1975,7 @@ namespace MC2Demo.Presentation
             LoadoutCompactCheck targetCheck = BuildLoadoutTargetControlsCompactCheck();
             LoadoutCompactCheck nudgeCheck = BuildLoadoutNudgeCompactCheck();
             LoadoutCompactCheck selectedSummaryCheck = BuildLoadoutSelectedSummaryCompactCheck(unit, preview, weapons[0]);
+            LoadoutCompactCheck routeCheck = BuildLoadoutRouteCompactCheck();
             string summary = "title="
                 + title
                 + " button="
@@ -1990,7 +1993,9 @@ namespace MC2Demo.Presentation
                 + " "
                 + nudgeCheck.Summary
                 + " "
-                + selectedSummaryCheck.Summary;
+                + selectedSummaryCheck.Summary
+                + " "
+                + routeCheck.Summary;
 
             return new LoadoutCompactAssertionResult
             {
@@ -2002,9 +2007,28 @@ namespace MC2Demo.Presentation
                     && selectedResetCheck.Accepted
                     && targetCheck.Accepted
                     && nudgeCheck.Accepted
-                    && selectedSummaryCheck.Accepted,
+                    && selectedSummaryCheck.Accepted
+                    && routeCheck.Accepted,
                 Summary = summary
             };
+        }
+
+        private LoadoutCompactCheck BuildLoadoutRouteCompactCheck()
+        {
+            string flow = DemoFlowScreenName(demoFlowScreen);
+            bool panelOk = showLoadoutPanel;
+            bool flowOk = string.Equals(flow, "Mech Lab", StringComparison.Ordinal);
+            bool statusOk = statusText?.IndexOf("Mech Lab", StringComparison.OrdinalIgnoreCase) >= 0;
+            bool titleOk = LoadoutPanelFrameTitle.StartsWith("Mech Lab", StringComparison.Ordinal)
+                && LoadoutPanelHeaderTitle.StartsWith("Mech Lab", StringComparison.Ordinal);
+            string summary = "route="
+                + flow
+                + " panel="
+                + panelOk
+                + " status="
+                + TruncateText(statusText ?? string.Empty, 30);
+
+            return new LoadoutCompactCheck(panelOk && flowOk && statusOk && titleOk, summary);
         }
 
         private LoadoutCompactCheck BuildLoadoutConditionCompactCheck(UnitState unit)
@@ -4953,12 +4977,12 @@ namespace MC2Demo.Presentation
 
             Rect panel = LoadoutPanelRect();
             DrawModalBackdrop();
-            DrawDesignPanelFrame(panel, "Mech Lab / 机库整备", UiAmberColor);
+            DrawDesignPanelFrame(panel, LoadoutPanelFrameTitle, UiAmberColor);
             float x = panel.x + 14f;
             float y = panel.y + 34f;
             float width = panel.width - 28f;
 
-            GUI.Label(new Rect(x, y, width - 76f, 22f), "Mech Lab  /  机库整备", uiHeaderStyle);
+            GUI.Label(new Rect(x, y, width - 76f, 22f), LoadoutPanelHeaderTitle, uiHeaderStyle);
             if (GUI.Button(new Rect(panel.xMax - 70f, panel.y + 7f, 56f, 24f), "Close"))
             {
                 showLoadoutPanel = false;
