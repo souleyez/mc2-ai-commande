@@ -8261,26 +8261,23 @@ namespace MC2Demo.Presentation
 
             int cells = CountLoadoutBlockCells(preview, detailCell);
             string shapeText = LoadoutBlockShapeText(preview, detailCell);
+            string compactShapeText = LoadoutBlockCompactShapeText(cells, shapeText);
             if (detailCell.Category == LoadoutItemCategory.ArmorPlate)
             {
-                return "Armor Plate  Hardness +1  Load 0.5  Cells " + cells.ToString(CultureInfo.InvariantCulture)
-                    + "  Shape " + shapeText;
+                return "Armor Plate  Hard +1  Load 0.5  " + compactShapeText;
             }
 
             if (detailCell.Category == LoadoutItemCategory.HeatSink)
             {
-                return "Heat Sink  Cooling +1.5  Load 1  Cells " + cells.ToString(CultureInfo.InvariantCulture)
-                    + "  Shape " + shapeText;
+                return "Heat Sink  Cool +1.5  Load 1  " + compactShapeText;
             }
 
             CombatWeaponDefinition weapon = LoadoutWeaponForCell(unit, detailCell);
             if (weapon == null)
             {
                 return (detailCell.DisplayName ?? "Payload")
-                    + "  Cells "
-                    + cells.ToString(CultureInfo.InvariantCulture)
-                    + "  Shape "
-                    + shapeText;
+                    + "  "
+                    + compactShapeText;
             }
 
             return (detailCell.SourceWeaponIndex + 1).ToString(CultureInfo.InvariantCulture)
@@ -8290,8 +8287,14 @@ namespace MC2Demo.Presentation
                 + " D" + FormatDecimal(weapon.damage)
                 + " R" + Mathf.RoundToInt(weapon.rangeMax).ToString(CultureInfo.InvariantCulture)
                 + " CD" + FormatDecimal(weapon.recycleTime)
-                + " Cells " + cells.ToString(CultureInfo.InvariantCulture)
-                + " Shape " + shapeText;
+                + " " + compactShapeText;
+        }
+
+        private static string LoadoutBlockCompactShapeText(int cells, string shapeText)
+        {
+            return "C" + Math.Max(0, cells).ToString(CultureInfo.InvariantCulture)
+                + " "
+                + (string.IsNullOrWhiteSpace(shapeText) ? "?x?" : shapeText);
         }
 
         private static string LoadoutTargetPlacementDetailText(
@@ -9116,7 +9119,7 @@ namespace MC2Demo.Presentation
                 new Rect(x, y, width - LoadoutEditStatusReservedWidth, 18f),
                 !hasInventory
                     ? "Stock " + TruncateText(FirstInventoryAvailabilityError(availability), 28)
-                    : hasPendingEdits ? "Draft fit" : "Applied fit");
+                    : hasPendingEdits ? "Pending fit" : "Applied fit");
             GUI.color = previousColor;
 
             bool previousEnabled = GUI.enabled;

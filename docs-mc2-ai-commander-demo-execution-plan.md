@@ -51,6 +51,7 @@ The Unity demo currently supports:
 - selected weapon summary echoes base, current, and pending target grid positions when the player moves a payload block or chooses a target cell
 - selected weapon summary labels Base or Moved with cyan/amber border cues for draft placement state
 - selected weapon edit controls mirror the same Base or Moved grid-position chain as the summary
+- payload detail text uses compact `C` and `WxH` shape readouts and labels unapplied edits as Pending fit
 - weapon selection, move, place, and reset results report the same W# Base/Moved coordinate format in the top status
 - compact mounted weapon buttons use S/M/L range-band labels and `WxH` shape labels with the same color language as payload blocks
 - compact mounted weapon buttons replace the active weapon number with a `>` selector for color-independent selection feedback
@@ -649,6 +650,7 @@ Tasks:
 - The selected weapon summary now echoes base, current, and pending target grid positions, so slot moves stay visible even before reaching the lower Place controls.
 - The selected weapon summary now uses a compact `W# Base/Moved` prefix and cyan/amber border cue, so draft placement state is visible without adding another row.
 - The selected weapon edit controls now mirror that same Base/Moved coordinate chain, keeping the nudge/place area consistent with the summary line.
+- Payload detail rows now replace verbose `Cells`/`Shape` wording with compact `C` plus `WxH` readouts, and the edit lane now calls unapplied loadout changes `Pending fit`.
 - Destroyed cockpit, arm, and leg sections now leave persistent tactical-view damage beacons in addition to the existing flashes, detached parts, and ejection effects.
 - Missile, ballistic, and energy attacks now have clearer muzzle and trace accents layered over the existing family-specific combat effects.
 - The debrief now compresses completed objectives, enemy kills, and damaged player mechs into readable summary rows with `+n` overflow counts.
