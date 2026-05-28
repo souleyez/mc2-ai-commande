@@ -1889,9 +1889,12 @@ namespace MC2Demo.Presentation
             string text = CombatSituationText();
             int playerReady = CountActivePlayerUnits();
             int playerSlots = CountPlayerUnits();
+            int detached = CountDetachedPlayerUnits();
             int activeHostiles = CountActiveHostileUnits();
             int liveTargets = CountLiveStructures();
-            bool textOk = text.IndexOf("Squad ", StringComparison.OrdinalIgnoreCase) >= 0
+            bool textOk = text.IndexOf("Cmd ", StringComparison.OrdinalIgnoreCase) >= 0
+                && text.IndexOf("Squad ", StringComparison.OrdinalIgnoreCase) >= 0
+                && text.IndexOf("Solo ", StringComparison.OrdinalIgnoreCase) >= 0
                 && text.IndexOf("Hostiles ", StringComparison.OrdinalIgnoreCase) >= 0
                 && text.IndexOf("Targets ", StringComparison.OrdinalIgnoreCase) >= 0
                 && (text.EndsWith("quiet", StringComparison.OrdinalIgnoreCase)
@@ -1899,12 +1902,16 @@ namespace MC2Demo.Presentation
             bool countsOk = playerSlots > 0
                 && playerReady >= 0
                 && playerReady <= playerSlots
+                && detached >= 0
+                && detached <= playerSlots
                 && activeHostiles >= 0
                 && liveTargets >= 0;
             string summary = "squad="
                 + playerReady.ToString(CultureInfo.InvariantCulture)
                 + "/"
                 + playerSlots.ToString(CultureInfo.InvariantCulture)
+                + " solo="
+                + detached.ToString(CultureInfo.InvariantCulture)
                 + " hostiles="
                 + activeHostiles.ToString(CultureInfo.InvariantCulture)
                 + " targets="
@@ -4790,7 +4797,7 @@ namespace MC2Demo.Presentation
             float x = panel.x;
             DrawDesignPanelFrame(panel, "Combat / 战况", UiCyanColor);
             GUI.Label(new Rect(x + 12f, panel.y + 36f, 320f, 22f), "Active units: " + CountLiveUnits() + " / " + mission.Units.Count);
-            GUI.Label(new Rect(x + 12f, panel.y + 56f, 320f, 18f), CombatSituationText());
+            GUI.Label(new Rect(x + 12f, panel.y + 56f, panel.width - 24f, 18f), CombatSituationText());
             float y = panel.y + 80f;
             foreach (string line in combatLog)
             {
@@ -4809,19 +4816,40 @@ namespace MC2Demo.Presentation
         {
             int playerReady = CountActivePlayerUnits();
             int playerSlots = CountPlayerUnits();
+            int detached = CountDetachedPlayerUnits();
             int activeHostiles = CountActiveHostileUnits();
             int liveTargets = CountLiveStructures();
             string tempo = HasRecentCombatEvent() ? "contact" : "quiet";
-            return "Squad "
+            return "Cmd "
+                + CommanderUnitLabel()
+                + "  Squad "
                 + playerReady.ToString(CultureInfo.InvariantCulture)
                 + "/"
                 + playerSlots.ToString(CultureInfo.InvariantCulture)
+                + "  Solo "
+                + detached.ToString(CultureInfo.InvariantCulture)
                 + "  Hostiles "
                 + activeHostiles.ToString(CultureInfo.InvariantCulture)
                 + "  Targets "
                 + liveTargets.ToString(CultureInfo.InvariantCulture)
                 + "  "
                 + tempo;
+        }
+
+        private string CommanderUnitLabel()
+        {
+            if (mission == null)
+            {
+                return "--";
+            }
+
+            foreach (UnitState unit in mission.PlayerUnits())
+            {
+                string label = string.IsNullOrWhiteSpace(unit.UnitType) ? unit.Id : unit.UnitType;
+                return TruncateText(label, 10);
+            }
+
+            return "--";
         }
 
         private bool HasRecentCombatEvent()
@@ -10531,6 +10559,25 @@ namespace MC2Demo.Presentation
             foreach (UnitState unit in mission.PlayerUnits())
             {
                 if (unit.IsActive && !unit.IsDestroyed)
+                {
+                    count++;
+                }
+            }
+
+            return count;
+        }
+
+        private int CountDetachedPlayerUnits()
+        {
+            int count = 0;
+            if (mission == null)
+            {
+                return count;
+            }
+
+            foreach (UnitState unit in mission.PlayerUnits())
+            {
+                if (unit.IsActive && !unit.IsDestroyed && unit.IsDetached)
                 {
                     count++;
                 }

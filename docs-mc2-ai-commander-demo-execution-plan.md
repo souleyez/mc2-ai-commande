@@ -41,6 +41,7 @@ The Unity demo currently supports:
 - player squad orders, detached unit orders, focused unit/structure attacks, and Jet orders
 - heat, cooldown, weapon range/readiness, simple section damage, section penalties, and animated breakoff/ejection effects
 - compact tactical UI with unit status, mech bay preview, mission brief, current-objective map, world objective hints, health bars, command rings, range rings, and target lines
+- the combat situation row names the commander mech, squad readiness, detached single-order count, hostiles, targets, and recent contact tempo
 - focused mech bay fitting view with compact squad buttons, draft markers, and selected-mech fit-pressure bars so one selected payload grid owns the drawer
 - initial BattleCore loadout contract for chassis grids, item shapes, heat, weight, armor plates, heat sinks, radar slots, and jump jet slots
 - deterministic BattleCore loadout validator for grid bounds, blocked cells, overlap, rotation, heat caps, weight caps, and special-slot compatibility
@@ -602,6 +603,7 @@ Tasks:
 - The same design pass now extends across Save Slot, System, Contracts, Debrief, and Mech Bay panels with shared framed surfaces and highlighted flow lanes.
 - The first in-window visual inspection pass tightened the title save panel with an inset account summary, shorter top status strip, and side-by-side Continue/New Company actions.
 - The battle/mech-bay inspection pass now frames the Combat/Mission HUD and shifts the mech bay into a right-side focused drawer with a dimmed backdrop.
+- The combat situation row now names the first commander mech plus Solo count, so detached single-order state is visible without scanning every squad row.
 - The mech bay payload grid now presents weapons, armor, and heat sinks as larger whole-block grid pieces using original-style empty/short/mid/long/component color cues.
 - The loadout status line now includes compact heat/load/grid usage bars, so fit pressure is visible before reading the numeric caps.
 - The payload grid now adds selected/hovered item detail text so each block exposes heat, weight, damage, range, cooldown, or component bonuses without opening another panel.
