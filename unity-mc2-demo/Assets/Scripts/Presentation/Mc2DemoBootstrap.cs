@@ -5385,7 +5385,7 @@ namespace MC2Demo.Presentation
 
             if (selectedUnit != null)
             {
-                string fitState = HasPendingLoadoutEdits(selectedUnit) ? "Draft" : "Applied";
+                string fitState = HasPendingLoadoutEdits(selectedUnit) ? "Pending" : "Applied";
                 CombatLoadoutPreview preview = LoadoutPreviewFor(selectedUnit);
                 LoadoutValidationResult result = preview.Validation;
                 string fitReview = result.IsValid ? "Fit OK" : "Review " + TruncateText(FirstLoadoutError(result), 12);
@@ -7410,12 +7410,12 @@ namespace MC2Demo.Presentation
             if (outgoing)
             {
                 squadSelectionDraftOutgoingOwnedMechId = selected?.ownedMechId;
-                statusText = "Draft outgoing: " + TruncateText(SquadSelectionSlotName(selected), 24);
+                statusText = "Outgoing set: " + TruncateText(SquadSelectionSlotName(selected), 24);
             }
             else
             {
                 squadSelectionDraftIncomingOwnedMechId = selected?.ownedMechId;
-                statusText = "Draft incoming: " + TruncateText(SquadSelectionSlotName(selected), 24);
+                statusText = "Reserve set: " + TruncateText(SquadSelectionSlotName(selected), 24);
             }
         }
 

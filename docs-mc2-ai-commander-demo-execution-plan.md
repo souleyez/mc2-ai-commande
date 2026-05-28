@@ -42,7 +42,7 @@ The Unity demo currently supports:
 - heat, cooldown, weapon range/readiness, simple section damage, section penalties, and animated breakoff/ejection effects
 - compact tactical UI with unit status, mech bay preview, mission brief, current-objective map, world objective hints, health bars, command rings, range rings, and target lines
 - the combat situation row names the commander mech, squad readiness, detached single-order count, hostiles, targets, and recent contact tempo
-- focused mech bay fitting view with compact squad buttons, draft markers, and selected-mech fit-pressure bars so one selected payload grid owns the drawer
+- focused mech bay fitting view with compact squad buttons, pending-fit markers, and selected-mech fit-pressure bars so one selected payload grid owns the drawer
 - initial BattleCore loadout contract for chassis grids, item shapes, heat, weight, armor plates, heat sinks, radar slots, and jump jet slots
 - deterministic BattleCore loadout validator for grid bounds, blocked cells, overlap, rotation, heat caps, weight caps, and special-slot compatibility
 - source weapon loadout projection in the mech bay with validator status, heat/load limits, and occupied grid cell counts
@@ -52,6 +52,7 @@ The Unity demo currently supports:
 - selected weapon summary labels Base or Moved with cyan/amber border cues for draft placement state
 - selected weapon edit controls mirror the same Base or Moved grid-position chain as the summary
 - payload detail text uses compact `C` and `WxH` shape readouts and labels unapplied edits as Pending fit
+- mech bay selector and squad replacement status text now use Pending/Outgoing/Reserve wording instead of player-facing draft language
 - weapon selection, move, place, and reset results report the same W# Base/Moved coordinate format in the top status
 - compact mounted weapon buttons use S/M/L range-band labels and `WxH` shape labels with the same color language as payload blocks
 - compact mounted weapon buttons replace the active weapon number with a `>` selector for color-independent selection feedback
@@ -641,7 +642,7 @@ Tasks:
 - Weapon-filled filler targets now use the shorter Lock label, keeping the target button language aligned with compact Pick/Block states.
 - Stacked filler targets now use the short Stk label, matching the compact button language in the same target row.
 - The mech bay now uses compact squad buttons and expands one selected fitting card at a time, reducing drawer scroll pressure before the future non-IMGUI rewrite.
-- The squad fitting selector now marks draft mechs and shows the selected mech's pilot, fit state, structure, plus H/W/G pressure bars in the same compact strip.
+- The squad fitting selector now marks pending-fit mechs and shows the selected mech's pilot, fit state, structure, plus H/W/G pressure bars in the same compact strip.
 - The selected fitting card now repeats the selected weapon's combat stats, compact cell count, and `WxH` footprint above the mounted weapon buttons, reducing trips between the grid detail line and weapon selector.
 - The selected weapon summary now drops verbose `Cells` and `Shape` words in favor of compact `C` plus `WxH` readouts, reducing right-drawer overflow pressure.
 - Mounted weapon buttons now replace the active weapon number with `>`, making the move target readable even without relying on color.
@@ -651,6 +652,7 @@ Tasks:
 - The selected weapon summary now uses a compact `W# Base/Moved` prefix and cyan/amber border cue, so draft placement state is visible without adding another row.
 - The selected weapon edit controls now mirror that same Base/Moved coordinate chain, keeping the nudge/place area consistent with the summary line.
 - Payload detail rows now replace verbose `Cells`/`Shape` wording with compact `C` plus `WxH` readouts, and the edit lane now calls unapplied loadout changes `Pending fit`.
+- The mech bay selector and squad replacement cycling now use Pending, Outgoing set, and Reserve set status text instead of player-facing draft wording.
 - Destroyed cockpit, arm, and leg sections now leave persistent tactical-view damage beacons in addition to the existing flashes, detached parts, and ejection effects.
 - Missile, ballistic, and energy attacks now have clearer muzzle and trace accents layered over the existing family-specific combat effects.
 - The debrief now compresses completed objectives, enemy kills, and damaged player mechs into readable summary rows with `+n` overflow counts.
