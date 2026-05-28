@@ -54,6 +54,7 @@ The Unity demo currently supports:
 - payload detail text uses compact `C` and `WxH` shape readouts and labels unapplied edits as Pending fit
 - mech bay selector and squad replacement status text now use Pending/Outgoing/Reserve wording instead of player-facing draft language
 - roster fit detail now shows Ready Bay or Reserve Bay instead of exposing internal owned-mech ids
+- reserve prep logs and save-result labels now use Reserve Prep wording instead of local/candidate terminology
 - weapon selection, move, place, and reset results report the same W# Base/Moved coordinate format in the top status
 - compact mounted weapon buttons use S/M/L range-band labels and `WxH` shape labels with the same color language as payload blocks
 - compact mounted weapon buttons replace the active weapon number with a `>` selector for color-independent selection feedback
@@ -148,7 +149,7 @@ The Unity demo currently supports:
 - system-opened Save Slot now has a Save Current action that writes the active account to the persistent save slot and refreshes the Continue summary
 - system-opened Save Slot now has Export Copy and Reset Slot actions; Reset Slot requires confirmation, copies the old save first, then overwrites the default slot with a fresh demo snapshot
 - command-file `prepare-local-candidate` can now produce a ready reserve candidate through local receipt assembly, NPC hiring, weapon purchase, and warehouse fit-review services
-- local candidate prep now records a read-only saved-account delta line so token, mech, ready, reserve, and item-stack changes are visible before any real save file exists
+- reserve prep now records a read-only saved-account delta line so token, mech, ready, reserve, and item-stack changes are visible before any real save file exists
 - CLI/AI loop pieces:
   - `-mc2Command`
   - `-mc2AdvanceSeconds`
@@ -572,8 +573,8 @@ Tasks:
 - The smoke-only reserve replacement remains as a command-file fallback, but the primary command smoke now produces a ready reserve candidate through the local receipt, assembly, NPC hire, weapon shop, and warehouse fit-review services.
 - The mech bay summary now exposes that same ready-candidate service chain as a compact Reserve Prep action, and it opens Next Squad with the prepared reserve candidate preselected.
 - A tiny saved-account boundary now wraps demo inventory state as a cloned local account snapshot, validates cached counters, and round-trips through JSON without changing battle rules or requiring backend services.
-- A lightweight command-file `saved-account-report` smoke hook now validates and logs a local saved-account JSON dry-run before and after candidate prep, without writing persistent user data by default.
-- Local candidate prep now records a read-only saved-account delta line after the receipt/assembly/pilot/shop/fit chain, so inventory growth is visible before real save/load work.
+- A lightweight command-file `saved-account-report` smoke hook now validates and logs a local saved-account JSON dry-run before and after reserve prep, without writing persistent user data by default.
+- Reserve prep now records a read-only saved-account delta line after the receipt/assembly/pilot/shop/fit chain, so inventory growth is visible before real save/load work.
 - A manual command-file `saved-account-save-load-preview` hook now exercises JSON serialization, load validation, and zero-delta round-trip checks while keeping default startup and UI flows read-only.
 - A manual command-file save-file path now supports `saved-account-export <path>` and `saved-account-import-preview <path>`, so test runs can write and validate local account JSON only when a script asks for it.
 - A guarded `saved-account-import-apply-preview <path>` command now checks account identity and reports what token/mech/reserve deltas a future apply would make, without mutating the live mech bay.
@@ -584,7 +585,7 @@ Tasks:
 - The mech bay summary now provides Default and Export helpers that point at a persistent demo save file and write the current local account snapshot before preview/apply.
 - The mech bay summary now provides a guarded Load helper that previews and applies the persistent demo save path when the file exists.
 - The mech bay summary now keeps a compact Last Save result line for export, preview, apply, and blocked save/load outcomes.
-- Guarded account-changing actions now auto-save the current local account snapshot to the persistent demo save file, including mission receipts, import apply, candidate prep, shop purchases, pilot hires, warehouse fits, squad selection, and repairs.
+- Guarded account-changing actions now auto-save the current local account snapshot to the persistent demo save file, including mission receipts, import apply, reserve prep, shop purchases, pilot hires, warehouse fits, squad selection, and repairs.
 - Startup command files can now run `saved-account-load-default-preview` and `saved-account-load-default-apply`, restoring the persistent demo save path through the existing import-apply guard.
 - Startup command files can now run `saved-account-save-current-default`, explicitly covering the Save Current default export path before preview/apply smoke checks.
 - The explicit `-mc2LoadDefaultSave` startup flag now restores the persistent demo save path through the existing import-apply guard when the file exists, and skips cleanly when it does not.
@@ -655,6 +656,7 @@ Tasks:
 - Payload detail rows now replace verbose `Cells`/`Shape` wording with compact `C` plus `WxH` readouts, and the edit lane now calls unapplied loadout changes `Pending fit`.
 - The mech bay selector and squad replacement cycling now use Pending, Outgoing set, and Reserve set status text instead of player-facing draft wording.
 - The roster fit detail now replaces internal owned-mech ids with Ready Bay or Reserve Bay labels, keeping the line player-facing.
+- Reserve prep logs and save-result labels now use Reserve Prep wording instead of local/candidate terminology while keeping existing command names stable.
 - Destroyed cockpit, arm, and leg sections now leave persistent tactical-view damage beacons in addition to the existing flashes, detached parts, and ejection effects.
 - Missile, ballistic, and energy attacks now have clearer muzzle and trace accents layered over the existing family-specific combat effects.
 - The debrief now compresses completed objectives, enemy kills, and damaged player mechs into readable summary rows with `+n` overflow counts.

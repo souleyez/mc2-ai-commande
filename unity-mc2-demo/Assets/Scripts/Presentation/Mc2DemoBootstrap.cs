@@ -1474,15 +1474,15 @@ namespace MC2Demo.Presentation
                 string deltaText = RecordSavedAccountDelta(
                     beforeAccount,
                     CurrentSavedAccountSnapshot(),
-                    "CLI local candidate");
-                TryAutoSaveSavedAccount("local candidate " + deltaText);
-                AddCombatLogLine("CLI local candidate ready: " + ownedMechId);
-                Debug.Log("MC2 commander local candidate: ready ownedMechId=" + ownedMechId + " " + deltaText);
+                    "CLI reserve prep");
+                TryAutoSaveSavedAccount("reserve prep " + deltaText);
+                AddCombatLogLine("CLI reserve prep ready: " + ownedMechId);
+                Debug.Log("MC2 commander reserve prep: ready ownedMechId=" + ownedMechId + " " + deltaText);
                 return;
             }
 
-            AddCombatLogLine("CLI local candidate blocked");
-            Debug.LogError("MC2 commander local candidate blocked: status=" + statusText);
+            AddCombatLogLine("CLI reserve prep blocked");
+            Debug.LogError("MC2 commander reserve prep blocked: status=" + statusText);
         }
 
         private string EnsureLocalReadyCandidate(string logPrefix, bool markStartupSmokeFailure)
@@ -1495,7 +1495,7 @@ namespace MC2Demo.Presentation
             string existingCandidate = FirstStartupDepotCandidateOwnedMechId();
             if (!string.IsNullOrWhiteSpace(existingCandidate))
             {
-                statusText = "Local candidate ready";
+                statusText = "Reserve prep ready";
                 return existingCandidate;
             }
 
@@ -1604,7 +1604,7 @@ namespace MC2Demo.Presentation
                 return BlockLocalCandidate("No next-squad candidate after local setup", logPrefix, markStartupSmokeFailure);
             }
 
-            statusText = "Local candidate ready";
+            statusText = "Reserve prep ready";
             return readyCandidate;
         }
 
@@ -1615,8 +1615,8 @@ namespace MC2Demo.Presentation
                 startupSmokeFailed = true;
             }
 
-            statusText = "Local candidate blocked";
-            Debug.LogError("MC2 commander local candidate blocked: " + logPrefix + " " + reason);
+            statusText = "Reserve prep blocked";
+            Debug.LogError("MC2 commander reserve prep blocked: " + logPrefix + " " + reason);
             return null;
         }
 
@@ -6500,20 +6500,20 @@ namespace MC2Demo.Presentation
                 if (string.IsNullOrWhiteSpace(ownedMechId))
                 {
                     beforeAccount = CurrentSavedAccountSnapshot();
-                    ownedMechId = EnsureLocalReadyCandidate("Mech bay candidate", false);
+                    ownedMechId = EnsureLocalReadyCandidate("Mech bay reserve prep", false);
                     if (!string.IsNullOrWhiteSpace(ownedMechId))
                     {
                         RecordSavedAccountDelta(
                             beforeAccount,
                             CurrentSavedAccountSnapshot(),
-                            "Mech bay candidate");
-                        TryAutoSaveSavedAccount("local candidate");
+                            "Mech bay reserve prep");
+                        TryAutoSaveSavedAccount("reserve prep");
                     }
                 }
 
                 if (!string.IsNullOrWhiteSpace(ownedMechId))
                 {
-                    OpenSquadSelectionPreviewIncoming(ownedMechId, "Candidate prep");
+                    OpenSquadSelectionPreviewIncoming(ownedMechId, "Reserve prep");
                 }
             }
 
