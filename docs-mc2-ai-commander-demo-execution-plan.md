@@ -72,6 +72,7 @@ The Unity demo currently supports:
 - Save Slot path helper button now reads Slot instead of Default while keeping the same guarded save-slot path
 - Save Slot roundtrip status now uses Save check ready/failed wording instead of account save/load preview status text
 - Save Slot load-check and load-apply statuses now use Load check, Load blocked, Load failed, and Save loaded wording instead of account/import/apply-preview status text
+- Startup Continue now shows Save check failed for unreadable saved games instead of exposing preview/import/account service messages
 - weapon selection, move, place, and reset results report the same W# Base/Moved coordinate format in the top status
 - compact mounted weapon buttons use S/M/L range-band labels and `WxH` shape labels with the same color language as payload blocks
 - compact mounted weapon buttons replace the active weapon number with a `>` selector for color-independent selection feedback

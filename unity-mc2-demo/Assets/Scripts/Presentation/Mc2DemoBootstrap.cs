@@ -72,6 +72,7 @@ namespace MC2Demo.Presentation
         private const string SaveSlotResetFreshDetailText = "fresh save";
         private const string SaveSlotResetOldCopyPrefix = "old copy ";
         private const string SaveSlotNoSavedCopyText = "No saved game to copy";
+        private const string SaveSlotContinueCheckFailedText = "Save check failed";
         private const string EndRunButtonLabel = "End Run";
         private const string DebriefNextStepText = "Next: repair, save, choose next contract.";
         private const string DebriefPayoutLabel = "Payout";
@@ -611,7 +612,7 @@ namespace MC2Demo.Presentation
             if (preview == null || !preview.Accepted)
             {
                 startupContinueSummaryText = SaveSlotNeedsReviewText;
-                startupContinueRosterText = preview?.Message ?? "Preview failed";
+                startupContinueRosterText = SavedAccountStartupContinueReviewText(preview?.Message);
                 startupContinueDeltaText = "Continue disabled";
                 return true;
             }
@@ -645,6 +646,24 @@ namespace MC2Demo.Presentation
             {
                 return "File " + SavedAccountFileName(path) + "  " + exception.Message;
             }
+        }
+
+        private static string SavedAccountStartupContinueReviewText(string message)
+        {
+            if (string.IsNullOrWhiteSpace(message))
+            {
+                return SaveSlotContinueCheckFailedText;
+            }
+
+            if (message.IndexOf("preview", StringComparison.OrdinalIgnoreCase) >= 0
+                || message.IndexOf("import", StringComparison.OrdinalIgnoreCase) >= 0
+                || message.IndexOf("account", StringComparison.OrdinalIgnoreCase) >= 0
+                || message.IndexOf("JSON", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return SaveSlotContinueCheckFailedText;
+            }
+
+            return SavedAccountImportApplyPlayerBlockReason(message);
         }
 
         private static bool HasStartupAutomationArgs(string[] args)
@@ -2214,7 +2233,11 @@ namespace MC2Demo.Presentation
                 && string.Equals(SaveSlotResetOldCopyPrefix, "old copy ", StringComparison.Ordinal)
                 && SaveSlotResetOldCopyPrefix.IndexOf("default", StringComparison.OrdinalIgnoreCase) < 0
                 && string.Equals(SaveSlotNoSavedCopyText, "No saved game to copy", StringComparison.Ordinal)
-                && SaveSlotNoSavedCopyText.IndexOf("default", StringComparison.OrdinalIgnoreCase) < 0;
+                && SaveSlotNoSavedCopyText.IndexOf("default", StringComparison.OrdinalIgnoreCase) < 0
+                && string.Equals(SaveSlotContinueCheckFailedText, "Save check failed", StringComparison.Ordinal)
+                && SavedAccountStartupContinueReviewText("Preview failed").IndexOf("preview", StringComparison.OrdinalIgnoreCase) < 0
+                && SavedAccountStartupContinueReviewText("JSON import apply preview rejected").IndexOf("import", StringComparison.OrdinalIgnoreCase) < 0
+                && SavedAccountStartupContinueReviewText("JSON import apply preview rejected").IndexOf("account", StringComparison.OrdinalIgnoreCase) < 0;
             string summary = "bayLabels="
                 + MechLabReadyLabel
                 + "/"
@@ -2254,7 +2277,9 @@ namespace MC2Demo.Presentation
                 + " confirm="
                 + SaveSlotStartFreshButtonLabel
                 + " reset="
-                + SaveSlotResetFreshDetailText;
+                + SaveSlotResetFreshDetailText
+                + " continueCheck="
+                + SaveSlotContinueCheckFailedText;
 
             return new LoadoutCompactCheck(accepted, summary);
         }
