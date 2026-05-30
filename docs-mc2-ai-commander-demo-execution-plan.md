@@ -814,5 +814,6 @@ Tasks:
 - The Contracts panel now uses simpler player-facing task-card and navigation labels such as Available Contracts, Mission map ready, Launch, Back to Battle, and Back to Debrief guarded by the debrief smoke.
 - The System and Debrief restart action now reads Restart Mission, and the System close action reads Back, keeping the pause/system flow closer to player intent and guarded by the debrief smoke.
 - The Mission Map and Mech Lab top-right close actions now read Back, with both labels guarded by combat-situation and loadout compact smoke paths.
+- The Mech Lab save-file check row now uses Check, Load Check, and No save checked wording instead of preview-language controls, guarded by the loadout compact smoke.
 - The next low-risk step is to keep tuning the selected fitting card density and then migrate these flow screens beyond IMGUI once the layout direction feels right.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.

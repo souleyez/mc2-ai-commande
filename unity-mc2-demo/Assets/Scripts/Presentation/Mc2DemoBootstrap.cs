@@ -46,10 +46,11 @@ namespace MC2Demo.Presentation
         private const string MechLabBuildPrefix = "Build ";
         private const string SavedAccountIdleLabel = "Ready  no recent save action";
         private const string SavedAccountPathReadyStatusText = "Save slot path ready";
-        private const string SavedAccountNoLoadPreviewText = "No load preview";
+        private const string SavedAccountNoLoadPreviewText = "No save checked";
         private const string SavedAccountLoadPathLabel = "Load";
-        private const string SavedAccountLoadPreviewPrefix = "Load Preview ";
+        private const string SavedAccountLoadPreviewPrefix = "Load Check ";
         private const string SavedAccountLoadButtonLabel = "Load";
+        private const string SavedAccountCheckButtonLabel = "Check";
         private const string SavedAccountSlotPathPrefix = "Slot ";
         private const string SavedAccountNoSlotPathText = "No slot path";
         private const string SavedAccountDefaultPathResultText = "Save Slot path";
@@ -2100,12 +2101,14 @@ namespace MC2Demo.Presentation
                 && SavedAccountIdleLabel.IndexOf("Idle", StringComparison.OrdinalIgnoreCase) < 0
                 && SavedAccountPathReadyStatusText.StartsWith("Save slot", StringComparison.Ordinal)
                 && SavedAccountPathReadyStatusText.IndexOf("account", StringComparison.OrdinalIgnoreCase) < 0
-                && string.Equals(SavedAccountNoLoadPreviewText, "No load preview", StringComparison.Ordinal)
+                && string.Equals(SavedAccountNoLoadPreviewText, "No save checked", StringComparison.Ordinal)
                 && SavedAccountNoLoadPreviewText.IndexOf("Idle", StringComparison.OrdinalIgnoreCase) < 0
                 && SavedAccountNoLoadPreviewText.IndexOf("import apply", StringComparison.OrdinalIgnoreCase) < 0
                 && string.Equals(SavedAccountLoadPathLabel, "Load", StringComparison.Ordinal)
-                && SavedAccountLoadPreviewPrefix.StartsWith("Load Preview", StringComparison.Ordinal)
+                && SavedAccountLoadPreviewPrefix.StartsWith("Load Check", StringComparison.Ordinal)
                 && SavedAccountLoadPreviewPrefix.IndexOf("Import", StringComparison.OrdinalIgnoreCase) < 0
+                && string.Equals(SavedAccountCheckButtonLabel, "Check", StringComparison.Ordinal)
+                && SavedAccountCheckButtonLabel.IndexOf("Preview", StringComparison.OrdinalIgnoreCase) < 0
                 && string.Equals(SavedAccountLoadButtonLabel, "Load", StringComparison.Ordinal)
                 && string.Equals(SavedAccountSlotPathPrefix, "Slot ", StringComparison.Ordinal)
                 && string.Equals(SavedAccountNoSlotPathText, "No slot path", StringComparison.Ordinal)
@@ -6655,7 +6658,7 @@ namespace MC2Demo.Presentation
             GUI.enabled = previousEnabled && canPreview;
             if (DrawActionButton(
                     new Rect(fieldX + fieldWidth + 8f, y - 2f, buttonWidth, 22f),
-                    "Preview",
+                    SavedAccountCheckButtonLabel,
                     canPreview))
             {
                 TryPreviewSavedAccountImportApply(savedAccountImportPreviewInputPath, false, "Mech Lab");
