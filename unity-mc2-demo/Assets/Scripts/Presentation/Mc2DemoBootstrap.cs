@@ -2316,11 +2316,24 @@ namespace MC2Demo.Presentation
             string purchaseReady = PlayerMechLabActionStatusText("Ready demo purchase");
             string hireReady = PlayerMechLabActionStatusText("Ready demo hire");
             string unavailable = PlayerMechLabActionStatusText("Inventory missing");
+            string pilotSummary = PilotHirePreviewText(new MechBayPilotHirePreview
+            {
+                Candidates = new[]
+                {
+                    new MechBayPilotHireCandidate
+                    {
+                        hireCost = 600,
+                        canAfford = true
+                    }
+                }
+            });
             bool accepted = string.Equals(purchaseReady, "Ready to buy", StringComparison.Ordinal)
                 && purchaseReady.IndexOf("demo", StringComparison.OrdinalIgnoreCase) < 0
                 && string.Equals(hireReady, "Ready to hire", StringComparison.Ordinal)
                 && hireReady.IndexOf("demo", StringComparison.OrdinalIgnoreCase) < 0
-                && string.Equals(unavailable, MechLabUnavailableText, StringComparison.Ordinal);
+                && string.Equals(unavailable, MechLabUnavailableText, StringComparison.Ordinal)
+                && pilotSummary.IndexOf("NPC pilots from", StringComparison.OrdinalIgnoreCase) >= 0
+                && !ContainsPrototypeCopy(pilotSummary);
             return new LoadoutCompactCheck(
                 accepted,
                 "shopHire="
@@ -2328,7 +2341,9 @@ namespace MC2Demo.Presentation
                 + "/"
                 + hireReady
                 + "/"
-                + unavailable);
+                + unavailable
+                + " pilotSummary="
+                + pilotSummary);
         }
 
         private static LoadoutCompactCheck BuildMechLabRosterCopyCheck()
@@ -2339,18 +2354,21 @@ namespace MC2Demo.Presentation
             string depotHeld = PlayerRosterStatusText("Held: needs depot fit");
             string futureDeploy = PlayerRosterStatusText("Future depot deployment flow");
             string selection = PlayerRosterStatusText("Finish fit before selection");
+            string squadOpen = NextSquadOpenStatusText("Reserve preview candidate");
             bool accepted = string.Equals(loadout, "Needs fit", StringComparison.Ordinal)
                 && string.Equals(fitReady, "Ready fit review", StringComparison.Ordinal)
                 && string.Equals(fitLocked, "Fit review locked", StringComparison.Ordinal)
                 && string.Equals(depotHeld, "Held: needs reserve fit", StringComparison.Ordinal)
                 && string.Equals(futureDeploy, "Reserve not ready", StringComparison.Ordinal)
                 && string.Equals(selection, "Finish fit first", StringComparison.Ordinal)
+                && squadOpen.StartsWith("Next squad open: ", StringComparison.Ordinal)
                 && !ContainsPrototypeCopy(loadout)
                 && !ContainsPrototypeCopy(fitReady)
                 && !ContainsPrototypeCopy(fitLocked)
                 && !ContainsPrototypeCopy(depotHeld)
                 && !ContainsPrototypeCopy(futureDeploy)
-                && !ContainsPrototypeCopy(selection);
+                && !ContainsPrototypeCopy(selection)
+                && !ContainsPrototypeCopy(squadOpen);
             return new LoadoutCompactCheck(
                 accepted,
                 "rosterCopy="
@@ -2364,7 +2382,9 @@ namespace MC2Demo.Presentation
                 + "/"
                 + futureDeploy
                 + "/"
-                + selection);
+                + selection
+                + " squadOpen="
+                + squadOpen);
         }
 
         private static bool ContainsPrototypeCopy(string text)
@@ -2378,6 +2398,7 @@ namespace MC2Demo.Presentation
                 || text.IndexOf("depot", StringComparison.OrdinalIgnoreCase) >= 0
                 || text.IndexOf("future", StringComparison.OrdinalIgnoreCase) >= 0
                 || text.IndexOf("preview", StringComparison.OrdinalIgnoreCase) >= 0
+                || text.IndexOf("candidate", StringComparison.OrdinalIgnoreCase) >= 0
                 || text.IndexOf("read-only", StringComparison.OrdinalIgnoreCase) >= 0
                 || text.IndexOf("loadout", StringComparison.OrdinalIgnoreCase) >= 0;
         }
@@ -7071,7 +7092,7 @@ namespace MC2Demo.Presentation
 
             string cost = cheapestCost == int.MaxValue ? "unknown" : FormatTokens(cheapestCost) + " token";
             return candidates.Length.ToString(CultureInfo.InvariantCulture)
-                + " NPC candidates from "
+                + " NPC pilots from "
                 + cost
                 + "  afford "
                 + affordableCount.ToString(CultureInfo.InvariantCulture)
@@ -7358,6 +7379,16 @@ namespace MC2Demo.Presentation
             return status + "  " + requirements;
         }
 
+        private static string NextSquadOpenStatusText(string name)
+        {
+            string display = string.IsNullOrWhiteSpace(name) ? "mech" : PlayerRosterStatusText(name);
+            display = display.Replace("preview", "review");
+            display = display.Replace("Preview", "Review");
+            display = display.Replace("candidate", "reserve");
+            display = display.Replace("Candidate", "Reserve");
+            return "Next squad open: " + TruncateText(PlayerRosterStatusText(display), 20);
+        }
+
         private void OpenSquadSelectionPreview(MechBayOwnedRosterEntry entry)
         {
             string name = string.IsNullOrWhiteSpace(entry?.displayName) ? "owned mech" : entry.displayName;
@@ -7383,8 +7414,8 @@ namespace MC2Demo.Presentation
                 return;
             }
 
-            statusText = "Next contract preview: " + TruncateText(name, 18);
-            AddCombatLogLine("Next contract squad preview opened");
+            statusText = NextSquadOpenStatusText(name);
+            AddCombatLogLine("Next contract squad opened");
         }
 
         private void OpenSquadSelectionPreviewIncoming(string incomingOwnedMechId, string sourceLabel)
