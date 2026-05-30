@@ -77,6 +77,8 @@ namespace MC2Demo.Presentation
         private const string ContractsLaunchButtonLabel = "Launch";
         private const string ContractsReturnBattleButtonLabel = "Back to Battle";
         private const string ContractsReturnDebriefButtonLabel = "Back to Debrief";
+        private const string SystemRestartButtonLabel = "Restart Mission";
+        private const string SystemBackButtonLabel = "Back";
         private const string AfterActionMechLabStatusText = "After Action: Mech Lab";
         private const string AfterActionContractsStatusText = "After Action: Contracts";
         private const string LoadoutStockShortPrefix = "Stock short: ";
@@ -2371,6 +2373,9 @@ namespace MC2Demo.Presentation
                 && string.Equals(ContractsReturnBattleButtonLabel, "Back to Battle", StringComparison.Ordinal)
                 && string.Equals(ContractsReturnDebriefButtonLabel, "Back to Debrief", StringComparison.Ordinal)
                 && ContractsLaunchButtonLabel.IndexOf("Contract", StringComparison.OrdinalIgnoreCase) < 0
+                && string.Equals(SystemRestartButtonLabel, "Restart Mission", StringComparison.Ordinal)
+                && SystemRestartButtonLabel.IndexOf("Contract", StringComparison.OrdinalIgnoreCase) < 0
+                && string.Equals(SystemBackButtonLabel, "Back", StringComparison.Ordinal)
                 && AfterActionMechLabStatusText.StartsWith("After Action", StringComparison.Ordinal)
                 && AfterActionContractsStatusText.StartsWith("After Action", StringComparison.Ordinal);
 
@@ -2396,6 +2401,8 @@ namespace MC2Demo.Presentation
                 + ContractsOpenStatusText
                 + "/"
                 + ContractsLaunchButtonLabel
+                + "/"
+                + SystemRestartButtonLabel
                 + "/"
                 + AfterActionMechLabStatusText
                 + " combatLine="
@@ -10101,7 +10108,7 @@ namespace MC2Demo.Presentation
                 }
             }
 
-            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 108f, panel.width - 36f, 30f), "Restart Contract"))
+            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 108f, panel.width - 36f, 30f), SystemRestartButtonLabel))
             {
                 TryApplyMissionRestartRuntimeSwap();
             }
@@ -10125,7 +10132,7 @@ namespace MC2Demo.Presentation
                 Application.Quit(0);
             }
 
-            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 286f, panel.width - 36f, 30f), "Close"))
+            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 286f, panel.width - 36f, 30f), SystemBackButtonLabel))
             {
                 showSystemPanel = false;
                 if (mission.Result == MissionResultState.InProgress)
@@ -10249,7 +10256,7 @@ namespace MC2Demo.Presentation
                 OpenPostMissionListPanel();
             }
 
-            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 334f, actionWidth, 30f), "Restart Contract"))
+            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 334f, actionWidth, 30f), SystemRestartButtonLabel))
             {
                 TryApplyMissionRestartRuntimeSwap();
             }

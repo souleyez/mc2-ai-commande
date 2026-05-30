@@ -812,5 +812,6 @@ Tasks:
 - The loadout compact assertion is now split into small check helpers, keeping the growing UI contract readable before more fitting-card density rules are added.
 - The Save Slot title, result row, reset confirmation, and New Company confirmation now use calmer player-facing wording guarded by the loadout compact smoke.
 - The Contracts panel now uses simpler player-facing task-card and navigation labels such as Available Contracts, Mission map ready, Launch, Back to Battle, and Back to Debrief guarded by the debrief smoke.
+- The System and Debrief restart action now reads Restart Mission, and the System close action reads Back, keeping the pause/system flow closer to player intent and guarded by the debrief smoke.
 - The next low-risk step is to keep tuning the selected fitting card density and then migrate these flow screens beyond IMGUI once the layout direction feels right.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.
