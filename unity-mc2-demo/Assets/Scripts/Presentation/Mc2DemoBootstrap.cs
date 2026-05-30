@@ -86,6 +86,7 @@ namespace MC2Demo.Presentation
         private const string MissionMapBackButtonLabel = "Back";
         private const string MechLabBackButtonLabel = "Back";
         private const string SquadSelectionBackButtonLabel = "Back";
+        private const string SquadSelectionUnavailableStatusText = "Squad plan unavailable";
         private const string ReserveFitBackButtonLabel = "Back";
         private const string AfterActionMechLabStatusText = "After Action: Mech Lab";
         private const string AfterActionContractsStatusText = "After Action: Contracts";
@@ -1490,19 +1491,26 @@ namespace MC2Demo.Presentation
                 && SquadSelectionBackButtonLabel.IndexOf("Hide", StringComparison.OrdinalIgnoreCase) < 0;
             bool reserveBackOk = string.Equals(ReserveFitBackButtonLabel, "Back", StringComparison.Ordinal)
                 && ReserveFitBackButtonLabel.IndexOf("Hide", StringComparison.OrdinalIgnoreCase) < 0;
+            string squadStatus = SquadSelectionStatusText(squadPreview?.Status);
+            bool statusCopyOk = squadStatus.IndexOf("preview", StringComparison.OrdinalIgnoreCase) < 0
+                && squadStatus.IndexOf("depot", StringComparison.OrdinalIgnoreCase) < 0
+                && squadStatus.IndexOf("candidate", StringComparison.OrdinalIgnoreCase) < 0;
             bool accepted = completed
                 && hadCue
                 && !showSquadSelectionPreview
                 && summaryOk
                 && launchOk
                 && backOk
-                && reserveBackOk;
+                && reserveBackOk
+                && statusCopyOk;
             string line = "hidden="
                 + (!showSquadSelectionPreview)
                 + " back="
                 + SquadSelectionBackButtonLabel
                 + "/"
                 + ReserveFitBackButtonLabel
+                + " squadStatus="
+                + squadStatus
                 + " completed="
                 + completed
                 + " cue="
@@ -7170,7 +7178,7 @@ namespace MC2Demo.Presentation
                 statusText = keepCompletedReplacementCue ? "Next contract squad set" : "Next squad closed";
             }
 
-            string status = string.IsNullOrWhiteSpace(preview?.Status) ? "Preview unavailable" : preview.Status;
+            string status = SquadSelectionStatusText(preview?.Status);
             GUI.Label(new Rect(x + 12f, y + 24f, width - 24f, 18f), TruncateText(status, 76));
             if (SquadSelectionCompleted(preview))
             {
@@ -7231,6 +7239,28 @@ namespace MC2Demo.Presentation
             return preview?.MissionSlotCount > 0
                 ? "Prepare a reserve mech before replacing a slot"
                 : "No current squad slots available";
+        }
+
+        private static string SquadSelectionStatusText(string status)
+        {
+            if (string.IsNullOrWhiteSpace(status))
+            {
+                return SquadSelectionUnavailableStatusText;
+            }
+
+            string result = status;
+            result = result.Replace("Preview unavailable", SquadSelectionUnavailableStatusText);
+            result = result.Replace("No depot candidates ready", "No reserve mechs ready");
+            result = result.Replace("fitted depot candidate", "ready reserve mech");
+            result = result.Replace("depot candidate", "reserve mech");
+            result = result.Replace("depot candidates", "reserve mechs");
+            result = result.Replace("depot", "reserve");
+            result = result.Replace("Depot", "Reserve");
+            result = result.Replace("candidate", "reserve");
+            result = result.Replace("Candidate", "Reserve");
+            result = result.Replace("preview", "plan");
+            result = result.Replace("Preview", "Plan");
+            return result;
         }
 
         private void DrawSquadSelectionDraftPickers(

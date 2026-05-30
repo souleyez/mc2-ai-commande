@@ -131,6 +131,7 @@ The Unity demo currently supports:
 - post-launch mech bay log confirms which completed replacement was loaded
 - command-file `mech-bay-launch` smoke hook exercises the mech-bay Launch handoff
 - command-file `hide-squad-preview` smoke hook proves the completed replacement cue survives into the general next-mission handoff before Launch
+- Next Contract Squad status copy now filters preview/depot/candidate wording into player-facing squad-plan and reserve-mech wording, guarded by the hidden handoff launch smoke
 - squad-selection preview refreshes after confirmation so the joined reserve mech becomes a mission slot and no longer appears as a candidate
 - next-mission handoff preview reads `availableForMission` roster slots without mutating the active combat mission
 - next-mission handoff area shows a player-facing Ready/Blocked summary, guarded Launch action, and selected lineup
