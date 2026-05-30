@@ -56,8 +56,8 @@ namespace MC2Demo.Presentation
         private const string SavedAccountDefaultPathResultText = "Save Slot path";
         private const string SavedAccountResultPrefix = "Save Result ";
         private const string SavedAccountSlotButtonLabel = "Slot";
-        private const string SavedAccountRoundtripReadyStatusText = "Save preview ready";
-        private const string SavedAccountRoundtripFailedStatusText = "Save preview failed";
+        private const string SavedAccountRoundtripReadyStatusText = "Save check ready";
+        private const string SavedAccountRoundtripFailedStatusText = "Save check failed";
         private const string SaveSlotTitleReadyText = "Company ready";
         private const string SaveSlotResultLabel = "Result ";
         private const string SaveSlotResetConfirmText = "Reset starts fresh; old save is copied first.";
@@ -2145,6 +2145,10 @@ namespace MC2Demo.Presentation
                 && SavedAccountResultPrefix.IndexOf("Last", StringComparison.OrdinalIgnoreCase) < 0
                 && string.Equals(SavedAccountSlotButtonLabel, "Slot", StringComparison.Ordinal)
                 && SavedAccountSlotButtonLabel.IndexOf("Default", StringComparison.OrdinalIgnoreCase) < 0
+                && string.Equals(SavedAccountRoundtripReadyStatusText, "Save check ready", StringComparison.Ordinal)
+                && SavedAccountRoundtripReadyStatusText.IndexOf("preview", StringComparison.OrdinalIgnoreCase) < 0
+                && string.Equals(SavedAccountRoundtripFailedStatusText, "Save check failed", StringComparison.Ordinal)
+                && SavedAccountRoundtripFailedStatusText.IndexOf("preview", StringComparison.OrdinalIgnoreCase) < 0
                 && string.Equals(SaveSlotTitleReadyText, "Company ready", StringComparison.Ordinal)
                 && string.Equals(SaveSlotResultLabel, "Result ", StringComparison.Ordinal)
                 && SaveSlotResultLabel.IndexOf("Last", StringComparison.OrdinalIgnoreCase) < 0
@@ -2181,6 +2185,10 @@ namespace MC2Demo.Presentation
                 + SavedAccountNoSlotPathText
                 + " result="
                 + SavedAccountResultPrefix.Trim();
+            summary += " roundtrip="
+                + SavedAccountRoundtripReadyStatusText
+                + "/"
+                + SavedAccountRoundtripFailedStatusText;
             summary += " slotButton="
                 + SavedAccountSlotButtonLabel
                 + " title="
