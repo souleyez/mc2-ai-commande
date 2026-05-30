@@ -2125,6 +2125,7 @@ namespace MC2Demo.Presentation
             LoadoutCompactCheck routeCheck = BuildLoadoutRouteCompactCheck();
             LoadoutCompactCheck baySummaryCheck = BuildMechLabSummaryLabelCheck();
             LoadoutCompactCheck actionCopyCheck = BuildMechLabActionCopyCheck();
+            LoadoutCompactCheck rosterCopyCheck = BuildMechLabRosterCopyCheck();
             string summary = "title="
                 + title
                 + " button="
@@ -2148,7 +2149,9 @@ namespace MC2Demo.Presentation
                 + " "
                 + baySummaryCheck.Summary
                 + " "
-                + actionCopyCheck.Summary;
+                + actionCopyCheck.Summary
+                + " "
+                + rosterCopyCheck.Summary;
 
             return new LoadoutCompactAssertionResult
             {
@@ -2163,7 +2166,8 @@ namespace MC2Demo.Presentation
                     && selectedSummaryCheck.Accepted
                     && routeCheck.Accepted
                     && baySummaryCheck.Accepted
-                    && actionCopyCheck.Accepted,
+                    && actionCopyCheck.Accepted
+                    && rosterCopyCheck.Accepted,
                 Summary = summary
             };
         }
@@ -2325,6 +2329,57 @@ namespace MC2Demo.Presentation
                 + hireReady
                 + "/"
                 + unavailable);
+        }
+
+        private static LoadoutCompactCheck BuildMechLabRosterCopyCheck()
+        {
+            string loadout = PlayerRosterStatusText("Needs loadout");
+            string fitReady = PlayerFitStatusText("Read-only draft fit preview");
+            string fitLocked = PlayerFitStatusText("Draft fitting locked for this demo");
+            string depotHeld = PlayerRosterStatusText("Held: needs depot fit");
+            string futureDeploy = PlayerRosterStatusText("Future depot deployment flow");
+            string selection = PlayerRosterStatusText("Finish fit before selection");
+            bool accepted = string.Equals(loadout, "Needs fit", StringComparison.Ordinal)
+                && string.Equals(fitReady, "Ready fit review", StringComparison.Ordinal)
+                && string.Equals(fitLocked, "Fit review locked", StringComparison.Ordinal)
+                && string.Equals(depotHeld, "Held: needs reserve fit", StringComparison.Ordinal)
+                && string.Equals(futureDeploy, "Reserve not ready", StringComparison.Ordinal)
+                && string.Equals(selection, "Finish fit first", StringComparison.Ordinal)
+                && !ContainsPrototypeCopy(loadout)
+                && !ContainsPrototypeCopy(fitReady)
+                && !ContainsPrototypeCopy(fitLocked)
+                && !ContainsPrototypeCopy(depotHeld)
+                && !ContainsPrototypeCopy(futureDeploy)
+                && !ContainsPrototypeCopy(selection);
+            return new LoadoutCompactCheck(
+                accepted,
+                "rosterCopy="
+                + loadout
+                + "/"
+                + fitReady
+                + "/"
+                + fitLocked
+                + "/"
+                + depotHeld
+                + "/"
+                + futureDeploy
+                + "/"
+                + selection);
+        }
+
+        private static bool ContainsPrototypeCopy(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                return false;
+            }
+
+            return text.IndexOf("demo", StringComparison.OrdinalIgnoreCase) >= 0
+                || text.IndexOf("depot", StringComparison.OrdinalIgnoreCase) >= 0
+                || text.IndexOf("future", StringComparison.OrdinalIgnoreCase) >= 0
+                || text.IndexOf("preview", StringComparison.OrdinalIgnoreCase) >= 0
+                || text.IndexOf("read-only", StringComparison.OrdinalIgnoreCase) >= 0
+                || text.IndexOf("loadout", StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
         private LoadoutCompactCheck BuildLoadoutConditionCompactCheck(UnitState unit)
@@ -6790,6 +6845,33 @@ namespace MC2Demo.Presentation
             return result;
         }
 
+        private static string PlayerRosterStatusText(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                return "";
+            }
+
+            string result = text;
+            result = result.Replace("Needs loadout", "Needs fit");
+            result = result.Replace("No loadout", "No fit");
+            result = result.Replace("Loadout", "Fit");
+            result = result.Replace("loadout", "fit");
+            result = result.Replace("Depot fit read-only", "Reserve fit locked");
+            result = result.Replace("Held: needs depot fit", "Held: needs reserve fit");
+            result = result.Replace("Held: depot mech", "Held reserve");
+            result = result.Replace("Future depot deployment flow", "Reserve not ready");
+            result = result.Replace("Ready for future fitting", "Ready to fit");
+            result = result.Replace("Finish fit before selection", "Finish fit first");
+            result = result.Replace("Locked: needs depot fit", "Locked: needs reserve fit");
+            result = result.Replace("Depot selection locked", "Reserve selection locked");
+            result = result.Replace("depot", "reserve");
+            result = result.Replace("Depot", "Reserve");
+            result = result.Replace(" for this demo", "");
+            result = result.Replace("read-only", "locked");
+            return result;
+        }
+
         private void DrawSavedAccountFileResultLine(float x, float y, float width)
         {
             string text = string.IsNullOrWhiteSpace(lastSavedAccountFileResultText)
@@ -7089,7 +7171,9 @@ namespace MC2Demo.Presentation
             }
 
             string chassis = string.IsNullOrWhiteSpace(entry.chassisId) ? entry.unitType : entry.chassisId;
-            string loadoutStatus = string.IsNullOrWhiteSpace(entry.loadoutStatus) ? "Unknown" : entry.loadoutStatus;
+            string loadoutStatus = string.IsNullOrWhiteSpace(entry.loadoutStatus)
+                ? "Unknown"
+                : PlayerRosterStatusText(entry.loadoutStatus);
             string bay = entry.isWarehouseMech ? "Reserve Bay" : "Ready Bay";
             return "Chassis " + chassis + "  Fit " + loadoutStatus + "  " + bay;
         }
@@ -7113,8 +7197,12 @@ namespace MC2Demo.Presentation
                 return "Deploy unavailable";
             }
 
-            string status = string.IsNullOrWhiteSpace(entry.deploymentStatus) ? "Unknown" : entry.deploymentStatus;
-            string requirements = string.IsNullOrWhiteSpace(entry.deploymentRequirements) ? "Requirements unknown" : entry.deploymentRequirements;
+            string status = string.IsNullOrWhiteSpace(entry.deploymentStatus)
+                ? "Unknown"
+                : PlayerRosterStatusText(entry.deploymentStatus);
+            string requirements = string.IsNullOrWhiteSpace(entry.deploymentRequirements)
+                ? "Requirements unknown"
+                : PlayerRosterStatusText(entry.deploymentRequirements);
             return "Deploy " + status + "  " + requirements;
         }
 
@@ -7236,7 +7324,7 @@ namespace MC2Demo.Presentation
 
             string requirements = entry == null || string.IsNullOrWhiteSpace(entry.draftFitRequirements)
                 ? "Requirements unknown"
-                : "Requires " + entry.draftFitRequirements;
+                : "Requires " + PlayerRosterStatusText(entry.draftFitRequirements);
             GUI.Label(new Rect(x + 80f, y + 22f, width - 80f, 18f), TruncateText(requirements, 44));
         }
 
@@ -7263,10 +7351,10 @@ namespace MC2Demo.Presentation
 
             string status = string.IsNullOrWhiteSpace(entry.squadSelectionStatus)
                 ? "Selection unavailable"
-                : entry.squadSelectionStatus;
+                : PlayerRosterStatusText(entry.squadSelectionStatus);
             string requirements = string.IsNullOrWhiteSpace(entry.squadSelectionRequirements)
                 ? "Requirements unknown"
-                : entry.squadSelectionRequirements;
+                : PlayerRosterStatusText(entry.squadSelectionRequirements);
             return status + "  " + requirements;
         }
 
@@ -7953,6 +8041,7 @@ namespace MC2Demo.Presentation
             }
 
             string result = text;
+            result = PlayerRosterStatusText(result);
             result = result.Replace("Read-only draft fit preview", "Ready fit review");
             result = result.Replace("Draft fit preview locked", "Reserve fit locked");
             result = result.Replace("Draft fit preview unavailable", "Fit review unavailable");
