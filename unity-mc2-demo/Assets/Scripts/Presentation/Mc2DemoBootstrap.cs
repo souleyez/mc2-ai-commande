@@ -71,6 +71,12 @@ namespace MC2Demo.Presentation
         private const string SaveSlotNeedsReviewText = "Save slot needs review";
         private const string NoSaveSlotText = "No save slot";
         private const string ContractsOpenStatusText = "Contracts open";
+        private const string ContractsHeaderText = "Available Contracts";
+        private const string ContractsCardTitleText = "Airfield Contract";
+        private const string ContractsMapReadyText = "Mission map ready";
+        private const string ContractsLaunchButtonLabel = "Launch";
+        private const string ContractsReturnBattleButtonLabel = "Back to Battle";
+        private const string ContractsReturnDebriefButtonLabel = "Back to Debrief";
         private const string AfterActionMechLabStatusText = "After Action: Mech Lab";
         private const string AfterActionContractsStatusText = "After Action: Contracts";
         private const string LoadoutStockShortPrefix = "Stock short: ";
@@ -2358,6 +2364,13 @@ namespace MC2Demo.Presentation
                 && SaveSlotNeedsReviewText.IndexOf("review", StringComparison.OrdinalIgnoreCase) >= 0
                 && NoSaveSlotText.IndexOf("default", StringComparison.OrdinalIgnoreCase) < 0
                 && string.Equals(ContractsOpenStatusText, "Contracts open", StringComparison.Ordinal)
+                && string.Equals(ContractsHeaderText, "Available Contracts", StringComparison.Ordinal)
+                && string.Equals(ContractsCardTitleText, "Airfield Contract", StringComparison.Ordinal)
+                && string.Equals(ContractsMapReadyText, "Mission map ready", StringComparison.Ordinal)
+                && string.Equals(ContractsLaunchButtonLabel, "Launch", StringComparison.Ordinal)
+                && string.Equals(ContractsReturnBattleButtonLabel, "Back to Battle", StringComparison.Ordinal)
+                && string.Equals(ContractsReturnDebriefButtonLabel, "Back to Debrief", StringComparison.Ordinal)
+                && ContractsLaunchButtonLabel.IndexOf("Contract", StringComparison.OrdinalIgnoreCase) < 0
                 && AfterActionMechLabStatusText.StartsWith("After Action", StringComparison.Ordinal)
                 && AfterActionContractsStatusText.StartsWith("After Action", StringComparison.Ordinal);
 
@@ -2381,6 +2394,8 @@ namespace MC2Demo.Presentation
                 + DebriefBountyLabel
                 + " flow="
                 + ContractsOpenStatusText
+                + "/"
+                + ContractsLaunchButtonLabel
                 + "/"
                 + AfterActionMechLabStatusText
                 + " combatLine="
@@ -10138,15 +10153,15 @@ namespace MC2Demo.Presentation
             string missionId = mission?.Contract?.mission?.id ?? "mc2_01";
             int objectiveCount = mission?.Objectives?.Count ?? 0;
             int playerCount = CountPlayerUnits();
-            GUI.Label(new Rect(x, y, width, 20f), "Available contracts / 可接任务", uiHeaderStyle);
+            GUI.Label(new Rect(x, y, width, 20f), ContractsHeaderText, uiHeaderStyle);
             y += 26f;
             DrawDesignInsetFrame(new Rect(x, y, width, 86f), UiCyanColor);
-            GUI.Label(new Rect(x + 12f, y + 10f, width - 24f, 20f), missionId + "  Field Contract");
-            GUI.Label(new Rect(x + 12f, y + 34f, width - 24f, 20f), "Objectives " + objectiveCount.ToString(CultureInfo.InvariantCulture) + "  Recon map ready");
+            GUI.Label(new Rect(x + 12f, y + 10f, width - 24f, 20f), missionId + "  " + ContractsCardTitleText);
+            GUI.Label(new Rect(x + 12f, y + 34f, width - 24f, 20f), "Objectives " + objectiveCount.ToString(CultureInfo.InvariantCulture) + "  " + ContractsMapReadyText);
             GUI.Label(new Rect(x + 12f, y + 58f, width - 24f, 20f), "Squad " + playerCount.ToString(CultureInfo.InvariantCulture) + " mechs  Ready");
             y += 102f;
 
-            if (GUI.Button(new Rect(x, y, width, 30f), "Launch Contract"))
+            if (GUI.Button(new Rect(x, y, width, 30f), ContractsLaunchButtonLabel))
             {
                 bool launched = TryApplyMissionRestartRuntimeSwap();
                 showMissionListPanel = !launched;
@@ -10170,7 +10185,9 @@ namespace MC2Demo.Presentation
             }
 
             y += 38f;
-            string returnText = mission.Result == MissionResultState.InProgress ? "Return Battle" : "Return Debrief";
+            string returnText = mission.Result == MissionResultState.InProgress
+                ? ContractsReturnBattleButtonLabel
+                : ContractsReturnDebriefButtonLabel;
             if (GUI.Button(new Rect(x, y, width, 30f), returnText))
             {
                 showMissionListPanel = false;
