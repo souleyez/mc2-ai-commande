@@ -50,6 +50,9 @@ namespace MC2Demo.Presentation
         private const string SavedAccountLoadPathLabel = "Load";
         private const string SavedAccountLoadPreviewPrefix = "Load Preview ";
         private const string SavedAccountLoadButtonLabel = "Load";
+        private const string SavedAccountSlotPathPrefix = "Slot ";
+        private const string SavedAccountNoSlotPathText = "No slot path";
+        private const string SavedAccountDefaultPathResultText = "Save Slot path";
         private const string EndRunButtonLabel = "End Run";
         private const string DebriefNextStepText = "Next: repair, save, choose next contract.";
         private const string DebriefPayoutLabel = "Payout";
@@ -2075,7 +2078,11 @@ namespace MC2Demo.Presentation
                 && string.Equals(SavedAccountLoadPathLabel, "Load", StringComparison.Ordinal)
                 && SavedAccountLoadPreviewPrefix.StartsWith("Load Preview", StringComparison.Ordinal)
                 && SavedAccountLoadPreviewPrefix.IndexOf("Import", StringComparison.OrdinalIgnoreCase) < 0
-                && string.Equals(SavedAccountLoadButtonLabel, "Load", StringComparison.Ordinal);
+                && string.Equals(SavedAccountLoadButtonLabel, "Load", StringComparison.Ordinal)
+                && string.Equals(SavedAccountSlotPathPrefix, "Slot ", StringComparison.Ordinal)
+                && string.Equals(SavedAccountNoSlotPathText, "No slot path", StringComparison.Ordinal)
+                && string.Equals(SavedAccountDefaultPathResultText, "Save Slot path", StringComparison.Ordinal)
+                && SavedAccountDefaultPathResultText.IndexOf("Default", StringComparison.OrdinalIgnoreCase) < 0;
             string summary = "bayLabels="
                 + MechLabReadyLabel
                 + "/"
@@ -2091,7 +2098,11 @@ namespace MC2Demo.Presentation
                 + "/"
                 + SavedAccountNoLoadPreviewText
                 + "/"
-                + SavedAccountLoadPreviewPrefix.Trim();
+                + SavedAccountLoadPreviewPrefix.Trim()
+                + " slotPath="
+                + SavedAccountSlotPathPrefix.Trim()
+                + "/"
+                + SavedAccountNoSlotPathText;
 
             return new LoadoutCompactCheck(accepted, summary);
         }
@@ -6534,7 +6545,7 @@ namespace MC2Demo.Presentation
             {
                 savedAccountImportPreviewInputPath = DefaultSavedAccountFilePath();
                 statusText = SavedAccountPathReadyStatusText;
-                RecordSavedAccountFileResult("Default path", false, SavedAccountFileName(savedAccountImportPreviewInputPath));
+                RecordSavedAccountFileResult(SavedAccountDefaultPathResultText, false, SavedAccountFileName(savedAccountImportPreviewInputPath));
             }
 
             bool canExport = demoInventory != null
@@ -6555,13 +6566,13 @@ namespace MC2Demo.Presentation
 
             GUI.enabled = previousEnabled;
             string pathText = string.IsNullOrWhiteSpace(savedAccountImportPreviewInputPath)
-                ? "No path"
+                ? SavedAccountNoSlotPathText
                 : savedAccountImportPreviewInputPath;
             DrawActionStateLabel(
                 x + 192f,
                 y,
                 width - 192f,
-                "Save " + pathText,
+                SavedAccountSlotPathPrefix + pathText,
                 canExport || canLoadDefault,
                 42);
         }

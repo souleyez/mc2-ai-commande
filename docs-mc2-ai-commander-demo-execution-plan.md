@@ -67,6 +67,7 @@ The Unity demo currently supports:
 - Mech Lab apply feedback now uses Stock short and Fit applied wording instead of inventory/demo-fit status text
 - Save Slot helper feedback now uses Save slot path ready and No load preview wording instead of account/idle import phrasing
 - Save Slot load-preview controls now use Load and Load Preview wording instead of import-apply UI labels
+- Save Slot path feedback now uses Slot and No slot path wording instead of save/default-path UI labels
 - weapon selection, move, place, and reset results report the same W# Base/Moved coordinate format in the top status
 - compact mounted weapon buttons use S/M/L range-band labels and `WxH` shape labels with the same color language as payload blocks
 - compact mounted weapon buttons replace the active weapon number with a `>` selector for color-independent selection feedback
