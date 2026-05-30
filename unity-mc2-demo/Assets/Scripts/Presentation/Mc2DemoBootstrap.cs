@@ -2124,6 +2124,7 @@ namespace MC2Demo.Presentation
             LoadoutCompactCheck selectedSummaryCheck = BuildLoadoutSelectedSummaryCompactCheck(unit, preview, weapons[0]);
             LoadoutCompactCheck routeCheck = BuildLoadoutRouteCompactCheck();
             LoadoutCompactCheck baySummaryCheck = BuildMechLabSummaryLabelCheck();
+            LoadoutCompactCheck actionCopyCheck = BuildMechLabActionCopyCheck();
             string summary = "title="
                 + title
                 + " button="
@@ -2145,7 +2146,9 @@ namespace MC2Demo.Presentation
                 + " "
                 + routeCheck.Summary
                 + " "
-                + baySummaryCheck.Summary;
+                + baySummaryCheck.Summary
+                + " "
+                + actionCopyCheck.Summary;
 
             return new LoadoutCompactAssertionResult
             {
@@ -2159,7 +2162,8 @@ namespace MC2Demo.Presentation
                     && nudgeCheck.Accepted
                     && selectedSummaryCheck.Accepted
                     && routeCheck.Accepted
-                    && baySummaryCheck.Accepted,
+                    && baySummaryCheck.Accepted
+                    && actionCopyCheck.Accepted,
                 Summary = summary
             };
         }
@@ -2301,6 +2305,26 @@ namespace MC2Demo.Presentation
                 + (SaveGameUiEnabled ? "Visible" : "Hidden");
 
             return new LoadoutCompactCheck(accepted, summary);
+        }
+
+        private static LoadoutCompactCheck BuildMechLabActionCopyCheck()
+        {
+            string purchaseReady = PlayerMechLabActionStatusText("Ready demo purchase");
+            string hireReady = PlayerMechLabActionStatusText("Ready demo hire");
+            string unavailable = PlayerMechLabActionStatusText("Inventory missing");
+            bool accepted = string.Equals(purchaseReady, "Ready to buy", StringComparison.Ordinal)
+                && purchaseReady.IndexOf("demo", StringComparison.OrdinalIgnoreCase) < 0
+                && string.Equals(hireReady, "Ready to hire", StringComparison.Ordinal)
+                && hireReady.IndexOf("demo", StringComparison.OrdinalIgnoreCase) < 0
+                && string.Equals(unavailable, MechLabUnavailableText, StringComparison.Ordinal);
+            return new LoadoutCompactCheck(
+                accepted,
+                "shopHire="
+                + purchaseReady
+                + "/"
+                + hireReady
+                + "/"
+                + unavailable);
         }
 
         private LoadoutCompactCheck BuildLoadoutConditionCompactCheck(UnitState unit)
@@ -6683,7 +6707,7 @@ namespace MC2Demo.Presentation
                 + cost
                 + "  afford "
                 + affordableCount.ToString(CultureInfo.InvariantCulture)
-                + "  demo buy";
+                + "  buy ready";
         }
 
         private void DrawWeaponShopPurchaseStub(
@@ -6707,7 +6731,7 @@ namespace MC2Demo.Presentation
             {
                 MechBayWeaponPurchasePreviewResult result =
                     MechBayWeaponShopPreviewService.TryApplyDemoPurchase(inventory, firstEntry.itemId);
-                statusText = result?.Message ?? "Purchase unavailable";
+                statusText = PlayerMechLabActionStatusText(result?.Message ?? "Purchase unavailable");
                 if (result != null && result.Accepted)
                 {
                     AddCombatLogLine("Shop " + result.Message);
@@ -6743,7 +6767,27 @@ namespace MC2Demo.Presentation
             }
 
             string cost = FormatTokens(purchasePreview.TokenCost) + " token";
-            return purchasePreview.displayName + " " + cost + "  " + purchasePreview.Message;
+            return purchasePreview.displayName
+                + " "
+                + cost
+                + "  "
+                + PlayerMechLabActionStatusText(purchasePreview.Message);
+        }
+
+        private static string PlayerMechLabActionStatusText(string message)
+        {
+            if (string.IsNullOrWhiteSpace(message))
+            {
+                return "";
+            }
+
+            string result = message;
+            result = result.Replace("Ready demo purchase", "Ready to buy");
+            result = result.Replace("Demo purchase", "Ready to buy");
+            result = result.Replace("Ready demo hire", "Ready to hire");
+            result = result.Replace("Demo hire", "Ready to hire");
+            result = result.Replace("Inventory missing", MechLabUnavailableText);
+            return result;
         }
 
         private void DrawSavedAccountFileResultLine(float x, float y, float width)
@@ -6949,7 +6993,7 @@ namespace MC2Demo.Presentation
                 + cost
                 + "  afford "
                 + affordableCount.ToString(CultureInfo.InvariantCulture)
-                + "  demo hire";
+                + "  hire ready";
         }
 
         private void DrawOwnedRosterDetail(
@@ -7098,7 +7142,7 @@ namespace MC2Demo.Presentation
             {
                 MechBayPilotHireResult result =
                     MechBayPilotHirePreviewService.TryApplyDemoHire(demoInventory, entry.ownedMechId, candidate.pilotId);
-                statusText = result?.Message ?? "Pilot hire unavailable";
+                statusText = PlayerMechLabActionStatusText(result?.Message ?? "Pilot hire unavailable");
                 if (result != null && result.Accepted)
                 {
                     AddCombatLogLine("Pilot " + result.Message);
@@ -7131,7 +7175,12 @@ namespace MC2Demo.Presentation
 
             string cost = FormatTokens(hirePreview.TokenCost) + " token";
             string risk = string.IsNullOrWhiteSpace(hirePreview.RiskProfile) ? "" : "  " + hirePreview.RiskProfile;
-            return hirePreview.displayName + " " + cost + "  " + hirePreview.Message + risk;
+            return hirePreview.displayName
+                + " "
+                + cost
+                + "  "
+                + PlayerMechLabActionStatusText(hirePreview.Message)
+                + risk;
         }
 
         private static MechBayPilotHireCandidate FirstPilotHireCandidate(MechBayPilotHirePreview preview)

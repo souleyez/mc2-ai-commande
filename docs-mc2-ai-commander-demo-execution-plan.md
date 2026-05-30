@@ -66,6 +66,7 @@ The Unity demo currently supports:
 - Debrief reward rows now use short Salvage and Bounty labels instead of claims/total-bounty wording
 - System and debrief status copy now uses Save slot, Contracts open, and After Action wording instead of default/post-mission labels
 - Mech Lab apply feedback now uses Stock short and Fit applied wording instead of inventory/demo-fit status text
+- Mech Lab shop and pilot-hire rows now translate demo-service readiness into player-facing buy/hire wording
 - Save Slot helper feedback now uses Save slot path ready and No load preview wording instead of account/idle import phrasing
 - Save Slot load-preview controls now use Load and Load Preview wording instead of import-apply UI labels
 - Save Slot path feedback now uses Slot and No slot path wording instead of save/default-path UI labels
