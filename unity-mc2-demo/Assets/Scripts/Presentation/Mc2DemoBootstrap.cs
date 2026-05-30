@@ -46,6 +46,8 @@ namespace MC2Demo.Presentation
         private const string MechLabBuildPrefix = "Build ";
         private const string SavedAccountIdleLabel = "Ready  no recent save action";
         private const string EndRunButtonLabel = "End Run";
+        private const string DebriefNextStepText = "Next: repair, save, choose next contract.";
+        private const string DebriefPayoutLabel = "Payout";
         private const float LoadoutResetButtonRightOffset = 72f;
         private const float LoadoutResetButtonWidth = 64f;
         private const float LoadoutSelectedResetButtonWidth = 50f;
@@ -2268,6 +2270,10 @@ namespace MC2Demo.Presentation
             bool endRunLabelOk = string.Equals(EndRunButtonLabel, "End Run", StringComparison.Ordinal)
                 && EndRunButtonLabel.IndexOf("Demo", StringComparison.OrdinalIgnoreCase) < 0
                 && EndRunButtonLabel.Length <= 8;
+            bool debriefCopyOk = string.Equals(DebriefPayoutLabel, "Payout", StringComparison.Ordinal)
+                && DebriefPayoutLabel.IndexOf("Receipt", StringComparison.OrdinalIgnoreCase) < 0
+                && DebriefNextStepText.IndexOf("choose next contract", StringComparison.OrdinalIgnoreCase) >= 0
+                && DebriefNextStepText.IndexOf("launch again", StringComparison.OrdinalIgnoreCase) < 0;
 
             string result = "objectives="
                 + summary.completedVisibleObjectives.ToString(CultureInfo.InvariantCulture)
@@ -2281,6 +2287,8 @@ namespace MC2Demo.Presentation
                 + summary.netResourcePoints.ToString(CultureInfo.InvariantCulture)
                 + " end="
                 + EndRunButtonLabel
+                + " payout="
+                + DebriefPayoutLabel
                 + " combatLine="
                 + combatLine;
 
@@ -2291,7 +2299,8 @@ namespace MC2Demo.Presentation
                     && economyTotalsOk
                     && combatLineOk
                     && overflowOk
-                    && endRunLabelOk,
+                    && endRunLabelOk
+                    && debriefCopyOk,
                 Summary = result
             };
         }
@@ -10116,7 +10125,7 @@ namespace MC2Demo.Presentation
             GUI.Label(new Rect(panel.x + 18f, panel.y + 36f, panel.width - 36f, 42f), mission.ResultReason);
             DrawMissionResultSummary(panel, mission.ResultSummary);
 
-            GUI.Label(new Rect(panel.x + 18f, panel.y + 270f, panel.width - 36f, 20f), "Next: repair, save, then launch again.");
+            GUI.Label(new Rect(panel.x + 18f, panel.y + 270f, panel.width - 36f, 20f), DebriefNextStepText);
             float actionWidth = (panel.width - 44f) * 0.5f;
             if (GUI.Button(new Rect(panel.x + 18f, panel.y + 296f, actionWidth, 30f), "Mech Lab"))
             {
@@ -10176,7 +10185,7 @@ namespace MC2Demo.Presentation
             {
                 GUI.Label(
                     new Rect(panel.x + 18f, y, panel.width - 36f, 20f),
-                    "Receipt Token " + SignedTokens(missionReceipt.TokenDelta)
+                    DebriefPayoutLabel + " " + SignedTokens(missionReceipt.TokenDelta)
                     + "    " + MechLabPartsLabel + " +" + missionReceipt.SalvageFragmentCount
                     + "    Balance " + FormatTokens(missionReceipt.TokenBalance));
                 y += 22f;
