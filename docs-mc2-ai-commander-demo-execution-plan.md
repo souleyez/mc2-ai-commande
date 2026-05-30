@@ -69,6 +69,7 @@ The Unity demo currently supports:
 - Mech Lab shop and pilot-hire rows now translate demo-service readiness into player-facing buy/hire wording
 - Mech Lab pilot-hire summary now says NPC pilots instead of NPC candidates
 - Mech Lab roster detail rows now translate depot/future/loadout service wording into reserve/fit player wording
+- Mech Lab roster empty and state rows now use bay/squad wording instead of owned-mech or mission-state wording
 - Next Squad open feedback now uses direct open wording instead of preview/candidate terminology
 - Save Slot helper feedback now uses Save slot path ready and No load preview wording instead of account/idle import phrasing
 - Save Slot load-preview controls now use Load and Load Preview wording instead of import-apply UI labels

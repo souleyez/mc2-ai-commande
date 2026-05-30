@@ -99,6 +99,8 @@ namespace MC2Demo.Presentation
         private const string ReserveFitBackButtonLabel = "Back";
         private const string AfterActionMechLabStatusText = "After Action: Mech Lab";
         private const string AfterActionContractsStatusText = "After Action: Contracts";
+        private const string MechLabRosterEmptyText = "No mechs in bay";
+        private const string MechLabRosterStateLabel = "Squad State ";
         private const string LoadoutStockShortPrefix = "Stock short: ";
         private const string LoadoutFitAppliedStatusText = "Fit applied";
         private const float LoadoutResetButtonRightOffset = 72f;
@@ -2362,6 +2364,10 @@ namespace MC2Demo.Presentation
                 && string.Equals(futureDeploy, "Reserve not ready", StringComparison.Ordinal)
                 && string.Equals(selection, "Finish fit first", StringComparison.Ordinal)
                 && squadOpen.StartsWith("Next squad open: ", StringComparison.Ordinal)
+                && string.Equals(MechLabRosterEmptyText, "No mechs in bay", StringComparison.Ordinal)
+                && MechLabRosterEmptyText.IndexOf("owned", StringComparison.OrdinalIgnoreCase) < 0
+                && string.Equals(MechLabRosterStateLabel, "Squad State ", StringComparison.Ordinal)
+                && MechLabRosterStateLabel.IndexOf("Mission", StringComparison.OrdinalIgnoreCase) < 0
                 && !ContainsPrototypeCopy(loadout)
                 && !ContainsPrototypeCopy(fitReady)
                 && !ContainsPrototypeCopy(fitLocked)
@@ -2384,7 +2390,11 @@ namespace MC2Demo.Presentation
                 + "/"
                 + selection
                 + " squadOpen="
-                + squadOpen);
+                + squadOpen
+                + " rosterUi="
+                + MechLabRosterEmptyText
+                + "/"
+                + MechLabRosterStateLabel.Trim());
         }
 
         private static bool ContainsPrototypeCopy(string text)
@@ -6153,7 +6163,7 @@ namespace MC2Demo.Presentation
         {
             if (roster == null || roster.Length == 0)
             {
-                return "No owned mechs";
+                return MechLabRosterEmptyText;
             }
 
             List<string> entries = new();
@@ -6183,7 +6193,7 @@ namespace MC2Demo.Presentation
 
             if (entries.Count == 0)
             {
-                return "No owned mechs";
+                return MechLabRosterEmptyText;
             }
 
             string text = roster.Length.ToString(CultureInfo.InvariantCulture) + ": " + string.Join(" | ", entries);
@@ -6202,7 +6212,7 @@ namespace MC2Demo.Presentation
             GUI.color = state.NeedsRepairCount > 0 || state.NeedsFitCount > 0 || state.UnavailableCount > 0
                 ? new Color(1f, 0.78f, 0.28f, 1f)
                 : new Color(0.58f, 0.82f, 1f, 1f);
-            GUI.Label(new Rect(x, y, width, 18f), "Mission State " + TruncateText(RosterMissionStateText(state), 72));
+            GUI.Label(new Rect(x, y, width, 18f), MechLabRosterStateLabel + TruncateText(RosterMissionStateText(state), 72));
             GUI.color = previous;
         }
 
@@ -7108,7 +7118,7 @@ namespace MC2Demo.Presentation
         {
             if (roster == null || roster.Length == 0)
             {
-                GUI.Label(new Rect(x, y, width, 18f), "Detail No owned mechs");
+                GUI.Label(new Rect(x, y, width, 18f), MechLabRosterEmptyText);
                 return;
             }
 
