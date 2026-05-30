@@ -810,5 +810,6 @@ Tasks:
 - The loadout compact smoke now also asserts the nudge pad labels and geometry, guarding `N/W/E/S` plus `Move OK/Block` feedback as compact selected-weapon movement controls.
 - The loadout compact smoke now also asserts the selected-weapon summary row, guarding the compact `W# Base/Moved`, `D/R/CD/H/W/C`, and `WxH` readouts that explain the active weapon block.
 - The loadout compact assertion is now split into small check helpers, keeping the growing UI contract readable before more fitting-card density rules are added.
+- The Save Slot title, result row, reset confirmation, and New Company confirmation now use calmer player-facing wording guarded by the loadout compact smoke.
 - The next low-risk step is to keep tuning the selected fitting card density and then migrate these flow screens beyond IMGUI once the layout direction feels right.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.

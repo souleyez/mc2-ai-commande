@@ -57,6 +57,12 @@ namespace MC2Demo.Presentation
         private const string SavedAccountSlotButtonLabel = "Slot";
         private const string SavedAccountRoundtripReadyStatusText = "Save preview ready";
         private const string SavedAccountRoundtripFailedStatusText = "Save preview failed";
+        private const string SaveSlotTitleReadyText = "Company ready";
+        private const string SaveSlotResultLabel = "Result ";
+        private const string SaveSlotResetConfirmText = "Reset starts fresh; old save is copied first.";
+        private const string SaveSlotNewCompanyConfirmText = "New company starts fresh; save stays untouched.";
+        private const string SaveSlotConfirmResetButtonLabel = "Reset Slot";
+        private const string SaveSlotStartFreshButtonLabel = "Start Fresh";
         private const string EndRunButtonLabel = "End Run";
         private const string DebriefNextStepText = "Next: repair, save, choose next contract.";
         private const string DebriefPayoutLabel = "Payout";
@@ -2090,7 +2096,15 @@ namespace MC2Demo.Presentation
                 && string.Equals(SavedAccountResultPrefix, "Save Result ", StringComparison.Ordinal)
                 && SavedAccountResultPrefix.IndexOf("Last", StringComparison.OrdinalIgnoreCase) < 0
                 && string.Equals(SavedAccountSlotButtonLabel, "Slot", StringComparison.Ordinal)
-                && SavedAccountSlotButtonLabel.IndexOf("Default", StringComparison.OrdinalIgnoreCase) < 0;
+                && SavedAccountSlotButtonLabel.IndexOf("Default", StringComparison.OrdinalIgnoreCase) < 0
+                && string.Equals(SaveSlotTitleReadyText, "Company ready", StringComparison.Ordinal)
+                && string.Equals(SaveSlotResultLabel, "Result ", StringComparison.Ordinal)
+                && SaveSlotResultLabel.IndexOf("Last", StringComparison.OrdinalIgnoreCase) < 0
+                && SaveSlotResetConfirmText.IndexOf("default", StringComparison.OrdinalIgnoreCase) < 0
+                && SaveSlotResetConfirmText.IndexOf("copied first", StringComparison.OrdinalIgnoreCase) >= 0
+                && SaveSlotNewCompanyConfirmText.IndexOf("save stays untouched", StringComparison.OrdinalIgnoreCase) >= 0
+                && string.Equals(SaveSlotConfirmResetButtonLabel, "Reset Slot", StringComparison.Ordinal)
+                && string.Equals(SaveSlotStartFreshButtonLabel, "Start Fresh", StringComparison.Ordinal);
             string summary = "bayLabels="
                 + MechLabReadyLabel
                 + "/"
@@ -2113,7 +2127,12 @@ namespace MC2Demo.Presentation
                 + SavedAccountNoSlotPathText
                 + " result="
                 + SavedAccountResultPrefix.Trim();
-            summary += " slotButton=" + SavedAccountSlotButtonLabel;
+            summary += " slotButton="
+                + SavedAccountSlotButtonLabel
+                + " title="
+                + SaveSlotTitleReadyText
+                + " confirm="
+                + SaveSlotStartFreshButtonLabel;
 
             return new LoadoutCompactCheck(accepted, summary);
         }
@@ -4364,7 +4383,7 @@ namespace MC2Demo.Presentation
             string defaultPath = DefaultSavedAccountFilePath();
             bool fileExists = File.Exists(defaultPath);
             bool canContinue = fileExists && startupContinueSaveReady;
-            GUI.Label(new Rect(x, y, width, 20f), canContinue ? "Continue company progress" : "Save slot needs review");
+            GUI.Label(new Rect(x, y, width, 20f), canContinue ? SaveSlotTitleReadyText : SaveSlotNeedsReviewText);
             y += 24f;
             float summaryHeight = startupSaveChoicesOpenedFromSystem ? 112f : 88f;
             DrawDesignInsetFrame(new Rect(x - 8f, y - 6f, width + 16f, summaryHeight), UiCyanColor);
@@ -4381,7 +4400,7 @@ namespace MC2Demo.Presentation
                 string lastSave = string.IsNullOrWhiteSpace(lastSavedAccountFileResultText)
                     ? SavedAccountIdleLabel
                     : lastSavedAccountFileResultText;
-                GUI.Label(new Rect(x, y, width, 20f), "Last " + TruncateText(lastSave, 58));
+                GUI.Label(new Rect(x, y, width, 20f), SaveSlotResultLabel + TruncateText(lastSave, 58));
                 y += 22f;
             }
 
@@ -4464,10 +4483,10 @@ namespace MC2Demo.Presentation
 
             if (startupResetSlotConfirmPending)
             {
-                GUI.Label(new Rect(x, y - 2f, width, 18f), "Reset slot starts fresh; old default is copied first.");
+                GUI.Label(new Rect(x, y - 2f, width, 18f), SaveSlotResetConfirmText);
                 y += 24f;
                 float halfWidth = (width - 8f) * 0.5f;
-                if (GUI.Button(new Rect(x, y, halfWidth, 30f), "Confirm Reset"))
+                if (GUI.Button(new Rect(x, y, halfWidth, 30f), SaveSlotConfirmResetButtonLabel))
                 {
                     TryResetDefaultSaveSlotFromSaveChoices();
                 }
@@ -4480,10 +4499,10 @@ namespace MC2Demo.Presentation
             }
             else if (startupNewGameConfirmPending)
             {
-                GUI.Label(new Rect(x, y - 2f, width, 18f), "New company resets this run; save slot is kept.");
+                GUI.Label(new Rect(x, y - 2f, width, 18f), SaveSlotNewCompanyConfirmText);
                 y += 24f;
                 float halfWidth = (width - 8f) * 0.5f;
-                if (GUI.Button(new Rect(x, y, halfWidth, 30f), "Confirm New"))
+                if (GUI.Button(new Rect(x, y, halfWidth, 30f), SaveSlotStartFreshButtonLabel))
                 {
                     TryStartFreshDemoRun("New company started");
                 }
