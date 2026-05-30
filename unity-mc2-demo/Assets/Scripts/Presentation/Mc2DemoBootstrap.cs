@@ -41,6 +41,8 @@ namespace MC2Demo.Presentation
         private const string LoadoutPanelHeaderTitle = "Mech Lab  /  机库整备";
         private const string MechLabReadyLabel = "Bay Ready";
         private const string MechLabReviewPrefix = "Bay Review: ";
+        private const string MechLabLoadingText = "Bay loading";
+        private const string MechLabUnavailableText = "Bay unavailable";
         private const string MechLabCompanyPrefix = "Company ";
         private const string MechLabPartsLabel = "Parts";
         private const string MechLabBuildPrefix = "Build ";
@@ -1632,7 +1634,7 @@ namespace MC2Demo.Presentation
         {
             if (demoInventory == null)
             {
-                return BlockLocalCandidate("Inventory missing", logPrefix, markStartupSmokeFailure);
+                return BlockLocalCandidate(MechLabUnavailableText, logPrefix, markStartupSmokeFailure);
             }
 
             string existingCandidate = FirstStartupDepotCandidateOwnedMechId();
@@ -2188,6 +2190,10 @@ namespace MC2Demo.Presentation
         {
             bool accepted = string.Equals(MechLabReadyLabel, "Bay Ready", StringComparison.Ordinal)
                 && MechLabReviewPrefix.StartsWith("Bay Review", StringComparison.Ordinal)
+                && string.Equals(MechLabLoadingText, "Bay loading", StringComparison.Ordinal)
+                && MechLabLoadingText.IndexOf("Inventory", StringComparison.OrdinalIgnoreCase) < 0
+                && string.Equals(MechLabUnavailableText, "Bay unavailable", StringComparison.Ordinal)
+                && MechLabUnavailableText.IndexOf("Inventory", StringComparison.OrdinalIgnoreCase) < 0
                 && MechLabCompanyPrefix.StartsWith("Company", StringComparison.Ordinal)
                 && string.Equals(MechLabPartsLabel, "Parts", StringComparison.Ordinal)
                 && MechLabBuildPrefix.StartsWith("Build", StringComparison.Ordinal)
@@ -2255,6 +2261,10 @@ namespace MC2Demo.Presentation
                 + MechLabBuildPrefix.Trim()
                 + "/"
                 + SavedAccountIdleLabel
+                + " bayState="
+                + MechLabLoadingText
+                + "/"
+                + MechLabUnavailableText
                 + " saveCopy="
                 + SavedAccountPathReadyStatusText
                 + "/"
@@ -5363,7 +5373,7 @@ namespace MC2Demo.Presentation
         {
             if (demoInventoryValidation == null)
             {
-                GUI.Label(new Rect(x, y, width, 18f), "Inventory loading");
+                GUI.Label(new Rect(x, y, width, 18f), MechLabLoadingText);
                 return;
             }
 
@@ -5520,7 +5530,7 @@ namespace MC2Demo.Presentation
                 : "Ready Bay";
             if (demoInventory == null)
             {
-                return prefix + "  inventory missing";
+                return prefix + "  " + MechLabUnavailableText;
             }
 
             if (repairCount > 0)
@@ -5590,7 +5600,7 @@ namespace MC2Demo.Presentation
         {
             if (demoInventory == null)
             {
-                statusText = "Inventory missing";
+                statusText = MechLabUnavailableText;
                 AddCombatLogLine(statusText);
                 return;
             }
@@ -7622,7 +7632,7 @@ namespace MC2Demo.Presentation
 
             if (reason.IndexOf("Inventory", StringComparison.OrdinalIgnoreCase) >= 0)
             {
-                return "inventory unavailable";
+                return MechLabUnavailableText;
             }
 
             if (reason.IndexOf("No pending", StringComparison.OrdinalIgnoreCase) >= 0)

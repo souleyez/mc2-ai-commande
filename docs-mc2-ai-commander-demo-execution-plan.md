@@ -59,6 +59,7 @@ The Unity demo currently supports:
 - contracts, debrief, flow breadcrumb, drawer frame, and top status now route fitting/editing entries through Mech Lab wording while keeping the underlying mech bay state stable
 - the loadout compact smoke now asserts that the opened fitting route, panel title, and top status all stay on Mech Lab wording
 - Mech Lab's default summary now uses Bay Ready/Bay Review, Company, and no-recent-save wording instead of Inventory, Account, or idle save/load phrasing
+- Mech Lab loading, unavailable, repair, and launch-blocked states now keep Bay wording instead of surfacing Inventory terminology
 - Mech Lab and debrief resource readouts now use Parts and Build wording instead of Frags or Assembly labels while keeping the underlying receipt fields unchanged
 - System and debrief exit actions now read End Run instead of Exit Demo, and the debrief smoke guards that player-facing label
 - Debrief copy now says Payout and points players to repair, inspect Mech Lab, and choose the next contract instead of receipt/launch-again wording
