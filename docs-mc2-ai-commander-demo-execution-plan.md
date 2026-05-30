@@ -74,6 +74,7 @@ The Unity demo currently supports:
 - Save Slot load-check and load-apply statuses now use Load check, Load blocked, Load failed, and Save loaded wording instead of account/import/apply-preview status text
 - Startup Continue now shows Save check failed for unreadable saved games instead of exposing preview/import/account service messages
 - Visible save-game UI is now hidden from the player loop; saved-account import/export remains available only as a command-file and developer validation harness
+- Mech Lab detail rows also keep saved-account path/check/load tools behind the hidden save-game UI flag, so normal roster/shop detail can open without exposing save tooling
 - weapon selection, move, place, and reset results report the same W# Base/Moved coordinate format in the top status
 - compact mounted weapon buttons use S/M/L range-band labels and `WxH` shape labels with the same color language as payload blocks
 - compact mounted weapon buttons replace the active weapon number with a `>` selector for color-independent selection feedback

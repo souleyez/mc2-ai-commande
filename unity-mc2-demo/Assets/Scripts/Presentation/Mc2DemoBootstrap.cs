@@ -5417,35 +5417,41 @@ namespace MC2Demo.Presentation
                 return;
             }
 
-            DrawSavedAccountImportPathToolsLine(x, y + 150f, width);
-            DrawSavedAccountImportPreviewPathLine(x, y + 172f, width);
-            DrawSavedAccountImportApplyPreviewLine(x, y + 194f, width);
+            float detailY = actionY + 48f;
+            if (SaveGameUiEnabled)
+            {
+                DrawSavedAccountImportPathToolsLine(x, detailY, width);
+                DrawSavedAccountImportPreviewPathLine(x, detailY + 22f, width);
+                DrawSavedAccountImportApplyPreviewLine(x, detailY + 44f, width);
+                detailY += 64f;
+            }
+
             MechBayWeaponShopPreview shopPreview = MechBayWeaponShopPreviewService.BuildPreview(demoInventory);
             GUI.Label(
-                new Rect(x, y + 214f, width, 18f),
+                new Rect(x, detailY, width, 18f),
                 "Shop " + WeaponShopPreviewText(shopPreview));
-            DrawWeaponShopPurchaseStub(x, y + 236f, width, shopPreview, demoInventory);
+            DrawWeaponShopPurchaseStub(x, detailY + 22f, width, shopPreview, demoInventory);
             MechBayPilotHirePreview pilotHirePreview = MechBayPilotHirePreviewService.BuildPreview(demoInventory);
             GUI.Label(
-                new Rect(x, y + 258f, width, 18f),
+                new Rect(x, detailY + 44f, width, 18f),
                 "Pilot Hire " + PilotHirePreviewText(pilotHirePreview));
             MechBayOwnedRosterEntry[] roster = MechBayOwnedRosterService.BuildRosterPreview(demoInventory);
             ClampSelectedRosterIndex(roster);
             GUI.Label(
-                new Rect(x, y + 280f, width, 18f),
+                new Rect(x, detailY + 66f, width, 18f),
                 "Roster " + TruncateText(OwnedRosterText(roster), 62));
-            DrawRosterMissionStateLine(x, y + 302f, width, roster);
+            DrawRosterMissionStateLine(x, detailY + 88f, width, roster);
             string handoffSummary = HasSquadSelectionCompletedReplacement()
                 ? MissionHandoffCompletedSummaryText(handoffPreview, restartGuard)
                 : MissionHandoffPlayerSummaryText(handoffPreview, restartGuard);
             GUI.Label(
-                new Rect(x, y + 324f, width, 18f),
+                new Rect(x, detailY + 110f, width, 18f),
                 "Next Contract " + TruncateText(handoffSummary, 58));
-            DrawMissionHandoffLaunchAction(x, y + 346f, width, handoffPreview, restartGuard);
-            DrawMissionHandoffLineup(x, y + 368f, width, handoffPreview);
+            DrawMissionHandoffLaunchAction(x, detailY + 132f, width, handoffPreview, restartGuard);
+            DrawMissionHandoffLineup(x, detailY + 154f, width, handoffPreview);
             if (showRosterDetail)
             {
-                DrawOwnedRosterDetail(x, y + 390f, width, roster, pilotHirePreview);
+                DrawOwnedRosterDetail(x, detailY + 176f, width, roster, pilotHirePreview);
             }
         }
 
