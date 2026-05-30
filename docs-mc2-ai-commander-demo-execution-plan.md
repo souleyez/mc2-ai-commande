@@ -70,6 +70,7 @@ The Unity demo currently supports:
 - Save Slot path feedback now uses Slot and No slot path wording instead of save/default-path UI labels
 - Save Slot result feedback now uses Save Result wording instead of Last Save UI labels
 - Save Slot path helper button now reads Slot instead of Default while keeping the same guarded save-slot path
+- Save Slot roundtrip status now uses Save preview ready/failed wording instead of account save/load preview status text
 - weapon selection, move, place, and reset results report the same W# Base/Moved coordinate format in the top status
 - compact mounted weapon buttons use S/M/L range-band labels and `WxH` shape labels with the same color language as payload blocks
 - compact mounted weapon buttons replace the active weapon number with a `>` selector for color-independent selection feedback

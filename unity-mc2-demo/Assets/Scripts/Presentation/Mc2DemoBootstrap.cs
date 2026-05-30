@@ -55,6 +55,8 @@ namespace MC2Demo.Presentation
         private const string SavedAccountDefaultPathResultText = "Save Slot path";
         private const string SavedAccountResultPrefix = "Save Result ";
         private const string SavedAccountSlotButtonLabel = "Slot";
+        private const string SavedAccountRoundtripReadyStatusText = "Save preview ready";
+        private const string SavedAccountRoundtripFailedStatusText = "Save preview failed";
         private const string EndRunButtonLabel = "End Run";
         private const string DebriefNextStepText = "Next: repair, save, choose next contract.";
         private const string DebriefPayoutLabel = "Payout";
@@ -936,7 +938,7 @@ namespace MC2Demo.Presentation
 
             if (preview.Accepted && sourceUnchanged)
             {
-                statusText = "Account save/load preview ready";
+                statusText = SavedAccountRoundtripReadyStatusText;
                 RecordSavedAccountFileResult("Roundtrip OK", true, deltaText);
                 AddCombatLogLine("CLI saved account save/load preview OK: " + summary);
                 Debug.Log("MC2 saved account save/load preview: " + line);
@@ -944,7 +946,7 @@ namespace MC2Demo.Presentation
             }
 
             startupSmokeFailed = true;
-            statusText = "Account save/load preview failed";
+            statusText = SavedAccountRoundtripFailedStatusText;
             string reason = preview.Message ?? "preview failed";
             RecordSavedAccountFileResult("Roundtrip failed", false, reason);
             AddCombatLogLine("CLI saved account save/load preview failed: " + reason);
