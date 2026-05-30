@@ -61,7 +61,7 @@ The Unity demo currently supports:
 - Mech Lab's default summary now uses Bay Ready/Bay Review, Company, and no-recent-save wording instead of Inventory, Account, or idle save/load phrasing
 - Mech Lab and debrief resource readouts now use Parts and Build wording instead of Frags or Assembly labels while keeping the underlying receipt fields unchanged
 - System and debrief exit actions now read End Run instead of Exit Demo, and the debrief smoke guards that player-facing label
-- Debrief copy now says Payout and points players to repair, save, and choose the next contract instead of receipt/launch-again wording
+- Debrief copy now says Payout and points players to repair, inspect Mech Lab, and choose the next contract instead of receipt/launch-again wording
 - Debrief reward rows now use short Salvage and Bounty labels instead of claims/total-bounty wording
 - System and debrief status copy now uses Save slot, Contracts open, and After Action wording instead of default/post-mission labels
 - Mech Lab apply feedback now uses Stock short and Fit applied wording instead of inventory/demo-fit status text
@@ -73,6 +73,7 @@ The Unity demo currently supports:
 - Save Slot roundtrip status now uses Save check ready/failed wording instead of account save/load preview status text
 - Save Slot load-check and load-apply statuses now use Load check, Load blocked, Load failed, and Save loaded wording instead of account/import/apply-preview status text
 - Startup Continue now shows Save check failed for unreadable saved games instead of exposing preview/import/account service messages
+- Visible save-game UI is now hidden from the player loop; saved-account import/export remains available only as a command-file and developer validation harness
 - weapon selection, move, place, and reset results report the same W# Base/Moved coordinate format in the top status
 - compact mounted weapon buttons use S/M/L range-band labels and `WxH` shape labels with the same color language as payload blocks
 - compact mounted weapon buttons replace the active weapon number with a `>` selector for color-independent selection feedback
@@ -158,15 +159,13 @@ The Unity demo currently supports:
 - mech bay summary now provides a guarded Load helper for the persistent demo save file when that file exists
 - mech bay summary now keeps a compact Save Result line for the latest export, preview, apply, or blocked save/load result
 - guarded account-changing actions now auto-save the current local account snapshot to the persistent demo save file
-- manual demo startup now shows a lightweight Continue/New Company panel when the persistent demo save exists and no automation startup args are used
-- that startup panel now previews the loaded account summary, token/reserve/item counts, delta, and save timestamp before enabling Continue
-- the runtime now tracks a lightweight demo flow screen across title, battle, mech bay, contracts, Save Slot, system, and debrief states
+- manual demo startup now bypasses the save-game gate and enters the playable loop directly
+- the saved-account panel and Continue/New Company shell are retained only as hidden developer tooling
+- the runtime now tracks a lightweight demo flow screen across title, battle, mech bay, contracts, system, debrief, and hidden save-tooling states
 - the top status strip now exposes the current flow state, giving the future title shell a visible state boundary before the IMGUI migration
 - the system panel now opens a Contracts shell with the current `mc2_01` contract, launch, mech bay, system, and return-battle actions
-- the pause/system panel now exposes the same Save Slot entry, and New Company resets the active demo run without deleting the persistent save slot
-- New Company now requires an explicit confirmation inside Save Slot, and system-opened Save Slot can return with Back
-- system-opened Save Slot now has a Save Current action that writes the active account to the persistent save slot and refreshes the Continue summary
-- system-opened Save Slot now has Export Copy and Reset Slot actions; Reset Slot requires confirmation, copies the old save first, then overwrites the default slot with a fresh demo snapshot
+- the pause/system panel now keeps the player loop focused on Resume, Restart Mission, Contracts, End Run, and Back
+- hidden save tooling still has guarded Save Current, Export Copy, Reset Slot, and Back paths for command-file/developer validation
 - command-file `prepare-local-candidate` can now produce a ready reserve candidate through local receipt assembly, NPC hiring, weapon purchase, and warehouse fit-review services
 - reserve prep now records a read-only saved-account delta line so token, mech, ready, reserve, and item-stack changes are visible before any real save file exists
 - CLI/AI loop pieces:
@@ -488,9 +487,9 @@ Start with **playable loop closure and flow polish**.
 
 Reason:
 
-- The old starter mission restart polish, roster swap, persistent save shell, post-battle lane, and first design-image-inspired UI pass are now implemented.
+- The old starter mission restart polish, roster swap, hidden developer save harness, post-battle lane, and first design-image-inspired UI pass are now implemented.
 - The current risk is no longer raw feature absence; it is that the playable loop still depends on dense IMGUI prototype panels and too many debug-flavored rows.
-- The next demo milestone should make one private Windows build feel like a coherent local game: Continue/New Company, battle, debrief, repair/save, contracts, mech bay, squad swap, and relaunch.
+- The next demo milestone should make one private Windows build feel like a coherent local game: battle, debrief, repair, contracts, mech bay, squad swap, and relaunch.
 - AI remains intentionally bounded to high-level directives and capability preview; do not expand model-driven combat until the local loop feels good.
 - Content replacement remains a package boundary, not a blocker for private reference validation.
 
@@ -506,9 +505,9 @@ Goal: make one private Windows build understandable without developer narration.
 
 Definition of done:
 
-1. Manual startup can choose Continue or New Company without exposing debug-language account internals.
-2. The player can enter battle, complete or force-resolve the current `mc2_01` flow, reach debrief, repair, save, open contracts, inspect Mech Lab, swap one reserve mech, and relaunch the next contract.
-3. Save Slot, Contracts, Mech Lab, Debrief, System, and top-flow labels use player-facing wording.
+1. Manual startup enters the playable demo directly without a save-game gate.
+2. The player can enter battle, complete or force-resolve the current `mc2_01` flow, reach debrief, repair, open contracts, inspect Mech Lab, swap one reserve mech, and relaunch the next contract.
+3. Contracts, Mech Lab, Debrief, System, and top-flow labels use player-facing wording.
 4. Remaining debug-only rows are hidden from normal play while command-file and log coverage remain available.
 5. At least one command-file smoke path proves the visible flow after each meaningful polish step.
 
@@ -609,9 +608,9 @@ Goal: make the current Windows demo understandable without developer narration.
 
 Tasks:
 
-1. Audit the visible flow from manual startup through battle, debrief, repair/save, contracts, mech bay, squad swap, and relaunch.
+1. Audit the visible flow from manual startup through battle, debrief, repair, contracts, mech bay, squad swap, and relaunch.
 2. Remove or hide debug-only rows from player-facing panels while preserving command-file and log coverage.
-3. Tighten button wording around Continue, New Company, Repair All, Save, Contracts, Launch, Reserve, Set, and squad replacement.
+3. Tighten button wording around Repair All, Contracts, Launch, Reserve, Set, and squad replacement.
 4. Keep every action guarded by the existing validated BattleCore paths.
 5. Add or update one command-file smoke path that proves the visible loop still works after each polish step.
 
@@ -727,7 +726,7 @@ Tasks:
 - The system panel now opens a player-facing Contracts shell for `mc2_01`, with launch, mech bay, system, and return-battle actions.
 - The debrief panel now routes post-battle flow through Mech Bay or Contracts, hiding the debrief overlay before the player repairs, saves, or chooses the next launch.
 - The Contracts return action now goes back to Debrief after a completed mission, keeping the post-battle flow reversible.
-- The mech bay summary now has a compact post-battle/prep lane with Repair All, Save, Contracts, and Launch, so the main playable loop is visible in one row.
+- The mech bay summary now has a compact post-battle/prep lane with Repair All, Contracts, and Launch, so the main playable loop stays visible without a save-game step.
 - The mech bay next-contract row now uses Contract wording to match the system and debrief flow.
 - The squad replacement preview and top flow label now use Next Contract and Contracts wording while preserving internal mission-contract guards.
 - The mech bay flow lane now uses player-facing After Action and Ready Bay status text, and the candidate shortcut now reads as a Reserve action rather than a debug-style prep hook.

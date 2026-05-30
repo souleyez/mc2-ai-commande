@@ -74,12 +74,13 @@ namespace MC2Demo.Presentation
         private const string SaveSlotNoSavedCopyText = "No saved game to copy";
         private const string SaveSlotContinueCheckFailedText = "Save check failed";
         private const string EndRunButtonLabel = "End Run";
-        private const string DebriefNextStepText = "Next: repair, save, choose next contract.";
+        private const string DebriefNextStepText = "Next: repair, inspect Mech Lab, choose next contract.";
         private const string DebriefPayoutLabel = "Payout";
         private const string DebriefSalvageLabel = "Salvage";
         private const string DebriefBountyLabel = "Bounty";
         private const string SaveSlotNeedsReviewText = "Save slot needs review";
         private const string NoSaveSlotText = "No save slot";
+        private const bool SaveGameUiEnabled = false;
         private const string ContractsOpenStatusText = "Contracts open";
         private const string ContractsHeaderText = "Available Contracts";
         private const string ContractsCardTitleText = "Airfield Contract";
@@ -573,6 +574,11 @@ namespace MC2Demo.Presentation
             startupSaveChoicesOpenedFromSystem = false;
             startupNewGameConfirmPending = false;
             startupResetSlotConfirmPending = false;
+            if (!SaveGameUiEnabled)
+            {
+                return;
+            }
+
             if (HasStartupAutomationArgs(args) || !RefreshStartupContinueSavePreview())
             {
                 return;
@@ -2237,7 +2243,8 @@ namespace MC2Demo.Presentation
                 && string.Equals(SaveSlotContinueCheckFailedText, "Save check failed", StringComparison.Ordinal)
                 && SavedAccountStartupContinueReviewText("Preview failed").IndexOf("preview", StringComparison.OrdinalIgnoreCase) < 0
                 && SavedAccountStartupContinueReviewText("JSON import apply preview rejected").IndexOf("import", StringComparison.OrdinalIgnoreCase) < 0
-                && SavedAccountStartupContinueReviewText("JSON import apply preview rejected").IndexOf("account", StringComparison.OrdinalIgnoreCase) < 0;
+                && SavedAccountStartupContinueReviewText("JSON import apply preview rejected").IndexOf("account", StringComparison.OrdinalIgnoreCase) < 0
+                && !SaveGameUiEnabled;
             string summary = "bayLabels="
                 + MechLabReadyLabel
                 + "/"
@@ -2279,7 +2286,9 @@ namespace MC2Demo.Presentation
                 + " reset="
                 + SaveSlotResetFreshDetailText
                 + " continueCheck="
-                + SaveSlotContinueCheckFailedText;
+                + SaveSlotContinueCheckFailedText
+                + " saveUi="
+                + (SaveGameUiEnabled ? "Visible" : "Hidden");
 
             return new LoadoutCompactCheck(accepted, summary);
         }
@@ -2500,6 +2509,7 @@ namespace MC2Demo.Presentation
                 && string.Equals(DebriefBountyLabel, "Bounty", StringComparison.Ordinal)
                 && DebriefBountyLabel.IndexOf("Total", StringComparison.OrdinalIgnoreCase) < 0
                 && DebriefNextStepText.IndexOf("choose next contract", StringComparison.OrdinalIgnoreCase) >= 0
+                && DebriefNextStepText.IndexOf("save", StringComparison.OrdinalIgnoreCase) < 0
                 && DebriefNextStepText.IndexOf("launch again", StringComparison.OrdinalIgnoreCase) < 0;
             bool flowStatusCopyOk = SaveSlotNeedsReviewText.IndexOf("slot", StringComparison.OrdinalIgnoreCase) >= 0
                 && SaveSlotNeedsReviewText.IndexOf("review", StringComparison.OrdinalIgnoreCase) >= 0
@@ -5386,7 +5396,6 @@ namespace MC2Demo.Presentation
             GUI.Label(
                 new Rect(x, y + 60f, width, 18f),
                 MechLabBuildPrefix + AssemblyPreviewText(MechBayAssemblyPreviewService.BestAssemblyProgress(demoInventory)));
-            DrawSavedAccountFileResultLine(x, y + 82f, width);
             MechBayMissionHandoffPreview handoffPreview =
                 MechBayMissionHandoffPreviewService.BuildPreview(demoInventory);
             MechBayMissionRestartApplyGuard restartGuard =
@@ -5394,8 +5403,15 @@ namespace MC2Demo.Presentation
                     demoInventory,
                     mission?.Contract,
                     combatProfiles);
-            DrawPostBattleMechBayLane(x, y + 104f, width, handoffPreview, restartGuard);
-            DrawLocalCandidatePrepAction(x, y + 128f, width);
+            float actionY = y + 82f;
+            if (SaveGameUiEnabled)
+            {
+                DrawSavedAccountFileResultLine(x, actionY, width);
+                actionY += 22f;
+            }
+
+            DrawPostBattleMechBayLane(x, actionY, width, handoffPreview, restartGuard);
+            DrawLocalCandidatePrepAction(x, actionY + 24f, width);
             if (!showRosterDetail)
             {
                 return;
@@ -5446,43 +5462,42 @@ namespace MC2Demo.Presentation
                 && repairCost > 0
                 && demoInventory != null
                 && demoInventory.tokenBalance >= repairCost;
-            bool saveReady = demoInventory != null;
             bool launchReady = restartGuard?.ApplyEnabled == true;
             bool previousEnabled = GUI.enabled;
             Rect laneRect = new(x - 4f, y - 5f, width + 8f, 30f);
             DrawColorRect(laneRect, new Color(0.015f, 0.025f, 0.03f, 0.82f));
             DrawRectBorder(laneRect, new Color(UiAmberColor.r, UiAmberColor.g, UiAmberColor.b, 0.45f), 1f);
 
+            float buttonX = x;
             GUI.enabled = previousEnabled && repairReady;
-            if (DrawActionButton(new Rect(x, y - 2f, 78f, 22f), "Repair All", repairReady))
+            if (DrawActionButton(new Rect(buttonX, y - 2f, 78f, 22f), "Repair All", repairReady))
             {
                 TryRepairAllPlayerMechs();
             }
 
-            GUI.enabled = previousEnabled && saveReady;
-            if (DrawActionButton(new Rect(x + 86f, y - 2f, 48f, 22f), "Save", saveReady))
-            {
-                TrySaveCurrentFromMechBayLane();
-            }
+            buttonX += 86f;
 
             GUI.enabled = previousEnabled;
-            if (DrawActionButton(new Rect(x + 142f, y - 2f, 68f, 22f), "Contracts", true))
+            if (DrawActionButton(new Rect(buttonX, y - 2f, 68f, 22f), "Contracts", true))
             {
                 OpenMissionListFromMechBayLane();
             }
 
+            buttonX += 76f;
+
             GUI.enabled = previousEnabled && launchReady;
-            if (DrawActionButton(new Rect(x + 218f, y - 2f, 58f, 22f), "Launch", launchReady))
+            if (DrawActionButton(new Rect(buttonX, y - 2f, 58f, 22f), "Launch", launchReady))
             {
                 TryApplyMissionRestartRuntimeSwap(keepMechBayOpen: true);
             }
 
+            buttonX += 68f;
             GUI.enabled = previousEnabled;
             bool laneReady = repairCount > 0 ? repairReady : launchReady;
             DrawActionStateLabel(
-                x + 286f,
+                buttonX,
                 y,
-                width - 286f,
+                width - (buttonX - x),
                 PostBattleMechBayLaneText(repairCount, repairCost, handoffPreview, restartGuard),
                 laneReady,
                 54);
@@ -5516,7 +5531,7 @@ namespace MC2Demo.Presentation
                     + repairCount.ToString(CultureInfo.InvariantCulture)
                     + " mechs  "
                     + FormatTokens(repairCost)
-                    + " then save";
+                    + " then launch";
             }
 
             if (restartGuard?.ApplyEnabled == true)
@@ -10274,26 +10289,17 @@ namespace MC2Demo.Presentation
                 TryApplyMissionRestartRuntimeSwap();
             }
 
-            string saveChoiceText = startupContinueSaveReady
-                ? startupContinueSummaryText
-                : File.Exists(DefaultSavedAccountFilePath()) ? SaveSlotNeedsReviewText : NoSaveSlotText;
-            GUI.Label(new Rect(panel.x + 18f, panel.y + 146f, panel.width - 36f, 20f), "Save " + TruncateText(saveChoiceText, 48));
-            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 172f, panel.width - 36f, 30f), "Save Slot"))
-            {
-                OpenSaveChoicePanelFromSystem();
-            }
-
-            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 210f, panel.width - 36f, 30f), "Contracts"))
+            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 146f, panel.width - 36f, 30f), "Contracts"))
             {
                 OpenMissionListPanelFromSystem();
             }
 
-            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 248f, panel.width - 36f, 30f), EndRunButtonLabel))
+            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 184f, panel.width - 36f, 30f), EndRunButtonLabel))
             {
                 Application.Quit(0);
             }
 
-            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 286f, panel.width - 36f, 30f), SystemBackButtonLabel))
+            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 222f, panel.width - 36f, 30f), SystemBackButtonLabel))
             {
                 showSystemPanel = false;
                 if (mission.Result == MissionResultState.InProgress)
