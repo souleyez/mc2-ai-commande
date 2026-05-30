@@ -79,6 +79,8 @@ namespace MC2Demo.Presentation
         private const string ContractsReturnDebriefButtonLabel = "Back to Debrief";
         private const string SystemRestartButtonLabel = "Restart Mission";
         private const string SystemBackButtonLabel = "Back";
+        private const string MissionMapBackButtonLabel = "Back";
+        private const string MechLabBackButtonLabel = "Back";
         private const string AfterActionMechLabStatusText = "After Action: Mech Lab";
         private const string AfterActionContractsStatusText = "After Action: Contracts";
         private const string LoadoutStockShortPrefix = "Stock short: ";
@@ -1952,6 +1954,8 @@ namespace MC2Demo.Presentation
                 && detached <= playerSlots
                 && activeHostiles >= 0
                 && liveTargets >= 0;
+            bool mapBackOk = string.Equals(MissionMapBackButtonLabel, "Back", StringComparison.Ordinal)
+                && MissionMapBackButtonLabel.IndexOf("Close", StringComparison.OrdinalIgnoreCase) < 0;
             string summary = "squad="
                 + playerReady.ToString(CultureInfo.InvariantCulture)
                 + "/"
@@ -1962,12 +1966,14 @@ namespace MC2Demo.Presentation
                 + activeHostiles.ToString(CultureInfo.InvariantCulture)
                 + " targets="
                 + liveTargets.ToString(CultureInfo.InvariantCulture)
+                + " mapBack="
+                + MissionMapBackButtonLabel
                 + " text="
                 + text;
 
             return new CombatSituationAssertionResult
             {
-                Accepted = textOk && countsOk,
+                Accepted = textOk && countsOk && mapBackOk,
                 Summary = summary
             };
         }
@@ -2069,14 +2075,18 @@ namespace MC2Demo.Presentation
             bool statusOk = statusText?.IndexOf("Mech Lab", StringComparison.OrdinalIgnoreCase) >= 0;
             bool titleOk = LoadoutPanelFrameTitle.StartsWith("Mech Lab", StringComparison.Ordinal)
                 && LoadoutPanelHeaderTitle.StartsWith("Mech Lab", StringComparison.Ordinal);
+            bool backOk = string.Equals(MechLabBackButtonLabel, "Back", StringComparison.Ordinal)
+                && MechLabBackButtonLabel.IndexOf("Close", StringComparison.OrdinalIgnoreCase) < 0;
             string summary = "route="
                 + flow
                 + " panel="
                 + panelOk
                 + " status="
-                + TruncateText(statusText ?? string.Empty, 30);
+                + TruncateText(statusText ?? string.Empty, 30)
+                + " back="
+                + MechLabBackButtonLabel;
 
-            return new LoadoutCompactCheck(panelOk && flowOk && statusOk && titleOk, summary);
+            return new LoadoutCompactCheck(panelOk && flowOk && statusOk && titleOk && backOk, summary);
         }
 
         private static LoadoutCompactCheck BuildMechLabSummaryLabelCheck()
@@ -5082,7 +5092,7 @@ namespace MC2Demo.Presentation
                 DrawObjectiveMapMarker(map, objective);
             }
 
-            if (GUI.Button(new Rect(panel.xMax - 66f, panel.y + 6f, 52f, 24f), "Close"))
+            if (GUI.Button(new Rect(panel.xMax - 66f, panel.y + 6f, 52f, 24f), MissionMapBackButtonLabel))
             {
                 showMissionMap = false;
                 statusText = "Mission map closed";
@@ -5153,7 +5163,7 @@ namespace MC2Demo.Presentation
             float width = panel.width - 28f;
 
             GUI.Label(new Rect(x, y, width - 76f, 22f), LoadoutPanelHeaderTitle, uiHeaderStyle);
-            if (GUI.Button(new Rect(panel.xMax - 70f, panel.y + 7f, 56f, 24f), "Close"))
+            if (GUI.Button(new Rect(panel.xMax - 70f, panel.y + 7f, 56f, 24f), MechLabBackButtonLabel))
             {
                 showLoadoutPanel = false;
                 showWarehouseDraftFitPreview = false;
