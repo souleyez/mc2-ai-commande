@@ -48,6 +48,8 @@ namespace MC2Demo.Presentation
         private const string EndRunButtonLabel = "End Run";
         private const string DebriefNextStepText = "Next: repair, save, choose next contract.";
         private const string DebriefPayoutLabel = "Payout";
+        private const string DebriefSalvageLabel = "Salvage";
+        private const string DebriefBountyLabel = "Bounty";
         private const float LoadoutResetButtonRightOffset = 72f;
         private const float LoadoutResetButtonWidth = 64f;
         private const float LoadoutSelectedResetButtonWidth = 50f;
@@ -2272,6 +2274,10 @@ namespace MC2Demo.Presentation
                 && EndRunButtonLabel.Length <= 8;
             bool debriefCopyOk = string.Equals(DebriefPayoutLabel, "Payout", StringComparison.Ordinal)
                 && DebriefPayoutLabel.IndexOf("Receipt", StringComparison.OrdinalIgnoreCase) < 0
+                && string.Equals(DebriefSalvageLabel, "Salvage", StringComparison.Ordinal)
+                && DebriefSalvageLabel.IndexOf("claims", StringComparison.OrdinalIgnoreCase) < 0
+                && string.Equals(DebriefBountyLabel, "Bounty", StringComparison.Ordinal)
+                && DebriefBountyLabel.IndexOf("Total", StringComparison.OrdinalIgnoreCase) < 0
                 && DebriefNextStepText.IndexOf("choose next contract", StringComparison.OrdinalIgnoreCase) >= 0
                 && DebriefNextStepText.IndexOf("launch again", StringComparison.OrdinalIgnoreCase) < 0;
 
@@ -2289,6 +2295,10 @@ namespace MC2Demo.Presentation
                 + EndRunButtonLabel
                 + " payout="
                 + DebriefPayoutLabel
+                + " salvage="
+                + DebriefSalvageLabel
+                + " bounty="
+                + DebriefBountyLabel
                 + " combatLine="
                 + combatLine;
 
@@ -10177,8 +10187,8 @@ namespace MC2Demo.Presentation
 
             GUI.Label(
                 new Rect(panel.x + 18f, y, panel.width - 36f, 20f),
-                "Salvage claims " + summary.salvageClaimCount
-                + "    Total bounty " + FormatTokens(summary.visibleRewardResourcePoints));
+                DebriefSalvageLabel + " " + summary.salvageClaimCount
+                + "    " + DebriefBountyLabel + " " + FormatTokens(summary.visibleRewardResourcePoints));
             y += 22f;
 
             if (missionReceipt != null)

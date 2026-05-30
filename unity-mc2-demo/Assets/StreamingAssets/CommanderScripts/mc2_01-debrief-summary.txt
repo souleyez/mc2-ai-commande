@@ -1,4 +1,4 @@
-# Proves the debrief summary rows, payout/next-step copy, End Run label, and compact combat overflow helper stay valid.
+# Proves the debrief summary rows, salvage/bounty/payout copy, End Run label, and compact combat overflow helper stay valid.
 advance 1
 assert-debrief-summary
 report
