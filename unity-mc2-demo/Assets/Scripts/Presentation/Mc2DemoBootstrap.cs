@@ -2112,6 +2112,10 @@ namespace MC2Demo.Presentation
             string button = LoadoutWeaponButtonLabel(weapons[0], preview, 0, false, HasLoadoutWeaponPlacementOverride(unit, 0));
             bool titleOk = title.StartsWith("Fit ", StringComparison.Ordinal)
                 && title.Length <= 46
+                && title.IndexOf("#", StringComparison.Ordinal) < 0
+                && title.IndexOf("demo", StringComparison.OrdinalIgnoreCase) < 0
+                && title.IndexOf("mech-", StringComparison.OrdinalIgnoreCase) < 0
+                && title.IndexOf("unit-", StringComparison.OrdinalIgnoreCase) < 0
                 && title.IndexOf(" owned ", StringComparison.OrdinalIgnoreCase) < 0
                 && title.IndexOf(" pilot ", StringComparison.OrdinalIgnoreCase) < 0;
             bool buttonOk = button.Length <= 12
@@ -6002,15 +6006,6 @@ namespace MC2Demo.Presentation
             }
 
             string title = "Fit " + unit.UnitType;
-            if (!string.IsNullOrWhiteSpace(unit.OwnedMechId))
-            {
-                title += "  #" + TruncateText(unit.OwnedMechId, 12);
-            }
-            else if (!string.IsNullOrWhiteSpace(unit.Id))
-            {
-                title += "  #" + TruncateText(unit.Id, 8);
-            }
-
             if (!string.IsNullOrWhiteSpace(unit.PilotDisplayName))
             {
                 title += "  " + TruncateText(unit.PilotDisplayName, 14);

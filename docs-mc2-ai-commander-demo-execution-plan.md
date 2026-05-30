@@ -43,6 +43,7 @@ The Unity demo currently supports:
 - compact tactical UI with unit status, mech bay preview, mission brief, current-objective map, world objective hints, health bars, command rings, range rings, and target lines
 - the combat situation row names the commander mech, squad readiness, detached single-order count, hostiles, targets, and recent contact tempo
 - focused mech bay fitting view with compact squad buttons, pending-fit markers, and selected-mech fit-pressure bars so one selected payload grid owns the drawer
+- selected fitting card titles now show chassis and pilot only, hiding runtime or owned-mech ids from the visible Mech Lab surface
 - initial BattleCore loadout contract for chassis grids, item shapes, heat, weight, armor plates, heat sinks, radar slots, and jump jet slots
 - deterministic BattleCore loadout validator for grid bounds, blocked cells, overlap, rotation, heat caps, weight caps, and special-slot compatibility
 - source weapon loadout projection in the mech bay with validator status, heat/load limits, and occupied grid cell counts
@@ -809,7 +810,7 @@ Tasks:
 - Mounted weapon buttons now show only selector, range band, and `WxH` footprint, with tighter rows while the selected weapon summary keeps the full name and stats.
 - The payload grid section now reserves height for the compact side-rail controls, preventing the weapon list from crowding the movement/status controls after the density pass.
 - The fitting Apply/Reset row now sits inside a compact status strip with stock/draft/applied cue borders, matching the rest of the right-drawer control language.
-- The selected fitting card title now uses a short `Fit` label with compact owned/runtime id and pilot text instead of repeating the full unit and owned-mech identity chain.
+- The selected fitting card title now uses a short `Fit` label with chassis and pilot text only, keeping owned/runtime ids out of the visible card.
 - A command-file `assert-loadout-compact` hook and `mc2_01-loadout-compact.txt` smoke path now guard the compact fitting title, mounted-weapon button labels, and grid-section height contract.
 - The selected fitting card condition row now uses compact `Cond` text and a narrower Repair action, keeping the repair/state readout aligned with the denser loadout controls.
 - The loadout compact smoke now also asserts the condition row contract, including the short `Cond` label and narrow Repair action geometry.
