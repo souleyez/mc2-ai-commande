@@ -64,6 +64,9 @@ namespace MC2Demo.Presentation
         private const string SaveSlotNewCompanyConfirmText = "New company starts fresh; save stays untouched.";
         private const string SaveSlotConfirmResetButtonLabel = "Reset Slot";
         private const string SaveSlotStartFreshButtonLabel = "Start Fresh";
+        private const string SaveSlotResetFreshDetailText = "fresh save";
+        private const string SaveSlotResetOldCopyPrefix = "old copy ";
+        private const string SaveSlotNoSavedCopyText = "No saved game to copy";
         private const string EndRunButtonLabel = "End Run";
         private const string DebriefNextStepText = "Next: repair, save, choose next contract.";
         private const string DebriefPayoutLabel = "Payout";
@@ -1024,7 +1027,7 @@ namespace MC2Demo.Presentation
             reason = string.Empty;
             if (!File.Exists(defaultPath))
             {
-                reason = "No default save to copy";
+                reason = SaveSlotNoSavedCopyText;
                 return true;
             }
 
@@ -2125,7 +2128,13 @@ namespace MC2Demo.Presentation
                 && SaveSlotResetConfirmText.IndexOf("copied first", StringComparison.OrdinalIgnoreCase) >= 0
                 && SaveSlotNewCompanyConfirmText.IndexOf("save stays untouched", StringComparison.OrdinalIgnoreCase) >= 0
                 && string.Equals(SaveSlotConfirmResetButtonLabel, "Reset Slot", StringComparison.Ordinal)
-                && string.Equals(SaveSlotStartFreshButtonLabel, "Start Fresh", StringComparison.Ordinal);
+                && string.Equals(SaveSlotStartFreshButtonLabel, "Start Fresh", StringComparison.Ordinal)
+                && string.Equals(SaveSlotResetFreshDetailText, "fresh save", StringComparison.Ordinal)
+                && SaveSlotResetFreshDetailText.IndexOf("default", StringComparison.OrdinalIgnoreCase) < 0
+                && string.Equals(SaveSlotResetOldCopyPrefix, "old copy ", StringComparison.Ordinal)
+                && SaveSlotResetOldCopyPrefix.IndexOf("default", StringComparison.OrdinalIgnoreCase) < 0
+                && string.Equals(SaveSlotNoSavedCopyText, "No saved game to copy", StringComparison.Ordinal)
+                && SaveSlotNoSavedCopyText.IndexOf("default", StringComparison.OrdinalIgnoreCase) < 0;
             string summary = "bayLabels="
                 + MechLabReadyLabel
                 + "/"
@@ -2153,7 +2162,9 @@ namespace MC2Demo.Presentation
                 + " title="
                 + SaveSlotTitleReadyText
                 + " confirm="
-                + SaveSlotStartFreshButtonLabel;
+                + SaveSlotStartFreshButtonLabel
+                + " reset="
+                + SaveSlotResetFreshDetailText;
 
             return new LoadoutCompactCheck(accepted, summary);
         }
@@ -10518,8 +10529,8 @@ namespace MC2Demo.Presentation
 
             bool saved = TryExportSavedAccount(DefaultSavedAccountFilePath(), false, "Save slot reset");
             string detail = File.Exists(copyPath)
-                ? "fresh default; old " + SavedAccountFileName(copyPath)
-                : "fresh default";
+                ? SaveSlotResetFreshDetailText + "; " + SaveSlotResetOldCopyPrefix + SavedAccountFileName(copyPath)
+                : SaveSlotResetFreshDetailText;
             RecordSavedAccountFileResult(saved ? "Reset Slot OK" : "Reset Slot failed", saved, saved ? detail : "fresh export failed");
             statusText = saved ? "Save slot reset" : "Reset save failed";
             AddCombatLogLine(saved ? "Save slot reset: " + detail : "Save slot reset failed");

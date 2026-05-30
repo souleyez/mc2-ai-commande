@@ -815,5 +815,6 @@ Tasks:
 - The System and Debrief restart action now reads Restart Mission, and the System close action reads Back, keeping the pause/system flow closer to player intent and guarded by the debrief smoke.
 - The Mission Map and Mech Lab top-right close actions now read Back, with both labels guarded by combat-situation and loadout compact smoke paths.
 - The Mech Lab save-file check row now uses Check, Load Check, and No save checked wording instead of preview-language controls, guarded by the loadout compact smoke.
+- The Save Slot reset result now says fresh save and old copy instead of default-save wording, with the no-saved-game case guarded by the loadout compact smoke.
 - The next low-risk step is to keep tuning the selected fitting card density and then migrate these flow screens beyond IMGUI once the layout direction feels right.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.
