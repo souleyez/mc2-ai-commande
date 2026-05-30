@@ -45,6 +45,8 @@ namespace MC2Demo.Presentation
         private const string MechLabPartsLabel = "Parts";
         private const string MechLabBuildPrefix = "Build ";
         private const string SavedAccountIdleLabel = "Ready  no recent save action";
+        private const string SavedAccountPathReadyStatusText = "Save slot path ready";
+        private const string SavedAccountNoLoadPreviewText = "No load preview";
         private const string EndRunButtonLabel = "End Run";
         private const string DebriefNextStepText = "Next: repair, save, choose next contract.";
         private const string DebriefPayoutLabel = "Payout";
@@ -2061,7 +2063,12 @@ namespace MC2Demo.Presentation
                 && string.Equals(MechLabPartsLabel, "Parts", StringComparison.Ordinal)
                 && MechLabBuildPrefix.StartsWith("Build", StringComparison.Ordinal)
                 && SavedAccountIdleLabel.IndexOf("save/load", StringComparison.OrdinalIgnoreCase) < 0
-                && SavedAccountIdleLabel.IndexOf("Idle", StringComparison.OrdinalIgnoreCase) < 0;
+                && SavedAccountIdleLabel.IndexOf("Idle", StringComparison.OrdinalIgnoreCase) < 0
+                && SavedAccountPathReadyStatusText.StartsWith("Save slot", StringComparison.Ordinal)
+                && SavedAccountPathReadyStatusText.IndexOf("account", StringComparison.OrdinalIgnoreCase) < 0
+                && string.Equals(SavedAccountNoLoadPreviewText, "No load preview", StringComparison.Ordinal)
+                && SavedAccountNoLoadPreviewText.IndexOf("Idle", StringComparison.OrdinalIgnoreCase) < 0
+                && SavedAccountNoLoadPreviewText.IndexOf("import apply", StringComparison.OrdinalIgnoreCase) < 0;
             string summary = "bayLabels="
                 + MechLabReadyLabel
                 + "/"
@@ -2071,7 +2078,11 @@ namespace MC2Demo.Presentation
                 + "/"
                 + MechLabBuildPrefix.Trim()
                 + "/"
-                + SavedAccountIdleLabel;
+                + SavedAccountIdleLabel
+                + " saveCopy="
+                + SavedAccountPathReadyStatusText
+                + "/"
+                + SavedAccountNoLoadPreviewText;
 
             return new LoadoutCompactCheck(accepted, summary);
         }
@@ -6513,7 +6524,7 @@ namespace MC2Demo.Presentation
             if (DrawActionButton(new Rect(x, y - 2f, 62f, 22f), "Default", true))
             {
                 savedAccountImportPreviewInputPath = DefaultSavedAccountFilePath();
-                statusText = "Default account path ready";
+                statusText = SavedAccountPathReadyStatusText;
                 RecordSavedAccountFileResult("Default path", false, SavedAccountFileName(savedAccountImportPreviewInputPath));
             }
 
@@ -6579,7 +6590,7 @@ namespace MC2Demo.Presentation
                 && !string.IsNullOrWhiteSpace(lastSavedAccountImportApplyPreviewPath);
             string text = hasPreview
                 ? lastSavedAccountImportApplyPreviewText
-                : "Idle  no import apply preview";
+                : SavedAccountNoLoadPreviewText;
             bool previousEnabled = GUI.enabled;
             GUI.enabled = previousEnabled && ready;
             if (DrawActionButton(new Rect(x, y - 2f, 58f, 22f), "Apply", ready))
