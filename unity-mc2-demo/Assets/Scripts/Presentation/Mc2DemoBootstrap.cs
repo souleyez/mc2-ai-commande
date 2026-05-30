@@ -55,6 +55,8 @@ namespace MC2Demo.Presentation
         private const string ContractsOpenStatusText = "Contracts open";
         private const string AfterActionMechLabStatusText = "After Action: Mech Lab";
         private const string AfterActionContractsStatusText = "After Action: Contracts";
+        private const string LoadoutStockShortPrefix = "Stock short: ";
+        private const string LoadoutFitAppliedStatusText = "Fit applied";
         private const float LoadoutResetButtonRightOffset = 72f;
         private const float LoadoutResetButtonWidth = 64f;
         private const float LoadoutSelectedResetButtonWidth = 50f;
@@ -2112,7 +2114,11 @@ namespace MC2Demo.Presentation
                 && stockApplyLabel.Length <= 7
                 && LoadoutApplyButtonWidth <= 66f
                 && LoadoutResetButtonWidth <= 64f
-                && LoadoutEditStatusReservedWidth <= 146f;
+                && LoadoutEditStatusReservedWidth <= 146f
+                && LoadoutStockShortPrefix.StartsWith("Stock short", StringComparison.Ordinal)
+                && LoadoutStockShortPrefix.IndexOf("Inventory", StringComparison.OrdinalIgnoreCase) < 0
+                && string.Equals(LoadoutFitAppliedStatusText, "Fit applied", StringComparison.Ordinal)
+                && LoadoutFitAppliedStatusText.IndexOf("demo", StringComparison.OrdinalIgnoreCase) < 0;
             return new LoadoutCompactCheck(
                 accepted,
                 "edit="
@@ -2123,6 +2129,8 @@ namespace MC2Demo.Presentation
                 + readyApplyLabel
                 + "/"
                 + stockApplyLabel
+                + " status="
+                + LoadoutFitAppliedStatusText
                 + " applyW="
                 + LoadoutApplyButtonWidth.ToString(CultureInfo.InvariantCulture)
                 + " resetW="
@@ -9583,7 +9591,7 @@ namespace MC2Demo.Presentation
             MechBayInventoryAvailabilityResult availability = CurrentDraftInventoryAvailability();
             if (availability == null || !availability.IsValid)
             {
-                statusText = "Inventory short: " + FirstInventoryAvailabilityError(availability);
+                statusText = LoadoutStockShortPrefix + FirstInventoryAvailabilityError(availability);
                 return;
             }
 
@@ -9592,7 +9600,7 @@ namespace MC2Demo.Presentation
             appliedLoadoutPlacementOverridesByUnit[key] = ClonePlacementOverrides(LoadoutPlacementOverridesFor(unit), weaponCount);
             appliedLoadoutFillerOverridesByUnit[key] = CloneFillerOverrides(LoadoutFillerOverridesFor(unit));
             unit.ApplyDemoLoadout(BuildAppliedLoadoutCombatOverride(unit, preview));
-            statusText = "Applied demo fit";
+            statusText = LoadoutFitAppliedStatusText;
         }
 
         private void ResetLoadoutDraft(UnitState unit)

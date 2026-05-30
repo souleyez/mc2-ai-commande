@@ -1,4 +1,4 @@
-# Proves the Mech Lab fitting card keeps compact title, route label, bay summary resource/build labels, condition row, selected weapon summary, edit buttons, target actions, nudge controls, selected reset, weapon button, and grid spacing contracts.
+# Proves the Mech Lab fitting card keeps compact title, route label, bay summary resource/build labels, condition row, selected weapon summary, edit/status copy, target actions, nudge controls, selected reset, weapon button, and grid spacing contracts.
 prepare-local-candidate
 squad-swap
 mech-bay-launch
