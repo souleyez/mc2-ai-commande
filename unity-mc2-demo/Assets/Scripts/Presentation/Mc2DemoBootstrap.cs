@@ -58,6 +58,11 @@ namespace MC2Demo.Presentation
         private const string SavedAccountSlotButtonLabel = "Slot";
         private const string SavedAccountRoundtripReadyStatusText = "Save check ready";
         private const string SavedAccountRoundtripFailedStatusText = "Save check failed";
+        private const string SavedAccountLoadCheckReadyStatusText = "Load check ready";
+        private const string SavedAccountLoadCheckFailedStatusText = "Load check failed";
+        private const string SavedAccountLoadBlockedStatusText = "Load blocked";
+        private const string SavedAccountLoadFailedStatusText = "Load failed";
+        private const string SavedAccountLoadedStatusText = "Save loaded";
         private const string SaveSlotTitleReadyText = "Company ready";
         private const string SaveSlotResultLabel = "Result ";
         private const string SaveSlotResetConfirmText = "Reset starts fresh; old save is copied first.";
@@ -1086,17 +1091,17 @@ namespace MC2Demo.Presentation
 
             if (importPreview.Accepted && sourceUnchanged)
             {
-                statusText = "Account import preview ready";
-                RecordSavedAccountFileResult("Import Preview OK", true, deltaText);
+                statusText = SavedAccountRoundtripReadyStatusText;
+                RecordSavedAccountFileResult("Save check OK", true, deltaText);
                 AddCombatLogLine("CLI saved account import preview OK: " + deltaText);
                 Debug.Log("MC2 saved account import preview: " + line);
                 return;
             }
 
             startupSmokeFailed = true;
-            statusText = "Account import preview failed";
+            statusText = SavedAccountRoundtripFailedStatusText;
             string reason = importPreview.Message ?? "import preview failed";
-            RecordSavedAccountFileResult("Import Preview failed", false, reason);
+            RecordSavedAccountFileResult("Save check failed", false, reason);
             AddCombatLogLine("CLI saved account import preview failed: " + reason);
             Debug.LogError("MC2 saved account import preview failed: " + reason + " " + line);
         }
@@ -1144,9 +1149,9 @@ namespace MC2Demo.Presentation
 
             if (applyPreview.Accepted && sourceUnchanged)
             {
-                statusText = "Account import apply preview ready";
+                statusText = SavedAccountLoadCheckReadyStatusText;
                 RecordSavedAccountFileResult(
-                    applyPreview.WouldChange ? "Preview review" : "Preview ready",
+                    applyPreview.WouldChange ? "Load check review" : "Load check ready",
                     true,
                     deltaText);
                 AddCombatLogLine((logPrefix ?? "Saved account") + " saved account import apply preview OK: " + deltaText);
@@ -1159,9 +1164,9 @@ namespace MC2Demo.Presentation
                 startupSmokeFailed = true;
             }
 
-            statusText = "Account import apply preview failed";
+            statusText = SavedAccountLoadCheckFailedStatusText;
             string reason = applyPreview.Message ?? "import apply preview failed";
-            RecordSavedAccountFileResult("Preview failed", false, reason);
+            RecordSavedAccountFileResult("Load check failed", false, reason);
             AddCombatLogLine((logPrefix ?? "Saved account") + " saved account import apply preview failed: " + reason);
             Debug.LogError(
                 "MC2 saved account import apply preview failed: source="
@@ -1239,10 +1244,11 @@ namespace MC2Demo.Presentation
                     startupSmokeFailed = true;
                 }
 
-                statusText = "Account import apply blocked";
+                statusText = SavedAccountLoadBlockedStatusText;
+                string playerBlockReason = SavedAccountImportApplyPlayerBlockReason(blockReason);
                 lastSavedAccountImportApplyPreviewReady = false;
-                lastSavedAccountImportApplyPreviewText = "Blocked  " + blockReason;
-                RecordSavedAccountFileResult("Apply blocked", false, blockReason);
+                lastSavedAccountImportApplyPreviewText = "Blocked  " + playerBlockReason;
+                RecordSavedAccountFileResult("Load blocked", false, playerBlockReason);
                 AddCombatLogLine((logPrefix ?? "Saved account") + " saved account import apply blocked: " + blockReason);
                 Debug.LogError(
                     "MC2 saved account import apply blocked: path="
@@ -1265,11 +1271,11 @@ namespace MC2Demo.Presentation
                     startupSmokeFailed = true;
                 }
 
-                statusText = "Account import apply failed";
+                statusText = SavedAccountLoadFailedStatusText;
                 string reason = apply?.Message ?? "apply failed";
                 lastSavedAccountImportApplyPreviewReady = false;
                 lastSavedAccountImportApplyPreviewText = "Blocked  " + reason;
-                RecordSavedAccountFileResult("Apply failed", false, reason);
+                RecordSavedAccountFileResult("Load failed", false, reason);
                 AddCombatLogLine((logPrefix ?? "Saved account") + " saved account import apply failed: " + reason);
                 Debug.LogError(
                     "MC2 saved account import apply failed: path="
@@ -1290,8 +1296,8 @@ namespace MC2Demo.Presentation
             lastSavedAccountImportApplyPreviewDeltaText = deltaText;
             lastSavedAccountImportApplyPreviewJsonCharCount = apply.JsonCharCount;
             lastSavedAccountImportApplyPreviewText = "Applied  " + deltaText;
-            statusText = "Account import applied";
-            RecordSavedAccountFileResult("Apply OK", true, deltaText);
+            statusText = SavedAccountLoadedStatusText;
+            RecordSavedAccountFileResult("Load OK", true, deltaText);
             AddCombatLogLine((logPrefix ?? "Saved account") + " saved account import apply OK: " + deltaText);
             TryAutoSaveSavedAccount("import apply " + deltaText);
             Debug.Log(
@@ -1347,6 +1353,42 @@ namespace MC2Demo.Presentation
             return null;
         }
 
+        private static string SavedAccountImportApplyPlayerBlockReason(string reason)
+        {
+            if (string.IsNullOrWhiteSpace(reason))
+            {
+                return "check save first";
+            }
+
+            if (reason.IndexOf("not ready", StringComparison.OrdinalIgnoreCase) >= 0
+                || reason.IndexOf("rejected", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return "check save first";
+            }
+
+            if (reason.IndexOf("path mismatch", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return "save path changed";
+            }
+
+            if (reason.IndexOf("file changed", StringComparison.OrdinalIgnoreCase) >= 0
+                || reason.IndexOf("delta changed", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return "save changed after check";
+            }
+
+            string result = reason;
+            result = result.Replace("import apply preview", "load check");
+            result = result.Replace("Import apply preview", "Load check");
+            result = result.Replace("import apply", "load");
+            result = result.Replace("Import apply", "Load");
+            result = result.Replace("preview", "check");
+            result = result.Replace("Preview", "Check");
+            result = result.Replace("account", "save");
+            result = result.Replace("Account", "Save");
+            return result;
+        }
+
         private static string SavedAccountImportApplyPreviewText(
             MechBaySavedAccountFileResult preview,
             string deltaText,
@@ -1354,17 +1396,17 @@ namespace MC2Demo.Presentation
         {
             if (preview == null)
             {
-                return "Blocked  preview unavailable";
+                return "Blocked  check unavailable";
             }
 
             if (!sourceUnchanged)
             {
-                return "Blocked  source changed during preview";
+                return "Blocked  source changed during check";
             }
 
             if (!preview.Accepted)
             {
-                return "Blocked  " + (preview.Message ?? "preview rejected");
+                return "Blocked  " + SavedAccountImportApplyPlayerBlockReason(preview.Message ?? "preview rejected");
             }
 
             string delta = string.IsNullOrWhiteSpace(deltaText) ? "Delta none" : deltaText;
@@ -2149,6 +2191,16 @@ namespace MC2Demo.Presentation
                 && SavedAccountRoundtripReadyStatusText.IndexOf("preview", StringComparison.OrdinalIgnoreCase) < 0
                 && string.Equals(SavedAccountRoundtripFailedStatusText, "Save check failed", StringComparison.Ordinal)
                 && SavedAccountRoundtripFailedStatusText.IndexOf("preview", StringComparison.OrdinalIgnoreCase) < 0
+                && string.Equals(SavedAccountLoadCheckReadyStatusText, "Load check ready", StringComparison.Ordinal)
+                && SavedAccountLoadCheckReadyStatusText.IndexOf("account", StringComparison.OrdinalIgnoreCase) < 0
+                && SavedAccountLoadCheckReadyStatusText.IndexOf("preview", StringComparison.OrdinalIgnoreCase) < 0
+                && string.Equals(SavedAccountLoadCheckFailedStatusText, "Load check failed", StringComparison.Ordinal)
+                && SavedAccountLoadCheckFailedStatusText.IndexOf("account", StringComparison.OrdinalIgnoreCase) < 0
+                && SavedAccountLoadCheckFailedStatusText.IndexOf("preview", StringComparison.OrdinalIgnoreCase) < 0
+                && string.Equals(SavedAccountLoadBlockedStatusText, "Load blocked", StringComparison.Ordinal)
+                && string.Equals(SavedAccountLoadFailedStatusText, "Load failed", StringComparison.Ordinal)
+                && string.Equals(SavedAccountLoadedStatusText, "Save loaded", StringComparison.Ordinal)
+                && SavedAccountLoadedStatusText.IndexOf("import", StringComparison.OrdinalIgnoreCase) < 0
                 && string.Equals(SaveSlotTitleReadyText, "Company ready", StringComparison.Ordinal)
                 && string.Equals(SaveSlotResultLabel, "Result ", StringComparison.Ordinal)
                 && SaveSlotResultLabel.IndexOf("Last", StringComparison.OrdinalIgnoreCase) < 0
@@ -2189,6 +2241,12 @@ namespace MC2Demo.Presentation
                 + SavedAccountRoundtripReadyStatusText
                 + "/"
                 + SavedAccountRoundtripFailedStatusText;
+            summary += " loadStatus="
+                + SavedAccountLoadCheckReadyStatusText
+                + "/"
+                + SavedAccountLoadBlockedStatusText
+                + "/"
+                + SavedAccountLoadedStatusText;
             summary += " slotButton="
                 + SavedAccountSlotButtonLabel
                 + " title="
