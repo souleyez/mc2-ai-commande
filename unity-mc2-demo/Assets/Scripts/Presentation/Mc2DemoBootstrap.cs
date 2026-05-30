@@ -54,6 +54,7 @@ namespace MC2Demo.Presentation
         private const string SavedAccountNoSlotPathText = "No slot path";
         private const string SavedAccountDefaultPathResultText = "Save Slot path";
         private const string SavedAccountResultPrefix = "Save Result ";
+        private const string SavedAccountSlotButtonLabel = "Slot";
         private const string EndRunButtonLabel = "End Run";
         private const string DebriefNextStepText = "Next: repair, save, choose next contract.";
         private const string DebriefPayoutLabel = "Payout";
@@ -2085,7 +2086,9 @@ namespace MC2Demo.Presentation
                 && string.Equals(SavedAccountDefaultPathResultText, "Save Slot path", StringComparison.Ordinal)
                 && SavedAccountDefaultPathResultText.IndexOf("Default", StringComparison.OrdinalIgnoreCase) < 0
                 && string.Equals(SavedAccountResultPrefix, "Save Result ", StringComparison.Ordinal)
-                && SavedAccountResultPrefix.IndexOf("Last", StringComparison.OrdinalIgnoreCase) < 0;
+                && SavedAccountResultPrefix.IndexOf("Last", StringComparison.OrdinalIgnoreCase) < 0
+                && string.Equals(SavedAccountSlotButtonLabel, "Slot", StringComparison.Ordinal)
+                && SavedAccountSlotButtonLabel.IndexOf("Default", StringComparison.OrdinalIgnoreCase) < 0;
             string summary = "bayLabels="
                 + MechLabReadyLabel
                 + "/"
@@ -2108,6 +2111,7 @@ namespace MC2Demo.Presentation
                 + SavedAccountNoSlotPathText
                 + " result="
                 + SavedAccountResultPrefix.Trim();
+            summary += " slotButton=" + SavedAccountSlotButtonLabel;
 
             return new LoadoutCompactCheck(accepted, summary);
         }
@@ -6546,7 +6550,7 @@ namespace MC2Demo.Presentation
         private void DrawSavedAccountImportPathToolsLine(float x, float y, float width)
         {
             bool previousEnabled = GUI.enabled;
-            if (DrawActionButton(new Rect(x, y - 2f, 62f, 22f), "Default", true))
+            if (DrawActionButton(new Rect(x, y - 2f, 62f, 22f), SavedAccountSlotButtonLabel, true))
             {
                 savedAccountImportPreviewInputPath = DefaultSavedAccountFilePath();
                 statusText = SavedAccountPathReadyStatusText;
