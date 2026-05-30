@@ -47,6 +47,9 @@ namespace MC2Demo.Presentation
         private const string SavedAccountIdleLabel = "Ready  no recent save action";
         private const string SavedAccountPathReadyStatusText = "Save slot path ready";
         private const string SavedAccountNoLoadPreviewText = "No load preview";
+        private const string SavedAccountLoadPathLabel = "Load";
+        private const string SavedAccountLoadPreviewPrefix = "Load Preview ";
+        private const string SavedAccountLoadButtonLabel = "Load";
         private const string EndRunButtonLabel = "End Run";
         private const string DebriefNextStepText = "Next: repair, save, choose next contract.";
         private const string DebriefPayoutLabel = "Payout";
@@ -2068,7 +2071,11 @@ namespace MC2Demo.Presentation
                 && SavedAccountPathReadyStatusText.IndexOf("account", StringComparison.OrdinalIgnoreCase) < 0
                 && string.Equals(SavedAccountNoLoadPreviewText, "No load preview", StringComparison.Ordinal)
                 && SavedAccountNoLoadPreviewText.IndexOf("Idle", StringComparison.OrdinalIgnoreCase) < 0
-                && SavedAccountNoLoadPreviewText.IndexOf("import apply", StringComparison.OrdinalIgnoreCase) < 0;
+                && SavedAccountNoLoadPreviewText.IndexOf("import apply", StringComparison.OrdinalIgnoreCase) < 0
+                && string.Equals(SavedAccountLoadPathLabel, "Load", StringComparison.Ordinal)
+                && SavedAccountLoadPreviewPrefix.StartsWith("Load Preview", StringComparison.Ordinal)
+                && SavedAccountLoadPreviewPrefix.IndexOf("Import", StringComparison.OrdinalIgnoreCase) < 0
+                && string.Equals(SavedAccountLoadButtonLabel, "Load", StringComparison.Ordinal);
             string summary = "bayLabels="
                 + MechLabReadyLabel
                 + "/"
@@ -2082,7 +2089,9 @@ namespace MC2Demo.Presentation
                 + " saveCopy="
                 + SavedAccountPathReadyStatusText
                 + "/"
-                + SavedAccountNoLoadPreviewText;
+                + SavedAccountNoLoadPreviewText
+                + "/"
+                + SavedAccountLoadPreviewPrefix.Trim();
 
             return new LoadoutCompactCheck(accepted, summary);
         }
@@ -6559,7 +6568,7 @@ namespace MC2Demo.Presentation
 
         private void DrawSavedAccountImportPreviewPathLine(float x, float y, float width)
         {
-            GUI.Label(new Rect(x, y, 52f, 18f), "Import");
+            GUI.Label(new Rect(x, y, 52f, 18f), SavedAccountLoadPathLabel);
             float buttonWidth = 72f;
             float fieldX = x + 56f;
             float fieldWidth = Mathf.Max(48f, width - 56f - buttonWidth - 8f);
@@ -6593,7 +6602,7 @@ namespace MC2Demo.Presentation
                 : SavedAccountNoLoadPreviewText;
             bool previousEnabled = GUI.enabled;
             GUI.enabled = previousEnabled && ready;
-            if (DrawActionButton(new Rect(x, y - 2f, 58f, 22f), "Apply", ready))
+            if (DrawActionButton(new Rect(x, y - 2f, 58f, 22f), SavedAccountLoadButtonLabel, ready))
             {
                 TryApplySavedAccountImport(lastSavedAccountImportApplyPreviewPath, false, "Mech Lab");
             }
@@ -6603,7 +6612,7 @@ namespace MC2Demo.Presentation
                 x + 66f,
                 y,
                 width - 66f,
-                "Import Apply " + text,
+                SavedAccountLoadPreviewPrefix + text,
                 ready,
                 56);
         }
