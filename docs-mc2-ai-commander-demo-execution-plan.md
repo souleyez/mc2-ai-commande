@@ -63,6 +63,7 @@ The Unity demo currently supports:
 - System and debrief exit actions now read End Run instead of Exit Demo, and the debrief smoke guards that player-facing label
 - Debrief copy now says Payout and points players to repair, save, and choose the next contract instead of receipt/launch-again wording
 - Debrief reward rows now use short Salvage and Bounty labels instead of claims/total-bounty wording
+- System and debrief status copy now uses Save slot, Contracts open, and After Action wording instead of default/post-mission labels
 - weapon selection, move, place, and reset results report the same W# Base/Moved coordinate format in the top status
 - compact mounted weapon buttons use S/M/L range-band labels and `WxH` shape labels with the same color language as payload blocks
 - compact mounted weapon buttons replace the active weapon number with a `>` selector for color-independent selection feedback

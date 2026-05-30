@@ -50,6 +50,11 @@ namespace MC2Demo.Presentation
         private const string DebriefPayoutLabel = "Payout";
         private const string DebriefSalvageLabel = "Salvage";
         private const string DebriefBountyLabel = "Bounty";
+        private const string SaveSlotNeedsReviewText = "Save slot needs review";
+        private const string NoSaveSlotText = "No save slot";
+        private const string ContractsOpenStatusText = "Contracts open";
+        private const string AfterActionMechLabStatusText = "After Action: Mech Lab";
+        private const string AfterActionContractsStatusText = "After Action: Contracts";
         private const float LoadoutResetButtonRightOffset = 72f;
         private const float LoadoutResetButtonWidth = 64f;
         private const float LoadoutSelectedResetButtonWidth = 50f;
@@ -563,7 +568,7 @@ namespace MC2Demo.Presentation
                 MechBaySavedAccountService.PreviewImportApplyJsonFile(defaultPath, CurrentSavedAccountSnapshot());
             if (preview == null || !preview.Accepted)
             {
-                startupContinueSummaryText = "Save needs review";
+                startupContinueSummaryText = SaveSlotNeedsReviewText;
                 startupContinueRosterText = preview?.Message ?? "Preview failed";
                 startupContinueDeltaText = "Continue disabled";
                 return true;
@@ -2280,6 +2285,12 @@ namespace MC2Demo.Presentation
                 && DebriefBountyLabel.IndexOf("Total", StringComparison.OrdinalIgnoreCase) < 0
                 && DebriefNextStepText.IndexOf("choose next contract", StringComparison.OrdinalIgnoreCase) >= 0
                 && DebriefNextStepText.IndexOf("launch again", StringComparison.OrdinalIgnoreCase) < 0;
+            bool flowStatusCopyOk = SaveSlotNeedsReviewText.IndexOf("slot", StringComparison.OrdinalIgnoreCase) >= 0
+                && SaveSlotNeedsReviewText.IndexOf("review", StringComparison.OrdinalIgnoreCase) >= 0
+                && NoSaveSlotText.IndexOf("default", StringComparison.OrdinalIgnoreCase) < 0
+                && string.Equals(ContractsOpenStatusText, "Contracts open", StringComparison.Ordinal)
+                && AfterActionMechLabStatusText.StartsWith("After Action", StringComparison.Ordinal)
+                && AfterActionContractsStatusText.StartsWith("After Action", StringComparison.Ordinal);
 
             string result = "objectives="
                 + summary.completedVisibleObjectives.ToString(CultureInfo.InvariantCulture)
@@ -2299,6 +2310,10 @@ namespace MC2Demo.Presentation
                 + DebriefSalvageLabel
                 + " bounty="
                 + DebriefBountyLabel
+                + " flow="
+                + ContractsOpenStatusText
+                + "/"
+                + AfterActionMechLabStatusText
                 + " combatLine="
                 + combatLine;
 
@@ -2310,7 +2325,8 @@ namespace MC2Demo.Presentation
                     && combatLineOk
                     && overflowOk
                     && endRunLabelOk
-                    && debriefCopyOk,
+                    && debriefCopyOk
+                    && flowStatusCopyOk,
                 Summary = result
             };
         }
@@ -5387,7 +5403,7 @@ namespace MC2Demo.Presentation
         {
             showLoadoutPanel = false;
             OpenMissionListPanelFromSystem();
-            statusText = "Mission list open from Mech Lab";
+            statusText = ContractsOpenStatusText + " from Mech Lab";
         }
 
         private UnitState SelectedMechBayLoadoutUnit()
@@ -10008,7 +10024,7 @@ namespace MC2Demo.Presentation
 
             string saveChoiceText = startupContinueSaveReady
                 ? startupContinueSummaryText
-                : File.Exists(DefaultSavedAccountFilePath()) ? "Save needs review" : "No default save";
+                : File.Exists(DefaultSavedAccountFilePath()) ? SaveSlotNeedsReviewText : NoSaveSlotText;
             GUI.Label(new Rect(panel.x + 18f, panel.y + 146f, panel.width - 36f, 20f), "Save " + TruncateText(saveChoiceText, 48));
             if (GUI.Button(new Rect(panel.x + 18f, panel.y + 172f, panel.width - 36f, 30f), "Save Slot"))
             {
@@ -10109,7 +10125,7 @@ namespace MC2Demo.Presentation
             showMissionResultPanel = false;
             AddCombatLogLine("Debrief accepted: open mech lab");
             OpenLoadoutPanel();
-            statusText = "Post-mission mech lab";
+            statusText = AfterActionMechLabStatusText;
         }
 
         private void OpenPostMissionListPanel()
@@ -10117,7 +10133,7 @@ namespace MC2Demo.Presentation
             showMissionResultPanel = false;
             AddCombatLogLine("Debrief accepted: open contracts");
             OpenMissionListPanelFromSystem();
-            statusText = "Post-mission contracts";
+            statusText = AfterActionContractsStatusText;
         }
 
         private void DrawMissionResultPanel()
@@ -10354,7 +10370,7 @@ namespace MC2Demo.Presentation
             pendingDetachedUnitId = null;
             pendingJumpOrder = false;
             SetDemoFlowScreen(DemoFlowScreen.MissionSelect);
-            statusText = "Mission list open";
+            statusText = ContractsOpenStatusText;
         }
 
         private void TrySaveCurrentFromSaveChoices()
