@@ -491,6 +491,115 @@ Reason:
 - AI remains intentionally bounded to high-level directives and capability preview; do not expand model-driven combat until the local loop feels good.
 - Content replacement remains a package boundary, not a blocker for private reference validation.
 
+## Frozen Development Plan
+
+This is the current locked execution plan for the private Windows demo. When the user says "continue by the plan", follow this order unless a bug blocks the build or the user explicitly changes priority.
+
+### Phase A: Local Playable Loop
+
+Status: active.
+
+Goal: make one private Windows build understandable without developer narration.
+
+Definition of done:
+
+1. Manual startup can choose Continue or New Company without exposing debug-language account internals.
+2. The player can enter battle, complete or force-resolve the current `mc2_01` flow, reach debrief, repair, save, open contracts, inspect Mech Lab, swap one reserve mech, and relaunch the next contract.
+3. Save Slot, Contracts, Mech Lab, Debrief, System, and top-flow labels use player-facing wording.
+4. Remaining debug-only rows are hidden from normal play while command-file and log coverage remain available.
+5. At least one command-file smoke path proves the visible flow after each meaningful polish step.
+
+Next work:
+
+1. Run a visible-flow audit from title to relaunch and record any remaining confusing labels or dead-end actions.
+2. Tighten or hide the highest-noise UI rows first; avoid adding new systems.
+3. Keep commits small, with exact file staging and a smoke or validator command in the commit notes.
+
+### Phase B: Battle Readability
+
+Status: next.
+
+Goal: make `mc2_01` feel like a readable tactical mech battle, not just a functional simulation.
+
+Definition of done:
+
+1. Missile, ballistic, and energy weapons are visually distinct in muzzle, trace, hit, and log/status feedback.
+2. Destroyed arms, legs, cockpit hits, and pilot ejection are visible enough to understand at tactical zoom.
+3. Enemy activation and encounter pacing in `mc2_01` follow the reference mission rhythm without adding strong AI.
+4. The combat HUD clearly communicates commander mech, squad readiness, solo orders, current hostiles, target pressure, and recent contact.
+5. Debrief summarizes objectives, kills, player damage, payout, and salvage in compact player-facing rows.
+
+Next work:
+
+1. Improve primitive/generated combat effects before importing or replacing major art.
+2. Strengthen persistent section-damage markers and ejection readability.
+3. Tune one encounter at a time against `docs-mc2-01-mission-analysis.md`.
+
+### Phase C: Mech Lab Experience
+
+Status: after Phase B first pass, with small supporting polish allowed during Phase A.
+
+Goal: turn the current fitting drawer into an original-style mech customization surface.
+
+Definition of done:
+
+1. Mech Lab has a dedicated, calm layout instead of carrying too much battle-side drawer pressure.
+2. Weapons, armor plates, and heat sinks read as whole grid blocks.
+3. Weapon list selects mounted blocks only; fitted weapons are always active.
+4. Heat, weight, grid usage, range, cooldown, damage, armor hardness, and cooling pressure are visible before applying.
+5. Invalid fits are blocked by BattleCore validation, not by presentation-only checks.
+
+Next work:
+
+1. Preserve the current validator and content-pack data boundary.
+2. Move interaction toward large block placement and fewer text-heavy rows.
+3. Keep armor math simple: armor plates raise overall hardness; section damage and cockpit risk stay visible.
+
+### Phase D: Public-Safe Content Pack
+
+Status: after the private demo loop and battle readability are convincing.
+
+Goal: create a capture-safe vertical slice without original copyrighted assets, names, story text, trademarks, audio, or model/texture content.
+
+Definition of done:
+
+1. Original MC2 files remain private reference-linked development content only.
+2. Product identity, UI strings, mech names, weapon names, pilot names, visible mission text, icons, effects, audio, and visuals have replacement provenance.
+3. The public build mounts a project-owned or properly licensed content pack and still runs the same mission contract path.
+4. Replacement work follows `docs-content-replacement-plan.md` and `docs-content-pack.md`.
+
+Next work:
+
+1. Do not block private validation on replacement art.
+2. Once the demo is presentable, build a text-safe slice first, then an art-safe slice.
+
+### Phase E: AI Commander and Platform
+
+Status: bounded and later.
+
+Goal: keep AI and platform architecture ready without letting them consume the first playable-demo milestone.
+
+Definition of done for the near term:
+
+1. AI commander remains limited to opening plan, directive token, capability window, and optional high-level refresh.
+2. Model calls never choose per-frame actions, exact coordinates, exact targets, or weapon timing.
+3. Local BattleCore remains responsible for movement legality, target selection, heat, cooldown, damage, objectives, and paper-result compatibility.
+4. Map server, certified rewards, web ranking, creator economy, support/friend pilots, wages, multiplayer, and blockchain stay in planning until the single-player Windows demo is strong.
+
+Next work:
+
+1. Treat `docs-ai-commander-directive-contract.md` as the stop line for AI work.
+2. Treat `docs-platform-ecosystem-plan.md` as the long-term reference only.
+
+### Operating Rules
+
+1. Do not start broad new systems while Phase A has unresolved visible-flow blockers.
+2. Prefer one small player-visible improvement plus one smoke/validator update per commit.
+3. Keep BattleCore deterministic and Unity presentation-driven code thin.
+4. Use original assets and values only for private reference validation.
+5. Never commit private generated reference dumps or ignored content-pack output.
+6. When uncertain, improve the current playable Windows demo before expanding product scope.
+
 ### Immediate Plan: Local Playable Loop
 
 Goal: make the current Windows demo understandable without developer narration.
