@@ -68,6 +68,7 @@ The Unity demo currently supports:
 - Save Slot helper feedback now uses Save slot path ready and No load preview wording instead of account/idle import phrasing
 - Save Slot load-preview controls now use Load and Load Preview wording instead of import-apply UI labels
 - Save Slot path feedback now uses Slot and No slot path wording instead of save/default-path UI labels
+- Save Slot result feedback now uses Save Result wording instead of Last Save UI labels
 - weapon selection, move, place, and reset results report the same W# Base/Moved coordinate format in the top status
 - compact mounted weapon buttons use S/M/L range-band labels and `WxH` shape labels with the same color language as payload blocks
 - compact mounted weapon buttons replace the active weapon number with a `>` selector for color-independent selection feedback
@@ -150,7 +151,7 @@ The Unity demo currently supports:
 - mech bay summary now includes a manual saved-account JSON path field plus Preview action, so the guarded apply flow can start from UI
 - mech bay summary now provides Default and Export helpers that point at a persistent demo save file and write the current account snapshot there
 - mech bay summary now provides a guarded Load helper for the persistent demo save file when that file exists
-- mech bay summary now keeps a compact Last Save line for the latest export, preview, apply, or blocked save/load result
+- mech bay summary now keeps a compact Save Result line for the latest export, preview, apply, or blocked save/load result
 - guarded account-changing actions now auto-save the current local account snapshot to the persistent demo save file
 - manual demo startup now shows a lightweight Continue/New Company panel when the persistent demo save exists and no automation startup args are used
 - that startup panel now previews the loaded account summary, token/reserve/item counts, delta, and save timestamp before enabling Continue
@@ -597,7 +598,7 @@ Tasks:
 - The mech bay summary now includes a manual saved-account JSON path field and Preview action, so users can generate a guarded import apply preview without relying on startup command files.
 - The mech bay summary now provides Default and Export helpers that point at a persistent demo save file and write the current local account snapshot before preview/apply.
 - The mech bay summary now provides a guarded Load helper that previews and applies the persistent demo save path when the file exists.
-- The mech bay summary now keeps a compact Last Save result line for export, preview, apply, and blocked save/load outcomes.
+- The mech bay summary now keeps a compact Save Result line for export, preview, apply, and blocked save/load outcomes.
 - Guarded account-changing actions now auto-save the current local account snapshot to the persistent demo save file, including mission receipts, import apply, reserve prep, shop purchases, pilot hires, warehouse fits, squad selection, and repairs.
 - Startup command files can now run `saved-account-load-default-preview` and `saved-account-load-default-apply`, restoring the persistent demo save path through the existing import-apply guard.
 - Startup command files can now run `saved-account-save-current-default`, explicitly covering the Save Current default export path before preview/apply smoke checks.

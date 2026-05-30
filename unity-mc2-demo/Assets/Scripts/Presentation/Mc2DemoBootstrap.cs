@@ -53,6 +53,7 @@ namespace MC2Demo.Presentation
         private const string SavedAccountSlotPathPrefix = "Slot ";
         private const string SavedAccountNoSlotPathText = "No slot path";
         private const string SavedAccountDefaultPathResultText = "Save Slot path";
+        private const string SavedAccountResultPrefix = "Save Result ";
         private const string EndRunButtonLabel = "End Run";
         private const string DebriefNextStepText = "Next: repair, save, choose next contract.";
         private const string DebriefPayoutLabel = "Payout";
@@ -2082,7 +2083,9 @@ namespace MC2Demo.Presentation
                 && string.Equals(SavedAccountSlotPathPrefix, "Slot ", StringComparison.Ordinal)
                 && string.Equals(SavedAccountNoSlotPathText, "No slot path", StringComparison.Ordinal)
                 && string.Equals(SavedAccountDefaultPathResultText, "Save Slot path", StringComparison.Ordinal)
-                && SavedAccountDefaultPathResultText.IndexOf("Default", StringComparison.OrdinalIgnoreCase) < 0;
+                && SavedAccountDefaultPathResultText.IndexOf("Default", StringComparison.OrdinalIgnoreCase) < 0
+                && string.Equals(SavedAccountResultPrefix, "Save Result ", StringComparison.Ordinal)
+                && SavedAccountResultPrefix.IndexOf("Last", StringComparison.OrdinalIgnoreCase) < 0;
             string summary = "bayLabels="
                 + MechLabReadyLabel
                 + "/"
@@ -2102,7 +2105,9 @@ namespace MC2Demo.Presentation
                 + " slotPath="
                 + SavedAccountSlotPathPrefix.Trim()
                 + "/"
-                + SavedAccountNoSlotPathText;
+                + SavedAccountNoSlotPathText
+                + " result="
+                + SavedAccountResultPrefix.Trim();
 
             return new LoadoutCompactCheck(accepted, summary);
         }
@@ -6533,7 +6538,7 @@ namespace MC2Demo.Presentation
                 x,
                 y,
                 width,
-                "Last Save " + text,
+                SavedAccountResultPrefix + text,
                 lastSavedAccountFileResultReady,
                 66);
         }
