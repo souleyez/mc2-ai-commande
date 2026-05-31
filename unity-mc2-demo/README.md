@@ -52,6 +52,7 @@ Current demo behavior:
 - shows compact world health bars for damaged or player-targeted enemies and structures
 - shows a subtle weapon range ring for selected, detached, attacking, or firing units
 - varies tactical target-line color and thickness for ready, cooling, and blocked shots
+- shows compact local weapon-readiness rings for ready, cooling, and blocked player mechs
 - renders short weapon beams, hit flashes, and impact bursts for combat events, with energy pillar/ring, missile blast, and ballistic spark cues
 - scales hit flash, impact, and pulse size by incoming damage and kill state so heavy hits read harder
 - draws short inbound hit slashes at impact points so the attack direction reads at tactical zoom
@@ -202,6 +203,7 @@ Current demo behavior:
 - draws compact move and Jet order path lines while player mechs are traveling
 - pulses compact arrival cues after move and Jet orders complete
 - makes ready, cooling, and blocked weapon target lines read differently in the tactical view
+- shows compact ready, cooling, and blocked weapon-readiness rings on actively targeting player mechs
 - shows compact target-lock rings for auto-acquired and commanded targets
 - shows a compact squad-focus pressure ring when multiple player mechs share a target
 - shows a compact hostile-focus warning ring when multiple enemies share a player target

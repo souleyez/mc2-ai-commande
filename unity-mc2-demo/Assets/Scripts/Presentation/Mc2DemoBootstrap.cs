@@ -154,6 +154,7 @@ namespace MC2Demo.Presentation
         private readonly Dictionary<string, GameObject> unitFocusMarkers = new();
         private readonly Dictionary<string, GameObject> unitDamageWarningMarkers = new();
         private readonly Dictionary<string, GameObject> unitRangeMarkers = new();
+        private readonly Dictionary<string, GameObject> unitWeaponReadinessMarkers = new();
         private readonly Dictionary<string, GameObject> unitCommanderAnchors = new();
         private readonly Dictionary<string, GameObject> unitCommanderBeacons = new();
         private readonly Dictionary<string, GameObject> unitTargetLines = new();
@@ -520,6 +521,7 @@ namespace MC2Demo.Presentation
             unitFocusMarkers.Clear();
             unitDamageWarningMarkers.Clear();
             unitRangeMarkers.Clear();
+            unitWeaponReadinessMarkers.Clear();
             unitCommanderAnchors.Clear();
             unitCommanderBeacons.Clear();
             unitTargetLines.Clear();
@@ -2171,6 +2173,8 @@ namespace MC2Demo.Presentation
             bool sectionFlashFxOk = sectionFlashFx.IndexOf("SectionHitCue=cockpit+arms+legs+torso", StringComparison.Ordinal) >= 0;
             string targetLineFx = TargetLineCueSummary();
             bool targetLineFxOk = targetLineFx.IndexOf("TargetLine=ready+cooling+blocked", StringComparison.Ordinal) >= 0;
+            string weaponReadinessFx = WeaponReadinessCueSummary();
+            bool weaponReadinessFxOk = weaponReadinessFx.IndexOf("WeaponReadiness=ready+cooling+blocked", StringComparison.Ordinal) >= 0;
             string targetLockFx = TargetLockCueSummary();
             bool targetLockFxOk = targetLockFx.IndexOf("TargetLock=auto+command", StringComparison.Ordinal) >= 0;
             string squadFocusFx = SquadFocusCueSummary();
@@ -2253,6 +2257,8 @@ namespace MC2Demo.Presentation
                 + sectionFlashFx
                 + " targetLineFx="
                 + targetLineFx
+                + " weaponReadinessFx="
+                + weaponReadinessFx
                 + " targetLockFx="
                 + targetLockFx
                 + " squadFocusFx="
@@ -2318,6 +2324,7 @@ namespace MC2Demo.Presentation
                     && sectionHitFxOk
                     && sectionFlashFxOk
                     && targetLineFxOk
+                    && weaponReadinessFxOk
                     && targetLockFxOk
                     && squadFocusFxOk
                     && threatFocusFxOk
@@ -2358,6 +2365,11 @@ namespace MC2Demo.Presentation
         private static string TargetLineCueSummary()
         {
             return "TargetLine=ready+cooling+blocked";
+        }
+
+        private static string WeaponReadinessCueSummary()
+        {
+            return "WeaponReadiness=ready+cooling+blocked";
         }
 
         private static string TargetLockCueSummary()
@@ -5995,6 +6007,11 @@ namespace MC2Demo.Presentation
                     "CommandWeaponRange",
                     new Color(0.25f, 0.82f, 1f, 0.12f),
                     Vector3.one);
+                unitWeaponReadinessMarkers[unit.Id] = CreateMarkerDisc(
+                    unit.Id + " Weapon Readiness",
+                    "WeaponReadinessReady",
+                    new Color(0.34f, 1f, 0.62f, 0.26f),
+                    new Vector3(0.84f, 0.012f, 0.84f));
                 unitCommanderAnchors[unit.Id] = CreateMarkerDisc(
                     unit.Id + " Commander Anchor",
                     "CommanderAnchor",
@@ -6065,6 +6082,7 @@ namespace MC2Demo.Presentation
                 UpdateFocusMarker(unit);
                 UpdatePlayerDamageWarningMarker(unit);
                 UpdateRangeMarker(unit);
+                UpdateWeaponReadinessMarker(unit);
                 UpdateTargetLine(unit);
             }
 
@@ -6337,6 +6355,46 @@ namespace MC2Demo.Presentation
                 float worldDiameter = Mathf.Clamp((unit.CombatWeaponRange / 100f) * 2f, 1.2f, 8f);
                 marker.transform.localScale = new Vector3(worldDiameter, 0.01f, worldDiameter);
             }
+        }
+
+        private void UpdateWeaponReadinessMarker(UnitState unit)
+        {
+            if (!unitWeaponReadinessMarkers.TryGetValue(unit.Id, out GameObject marker))
+            {
+                return;
+            }
+
+            string targetId = string.IsNullOrEmpty(unit.AttackTargetId) ? unit.CurrentTargetId : unit.AttackTargetId;
+            bool hasTarget = !string.IsNullOrEmpty(targetId);
+            bool isVisible = unit.IsActive
+                && !unit.IsDestroyed
+                && hasTarget
+                && unit.CombatWeaponRange > 0f;
+            marker.SetActive(isVisible);
+            if (!isVisible)
+            {
+                return;
+            }
+
+            bool blocked = unit.IsHeatLocked || !IsTargetInWeaponRange(unit, targetId);
+            bool cooling = !blocked && unit.IsWeaponCoolingDown;
+            float readiness = Mathf.Clamp01(unit.WeaponReadinessRatio);
+            float pulse = blocked
+                ? 0.96f + Mathf.Sin(Time.time * 6.2f) * 0.10f
+                : cooling
+                    ? 0.92f + Mathf.Sin(Time.time * 4.8f) * 0.08f
+                    : 0.98f + Mathf.Sin(Time.time * 3.2f) * 0.04f;
+            float baseScale = blocked ? 1.02f : cooling ? Mathf.Lerp(0.72f, 0.96f, readiness) : 0.88f;
+            marker.transform.position = GroundMarkerPosition(unit.MissionPosition, 0.095f);
+            marker.transform.localScale = new Vector3(baseScale * pulse, 0.012f, baseScale * pulse);
+            AssignMaterial(
+                marker,
+                blocked ? "WeaponReadinessBlocked" : cooling ? "WeaponReadinessCooling" : "WeaponReadinessReady",
+                blocked
+                    ? new Color(1f, 0.16f, 0.10f, 0.36f)
+                    : cooling
+                        ? new Color(1f, 0.62f, 0.14f, 0.30f)
+                        : new Color(0.34f, 1f, 0.62f, 0.26f));
         }
 
         private void UpdateTargetLine(UnitState unit)
