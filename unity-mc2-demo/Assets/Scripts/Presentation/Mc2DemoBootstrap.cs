@@ -151,6 +151,7 @@ namespace MC2Demo.Presentation
         private readonly Dictionary<string, GameObject> unitSelectionMarkers = new();
         private readonly Dictionary<string, GameObject> unitOrderMarkers = new();
         private readonly Dictionary<string, GameObject> unitFocusMarkers = new();
+        private readonly Dictionary<string, GameObject> unitDamageWarningMarkers = new();
         private readonly Dictionary<string, GameObject> unitRangeMarkers = new();
         private readonly Dictionary<string, GameObject> unitCommanderAnchors = new();
         private readonly Dictionary<string, GameObject> unitCommanderBeacons = new();
@@ -511,6 +512,7 @@ namespace MC2Demo.Presentation
             unitSelectionMarkers.Clear();
             unitOrderMarkers.Clear();
             unitFocusMarkers.Clear();
+            unitDamageWarningMarkers.Clear();
             unitRangeMarkers.Clear();
             unitCommanderAnchors.Clear();
             unitCommanderBeacons.Clear();
@@ -2165,6 +2167,8 @@ namespace MC2Demo.Presentation
             bool squadFocusFxOk = squadFocusFx.IndexOf("SquadFocus=ring+pressure", StringComparison.Ordinal) >= 0;
             string threatFocusFx = ThreatFocusCueSummary();
             bool threatFocusFxOk = threatFocusFx.IndexOf("ThreatFocus=ring+warning", StringComparison.Ordinal) >= 0;
+            string playerDamageFx = PlayerDamageCueSummary();
+            bool playerDamageFxOk = playerDamageFx.IndexOf("PlayerDamage=warning+critical", StringComparison.Ordinal) >= 0;
             string sectionFx = DemoUnitView.SectionDamageCueSummary();
             bool sectionFxOk = sectionFx.IndexOf("Arms=missing-socket+flag", StringComparison.Ordinal) >= 0
                 && sectionFx.IndexOf("Legs=collapse+red-cross", StringComparison.Ordinal) >= 0
@@ -2237,6 +2241,8 @@ namespace MC2Demo.Presentation
                 + squadFocusFx
                 + " threatFocusFx="
                 + threatFocusFx
+                + " playerDamageFx="
+                + playerDamageFx
                 + " sectionFx="
                 + sectionFx
                 + " heatFx="
@@ -2289,6 +2295,7 @@ namespace MC2Demo.Presentation
                     && targetLockFxOk
                     && squadFocusFxOk
                     && threatFocusFxOk
+                    && playerDamageFxOk
                     && sectionFxOk
                     && heatFxOk
                     && objectiveFxOk
@@ -2336,6 +2343,11 @@ namespace MC2Demo.Presentation
         private static string ThreatFocusCueSummary()
         {
             return "ThreatFocus=ring+warning";
+        }
+
+        private static string PlayerDamageCueSummary()
+        {
+            return "PlayerDamage=warning+critical";
         }
 
         private bool CombatTempoTextMatchesState(string tempoText)
@@ -5922,6 +5934,11 @@ namespace MC2Demo.Presentation
                     "CommandFocus",
                     new Color(1f, 0.58f, 0.12f, 0.48f),
                     new Vector3(1.18f, 0.016f, 1.18f));
+                unitDamageWarningMarkers[unit.Id] = CreateMarkerDisc(
+                    unit.Id + " Damage Warning",
+                    "PlayerDamageWarning",
+                    new Color(1f, 0.44f, 0.10f, 0.36f),
+                    new Vector3(1.16f, 0.018f, 1.16f));
                 unitRangeMarkers[unit.Id] = CreateMarkerDisc(
                     unit.Id + " Weapon Range",
                     "CommandWeaponRange",
@@ -5983,6 +6000,7 @@ namespace MC2Demo.Presentation
                 UpdateSelectionMarker(unit);
                 UpdateOrderMarker(unit);
                 UpdateFocusMarker(unit);
+                UpdatePlayerDamageWarningMarker(unit);
                 UpdateRangeMarker(unit);
                 UpdateTargetLine(unit);
             }
@@ -6129,6 +6147,37 @@ namespace MC2Demo.Presentation
                 float scale = Mathf.Clamp(radius / 95f, 1.1f, 4.2f);
                 marker.transform.localScale = new Vector3(scale, 0.016f, scale);
             }
+        }
+
+        private void UpdatePlayerDamageWarningMarker(UnitState unit)
+        {
+            if (!unitDamageWarningMarkers.TryGetValue(unit.Id, out GameObject marker))
+            {
+                return;
+            }
+
+            bool hasSectionPenalty = unit.MobilityRatio < 0.99f || unit.FirepowerRatio < 0.99f;
+            bool isVisible = unit.IsActive
+                && !unit.IsDestroyed
+                && (unit.Structure < 0.82f || hasSectionPenalty);
+            marker.SetActive(isVisible);
+            if (!isVisible)
+            {
+                return;
+            }
+
+            bool isCritical = unit.Structure <= 0.45f
+                || unit.MobilityRatio <= 0.55f
+                || unit.FirepowerRatio <= 0.55f;
+            float pulseSpeed = isCritical ? 7.2f : 4.8f;
+            float pulse = 0.96f + Mathf.Sin(Time.time * pulseSpeed) * (isCritical ? 0.10f : 0.06f);
+            float scale = (isCritical ? 1.34f : 1.14f) * pulse;
+            marker.transform.position = GroundMarkerPosition(unit.MissionPosition, 0.115f);
+            marker.transform.localScale = new Vector3(scale, 0.018f, scale);
+            AssignMaterial(
+                marker,
+                isCritical ? "PlayerDamageCritical" : "PlayerDamageWarning",
+                isCritical ? new Color(1f, 0.12f, 0.08f, 0.48f) : new Color(1f, 0.46f, 0.10f, 0.34f));
         }
 
         private void UpdateRangeMarker(UnitState unit)
