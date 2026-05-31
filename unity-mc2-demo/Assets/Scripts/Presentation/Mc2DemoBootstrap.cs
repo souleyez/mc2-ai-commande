@@ -2134,6 +2134,7 @@ namespace MC2Demo.Presentation
             LoadoutCompactCheck targetCheck = BuildLoadoutTargetControlsCompactCheck();
             LoadoutCompactCheck nudgeCheck = BuildLoadoutNudgeCompactCheck();
             LoadoutCompactCheck selectedSummaryCheck = BuildLoadoutSelectedSummaryCompactCheck(unit, preview, weapons[0]);
+            LoadoutCompactCheck componentDetailCheck = BuildLoadoutComponentDetailCompactCheck();
             LoadoutCompactCheck routeCheck = BuildLoadoutRouteCompactCheck();
             LoadoutCompactCheck baySummaryCheck = BuildMechLabSummaryLabelCheck();
             LoadoutCompactCheck actionCopyCheck = BuildMechLabActionCopyCheck();
@@ -2159,6 +2160,8 @@ namespace MC2Demo.Presentation
                 + " "
                 + selectedSummaryCheck.Summary
                 + " "
+                + componentDetailCheck.Summary
+                + " "
                 + routeCheck.Summary
                 + " "
                 + baySummaryCheck.Summary
@@ -2179,6 +2182,7 @@ namespace MC2Demo.Presentation
                     && targetCheck.Accepted
                     && nudgeCheck.Accepted
                     && selectedSummaryCheck.Accepted
+                    && componentDetailCheck.Accepted
                     && routeCheck.Accepted
                     && baySummaryCheck.Accepted
                     && actionCopyCheck.Accepted
@@ -2625,6 +2629,52 @@ namespace MC2Demo.Presentation
             return new LoadoutCompactCheck(
                 accepted,
                 "selectedSummary=" + selectedSummary);
+        }
+
+        private static LoadoutCompactCheck BuildLoadoutComponentDetailCompactCheck()
+        {
+            string armorDetail = SyntheticComponentDetail(LoadoutItemCategory.ArmorPlate, "Armor Plate");
+            string sinkDetail = SyntheticComponentDetail(LoadoutItemCategory.HeatSink, "Heat Sink");
+            bool accepted = armorDetail.IndexOf("A+1", StringComparison.Ordinal) >= 0
+                && armorDetail.IndexOf("W0.5", StringComparison.Ordinal) >= 0
+                && sinkDetail.IndexOf("C+1.5", StringComparison.Ordinal) >= 0
+                && sinkDetail.IndexOf("W1", StringComparison.Ordinal) >= 0
+                && armorDetail.IndexOf("Hard", StringComparison.OrdinalIgnoreCase) < 0
+                && armorDetail.IndexOf("Load ", StringComparison.OrdinalIgnoreCase) < 0
+                && armorDetail.IndexOf("Plate", StringComparison.OrdinalIgnoreCase) < 0
+                && sinkDetail.IndexOf("Cool", StringComparison.OrdinalIgnoreCase) < 0
+                && sinkDetail.IndexOf("Load ", StringComparison.OrdinalIgnoreCase) < 0
+                && sinkDetail.IndexOf("Heat ", StringComparison.OrdinalIgnoreCase) < 0
+                && armorDetail.Length <= 26
+                && sinkDetail.Length <= 26;
+            return new LoadoutCompactCheck(
+                accepted,
+                "componentDetail="
+                + armorDetail
+                + "/"
+                + sinkDetail);
+        }
+
+        private static string SyntheticComponentDetail(string category, string displayName)
+        {
+            CombatLoadoutPreviewGridCell cell = new(
+                0,
+                0,
+                -1,
+                "synthetic-" + category,
+                displayName,
+                category,
+                "");
+            CombatLoadoutPreview preview = new(
+                new LoadoutValidationResult(),
+                1,
+                1,
+                1,
+                new[] { cell },
+                Array.Empty<CombatLoadoutPreviewItem>(),
+                0f,
+                0f);
+            return LoadoutBlockDetailText(null, preview, cell, 0, 0, false, default, -1);
         }
 
         private DebriefSummaryAssertionResult BuildDebriefSummaryAssertion()
@@ -8897,12 +8947,12 @@ namespace MC2Demo.Presentation
             string compactShapeText = LoadoutBlockCompactShapeText(cells, shapeText);
             if (detailCell.Category == LoadoutItemCategory.ArmorPlate)
             {
-                return "Armor Plate  Hard +1  Load 0.5  " + compactShapeText;
+                return "Armor  A+1 W0.5  " + compactShapeText;
             }
 
             if (detailCell.Category == LoadoutItemCategory.HeatSink)
             {
-                return "Heat Sink  Cool +1.5  Load 1  " + compactShapeText;
+                return "Sink  C+1.5 W1  " + compactShapeText;
             }
 
             CombatWeaponDefinition weapon = LoadoutWeaponForCell(unit, detailCell);
