@@ -224,7 +224,7 @@ Current demo behavior:
 - keeps the current active objective readable with a compact target guide ring and beacon
 - keeps objective direction readable with a thin route line from the commander mech to the active target
 - makes active objective target damage readable by tinting guide and route cues toward damaged and critical states
-- keeps target structures readable with persistent scorch, smoke, flame, and collapse cues
+- keeps target structures readable with persistent scorch, smoke, flame, collapse dust, and rubble/debris cues
 - resolves temporary weapon cooldown, damage, cockpit/torso/arms/legs sections,
   and destruction
 - keeps destroyed cockpit, arm, and leg sections readable from the tactical view, including a short cockpit ejection chute and landing cue

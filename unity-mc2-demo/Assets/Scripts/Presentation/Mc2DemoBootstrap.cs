@@ -2212,7 +2212,7 @@ namespace MC2Demo.Presentation
             string jetFx = DemoUnitView.JetCueSummary();
             bool jetFxOk = jetFx.IndexOf("Jet=takeoff+trail+landing", StringComparison.Ordinal) >= 0;
             string structureFx = DemoStructureView.StructureDamageCueSummary();
-            bool structureFxOk = structureFx.IndexOf("Structure=scar+smoke+collapse", StringComparison.Ordinal) >= 0;
+            bool structureFxOk = structureFx.IndexOf("Structure=scar+smoke+collapse+rubble", StringComparison.Ordinal) >= 0;
             string scriptFx = ScriptEventCueSummary();
             bool scriptFxOk = scriptFx.IndexOf("ScriptCue=ring+beacon+signal", StringComparison.Ordinal) >= 0;
             string resultFx = MissionResultCueSummary();

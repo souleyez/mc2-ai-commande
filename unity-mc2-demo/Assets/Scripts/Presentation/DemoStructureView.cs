@@ -69,7 +69,7 @@ namespace MC2Demo.Presentation
 
         public static string StructureDamageCueSummary()
         {
-            return "Structure=scar+smoke+collapse";
+            return "Structure=scar+smoke+collapse+rubble";
         }
 
         private void ApplyPersistentDamageCues()
@@ -128,8 +128,28 @@ namespace MC2Demo.Presentation
         private void SpawnDestructionEffects()
         {
             Vector3 center = GroundedPosition(Structure.MissionPosition, liveScale.y) + new Vector3(0f, liveScale.y * 0.25f, 0f);
+            Vector3 ground = GroundedPosition(Structure.MissionPosition, 0.08f);
             CreateEffect("Structure Blast", PrimitiveType.Sphere, center, new Color(1f, 0.42f, 0.08f, 0.72f), 0.55f, new Vector3(0.4f, 0.4f, 0.4f), new Vector3(4.6f, 1.6f, 4.6f));
             CreateEffect("Structure Smoke", PrimitiveType.Sphere, center + new Vector3(0f, 0.5f, 0f), new Color(0.12f, 0.12f, 0.12f, 0.52f), 1.8f, new Vector3(0.9f, 0.5f, 0.9f), new Vector3(3.8f, 3.2f, 3.8f));
+            CreateEffect("Structure Collapse Dust Ring", PrimitiveType.Cylinder, ground, new Color(0.44f, 0.36f, 0.26f, 0.38f), 0.72f, new Vector3(0.72f, 0.018f, 0.72f), new Vector3(3.4f, 0.006f, 3.4f));
+            SpawnCollapseDebris(center);
+        }
+
+        private void SpawnCollapseDebris(Vector3 center)
+        {
+            Color hot = new(1f, 0.38f, 0.08f, 0.72f);
+            Color dark = new(0.18f, 0.13f, 0.09f, 0.82f);
+            SpawnCollapseDebrisPiece(center, new Vector3(1.10f, 0.42f, 0.55f), hot, 0.18f, 1.8f);
+            SpawnCollapseDebrisPiece(center, new Vector3(-0.92f, 0.28f, 0.70f), dark, 0.20f, 2.0f);
+            SpawnCollapseDebrisPiece(center, new Vector3(0.48f, 0.36f, -1.04f), dark, 0.16f, 1.9f);
+            SpawnCollapseDebrisPiece(center, new Vector3(-0.60f, 0.34f, -0.80f), hot, 0.14f, 1.7f);
+        }
+
+        private void SpawnCollapseDebrisPiece(Vector3 center, Vector3 impulse, Color color, float size, float duration)
+        {
+            Vector3 start = center + Vector3.up * 0.10f;
+            Vector3 end = center + impulse;
+            CreateMovingEffect("Structure Collapse Debris", PrimitiveType.Cube, start, end, color, duration, Vector3.one * size, Vector3.one * (size * 0.42f));
         }
 
         private void SpawnDestroyedPersistentCue()
@@ -159,6 +179,21 @@ namespace MC2Demo.Presentation
 
             DemoTransientEffect transient = effect.AddComponent<DemoTransientEffect>();
             transient.Begin(color, duration, fromScale, toScale);
+        }
+
+        private void CreateMovingEffect(string effectName, PrimitiveType primitive, Vector3 start, Vector3 end, Color color, float duration, Vector3 fromScale, Vector3 toScale)
+        {
+            GameObject effect = GameObject.CreatePrimitive(primitive);
+            effect.name = effectName;
+            effect.transform.position = start;
+            Collider effectCollider = effect.GetComponent<Collider>();
+            if (effectCollider != null)
+            {
+                Destroy(effectCollider);
+            }
+
+            DemoTransientEffect transient = effect.AddComponent<DemoTransientEffect>();
+            transient.BeginMoving(color, duration, fromScale, toScale, end);
         }
 
         private void CreatePersistentCue(
