@@ -1,0 +1,9 @@
+# Proves HangarAttacked wakes infantry ambush only after the airfield patrol beat is armed.
+assert-encounter-pacing
+command squad move 3136 -789
+advance 12
+assert-encounter-pacing
+command squad attack structure structure-1-0
+advance 8
+assert-encounter-pacing
+report

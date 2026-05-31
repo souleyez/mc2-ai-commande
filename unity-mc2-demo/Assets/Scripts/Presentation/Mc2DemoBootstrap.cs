@@ -254,10 +254,7 @@ namespace MC2Demo.Presentation
             {
                 mission.Tick(Time.deltaTime);
                 scriptBridge?.CaptureFrame();
-                CaptureCombatEvents();
-                CaptureObjectiveEvents();
-                CaptureUnitActivationEvents();
-                CaptureScriptEvents();
+                CaptureMissionTickEvents();
                 HandleWorldClick();
             }
 
@@ -3415,6 +3412,7 @@ namespace MC2Demo.Presentation
                 float delta = Mathf.Min(StepSeconds, clampedSeconds - step * StepSeconds);
                 mission.Tick(delta);
                 scriptBridge?.CaptureFrame();
+                CaptureMissionTickEvents();
             }
 
             AddCombatLogLine("CLI advance: " + clampedSeconds.ToString("0.##", CultureInfo.InvariantCulture) + "s");
@@ -3897,6 +3895,14 @@ namespace MC2Demo.Presentation
                 duration,
                 new Vector3(startRadius, height, startRadius),
                 new Vector3(endRadius, height * 0.35f, endRadius));
+        }
+
+        private void CaptureMissionTickEvents()
+        {
+            CaptureCombatEvents();
+            CaptureObjectiveEvents();
+            CaptureUnitActivationEvents();
+            CaptureScriptEvents();
         }
 
         private void CaptureObjectiveEvents()
