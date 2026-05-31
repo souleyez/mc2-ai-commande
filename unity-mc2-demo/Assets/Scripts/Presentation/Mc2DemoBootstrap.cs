@@ -2135,6 +2135,8 @@ namespace MC2Demo.Presentation
             bool weaponFxOk = weaponFx.IndexOf("Energy=beam+pillar+muzzle", StringComparison.Ordinal) >= 0
                 && weaponFx.IndexOf("Missile=arc+blast+salvo", StringComparison.Ordinal) >= 0
                 && weaponFx.IndexOf("Ballistic=tracer+sparks+muzzle", StringComparison.Ordinal) >= 0;
+            string muzzleFx = WeaponMuzzlePointCueSummary();
+            bool muzzleFxOk = muzzleFx.IndexOf("WeaponMuzzlePoint=energy+missile+ballistic", StringComparison.Ordinal) >= 0;
             string armorFx = ArmorMitigationCueSummary();
             bool armorFxOk = armorFx.IndexOf("ArmorMitigation=glint+spark", StringComparison.Ordinal) >= 0;
             string sectionHitFx = SectionHitPointCueSummary();
@@ -2193,6 +2195,8 @@ namespace MC2Demo.Presentation
                 + MissionMapBackButtonLabel
                 + " fx="
                 + weaponFx
+                + " muzzleFx="
+                + muzzleFx
                 + " armorFx="
                 + armorFx
                 + " sectionHitFx="
@@ -2241,6 +2245,7 @@ namespace MC2Demo.Presentation
                     && topModeOk
                     && fundsOk
                     && weaponFxOk
+                    && muzzleFxOk
                     && armorFxOk
                     && sectionHitFxOk
                     && targetLineFxOk
@@ -4163,7 +4168,7 @@ namespace MC2Demo.Presentation
         private void SpawnCombatEffect(CombatEvent combatEvent)
         {
             if (combatEvent.Damage <= 0f
-                || !TryGetCombatPoint(combatEvent.AttackerId, out Vector3 attackerPoint)
+                || !TryGetCombatMuzzlePoint(combatEvent.AttackerId, combatEvent.WeaponType, out Vector3 attackerPoint)
                 || !TryGetCombatHitPoint(combatEvent.TargetId, combatEvent.SectionName, out Vector3 targetPoint))
             {
                 return;
@@ -4195,6 +4200,17 @@ namespace MC2Demo.Presentation
 
             point = Vector3.zero;
             return false;
+        }
+
+        private bool TryGetCombatMuzzlePoint(string id, string weaponType, out Vector3 point)
+        {
+            if (unitViews.TryGetValue(id, out DemoUnitView unitView) && unitView != null && unitView.Unit != null)
+            {
+                point = unitView.transform.TransformPoint(CombatWeaponMuzzleLocalPoint(weaponType));
+                return true;
+            }
+
+            return TryGetCombatPoint(id, out point);
         }
 
         private bool TryGetCombatHitPoint(string id, string sectionName, out Vector3 point)
@@ -4231,6 +4247,26 @@ namespace MC2Demo.Presentation
             }
 
             return new Vector3(0f, 0.18f, 0.20f);
+        }
+
+        private static Vector3 CombatWeaponMuzzleLocalPoint(string weaponType)
+        {
+            if (ContainsWeaponType(weaponType, "Missile"))
+            {
+                return new Vector3(0f, 0.72f, -0.18f);
+            }
+
+            if (ContainsWeaponType(weaponType, "Ballistic"))
+            {
+                return new Vector3(0.58f, 0.18f, 0.10f);
+            }
+
+            if (ContainsWeaponType(weaponType, "Energy"))
+            {
+                return new Vector3(-0.58f, 0.20f, 0.12f);
+            }
+
+            return new Vector3(0f, 0.46f, 0.20f);
         }
 
         private static bool IsCombatSectionName(string sectionName, string expected)
@@ -4295,6 +4331,11 @@ namespace MC2Demo.Presentation
         private static string WeaponFxCueSummary()
         {
             return "Energy=beam+pillar+muzzle Missile=arc+blast+salvo Ballistic=tracer+sparks+muzzle";
+        }
+
+        private static string WeaponMuzzlePointCueSummary()
+        {
+            return "WeaponMuzzlePoint=energy+missile+ballistic";
         }
 
         private static string ArmorMitigationCueSummary()

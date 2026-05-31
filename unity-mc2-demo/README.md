@@ -45,6 +45,7 @@ Current demo behavior:
 - shows a subtle weapon range ring for selected, detached, attacking, or firing units
 - varies tactical target-line color and thickness for ready, cooling, and blocked shots
 - renders short weapon beams, hit flashes, and impact bursts for combat events, with energy pillar/ring, missile blast, and ballistic spark cues
+- starts weapon traces from family-specific mech hardpoints for energy, missile, and ballistic fire
 - offsets unit hit effects toward cockpit, arms, legs, or torso based on the reported damage section
 - flashes short armor mitigation glints and sparks when hardness absorbs part of an incoming hit
 - shows animated limb breakoff, persistent missing-part flags, red leg-collapse cues, section sparks, smoke, cockpit ejection cues, and destroyed-mech wreck markers
@@ -182,6 +183,7 @@ Current demo behavior:
 - summarizes completed objectives, enemy kills, and damaged player mechs in the debrief without expanding the panel
 - auto-acquires hostile units in weapon range
 - gives missile, ballistic, and energy attacks distinct muzzle, trace, and hit accents
+- starts those weapon traces from simple arm or shoulder hardpoints instead of the mech center
 - lands unit hit effects on section-aware cockpit, arm, leg, or torso points instead of always at unit center
 - makes ready, cooling, and blocked weapon target lines read differently in the tactical view
 - makes armor hardness mitigation visible through compact battlefield glint/spark cues
