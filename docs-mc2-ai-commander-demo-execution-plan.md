@@ -114,6 +114,7 @@ The Unity demo currently supports:
 - disabled filler targets now label themselves Lock or Stk instead of showing a misleading next action
 - selected-weapon Reset stays disabled, labeled, and colored as Base until that weapon has a placement override to clear
 - the fit Apply action labels and colors itself Done, Invalid, Stock, or Apply so disabled apply states do not rely only on the status line
+- the fitting Apply/Reset strip uses compact Fit OK, Pending, and Stock status text so the status lane stays readable beside the buttons
 - mech bay draft/apply/reset boundaries for temporary demo fits, with the draft reset button labeled and colored as Clean or Reset
 - applied demo fit handoff into combat readiness, range, heat, cooldown, and weapon display stats
 - applied armor hardness reduces incoming damage and applied heat sinks increase cooling
@@ -830,6 +831,7 @@ Tasks:
 - The loadout compact smoke now also asserts the nudge pad labels and geometry, guarding `N/W/E/S` plus `Move OK/Block` feedback as compact selected-weapon movement controls.
 - The loadout compact smoke now also asserts the selected-weapon summary row, guarding the compact `W# Base/Moved`, `D/R/CD/H/W/C`, and `WxH` readouts that explain the active weapon block.
 - The loadout compact assertion is now split into small check helpers, keeping the growing UI contract readable before more fitting-card density rules are added.
+- The fitting Apply/Reset strip now uses compact Fit OK, Pending, and Stock state text, guarded by the loadout compact smoke.
 - The Save Slot title, result row, reset confirmation, and New Company confirmation now use calmer player-facing wording guarded by the loadout compact smoke.
 - The Contracts panel now uses simpler player-facing task-card and navigation labels such as Available Contracts, Mission map ready, Launch, Back to Battle, and Back to Debrief guarded by the debrief smoke.
 - The System and Debrief restart action now reads Restart Mission, and the System close action reads Back, keeping the pause/system flow closer to player intent and guarded by the debrief smoke.

@@ -105,6 +105,7 @@ namespace MC2Demo.Presentation
         private const string MechLabRosterStateLabel = "Squad State ";
         private const string LoadoutStockShortPrefix = "Stock short: ";
         private const string LoadoutFitAppliedStatusText = "Fit applied";
+        private const string LoadoutEditPendingLabel = "Pending";
         private const float LoadoutResetButtonRightOffset = 72f;
         private const float LoadoutResetButtonWidth = 64f;
         private const float LoadoutSelectedResetButtonWidth = 50f;
@@ -2569,6 +2570,9 @@ namespace MC2Demo.Presentation
             string stockApplyLabel = LoadoutApplyButtonLabel(true, preview, false);
             string resetLabel = LoadoutDraftResetButtonLabel(false);
             string dirtyResetLabel = LoadoutDraftResetButtonLabel(true);
+            string cleanStatus = LoadoutEditStatusText(true, false, "");
+            string pendingStatus = LoadoutEditStatusText(true, true, "");
+            string stockStatus = LoadoutEditStatusText(false, true, "armor plates +1");
             bool readyApplyOk = string.Equals(readyApplyLabel, "Apply", StringComparison.Ordinal)
                 || string.Equals(readyApplyLabel, "Invalid", StringComparison.Ordinal);
             bool stockApplyOk = string.Equals(stockApplyLabel, "Stock", StringComparison.Ordinal)
@@ -2587,7 +2591,13 @@ namespace MC2Demo.Presentation
                 && LoadoutStockShortPrefix.StartsWith("Stock short", StringComparison.Ordinal)
                 && LoadoutStockShortPrefix.IndexOf("Inventory", StringComparison.OrdinalIgnoreCase) < 0
                 && string.Equals(LoadoutFitAppliedStatusText, "Fit applied", StringComparison.Ordinal)
-                && LoadoutFitAppliedStatusText.IndexOf("demo", StringComparison.OrdinalIgnoreCase) < 0;
+                && LoadoutFitAppliedStatusText.IndexOf("demo", StringComparison.OrdinalIgnoreCase) < 0
+                && string.Equals(cleanStatus, LoadoutFitOkLabel, StringComparison.Ordinal)
+                && string.Equals(pendingStatus, LoadoutEditPendingLabel, StringComparison.Ordinal)
+                && stockStatus.StartsWith("Stock ", StringComparison.Ordinal)
+                && stockStatus.IndexOf("Applied", StringComparison.OrdinalIgnoreCase) < 0
+                && stockStatus.IndexOf("Pending fit", StringComparison.OrdinalIgnoreCase) < 0
+                && stockStatus.Length <= 32;
             return new LoadoutCompactCheck(
                 accepted,
                 "edit="
@@ -2600,6 +2610,12 @@ namespace MC2Demo.Presentation
                 + stockApplyLabel
                 + " status="
                 + LoadoutFitAppliedStatusText
+                + " editState="
+                + cleanStatus
+                + "/"
+                + pendingStatus
+                + "/"
+                + stockStatus
                 + " applyW="
                 + LoadoutApplyButtonWidth.ToString(CultureInfo.InvariantCulture)
                 + " resetW="
@@ -9963,9 +9979,10 @@ namespace MC2Demo.Presentation
                     : new Color(0.58f, 0.82f, 1f, 1f);
             GUI.Label(
                 new Rect(x, y, width - LoadoutEditStatusReservedWidth, 18f),
-                !hasInventory
-                    ? "Stock " + TruncateText(FirstInventoryAvailabilityError(availability), 28)
-                    : hasPendingEdits ? "Pending fit" : "Applied fit");
+                LoadoutEditStatusText(
+                    hasInventory,
+                    hasPendingEdits,
+                    FirstInventoryAvailabilityError(availability)));
             GUI.color = previousColor;
 
             bool previousEnabled = GUI.enabled;
@@ -10008,6 +10025,16 @@ namespace MC2Demo.Presentation
             }
 
             return hasInventory ? "Apply" : "Stock";
+        }
+
+        private static string LoadoutEditStatusText(bool hasInventory, bool hasPendingEdits, string stockIssue)
+        {
+            if (!hasInventory)
+            {
+                return "Stock " + TruncateText(stockIssue, 24);
+            }
+
+            return hasPendingEdits ? LoadoutEditPendingLabel : LoadoutFitOkLabel;
         }
 
         private static Color LoadoutApplyButtonColor(bool hasPendingEdits, CombatLoadoutPreview preview, bool hasInventory)

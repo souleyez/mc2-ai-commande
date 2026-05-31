@@ -82,6 +82,7 @@ Current demo behavior:
 - lets projected filler cells cycle between armor, heat sink, and empty to preview loadout tradeoffs
 - disables, labels, and colors the selected-weapon Reset action as Base until that weapon has a placement override to clear
 - labels and colors the fit Apply action as Done, Invalid, Stock, or Apply so disabled states are visible in the button itself
+- uses compact Fit OK, Pending, and Stock status text in the fitting Apply/Reset strip
 - marks mech bay edits as draft/applied and labels the draft reset action as Clean or Reset depending on whether there is anything to revert
 - hands applied demo fits to combat readiness, range, heat, cooldown, and weapon display stats
 - applies armor hardness as simple incoming damage reduction and heat sinks as faster cooling
