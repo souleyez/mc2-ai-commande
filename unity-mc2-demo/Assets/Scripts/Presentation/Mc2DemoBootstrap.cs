@@ -2145,6 +2145,7 @@ namespace MC2Demo.Presentation
             LoadoutCompactCheck targetCheck = BuildLoadoutTargetControlsCompactCheck();
             LoadoutCompactCheck nudgeCheck = BuildLoadoutNudgeCompactCheck();
             LoadoutCompactCheck placementHeaderCheck = BuildLoadoutPlacementHeaderCompactCheck(unit, preview);
+            LoadoutCompactCheck blockLabelCheck = BuildLoadoutBlockLabelCompactCheck(unit, preview);
             LoadoutCompactCheck selectedSummaryCheck = BuildLoadoutSelectedSummaryCompactCheck(unit, preview, weapons[0]);
             LoadoutCompactCheck componentDetailCheck = BuildLoadoutComponentDetailCompactCheck();
             LoadoutCompactCheck openSlotDetailCheck = BuildLoadoutOpenSlotDetailCompactCheck();
@@ -2174,6 +2175,8 @@ namespace MC2Demo.Presentation
                 + " "
                 + placementHeaderCheck.Summary
                 + " "
+                + blockLabelCheck.Summary
+                + " "
                 + selectedSummaryCheck.Summary
                 + " "
                 + componentDetailCheck.Summary
@@ -2202,6 +2205,7 @@ namespace MC2Demo.Presentation
                     && targetCheck.Accepted
                     && nudgeCheck.Accepted
                     && placementHeaderCheck.Accepted
+                    && blockLabelCheck.Accepted
                     && selectedSummaryCheck.Accepted
                     && componentDetailCheck.Accepted
                     && openSlotDetailCheck.Accepted
@@ -2730,6 +2734,46 @@ namespace MC2Demo.Presentation
                 && header.IndexOf("  D ", StringComparison.Ordinal) < 0
                 && header.Length <= 32;
             return new LoadoutCompactCheck(accepted, "placementHeader=" + header);
+        }
+
+        private static LoadoutCompactCheck BuildLoadoutBlockLabelCompactCheck(UnitState unit, CombatLoadoutPreview preview)
+        {
+            string weaponLabel = LoadoutBlockLabel(unit, LoadoutCellForSelectedWeapon(preview, 0));
+            string armorLabel = LoadoutBlockLabel(
+                null,
+                new CombatLoadoutPreviewGridCell(
+                    0,
+                    0,
+                    -1,
+                    "synthetic-armor",
+                    "Armor Plate",
+                    LoadoutItemCategory.ArmorPlate,
+                    ""));
+            string sinkLabel = LoadoutBlockLabel(
+                null,
+                new CombatLoadoutPreviewGridCell(
+                    0,
+                    0,
+                    -1,
+                    "synthetic-sink",
+                    "Heat Sink",
+                    LoadoutItemCategory.HeatSink,
+                    ""));
+            bool accepted = weaponLabel.StartsWith("1 ", StringComparison.Ordinal)
+                && weaponLabel.IndexOf("Autocannon", StringComparison.OrdinalIgnoreCase) < 0
+                && weaponLabel.Length <= 12
+                && string.Equals(armorLabel, "A+", StringComparison.Ordinal)
+                && string.Equals(sinkLabel, "C+", StringComparison.Ordinal)
+                && armorLabel.IndexOf("ARM", StringComparison.OrdinalIgnoreCase) < 0
+                && sinkLabel.IndexOf("SINK", StringComparison.OrdinalIgnoreCase) < 0;
+            return new LoadoutCompactCheck(
+                accepted,
+                "blockLabel="
+                + weaponLabel
+                + "/"
+                + armorLabel
+                + "/"
+                + sinkLabel);
         }
 
         private LoadoutCompactCheck BuildLoadoutSelectedSummaryCompactCheck(
@@ -9075,12 +9119,12 @@ namespace MC2Demo.Presentation
 
             if (cell.Category == LoadoutItemCategory.ArmorPlate)
             {
-                return "ARM";
+                return "A+";
             }
 
             if (cell.Category == LoadoutItemCategory.HeatSink)
             {
-                return "SINK";
+                return "C+";
             }
 
             CombatWeaponDefinition weapon = LoadoutWeaponForCell(unit, cell);

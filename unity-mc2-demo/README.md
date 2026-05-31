@@ -58,6 +58,7 @@ Current demo behavior:
 - highlights the selected mounted weapon row in the fitting list
 - visualizes the projected mech bay slot grid with placeholder multi-cell weapon shapes
 - renders projected payload items as larger whole-block grid pieces with original-style empty/short/mid/long/component color bands
+- labels armor and heat-sink component blocks as compact `A+` and `C+` grid symbols
 - shows selected or hovered payload details for weapon heat, weight, damage, range, cooldown, and compact component bonuses
 - highlights hovered payload blocks and empty cells so the grid reads as direct block editing instead of tiny cell picking
 - keeps clicked component or empty cells selected with compact slot detail so armor/sink tradeoffs can be inspected without holding the pointer still
