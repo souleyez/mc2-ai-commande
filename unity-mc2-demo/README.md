@@ -39,6 +39,7 @@ Current demo behavior:
 - shows world objective area hints only for the current active objective
 - pulses visible objective activation and completion at the battlefield target position
 - draws tactical target lines from player units to active targets, colored by weapon readiness
+- pulses short target-lock rings when squad weapons auto-acquire or commanded attacks change target
 - shows a compact mission brief with objective progress and target structure integrity
 - keeps mission brief objective names compact enough for North island and Extraction to remain readable in the fixed right HUD
 - shows compact world health bars for damaged or player-targeted enemies and structures
@@ -192,6 +193,7 @@ Current demo behavior:
 - lands unit hit effects on section-aware cockpit, arm, leg, or torso points instead of always at unit center
 - gives those section hit points distinct cockpit, arm, leg, and torso flash accents
 - makes ready, cooling, and blocked weapon target lines read differently in the tactical view
+- shows compact target-lock rings for auto-acquired and commanded targets
 - makes armor hardness mitigation visible through compact battlefield glint/spark cues
 - renders Jet takeoff flame, midair smoke, and landing dust cues
 - shows hot and heat-locked mechs with battlefield vent/lock cues

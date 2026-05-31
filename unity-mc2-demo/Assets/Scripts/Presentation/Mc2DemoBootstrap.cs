@@ -155,6 +155,7 @@ namespace MC2Demo.Presentation
         private readonly Dictionary<string, GameObject> unitCommanderAnchors = new();
         private readonly Dictionary<string, GameObject> unitCommanderBeacons = new();
         private readonly Dictionary<string, GameObject> unitTargetLines = new();
+        private readonly Dictionary<string, string> lastTargetLockByUnit = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, GameObject> unitHealthBarBacks = new();
         private readonly Dictionary<string, GameObject> unitHealthBarFills = new();
         private readonly Dictionary<int, List<GameObject>> objectiveAreaMarkers = new();
@@ -510,6 +511,7 @@ namespace MC2Demo.Presentation
             unitCommanderAnchors.Clear();
             unitCommanderBeacons.Clear();
             unitTargetLines.Clear();
+            lastTargetLockByUnit.Clear();
             unitHealthBarBacks.Clear();
             unitHealthBarFills.Clear();
             objectiveAreaMarkers.Clear();
@@ -2149,6 +2151,8 @@ namespace MC2Demo.Presentation
             bool sectionFlashFxOk = sectionFlashFx.IndexOf("SectionHitCue=cockpit+arms+legs+torso", StringComparison.Ordinal) >= 0;
             string targetLineFx = TargetLineCueSummary();
             bool targetLineFxOk = targetLineFx.IndexOf("TargetLine=ready+cooling+blocked", StringComparison.Ordinal) >= 0;
+            string targetLockFx = TargetLockCueSummary();
+            bool targetLockFxOk = targetLockFx.IndexOf("TargetLock=auto+command", StringComparison.Ordinal) >= 0;
             string sectionFx = DemoUnitView.SectionDamageCueSummary();
             bool sectionFxOk = sectionFx.IndexOf("Arms=missing-socket+flag", StringComparison.Ordinal) >= 0
                 && sectionFx.IndexOf("Legs=collapse+red-cross", StringComparison.Ordinal) >= 0
@@ -2215,6 +2219,8 @@ namespace MC2Demo.Presentation
                 + sectionFlashFx
                 + " targetLineFx="
                 + targetLineFx
+                + " targetLockFx="
+                + targetLockFx
                 + " sectionFx="
                 + sectionFx
                 + " heatFx="
@@ -2264,6 +2270,7 @@ namespace MC2Demo.Presentation
                     && sectionHitFxOk
                     && sectionFlashFxOk
                     && targetLineFxOk
+                    && targetLockFxOk
                     && sectionFxOk
                     && heatFxOk
                     && objectiveFxOk
@@ -2296,6 +2303,11 @@ namespace MC2Demo.Presentation
         private static string TargetLineCueSummary()
         {
             return "TargetLine=ready+cooling+blocked";
+        }
+
+        private static string TargetLockCueSummary()
+        {
+            return "TargetLock=auto+command";
         }
 
         private bool CombatTempoTextMatchesState(string tempoText)
@@ -6119,13 +6131,55 @@ namespace MC2Demo.Presentation
             line.SetActive(isVisible);
             if (!isVisible)
             {
+                lastTargetLockByUnit.Remove(unit.Id);
                 return;
             }
 
             Vector3 unitPoint = unitView.transform.position + Vector3.up * 0.18f;
+            SpawnTargetLockCueIfChanged(unit, targetId, targetPoint);
             targetPoint += Vector3.up * 0.18f;
             PositionLine(line, unitPoint, targetPoint, TargetLineRadius(unit, targetId));
             AssignMaterial(line, TargetLineMaterialName(unit, targetId), TargetLineColor(unit, targetId));
+        }
+
+        private void SpawnTargetLockCueIfChanged(UnitState unit, string targetId, Vector3 targetPoint)
+        {
+            if (unit == null || string.IsNullOrEmpty(unit.Id) || string.IsNullOrEmpty(targetId))
+            {
+                return;
+            }
+
+            if (lastTargetLockByUnit.TryGetValue(unit.Id, out string previousTargetId)
+                && string.Equals(previousTargetId, targetId, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            lastTargetLockByUnit[unit.Id] = targetId;
+            CreateTargetLockCue(targetPoint, unit.HasAttackOrder);
+        }
+
+        private void CreateTargetLockCue(Vector3 targetPoint, bool commanded)
+        {
+            Color color = commanded
+                ? new Color(1f, 0.62f, 0.16f, 0.58f)
+                : new Color(0.30f, 0.92f, 1f, 0.50f);
+            float scale = commanded ? 1.08f : 0.88f;
+            Vector3 center = targetPoint + Vector3.up * 0.18f;
+            CreateImpactDisc(
+                "Target Lock Ring",
+                center,
+                new Color(color.r, color.g, color.b, 0.30f),
+                0.34f,
+                0.20f * scale,
+                0.72f * scale,
+                0.018f);
+            CreateBeam(
+                center + Vector3.up * 0.04f,
+                center + Vector3.up * (0.62f * scale),
+                new Color(color.r, color.g, color.b, 0.48f),
+                0.28f,
+                0.014f * scale);
         }
 
         private GameObject CreateTargetLine(string objectName)
