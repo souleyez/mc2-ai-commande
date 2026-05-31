@@ -152,6 +152,8 @@ namespace MC2Demo.Presentation
         private readonly Dictionary<string, GameObject> unitOrderMarkers = new();
         private readonly Dictionary<string, GameObject> unitFocusMarkers = new();
         private readonly Dictionary<string, GameObject> unitRangeMarkers = new();
+        private readonly Dictionary<string, GameObject> unitCommanderAnchors = new();
+        private readonly Dictionary<string, GameObject> unitCommanderBeacons = new();
         private readonly Dictionary<string, GameObject> unitTargetLines = new();
         private readonly Dictionary<string, GameObject> unitHealthBarBacks = new();
         private readonly Dictionary<string, GameObject> unitHealthBarFills = new();
@@ -504,6 +506,8 @@ namespace MC2Demo.Presentation
             unitOrderMarkers.Clear();
             unitFocusMarkers.Clear();
             unitRangeMarkers.Clear();
+            unitCommanderAnchors.Clear();
+            unitCommanderBeacons.Clear();
             unitTargetLines.Clear();
             unitHealthBarBacks.Clear();
             unitHealthBarFills.Clear();
@@ -2147,6 +2151,8 @@ namespace MC2Demo.Presentation
             bool scriptFxOk = scriptFx.IndexOf("ScriptCue=ring+beacon+signal", StringComparison.Ordinal) >= 0;
             string commandFx = CommandCueSummary();
             bool commandFxOk = commandFx.IndexOf("Command=move+attack+single", StringComparison.Ordinal) >= 0;
+            string commanderFx = CommanderCueSummary();
+            bool commanderFxOk = commanderFx.IndexOf("Commander=anchor+beacon", StringComparison.Ordinal) >= 0;
             string tempoText = CombatTempoText();
             string tempoMode = CombatTempoMode();
             bool tempoOk = CombatTempoTextMatchesState(tempoText);
@@ -2191,6 +2197,8 @@ namespace MC2Demo.Presentation
                 + scriptFx
                 + " commandFx="
                 + commandFx
+                + " commanderFx="
+                + commanderFx
                 + " tempoMode="
                 + tempoMode
                 + " tempo="
@@ -2222,6 +2230,7 @@ namespace MC2Demo.Presentation
                     && structureFxOk
                     && scriptFxOk
                     && commandFxOk
+                    && commanderFxOk
                     && tempoOk
                     && expectedTempoOk
                     && pressureOk
@@ -2230,6 +2239,11 @@ namespace MC2Demo.Presentation
                     && missionBrief.Accepted,
                 Summary = summary
             };
+        }
+
+        private static string CommanderCueSummary()
+        {
+            return "Commander=anchor+beacon";
         }
 
         private bool CombatTempoTextMatchesState(string tempoText)
@@ -5618,6 +5632,16 @@ namespace MC2Demo.Presentation
                     "CommandWeaponRange",
                     new Color(0.25f, 0.82f, 1f, 0.12f),
                     Vector3.one);
+                unitCommanderAnchors[unit.Id] = CreateMarkerDisc(
+                    unit.Id + " Commander Anchor",
+                    "CommanderAnchor",
+                    new Color(1f, 0.78f, 0.18f, 0.34f),
+                    new Vector3(1.08f, 0.018f, 1.08f));
+                unitCommanderBeacons[unit.Id] = CreateMarkerDisc(
+                    unit.Id + " Commander Beacon",
+                    "CommanderBeacon",
+                    new Color(1f, 0.84f, 0.26f, 0.70f),
+                    new Vector3(0.085f, 0.42f, 0.085f));
                 unitTargetLines[unit.Id] = CreateTargetLine(unit.Id + " Target Line");
             }
         }
@@ -5645,8 +5669,10 @@ namespace MC2Demo.Presentation
                 return;
             }
 
+            UnitState commander = FirstPlayerUnit();
             foreach (UnitState unit in mission.PlayerUnits())
             {
+                UpdateCommanderMarker(unit, commander);
                 UpdateSelectionMarker(unit);
                 UpdateOrderMarker(unit);
                 UpdateFocusMarker(unit);
@@ -5667,6 +5693,48 @@ namespace MC2Demo.Presentation
                 }
 
                 view.gameObject.SetActive(unit.IsActive || unit.IsPlayerUnit || unit.IsDestroyed);
+            }
+        }
+
+        private void UpdateCommanderMarker(UnitState unit, UnitState commander)
+        {
+            bool hasAnchor = unitCommanderAnchors.TryGetValue(unit.Id, out GameObject anchor);
+            bool hasBeacon = unitCommanderBeacons.TryGetValue(unit.Id, out GameObject beacon);
+            if (!hasAnchor && !hasBeacon)
+            {
+                return;
+            }
+
+            bool isVisible = commander != null
+                && string.Equals(unit.Id, commander.Id, StringComparison.OrdinalIgnoreCase)
+                && unit.IsActive
+                && !unit.IsDestroyed;
+            if (hasAnchor)
+            {
+                anchor.SetActive(isVisible);
+            }
+
+            if (hasBeacon)
+            {
+                beacon.SetActive(isVisible);
+            }
+
+            if (!isVisible)
+            {
+                return;
+            }
+
+            float pulse = 0.92f + Mathf.Sin(Time.time * 3.8f) * 0.08f;
+            if (hasAnchor)
+            {
+                anchor.transform.position = GroundMarkerPosition(unit.MissionPosition, 0.075f);
+                anchor.transform.localScale = new Vector3(1.08f * pulse, 0.018f, 1.08f * pulse);
+            }
+
+            if (hasBeacon)
+            {
+                beacon.transform.position = CommanderBeaconPosition(unit);
+                beacon.transform.localScale = new Vector3(0.085f * pulse, 0.40f + pulse * 0.08f, 0.085f * pulse);
             }
         }
 
@@ -5968,6 +6036,16 @@ namespace MC2Demo.Presentation
             }
 
             return GroundMarkerPosition(unit.MissionPosition, 1.15f);
+        }
+
+        private Vector3 CommanderBeaconPosition(UnitState unit)
+        {
+            if (unitViews.TryGetValue(unit.Id, out DemoUnitView view) && view != null)
+            {
+                return view.transform.position + Vector3.up * 1.06f;
+            }
+
+            return GroundMarkerPosition(unit.MissionPosition, 1.06f);
         }
 
         private Vector3 StructureHealthBarPosition(StructureState structure)
@@ -7518,18 +7596,29 @@ namespace MC2Demo.Presentation
 
         private string CommanderUnitLabel()
         {
-            if (mission == null)
+            UnitState commander = FirstPlayerUnit();
+            if (commander == null)
             {
                 return "--";
             }
 
-            foreach (UnitState unit in mission.PlayerUnits())
+            string label = string.IsNullOrWhiteSpace(commander.UnitType) ? commander.Id : commander.UnitType;
+            return TruncateText(label, 10);
+        }
+
+        private UnitState FirstPlayerUnit()
+        {
+            if (mission == null)
             {
-                string label = string.IsNullOrWhiteSpace(unit.UnitType) ? unit.Id : unit.UnitType;
-                return TruncateText(label, 10);
+                return null;
             }
 
-            return "--";
+            foreach (UnitState unit in mission.PlayerUnits())
+            {
+                return unit;
+            }
+
+            return null;
         }
 
         private bool HasRecentCombatEvent()
