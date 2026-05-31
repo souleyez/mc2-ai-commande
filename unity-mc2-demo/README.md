@@ -171,7 +171,7 @@ Current demo behavior:
 - estimates contract bounty, repair cost, net funds result, and salvage claims in mission debriefs
 - summarizes completed objectives, enemy kills, and damaged player mechs in the debrief without expanding the panel
 - auto-acquires hostile units in weapon range
-- gives missile, ballistic, and energy attacks distinct muzzle and trace accents
+- gives missile, ballistic, and energy attacks distinct muzzle, trace, and hit accents
 - resolves temporary weapon cooldown, damage, cockpit/torso/arms/legs sections,
   and destruction
 - keeps destroyed cockpit, arm, and leg sections readable from the tactical view

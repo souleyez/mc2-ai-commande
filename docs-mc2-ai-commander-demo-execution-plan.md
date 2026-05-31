@@ -703,7 +703,7 @@ Tasks:
 ### Completed Context
 
 - Battle readability pass has begun with family-specific hit cues: energy beam plus pillar/ring, missile arc plus blast/smoke, and ballistic tracer plus sparks.
-- The combat situation smoke now guards the current weapon FX cue contract with `Energy=beam+pillar Missile=arc+blast Ballistic=tracer+sparks`.
+- The combat situation smoke now guards the current weapon FX cue contract with `Energy=beam+pillar+muzzle Missile=arc+blast+salvo Ballistic=tracer+sparks+muzzle`.
 - The combat situation smoke now also guards the compact battle pulse with explicit quiet, contact, and fire expectations tied to mission events.
 - The combat situation smoke now also guards source-group contact pressure internally, so active Airfield and North groups remain verifiable without occupying default battle HUD space.
 - The combat situation smoke now also guards the commanded Focus contract, keeping the current target readable without exposing internal target ids.
@@ -846,7 +846,7 @@ Tasks:
 - Reserve prep logs and save-result labels now use Reserve Prep wording instead of local/candidate terminology while keeping existing command names stable.
 - The fitting drawer header and selector now use Mech Lab wording, nudging the current IMGUI drawer toward the dedicated Mech Lab surface planned next.
 - Destroyed cockpit, arm, and leg sections now leave persistent tactical-view damage beacons in addition to the existing flashes, detached parts, and ejection effects.
-- Missile, ballistic, and energy attacks now have clearer muzzle and trace accents layered over the existing family-specific combat effects.
+- Missile, ballistic, and energy attacks now have clearer family-specific muzzle, trace, and hit accents layered over the existing primitive combat effects.
 - The debrief now compresses completed objectives, enemy kills, and damaged player mechs into readable summary rows with `+n` overflow counts.
 - A command-file `assert-debrief-summary` hook and `mc2_01-debrief-summary.txt` smoke path now verify result counters and the compact combat summary row.
 - The combat HUD now includes a compact situation row for squad readiness, active hostiles, live targets, and contact tempo above the recent event log.

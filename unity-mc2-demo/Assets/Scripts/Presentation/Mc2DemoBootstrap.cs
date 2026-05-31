@@ -2123,9 +2123,9 @@ namespace MC2Demo.Presentation
             bool fundsOk = string.Equals(funds, "Funds 1,234", StringComparison.Ordinal)
                 && funds.IndexOf("TOKEN", StringComparison.OrdinalIgnoreCase) < 0;
             string weaponFx = WeaponFxCueSummary();
-            bool weaponFxOk = weaponFx.IndexOf("Energy=beam+pillar", StringComparison.Ordinal) >= 0
-                && weaponFx.IndexOf("Missile=arc+blast", StringComparison.Ordinal) >= 0
-                && weaponFx.IndexOf("Ballistic=tracer+sparks", StringComparison.Ordinal) >= 0;
+            bool weaponFxOk = weaponFx.IndexOf("Energy=beam+pillar+muzzle", StringComparison.Ordinal) >= 0
+                && weaponFx.IndexOf("Missile=arc+blast+salvo", StringComparison.Ordinal) >= 0
+                && weaponFx.IndexOf("Ballistic=tracer+sparks+muzzle", StringComparison.Ordinal) >= 0;
             string sectionFx = DemoUnitView.SectionDamageCueSummary();
             bool sectionFxOk = sectionFx.IndexOf("Arms=missing-socket+flag", StringComparison.Ordinal) >= 0
                 && sectionFx.IndexOf("Legs=collapse+red-cross", StringComparison.Ordinal) >= 0
@@ -4162,7 +4162,7 @@ namespace MC2Demo.Presentation
 
         private static string WeaponFxCueSummary()
         {
-            return "Energy=beam+pillar Missile=arc+blast Ballistic=tracer+sparks";
+            return "Energy=beam+pillar+muzzle Missile=arc+blast+salvo Ballistic=tracer+sparks+muzzle";
         }
 
         private static float ImpactScale(string weaponType)
@@ -4288,6 +4288,7 @@ namespace MC2Demo.Presentation
             }
 
             CreateMuzzleFlash(from, color, 0.46f, 0.25f);
+            CreateMissileMuzzleCue(from, direction, color);
             Vector3 side = LateralVector(direction) * 0.12f;
             float arcHeight = Mathf.Clamp(distance * 0.16f, 0.45f, 2.2f);
             for (int index = 0; index < 3; index++)
@@ -4317,6 +4318,7 @@ namespace MC2Demo.Presentation
             Vector3 normalized = direction.normalized;
             Vector3 side = LateralVector(direction) * 0.07f;
             CreateMuzzleFlash(from, new Color(1f, 0.62f, 0.18f, 0.82f), 0.30f, 0.14f);
+            CreateBallisticMuzzleCue(from, direction);
             Vector3 tracerStart = Vector3.Lerp(from, to, 0.58f);
             Vector3 tracerEnd = Vector3.Lerp(from, to, 0.96f);
             CreateBeam(tracerStart, tracerEnd, color, 0.075f, 0.018f);
@@ -4335,9 +4337,11 @@ namespace MC2Demo.Presentation
 
         private void CreateEnergyTrace(Vector3 from, Vector3 to, Color color)
         {
+            Vector3 direction = to - from;
             Color halo = new(color.r, color.g, color.b, 0.26f);
             Color core = new(0.72f, 1f, 1f, 0.92f);
             CreateMuzzleFlash(from, new Color(0.48f, 0.96f, 1f, 0.68f), 0.34f, 0.18f);
+            CreateEnergyMuzzleCue(from, direction, color);
             CreateBeam(from, to, halo, 0.16f, 0.070f);
             CreateBeam(from, to, color, 0.13f, 0.038f);
             CreateBeam(from + Vector3.up * 0.04f, to + Vector3.up * 0.04f, core, 0.08f, 0.016f);
@@ -4353,6 +4357,49 @@ namespace MC2Demo.Presentation
         {
             Vector3 side = Vector3.Cross(direction.normalized, Vector3.up);
             return side.sqrMagnitude <= 0.0001f ? Vector3.right : side.normalized;
+        }
+
+        private void CreateEnergyMuzzleCue(Vector3 from, Vector3 direction, Color color)
+        {
+            Vector3 forward = SafeDirection(direction);
+            CreateImpactDisc(
+                "Energy Muzzle Charge",
+                from + forward * 0.10f + Vector3.up * 0.02f,
+                new Color(0.44f, 1f, 1f, 0.38f),
+                0.18f,
+                0.18f,
+                0.52f,
+                0.018f);
+            CreateBeam(
+                from + Vector3.up * 0.05f,
+                from + forward * 0.42f + Vector3.up * 0.08f,
+                new Color(color.r, color.g, color.b, 0.62f),
+                0.14f,
+                0.026f);
+        }
+
+        private void CreateMissileMuzzleCue(Vector3 from, Vector3 direction, Color color)
+        {
+            Vector3 forward = SafeDirection(direction);
+            Vector3 side = LateralVector(forward) * 0.16f;
+            Vector3 lift = Vector3.up * 0.05f;
+            CreateBeam(from - side + lift, from + forward * 0.46f - side * 0.35f + Vector3.up * 0.12f, color, 0.18f, 0.026f);
+            CreateBeam(from + side + lift, from + forward * 0.46f + side * 0.35f + Vector3.up * 0.12f, color, 0.18f, 0.026f);
+            CreateImpact(from - forward * 0.08f + Vector3.up * 0.02f, new Color(0.16f, 0.15f, 0.13f, 0.36f), false, 0.34f);
+        }
+
+        private void CreateBallisticMuzzleCue(Vector3 from, Vector3 direction)
+        {
+            Vector3 forward = SafeDirection(direction);
+            Vector3 side = LateralVector(forward) * 0.18f;
+            Vector3 center = from + forward * 0.18f + Vector3.up * 0.04f;
+            CreateBeam(center - side, center + side, new Color(1f, 0.76f, 0.20f, 0.62f), 0.10f, 0.012f);
+            CreateBeam(center, center + forward * 0.44f, new Color(1f, 0.90f, 0.42f, 0.74f), 0.09f, 0.018f);
+        }
+
+        private static Vector3 SafeDirection(Vector3 direction)
+        {
+            return direction.sqrMagnitude <= 0.0001f ? Vector3.forward : direction.normalized;
         }
 
         private void CreateMuzzleFlash(Vector3 position, Color color, float scale, float duration)
