@@ -47,6 +47,7 @@ Current demo behavior:
 - renders short weapon beams, hit flashes, and impact bursts for combat events, with energy pillar/ring, missile blast, and ballistic spark cues
 - starts weapon traces from family-specific mech hardpoints for energy, missile, and ballistic fire
 - offsets unit hit effects toward cockpit, arms, legs, or torso based on the reported damage section
+- flashes section-specific cockpit, arm, leg, or torso hit cues at the impact point
 - flashes short armor mitigation glints and sparks when hardness absorbs part of an incoming hit
 - shows animated limb breakoff, persistent missing-part flags, red leg-collapse cues, section sparks, smoke, cockpit ejection cues, and destroyed-mech wreck markers
 - applies simple section penalties: destroyed arms reduce firepower, destroyed legs slow movement and disable Jet
@@ -185,6 +186,7 @@ Current demo behavior:
 - gives missile, ballistic, and energy attacks distinct muzzle, trace, and hit accents
 - starts those weapon traces from simple arm or shoulder hardpoints instead of the mech center
 - lands unit hit effects on section-aware cockpit, arm, leg, or torso points instead of always at unit center
+- gives those section hit points distinct cockpit, arm, leg, and torso flash accents
 - makes ready, cooling, and blocked weapon target lines read differently in the tactical view
 - makes armor hardness mitigation visible through compact battlefield glint/spark cues
 - renders Jet takeoff flame, midair smoke, and landing dust cues

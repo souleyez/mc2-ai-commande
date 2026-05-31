@@ -859,6 +859,7 @@ Tasks:
 - Missile, ballistic, and energy attacks now have clearer family-specific muzzle, trace, and hit accents layered over the existing primitive combat effects.
 - Weapon traces now start from family-specific arm or shoulder hardpoints, so energy, missile, and ballistic fire no longer originates from the mech center.
 - Unit hit effects now land on section-aware cockpit, arm, leg, or torso points, so combat hits line up better with the reported damage section.
+- Section-aware hit points now carry compact cockpit, arm, leg, and torso flash accents, improving hit readability without adding combat HUD rows.
 - Armor hardness mitigation now emits short battlefield glint/spark cues, so armor plates read during hits without adding combat HUD rows.
 - The debrief now compresses completed objectives, enemy kills, and damaged player mechs into readable summary rows with `+n` overflow counts.
 - A command-file `assert-debrief-summary` hook and `mc2_01-debrief-summary.txt` smoke path now verify result counters and the compact combat summary row.
@@ -913,6 +914,7 @@ Tasks:
 - Enemy contact activation now has a smoke-guarded visual cue contract: `ContactWake=ring+beacon+ping`.
 - Weapon muzzle placement now has a smoke-guarded battlefield cue contract: `WeaponMuzzlePoint=energy+missile+ballistic`.
 - Section-aware hit placement now has a smoke-guarded battlefield cue contract: `SectionHitPoint=cockpit+arms+legs+torso`.
+- Section-aware hit flashes now have a smoke-guarded battlefield cue contract: `SectionHitCue=cockpit+arms+legs+torso`.
 - Armor mitigation now has a smoke-guarded battlefield cue contract: `ArmorMitigation=glint+spark`.
 - Weapon target lines now have a smoke-guarded battlefield cue contract: `TargetLine=ready+cooling+blocked`.
 - Visible objective events now have a smoke-guarded battlefield cue contract: `ObjectivePulse=active+complete+target`.

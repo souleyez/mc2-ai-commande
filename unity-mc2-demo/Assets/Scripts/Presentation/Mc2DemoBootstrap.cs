@@ -2141,6 +2141,8 @@ namespace MC2Demo.Presentation
             bool armorFxOk = armorFx.IndexOf("ArmorMitigation=glint+spark", StringComparison.Ordinal) >= 0;
             string sectionHitFx = SectionHitPointCueSummary();
             bool sectionHitFxOk = sectionHitFx.IndexOf("SectionHitPoint=cockpit+arms+legs+torso", StringComparison.Ordinal) >= 0;
+            string sectionFlashFx = SectionHitCueSummary();
+            bool sectionFlashFxOk = sectionFlashFx.IndexOf("SectionHitCue=cockpit+arms+legs+torso", StringComparison.Ordinal) >= 0;
             string targetLineFx = TargetLineCueSummary();
             bool targetLineFxOk = targetLineFx.IndexOf("TargetLine=ready+cooling+blocked", StringComparison.Ordinal) >= 0;
             string sectionFx = DemoUnitView.SectionDamageCueSummary();
@@ -2201,6 +2203,8 @@ namespace MC2Demo.Presentation
                 + armorFx
                 + " sectionHitFx="
                 + sectionHitFx
+                + " sectionFlashFx="
+                + sectionFlashFx
                 + " targetLineFx="
                 + targetLineFx
                 + " sectionFx="
@@ -2248,6 +2252,7 @@ namespace MC2Demo.Presentation
                     && muzzleFxOk
                     && armorFxOk
                     && sectionHitFxOk
+                    && sectionFlashFxOk
                     && targetLineFxOk
                     && sectionFxOk
                     && heatFxOk
@@ -4180,6 +4185,7 @@ namespace MC2Demo.Presentation
             CreateWeaponTrace(attackerPoint, targetPoint, combatEvent, weaponColor);
             CreateImpact(targetPoint, weaponColor, combatEvent.DestroyedTarget, ImpactScale(combatEvent.WeaponType));
             CreateWeaponImpactCue(attackerPoint, targetPoint, combatEvent, weaponColor);
+            CreateSectionHitCue(attackerPoint, targetPoint, combatEvent.SectionName, combatEvent.DestroyedTarget);
             CreateArmorMitigationCue(attackerPoint, targetPoint, combatEvent);
             PulseTarget(combatEvent.TargetId, new Color(1f, 0.9f, 0.52f), combatEvent.DestroyedTarget ? 0.28f : 0.18f);
         }
@@ -4348,6 +4354,11 @@ namespace MC2Demo.Presentation
             return "SectionHitPoint=cockpit+arms+legs+torso";
         }
 
+        private static string SectionHitCueSummary()
+        {
+            return "SectionHitCue=cockpit+arms+legs+torso";
+        }
+
         private static float ImpactScale(string weaponType)
         {
             if (ContainsWeaponType(weaponType, "Missile"))
@@ -4436,6 +4447,52 @@ namespace MC2Demo.Presentation
             CreateBeam(sparkBase, sparkBase + side * 0.62f + Vector3.up * 0.12f, new Color(1f, 0.88f, 0.36f, 0.70f), 0.075f, 0.012f);
             CreateBeam(sparkBase, sparkBase - side * 0.58f + Vector3.up * 0.10f, new Color(1f, 0.64f, 0.18f, 0.62f), 0.070f, 0.010f);
             CreateBeam(sparkBase, sparkBase + Vector3.up * 0.52f, color, 0.065f, 0.010f);
+        }
+
+        private void CreateSectionHitCue(Vector3 from, Vector3 to, string sectionName, bool destroyedTarget)
+        {
+            Vector3 direction = to - from;
+            Vector3 side = LateralVector(direction);
+            float scale = destroyedTarget ? 1.15f : 1f;
+            if (IsCombatSectionName(sectionName, "Cockpit") || IsCombatSectionName(sectionName, "Turret"))
+            {
+                Color cockpit = new(0.62f, 0.96f, 1f, 0.62f);
+                CreateImpactDisc("Cockpit Hit Ring", to + Vector3.up * 0.02f, cockpit, 0.18f, 0.12f * scale, 0.42f * scale, 0.012f);
+                CreateBeam(to - Vector3.up * 0.05f, to + Vector3.up * (0.62f * scale), cockpit, 0.11f, 0.010f);
+                return;
+            }
+
+            if (IsCombatSectionName(sectionName, "Left Arm") || IsCombatSectionName(sectionName, "Right Arm") || IsCombatSectionName(sectionName, "Left") || IsCombatSectionName(sectionName, "Right"))
+            {
+                Color armSpark = new(1f, 0.64f, 0.16f, 0.74f);
+                CreateBeam(to - side * (0.18f * scale), to + side * (0.52f * scale) + Vector3.up * 0.06f, armSpark, 0.075f, 0.010f);
+                CreateBeam(to + side * (0.10f * scale), to - side * (0.42f * scale) + Vector3.up * 0.12f, new Color(1f, 0.90f, 0.36f, 0.62f), 0.070f, 0.008f);
+                return;
+            }
+
+            if (IsCombatSectionName(sectionName, "Legs"))
+            {
+                CreateImpactDisc(
+                    "Leg Hit Shock",
+                    to + Vector3.down * 0.02f,
+                    new Color(1f, 0.24f, 0.08f, 0.44f),
+                    0.24f,
+                    0.18f * scale,
+                    0.58f * scale,
+                    0.012f);
+                CreateBeam(to, to + Vector3.up * (0.32f * scale), new Color(1f, 0.46f, 0.10f, 0.62f), 0.080f, 0.009f);
+                return;
+            }
+
+            CreateImpactDisc(
+                "Torso Hit Core",
+                to + Vector3.up * 0.04f,
+                new Color(1f, 0.76f, 0.24f, 0.38f),
+                0.20f,
+                0.16f * scale,
+                0.48f * scale,
+                0.014f);
+            CreateBeam(to - side * (0.18f * scale), to + side * (0.18f * scale) + Vector3.up * 0.20f, new Color(1f, 0.82f, 0.28f, 0.60f), 0.080f, 0.010f);
         }
 
         private void CreateArmorMitigationCue(Vector3 from, Vector3 to, CombatEvent combatEvent)
