@@ -161,6 +161,7 @@ Current demo behavior:
 - supports a command-file `hide-squad-preview` smoke action that proves the general next-mission handoff keeps the completed replacement cue before Launch
 - includes `mc2_01-visible-flow-audit.txt` as the Phase A smoke path for battle HUD, debrief, Mech Lab, squad swap, hidden handoff, launch, and identity checks
 - includes `mc2_01-solo-order-state.txt` as the single-unit order smoke path for detached solo count, squad-command isolation, automatic return, and solo-order cue contract
+- includes `mc2_01-solo-attack-isolation.txt` as the single-unit attack smoke path for detached target orders and later squad-command isolation
 - includes `mc2_01-solo-jet-state.txt` as the single-unit Jet smoke path for brief jumping state, solo isolation, landing return, and Jet cue contract
 - includes `mc2_01-jet-landing-block.txt` as the illegal Jet landing smoke path for blocked command results and no unintended solo/jumping state
 - includes `mc2_01-squad-jet-partial.txt` as the squad Jet smoke path for per-mech landing legality, partial acceptance, and no unintended solo state

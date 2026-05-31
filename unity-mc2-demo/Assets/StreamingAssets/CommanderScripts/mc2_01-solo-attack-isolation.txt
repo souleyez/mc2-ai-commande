@@ -1,0 +1,9 @@
+# Proves a single-unit attack stays detached when later squad orders are issued.
+assert-combat-situation quiet solo=0 jumping=0
+command unit unit-1 attack structure structure-1-0
+assert-command-result accepted=1
+assert-combat-situation quiet solo=1
+command squad move 3136 -789
+assert-command-result accepted=2
+assert-combat-situation solo=1
+report

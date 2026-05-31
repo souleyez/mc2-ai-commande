@@ -887,6 +887,7 @@ Tasks:
 - The combat HUD now includes a compact situation row for squad readiness, active hostiles, live targets, and contact tempo above the recent event log.
 - A command-file `assert-combat-situation` hook and `mc2_01-combat-situation.txt` smoke path now verify that row, with quiet/contact driven by recent combat events instead of generic log entries.
 - A command-file `mc2_01-solo-order-state.txt` smoke path now verifies a single-unit order moves the combat situation row to `Solo 1`, stays isolated through a later squad command, returns to `Solo 0` after arrival, and keeps the solo-order cue contract guarded.
+- A command-file `mc2_01-solo-attack-isolation.txt` smoke path now verifies a single-unit structure attack stays detached while a later squad move is accepted only by the non-detached mechs.
 - A command-file `mc2_01-solo-jet-state.txt` smoke path now verifies a single-unit Jet order enters `jumping=1`, keeps the mech in `Solo 1`, and returns to `Solo 0` after landing.
 - A command-file `assert-command-result` hook and `mc2_01-jet-landing-block.txt` smoke path now verify illegal Jet landings are blocked without detaching or launching the mech.
 - A command-file `mc2_01-squad-jet-partial.txt` smoke path now verifies squad Jet orders are accepted per mech, so illegal landings stay grounded while valid landings jump without creating solo state.
