@@ -40,6 +40,7 @@ Current demo behavior:
 - pulses a short return-to-squad cue when a single-unit order finishes and the mech rejoins squad control
 - shows world objective area hints only for the current active objective
 - keeps a compact active-objective guide ring and beacon on the current battlefield target
+- draws a thin commander-to-objective route line for the current active battlefield target
 - pulses visible objective activation and completion at the battlefield target position
 - pulses a distinct mission-complete or mission-failed result cue before the debrief panel takes over
 - draws tactical target lines from player units to active targets, colored by weapon readiness
@@ -220,6 +221,7 @@ Current demo behavior:
 - shows single-order completion with a compact return-to-squad pulse
 - shows mission complete and failed result cues as a stronger battlefield transition into debrief
 - keeps the current active objective readable with a compact target guide ring and beacon
+- keeps objective direction readable with a thin route line from the commander mech to the active target
 - keeps target structures readable with persistent scorch, smoke, flame, and collapse cues
 - resolves temporary weapon cooldown, damage, cockpit/torso/arms/legs sections,
   and destruction

@@ -166,6 +166,7 @@ namespace MC2Demo.Presentation
         private readonly Dictionary<int, List<GameObject>> objectiveAreaMarkers = new();
         private GameObject activeObjectiveGuideMarker;
         private GameObject activeObjectiveGuideBeacon;
+        private GameObject activeObjectiveRouteLine;
         private readonly Dictionary<string, GameObject> structureHealthBarBacks = new();
         private readonly Dictionary<string, GameObject> structureHealthBarFills = new();
         private readonly HashSet<string> detachedUnitIdsLastFrame = new(StringComparer.OrdinalIgnoreCase);
@@ -535,6 +536,7 @@ namespace MC2Demo.Presentation
             objectiveAreaMarkers.Clear();
             activeObjectiveGuideMarker = null;
             activeObjectiveGuideBeacon = null;
+            activeObjectiveRouteLine = null;
             structureHealthBarBacks.Clear();
             structureHealthBarFills.Clear();
             detachedUnitIdsLastFrame.Clear();
@@ -2203,6 +2205,8 @@ namespace MC2Demo.Presentation
             bool objectiveFxOk = objectiveFx.IndexOf("ObjectivePulse=active+complete+target", StringComparison.Ordinal) >= 0;
             string objectiveGuideFx = ObjectiveGuideCueSummary();
             bool objectiveGuideFxOk = objectiveGuideFx.IndexOf("ObjectiveGuide=active+beacon+target", StringComparison.Ordinal) >= 0;
+            string objectiveRouteFx = ObjectiveRouteCueSummary();
+            bool objectiveRouteFxOk = objectiveRouteFx.IndexOf("ObjectiveRoute=commander+target", StringComparison.Ordinal) >= 0;
             string jetFx = DemoUnitView.JetCueSummary();
             bool jetFxOk = jetFx.IndexOf("Jet=takeoff+trail+landing", StringComparison.Ordinal) >= 0;
             string structureFx = DemoStructureView.StructureDamageCueSummary();
@@ -2287,6 +2291,8 @@ namespace MC2Demo.Presentation
                 + objectiveFx
                 + " objectiveGuideFx="
                 + objectiveGuideFx
+                + " objectiveRouteFx="
+                + objectiveRouteFx
                 + " jetFx="
                 + jetFx
                 + " structureFx="
@@ -2347,6 +2353,7 @@ namespace MC2Demo.Presentation
                     && heatFxOk
                     && objectiveFxOk
                     && objectiveGuideFxOk
+                    && objectiveRouteFxOk
                     && jetFxOk
                     && structureFxOk
                     && scriptFxOk
@@ -5046,6 +5053,11 @@ namespace MC2Demo.Presentation
             return "ObjectiveGuide=active+beacon+target";
         }
 
+        private static string ObjectiveRouteCueSummary()
+        {
+            return "ObjectiveRoute=commander+target";
+        }
+
         private void CaptureUnitActivationEvents()
         {
             List<string> contactKeys = new();
@@ -6029,6 +6041,7 @@ namespace MC2Demo.Presentation
                 "ObjectiveGuideBeacon",
                 new Color(1f, 0.88f, 0.32f, 0.58f),
                 new Vector3(0.06f, 0.42f, 0.06f));
+            activeObjectiveRouteLine = CreateTargetLine("Active Objective Route");
             UpdateObjectiveAreaVisibility();
         }
 
@@ -6096,6 +6109,16 @@ namespace MC2Demo.Presentation
                 activeObjectiveGuideBeacon.SetActive(visible);
             }
 
+            UnitState commander = FirstPlayerUnit();
+            bool routeVisible = visible
+                && commander != null
+                && commander.IsActive
+                && !commander.IsDestroyed;
+            if (activeObjectiveRouteLine != null)
+            {
+                activeObjectiveRouteLine.SetActive(routeVisible);
+            }
+
             if (!visible)
             {
                 return;
@@ -6117,6 +6140,14 @@ namespace MC2Demo.Presentation
                 float beaconScale = Mathf.Clamp(0.055f * scale, 0.045f, 0.095f);
                 activeObjectiveGuideBeacon.transform.localScale = new Vector3(beaconScale, 0.42f * pulse, beaconScale);
                 AssignMaterial(activeObjectiveGuideBeacon, "ObjectiveGuideBeacon", new Color(1f, 0.90f, 0.34f, 0.56f));
+            }
+
+            if (routeVisible && activeObjectiveRouteLine != null)
+            {
+                Vector3 commanderPoint = GroundMarkerPosition(commander.MissionPosition, 0.20f);
+                Vector3 targetPoint = GroundMarkerPosition(missionPoint, 0.20f);
+                PositionLine(activeObjectiveRouteLine, commanderPoint, targetPoint, 0.014f);
+                AssignMaterial(activeObjectiveRouteLine, "ObjectiveRoute", new Color(1f, 0.82f, 0.24f, 0.36f));
             }
         }
 

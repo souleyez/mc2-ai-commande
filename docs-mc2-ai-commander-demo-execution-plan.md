@@ -728,6 +728,7 @@ Tasks:
 - The combat-situation smoke now also guards compact mission-panel objective lines so the North island and Extraction objectives remain readable in the fixed right HUD.
 - Enemy activation events now spawn a short tactical wake ring, beacon, and ping at the activated group center, making source-paced contact beats visible without adding another combat HUD row.
 - Current active objectives now keep a compact battlefield guide ring and beacon at the target point, improving fixed-camera navigation without adding HUD rows.
+- Current active objectives now also draw a thin commander-to-target route line, making objective direction readable without changing command flow.
 - Visible objective activation and completion events now spawn short target-position pulses, keeping mission progress readable in the battlefield without expanding the combat HUD.
 - Mission complete and failed script events now spawn a stronger result cue before the debrief panel takes over, keeping the battle-to-debrief transition visible without adding HUD rows.
 - Jet orders now show takeoff flame, in-flight smoke trail, and landing dust cues so short jumps read clearly at the fixed tactical camera.
@@ -943,6 +944,7 @@ Tasks:
 - Hostile pressure center now has a smoke-guarded battlefield cue contract: `HostilePressure=centroid+tempo`.
 - Visible objective events now have a smoke-guarded battlefield cue contract: `ObjectivePulse=active+complete+target`.
 - Active objective guide hints now have a smoke-guarded battlefield cue contract: `ObjectiveGuide=active+beacon+target`.
+- Active objective route hints now have a smoke-guarded battlefield cue contract: `ObjectiveRoute=commander+target`.
 - Jet movement now has a smoke-guarded battlefield cue contract: `Jet=takeoff+trail+landing`.
 - Target structure damage now has a smoke-guarded battlefield cue contract: `Structure=scar+smoke+collapse`.
 - Script bridge events now have a smoke-guarded battlefield cue contract: `ScriptCue=ring+beacon+signal`.
