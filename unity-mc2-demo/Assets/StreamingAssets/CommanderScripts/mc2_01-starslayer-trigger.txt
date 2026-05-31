@@ -1,4 +1,4 @@
-# Proves the west-side Starslayer lance wakes only after the hidden area-7 trigger.
+# Proves the west-side Starslayer lance wakes after hidden area 7 and emits its VO hook when cleared.
 assert-encounter-pacing
 command squad move 3136 -789
 advance 12

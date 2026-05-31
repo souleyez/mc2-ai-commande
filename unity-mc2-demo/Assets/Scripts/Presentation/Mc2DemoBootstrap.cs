@@ -2149,8 +2149,11 @@ namespace MC2Demo.Presentation
             bool airfieldComplete = IsObjectiveCompleteForAssertion(0);
             bool hangarDamaged = IsHangarDamagedForAssertion();
             bool starslayerTriggered = IsObjectiveCompleteForAssertion(7);
+            bool starslayerVoReady = IsObjectiveCompleteForAssertion(8);
+            bool starslayerCleared = starslayer.Total > 0 && starslayer.Destroyed == starslayer.Total;
             string stage = EncounterPacingStage(airfieldComplete, hangarDamaged, starslayerTriggered);
             bool totalsOk = airfield.Total > 0 && north.Total > 0 && ambush.Total > 0 && starslayer.Total > 0;
+            bool voiceOverOk = !starslayerCleared || starslayerVoReady;
             bool activeOk;
             if (!airfieldComplete)
             {
@@ -2188,12 +2191,16 @@ namespace MC2Demo.Presentation
                 + ambush.Summary
                 + " starslayer="
                 + starslayer.Summary
+                + " starslayerDestroyed="
+                + starslayer.DestroyedSummary
+                + " starslayerVO="
+                + (starslayerVoReady ? "ready" : "pending")
                 + " contract="
                 + EncounterPacingCueSummary();
 
             return new EncounterPacingAssertionResult
             {
-                Accepted = totalsOk && activeOk,
+                Accepted = totalsOk && activeOk && voiceOverOk,
                 Summary = summary
             };
         }
@@ -2237,6 +2244,11 @@ namespace MC2Demo.Presentation
                 if (unit.IsActive || unit.IsDestroyed)
                 {
                     counts.Active++;
+                }
+
+                if (unit.IsDestroyed)
+                {
+                    counts.Destroyed++;
                 }
             }
 
@@ -7431,8 +7443,10 @@ namespace MC2Demo.Presentation
         private struct EncounterPacingCounts
         {
             public int Active { get; set; }
+            public int Destroyed { get; set; }
             public int Total { get; set; }
             public string Summary => Active.ToString(CultureInfo.InvariantCulture) + "/" + Total.ToString(CultureInfo.InvariantCulture);
+            public string DestroyedSummary => Destroyed.ToString(CultureInfo.InvariantCulture) + "/" + Total.ToString(CultureInfo.InvariantCulture);
         }
 
         private struct LoadoutCompactAssertionResult

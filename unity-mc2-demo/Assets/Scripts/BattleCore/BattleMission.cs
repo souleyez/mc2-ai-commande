@@ -920,7 +920,9 @@ namespace MC2Demo.BattleCore
             float bestDistanceSqr = tolerance * tolerance;
             foreach (UnitState unit in units)
             {
-                float distanceSqr = (unit.MissionPosition - missionPoint).sqrMagnitude;
+                float distanceSqr = Mathf.Min(
+                    (unit.MissionPosition - missionPoint).sqrMagnitude,
+                    (unit.SpawnPosition - missionPoint).sqrMagnitude);
                 if (distanceSqr <= bestDistanceSqr)
                 {
                     best = unit;
