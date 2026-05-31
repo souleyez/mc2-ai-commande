@@ -2848,6 +2848,7 @@ namespace MC2Demo.Presentation
             string selectedSummary = LoadoutSelectedWeaponSummaryText(unit, preview, 0, weapon, selectedItem, baseItem);
             bool accepted = selectedSummary.StartsWith("W1 ", StringComparison.Ordinal)
                 && selectedSummary.IndexOf(" Base ", StringComparison.Ordinal) >= 0
+                && selectedSummary.IndexOf("AC10", StringComparison.Ordinal) >= 0
                 && selectedSummary.IndexOf("  D ", StringComparison.Ordinal) >= 0
                 && selectedSummary.IndexOf("  R ", StringComparison.Ordinal) >= 0
                 && selectedSummary.IndexOf("  CD ", StringComparison.Ordinal) >= 0
@@ -2855,9 +2856,11 @@ namespace MC2Demo.Presentation
                 && selectedSummary.IndexOf("  W ", StringComparison.Ordinal) >= 0
                 && selectedSummary.IndexOf("  C ", StringComparison.Ordinal) >= 0
                 && selectedSummary.IndexOf("x", StringComparison.Ordinal) >= 0
+                && selectedSummary.IndexOf("Autocannon", StringComparison.OrdinalIgnoreCase) < 0
+                && selectedSummary.IndexOf("(", StringComparison.Ordinal) < 0
                 && selectedSummary.IndexOf("Cells", StringComparison.OrdinalIgnoreCase) < 0
                 && selectedSummary.IndexOf("Shape", StringComparison.OrdinalIgnoreCase) < 0
-                && selectedSummary.Length <= 118;
+                && selectedSummary.Length <= 104;
             return new LoadoutCompactCheck(
                 accepted,
                 "selectedSummary=" + selectedSummary);
@@ -10050,12 +10053,18 @@ namespace MC2Demo.Presentation
             string shapeText = LoadoutBlockShapeText(preview, selectedCell);
             string positionText = LoadoutWeaponPositionSummary(unit, preview, selectedItem, baseItem);
             string placementState = HasLoadoutWeaponPlacementOverride(unit, selectedWeaponIndex) ? "Moved" : "Base";
+            string weaponName = ShortLoadoutItemName(weapon?.name ?? "Weapon");
+            if (string.IsNullOrWhiteSpace(weaponName))
+            {
+                weaponName = "Weapon";
+            }
+
             return "W"
                 + (selectedWeaponIndex + 1).ToString(CultureInfo.InvariantCulture)
                 + " "
                 + placementState
                 + " "
-                + TruncateText(weapon?.name ?? "Weapon", 18)
+                + weaponName
                 + positionText
                 + "  D "
                 + FormatDecimal(weapon?.damage ?? 0f)

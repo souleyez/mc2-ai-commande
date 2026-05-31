@@ -49,7 +49,7 @@ Current demo behavior:
 - draws compact `Fit OK` or `Review` status plus `H/W/G` heat, weight, and grid usage readouts so fitting pressure is visible before reading the numeric limits
 - hides zero repair cost from the selected mech condition row and shows an `OK` repair button state until a damaged mech needs repair
 - treats fitted weapons as always active and uses the weapon list only to select mounted weapons for slot editing
-- shows a selected-weapon summary line with damage, range, cooldown, heat, weight, compact cell count, and `WxH` footprint above the fitting weapon buttons
+- shows a selected-weapon summary line with compact weapon short code, damage, range, cooldown, heat, weight, compact cell count, and `WxH` footprint above the fitting weapon buttons
 - echoes the selected weapon's base, current, and pending target grid positions in that summary line
 - labels the selected weapon summary as Base or Moved with matching cyan/amber border cues
 - mirrors the same Base or Moved grid-position chain in the selected weapon edit controls

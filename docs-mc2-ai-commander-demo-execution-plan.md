@@ -52,7 +52,7 @@ The Unity demo currently supports:
 - deterministic BattleCore loadout validator for grid bounds, blocked cells, overlap, rotation, heat caps, weight caps, and special-slot compatibility
 - source weapon loadout projection in the mech bay with validator status, heat/load limits, and occupied grid cell counts
 - fitted weapons are always active; the mech bay weapon list selects mounted weapons for slot editing instead of exposing weapon switches
-- selected fitting weapon summary line with damage, range, cooldown, heat, weight, compact cell count, and `WxH` footprint above the mounted weapon buttons
+- selected fitting weapon summary line with compact weapon short code, damage, range, cooldown, heat, weight, compact cell count, and `WxH` footprint above the mounted weapon buttons
 - selected weapon summary echoes base, current, and pending target grid positions when the player moves a payload block or chooses a target cell
 - selected weapon summary labels Base or Moved with cyan/amber border cues for draft placement state
 - selected weapon edit controls mirror the same Base or Moved grid-position chain as the summary
@@ -837,6 +837,7 @@ Tasks:
 - The loadout compact smoke now also asserts the compact target detail weapon reference, keeping placement details on `for W# code` wording.
 - The loadout compact smoke now also asserts the nudge pad labels and geometry, guarding `N/W/E/S` plus `Move OK/Block` feedback as compact selected-weapon movement controls.
 - The loadout compact smoke now also asserts the selected-weapon summary row, guarding the compact `W# Base/Moved`, `D/R/CD/H/W/C`, and `WxH` readouts that explain the active weapon block.
+- The selected-weapon summary row now uses compact weapon short codes such as `AC10` instead of repeating full source weapon names.
 - The loadout compact smoke now also asserts the selected-weapon edit-control header, keeping it to a short `W# Base/Moved @x,y` coordinate line.
 - The loadout compact smoke now also asserts compact `A+` and `C+` grid labels for armor and heat-sink component blocks.
 - The loadout compact smoke now also asserts compact weapon block short codes such as `AC10`, avoiding duplicated `AC (AC10)` text inside small grid blocks.
