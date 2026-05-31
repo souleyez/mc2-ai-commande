@@ -64,7 +64,7 @@ Current demo behavior:
 - offsets unit hit effects toward cockpit, arms, legs, or torso based on the reported damage section
 - flashes section-specific cockpit, arm, leg, or torso hit cues at the impact point
 - flashes short armor mitigation glints and sparks when hardness absorbs part of an incoming hit
-- shows animated limb breakoff, persistent missing-part flags, red leg-collapse cues, section sparks, smoke, cockpit ejection cues, and destroyed-mech wreck markers
+- shows animated limb breakoff, persistent missing-part flags, red leg-collapse cues, section sparks, smoke, cockpit ejection pod/chute cues, and destroyed-mech wreck markers
 - applies simple section penalties: destroyed arms reduce firepower, destroyed legs slow movement and disable Jet
 - tracks source-derived weapon heat, cooling, and heat lockouts in combat
 - shows heat vent and heat-lock cues on hot mechs without adding combat HUD rows
@@ -227,7 +227,7 @@ Current demo behavior:
 - keeps target structures readable with persistent scorch, smoke, flame, and collapse cues
 - resolves temporary weapon cooldown, damage, cockpit/torso/arms/legs sections,
   and destruction
-- keeps destroyed cockpit, arm, and leg sections readable from the tactical view
+- keeps destroyed cockpit, arm, and leg sections readable from the tactical view, including a short cockpit ejection chute and landing cue
   with persistent damage beacons in addition to flashes and detached parts
 - marks critical but not-yet-destroyed sections with small persistent smoke/spark cues
 - shows player unit structure and section damage in the left status panel

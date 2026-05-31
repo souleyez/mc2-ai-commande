@@ -719,7 +719,7 @@ Tasks:
 - Accepted player and CLI commands now pulse move, attack, Jet, and single-unit cues on the battlefield so command acknowledgement reads without adding another HUD row.
 - Move and Jet orders now draw compact travel path lines from player mechs to their destinations without adding combat HUD rows.
 - Move and Jet orders now pulse compact arrival cues when player mechs reach their destinations without adding combat HUD rows.
-- Section damage readability now has persistent missing-arm flags, red leg-collapse cues, cockpit breach/ejection markers, critical-section smoke/spark vents, destroyed-mech wreck blast/smoke/markers, and a smoke-guarded cue contract.
+- Section damage readability now has persistent missing-arm flags, red leg-collapse cues, cockpit breach/ejection/chute markers, critical-section smoke/spark vents, destroyed-mech wreck blast/smoke/markers, and a smoke-guarded cue contract.
 - Hot and heat-locked mechs now show battlefield vent/lock cues, so heat pressure reads at the fixed tactical camera without adding another combat HUD row.
 - The first squad mech now has a subtle commander anchor/beacon in the battlefield, matching the fixed camera follow rule without adding combat HUD rows.
 - Single-unit orders now emit a short return-to-squad pulse when the mech automatically rejoins squad control after completing its solo order.
@@ -928,12 +928,14 @@ Tasks:
 - The README and current-plan baseline now describe the same Reserve, Fit Review, and Funds wording that the guarded Mech Lab UI exposes.
 - The Mech Lab now opens as a desktop-width two-column surface on normal Windows demo resolutions, with Company Bay actions separated from the Loadout fitting grid and the compact drawer kept as fallback.
 - The first dedicated Mech Lab visual audit is done, and Company Bay density is reduced with Ops/Roster paging; the next low-risk step is to switch to battle readability unless another Mech Lab visible blocker appears in play.
+- Cockpit destruction now extends the ejection cue with a short chute, cord, descending pod, and landing beacon so pilot escape reads at fixed tactical zoom without adding HUD text.
 - Enemy contact activation now has a smoke-guarded visual cue contract: `ContactWake=ring+beacon+ping`.
 - Hit severity now has a smoke-guarded battlefield cue contract: `HitSeverity=damage+kill`.
 - Hit direction now has a smoke-guarded battlefield cue contract: `HitDirection=inbound+slash`.
 - Weapon muzzle placement now has a smoke-guarded battlefield cue contract: `WeaponMuzzlePoint=energy+missile+ballistic`.
 - Section-aware hit placement now has a smoke-guarded battlefield cue contract: `SectionHitPoint=cockpit+arms+legs+torso`.
 - Section-aware hit flashes now have a smoke-guarded battlefield cue contract: `SectionHitCue=cockpit+arms+legs+torso`.
+- Cockpit ejection now extends the section damage contract with `Cockpit=breach+ejection-pod+chute`.
 - Armor mitigation now has a smoke-guarded battlefield cue contract: `ArmorMitigation=glint+spark`.
 - Weapon target lines now have a smoke-guarded battlefield cue contract: `TargetLine=ready+cooling+blocked`.
 - Player weapon readiness now has a smoke-guarded battlefield cue contract: `WeaponReadiness=ready+cooling+blocked`.

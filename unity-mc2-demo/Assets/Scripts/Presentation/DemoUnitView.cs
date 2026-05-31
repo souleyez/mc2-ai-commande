@@ -410,7 +410,7 @@ namespace MC2Demo.Presentation
 
         public static string SectionDamageCueSummary()
         {
-            return "Arms=missing-socket+flag Legs=collapse+red-cross Cockpit=breach+ejection-pod Critical=smoke+sparks Wreck=blast+smoke+marker";
+            return "Arms=missing-socket+flag Legs=collapse+red-cross Cockpit=breach+ejection-pod+chute Critical=smoke+sparks Wreck=blast+smoke+marker";
         }
 
         public static string JetCueSummary()
@@ -483,7 +483,30 @@ namespace MC2Demo.Presentation
             CreateBeam("Ejection Smoke Trail", start + Vector3.down * 0.08f, end + Vector3.down * 0.35f, new Color(0.08f, 0.10f, 0.12f, 0.36f), 1.6f, 0.075f);
             CreateTransient("Ejection Flash", PrimitiveType.Sphere, start, new Color(1f, 0.75f, 0.28f, 0.78f), 0.48f, Vector3.one * 0.18f, Vector3.one * 0.95f);
             CreateMovingTransient("Pilot Ejection Pod", PrimitiveType.Sphere, start, end, new Color(0.88f, 0.95f, 1f, 0.92f), 1.75f, Vector3.one * 0.18f, Vector3.one * 0.38f);
+            SpawnEjectionChuteCue(end);
             SpawnDamageBurst(start, 1.05f);
+        }
+
+        private void SpawnEjectionChuteCue(Vector3 apex)
+        {
+            Vector3 drift = transform.TransformDirection(new Vector3(0.62f, 0f, 0.52f));
+            Vector3 landing = GroundAtWorld(apex + drift);
+            Vector3 canopy = Vector3.Lerp(apex, landing, 0.28f) + Vector3.up * 0.42f;
+            Vector3 right = transform.TransformDirection(Vector3.right);
+            Vector3 podPoint = Vector3.Lerp(apex, landing, 0.42f) + Vector3.up * 0.10f;
+
+            CreateTransient("Pilot Chute Canopy", PrimitiveType.Sphere, canopy, new Color(0.82f, 0.95f, 1f, 0.72f), 2.2f, new Vector3(0.32f, 0.08f, 0.32f), new Vector3(0.72f, 0.05f, 0.72f));
+            CreateBeam("Pilot Chute Cord L", canopy - right * 0.24f, podPoint, new Color(0.86f, 0.96f, 1f, 0.58f), 2.2f, 0.010f);
+            CreateBeam("Pilot Chute Cord R", canopy + right * 0.24f, podPoint, new Color(0.86f, 0.96f, 1f, 0.58f), 2.2f, 0.010f);
+            CreateMovingTransient("Pilot Chute Pod", PrimitiveType.Sphere, podPoint, landing + Vector3.up * 0.08f, new Color(0.88f, 0.95f, 1f, 0.72f), 2.2f, Vector3.one * 0.16f, Vector3.one * 0.22f);
+            CreateTransient("Pilot Landing Beacon", PrimitiveType.Cylinder, landing, new Color(0.58f, 0.92f, 1f, 0.48f), 2.6f, new Vector3(0.18f, 0.012f, 0.18f), new Vector3(0.62f, 0.006f, 0.62f));
+        }
+
+        private static Vector3 GroundAtWorld(Vector3 worldPoint)
+        {
+            Vector2 missionPoint = WorldToMission(worldPoint);
+            worldPoint.y = DemoTerrainView.HeightAt(missionPoint) + 0.075f;
+            return worldPoint;
         }
 
         private bool HasDestroyedSection(string sectionName)
