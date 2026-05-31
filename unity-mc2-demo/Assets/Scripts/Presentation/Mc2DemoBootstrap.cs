@@ -2137,6 +2137,8 @@ namespace MC2Demo.Presentation
                 || string.Equals(tempoMode, expectedTempoMode, StringComparison.OrdinalIgnoreCase);
             string pressureText = CombatContactPressureText();
             bool pressureOk = CombatContactPressureTextMatchesState(pressureText);
+            string focusText = CombatFocusText();
+            bool focusOk = CombatFocusTextMatchesState(focusText);
             LoadoutCompactCheck missionBrief = BuildMissionBriefPanelTextCheck();
             string summary = "squad="
                 + playerReady.ToString(CultureInfo.InvariantCulture)
@@ -2165,6 +2167,8 @@ namespace MC2Demo.Presentation
                 + (string.IsNullOrWhiteSpace(expectedTempoMode) ? "" : " expectedTempo=" + expectedTempoMode)
                 + " pressure="
                 + pressureText
+                + " focus="
+                + focusText
                 + " "
                 + missionBrief.Summary
                 + " text="
@@ -2182,6 +2186,7 @@ namespace MC2Demo.Presentation
                     && tempoOk
                     && expectedTempoOk
                     && pressureOk
+                    && focusOk
                     && missionBrief.Accepted,
                 Summary = summary
             };
@@ -2256,6 +2261,35 @@ namespace MC2Demo.Presentation
             }
 
             return labelOk;
+        }
+
+        private bool CombatFocusTextMatchesState(string focusText)
+        {
+            if (string.IsNullOrWhiteSpace(focusText)
+                || !focusText.StartsWith("Focus ", StringComparison.Ordinal)
+                || focusText.Length > 48
+                || focusText.IndexOf("unit-", StringComparison.OrdinalIgnoreCase) >= 0
+                || focusText.IndexOf("structure-", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return false;
+            }
+
+            string targetId = PrimaryCommandedFocusTargetId(out int focusCount);
+            if (string.IsNullOrEmpty(targetId) || focusCount <= 0)
+            {
+                return string.Equals(focusText, "Focus none", StringComparison.Ordinal);
+            }
+
+            string expectedLabel = TruncateText(CombatTargetLabel(targetId), 18);
+            bool stateOk = focusText.IndexOf(" ready ", StringComparison.Ordinal) >= 0
+                || focusText.EndsWith(" closing", StringComparison.Ordinal)
+                || focusText.EndsWith(" hot", StringComparison.Ordinal)
+                || focusText.EndsWith(" cycling", StringComparison.Ordinal)
+                || focusText.EndsWith(" tracking", StringComparison.Ordinal);
+            return focusText.IndexOf(expectedLabel, StringComparison.Ordinal) >= 0
+                && focusText.IndexOf(" x" + focusCount.ToString(CultureInfo.InvariantCulture), StringComparison.Ordinal) >= 0
+                && focusText.IndexOf(" HP ", StringComparison.Ordinal) >= 0
+                && stateOk;
         }
 
         private LoadoutCompactCheck BuildMissionBriefPanelTextCheck()
@@ -6645,7 +6679,8 @@ namespace MC2Demo.Presentation
             GUI.Label(new Rect(x + 12f, panel.y + 56f, panel.width - 24f, 18f), CombatSituationText());
             DrawCombatTempoLine(x + 12f, panel.y + 76f, panel.width - 24f);
             DrawCombatContactPressureLine(x + 12f, panel.y + 96f, panel.width - 24f);
-            float y = panel.y + 120f;
+            DrawCombatFocusLine(x + 12f, panel.y + 116f, panel.width - 24f);
+            float y = panel.y + 140f;
             foreach (string line in combatLog)
             {
                 if (y > panel.yMax - 22f)
@@ -6672,6 +6707,14 @@ namespace MC2Demo.Presentation
             Color previous = GUI.color;
             GUI.color = CountActiveHostileUnits() > 0 ? new Color(1f, 0.78f, 0.32f) : new Color(0.58f, 0.72f, 0.78f);
             GUI.Label(new Rect(x, y, width, 18f), CombatContactPressureText());
+            GUI.color = previous;
+        }
+
+        private void DrawCombatFocusLine(float x, float y, float width)
+        {
+            Color previous = GUI.color;
+            GUI.color = CountCommandedFocusTargets() > 0 ? new Color(0.52f, 0.88f, 1f) : new Color(0.58f, 0.72f, 0.78f);
+            GUI.Label(new Rect(x, y, width, 18f), CombatFocusText());
             GUI.color = previous;
         }
 
@@ -6772,6 +6815,148 @@ namespace MC2Demo.Presentation
             }
 
             parts.Add(label + " " + count.ToString(CultureInfo.InvariantCulture));
+        }
+
+        private string CombatFocusText()
+        {
+            string targetId = PrimaryCommandedFocusTargetId(out int focusCount);
+            if (string.IsNullOrEmpty(targetId) || focusCount <= 0)
+            {
+                return "Focus none";
+            }
+
+            string label = CombatTargetLabel(targetId);
+            int health = CombatTargetHealthPercent(targetId);
+            string state = CombatFocusStateText(targetId);
+            return "Focus "
+                + TruncateText(label, 18)
+                + " x"
+                + focusCount.ToString(CultureInfo.InvariantCulture)
+                + " HP "
+                + health.ToString(CultureInfo.InvariantCulture)
+                + "% "
+                + state;
+        }
+
+        private string PrimaryCommandedFocusTargetId(out int focusCount)
+        {
+            Dictionary<string, int> counts = new(StringComparer.Ordinal);
+            string bestTarget = "";
+            int bestCount = 0;
+            foreach (UnitState unit in mission.PlayerUnits())
+            {
+                if (unit == null || unit.IsDestroyed || string.IsNullOrEmpty(unit.AttackTargetId))
+                {
+                    continue;
+                }
+
+                string targetId = unit.AttackTargetId;
+                counts.TryGetValue(targetId, out int count);
+                count += 1;
+                counts[targetId] = count;
+                if (count > bestCount)
+                {
+                    bestTarget = targetId;
+                    bestCount = count;
+                }
+            }
+
+            focusCount = bestCount;
+            return bestTarget;
+        }
+
+        private int CountCommandedFocusTargets()
+        {
+            PrimaryCommandedFocusTargetId(out int focusCount);
+            return focusCount;
+        }
+
+        private string CombatTargetLabel(string targetId)
+        {
+            UnitState unit = mission.FindUnit(targetId);
+            if (unit != null)
+            {
+                return string.IsNullOrWhiteSpace(unit.UnitType) ? "Unit" : unit.UnitType;
+            }
+
+            StructureState structure = mission.FindStructure(targetId);
+            if (structure != null)
+            {
+                return string.IsNullOrWhiteSpace(structure.ObjectType) ? "Structure" : structure.ObjectType;
+            }
+
+            return "Target";
+        }
+
+        private int CombatTargetHealthPercent(string targetId)
+        {
+            UnitState unit = mission.FindUnit(targetId);
+            if (unit != null)
+            {
+                return Mathf.RoundToInt(Mathf.Clamp01(unit.Structure) * 100f);
+            }
+
+            StructureState structure = mission.FindStructure(targetId);
+            if (structure != null)
+            {
+                return Mathf.RoundToInt(Mathf.Clamp01(structure.Structure) * 100f);
+            }
+
+            return 0;
+        }
+
+        private string CombatFocusStateText(string targetId)
+        {
+            int ready = 0;
+            int cooling = 0;
+            int hot = 0;
+            int closing = 0;
+            foreach (UnitState unit in mission.PlayerUnits())
+            {
+                if (unit == null || unit.IsDestroyed || !string.Equals(unit.AttackTargetId, targetId, StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                if (!IsTargetInWeaponRange(unit, targetId))
+                {
+                    closing += 1;
+                }
+                else if (unit.IsHeatLocked)
+                {
+                    hot += 1;
+                }
+                else if (unit.IsWeaponCoolingDown)
+                {
+                    cooling += 1;
+                }
+                else
+                {
+                    ready += 1;
+                }
+            }
+
+            if (ready > 0)
+            {
+                return "ready " + ready.ToString(CultureInfo.InvariantCulture);
+            }
+
+            if (closing > 0)
+            {
+                return "closing";
+            }
+
+            if (hot > 0)
+            {
+                return "hot";
+            }
+
+            if (cooling > 0)
+            {
+                return "cycling";
+            }
+
+            return "tracking";
         }
 
         private Color CombatTempoColor()
@@ -12907,7 +13092,7 @@ namespace MC2Demo.Presentation
 
         private Rect CombatPanelRect()
         {
-            return new Rect(Screen.width - 360f, 12f, 344f, 178f);
+            return new Rect(Screen.width - 360f, 12f, 344f, 198f);
         }
 
         private Rect MissionBriefPanelRect()

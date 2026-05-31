@@ -1,4 +1,4 @@
-# Proves the combat HUD reports squad, hostiles, targets, fixed tempo/contact pressure text, weapon FX, and section-damage cues.
+# Proves the combat HUD reports squad, hostiles, targets, focus pressure, fixed tempo/contact pressure text, weapon FX, and section-damage cues.
 assert-combat-situation quiet
 command squad move 3136 -789
 advance 12
