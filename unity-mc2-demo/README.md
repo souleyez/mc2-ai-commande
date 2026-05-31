@@ -45,6 +45,7 @@ Current demo behavior:
 - shows a subtle weapon range ring for selected, detached, attacking, or firing units
 - varies tactical target-line color and thickness for ready, cooling, and blocked shots
 - renders short weapon beams, hit flashes, and impact bursts for combat events, with energy pillar/ring, missile blast, and ballistic spark cues
+- flashes short armor mitigation glints and sparks when hardness absorbs part of an incoming hit
 - shows animated limb breakoff, persistent missing-part flags, red leg-collapse cues, section sparks, smoke, cockpit ejection cues, and destroyed-mech wreck markers
 - applies simple section penalties: destroyed arms reduce firepower, destroyed legs slow movement and disable Jet
 - tracks source-derived weapon heat, cooling, and heat lockouts in combat
@@ -101,7 +102,7 @@ Current demo behavior:
 - marks mech bay edits as draft/applied and labels the draft reset action as Clean or Reset depending on whether there is anything to revert
 - hands applied demo fits to combat readiness, range, heat, cooldown, and weapon display stats
 - applies armor hardness as simple incoming damage reduction and heat sinks as faster cooling
-- shows applied armor/cooling bonuses in unit weapon status and blocked damage in combat logs
+- shows applied armor/cooling bonuses in unit weapon status, blocked damage in combat logs, and compact armor mitigation hit cues
 - builds a starter mech bay inventory summary for owned mechs, weapons, armor plates, heat sinks, and funds balance
 - shows a compact owned-mech roster and read-only roster detail in the mech bay, including assembled reserve mechs
 - marks assembled reserve mechs as held with a pending-fit placeholder before next-contract selection
@@ -181,6 +182,7 @@ Current demo behavior:
 - auto-acquires hostile units in weapon range
 - gives missile, ballistic, and energy attacks distinct muzzle, trace, and hit accents
 - makes ready, cooling, and blocked weapon target lines read differently in the tactical view
+- makes armor hardness mitigation visible through compact battlefield glint/spark cues
 - renders Jet takeoff flame, midair smoke, and landing dust cues
 - shows hot and heat-locked mechs with battlefield vent/lock cues
 - keeps the camera-follow commander readable with a small anchor/beacon cue

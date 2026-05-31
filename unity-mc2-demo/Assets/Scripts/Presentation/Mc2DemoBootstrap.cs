@@ -2135,6 +2135,8 @@ namespace MC2Demo.Presentation
             bool weaponFxOk = weaponFx.IndexOf("Energy=beam+pillar+muzzle", StringComparison.Ordinal) >= 0
                 && weaponFx.IndexOf("Missile=arc+blast+salvo", StringComparison.Ordinal) >= 0
                 && weaponFx.IndexOf("Ballistic=tracer+sparks+muzzle", StringComparison.Ordinal) >= 0;
+            string armorFx = ArmorMitigationCueSummary();
+            bool armorFxOk = armorFx.IndexOf("ArmorMitigation=glint+spark", StringComparison.Ordinal) >= 0;
             string targetLineFx = TargetLineCueSummary();
             bool targetLineFxOk = targetLineFx.IndexOf("TargetLine=ready+cooling+blocked", StringComparison.Ordinal) >= 0;
             string sectionFx = DemoUnitView.SectionDamageCueSummary();
@@ -2189,6 +2191,8 @@ namespace MC2Demo.Presentation
                 + MissionMapBackButtonLabel
                 + " fx="
                 + weaponFx
+                + " armorFx="
+                + armorFx
                 + " targetLineFx="
                 + targetLineFx
                 + " sectionFx="
@@ -2233,6 +2237,7 @@ namespace MC2Demo.Presentation
                     && topModeOk
                     && fundsOk
                     && weaponFxOk
+                    && armorFxOk
                     && targetLineFxOk
                     && sectionFxOk
                     && heatFxOk
@@ -4165,6 +4170,7 @@ namespace MC2Demo.Presentation
             CreateWeaponTrace(attackerPoint, targetPoint, combatEvent, weaponColor);
             CreateImpact(targetPoint, weaponColor, combatEvent.DestroyedTarget, ImpactScale(combatEvent.WeaponType));
             CreateWeaponImpactCue(attackerPoint, targetPoint, combatEvent, weaponColor);
+            CreateArmorMitigationCue(attackerPoint, targetPoint, combatEvent);
             PulseTarget(combatEvent.TargetId, new Color(1f, 0.9f, 0.52f), combatEvent.DestroyedTarget ? 0.28f : 0.18f);
         }
 
@@ -4243,6 +4249,11 @@ namespace MC2Demo.Presentation
         private static string WeaponFxCueSummary()
         {
             return "Energy=beam+pillar+muzzle Missile=arc+blast+salvo Ballistic=tracer+sparks+muzzle";
+        }
+
+        private static string ArmorMitigationCueSummary()
+        {
+            return "ArmorMitigation=glint+spark";
         }
 
         private static float ImpactScale(string weaponType)
@@ -4333,6 +4344,33 @@ namespace MC2Demo.Presentation
             CreateBeam(sparkBase, sparkBase + side * 0.62f + Vector3.up * 0.12f, new Color(1f, 0.88f, 0.36f, 0.70f), 0.075f, 0.012f);
             CreateBeam(sparkBase, sparkBase - side * 0.58f + Vector3.up * 0.10f, new Color(1f, 0.64f, 0.18f, 0.62f), 0.070f, 0.010f);
             CreateBeam(sparkBase, sparkBase + Vector3.up * 0.52f, color, 0.065f, 0.010f);
+        }
+
+        private void CreateArmorMitigationCue(Vector3 from, Vector3 to, CombatEvent combatEvent)
+        {
+            if (combatEvent.MitigatedDamage <= 0.4f)
+            {
+                return;
+            }
+
+            Vector3 direction = SafeDirection(to - from);
+            Vector3 side = LateralVector(direction);
+            float totalIncoming = Mathf.Max(1f, combatEvent.Damage + combatEvent.MitigatedDamage);
+            float mitigationRatio = Mathf.Clamp01(combatEvent.MitigatedDamage / totalIncoming);
+            float scale = Mathf.Lerp(0.72f, 1.10f, mitigationRatio);
+            Vector3 center = to - direction * 0.10f + Vector3.up * 0.16f;
+            Color glint = new(0.74f, 1f, 1f, 0.56f);
+            Color spark = new(1f, 0.94f, 0.58f, 0.70f);
+            CreateImpactDisc(
+                "Armor Mitigation Glint",
+                center,
+                glint,
+                0.18f,
+                0.16f * scale,
+                0.48f * scale,
+                0.012f);
+            CreateBeam(center - side * (0.24f * scale), center + side * (0.30f * scale) + Vector3.up * 0.04f, spark, 0.085f, 0.009f);
+            CreateBeam(center - Vector3.up * 0.04f, center + Vector3.up * (0.38f * scale), glint, 0.095f, 0.008f);
         }
 
         private void CreateWeaponTrace(Vector3 from, Vector3 to, CombatEvent combatEvent, Color color)
