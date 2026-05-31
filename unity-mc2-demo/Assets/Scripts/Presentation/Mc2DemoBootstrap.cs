@@ -2534,15 +2534,22 @@ namespace MC2Demo.Presentation
         private LoadoutCompactCheck BuildLoadoutConditionCompactCheck(UnitState unit)
         {
             string conditionLine = MechConditionCompactText(unit);
+            string healthyLine = MechConditionCompactText(100, 0);
+            string damagedLine = MechConditionCompactText(74, 1200);
             bool accepted = conditionLine.StartsWith(LoadoutConditionPrefix, StringComparison.Ordinal)
                 && conditionLine.IndexOf("Condition", StringComparison.OrdinalIgnoreCase) < 0
-                && conditionLine.IndexOf("Repair ", StringComparison.OrdinalIgnoreCase) >= 0
+                && string.Equals(healthyLine, "Cond 100%", StringComparison.Ordinal)
+                && string.Equals(damagedLine, "Cond 74%  Repair 1,200", StringComparison.Ordinal)
+                && healthyLine.IndexOf("Repair", StringComparison.OrdinalIgnoreCase) < 0
+                && damagedLine.IndexOf("Repair 0", StringComparison.OrdinalIgnoreCase) < 0
                 && LoadoutRepairButtonWidth <= 64f
                 && LoadoutRepairStateOffset <= 70f;
             return new LoadoutCompactCheck(
                 accepted,
                 "condition="
                 + conditionLine
+                + " damaged="
+                + damagedLine
                 + " repairW="
                 + LoadoutRepairButtonWidth.ToString(CultureInfo.InvariantCulture));
         }
@@ -8578,10 +8585,20 @@ namespace MC2Demo.Presentation
         {
             int condition = MechConditionPercent(unit);
             int repairCost = MechBayRepairService.EstimateRepairCostResourcePoints(unit);
-            return LoadoutConditionPrefix
-                + condition.ToString(CultureInfo.InvariantCulture)
-                + "%  Repair "
-                + FormatTokens(repairCost);
+            return MechConditionCompactText(condition, repairCost);
+        }
+
+        private static string MechConditionCompactText(int condition, int repairCost)
+        {
+            string text = LoadoutConditionPrefix
+                + Math.Max(0, condition).ToString(CultureInfo.InvariantCulture)
+                + "%";
+            if (repairCost <= 0)
+            {
+                return text;
+            }
+
+            return text + "  Repair " + FormatTokens(repairCost);
         }
 
         private static string UnitMissionStateText(UnitState unit)
