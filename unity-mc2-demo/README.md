@@ -163,6 +163,7 @@ Current demo behavior:
 - includes `mc2_01-solo-order-state.txt` as the single-unit order smoke path for detached solo count, squad-command isolation, automatic return, and solo-order cue contract
 - includes `mc2_01-solo-jet-state.txt` as the single-unit Jet smoke path for brief jumping state, solo isolation, landing return, and Jet cue contract
 - includes `mc2_01-jet-landing-block.txt` as the illegal Jet landing smoke path for blocked command results and no unintended solo/jumping state
+- includes `mc2_01-squad-jet-partial.txt` as the squad Jet smoke path for per-mech landing legality, partial acceptance, and no unintended solo state
 - supports a command-file `saved-account-report` smoke action that validates and logs a JSON dry-run of the local account snapshot without writing persistent data
 - supports a command-file `saved-account-save-load-preview` smoke action that explicitly round-trips the local account JSON without writing a save file
 - supports explicit command-file `saved-account-export <path>` and `saved-account-import-preview <path>` actions for manual local account JSON file checks

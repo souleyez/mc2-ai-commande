@@ -1,0 +1,8 @@
+# Proves squad Jet orders are accepted per mech: invalid landings stay put while valid landings jump.
+assert-combat-situation quiet solo=0 jumping=0
+command squad jump 3000 -1500
+assert-command-result accepted=1
+assert-combat-situation quiet solo=0 jumping=1
+advance 1
+assert-combat-situation solo=0 jumping=0
+report
