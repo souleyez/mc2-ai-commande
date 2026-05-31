@@ -43,6 +43,7 @@ Current demo behavior:
 - keeps a subtle squad-focus pressure ring on targets shared by multiple player mechs
 - keeps a subtle hostile-focus warning ring on player mechs targeted by multiple enemies
 - marks damaged or section-penalized player mechs with compact warning and critical rings
+- shows a commander-centered combat-pressure ring for tracking, contact, and fire tempo
 - shows a compact mission brief with objective progress and target structure integrity
 - keeps mission brief objective names compact enough for North island and Extraction to remain readable in the fixed right HUD
 - shows compact world health bars for damaged or player-targeted enemies and structures
@@ -200,6 +201,7 @@ Current demo behavior:
 - shows a compact squad-focus pressure ring when multiple player mechs share a target
 - shows a compact hostile-focus warning ring when multiple enemies share a player target
 - shows compact player-damage warning and critical rings without adding combat HUD rows
+- shows commander-centered combat-pressure rings for tracking, contact, and fire tempo
 - makes armor hardness mitigation visible through compact battlefield glint/spark cues
 - renders Jet takeoff flame, midair smoke, and landing dust cues
 - shows hot and heat-locked mechs with battlefield vent/lock cues

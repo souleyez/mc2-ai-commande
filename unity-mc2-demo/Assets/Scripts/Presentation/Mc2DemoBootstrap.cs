@@ -176,6 +176,7 @@ namespace MC2Demo.Presentation
         private readonly List<string> combatLog = new();
         private GameObject squadFocusMarker;
         private GameObject hostileFocusMarker;
+        private GameObject combatPressureMarker;
         private string selectedMechBayLoadoutUnitId;
         private float lastCombatEventTimeSeconds = -999f;
         private float lastContactEventTimeSeconds = -999f;
@@ -535,6 +536,7 @@ namespace MC2Demo.Presentation
             combatLog.Clear();
             squadFocusMarker = null;
             hostileFocusMarker = null;
+            combatPressureMarker = null;
             lastCombatEventTimeSeconds = -999f;
             lastContactEventTimeSeconds = -999f;
             lastContactLabel = "";
@@ -2169,6 +2171,8 @@ namespace MC2Demo.Presentation
             bool threatFocusFxOk = threatFocusFx.IndexOf("ThreatFocus=ring+warning", StringComparison.Ordinal) >= 0;
             string playerDamageFx = PlayerDamageCueSummary();
             bool playerDamageFxOk = playerDamageFx.IndexOf("PlayerDamage=warning+critical", StringComparison.Ordinal) >= 0;
+            string combatPressureFx = CombatPressureCueSummary();
+            bool combatPressureFxOk = combatPressureFx.IndexOf("CombatPressure=tracking+contact+fire", StringComparison.Ordinal) >= 0;
             string sectionFx = DemoUnitView.SectionDamageCueSummary();
             bool sectionFxOk = sectionFx.IndexOf("Arms=missing-socket+flag", StringComparison.Ordinal) >= 0
                 && sectionFx.IndexOf("Legs=collapse+red-cross", StringComparison.Ordinal) >= 0
@@ -2243,6 +2247,8 @@ namespace MC2Demo.Presentation
                 + threatFocusFx
                 + " playerDamageFx="
                 + playerDamageFx
+                + " combatPressureFx="
+                + combatPressureFx
                 + " sectionFx="
                 + sectionFx
                 + " heatFx="
@@ -2296,6 +2302,7 @@ namespace MC2Demo.Presentation
                     && squadFocusFxOk
                     && threatFocusFxOk
                     && playerDamageFxOk
+                    && combatPressureFxOk
                     && sectionFxOk
                     && heatFxOk
                     && objectiveFxOk
@@ -2348,6 +2355,11 @@ namespace MC2Demo.Presentation
         private static string PlayerDamageCueSummary()
         {
             return "PlayerDamage=warning+critical";
+        }
+
+        private static string CombatPressureCueSummary()
+        {
+            return "CombatPressure=tracking+contact+fire";
         }
 
         private bool CombatTempoTextMatchesState(string tempoText)
@@ -5967,6 +5979,11 @@ namespace MC2Demo.Presentation
                 "HostileFocusWarning",
                 new Color(1f, 0.22f, 0.10f, 0.38f),
                 new Vector3(1.34f, 0.020f, 1.34f));
+            combatPressureMarker = CreateMarkerDisc(
+                "Combat Pressure Ring",
+                "CombatPressureTracking",
+                new Color(0.44f, 0.84f, 1f, 0.20f),
+                new Vector3(1.72f, 0.014f, 1.72f));
         }
 
         private GameObject CreateMarkerDisc(string objectName, string materialName, Color color, Vector3 scale)
@@ -6007,6 +6024,7 @@ namespace MC2Demo.Presentation
 
             UpdateSquadFocusMarker();
             UpdateHostileFocusMarker();
+            UpdateCombatPressureMarker(commander);
             UpdateTargetHealthBars();
         }
 
@@ -6381,6 +6399,46 @@ namespace MC2Demo.Presentation
             }
 
             return bestTargetId;
+        }
+
+        private void UpdateCombatPressureMarker(UnitState commander)
+        {
+            if (combatPressureMarker == null)
+            {
+                return;
+            }
+
+            string mode = CombatTempoMode();
+            int activeHostiles = CountActiveHostileUnits();
+            bool isVisible = commander != null
+                && commander.IsActive
+                && !commander.IsDestroyed
+                && !string.Equals(mode, "quiet", StringComparison.Ordinal)
+                && activeHostiles > 0;
+            combatPressureMarker.SetActive(isVisible);
+            if (!isVisible)
+            {
+                return;
+            }
+
+            bool isFire = string.Equals(mode, "fire", StringComparison.Ordinal);
+            bool isContact = string.Equals(mode, "contact", StringComparison.Ordinal);
+            float pressureScale = Mathf.Clamp01(activeHostiles / 20f);
+            float pulseSpeed = isFire ? 6.6f : isContact ? 4.8f : 3.2f;
+            float pulse = 0.96f + Mathf.Sin(Time.time * pulseSpeed) * (isFire ? 0.11f : 0.06f);
+            float scale = Mathf.Lerp(1.62f, 2.42f, pressureScale) * pulse;
+            combatPressureMarker.transform.position = GroundMarkerPosition(commander.MissionPosition, 0.055f);
+            combatPressureMarker.transform.localScale = new Vector3(scale, 0.014f, scale);
+
+            Color color = isFire
+                ? new Color(1f, 0.18f, 0.08f, 0.34f)
+                : isContact
+                    ? new Color(1f, 0.56f, 0.12f, 0.28f)
+                    : new Color(0.44f, 0.84f, 1f, 0.20f);
+            AssignMaterial(
+                combatPressureMarker,
+                isFire ? "CombatPressureFire" : isContact ? "CombatPressureContact" : "CombatPressureTracking",
+                color);
         }
 
         private GameObject CreateTargetLine(string objectName)
