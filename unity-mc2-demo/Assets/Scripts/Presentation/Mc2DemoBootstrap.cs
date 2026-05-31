@@ -2137,6 +2137,8 @@ namespace MC2Demo.Presentation
                 && weaponFx.IndexOf("Ballistic=tracer+sparks+muzzle", StringComparison.Ordinal) >= 0;
             string armorFx = ArmorMitigationCueSummary();
             bool armorFxOk = armorFx.IndexOf("ArmorMitigation=glint+spark", StringComparison.Ordinal) >= 0;
+            string sectionHitFx = SectionHitPointCueSummary();
+            bool sectionHitFxOk = sectionHitFx.IndexOf("SectionHitPoint=cockpit+arms+legs+torso", StringComparison.Ordinal) >= 0;
             string targetLineFx = TargetLineCueSummary();
             bool targetLineFxOk = targetLineFx.IndexOf("TargetLine=ready+cooling+blocked", StringComparison.Ordinal) >= 0;
             string sectionFx = DemoUnitView.SectionDamageCueSummary();
@@ -2193,6 +2195,8 @@ namespace MC2Demo.Presentation
                 + weaponFx
                 + " armorFx="
                 + armorFx
+                + " sectionHitFx="
+                + sectionHitFx
                 + " targetLineFx="
                 + targetLineFx
                 + " sectionFx="
@@ -2238,6 +2242,7 @@ namespace MC2Demo.Presentation
                     && fundsOk
                     && weaponFxOk
                     && armorFxOk
+                    && sectionHitFxOk
                     && targetLineFxOk
                     && sectionFxOk
                     && heatFxOk
@@ -4159,7 +4164,7 @@ namespace MC2Demo.Presentation
         {
             if (combatEvent.Damage <= 0f
                 || !TryGetCombatPoint(combatEvent.AttackerId, out Vector3 attackerPoint)
-                || !TryGetCombatPoint(combatEvent.TargetId, out Vector3 targetPoint))
+                || !TryGetCombatHitPoint(combatEvent.TargetId, combatEvent.SectionName, out Vector3 targetPoint))
             {
                 return;
             }
@@ -4190,6 +4195,47 @@ namespace MC2Demo.Presentation
 
             point = Vector3.zero;
             return false;
+        }
+
+        private bool TryGetCombatHitPoint(string id, string sectionName, out Vector3 point)
+        {
+            if (unitViews.TryGetValue(id, out DemoUnitView unitView) && unitView != null && unitView.Unit != null)
+            {
+                point = unitView.transform.TransformPoint(CombatSectionLocalPoint(sectionName));
+                return true;
+            }
+
+            return TryGetCombatPoint(id, out point);
+        }
+
+        private static Vector3 CombatSectionLocalPoint(string sectionName)
+        {
+            if (IsCombatSectionName(sectionName, "Cockpit") || IsCombatSectionName(sectionName, "Turret"))
+            {
+                return new Vector3(0f, 0.76f, 0.32f);
+            }
+
+            if (IsCombatSectionName(sectionName, "Left Arm") || IsCombatSectionName(sectionName, "Left"))
+            {
+                return new Vector3(-0.58f, 0.16f, 0.08f);
+            }
+
+            if (IsCombatSectionName(sectionName, "Right Arm") || IsCombatSectionName(sectionName, "Right"))
+            {
+                return new Vector3(0.58f, 0.16f, 0.08f);
+            }
+
+            if (IsCombatSectionName(sectionName, "Legs"))
+            {
+                return new Vector3(0f, -0.28f, 0.10f);
+            }
+
+            return new Vector3(0f, 0.18f, 0.20f);
+        }
+
+        private static bool IsCombatSectionName(string sectionName, string expected)
+        {
+            return string.Equals(sectionName, expected, StringComparison.OrdinalIgnoreCase);
         }
 
         private void PulseTarget(string targetId, Color color, float duration)
@@ -4254,6 +4300,11 @@ namespace MC2Demo.Presentation
         private static string ArmorMitigationCueSummary()
         {
             return "ArmorMitigation=glint+spark";
+        }
+
+        private static string SectionHitPointCueSummary()
+        {
+            return "SectionHitPoint=cockpit+arms+legs+torso";
         }
 
         private static float ImpactScale(string weaponType)
