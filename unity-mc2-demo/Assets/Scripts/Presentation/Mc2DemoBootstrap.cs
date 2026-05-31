@@ -2144,6 +2144,7 @@ namespace MC2Demo.Presentation
             LoadoutCompactCheck selectedResetCheck = BuildLoadoutSelectedResetCompactCheck();
             LoadoutCompactCheck targetCheck = BuildLoadoutTargetControlsCompactCheck();
             LoadoutCompactCheck nudgeCheck = BuildLoadoutNudgeCompactCheck();
+            LoadoutCompactCheck placementHeaderCheck = BuildLoadoutPlacementHeaderCompactCheck(unit, preview);
             LoadoutCompactCheck selectedSummaryCheck = BuildLoadoutSelectedSummaryCompactCheck(unit, preview, weapons[0]);
             LoadoutCompactCheck componentDetailCheck = BuildLoadoutComponentDetailCompactCheck();
             LoadoutCompactCheck openSlotDetailCheck = BuildLoadoutOpenSlotDetailCompactCheck();
@@ -2170,6 +2171,8 @@ namespace MC2Demo.Presentation
                 + targetCheck.Summary
                 + " "
                 + nudgeCheck.Summary
+                + " "
+                + placementHeaderCheck.Summary
                 + " "
                 + selectedSummaryCheck.Summary
                 + " "
@@ -2198,6 +2201,7 @@ namespace MC2Demo.Presentation
                     && selectedResetCheck.Accepted
                     && targetCheck.Accepted
                     && nudgeCheck.Accepted
+                    && placementHeaderCheck.Accepted
                     && selectedSummaryCheck.Accepted
                     && componentDetailCheck.Accepted
                     && openSlotDetailCheck.Accepted
@@ -2712,6 +2716,20 @@ namespace MC2Demo.Presentation
                 + LoadoutNudgeButtonWidth.ToString(CultureInfo.InvariantCulture)
                 + "/"
                 + LoadoutNudgeEastButtonWidth.ToString(CultureInfo.InvariantCulture));
+        }
+
+        private LoadoutCompactCheck BuildLoadoutPlacementHeaderCompactCheck(UnitState unit, CombatLoadoutPreview preview)
+        {
+            CombatLoadoutPreviewItem selectedItem = LoadoutPreviewItemForWeapon(preview, 0);
+            CombatLoadoutPreviewItem baseItem = LoadoutPreviewItemForWeapon(LoadoutBasePreviewFor(unit), 0);
+            string header = LoadoutPlacementHeaderText(unit, preview, 0, selectedItem, baseItem);
+            bool accepted = header.StartsWith("W1 Base @", StringComparison.Ordinal)
+                && header.IndexOf("Edit", StringComparison.OrdinalIgnoreCase) < 0
+                && header.IndexOf("Autocannon", StringComparison.OrdinalIgnoreCase) < 0
+                && header.IndexOf("Weapon", StringComparison.OrdinalIgnoreCase) < 0
+                && header.IndexOf("  D ", StringComparison.Ordinal) < 0
+                && header.Length <= 32;
+            return new LoadoutCompactCheck(accepted, "placementHeader=" + header);
         }
 
         private LoadoutCompactCheck BuildLoadoutSelectedSummaryCompactCheck(
@@ -9304,17 +9322,10 @@ namespace MC2Demo.Presentation
                 return;
             }
 
-            bool hasPlacementOverride = HasLoadoutWeaponPlacementOverride(unit, selectedWeaponIndex);
-            string placementState = hasPlacementOverride ? "Moved" : "Base";
             CombatLoadoutPreviewItem baseItem = LoadoutPreviewItemForWeapon(LoadoutBasePreviewFor(unit), selectedWeaponIndex);
-            string positionText = LoadoutWeaponPositionSummary(unit, preview, selectedItem, baseItem);
             GUI.Label(
                 new Rect(x, y, width, 18f),
-                "Edit W" + (selectedWeaponIndex + 1).ToString(CultureInfo.InvariantCulture)
-                + " " + TruncateText(selectedItem.DisplayName, 18)
-                + " "
-                + placementState
-                + positionText);
+                LoadoutPlacementHeaderText(unit, preview, selectedWeaponIndex, selectedItem, baseItem));
 
             DrawLoadoutNudgeButton(
                 unit,
@@ -9915,6 +9926,23 @@ namespace MC2Demo.Presentation
                 + cells.ToString(CultureInfo.InvariantCulture)
                 + "  "
                 + shapeText;
+        }
+
+        private string LoadoutPlacementHeaderText(
+            UnitState unit,
+            CombatLoadoutPreview preview,
+            int selectedWeaponIndex,
+            CombatLoadoutPreviewItem selectedItem,
+            CombatLoadoutPreviewItem baseItem)
+        {
+            if (selectedItem == null)
+            {
+                return "W? unavailable";
+            }
+
+            string placementState = HasLoadoutWeaponPlacementOverride(unit, selectedWeaponIndex) ? "Moved" : "Base";
+            return LoadoutWeaponStateLabel(selectedWeaponIndex, placementState)
+                + LoadoutWeaponPositionSummary(unit, preview, selectedItem, baseItem);
         }
 
         private string LoadoutWeaponPositionSummary(

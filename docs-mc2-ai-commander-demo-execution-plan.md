@@ -55,6 +55,7 @@ The Unity demo currently supports:
 - selected weapon summary echoes base, current, and pending target grid positions when the player moves a payload block or chooses a target cell
 - selected weapon summary labels Base or Moved with cyan/amber border cues for draft placement state
 - selected weapon edit controls mirror the same Base or Moved grid-position chain as the summary
+- selected weapon edit controls now use a compact `W# Base/Moved @x,y` header instead of repeating the weapon name
 - payload detail text uses compact `C` and `WxH` shape readouts and labels unapplied edits as Pending fit
 - mech bay selector and squad replacement status text now use Pending/Outgoing/Reserve wording instead of player-facing draft language
 - roster fit detail now shows Ready Bay or Reserve Bay instead of exposing internal owned-mech ids
@@ -830,6 +831,7 @@ Tasks:
 - The loadout compact smoke now also asserts target action labels and geometry, guarding compact `Place/Block/Pick` and `+Armor/+Sink/Clear/Lock/Stk` controls beside the payload grid.
 - The loadout compact smoke now also asserts the nudge pad labels and geometry, guarding `N/W/E/S` plus `Move OK/Block` feedback as compact selected-weapon movement controls.
 - The loadout compact smoke now also asserts the selected-weapon summary row, guarding the compact `W# Base/Moved`, `D/R/CD/H/W/C`, and `WxH` readouts that explain the active weapon block.
+- The loadout compact smoke now also asserts the selected-weapon edit-control header, keeping it to a short `W# Base/Moved @x,y` coordinate line.
 - The loadout compact assertion is now split into small check helpers, keeping the growing UI contract readable before more fitting-card density rules are added.
 - The fitting Apply/Reset strip now uses compact Fit OK, Pending, and Stock state text, guarded by the loadout compact smoke.
 - The Save Slot title, result row, reset confirmation, and New Company confirmation now use calmer player-facing wording guarded by the loadout compact smoke.

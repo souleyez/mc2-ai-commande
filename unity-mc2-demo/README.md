@@ -52,6 +52,7 @@ Current demo behavior:
 - echoes the selected weapon's base, current, and pending target grid positions in that summary line
 - labels the selected weapon summary as Base or Moved with matching cyan/amber border cues
 - mirrors the same Base or Moved grid-position chain in the selected weapon edit controls
+- keeps the selected weapon edit-control header to a compact `W# Base/Moved @x,y` coordinate line
 - reports weapon selection, move, place, and reset results with the same W# Base/Moved coordinate format in the top status
 - uses compact S/M/L range-band and `WxH` shape labels with matching colors on mounted weapon buttons
 - highlights the selected mounted weapon row in the fitting list
