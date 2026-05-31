@@ -15,6 +15,7 @@ Current demo behavior:
 - activates enemy groups from source mission brain names and objective progress
 - moves activated enemy groups with lightweight source-brain patrol orders backed by source nav markers
 - groups enemy contact logs into source-style encounter beats such as Airfield patrol, North patrol, Infantry ambush, and Starslayer lance
+- marks activated enemy contact groups with a short tactical wake ring, beacon, and ping in the battlefield
 - follows the first player mech as commander
 - defaults to squad orders, with status-bar click for detached single-unit order
 - routes player commands through a CLI-ready commander command port for AI draft/directive tests

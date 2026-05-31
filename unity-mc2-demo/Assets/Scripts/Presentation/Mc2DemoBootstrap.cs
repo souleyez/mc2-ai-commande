@@ -2648,6 +2648,8 @@ namespace MC2Demo.Presentation
             string stage = EncounterPacingStage(airfieldComplete, hangarDamaged, starslayerTriggered);
             bool totalsOk = airfield.Total > 0 && north.Total > 0 && ambush.Total > 0 && starslayer.Total > 0;
             bool voiceOverOk = !starslayerCleared || starslayerVoReady;
+            string activationFx = EncounterActivationCueSummary();
+            bool activationFxOk = activationFx.IndexOf("ContactWake=ring+beacon+ping", StringComparison.Ordinal) >= 0;
             bool activeOk;
             if (!airfieldComplete)
             {
@@ -2690,11 +2692,13 @@ namespace MC2Demo.Presentation
                 + " starslayerVO="
                 + (starslayerVoReady ? "ready" : "pending")
                 + " contract="
-                + EncounterPacingCueSummary();
+                + EncounterPacingCueSummary()
+                + " activationFx="
+                + activationFx;
 
             return new EncounterPacingAssertionResult
             {
-                Accepted = totalsOk && activeOk && voiceOverOk,
+                Accepted = totalsOk && activeOk && voiceOverOk && activationFxOk,
                 Summary = summary
             };
         }
@@ -2717,6 +2721,11 @@ namespace MC2Demo.Presentation
         private static string EncounterPacingCueSummary()
         {
             return "Airfield=Pat1+eastLRM North=Pat2+Pat4 Ambush=hangar-damage Starslayer=area7";
+        }
+
+        private static string EncounterActivationCueSummary()
+        {
+            return "ContactWake=ring+beacon+ping";
         }
 
         private EncounterPacingCounts CountEncounterGroup(string groupKey)
@@ -4509,6 +4518,8 @@ namespace MC2Demo.Presentation
             List<string> contactKeys = new();
             Dictionary<string, int> contactCounts = new(StringComparer.Ordinal);
             Dictionary<string, string> contactLabels = new(StringComparer.Ordinal);
+            Dictionary<string, Vector2> contactCenters = new(StringComparer.Ordinal);
+            Dictionary<string, int> contactCenterSamples = new(StringComparer.Ordinal);
             foreach (UnitActivationEvent activationEvent in mission.RecentUnitActivationEvents)
             {
                 UnitState unit = mission.FindUnit(activationEvent.UnitId);
@@ -4522,6 +4533,18 @@ namespace MC2Demo.Presentation
                 }
 
                 contactCounts[key]++;
+                if (unit != null)
+                {
+                    if (!contactCenters.ContainsKey(key))
+                    {
+                        contactCenters[key] = Vector2.zero;
+                        contactCenterSamples[key] = 0;
+                    }
+
+                    contactCenters[key] += unit.MissionPosition;
+                    contactCenterSamples[key]++;
+                }
+
                 Debug.Log("MC2 enemy activated: " + activationEvent.UnitId + " " + activationEvent.UnitType + " " + activationEvent.Brain);
             }
 
@@ -4535,7 +4558,51 @@ namespace MC2Demo.Presentation
                 lastContactLabel = label;
                 lastContactCount = count;
                 AddCombatLogLine(line);
+                if (contactCenters.TryGetValue(key, out Vector2 center)
+                    && contactCenterSamples.TryGetValue(key, out int samples)
+                    && samples > 0)
+                {
+                    SpawnEncounterActivationCue(key, center / samples, count);
+                }
+
                 Debug.Log("MC2 enemy contact group: " + key + " count=" + count.ToString(CultureInfo.InvariantCulture));
+            }
+        }
+
+        private void SpawnEncounterActivationCue(string key, Vector2 missionPoint, int count)
+        {
+            Vector3 center = GroundMarkerPosition(missionPoint, 0.12f);
+            Color color = EncounterActivationCueColor(key);
+            float scale = Mathf.Clamp(0.95f + count * 0.10f, 1.05f, 2.05f);
+            CreateImpactDisc(
+                "Encounter Wake Ring",
+                center,
+                new Color(color.r, color.g, color.b, 0.36f),
+                0.86f,
+                0.44f * scale,
+                1.55f * scale,
+                0.028f);
+            CreateBeam(
+                center + Vector3.up * 0.08f,
+                center + Vector3.up * Mathf.Clamp(1.0f + count * 0.10f, 1.1f, 1.8f),
+                new Color(color.r, color.g, color.b, 0.58f),
+                0.72f,
+                0.035f);
+            CreateImpact(center + Vector3.up * 0.22f, new Color(color.r, color.g, color.b, 0.52f), false, 0.42f * scale);
+        }
+
+        private static Color EncounterActivationCueColor(string key)
+        {
+            switch (key)
+            {
+                case "ambush":
+                    return new Color(1f, 0.32f, 0.10f, 0.90f);
+                case "starslayer":
+                    return new Color(0.86f, 0.42f, 1f, 0.86f);
+                case "north":
+                    return new Color(1f, 0.60f, 0.16f, 0.86f);
+                default:
+                    return new Color(1f, 0.78f, 0.22f, 0.84f);
             }
         }
 

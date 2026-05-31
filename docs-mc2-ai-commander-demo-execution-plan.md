@@ -711,6 +711,7 @@ Tasks:
 - The first `mc2_01` encounter pacing smoke now proves the airfield beat: initial hostiles held, Airfield/North patrols armed after objective 0, infantry ambush held until hangar damage, and Starslayer held for area 7.
 - The objective graph smoke now guards the source mission skeleton: 6 visible objectives, 3 hidden glue objectives, flag edges, hidden first-patrol flag `3`, north-island unlock, Starslayer area trigger, and Starslayer VO target count.
 - The combat-situation smoke now also guards compact mission-panel objective lines so the North island and Extraction objectives remain readable in the fixed right HUD.
+- Enemy activation events now spawn a short tactical wake ring, beacon, and ping at the activated group center, making source-paced contact beats visible without adding another combat HUD row.
 - The hangar ambush smoke now attacks `structure-1-0`, captures combat/script/contact events during startup advance, and verifies infantry activation only after Hangar damage.
 - The Starslayer trigger smoke now moves into the hidden area-7 zone, treats destroyed enemies as already-activated for pacing counts, and verifies the west lance wakes only after the area trigger; the same pacing assertion now requires the hidden Starslayer VO hook once the lance is cleared.
 - Mission rewards now add funds and salvage fragments, and ready fragment sets become local warehouse mechs.
@@ -897,4 +898,5 @@ Tasks:
 - The README and current-plan baseline now describe the same Reserve, Fit Review, and Funds wording that the guarded Mech Lab UI exposes.
 - The Mech Lab now opens as a desktop-width two-column surface on normal Windows demo resolutions, with Company Bay actions separated from the Loadout fitting grid and the compact drawer kept as fallback.
 - The first dedicated Mech Lab visual audit is done, and Company Bay density is reduced with Ops/Roster paging; the next low-risk step is to switch to battle readability unless another Mech Lab visible blocker appears in play.
+- Enemy contact activation now has a smoke-guarded visual cue contract: `ContactWake=ring+beacon+ping`.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.
