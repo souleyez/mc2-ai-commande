@@ -2137,6 +2137,8 @@ namespace MC2Demo.Presentation
             bool jetFxOk = jetFx.IndexOf("Jet=takeoff+trail+landing", StringComparison.Ordinal) >= 0;
             string structureFx = DemoStructureView.StructureDamageCueSummary();
             bool structureFxOk = structureFx.IndexOf("Structure=scar+smoke+collapse", StringComparison.Ordinal) >= 0;
+            string scriptFx = ScriptEventCueSummary();
+            bool scriptFxOk = scriptFx.IndexOf("ScriptCue=ring+beacon+signal", StringComparison.Ordinal) >= 0;
             string tempoText = CombatTempoText();
             string tempoMode = CombatTempoMode();
             bool tempoOk = CombatTempoTextMatchesState(tempoText);
@@ -2175,6 +2177,8 @@ namespace MC2Demo.Presentation
                 + jetFx
                 + " structureFx="
                 + structureFx
+                + " scriptFx="
+                + scriptFx
                 + " tempoMode="
                 + tempoMode
                 + " tempo="
@@ -2203,6 +2207,7 @@ namespace MC2Demo.Presentation
                     && objectiveFxOk
                     && jetFxOk
                     && structureFxOk
+                    && scriptFxOk
                     && tempoOk
                     && expectedTempoOk
                     && pressureOk
@@ -4797,6 +4802,7 @@ namespace MC2Demo.Presentation
                 string line = "Script: " + scriptEvent.Signal;
                 AddCombatLogLine(line);
                 statusText = scriptEvent.Message;
+                SpawnScriptEventCue(scriptEvent);
                 Debug.Log(
                     "MC2 script signal: "
                     + scriptEvent.Signal
@@ -4807,6 +4813,154 @@ namespace MC2Demo.Presentation
                     + " message="
                     + scriptEvent.Message);
             }
+        }
+
+        private void SpawnScriptEventCue(MissionScriptEvent scriptEvent)
+        {
+            if (scriptEvent == null
+                || !TryGetScriptEventCuePoint(scriptEvent, out Vector2 missionPoint, out float missionRadius))
+            {
+                return;
+            }
+
+            Vector3 center = GroundMarkerPosition(missionPoint, 0.16f);
+            Color color = ScriptEventCueColor(scriptEvent);
+            float scale = Mathf.Clamp(missionRadius / 160f, 0.85f, 2.25f);
+            CreateImpactDisc(
+                "Script Signal Pulse",
+                center,
+                new Color(color.r, color.g, color.b, 0.28f),
+                0.72f,
+                0.30f * scale,
+                1.28f * scale,
+                0.022f);
+            CreateBeam(
+                center + Vector3.up * 0.08f,
+                center + Vector3.up * Mathf.Clamp(0.95f * scale, 0.9f, 1.75f),
+                new Color(color.r, color.g, color.b, 0.46f),
+                0.62f,
+                0.026f);
+            CreateImpact(center + Vector3.up * 0.22f, new Color(color.r, color.g, color.b, 0.44f), false, 0.34f * scale);
+        }
+
+        private bool TryGetScriptEventCuePoint(MissionScriptEvent scriptEvent, out Vector2 missionPoint, out float missionRadius)
+        {
+            if (!string.IsNullOrWhiteSpace(scriptEvent.SourceId))
+            {
+                StructureState sourceStructure = mission.FindStructure(scriptEvent.SourceId);
+                if (sourceStructure != null)
+                {
+                    missionPoint = sourceStructure.MissionPosition;
+                    missionRadius = sourceStructure.Radius;
+                    return true;
+                }
+
+                UnitState sourceUnit = mission.FindUnit(scriptEvent.SourceId);
+                if (sourceUnit != null)
+                {
+                    missionPoint = sourceUnit.MissionPosition;
+                    missionRadius = 120f;
+                    return true;
+                }
+            }
+
+            if (TryGetScriptEventObjectiveCuePoint(scriptEvent.Signal, out missionPoint, out missionRadius))
+            {
+                return true;
+            }
+
+            return TryGetPlayerSquadCueCenter(out missionPoint, out missionRadius);
+        }
+
+        private bool TryGetScriptEventObjectiveCuePoint(string signal, out Vector2 missionPoint, out float missionRadius)
+        {
+            int objectiveIndex = -1;
+            if (string.Equals(signal, "Objective_0_Decided", StringComparison.OrdinalIgnoreCase))
+            {
+                objectiveIndex = 0;
+            }
+            else if (string.Equals(signal, "patrols_Area_Trigger", StringComparison.OrdinalIgnoreCase))
+            {
+                objectiveIndex = 3;
+            }
+            else if (string.Equals(signal, "Starslayer_Trigger", StringComparison.OrdinalIgnoreCase))
+            {
+                objectiveIndex = 7;
+            }
+            else if (string.Equals(signal, "Starslayer_VO_Check", StringComparison.OrdinalIgnoreCase))
+            {
+                objectiveIndex = 8;
+            }
+
+            ObjectiveState objective = objectiveIndex < 0 ? null : FindObjectiveState(objectiveIndex);
+            if (objective?.Definition != null && TryGetObjectiveCuePoint(objective.Definition, out missionPoint, out missionRadius))
+            {
+                return true;
+            }
+
+            missionPoint = default;
+            missionRadius = 0f;
+            return false;
+        }
+
+        private bool TryGetPlayerSquadCueCenter(out Vector2 missionPoint, out float missionRadius)
+        {
+            Vector2 total = Vector2.zero;
+            int count = 0;
+            foreach (UnitState unit in mission.PlayerUnits())
+            {
+                if (unit == null || !unit.IsActive || unit.IsDestroyed)
+                {
+                    continue;
+                }
+
+                total += unit.MissionPosition;
+                count++;
+            }
+
+            if (count <= 0)
+            {
+                missionPoint = default;
+                missionRadius = 0f;
+                return false;
+            }
+
+            missionPoint = total / count;
+            missionRadius = 140f;
+            return true;
+        }
+
+        private static Color ScriptEventCueColor(MissionScriptEvent scriptEvent)
+        {
+            string signal = scriptEvent?.Signal ?? "";
+            if (ContainsIgnoreCase(signal, "Starslayer"))
+            {
+                return new Color(0.86f, 0.42f, 1f, 0.82f);
+            }
+
+            if (ContainsIgnoreCase(signal, "Hangar") || scriptEvent?.Kind == MissionScriptEventKind.Combat)
+            {
+                return new Color(1f, 0.48f, 0.12f, 0.82f);
+            }
+
+            if (scriptEvent?.Kind == MissionScriptEventKind.MissionResult)
+            {
+                return ContainsIgnoreCase(signal, "Player")
+                    ? new Color(1f, 0.20f, 0.12f, 0.82f)
+                    : new Color(0.28f, 1f, 0.56f, 0.82f);
+            }
+
+            if (scriptEvent?.Kind == MissionScriptEventKind.UnitActivation)
+            {
+                return new Color(1f, 0.76f, 0.22f, 0.80f);
+            }
+
+            return new Color(0.36f, 0.88f, 1f, 0.78f);
+        }
+
+        private static string ScriptEventCueSummary()
+        {
+            return "ScriptCue=ring+beacon+signal";
         }
 
         private void CaptureMissionResult()

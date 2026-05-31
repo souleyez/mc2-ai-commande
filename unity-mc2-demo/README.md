@@ -10,6 +10,7 @@ Current demo behavior:
 - gates objectives with source flag and previous-primary prerequisites
 - emits objective activation and completion events for mission logging
 - routes objective, contact, combat, and result events through a script-signal bridge for later ABL/AI hooks
+- pulses script-signal bridge events at the battlefield source position
 - builds a source-driven 100 x 100 terrain mesh and water plane from packet data
 - places original terrain object records as lightweight trees and buildings
 - activates enemy groups from source mission brain names and objective progress
