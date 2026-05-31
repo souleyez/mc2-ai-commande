@@ -2361,6 +2361,23 @@ namespace MC2Demo.Presentation
             string purchaseReady = PlayerMechLabActionStatusText("Ready demo purchase");
             string hireReady = PlayerMechLabActionStatusText("Ready demo hire");
             string unavailable = PlayerMechLabActionStatusText("Inventory missing");
+            string shopSummary = WeaponShopPreviewText(new MechBayWeaponShopPreview
+            {
+                Entries = new[]
+                {
+                    new MechBayWeaponShopEntry
+                    {
+                        tokenCost = 400,
+                        canAfford = true
+                    }
+                }
+            });
+            string purchaseSummary = WeaponShopPurchaseStubText(new MechBayWeaponPurchasePreviewResult
+            {
+                displayName = "AC/5",
+                TokenCost = 450,
+                Message = "Ready demo purchase"
+            });
             string pilotSummary = PilotHirePreviewText(new MechBayPilotHirePreview
             {
                 Candidates = new[]
@@ -2377,7 +2394,12 @@ namespace MC2Demo.Presentation
                 && string.Equals(hireReady, "Ready to hire", StringComparison.Ordinal)
                 && hireReady.IndexOf("demo", StringComparison.OrdinalIgnoreCase) < 0
                 && string.Equals(unavailable, MechLabUnavailableText, StringComparison.Ordinal)
-                && pilotSummary.IndexOf("NPC pilots from", StringComparison.OrdinalIgnoreCase) >= 0
+                && shopSummary.IndexOf("400 funds", StringComparison.OrdinalIgnoreCase) >= 0
+                && shopSummary.IndexOf("token", StringComparison.OrdinalIgnoreCase) < 0
+                && purchaseSummary.IndexOf("450 funds", StringComparison.OrdinalIgnoreCase) >= 0
+                && purchaseSummary.IndexOf("token", StringComparison.OrdinalIgnoreCase) < 0
+                && pilotSummary.IndexOf("NPC pilot from 600 funds", StringComparison.OrdinalIgnoreCase) >= 0
+                && pilotSummary.IndexOf("token", StringComparison.OrdinalIgnoreCase) < 0
                 && !ContainsPrototypeCopy(pilotSummary);
             return new LoadoutCompactCheck(
                 accepted,
@@ -2387,6 +2409,10 @@ namespace MC2Demo.Presentation
                 + hireReady
                 + "/"
                 + unavailable
+                + " shop="
+                + shopSummary
+                + " buy="
+                + purchaseSummary
                 + " pilotSummary="
                 + pilotSummary);
         }
@@ -5880,7 +5906,7 @@ namespace MC2Demo.Presentation
 
             if (demoInventory.tokenBalance < repairCost)
             {
-                statusText = "Need " + FormatTokens(repairCost) + " token for all repairs";
+                statusText = "Need " + FundsCostText(repairCost) + " for all repairs";
                 AddCombatLogLine(statusText);
                 return;
             }
@@ -6974,7 +7000,7 @@ namespace MC2Demo.Presentation
                 }
             }
 
-            string cost = cheapestCost == int.MaxValue ? "unknown" : FormatTokens(cheapestCost) + " token";
+            string cost = cheapestCost == int.MaxValue ? "unknown" : FundsCostText(cheapestCost);
             return entries.Length.ToString(CultureInfo.InvariantCulture)
                 + " ordinary weapons from "
                 + cost
@@ -7039,7 +7065,7 @@ namespace MC2Demo.Presentation
                 return "Purchase unavailable";
             }
 
-            string cost = FormatTokens(purchasePreview.TokenCost) + " token";
+            string cost = FundsCostText(purchasePreview.TokenCost);
             return purchasePreview.displayName
                 + " "
                 + cost
@@ -7287,9 +7313,10 @@ namespace MC2Demo.Presentation
                 }
             }
 
-            string cost = cheapestCost == int.MaxValue ? "unknown" : FormatTokens(cheapestCost) + " token";
+            string cost = cheapestCost == int.MaxValue ? "unknown" : FundsCostText(cheapestCost);
+            string pilotLabel = candidates.Length == 1 ? " NPC pilot from " : " NPC pilots from ";
             return candidates.Length.ToString(CultureInfo.InvariantCulture)
-                + " NPC pilots from "
+                + pilotLabel
                 + cost
                 + "  afford "
                 + affordableCount.ToString(CultureInfo.InvariantCulture)
@@ -7479,7 +7506,7 @@ namespace MC2Demo.Presentation
                 return "Hire Pilot unavailable";
             }
 
-            string cost = FormatTokens(hirePreview.TokenCost) + " token";
+            string cost = FundsCostText(hirePreview.TokenCost);
             string risk = string.IsNullOrWhiteSpace(hirePreview.RiskProfile) ? "" : "  " + hirePreview.RiskProfile;
             return hirePreview.displayName
                 + " "
@@ -10922,6 +10949,11 @@ namespace MC2Demo.Presentation
         private static string FormatTokens(int value)
         {
             return value.ToString("N0", CultureInfo.InvariantCulture);
+        }
+
+        private static string FundsCostText(int value)
+        {
+            return FormatTokens(Math.Max(0, value)) + " funds";
         }
 
         private static string FormatDecimal(float value)
