@@ -706,6 +706,7 @@ Tasks:
 - The combat situation smoke now guards the current weapon FX cue contract with `Energy=beam+pillar+muzzle Missile=arc+blast+salvo Ballistic=tracer+sparks+muzzle`.
 - Tactical target lines now vary color and thickness for ready, cooling, and blocked shots, keeping weapon cadence visible without adding HUD rows.
 - Target acquisition now pulses compact auto/command lock rings at target points without adding combat HUD rows.
+- Squad focus now keeps a compact pressure ring on targets shared by multiple player mechs without adding combat HUD rows.
 - The combat situation smoke now also guards the compact battle pulse with explicit quiet, contact, and fire expectations tied to mission events.
 - The combat situation smoke now also guards source-group contact pressure internally, so active Airfield and North groups remain verifiable without occupying default battle HUD space.
 - The combat situation smoke now also guards the commanded Focus contract, keeping the current target readable without exposing internal target ids.
@@ -923,6 +924,7 @@ Tasks:
 - Armor mitigation now has a smoke-guarded battlefield cue contract: `ArmorMitigation=glint+spark`.
 - Weapon target lines now have a smoke-guarded battlefield cue contract: `TargetLine=ready+cooling+blocked`.
 - Target lock acquisition now has a smoke-guarded battlefield cue contract: `TargetLock=auto+command`.
+- Squad focus pressure now has a smoke-guarded battlefield cue contract: `SquadFocus=ring+pressure`.
 - Visible objective events now have a smoke-guarded battlefield cue contract: `ObjectivePulse=active+complete+target`.
 - Jet movement now has a smoke-guarded battlefield cue contract: `Jet=takeoff+trail+landing`.
 - Target structure damage now has a smoke-guarded battlefield cue contract: `Structure=scar+smoke+collapse`.

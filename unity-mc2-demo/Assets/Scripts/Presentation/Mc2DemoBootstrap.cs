@@ -156,6 +156,7 @@ namespace MC2Demo.Presentation
         private readonly Dictionary<string, GameObject> unitCommanderBeacons = new();
         private readonly Dictionary<string, GameObject> unitTargetLines = new();
         private readonly Dictionary<string, string> lastTargetLockByUnit = new(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, int> visibleFocusTargetCounts = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, GameObject> unitHealthBarBacks = new();
         private readonly Dictionary<string, GameObject> unitHealthBarFills = new();
         private readonly Dictionary<int, List<GameObject>> objectiveAreaMarkers = new();
@@ -171,6 +172,7 @@ namespace MC2Demo.Presentation
         private readonly Dictionary<string, Vector2Int> selectedLoadoutGridCellByUnit = new(StringComparer.OrdinalIgnoreCase);
         private readonly List<Material> ownedMaterials = new();
         private readonly List<string> combatLog = new();
+        private GameObject squadFocusMarker;
         private string selectedMechBayLoadoutUnitId;
         private float lastCombatEventTimeSeconds = -999f;
         private float lastContactEventTimeSeconds = -999f;
@@ -512,6 +514,7 @@ namespace MC2Demo.Presentation
             unitCommanderBeacons.Clear();
             unitTargetLines.Clear();
             lastTargetLockByUnit.Clear();
+            visibleFocusTargetCounts.Clear();
             unitHealthBarBacks.Clear();
             unitHealthBarFills.Clear();
             objectiveAreaMarkers.Clear();
@@ -525,6 +528,7 @@ namespace MC2Demo.Presentation
             selectedLoadoutWeaponByUnit.Clear();
             selectedLoadoutGridCellByUnit.Clear();
             combatLog.Clear();
+            squadFocusMarker = null;
             lastCombatEventTimeSeconds = -999f;
             lastContactEventTimeSeconds = -999f;
             lastContactLabel = "";
@@ -2153,6 +2157,8 @@ namespace MC2Demo.Presentation
             bool targetLineFxOk = targetLineFx.IndexOf("TargetLine=ready+cooling+blocked", StringComparison.Ordinal) >= 0;
             string targetLockFx = TargetLockCueSummary();
             bool targetLockFxOk = targetLockFx.IndexOf("TargetLock=auto+command", StringComparison.Ordinal) >= 0;
+            string squadFocusFx = SquadFocusCueSummary();
+            bool squadFocusFxOk = squadFocusFx.IndexOf("SquadFocus=ring+pressure", StringComparison.Ordinal) >= 0;
             string sectionFx = DemoUnitView.SectionDamageCueSummary();
             bool sectionFxOk = sectionFx.IndexOf("Arms=missing-socket+flag", StringComparison.Ordinal) >= 0
                 && sectionFx.IndexOf("Legs=collapse+red-cross", StringComparison.Ordinal) >= 0
@@ -2221,6 +2227,8 @@ namespace MC2Demo.Presentation
                 + targetLineFx
                 + " targetLockFx="
                 + targetLockFx
+                + " squadFocusFx="
+                + squadFocusFx
                 + " sectionFx="
                 + sectionFx
                 + " heatFx="
@@ -2271,6 +2279,7 @@ namespace MC2Demo.Presentation
                     && sectionFlashFxOk
                     && targetLineFxOk
                     && targetLockFxOk
+                    && squadFocusFxOk
                     && sectionFxOk
                     && heatFxOk
                     && objectiveFxOk
@@ -2308,6 +2317,11 @@ namespace MC2Demo.Presentation
         private static string TargetLockCueSummary()
         {
             return "TargetLock=auto+command";
+        }
+
+        private static string SquadFocusCueSummary()
+        {
+            return "SquadFocus=ring+pressure";
         }
 
         private bool CombatTempoTextMatchesState(string tempoText)
@@ -5911,6 +5925,12 @@ namespace MC2Demo.Presentation
                     new Vector3(0.085f, 0.42f, 0.085f));
                 unitTargetLines[unit.Id] = CreateTargetLine(unit.Id + " Target Line");
             }
+
+            squadFocusMarker = CreateMarkerDisc(
+                "Squad Focus Pressure",
+                "SquadFocusPressure",
+                new Color(1f, 0.72f, 0.18f, 0.34f),
+                new Vector3(1.40f, 0.018f, 1.40f));
         }
 
         private GameObject CreateMarkerDisc(string objectName, string materialName, Color color, Vector3 scale)
@@ -5948,6 +5968,7 @@ namespace MC2Demo.Presentation
                 UpdateTargetLine(unit);
             }
 
+            UpdateSquadFocusMarker();
             UpdateTargetHealthBars();
         }
 
@@ -6180,6 +6201,61 @@ namespace MC2Demo.Presentation
                 new Color(color.r, color.g, color.b, 0.48f),
                 0.28f,
                 0.014f * scale);
+        }
+
+        private void UpdateSquadFocusMarker()
+        {
+            if (squadFocusMarker == null)
+            {
+                return;
+            }
+
+            string targetId = PrimaryVisibleSquadFocusTargetId(out int focusCount);
+            Vector2 position = default;
+            float radius = 0f;
+            bool isVisible = focusCount >= 2 && TryGetTargetMarker(targetId, out position, out radius);
+            squadFocusMarker.SetActive(isVisible);
+            if (!isVisible)
+            {
+                return;
+            }
+
+            float pulse = 0.96f + Mathf.Sin(Time.time * 4.4f) * 0.06f;
+            float scale = Mathf.Clamp(radius / 88f, 1.35f, 4.8f) * pulse;
+            squadFocusMarker.transform.position = GroundMarkerPosition(position, 0.12f);
+            squadFocusMarker.transform.localScale = new Vector3(scale, 0.018f, scale);
+        }
+
+        private string PrimaryVisibleSquadFocusTargetId(out int focusCount)
+        {
+            visibleFocusTargetCounts.Clear();
+            string bestTargetId = string.Empty;
+            focusCount = 0;
+
+            foreach (UnitState unit in mission.PlayerUnits())
+            {
+                if (unit == null || unit.IsDestroyed)
+                {
+                    continue;
+                }
+
+                string targetId = string.IsNullOrEmpty(unit.AttackTargetId) ? unit.CurrentTargetId : unit.AttackTargetId;
+                if (string.IsNullOrEmpty(targetId) || !TryGetTargetMarker(targetId, out _, out _))
+                {
+                    continue;
+                }
+
+                visibleFocusTargetCounts.TryGetValue(targetId, out int count);
+                count++;
+                visibleFocusTargetCounts[targetId] = count;
+                if (count > focusCount)
+                {
+                    focusCount = count;
+                    bestTargetId = targetId;
+                }
+            }
+
+            return bestTargetId;
         }
 
         private GameObject CreateTargetLine(string objectName)
