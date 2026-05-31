@@ -40,7 +40,7 @@ The Unity demo currently supports:
 - enemy activation and lightweight patrol orders
 - player squad orders, detached unit orders, focused unit/structure attacks, and Jet orders
 - heat, cooldown, weapon range/readiness, simple section damage, section penalties, and animated breakoff/ejection effects
-- compact tactical UI with unit status, mech bay preview, mission brief, current-objective map, world objective hints, health bars, command rings, range rings, and target lines
+- compact tactical UI with unit status, mech bay preview, mission brief, current-objective map, world objective hints, health bars, command rings, command-accept pulses, range rings, and target lines
 - the combat situation row names the commander mech, squad readiness, detached single-order count, hostiles, targets, and recent contact tempo
 - the combat panel keeps a lean two-line HUD: squad/hostile basics plus one compact battle pulse for tempo and current focus
 - source-group Contacts pressure remains smoke-guarded for mission pacing, but is not shown as another default combat HUD row
@@ -707,6 +707,7 @@ Tasks:
 - The combat situation smoke now also guards the compact battle pulse with explicit quiet, contact, and fire expectations tied to mission events.
 - The combat situation smoke now also guards source-group contact pressure internally, so active Airfield and North groups remain verifiable without occupying default battle HUD space.
 - The combat situation smoke now also guards the commanded Focus contract, keeping the current target readable without exposing internal target ids.
+- Accepted player and CLI commands now pulse move, attack, Jet, and single-unit cues on the battlefield so command acknowledgement reads without adding another HUD row.
 - Section damage readability now has persistent missing-arm flags, red leg-collapse cues, cockpit breach/ejection markers, critical-section smoke/spark vents, destroyed-mech wreck blast/smoke/markers, and a smoke-guarded cue contract.
 - The first `mc2_01` encounter pacing smoke now proves the airfield beat: initial hostiles held, Airfield/North patrols armed after objective 0, infantry ambush held until hangar damage, and Starslayer held for area 7.
 - The objective graph smoke now guards the source mission skeleton: 6 visible objectives, 3 hidden glue objectives, flag edges, hidden first-patrol flag `3`, north-island unlock, Starslayer area trigger, and Starslayer VO target count.
@@ -908,4 +909,5 @@ Tasks:
 - Target structure damage now has a smoke-guarded battlefield cue contract: `Structure=scar+smoke+collapse`.
 - Script bridge events now have a smoke-guarded battlefield cue contract: `ScriptCue=ring+beacon+signal`.
 - Destroyed mech wreck cues now have a smoke-guarded battlefield cue contract: `Wreck=blast+smoke+marker`.
+- Accepted command cues now have a smoke-guarded battlefield cue contract: `Command=move+attack+single`.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.

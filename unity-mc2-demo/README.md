@@ -33,6 +33,7 @@ Current demo behavior:
 - frames the battle Combat/Mission HUD and shifts the mech bay into a right-side focused drawer with a dimmed backdrop
 - lets map clicks on hostile units or targetable buildings issue focused attack orders
 - renders command rings for selected units, order destinations, and focused targets
+- pulses accepted move, attack, Jet, and single-unit commands at the battlefield point without adding HUD rows
 - shows world objective area hints only for the current active objective
 - pulses visible objective activation and completion at the battlefield target position
 - draws tactical target lines from player units to active targets, colored by weapon readiness

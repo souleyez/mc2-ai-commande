@@ -752,7 +752,10 @@ namespace MC2Demo.Presentation
                 return;
             }
 
-            LogStartupCommanderCommand(commandLine, commandPort.IssueText(commandLine));
+            CommanderCommandPort.TryParse(commandLine, out CommanderCommand parsedCommand, out _);
+            CommanderCommandResult result = commandPort.IssueText(commandLine);
+            LogStartupCommanderCommand(commandLine, result);
+            SpawnAcceptedCommandCue(parsedCommand, result);
         }
 
         private int RunStartupCommanderCommandFile(string[] args, int index)
@@ -2140,6 +2143,8 @@ namespace MC2Demo.Presentation
             bool structureFxOk = structureFx.IndexOf("Structure=scar+smoke+collapse", StringComparison.Ordinal) >= 0;
             string scriptFx = ScriptEventCueSummary();
             bool scriptFxOk = scriptFx.IndexOf("ScriptCue=ring+beacon+signal", StringComparison.Ordinal) >= 0;
+            string commandFx = CommandCueSummary();
+            bool commandFxOk = commandFx.IndexOf("Command=move+attack+single", StringComparison.Ordinal) >= 0;
             string tempoText = CombatTempoText();
             string tempoMode = CombatTempoMode();
             bool tempoOk = CombatTempoTextMatchesState(tempoText);
@@ -2180,6 +2185,8 @@ namespace MC2Demo.Presentation
                 + structureFx
                 + " scriptFx="
                 + scriptFx
+                + " commandFx="
+                + commandFx
                 + " tempoMode="
                 + tempoMode
                 + " tempo="
@@ -2209,6 +2216,7 @@ namespace MC2Demo.Presentation
                     && jetFxOk
                     && structureFxOk
                     && scriptFxOk
+                    && commandFxOk
                     && tempoOk
                     && expectedTempoOk
                     && pressureOk
@@ -4964,6 +4972,86 @@ namespace MC2Demo.Presentation
             return "ScriptCue=ring+beacon+signal";
         }
 
+        private static string CommandCueSummary()
+        {
+            return "Command=move+attack+single";
+        }
+
+        private void SpawnAcceptedCommandCue(CommanderCommand command, CommanderCommandResult result)
+        {
+            if (command == null || result == null || !result.Accepted)
+            {
+                return;
+            }
+
+            bool isSingleUnitCommand = command.Scope == CommanderCommandScope.Unit && !string.IsNullOrEmpty(command.UnitId);
+            switch (command.Kind)
+            {
+                case CommanderCommandKind.Move:
+                    SpawnCommandMoveCue(command.MissionPoint, isSingleUnitCommand, false);
+                    break;
+                case CommanderCommandKind.Jump:
+                    SpawnCommandMoveCue(command.MissionPoint, isSingleUnitCommand, true);
+                    break;
+                case CommanderCommandKind.AttackUnit:
+                case CommanderCommandKind.AttackStructure:
+                    SpawnCommandAttackCue(command.TargetId, isSingleUnitCommand);
+                    break;
+            }
+
+            if (isSingleUnitCommand)
+            {
+                SpawnCommandSingleCue(command.UnitId, command.Kind);
+            }
+        }
+
+        private void SpawnCommandMoveCue(Vector2 missionPoint, bool isSingleUnitCommand, bool isJump)
+        {
+            Vector3 center = GroundMarkerPosition(missionPoint, 0.17f);
+            Color color = isJump
+                ? new Color(0.44f, 0.92f, 1f, 0.72f)
+                : isSingleUnitCommand
+                    ? new Color(1f, 0.64f, 0.18f, 0.72f)
+                    : new Color(0.22f, 0.82f, 1f, 0.68f);
+            float duration = isJump ? 0.72f : 0.58f;
+            CreateImpactDisc("Command Move Pulse", center, new Color(color.r, color.g, color.b, 0.34f), duration, 0.26f, isJump ? 1.30f : 1.05f, 0.024f);
+            CreateBeam(center + Vector3.up * 0.06f, center + Vector3.up * (isJump ? 1.28f : 0.88f), new Color(color.r, color.g, color.b, 0.54f), duration * 0.82f, isJump ? 0.034f : 0.026f);
+            CreateImpact(center + Vector3.up * 0.14f, new Color(color.r, color.g, color.b, 0.46f), false, isJump ? 0.48f : 0.34f);
+        }
+
+        private void SpawnCommandAttackCue(string targetId, bool isSingleUnitCommand)
+        {
+            if (string.IsNullOrEmpty(targetId) || !TryGetTargetMarker(targetId, out Vector2 missionPoint, out float radius))
+            {
+                return;
+            }
+
+            Vector3 center = GroundMarkerPosition(missionPoint, 0.18f);
+            float scale = Mathf.Clamp(radius / 120f, 0.85f, 2.25f);
+            Color color = isSingleUnitCommand
+                ? new Color(1f, 0.42f, 0.12f, 0.76f)
+                : new Color(1f, 0.62f, 0.16f, 0.72f);
+            CreateImpactDisc("Command Attack Pulse", center, new Color(color.r, color.g, color.b, 0.34f), 0.64f, 0.32f * scale, 1.25f * scale, 0.030f);
+            CreateBeam(center + Vector3.up * 0.08f, center + Vector3.up * Mathf.Clamp(0.95f * scale, 0.85f, 1.85f), new Color(color.r, color.g, color.b, 0.56f), 0.54f, 0.032f);
+            CreateImpact(center + Vector3.up * 0.18f, new Color(color.r, color.g, color.b, 0.48f), false, 0.42f * scale);
+        }
+
+        private void SpawnCommandSingleCue(string unitId, CommanderCommandKind commandKind)
+        {
+            UnitState unit = mission?.FindUnit(unitId);
+            if (unit == null || unit.IsDestroyed)
+            {
+                return;
+            }
+
+            Color color = commandKind == CommanderCommandKind.Move || commandKind == CommanderCommandKind.Jump
+                ? new Color(1f, 0.72f, 0.20f, 0.62f)
+                : new Color(1f, 0.34f, 0.12f, 0.66f);
+            Vector3 center = GroundMarkerPosition(unit.MissionPosition, 0.15f);
+            CreateImpactDisc("Command Single Pulse", center, new Color(color.r, color.g, color.b, 0.30f), 0.48f, 0.22f, 0.86f, 0.022f);
+            CreateBeam(center + Vector3.up * 0.05f, center + Vector3.up * 0.70f, new Color(color.r, color.g, color.b, 0.48f), 0.38f, 0.020f);
+        }
+
         private void CaptureMissionResult()
         {
             if (mission.Result == lastMissionResult)
@@ -6079,10 +6167,12 @@ namespace MC2Demo.Presentation
 
             if (!string.IsNullOrEmpty(pendingDetachedUnitId))
             {
-                CommanderCommandResult result = commandPort.MoveUnit(pendingDetachedUnitId, target);
+                string detachedUnitId = pendingDetachedUnitId;
+                CommanderCommandResult result = commandPort.MoveUnit(detachedUnitId, target);
                 statusText = result.Accepted
-                    ? (string.IsNullOrEmpty(label) ? "Detached order: " + pendingDetachedUnitId : label + " with " + pendingDetachedUnitId)
+                    ? (string.IsNullOrEmpty(label) ? "Detached order: " + detachedUnitId : label + " with " + detachedUnitId)
                     : result.Message;
+                SpawnAcceptedCommandCue(CommanderCommand.UnitMove(detachedUnitId, target), result);
                 pendingDetachedUnitId = null;
             }
             else
@@ -6091,6 +6181,7 @@ namespace MC2Demo.Presentation
                 statusText = result.Accepted
                     ? (string.IsNullOrEmpty(label) ? "Squad move" : label)
                     : result.Message;
+                SpawnAcceptedCommandCue(CommanderCommand.SquadMove(target), result);
             }
         }
 
@@ -6102,11 +6193,13 @@ namespace MC2Demo.Presentation
             {
                 result = commandPort.AttackUnit(detachedUnitId, target.Id);
                 statusText = result.Accepted ? "Focus " + target.UnitType + " with " + detachedUnitId : result.Message;
+                SpawnAcceptedCommandCue(CommanderCommand.AttackUnit(detachedUnitId, target.Id), result);
             }
             else
             {
                 result = commandPort.AttackUnit(null, target.Id);
                 statusText = result.Accepted ? "Squad focus: " + target.UnitType : result.Message;
+                SpawnAcceptedCommandCue(CommanderCommand.AttackUnit(null, target.Id), result);
             }
 
             pendingDetachedUnitId = null;
@@ -6120,11 +6213,13 @@ namespace MC2Demo.Presentation
             {
                 result = commandPort.AttackStructure(detachedUnitId, target.Id);
                 statusText = result.Accepted ? "Attack " + target.ObjectType + " with " + detachedUnitId : result.Message;
+                SpawnAcceptedCommandCue(CommanderCommand.AttackStructure(detachedUnitId, target.Id), result);
             }
             else
             {
                 result = commandPort.AttackStructure(null, target.Id);
                 statusText = result.Accepted ? "Squad attack: " + target.ObjectType : result.Message;
+                SpawnAcceptedCommandCue(CommanderCommand.AttackStructure(null, target.Id), result);
             }
 
             pendingDetachedUnitId = null;
@@ -6140,6 +6235,7 @@ namespace MC2Demo.Presentation
                 statusText = result.Accepted
                     ? (string.IsNullOrEmpty(label) ? "Jet order: " + detachedUnitId : "Jet vector: " + detachedUnitId)
                     : result.Message;
+                SpawnAcceptedCommandCue(CommanderCommand.UnitJump(detachedUnitId, target), result);
             }
             else
             {
@@ -6147,6 +6243,7 @@ namespace MC2Demo.Presentation
                 statusText = result.Accepted
                     ? (string.IsNullOrEmpty(label) ? "Squad jet: " + result.AcceptedCount : "Squad jet vector: " + result.AcceptedCount)
                     : result.Message;
+                SpawnAcceptedCommandCue(CommanderCommand.SquadJump(target), result);
             }
 
             pendingDetachedUnitId = null;
