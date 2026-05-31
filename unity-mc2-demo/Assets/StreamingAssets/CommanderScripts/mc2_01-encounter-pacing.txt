@@ -1,0 +1,6 @@
+# Proves the first mc2_01 encounter beat stays source-paced: no hostiles before the airfield, patrol groups armed after it, ambush held.
+assert-encounter-pacing
+command squad move 3136 -789
+advance 12
+assert-encounter-pacing
+report

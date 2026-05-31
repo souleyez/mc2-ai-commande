@@ -14,6 +14,7 @@ Current demo behavior:
 - places original terrain object records as lightweight trees and buildings
 - activates enemy groups from source mission brain names and objective progress
 - moves activated enemy groups with lightweight source-brain patrol orders backed by source nav markers
+- groups enemy contact logs into source-style encounter beats such as Airfield patrol, North patrol, Infantry ambush, and Starslayer lance
 - follows the first player mech as commander
 - defaults to squad orders, with status-bar click for detached single-unit order
 - routes player commands through a CLI-ready commander command port for AI draft/directive tests
@@ -239,6 +240,15 @@ Run the player with a startup commander command file:
   -logFile "$PWD\..\analysis-output\unity-player-command-file.log"
 ```
 
+Run the player with a startup command file that asserts the first source-paced encounter beat:
+
+```powershell
+& .\Builds\Windows\MC2UnityDemo.exe `
+  -batchmode -nographics -mc2SmokeTest `
+  -mc2CommandFile ".\Assets\StreamingAssets\CommanderScripts\mc2_01-encounter-pacing.txt" `
+  -logFile "$PWD\..\analysis-output\unity-player-encounter-pacing.log"
+```
+
 Run the player with a startup command file that restarts and rebuilds the active mission:
 
 ```powershell
@@ -378,7 +388,7 @@ command unit unit-1 move 3221 -277
 
 Relative command-file paths are checked from the current working directory first, then from the player `StreamingAssets` folder.
 
-Command files also support `prepare-local-candidate`, `prepare-depot-candidate`, `squad-swap`, `hide-squad-preview`, `saved-account-report`, `saved-account-save-load-preview`, `saved-account-export <path>`, `saved-account-import-preview <path>`, `saved-account-import-apply-preview <path>`, `saved-account-import-apply <path>`, `saved-account-load-default-preview`, `saved-account-save-current-default`, `saved-account-load-default-apply`, `mech-bay-launch`, `assert-restart-identity depot`, `assert-debrief-summary`, `assert-combat-situation`, and `assert-loadout-compact`. `prepare-local-candidate` runs the payout, assembly, NPC hire, weapon shop, and warehouse fit-review services before the swap, then logs a read-only saved-account delta and auto-saves the account snapshot; `hide-squad-preview` verifies the completed replacement cue survives into the general next-mission handoff; `assert-debrief-summary` verifies result counters and compact debrief combat rows; `assert-combat-situation` verifies the combat HUD situation row counters and recent-contact tempo; `assert-loadout-compact` verifies compact mech-bay fitting title, weapon-button, and grid-spacing contracts; `saved-account-report` validates and logs a JSON dry-run of the local account snapshot without writing a file; `saved-account-save-load-preview` serializes and loads that snapshot in memory to prove the future save/load boundary; `saved-account-export` writes a JSON file only when the script provides a path, `saved-account-import-preview` validates a file without applying it to the mech bay, `saved-account-import-apply-preview` adds the identity guard plus would-change delta for a future apply, then exposes the latest preview as a guarded mech bay Apply row with a manual JSON path Preview field, Default/Export/Load helpers, and a compact Last Save result line, `saved-account-import-apply` requires that matching accepted preview before replacing the local mech bay with a cloned loaded inventory, then auto-saves the resulting local account, `saved-account-save-current-default` writes the active account to the persistent demo save path, and the default-load commands reuse the same guard against that path; `prepare-depot-candidate` remains a legacy direct smoke fallback.
+Command files also support `prepare-local-candidate`, `prepare-depot-candidate`, `squad-swap`, `hide-squad-preview`, `saved-account-report`, `saved-account-save-load-preview`, `saved-account-export <path>`, `saved-account-import-preview <path>`, `saved-account-import-apply-preview <path>`, `saved-account-import-apply <path>`, `saved-account-load-default-preview`, `saved-account-save-current-default`, `saved-account-load-default-apply`, `mech-bay-launch`, `assert-restart-identity depot`, `assert-debrief-summary`, `assert-combat-situation`, `assert-encounter-pacing`, and `assert-loadout-compact`. `prepare-local-candidate` runs the payout, assembly, NPC hire, weapon shop, and warehouse fit-review services before the swap, then logs a read-only saved-account delta and auto-saves the account snapshot; `hide-squad-preview` verifies the completed replacement cue survives into the general next-mission handoff; `assert-debrief-summary` verifies result counters and compact debrief combat rows; `assert-combat-situation` verifies the combat HUD situation row counters and recent-contact tempo; `assert-encounter-pacing` verifies source-paced `mc2_01` encounter activation across the initial airfield beat; `assert-loadout-compact` verifies compact mech-bay fitting title, weapon-button, and grid-spacing contracts; `saved-account-report` validates and logs a JSON dry-run of the local account snapshot without writing a file; `saved-account-save-load-preview` serializes and loads that snapshot in memory to prove the future save/load boundary; `saved-account-export` writes a JSON file only when the script provides a path, `saved-account-import-preview` validates a file without applying it to the mech bay, `saved-account-import-apply-preview` adds the identity guard plus would-change delta for a future apply, then exposes the latest preview as a guarded mech bay Apply row with a manual JSON path Preview field, Default/Export/Load helpers, and a compact Last Save result line, `saved-account-import-apply` requires that matching accepted preview before replacing the local mech bay with a cloned loaded inventory, then auto-saves the resulting local account, `saved-account-save-current-default` writes the active account to the persistent demo save path, and the default-load commands reuse the same guard against that path; `prepare-depot-candidate` remains a legacy direct smoke fallback.
 
 Commander observation reports include `reportIndex` and `missionTimeSeconds` so future AI adapters can correlate decisions with elapsed battle time.
 

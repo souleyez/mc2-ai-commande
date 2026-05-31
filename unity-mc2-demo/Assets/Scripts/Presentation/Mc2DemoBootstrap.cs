@@ -848,6 +848,9 @@ namespace MC2Demo.Presentation
                     case StartupCommanderScriptActionKind.AssertCombatSituation:
                         RunStartupCombatSituationAssertion();
                         break;
+                    case StartupCommanderScriptActionKind.AssertEncounterPacing:
+                        RunStartupEncounterPacingAssertion();
+                        break;
                     case StartupCommanderScriptActionKind.AssertLoadoutCompact:
                         RunStartupLoadoutCompactAssertion();
                         break;
@@ -2046,6 +2049,22 @@ namespace MC2Demo.Presentation
             Debug.LogError("MC2 combat situation assertion failed: " + result.Summary);
         }
 
+        private void RunStartupEncounterPacingAssertion()
+        {
+            EncounterPacingAssertionResult result = BuildEncounterPacingAssertion();
+            if (result.Accepted)
+            {
+                AddCombatLogLine("CLI encounter pacing assert OK: " + result.Summary);
+                Debug.Log("MC2 encounter pacing assertion OK: " + result.Summary);
+                return;
+            }
+
+            startupSmokeFailed = true;
+            statusText = "Encounter pacing assertion failed";
+            AddCombatLogLine("CLI encounter pacing assert failed: " + result.Summary);
+            Debug.LogError("MC2 encounter pacing assertion failed: " + result.Summary);
+        }
+
         private CombatSituationAssertionResult BuildCombatSituationAssertion()
         {
             if (mission == null)
@@ -2117,6 +2136,133 @@ namespace MC2Demo.Presentation
                 Accepted = textOk && countsOk && mapBackOk && topModeOk && fundsOk && weaponFxOk && sectionFxOk,
                 Summary = summary
             };
+        }
+
+        private EncounterPacingAssertionResult BuildEncounterPacingAssertion()
+        {
+            if (mission == null)
+            {
+                return EncounterPacingAssertionResult.Blocked("No mission");
+            }
+
+            EncounterPacingCounts airfield = CountEncounterGroup("airfield");
+            EncounterPacingCounts north = CountEncounterGroup("north");
+            EncounterPacingCounts ambush = CountEncounterGroup("ambush");
+            EncounterPacingCounts starslayer = CountEncounterGroup("starslayer");
+            bool airfieldComplete = IsObjectiveCompleteForAssertion(0);
+            bool hangarDamaged = IsHangarDamagedForAssertion();
+            bool starslayerTriggered = IsObjectiveCompleteForAssertion(7);
+            string stage = EncounterPacingStage(airfieldComplete, hangarDamaged, starslayerTriggered);
+            bool totalsOk = airfield.Total > 0 && north.Total > 0 && ambush.Total > 0 && starslayer.Total > 0;
+            bool activeOk;
+            if (!airfieldComplete)
+            {
+                activeOk = airfield.Active == 0 && north.Active == 0 && ambush.Active == 0 && starslayer.Active == 0;
+            }
+            else if (!hangarDamaged)
+            {
+                activeOk = airfield.Active == airfield.Total
+                    && north.Active == north.Total
+                    && ambush.Active == 0
+                    && starslayer.Active == 0;
+            }
+            else if (!starslayerTriggered)
+            {
+                activeOk = airfield.Active == airfield.Total
+                    && north.Active == north.Total
+                    && ambush.Active == ambush.Total
+                    && starslayer.Active == 0;
+            }
+            else
+            {
+                activeOk = airfield.Active == airfield.Total
+                    && north.Active == north.Total
+                    && ambush.Active == ambush.Total
+                    && starslayer.Active == starslayer.Total;
+            }
+
+            string summary = "stage="
+                + stage
+                + " airfield="
+                + airfield.Summary
+                + " north="
+                + north.Summary
+                + " ambush="
+                + ambush.Summary
+                + " starslayer="
+                + starslayer.Summary
+                + " contract="
+                + EncounterPacingCueSummary();
+
+            return new EncounterPacingAssertionResult
+            {
+                Accepted = totalsOk && activeOk,
+                Summary = summary
+            };
+        }
+
+        private static string EncounterPacingStage(bool airfieldComplete, bool hangarDamaged, bool starslayerTriggered)
+        {
+            if (!airfieldComplete)
+            {
+                return "initial";
+            }
+
+            if (!hangarDamaged)
+            {
+                return "airfield";
+            }
+
+            return starslayerTriggered ? "starslayer" : "hangar";
+        }
+
+        private static string EncounterPacingCueSummary()
+        {
+            return "Airfield=Pat1+eastLRM North=Pat2+Pat4 Ambush=hangar-damage Starslayer=area7";
+        }
+
+        private EncounterPacingCounts CountEncounterGroup(string groupKey)
+        {
+            EncounterPacingCounts counts = new();
+            foreach (UnitState unit in mission.Units)
+            {
+                if (unit.IsPlayerUnit || unit.IsDestroyed)
+                {
+                    continue;
+                }
+
+                if (!string.Equals(EncounterGroupKey(unit), groupKey, StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                counts.Total++;
+                if (unit.IsActive)
+                {
+                    counts.Active++;
+                }
+            }
+
+            return counts;
+        }
+
+        private bool IsObjectiveCompleteForAssertion(int objectiveIndex)
+        {
+            foreach (ObjectiveState objective in mission.Objectives)
+            {
+                if (objective.Definition.index == objectiveIndex)
+                {
+                    return objective.IsComplete;
+                }
+            }
+
+            return false;
+        }
+
+        private bool IsHangarDamagedForAssertion()
+        {
+            StructureState hangar = mission.FindStructure("structure-1-0");
+            return hangar != null && hangar.CurrentStructure < hangar.MaxStructure;
         }
 
         private void RunStartupLoadoutCompactAssertion()
@@ -3777,12 +3923,105 @@ namespace MC2Demo.Presentation
 
         private void CaptureUnitActivationEvents()
         {
+            List<string> contactKeys = new();
+            Dictionary<string, int> contactCounts = new(StringComparer.Ordinal);
+            Dictionary<string, string> contactLabels = new(StringComparer.Ordinal);
             foreach (UnitActivationEvent activationEvent in mission.RecentUnitActivationEvents)
             {
-                string line = "Contact: " + activationEvent.UnitType;
-                AddCombatLogLine(line);
+                UnitState unit = mission.FindUnit(activationEvent.UnitId);
+                string key = EncounterGroupKey(unit);
+                string label = EncounterGroupLabel(key, activationEvent.UnitType);
+                if (!contactCounts.ContainsKey(key))
+                {
+                    contactKeys.Add(key);
+                    contactCounts[key] = 0;
+                    contactLabels[key] = label;
+                }
+
+                contactCounts[key]++;
                 Debug.Log("MC2 enemy activated: " + activationEvent.UnitId + " " + activationEvent.UnitType + " " + activationEvent.Brain);
             }
+
+            for (int index = 0; index < contactKeys.Count; index++)
+            {
+                string key = contactKeys[index];
+                int count = contactCounts[key];
+                string line = "Contact: " + contactLabels[key] + (count > 1 ? " x" + count.ToString(CultureInfo.InvariantCulture) : "");
+                AddCombatLogLine(line);
+                Debug.Log("MC2 enemy contact group: " + key + " count=" + count.ToString(CultureInfo.InvariantCulture));
+            }
+        }
+
+        private static string EncounterGroupKey(UnitState unit)
+        {
+            string brain = unit?.Brain ?? string.Empty;
+            if (BrainContains(brain, "infantry_ambush"))
+            {
+                return "ambush";
+            }
+
+            if (BrainStartsWith(brain, "mc2_01_Pat1") || IsEastLrmUnit(brain, unit))
+            {
+                return "airfield";
+            }
+
+            if (BrainStartsWith(brain, "mc2_01_Pat2") || BrainEquals(brain, "mc2_01_Pat4"))
+            {
+                return "north";
+            }
+
+            if (BrainEquals(brain, "mc2_01_Starslayer")
+                || BrainEquals(brain, "mc2_01_Urbies")
+                || IsWestLrmUnit(brain, unit))
+            {
+                return "starslayer";
+            }
+
+            return string.IsNullOrWhiteSpace(unit?.UnitType) ? "other" : "other:" + unit.UnitType;
+        }
+
+        private static string EncounterGroupLabel(string key, string fallbackUnitType)
+        {
+            switch (key)
+            {
+                case "airfield":
+                    return "Airfield patrol";
+                case "north":
+                    return "North patrol";
+                case "ambush":
+                    return "Infantry ambush";
+                case "starslayer":
+                    return "Starslayer lance";
+                default:
+                    return string.IsNullOrWhiteSpace(fallbackUnitType) ? "Hostile" : fallbackUnitType;
+            }
+        }
+
+        private static bool IsEastLrmUnit(string brain, UnitState unit)
+        {
+            return BrainEquals(brain, "mc2_01_LRMs") && unit != null && unit.SpawnPosition.x > 0f;
+        }
+
+        private static bool IsWestLrmUnit(string brain, UnitState unit)
+        {
+            return BrainEquals(brain, "mc2_01_LRMs") && unit != null && unit.SpawnPosition.x < 0f;
+        }
+
+        private static bool BrainContains(string brain, string value)
+        {
+            return !string.IsNullOrEmpty(brain)
+                && brain.IndexOf(value, StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        private static bool BrainStartsWith(string brain, string value)
+        {
+            return !string.IsNullOrEmpty(brain)
+                && brain.StartsWith(value, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static bool BrainEquals(string brain, string value)
+        {
+            return string.Equals(brain, value, StringComparison.OrdinalIgnoreCase);
         }
 
         private void CaptureScriptEvents()
@@ -7166,6 +7405,28 @@ namespace MC2Demo.Presentation
                     Summary = summary ?? "blocked"
                 };
             }
+        }
+
+        private struct EncounterPacingAssertionResult
+        {
+            public bool Accepted { get; set; }
+            public string Summary { get; set; }
+
+            public static EncounterPacingAssertionResult Blocked(string summary)
+            {
+                return new EncounterPacingAssertionResult
+                {
+                    Accepted = false,
+                    Summary = summary ?? "blocked"
+                };
+            }
+        }
+
+        private struct EncounterPacingCounts
+        {
+            public int Active { get; set; }
+            public int Total { get; set; }
+            public string Summary => Active.ToString(CultureInfo.InvariantCulture) + "/" + Total.ToString(CultureInfo.InvariantCulture);
         }
 
         private struct LoadoutCompactAssertionResult
