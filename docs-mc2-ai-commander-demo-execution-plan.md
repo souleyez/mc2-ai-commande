@@ -530,7 +530,7 @@ Current stage snapshot:
 
 Visible-flow audit notes, 2026-05-31:
 
-- Smoke paths for combat situation, debrief summary, loadout compact, and hidden handoff launch all pass on the current Windows build.
+- Smoke paths for combat situation, debrief summary, loadout compact, hidden handoff launch, and the combined visible-flow audit all pass on the current Windows build.
 - A real window capture of the Battle view shows the fixed camera and left/right HUD are readable enough for the next audit pass, though the right mission panel still truncates later objective names.
 - A real window capture of the Mech Lab view confirms the fitting drawer is functional but still cramped; the larger next step should be a dedicated Mech Lab surface, not more microcopy.
 - The audit found visible leftover `Token` wording in the Mech Lab inventory summary and debrief funds row; the current pass fixes those to the `Funds` and `Payout` wording family and guards them in smoke.
@@ -781,6 +781,7 @@ Tasks:
 - Post-launch mech bay log now repeats the completed replacement summary after a completed swap Launch.
 - A lightweight command-file `mech-bay-launch` smoke hook now exercises the mech-bay Launch path, checks the bay stays open and paused, and confirms the updated-squad status before identity assertion.
 - A lightweight command-file `hide-squad-preview` smoke hook now hides the completed squad preview, checks the general handoff summary still names the updated squad, and launches from that path.
+- A combined command-file `mc2_01-visible-flow-audit.txt` smoke path now covers battle HUD, debrief, Mech Lab, squad swap, hidden handoff, launch, restart identity, and loadout compact assertions for Phase A.
 - The smoke-only reserve replacement remains as a command-file fallback, but the primary command smoke now produces a ready reserve mech through the local payout, assembly, NPC hire, weapon shop, and warehouse fit-review services.
 - The mech bay summary now exposes that same ready-reserve service chain as a compact Reserve Prep action, and it opens Next Squad with the prepared reserve mech preselected.
 - A tiny saved-account boundary now wraps demo inventory state as a cloned local account snapshot, validates cached counters, and round-trips through JSON without changing battle rules or requiring backend services.
@@ -880,6 +881,7 @@ Tasks:
 - The debrief now compresses completed objectives, enemy kills, destroyed targets, and damaged player mechs into readable summary rows with compact section damage tags and `+n` overflow counts.
 - The debrief now highlights one compact Outcome row with objectives, kills, damage, net funds, and salvage before the detailed payout rows.
 - A command-file `assert-debrief-summary` hook and `mc2_01-debrief-summary.txt` smoke path now verify result counters and the compact combat summary row.
+- A command-file `mc2_01-visible-flow-audit.txt` smoke path now chains combat situation, debrief summary, reserve prep, squad handoff, launch identity, and loadout compact checks as the Phase A visible-flow guard.
 - The combat HUD now includes a compact situation row for squad readiness, active hostiles, live targets, and contact tempo above the recent event log.
 - A command-file `assert-combat-situation` hook and `mc2_01-combat-situation.txt` smoke path now verify that row, with quiet/contact driven by recent combat events instead of generic log entries.
 - Weapon selection, move, place, and selected-slot reset results now report `W# Moved @a,b>c,d` or `W# Base @a,b` in the top status.

@@ -1,0 +1,16 @@
+# Proves the Phase A playable loop smoke path across battle HUD, debrief, Mech Lab, squad swap, hidden handoff, launch, and runtime identity.
+assert-combat-situation quiet
+command squad move 3136 -789
+advance 12
+assert-combat-situation contact
+command squad attack structure structure-1-0
+advance 8
+assert-combat-situation fire
+assert-debrief-summary
+prepare-local-candidate
+squad-swap
+hide-squad-preview
+mech-bay-launch
+assert-restart-identity depot
+assert-loadout-compact
+report
