@@ -46,7 +46,7 @@ Current demo behavior:
 - defines the first BattleCore loadout contract for chassis grids, item shapes, heat, weight, and special equipment slots
 - validates loadout grid placement, rotation, blocked cells, overlap, heat, weight, and equipment slot compatibility
 - shows projected source loadout validation status, heat/load limits, and occupied grid cells in the mech bay
-- draws compact `H/W/G` heat, weight, and grid usage readouts plus bars so fitting pressure is visible before reading the numeric limits
+- draws compact `Fit OK` or `Review` status plus `H/W/G` heat, weight, and grid usage readouts so fitting pressure is visible before reading the numeric limits
 - treats fitted weapons as always active and uses the weapon list only to select mounted weapons for slot editing
 - shows a selected-weapon summary line with damage, range, cooldown, heat, weight, compact cell count, and `WxH` footprint above the fitting weapon buttons
 - echoes the selected weapon's base, current, and pending target grid positions in that summary line

@@ -117,7 +117,7 @@ namespace MC2Demo.Presentation
         private const float LoadoutNudgeStatusWidth = 142f;
         private const string LoadoutConditionPrefix = "Cond ";
         private const string LoadoutFitOkLabel = "Fit OK";
-        private const string LoadoutFitReviewPrefix = "Fit Review: ";
+        private const string LoadoutFitReviewPrefix = "Review ";
         private const string LoadoutHeatPressureLabel = "H ";
         private const string LoadoutWeightPressureLabel = "W ";
         private const string LoadoutGridPressureLabel = "G ";
@@ -2558,6 +2558,7 @@ namespace MC2Demo.Presentation
                 && pressureText.IndexOf("  " + LoadoutWeightPressureLabel, StringComparison.Ordinal) >= 0
                 && pressureText.IndexOf("  " + LoadoutGridPressureLabel, StringComparison.Ordinal) >= 0
                 && !ContainsPrototypeCopy(stateText)
+                && stateText.IndexOf("Fit Review", StringComparison.OrdinalIgnoreCase) < 0
                 && pressureText.IndexOf("Heat", StringComparison.OrdinalIgnoreCase) < 0
                 && pressureText.IndexOf("Load ", StringComparison.OrdinalIgnoreCase) < 0
                 && pressureText.IndexOf("Grid", StringComparison.OrdinalIgnoreCase) < 0
