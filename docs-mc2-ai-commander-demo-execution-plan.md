@@ -711,7 +711,7 @@ Tasks:
 - Squad focus now keeps a compact pressure ring and beacon on targets shared by multiple player mechs without adding combat HUD rows.
 - Hostile focus now keeps a compact warning ring and beacon on player mechs targeted by multiple enemies without adding combat HUD rows.
 - Player mech damage now shows compact warning and critical rings for structure loss or section penalties without adding combat HUD rows.
-- Combat tempo now shows a commander-centered pressure ring for tracking, contact, and fire states without adding combat HUD rows.
+- Combat tempo now shows a commander-centered pressure ring and beacon for tracking, contact, and fire states without adding combat HUD rows.
 - Active hostile clusters now show a compact pressure-center ring and beacon, making enemy pressure location readable without adding combat HUD rows.
 - The combat situation smoke now also guards the compact battle pulse with explicit quiet, contact, and fire expectations tied to mission events.
 - The combat situation smoke now also guards source-group contact pressure internally, so active Airfield and North groups remain verifiable without occupying default battle HUD space.
@@ -949,7 +949,7 @@ Tasks:
 - Squad focus pressure now has a smoke-guarded battlefield cue contract: `SquadFocus=ring+pressure+beacon`.
 - Hostile focus warning now has a smoke-guarded battlefield cue contract: `ThreatFocus=ring+warning+beacon`.
 - Player mech damage now has a smoke-guarded battlefield cue contract: `PlayerDamage=warning+critical`.
-- Combat tempo pressure now has a smoke-guarded battlefield cue contract: `CombatPressure=tracking+contact+fire`.
+- Combat tempo pressure now has a smoke-guarded battlefield cue contract: `CombatPressure=tracking+contact+fire+beacon`.
 - Hostile pressure center now has a smoke-guarded battlefield cue contract: `HostilePressure=centroid+tempo+beacon`.
 - Visible objective events now have a smoke-guarded battlefield cue contract: `ObjectivePulse=active+complete+target`.
 - Active objective guide hints now have a smoke-guarded battlefield cue contract: `ObjectiveGuide=active+beacon+target`.

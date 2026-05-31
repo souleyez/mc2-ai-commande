@@ -187,6 +187,7 @@ namespace MC2Demo.Presentation
         private GameObject hostileFocusMarker;
         private GameObject hostileFocusBeacon;
         private GameObject combatPressureMarker;
+        private GameObject combatPressureBeacon;
         private GameObject hostilePressureMarker;
         private GameObject hostilePressureBeacon;
         private string selectedMechBayLoadoutUnitId;
@@ -558,6 +559,7 @@ namespace MC2Demo.Presentation
             hostileFocusMarker = null;
             hostileFocusBeacon = null;
             combatPressureMarker = null;
+            combatPressureBeacon = null;
             hostilePressureMarker = null;
             hostilePressureBeacon = null;
             lastCombatEventTimeSeconds = -999f;
@@ -2200,7 +2202,7 @@ namespace MC2Demo.Presentation
             string playerDamageFx = PlayerDamageCueSummary();
             bool playerDamageFxOk = playerDamageFx.IndexOf("PlayerDamage=warning+critical", StringComparison.Ordinal) >= 0;
             string combatPressureFx = CombatPressureCueSummary();
-            bool combatPressureFxOk = combatPressureFx.IndexOf("CombatPressure=tracking+contact+fire", StringComparison.Ordinal) >= 0;
+            bool combatPressureFxOk = combatPressureFx.IndexOf("CombatPressure=tracking+contact+fire+beacon", StringComparison.Ordinal) >= 0;
             string hostilePressureFx = HostilePressureCueSummary();
             bool hostilePressureFxOk = hostilePressureFx.IndexOf("HostilePressure=centroid+tempo+beacon", StringComparison.Ordinal) >= 0;
             string sectionFx = DemoUnitView.SectionDamageCueSummary();
@@ -2433,7 +2435,7 @@ namespace MC2Demo.Presentation
 
         private static string CombatPressureCueSummary()
         {
-            return "CombatPressure=tracking+contact+fire";
+            return "CombatPressure=tracking+contact+fire+beacon";
         }
 
         private static string HostilePressureCueSummary()
@@ -6452,6 +6454,11 @@ namespace MC2Demo.Presentation
                 "CombatPressureTracking",
                 new Color(0.44f, 0.84f, 1f, 0.20f),
                 new Vector3(1.72f, 0.014f, 1.72f));
+            combatPressureBeacon = CreateMarkerDisc(
+                "Combat Pressure Beacon",
+                "CombatPressureBeacon",
+                new Color(1f, 0.58f, 0.14f, 0.42f),
+                new Vector3(0.070f, 0.34f, 0.070f));
             hostilePressureMarker = CreateMarkerDisc(
                 "Hostile Pressure Center",
                 "HostilePressureTracking",
@@ -7047,7 +7054,7 @@ namespace MC2Demo.Presentation
 
         private void UpdateCombatPressureMarker(UnitState commander)
         {
-            if (combatPressureMarker == null)
+            if (combatPressureMarker == null && combatPressureBeacon == null)
             {
                 return;
             }
@@ -7059,7 +7066,16 @@ namespace MC2Demo.Presentation
                 && !commander.IsDestroyed
                 && !string.Equals(mode, "quiet", StringComparison.Ordinal)
                 && activeHostiles > 0;
-            combatPressureMarker.SetActive(isVisible);
+            if (combatPressureMarker != null)
+            {
+                combatPressureMarker.SetActive(isVisible);
+            }
+
+            if (combatPressureBeacon != null)
+            {
+                combatPressureBeacon.SetActive(isVisible);
+            }
+
             if (!isVisible)
             {
                 return;
@@ -7070,19 +7086,35 @@ namespace MC2Demo.Presentation
             float pressureScale = Mathf.Clamp01(activeHostiles / 20f);
             float pulseSpeed = isFire ? 6.6f : isContact ? 4.8f : 3.2f;
             float pulse = 0.96f + Mathf.Sin(Time.time * pulseSpeed) * (isFire ? 0.11f : 0.06f);
-            float scale = Mathf.Lerp(1.62f, 2.42f, pressureScale) * pulse;
-            combatPressureMarker.transform.position = GroundMarkerPosition(commander.MissionPosition, 0.055f);
-            combatPressureMarker.transform.localScale = new Vector3(scale, 0.014f, scale);
-
             Color color = isFire
                 ? new Color(1f, 0.18f, 0.08f, 0.34f)
                 : isContact
                     ? new Color(1f, 0.56f, 0.12f, 0.28f)
                     : new Color(0.44f, 0.84f, 1f, 0.20f);
-            AssignMaterial(
-                combatPressureMarker,
-                isFire ? "CombatPressureFire" : isContact ? "CombatPressureContact" : "CombatPressureTracking",
-                color);
+            if (combatPressureMarker != null)
+            {
+                float scale = Mathf.Lerp(1.62f, 2.42f, pressureScale) * pulse;
+                combatPressureMarker.transform.position = GroundMarkerPosition(commander.MissionPosition, 0.055f);
+                combatPressureMarker.transform.localScale = new Vector3(scale, 0.014f, scale);
+                AssignMaterial(
+                    combatPressureMarker,
+                    isFire ? "CombatPressureFire" : isContact ? "CombatPressureContact" : "CombatPressureTracking",
+                    color);
+            }
+
+            if (combatPressureBeacon != null)
+            {
+                float beaconHeight = Mathf.Lerp(0.28f, 0.52f, pressureScale);
+                combatPressureBeacon.transform.position = GroundMarkerPosition(commander.MissionPosition, 0.46f);
+                combatPressureBeacon.transform.localScale = new Vector3(
+                    0.070f * pulse,
+                    beaconHeight + pulse * 0.075f,
+                    0.070f * pulse);
+                AssignMaterial(
+                    combatPressureBeacon,
+                    isFire ? "CombatPressureBeaconFire" : isContact ? "CombatPressureBeaconContact" : "CombatPressureBeaconTracking",
+                    new Color(color.r, color.g, color.b, isFire ? 0.46f : isContact ? 0.38f : 0.30f));
+            }
         }
 
         private void UpdateHostilePressureMarker()
