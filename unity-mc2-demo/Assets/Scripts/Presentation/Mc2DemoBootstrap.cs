@@ -1668,11 +1668,9 @@ namespace MC2Demo.Presentation
                         "enemy-2 " + unitType,
                         "enemy-3 " + unitType
                     }
-                });
+            });
             AddCombatLogLine(
-                logPrefix + " receipt: +" + FormatTokens(receipt.TokenDelta)
-                + " token fragments +" + receipt.SalvageFragmentCount
-                + ReceiptAssemblyLogText(receipt));
+                MissionReceiptLogText(logPrefix, receipt));
             RefreshDemoInventoryValidation();
 
             string targetOwnedMechId = FirstStartupPendingWarehouseMechId();
@@ -2151,6 +2149,7 @@ namespace MC2Demo.Presentation
             LoadoutCompactCheck routeCheck = BuildLoadoutRouteCompactCheck();
             LoadoutCompactCheck baySummaryCheck = BuildMechLabSummaryLabelCheck();
             LoadoutCompactCheck actionCopyCheck = BuildMechLabActionCopyCheck();
+            LoadoutCompactCheck receiptLogCheck = BuildMissionReceiptLogCopyCheck();
             LoadoutCompactCheck rosterCopyCheck = BuildMechLabRosterCopyCheck();
             string summary = "title="
                 + title
@@ -2183,6 +2182,8 @@ namespace MC2Demo.Presentation
                 + " "
                 + actionCopyCheck.Summary
                 + " "
+                + receiptLogCheck.Summary
+                + " "
                 + rosterCopyCheck.Summary;
 
             return new LoadoutCompactAssertionResult
@@ -2202,6 +2203,7 @@ namespace MC2Demo.Presentation
                     && routeCheck.Accepted
                     && baySummaryCheck.Accepted
                     && actionCopyCheck.Accepted
+                    && receiptLogCheck.Accepted
                     && rosterCopyCheck.Accepted,
                 Summary = summary
             };
@@ -2415,6 +2417,34 @@ namespace MC2Demo.Presentation
                 + purchaseSummary
                 + " pilotSummary="
                 + pilotSummary);
+        }
+
+        private static LoadoutCompactCheck BuildMissionReceiptLogCopyCheck()
+        {
+            MechBayMissionReceipt receipt = MechBayMissionReceiptService.BuildMissionReceipt(new MissionResultSummary
+            {
+                completedRewardResourcePoints = 3000,
+                destroyedEnemyUnitLabels = new[]
+                {
+                    "enemy-1 Shadow Cat"
+                }
+            });
+            string battleLog = MissionReceiptLogText(null, receipt);
+            string prepLog = MissionReceiptLogText("Reserve prep", receipt);
+            bool accepted = string.Equals(battleLog, "Payout +3,000  Salvage +1", StringComparison.Ordinal)
+                && string.Equals(prepLog, "Reserve prep payout +3,000  Salvage +1", StringComparison.Ordinal)
+                && battleLog.IndexOf("Receipt", StringComparison.OrdinalIgnoreCase) < 0
+                && battleLog.IndexOf("token", StringComparison.OrdinalIgnoreCase) < 0
+                && battleLog.IndexOf("fragments", StringComparison.OrdinalIgnoreCase) < 0
+                && prepLog.IndexOf("Receipt", StringComparison.OrdinalIgnoreCase) < 0
+                && prepLog.IndexOf("token", StringComparison.OrdinalIgnoreCase) < 0
+                && prepLog.IndexOf("fragments", StringComparison.OrdinalIgnoreCase) < 0;
+            return new LoadoutCompactCheck(
+                accepted,
+                "receiptLog="
+                + battleLog
+                + "/"
+                + prepLog);
         }
 
         private static LoadoutCompactCheck BuildMechLabRosterCopyCheck()
@@ -3461,10 +3491,7 @@ namespace MC2Demo.Presentation
             RefreshDemoInventoryValidation();
             if (missionReceipt.TokenDelta > 0 || missionReceipt.SalvageFragmentCount > 0)
             {
-                AddCombatLogLine(
-                    "Receipt token +" + FormatTokens(missionReceipt.TokenDelta)
-                    + " fragments +" + missionReceipt.SalvageFragmentCount
-                    + ReceiptAssemblyLogText(missionReceipt));
+                AddCombatLogLine(MissionReceiptLogText(null, missionReceipt));
                 TryAutoSaveSavedAccount("mission receipt");
             }
         }
@@ -8316,6 +8343,22 @@ namespace MC2Demo.Presentation
 
             return " built +" + receipt.AssembledMechCount.ToString(CultureInfo.InvariantCulture)
                 + " " + AssemblyNameOrGeneric(receipt);
+        }
+
+        private static string MissionReceiptLogText(string prefix, MechBayMissionReceipt receipt)
+        {
+            string lead = string.IsNullOrWhiteSpace(prefix) ? "Payout" : prefix.Trim() + " payout";
+            if (receipt == null)
+            {
+                return lead + " unavailable";
+            }
+
+            return lead
+                + " "
+                + SignedTokens(receipt.TokenDelta)
+                + "  Salvage +"
+                + Math.Max(0, receipt.SalvageFragmentCount).ToString(CultureInfo.InvariantCulture)
+                + ReceiptAssemblyLogText(receipt);
         }
 
         private static string ReceiptAssemblyText(MechBayMissionReceipt receipt)

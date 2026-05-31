@@ -71,6 +71,7 @@ The Unity demo currently supports:
 - System and debrief exit actions now read End Run instead of Exit Demo, and the debrief smoke guards that player-facing label
 - Debrief copy now says Payout and points players to repair, inspect Mech Lab, and choose the next contract instead of receipt/launch-again wording
 - Debrief reward rows now use short Salvage and Bounty labels instead of claims/total-bounty wording
+- mission payout combat-log entries now use Payout and Salvage wording instead of Receipt/token/fragments copy
 - System and debrief status copy now uses Save slot, Contracts open, and After Action wording instead of default/post-mission labels
 - Mech Lab apply feedback now uses Stock short and Fit applied wording instead of inventory/demo-fit status text
 - Mech Lab shop and pilot-hire rows now translate demo-service readiness into player-facing buy/hire wording
@@ -836,6 +837,7 @@ Tasks:
 - The top status strip now says `MODE Battle/Mech Lab/Debrief` instead of `FLOW ...`, guarded by combat-situation, debrief, and loadout smoke paths.
 - The top status resource readout now says `Funds` instead of `TOKEN`, guarded by combat-situation, debrief, and loadout smoke paths.
 - Mech Lab shop, purchase, hire, and repair cost rows now say funds instead of token, guarded by the loadout compact smoke path.
+- Mission payout combat-log entries now say Payout and Salvage instead of Receipt/token/fragments, guarded by the loadout compact smoke path.
 - The Mech Lab save-file check row now uses Check, Load Check, and No save checked wording instead of preview-language controls, guarded by the loadout compact smoke.
 - The Save Slot reset result now says fresh save and old copy instead of default-save wording, with the no-saved-game case guarded by the loadout compact smoke.
 - The Next Contract Squad and Reserve Fit Review subpanels now use Back instead of Hide, guarded by the hidden handoff launch smoke.
