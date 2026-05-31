@@ -2131,6 +2131,8 @@ namespace MC2Demo.Presentation
                 && sectionFx.IndexOf("Legs=collapse+red-cross", StringComparison.Ordinal) >= 0
                 && sectionFx.IndexOf("Cockpit=breach+ejection-pod", StringComparison.Ordinal) >= 0
                 && sectionFx.IndexOf("Critical=smoke+sparks", StringComparison.Ordinal) >= 0;
+            string objectiveFx = ObjectiveEventCueSummary();
+            bool objectiveFxOk = objectiveFx.IndexOf("ObjectivePulse=active+complete+target", StringComparison.Ordinal) >= 0;
             string tempoText = CombatTempoText();
             string tempoMode = CombatTempoMode();
             bool tempoOk = CombatTempoTextMatchesState(tempoText);
@@ -2163,6 +2165,8 @@ namespace MC2Demo.Presentation
                 + weaponFx
                 + " sectionFx="
                 + sectionFx
+                + " objectiveFx="
+                + objectiveFx
                 + " tempoMode="
                 + tempoMode
                 + " tempo="
@@ -2188,6 +2192,7 @@ namespace MC2Demo.Presentation
                     && fundsOk
                     && weaponFxOk
                     && sectionFxOk
+                    && objectiveFxOk
                     && tempoOk
                     && expectedTempoOk
                     && pressureOk
@@ -4503,14 +4508,106 @@ namespace MC2Demo.Presentation
                 if (objectiveEvent.Kind == ObjectiveEventKind.Activated)
                 {
                     AddCombatLogLine("Objective active: " + objectiveEvent.Title);
+                    SpawnObjectiveEventCue(objectiveEvent);
                     Debug.Log("MC2 objective active: " + objectiveEvent.Title);
                 }
                 else if (objectiveEvent.Kind == ObjectiveEventKind.Completed)
                 {
                     AddCombatLogLine("Objective done: " + objectiveEvent.Title);
+                    SpawnObjectiveEventCue(objectiveEvent);
                     Debug.Log("MC2 objective complete: " + objectiveEvent.Title);
                 }
             }
+        }
+
+        private void SpawnObjectiveEventCue(ObjectiveEvent objectiveEvent)
+        {
+            ObjectiveState objective = FindObjectiveState(objectiveEvent.ObjectiveIndex);
+            if (objective == null || !TryGetObjectiveCuePoint(objective.Definition, out Vector2 missionPoint, out float missionRadius))
+            {
+                return;
+            }
+
+            bool completed = objectiveEvent.Kind == ObjectiveEventKind.Completed;
+            Vector3 center = GroundMarkerPosition(missionPoint, 0.13f);
+            Color color = completed
+                ? new Color(0.28f, 1f, 0.56f, 0.84f)
+                : new Color(1f, 0.82f, 0.26f, 0.78f);
+            float scale = Mathf.Clamp(missionRadius / 150f, 0.85f, 2.15f);
+            CreateImpactDisc(
+                completed ? "Objective Complete Pulse" : "Objective Active Pulse",
+                center,
+                new Color(color.r, color.g, color.b, completed ? 0.34f : 0.30f),
+                completed ? 0.95f : 0.78f,
+                0.34f * scale,
+                (completed ? 1.72f : 1.38f) * scale,
+                0.024f);
+            CreateBeam(
+                center + Vector3.up * 0.08f,
+                center + Vector3.up * (completed ? 1.55f : 1.15f),
+                new Color(color.r, color.g, color.b, completed ? 0.54f : 0.44f),
+                completed ? 0.84f : 0.62f,
+                completed ? 0.034f : 0.026f);
+            CreateImpact(center + Vector3.up * 0.18f, new Color(color.r, color.g, color.b, 0.48f), false, completed ? 0.48f : 0.36f);
+        }
+
+        private ObjectiveState FindObjectiveState(int objectiveIndex)
+        {
+            foreach (ObjectiveState objective in mission.Objectives)
+            {
+                if (objective?.Definition != null && objective.Definition.index == objectiveIndex)
+                {
+                    return objective;
+                }
+            }
+
+            return null;
+        }
+
+        private static bool TryGetObjectiveCuePoint(ObjectiveDefinition objective, out Vector2 missionPoint, out float missionRadius)
+        {
+            if (objective?.conditions != null)
+            {
+                foreach (ObjectiveCondition condition in objective.conditions)
+                {
+                    if (condition?.targetStructure?.position != null)
+                    {
+                        missionPoint = new Vector2(condition.targetStructure.position.x, condition.targetStructure.position.y);
+                        missionRadius = 180f;
+                        return true;
+                    }
+
+                    if (condition?.targetArea != null)
+                    {
+                        missionPoint = new Vector2(condition.targetArea.x, condition.targetArea.y);
+                        missionRadius = Mathf.Max(80f, condition.targetArea.radius);
+                        return true;
+                    }
+
+                    if (condition?.targetUnit?.position != null)
+                    {
+                        missionPoint = new Vector2(condition.targetUnit.position.x, condition.targetUnit.position.y);
+                        missionRadius = 115f;
+                        return true;
+                    }
+                }
+            }
+
+            if (objective?.marker != null)
+            {
+                missionPoint = new Vector2(objective.marker.x, objective.marker.y);
+                missionRadius = 120f;
+                return true;
+            }
+
+            missionPoint = default;
+            missionRadius = 0f;
+            return false;
+        }
+
+        private static string ObjectiveEventCueSummary()
+        {
+            return "ObjectivePulse=active+complete+target";
         }
 
         private void CaptureUnitActivationEvents()

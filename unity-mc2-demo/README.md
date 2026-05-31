@@ -33,6 +33,7 @@ Current demo behavior:
 - lets map clicks on hostile units or targetable buildings issue focused attack orders
 - renders command rings for selected units, order destinations, and focused targets
 - shows world objective area hints only for the current active objective
+- pulses visible objective activation and completion at the battlefield target position
 - draws tactical target lines from player units to active targets, colored by weapon readiness
 - shows a compact mission brief with objective progress and target structure integrity
 - keeps mission brief objective names compact enough for North island and Extraction to remain readable in the fixed right HUD
