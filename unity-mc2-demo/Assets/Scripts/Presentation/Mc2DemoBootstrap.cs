@@ -2132,6 +2132,8 @@ namespace MC2Demo.Presentation
                 && sectionFx.IndexOf("Cockpit=breach+ejection-pod", StringComparison.Ordinal) >= 0;
             string tempoText = CombatTempoText();
             bool tempoOk = CombatTempoTextMatchesState(tempoText);
+            string pressureText = CombatContactPressureText();
+            bool pressureOk = CombatContactPressureTextMatchesState(pressureText);
             LoadoutCompactCheck missionBrief = BuildMissionBriefPanelTextCheck();
             string summary = "squad="
                 + playerReady.ToString(CultureInfo.InvariantCulture)
@@ -2155,6 +2157,8 @@ namespace MC2Demo.Presentation
                 + sectionFx
                 + " tempo="
                 + tempoText
+                + " pressure="
+                + pressureText
                 + " "
                 + missionBrief.Summary
                 + " text="
@@ -2170,6 +2174,7 @@ namespace MC2Demo.Presentation
                     && weaponFxOk
                     && sectionFxOk
                     && tempoOk
+                    && pressureOk
                     && missionBrief.Accepted,
                 Summary = summary
             };
@@ -2200,6 +2205,49 @@ namespace MC2Demo.Presentation
             }
 
             return string.Equals(tempoText, "Tempo Quiet  no contact", StringComparison.Ordinal);
+        }
+
+        private bool CombatContactPressureTextMatchesState(string pressureText)
+        {
+            if (string.IsNullOrWhiteSpace(pressureText)
+                || !pressureText.StartsWith("Contacts ", StringComparison.Ordinal)
+                || pressureText.Length > 56)
+            {
+                return false;
+            }
+
+            int airfield = CountLiveEncounterGroup("airfield");
+            int north = CountLiveEncounterGroup("north");
+            int ambush = CountLiveEncounterGroup("ambush");
+            int starslayer = CountLiveEncounterGroup("starslayer");
+            int activeHostiles = CountActiveHostileUnits();
+            if (activeHostiles <= 0)
+            {
+                return string.Equals(pressureText, "Contacts none", StringComparison.Ordinal);
+            }
+
+            bool labelOk = pressureText.IndexOf("none", StringComparison.OrdinalIgnoreCase) < 0;
+            if (airfield > 0)
+            {
+                labelOk = labelOk && pressureText.IndexOf("Air " + airfield.ToString(CultureInfo.InvariantCulture), StringComparison.Ordinal) >= 0;
+            }
+
+            if (north > 0)
+            {
+                labelOk = labelOk && pressureText.IndexOf("North " + north.ToString(CultureInfo.InvariantCulture), StringComparison.Ordinal) >= 0;
+            }
+
+            if (ambush > 0)
+            {
+                labelOk = labelOk && pressureText.IndexOf("Amb " + ambush.ToString(CultureInfo.InvariantCulture), StringComparison.Ordinal) >= 0;
+            }
+
+            if (starslayer > 0)
+            {
+                labelOk = labelOk && pressureText.IndexOf("Star " + starslayer.ToString(CultureInfo.InvariantCulture), StringComparison.Ordinal) >= 0;
+            }
+
+            return labelOk;
         }
 
         private LoadoutCompactCheck BuildMissionBriefPanelTextCheck()
@@ -2624,6 +2672,30 @@ namespace MC2Demo.Presentation
             }
 
             return counts;
+        }
+
+        private int CountLiveEncounterGroup(string groupKey)
+        {
+            int count = 0;
+            if (mission == null)
+            {
+                return count;
+            }
+
+            foreach (UnitState unit in mission.Units)
+            {
+                if (unit.IsPlayerUnit || unit.IsDestroyed || !unit.IsActive)
+                {
+                    continue;
+                }
+
+                if (string.Equals(EncounterGroupKey(unit), groupKey, StringComparison.Ordinal))
+                {
+                    count++;
+                }
+            }
+
+            return count;
         }
 
         private bool IsObjectiveCompleteForAssertion(int objectiveIndex)
@@ -6564,7 +6636,8 @@ namespace MC2Demo.Presentation
             GUI.Label(new Rect(x + 12f, panel.y + 36f, 320f, 22f), "Active units: " + CountLiveUnits() + " / " + mission.Units.Count);
             GUI.Label(new Rect(x + 12f, panel.y + 56f, panel.width - 24f, 18f), CombatSituationText());
             DrawCombatTempoLine(x + 12f, panel.y + 76f, panel.width - 24f);
-            float y = panel.y + 100f;
+            DrawCombatContactPressureLine(x + 12f, panel.y + 96f, panel.width - 24f);
+            float y = panel.y + 120f;
             foreach (string line in combatLog)
             {
                 if (y > panel.yMax - 22f)
@@ -6583,6 +6656,14 @@ namespace MC2Demo.Presentation
             Color previous = GUI.color;
             GUI.color = CombatTempoColor();
             GUI.Label(new Rect(x, y, width, 18f), CombatTempoText());
+            GUI.color = previous;
+        }
+
+        private void DrawCombatContactPressureLine(float x, float y, float width)
+        {
+            Color previous = GUI.color;
+            GUI.color = CountActiveHostileUnits() > 0 ? new Color(1f, 0.78f, 0.32f) : new Color(0.58f, 0.72f, 0.78f);
+            GUI.Label(new Rect(x, y, width, 18f), CombatContactPressureText());
             GUI.color = previous;
         }
 
@@ -6632,6 +6713,41 @@ namespace MC2Demo.Presentation
             }
 
             return "Tempo Quiet  no contact";
+        }
+
+        private string CombatContactPressureText()
+        {
+            List<string> parts = new();
+            AddContactPressurePart(parts, "Air", CountLiveEncounterGroup("airfield"));
+            AddContactPressurePart(parts, "North", CountLiveEncounterGroup("north"));
+            AddContactPressurePart(parts, "Amb", CountLiveEncounterGroup("ambush"));
+            AddContactPressurePart(parts, "Star", CountLiveEncounterGroup("starslayer"));
+
+            int known = 0;
+            for (int index = 0; index < parts.Count; index++)
+            {
+                string part = parts[index];
+                int separator = part.LastIndexOf(' ');
+                if (separator >= 0
+                    && int.TryParse(part.Substring(separator + 1), NumberStyles.Integer, CultureInfo.InvariantCulture, out int parsed))
+                {
+                    known += parsed;
+                }
+            }
+
+            int other = Mathf.Max(0, CountActiveHostileUnits() - known);
+            AddContactPressurePart(parts, "Other", other);
+            return parts.Count == 0 ? "Contacts none" : "Contacts " + string.Join("  ", parts);
+        }
+
+        private static void AddContactPressurePart(List<string> parts, string label, int count)
+        {
+            if (count <= 0)
+            {
+                return;
+            }
+
+            parts.Add(label + " " + count.ToString(CultureInfo.InvariantCulture));
         }
 
         private Color CombatTempoColor()

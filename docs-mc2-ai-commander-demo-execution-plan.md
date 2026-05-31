@@ -43,6 +43,7 @@ The Unity demo currently supports:
 - compact tactical UI with unit status, mech bay preview, mission brief, current-objective map, world objective hints, health bars, command rings, range rings, and target lines
 - the combat situation row names the commander mech, squad readiness, detached single-order count, hostiles, targets, and recent contact tempo
 - the combat panel now has a fixed Tempo row for quiet, contact, tracking, or fire states so encounter pressure is readable without scanning the log
+- the combat panel now has a compact Contacts row that splits active enemy pressure by source encounter group, such as Air and North
 - the battle mission panel uses compact objective names so later `mc2_01` tasks such as North island and Extraction stay readable in the fixed right HUD
 - focused mech bay fitting view with compact squad buttons, pending-fit markers, and selected-mech fit-pressure bars so one selected payload grid owns the drawer
 - selected fitting card titles now show chassis and pilot only, hiding runtime or owned-mech ids from the visible Mech Lab surface
@@ -704,6 +705,7 @@ Tasks:
 - Battle readability pass has begun with family-specific hit cues: energy beam plus pillar/ring, missile arc plus blast/smoke, and ballistic tracer plus sparks.
 - The combat situation smoke now guards the current weapon FX cue contract with `Energy=beam+pillar Missile=arc+blast Ballistic=tracer+sparks`.
 - The combat situation smoke now also guards the fixed battle Tempo row and advances into the airfield approach so contact/tracking/fire pressure stays tied to mission events.
+- The combat situation smoke now also guards the compact Contacts pressure row, so active Airfield and North groups are visible after the first objective trigger.
 - Section damage readability now has persistent missing-arm flags, red leg-collapse cues, cockpit breach/ejection markers, and a smoke-guarded cue contract.
 - The first `mc2_01` encounter pacing smoke now proves the airfield beat: initial hostiles held, Airfield/North patrols armed after objective 0, infantry ambush held until hangar damage, and Starslayer held for area 7.
 - The objective graph smoke now guards the source mission skeleton: 6 visible objectives, 3 hidden glue objectives, flag edges, hidden first-patrol flag `3`, north-island unlock, Starslayer area trigger, and Starslayer VO target count.
