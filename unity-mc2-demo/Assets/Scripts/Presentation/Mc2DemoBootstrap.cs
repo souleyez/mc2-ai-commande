@@ -150,6 +150,7 @@ namespace MC2Demo.Presentation
         private readonly Dictionary<string, DemoStructureView> structureViews = new();
         private readonly Dictionary<string, GameObject> unitSelectionMarkers = new();
         private readonly Dictionary<string, GameObject> unitOrderMarkers = new();
+        private readonly Dictionary<string, GameObject> unitOrderLines = new();
         private readonly Dictionary<string, GameObject> unitFocusMarkers = new();
         private readonly Dictionary<string, GameObject> unitDamageWarningMarkers = new();
         private readonly Dictionary<string, GameObject> unitRangeMarkers = new();
@@ -513,6 +514,7 @@ namespace MC2Demo.Presentation
             structureViews.Clear();
             unitSelectionMarkers.Clear();
             unitOrderMarkers.Clear();
+            unitOrderLines.Clear();
             unitFocusMarkers.Clear();
             unitDamageWarningMarkers.Clear();
             unitRangeMarkers.Clear();
@@ -2195,6 +2197,8 @@ namespace MC2Demo.Presentation
             bool scriptFxOk = scriptFx.IndexOf("ScriptCue=ring+beacon+signal", StringComparison.Ordinal) >= 0;
             string commandFx = CommandCueSummary();
             bool commandFxOk = commandFx.IndexOf("Command=move+attack+single", StringComparison.Ordinal) >= 0;
+            string orderPathFx = OrderPathCueSummary();
+            bool orderPathFxOk = orderPathFx.IndexOf("OrderPath=move+jet", StringComparison.Ordinal) >= 0;
             string commanderFx = CommanderCueSummary();
             bool commanderFxOk = commanderFx.IndexOf("Commander=anchor+beacon", StringComparison.Ordinal) >= 0;
             string soloReturnFx = SoloReturnCueSummary();
@@ -2269,6 +2273,8 @@ namespace MC2Demo.Presentation
                 + scriptFx
                 + " commandFx="
                 + commandFx
+                + " orderPathFx="
+                + orderPathFx
                 + " commanderFx="
                 + commanderFx
                 + " soloReturnFx="
@@ -2317,6 +2323,7 @@ namespace MC2Demo.Presentation
                     && structureFxOk
                     && scriptFxOk
                     && commandFxOk
+                    && orderPathFxOk
                     && commanderFxOk
                     && soloReturnFxOk
                     && tempoOk
@@ -5327,6 +5334,11 @@ namespace MC2Demo.Presentation
             return "Command=move+attack+single";
         }
 
+        private static string OrderPathCueSummary()
+        {
+            return "OrderPath=move+jet";
+        }
+
         private void SpawnAcceptedCommandCue(CommanderCommand command, CommanderCommandResult result)
         {
             if (command == null || result == null || !result.Accepted)
@@ -5953,6 +5965,7 @@ namespace MC2Demo.Presentation
                     "CommandMove",
                     new Color(0.15f, 0.66f, 1f, 0.42f),
                     new Vector3(0.88f, 0.014f, 0.88f));
+                unitOrderLines[unit.Id] = CreateTargetLine(unit.Id + " Order Path");
                 unitFocusMarkers[unit.Id] = CreateMarkerDisc(
                     unit.Id + " Focus Marker",
                     "CommandFocus",
@@ -6033,6 +6046,7 @@ namespace MC2Demo.Presentation
                 UpdateCommanderMarker(unit, commander);
                 UpdateSelectionMarker(unit);
                 UpdateOrderMarker(unit);
+                UpdateOrderPathLine(unit);
                 UpdateFocusMarker(unit);
                 UpdatePlayerDamageWarningMarker(unit);
                 UpdateRangeMarker(unit);
@@ -6162,6 +6176,33 @@ namespace MC2Demo.Presentation
             {
                 marker.transform.position = GroundMarkerPosition(unit.MoveTarget, 0.08f);
             }
+        }
+
+        private void UpdateOrderPathLine(UnitState unit)
+        {
+            if (!unitOrderLines.TryGetValue(unit.Id, out GameObject line))
+            {
+                return;
+            }
+
+            bool hasUnitView = unitViews.TryGetValue(unit.Id, out DemoUnitView unitView) && unitView != null;
+            bool isVisible = unit.IsActive
+                && !unit.IsDestroyed
+                && unit.HasMoveOrder
+                && hasUnitView;
+            line.SetActive(isVisible);
+            if (!isVisible)
+            {
+                return;
+            }
+
+            Vector3 unitPoint = unitView.transform.position + Vector3.up * 0.14f;
+            Vector3 targetPoint = GroundMarkerPosition(unit.MoveTarget, unit.IsJumping ? 0.24f : 0.14f);
+            PositionLine(line, unitPoint, targetPoint, unit.IsJumping ? 0.034f : 0.024f);
+            AssignMaterial(
+                line,
+                unit.IsJumping ? "OrderPathJet" : "OrderPathMove",
+                unit.IsJumping ? new Color(0.64f, 0.96f, 1f, 0.46f) : new Color(0.24f, 0.72f, 1f, 0.34f));
         }
 
         private void UpdateFocusMarker(UnitState unit)

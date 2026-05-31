@@ -715,6 +715,7 @@ Tasks:
 - The combat situation smoke now also guards source-group contact pressure internally, so active Airfield and North groups remain verifiable without occupying default battle HUD space.
 - The combat situation smoke now also guards the commanded Focus contract, keeping the current target readable without exposing internal target ids.
 - Accepted player and CLI commands now pulse move, attack, Jet, and single-unit cues on the battlefield so command acknowledgement reads without adding another HUD row.
+- Move and Jet orders now draw compact travel path lines from player mechs to their destinations without adding combat HUD rows.
 - Section damage readability now has persistent missing-arm flags, red leg-collapse cues, cockpit breach/ejection markers, critical-section smoke/spark vents, destroyed-mech wreck blast/smoke/markers, and a smoke-guarded cue contract.
 - Hot and heat-locked mechs now show battlefield vent/lock cues, so heat pressure reads at the fixed tactical camera without adding another combat HUD row.
 - The first squad mech now has a subtle commander anchor/beacon in the battlefield, matching the fixed camera follow rule without adding combat HUD rows.
@@ -939,6 +940,7 @@ Tasks:
 - Script bridge events now have a smoke-guarded battlefield cue contract: `ScriptCue=ring+beacon+signal`.
 - Destroyed mech wreck cues now have a smoke-guarded battlefield cue contract: `Wreck=blast+smoke+marker`.
 - Accepted command cues now have a smoke-guarded battlefield cue contract: `Command=move+attack+single`.
+- Move and Jet order paths now have a smoke-guarded battlefield cue contract: `OrderPath=move+jet`.
 - Heat pressure cues now have a smoke-guarded battlefield cue contract: `Heat=vent+lock`.
 - Commander follow cues now have a smoke-guarded battlefield cue contract: `Commander=anchor+beacon`.
 - Solo-order completion now has a smoke-guarded battlefield cue contract: `SoloReturn=ring+beacon`.
