@@ -707,7 +707,7 @@ Tasks:
 - The combat situation smoke now also guards the compact battle pulse with explicit quiet, contact, and fire expectations tied to mission events.
 - The combat situation smoke now also guards source-group contact pressure internally, so active Airfield and North groups remain verifiable without occupying default battle HUD space.
 - The combat situation smoke now also guards the commanded Focus contract, keeping the current target readable without exposing internal target ids.
-- Section damage readability now has persistent missing-arm flags, red leg-collapse cues, cockpit breach/ejection markers, critical-section smoke/spark vents, and a smoke-guarded cue contract.
+- Section damage readability now has persistent missing-arm flags, red leg-collapse cues, cockpit breach/ejection markers, critical-section smoke/spark vents, destroyed-mech wreck blast/smoke/markers, and a smoke-guarded cue contract.
 - The first `mc2_01` encounter pacing smoke now proves the airfield beat: initial hostiles held, Airfield/North patrols armed after objective 0, infantry ambush held until hangar damage, and Starslayer held for area 7.
 - The objective graph smoke now guards the source mission skeleton: 6 visible objectives, 3 hidden glue objectives, flag edges, hidden first-patrol flag `3`, north-island unlock, Starslayer area trigger, and Starslayer VO target count.
 - The combat-situation smoke now also guards compact mission-panel objective lines so the North island and Extraction objectives remain readable in the fixed right HUD.
@@ -907,4 +907,5 @@ Tasks:
 - Jet movement now has a smoke-guarded battlefield cue contract: `Jet=takeoff+trail+landing`.
 - Target structure damage now has a smoke-guarded battlefield cue contract: `Structure=scar+smoke+collapse`.
 - Script bridge events now have a smoke-guarded battlefield cue contract: `ScriptCue=ring+beacon+signal`.
+- Destroyed mech wreck cues now have a smoke-guarded battlefield cue contract: `Wreck=blast+smoke+marker`.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.

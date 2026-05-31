@@ -190,8 +190,10 @@ namespace MC2Demo.Presentation
                 return;
             }
 
+            Vector3 wreckCenter = transform.position;
             transform.localScale = new Vector3(liveScale.x, liveScale.y * 0.18f, liveScale.z);
             transform.rotation = Quaternion.Euler(0f, 0f, 90f);
+            SpawnDestroyedUnitCue(wreckCenter);
             destroyedPoseApplied = true;
         }
 
@@ -309,6 +311,23 @@ namespace MC2Demo.Presentation
             CreateTransient("Section Smoke", PrimitiveType.Sphere, position + Vector3.up * 0.18f, new Color(0.10f, 0.10f, 0.10f, 0.45f), 1.25f, Vector3.one * (0.18f * scale), Vector3.one * (0.95f * scale));
         }
 
+        private void SpawnDestroyedUnitCue(Vector3 wreckCenter)
+        {
+            Vector3 ground = wreckCenter;
+            if (Unit != null)
+            {
+                ground = MissionToWorld(Unit.MissionPosition);
+                ground.y = DemoTerrainView.HeightAt(Unit.MissionPosition) + 0.035f;
+            }
+
+            CreateTransient("Mech Wreck Blast", PrimitiveType.Sphere, wreckCenter + Vector3.up * 0.18f, new Color(1f, 0.42f, 0.08f, 0.72f), 0.55f, Vector3.one * 0.20f, new Vector3(1.35f, 0.85f, 1.35f));
+            CreateTransient("Mech Wreck Smoke", PrimitiveType.Sphere, wreckCenter + Vector3.up * 0.48f, new Color(0.08f, 0.08f, 0.08f, 0.52f), 1.65f, Vector3.one * 0.28f, new Vector3(1.15f, 1.80f, 1.15f));
+            CreateWorldDamageObject("Wreck Scorch", PrimitiveType.Cylinder, ground, Quaternion.identity, new Vector3(0.72f, 0.018f, 0.72f), new Color(0.04f, 0.03f, 0.02f, 0.95f));
+            CreateWorldDamageObject("Wreck Heat Beacon", PrimitiveType.Cylinder, ground + Vector3.up * 0.20f, Quaternion.identity, new Vector3(0.06f, 0.22f, 0.06f), new Color(1f, 0.20f, 0.05f, 1f));
+            CreateWorldDamageObject("Wreck Marker", PrimitiveType.Cube, ground + Vector3.up * 0.04f, Quaternion.identity, new Vector3(0.80f, 0.030f, 0.12f), new Color(1f, 0.16f, 0.08f, 1f));
+            CreateWorldDamageObject("Wreck Marker Crossbar", PrimitiveType.Cube, ground + Vector3.up * 0.045f, Quaternion.Euler(0f, 90f, 0f), new Vector3(0.68f, 0.030f, 0.10f), new Color(1f, 0.24f, 0.06f, 1f));
+        }
+
         private void SpawnCriticalSectionEffect(string sectionName)
         {
             Vector3 local = CriticalSectionLocalPoint(sectionName);
@@ -319,7 +338,7 @@ namespace MC2Demo.Presentation
 
         public static string SectionDamageCueSummary()
         {
-            return "Arms=missing-socket+flag Legs=collapse+red-cross Cockpit=breach+ejection-pod Critical=smoke+sparks";
+            return "Arms=missing-socket+flag Legs=collapse+red-cross Cockpit=breach+ejection-pod Critical=smoke+sparks Wreck=blast+smoke+marker";
         }
 
         public static string JetCueSummary()
@@ -599,6 +618,27 @@ namespace MC2Demo.Presentation
             {
                 Destroy(linkCollider);
             }
+        }
+
+        private void CreateWorldDamageObject(string objectName, PrimitiveType primitive, Vector3 position, Quaternion rotation, Vector3 scale, Color color)
+        {
+            GameObject marker = GameObject.CreatePrimitive(primitive);
+            marker.name = Unit.Id + " " + objectName;
+            marker.transform.SetPositionAndRotation(position, rotation);
+            marker.transform.localScale = scale;
+            Renderer markerRenderer = marker.GetComponent<Renderer>();
+            if (markerRenderer != null)
+            {
+                markerRenderer.sharedMaterial = CreateOwnedMaterial(color);
+            }
+
+            Collider markerCollider = marker.GetComponent<Collider>();
+            if (markerCollider != null)
+            {
+                Destroy(markerCollider);
+            }
+
+            marker.transform.SetParent(transform, true);
         }
 
         private Material CreateOwnedMaterial(Color color)

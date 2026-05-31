@@ -2130,7 +2130,8 @@ namespace MC2Demo.Presentation
             bool sectionFxOk = sectionFx.IndexOf("Arms=missing-socket+flag", StringComparison.Ordinal) >= 0
                 && sectionFx.IndexOf("Legs=collapse+red-cross", StringComparison.Ordinal) >= 0
                 && sectionFx.IndexOf("Cockpit=breach+ejection-pod", StringComparison.Ordinal) >= 0
-                && sectionFx.IndexOf("Critical=smoke+sparks", StringComparison.Ordinal) >= 0;
+                && sectionFx.IndexOf("Critical=smoke+sparks", StringComparison.Ordinal) >= 0
+                && sectionFx.IndexOf("Wreck=blast+smoke+marker", StringComparison.Ordinal) >= 0;
             string objectiveFx = ObjectiveEventCueSummary();
             bool objectiveFxOk = objectiveFx.IndexOf("ObjectivePulse=active+complete+target", StringComparison.Ordinal) >= 0;
             string jetFx = DemoUnitView.JetCueSummary();
