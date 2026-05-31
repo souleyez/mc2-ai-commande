@@ -177,6 +177,7 @@ namespace MC2Demo.Presentation
         private GameObject squadFocusMarker;
         private GameObject hostileFocusMarker;
         private GameObject combatPressureMarker;
+        private GameObject hostilePressureMarker;
         private string selectedMechBayLoadoutUnitId;
         private float lastCombatEventTimeSeconds = -999f;
         private float lastContactEventTimeSeconds = -999f;
@@ -537,6 +538,7 @@ namespace MC2Demo.Presentation
             squadFocusMarker = null;
             hostileFocusMarker = null;
             combatPressureMarker = null;
+            hostilePressureMarker = null;
             lastCombatEventTimeSeconds = -999f;
             lastContactEventTimeSeconds = -999f;
             lastContactLabel = "";
@@ -2173,6 +2175,8 @@ namespace MC2Demo.Presentation
             bool playerDamageFxOk = playerDamageFx.IndexOf("PlayerDamage=warning+critical", StringComparison.Ordinal) >= 0;
             string combatPressureFx = CombatPressureCueSummary();
             bool combatPressureFxOk = combatPressureFx.IndexOf("CombatPressure=tracking+contact+fire", StringComparison.Ordinal) >= 0;
+            string hostilePressureFx = HostilePressureCueSummary();
+            bool hostilePressureFxOk = hostilePressureFx.IndexOf("HostilePressure=centroid+tempo", StringComparison.Ordinal) >= 0;
             string sectionFx = DemoUnitView.SectionDamageCueSummary();
             bool sectionFxOk = sectionFx.IndexOf("Arms=missing-socket+flag", StringComparison.Ordinal) >= 0
                 && sectionFx.IndexOf("Legs=collapse+red-cross", StringComparison.Ordinal) >= 0
@@ -2249,6 +2253,8 @@ namespace MC2Demo.Presentation
                 + playerDamageFx
                 + " combatPressureFx="
                 + combatPressureFx
+                + " hostilePressureFx="
+                + hostilePressureFx
                 + " sectionFx="
                 + sectionFx
                 + " heatFx="
@@ -2303,6 +2309,7 @@ namespace MC2Demo.Presentation
                     && threatFocusFxOk
                     && playerDamageFxOk
                     && combatPressureFxOk
+                    && hostilePressureFxOk
                     && sectionFxOk
                     && heatFxOk
                     && objectiveFxOk
@@ -2360,6 +2367,11 @@ namespace MC2Demo.Presentation
         private static string CombatPressureCueSummary()
         {
             return "CombatPressure=tracking+contact+fire";
+        }
+
+        private static string HostilePressureCueSummary()
+        {
+            return "HostilePressure=centroid+tempo";
         }
 
         private bool CombatTempoTextMatchesState(string tempoText)
@@ -5984,6 +5996,11 @@ namespace MC2Demo.Presentation
                 "CombatPressureTracking",
                 new Color(0.44f, 0.84f, 1f, 0.20f),
                 new Vector3(1.72f, 0.014f, 1.72f));
+            hostilePressureMarker = CreateMarkerDisc(
+                "Hostile Pressure Center",
+                "HostilePressureTracking",
+                new Color(1f, 0.42f, 0.12f, 0.22f),
+                new Vector3(1.54f, 0.016f, 1.54f));
         }
 
         private GameObject CreateMarkerDisc(string objectName, string materialName, Color color, Vector3 scale)
@@ -6025,6 +6042,7 @@ namespace MC2Demo.Presentation
             UpdateSquadFocusMarker();
             UpdateHostileFocusMarker();
             UpdateCombatPressureMarker(commander);
+            UpdateHostilePressureMarker();
             UpdateTargetHealthBars();
         }
 
@@ -6439,6 +6457,66 @@ namespace MC2Demo.Presentation
                 combatPressureMarker,
                 isFire ? "CombatPressureFire" : isContact ? "CombatPressureContact" : "CombatPressureTracking",
                 color);
+        }
+
+        private void UpdateHostilePressureMarker()
+        {
+            if (hostilePressureMarker == null)
+            {
+                return;
+            }
+
+            bool isVisible = TryGetActiveHostileCentroid(out Vector2 center, out int hostileCount);
+            hostilePressureMarker.SetActive(isVisible);
+            if (!isVisible)
+            {
+                return;
+            }
+
+            string mode = CombatTempoMode();
+            bool isFire = string.Equals(mode, "fire", StringComparison.Ordinal);
+            bool isContact = string.Equals(mode, "contact", StringComparison.Ordinal);
+            float pressureScale = Mathf.Clamp01(hostileCount / 20f);
+            float pulseSpeed = isFire ? 5.8f : isContact ? 4.4f : 3.0f;
+            float pulse = 0.96f + Mathf.Sin(Time.time * pulseSpeed) * (isFire ? 0.10f : 0.055f);
+            float scale = Mathf.Lerp(1.28f, 2.18f, pressureScale) * pulse;
+            hostilePressureMarker.transform.position = GroundMarkerPosition(center, 0.105f);
+            hostilePressureMarker.transform.localScale = new Vector3(scale, 0.016f, scale);
+
+            Color color = isFire
+                ? new Color(1f, 0.16f, 0.06f, 0.32f)
+                : isContact
+                    ? new Color(1f, 0.48f, 0.10f, 0.27f)
+                    : new Color(1f, 0.72f, 0.22f, 0.20f);
+            AssignMaterial(
+                hostilePressureMarker,
+                isFire ? "HostilePressureFire" : isContact ? "HostilePressureContact" : "HostilePressureTracking",
+                color);
+        }
+
+        private bool TryGetActiveHostileCentroid(out Vector2 center, out int hostileCount)
+        {
+            Vector2 sum = Vector2.zero;
+            hostileCount = 0;
+            foreach (UnitState unit in mission.Units)
+            {
+                if (unit == null || unit.IsPlayerUnit || !unit.IsActive || unit.IsDestroyed)
+                {
+                    continue;
+                }
+
+                sum += unit.MissionPosition;
+                hostileCount++;
+            }
+
+            if (hostileCount <= 0)
+            {
+                center = default;
+                return false;
+            }
+
+            center = sum / hostileCount;
+            return true;
         }
 
         private GameObject CreateTargetLine(string objectName)

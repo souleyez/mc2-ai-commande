@@ -710,6 +710,7 @@ Tasks:
 - Hostile focus now keeps a compact warning ring on player mechs targeted by multiple enemies without adding combat HUD rows.
 - Player mech damage now shows compact warning and critical rings for structure loss or section penalties without adding combat HUD rows.
 - Combat tempo now shows a commander-centered pressure ring for tracking, contact, and fire states without adding combat HUD rows.
+- Active hostile clusters now show a compact pressure-center ring, making enemy pressure location readable without adding combat HUD rows.
 - The combat situation smoke now also guards the compact battle pulse with explicit quiet, contact, and fire expectations tied to mission events.
 - The combat situation smoke now also guards source-group contact pressure internally, so active Airfield and North groups remain verifiable without occupying default battle HUD space.
 - The combat situation smoke now also guards the commanded Focus contract, keeping the current target readable without exposing internal target ids.
@@ -931,6 +932,7 @@ Tasks:
 - Hostile focus warning now has a smoke-guarded battlefield cue contract: `ThreatFocus=ring+warning`.
 - Player mech damage now has a smoke-guarded battlefield cue contract: `PlayerDamage=warning+critical`.
 - Combat tempo pressure now has a smoke-guarded battlefield cue contract: `CombatPressure=tracking+contact+fire`.
+- Hostile pressure center now has a smoke-guarded battlefield cue contract: `HostilePressure=centroid+tempo`.
 - Visible objective events now have a smoke-guarded battlefield cue contract: `ObjectivePulse=active+complete+target`.
 - Jet movement now has a smoke-guarded battlefield cue contract: `Jet=takeoff+trail+landing`.
 - Target structure damage now has a smoke-guarded battlefield cue contract: `Structure=scar+smoke+collapse`.
