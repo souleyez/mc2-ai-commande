@@ -309,13 +309,21 @@ namespace MC2Demo.Presentation
 
             if (string.Equals(verb, "assert-combat-situation", StringComparison.OrdinalIgnoreCase))
             {
+                string expectedTempo = "";
                 if (!string.IsNullOrWhiteSpace(payload))
                 {
-                    error = "Assert combat situation action does not accept arguments.";
-                    return false;
+                    expectedTempo = payload.Trim().ToLowerInvariant();
+                    if (!string.Equals(expectedTempo, "quiet", StringComparison.Ordinal)
+                        && !string.Equals(expectedTempo, "contact", StringComparison.Ordinal)
+                        && !string.Equals(expectedTempo, "tracking", StringComparison.Ordinal)
+                        && !string.Equals(expectedTempo, "fire", StringComparison.Ordinal))
+                    {
+                        error = "Assert combat situation action only accepts optional quiet, contact, tracking, or fire.";
+                        return false;
+                    }
                 }
 
-                action = StartupCommanderScriptAction.AssertCombatSituation(lineNumber, rawLine);
+                action = StartupCommanderScriptAction.AssertCombatSituation(lineNumber, rawLine, expectedTempo);
                 return true;
             }
 
@@ -369,6 +377,7 @@ namespace MC2Demo.Presentation
         public string FilePath { get; private set; }
         public float AdvanceSeconds { get; private set; }
         public bool RequireDepotIdentity { get; private set; }
+        public string ExpectedCombatTempo { get; private set; }
 
         private StartupCommanderScriptAction()
         {
@@ -594,13 +603,14 @@ namespace MC2Demo.Presentation
             };
         }
 
-        public static StartupCommanderScriptAction AssertCombatSituation(int lineNumber, string sourceLine)
+        public static StartupCommanderScriptAction AssertCombatSituation(int lineNumber, string sourceLine, string expectedTempo)
         {
             return new StartupCommanderScriptAction
             {
                 Kind = StartupCommanderScriptActionKind.AssertCombatSituation,
                 LineNumber = lineNumber,
-                SourceLine = sourceLine ?? string.Empty
+                SourceLine = sourceLine ?? string.Empty,
+                ExpectedCombatTempo = expectedTempo ?? string.Empty
             };
         }
 

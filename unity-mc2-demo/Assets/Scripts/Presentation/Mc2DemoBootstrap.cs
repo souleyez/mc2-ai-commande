@@ -849,7 +849,7 @@ namespace MC2Demo.Presentation
                         RunStartupDebriefSummaryAssertion();
                         break;
                     case StartupCommanderScriptActionKind.AssertCombatSituation:
-                        RunStartupCombatSituationAssertion();
+                        RunStartupCombatSituationAssertion(action.ExpectedCombatTempo);
                         break;
                     case StartupCommanderScriptActionKind.AssertEncounterPacing:
                         RunStartupEncounterPacingAssertion();
@@ -2039,9 +2039,9 @@ namespace MC2Demo.Presentation
             Debug.LogError("MC2 debrief summary assertion failed: " + result.Summary);
         }
 
-        private void RunStartupCombatSituationAssertion()
+        private void RunStartupCombatSituationAssertion(string expectedTempoMode)
         {
-            CombatSituationAssertionResult result = BuildCombatSituationAssertion();
+            CombatSituationAssertionResult result = BuildCombatSituationAssertion(expectedTempoMode);
             if (result.Accepted)
             {
                 AddCombatLogLine("CLI combat situation assert OK: " + result.Summary);
@@ -2087,7 +2087,7 @@ namespace MC2Demo.Presentation
             Debug.LogError("MC2 objective graph assertion failed: " + result.Summary);
         }
 
-        private CombatSituationAssertionResult BuildCombatSituationAssertion()
+        private CombatSituationAssertionResult BuildCombatSituationAssertion(string expectedTempoMode)
         {
             if (mission == null)
             {
@@ -2131,7 +2131,10 @@ namespace MC2Demo.Presentation
                 && sectionFx.IndexOf("Legs=collapse+red-cross", StringComparison.Ordinal) >= 0
                 && sectionFx.IndexOf("Cockpit=breach+ejection-pod", StringComparison.Ordinal) >= 0;
             string tempoText = CombatTempoText();
+            string tempoMode = CombatTempoMode();
             bool tempoOk = CombatTempoTextMatchesState(tempoText);
+            bool expectedTempoOk = string.IsNullOrWhiteSpace(expectedTempoMode)
+                || string.Equals(tempoMode, expectedTempoMode, StringComparison.OrdinalIgnoreCase);
             string pressureText = CombatContactPressureText();
             bool pressureOk = CombatContactPressureTextMatchesState(pressureText);
             LoadoutCompactCheck missionBrief = BuildMissionBriefPanelTextCheck();
@@ -2155,8 +2158,11 @@ namespace MC2Demo.Presentation
                 + weaponFx
                 + " sectionFx="
                 + sectionFx
+                + " tempoMode="
+                + tempoMode
                 + " tempo="
                 + tempoText
+                + (string.IsNullOrWhiteSpace(expectedTempoMode) ? "" : " expectedTempo=" + expectedTempoMode)
                 + " pressure="
                 + pressureText
                 + " "
@@ -2174,6 +2180,7 @@ namespace MC2Demo.Presentation
                     && weaponFxOk
                     && sectionFxOk
                     && tempoOk
+                    && expectedTempoOk
                     && pressureOk
                     && missionBrief.Accepted,
                 Summary = summary
@@ -2187,19 +2194,20 @@ namespace MC2Demo.Presentation
                 return false;
             }
 
-            if (HasRecentCombatEvent())
+            string mode = CombatTempoMode();
+            if (string.Equals(mode, "fire", StringComparison.Ordinal))
             {
                 return tempoText.StartsWith("Tempo Fire  hostile pressure ", StringComparison.Ordinal);
             }
 
-            if (HasRecentContactEvent())
+            if (string.Equals(mode, "contact", StringComparison.Ordinal))
             {
                 return tempoText.StartsWith("Tempo Contact  ", StringComparison.Ordinal)
                     && !string.IsNullOrWhiteSpace(lastContactLabel)
                     && tempoText.IndexOf(TruncateText(lastContactLabel, 24), StringComparison.Ordinal) >= 0;
             }
 
-            if (CountActiveHostileUnits() > 0)
+            if (string.Equals(mode, "tracking", StringComparison.Ordinal))
             {
                 return tempoText.StartsWith("Tempo Tracking  hostiles ", StringComparison.Ordinal);
             }
@@ -6693,26 +6701,42 @@ namespace MC2Demo.Presentation
 
         private string CombatTempoText()
         {
+            string mode = CombatTempoMode();
             int activeHostiles = CountActiveHostileUnits();
-            if (HasRecentCombatEvent())
+            if (string.Equals(mode, "fire", StringComparison.Ordinal))
             {
                 return "Tempo Fire  hostile pressure "
                     + activeHostiles.ToString(CultureInfo.InvariantCulture);
             }
 
-            if (HasRecentContactEvent())
+            if (string.Equals(mode, "contact", StringComparison.Ordinal))
             {
                 string count = lastContactCount > 1 ? " x" + lastContactCount.ToString(CultureInfo.InvariantCulture) : "";
                 return "Tempo Contact  " + TruncateText(lastContactLabel, 24) + count;
             }
 
-            if (activeHostiles > 0)
+            if (string.Equals(mode, "tracking", StringComparison.Ordinal))
             {
                 return "Tempo Tracking  hostiles "
                     + activeHostiles.ToString(CultureInfo.InvariantCulture);
             }
 
             return "Tempo Quiet  no contact";
+        }
+
+        private string CombatTempoMode()
+        {
+            if (HasRecentCombatEvent())
+            {
+                return "fire";
+            }
+
+            if (HasRecentContactEvent())
+            {
+                return "contact";
+            }
+
+            return CountActiveHostileUnits() > 0 ? "tracking" : "quiet";
         }
 
         private string CombatContactPressureText()
@@ -6752,12 +6776,14 @@ namespace MC2Demo.Presentation
 
         private Color CombatTempoColor()
         {
-            if (HasRecentCombatEvent())
+            string mode = CombatTempoMode();
+            if (string.Equals(mode, "fire", StringComparison.Ordinal))
             {
                 return new Color(1f, 0.46f, 0.26f);
             }
 
-            if (HasRecentContactEvent() || CountActiveHostileUnits() > 0)
+            if (string.Equals(mode, "contact", StringComparison.Ordinal)
+                || string.Equals(mode, "tracking", StringComparison.Ordinal))
             {
                 return new Color(1f, 0.84f, 0.34f);
             }

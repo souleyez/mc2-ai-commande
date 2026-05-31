@@ -704,7 +704,7 @@ Tasks:
 
 - Battle readability pass has begun with family-specific hit cues: energy beam plus pillar/ring, missile arc plus blast/smoke, and ballistic tracer plus sparks.
 - The combat situation smoke now guards the current weapon FX cue contract with `Energy=beam+pillar Missile=arc+blast Ballistic=tracer+sparks`.
-- The combat situation smoke now also guards the fixed battle Tempo row and advances into the airfield approach so contact/tracking/fire pressure stays tied to mission events.
+- The combat situation smoke now also guards the fixed battle Tempo row with explicit quiet, contact, and fire expectations tied to mission events.
 - The combat situation smoke now also guards the compact Contacts pressure row, so active Airfield and North groups are visible after the first objective trigger.
 - Section damage readability now has persistent missing-arm flags, red leg-collapse cues, cockpit breach/ejection markers, and a smoke-guarded cue contract.
 - The first `mc2_01` encounter pacing smoke now proves the airfield beat: initial hostiles held, Airfield/North patrols armed after objective 0, infantry ambush held until hangar damage, and Starslayer held for area 7.
