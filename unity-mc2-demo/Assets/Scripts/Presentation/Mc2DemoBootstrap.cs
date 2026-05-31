@@ -2135,6 +2135,8 @@ namespace MC2Demo.Presentation
             bool objectiveFxOk = objectiveFx.IndexOf("ObjectivePulse=active+complete+target", StringComparison.Ordinal) >= 0;
             string jetFx = DemoUnitView.JetCueSummary();
             bool jetFxOk = jetFx.IndexOf("Jet=takeoff+trail+landing", StringComparison.Ordinal) >= 0;
+            string structureFx = DemoStructureView.StructureDamageCueSummary();
+            bool structureFxOk = structureFx.IndexOf("Structure=scar+smoke+collapse", StringComparison.Ordinal) >= 0;
             string tempoText = CombatTempoText();
             string tempoMode = CombatTempoMode();
             bool tempoOk = CombatTempoTextMatchesState(tempoText);
@@ -2171,6 +2173,8 @@ namespace MC2Demo.Presentation
                 + objectiveFx
                 + " jetFx="
                 + jetFx
+                + " structureFx="
+                + structureFx
                 + " tempoMode="
                 + tempoMode
                 + " tempo="
@@ -2198,6 +2202,7 @@ namespace MC2Demo.Presentation
                     && sectionFxOk
                     && objectiveFxOk
                     && jetFxOk
+                    && structureFxOk
                     && tempoOk
                     && expectedTempoOk
                     && pressureOk

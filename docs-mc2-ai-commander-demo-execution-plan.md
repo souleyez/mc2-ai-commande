@@ -714,6 +714,7 @@ Tasks:
 - Enemy activation events now spawn a short tactical wake ring, beacon, and ping at the activated group center, making source-paced contact beats visible without adding another combat HUD row.
 - Visible objective activation and completion events now spawn short target-position pulses, keeping mission progress readable in the battlefield without expanding the combat HUD.
 - Jet orders now show takeoff flame, in-flight smoke trail, and landing dust cues so short jumps read clearly at the fixed tactical camera.
+- Target structures now carry persistent scorch, smoke/flame, and collapsed-rubble cues so the Hangar objective reads in the battlefield without extra HUD rows.
 - The hangar ambush smoke now attacks `structure-1-0`, captures combat/script/contact events during startup advance, and verifies infantry activation only after Hangar damage.
 - The Starslayer trigger smoke now moves into the hidden area-7 zone, treats destroyed enemies as already-activated for pacing counts, and verifies the west lance wakes only after the area trigger; the same pacing assertion now requires the hidden Starslayer VO hook once the lance is cleared.
 - Mission rewards now add funds and salvage fragments, and ready fragment sets become local warehouse mechs.
@@ -903,4 +904,5 @@ Tasks:
 - Enemy contact activation now has a smoke-guarded visual cue contract: `ContactWake=ring+beacon+ping`.
 - Visible objective events now have a smoke-guarded battlefield cue contract: `ObjectivePulse=active+complete+target`.
 - Jet movement now has a smoke-guarded battlefield cue contract: `Jet=takeoff+trail+landing`.
+- Target structure damage now has a smoke-guarded battlefield cue contract: `Structure=scar+smoke+collapse`.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.

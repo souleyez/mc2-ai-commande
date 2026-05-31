@@ -175,6 +175,7 @@ Current demo behavior:
 - auto-acquires hostile units in weapon range
 - gives missile, ballistic, and energy attacks distinct muzzle, trace, and hit accents
 - renders Jet takeoff flame, midair smoke, and landing dust cues
+- keeps target structures readable with persistent scorch, smoke, flame, and collapse cues
 - resolves temporary weapon cooldown, damage, cockpit/torso/arms/legs sections,
   and destruction
 - keeps destroyed cockpit, arm, and leg sections readable from the tactical view
