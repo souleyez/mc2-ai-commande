@@ -1,4 +1,4 @@
-# Proves the combat HUD situation row reports squad, hostiles, targets, recent-contact tempo, and weapon FX cue contract.
+# Proves the combat HUD situation row reports squad, hostiles, targets, recent-contact tempo, weapon FX, and section-damage cue contracts.
 assert-combat-situation
 advance 1
 assert-combat-situation

@@ -186,6 +186,8 @@ namespace MC2Demo.Presentation
             {
                 CreateDamageScar("Cockpit Breach", new Vector3(0f, 0.45f, 0.34f), new Vector3(0.32f, 0.08f, 0.24f), new Color(0.02f, 0.02f, 0.02f, 1f));
                 CreateDamageBeacon("Cockpit Ejection Beacon", new Vector3(0f, 0.98f, 0.36f), new Color(0.58f, 0.92f, 1f, 1f), 0.055f, 0.42f);
+                CreateDamageFlag("Cockpit Lost Flag", new Vector3(0f, 1.12f, 0.18f), new Vector3(0.46f, 0.07f, 0.11f), new Color(0.62f, 0.95f, 1f, 1f));
+                CreateDamageLink("Cockpit Ejection Rail", new Vector3(-0.16f, 0.64f, 0.36f), new Vector3(0.16f, 1.05f, 0.46f), new Color(0.58f, 0.92f, 1f, 0.92f), 0.018f);
                 DetachPart("Cockpit", new Vector3(0f, 0.8f, 0.45f), new Color(1f, 0.65f, 0.18f, 0.72f));
                 SpawnCockpitEjection();
                 return;
@@ -195,6 +197,8 @@ namespace MC2Demo.Presentation
             {
                 CreateDamageScar("Left Shoulder Breach", new Vector3(-0.44f, 0.10f, 0.02f), new Vector3(0.16f, 0.34f, 0.20f), new Color(0.06f, 0.04f, 0.02f, 1f));
                 CreateDamageBeacon("Left Arm Missing Beacon", new Vector3(-0.58f, 0.42f, 0.06f), new Color(1f, 0.34f, 0.08f, 1f), 0.045f, 0.32f);
+                CreateDamageFlag("Left Arm Lost Flag", new Vector3(-0.32f, 0.92f, 0.12f), new Vector3(0.28f, 0.08f, 0.10f), new Color(1f, 0.32f, 0.08f, 1f));
+                CreateDamageLink("Left Broken Cable", new Vector3(-0.48f, 0.25f, 0.08f), new Vector3(-0.78f, 0.02f, 0.20f), new Color(1f, 0.52f, 0.12f, 0.92f), 0.015f);
                 DetachPart("Left Arm", new Vector3(-0.9f, 0.25f, 0.15f), new Color(1f, 0.42f, 0.08f, 0.68f));
                 SpawnDamageBurst(SectionWorldPoint(new Vector3(-0.62f, 0.08f, 0f)), 0.8f);
                 return;
@@ -204,6 +208,8 @@ namespace MC2Demo.Presentation
             {
                 CreateDamageScar("Right Shoulder Breach", new Vector3(0.44f, 0.10f, 0.02f), new Vector3(0.16f, 0.34f, 0.20f), new Color(0.06f, 0.04f, 0.02f, 1f));
                 CreateDamageBeacon("Right Arm Missing Beacon", new Vector3(0.58f, 0.42f, 0.06f), new Color(1f, 0.34f, 0.08f, 1f), 0.045f, 0.32f);
+                CreateDamageFlag("Right Arm Lost Flag", new Vector3(0.32f, 0.92f, 0.12f), new Vector3(0.28f, 0.08f, 0.10f), new Color(1f, 0.32f, 0.08f, 1f));
+                CreateDamageLink("Right Broken Cable", new Vector3(0.48f, 0.25f, 0.08f), new Vector3(0.78f, 0.02f, 0.20f), new Color(1f, 0.52f, 0.12f, 0.92f), 0.015f);
                 DetachPart("Right Arm", new Vector3(0.9f, 0.25f, 0.15f), new Color(1f, 0.42f, 0.08f, 0.68f));
                 SpawnDamageBurst(SectionWorldPoint(new Vector3(0.62f, 0.08f, 0f)), 0.8f);
                 return;
@@ -213,6 +219,10 @@ namespace MC2Demo.Presentation
             {
                 CreateDamageScar("Leg Failure Scorch", new Vector3(0f, -0.36f, 0.05f), new Vector3(0.52f, 0.12f, 0.26f), new Color(0.05f, 0.04f, 0.03f, 1f));
                 CreateDamageBeacon("Leg Failure Beacon", new Vector3(0f, -0.10f, 0.12f), new Color(1f, 0.22f, 0.10f, 1f), 0.06f, 0.30f);
+                CreateDamageFlag("Leg Failure Flag", new Vector3(0f, 0.78f, 0.14f), new Vector3(0.54f, 0.08f, 0.10f), new Color(1f, 0.12f, 0.08f, 1f));
+                CreateDamageFlag("Leg Failure Crossbar", new Vector3(0f, -0.28f, 0.18f), new Vector3(0.70f, 0.08f, 0.10f), new Color(1f, 0.16f, 0.08f, 1f));
+                CreateDamageLink("Left Leg Broken Cable", new Vector3(-0.18f, -0.28f, 0.08f), new Vector3(-0.42f, -0.58f, 0.18f), new Color(1f, 0.42f, 0.10f, 0.90f), 0.014f);
+                CreateDamageLink("Right Leg Broken Cable", new Vector3(0.18f, -0.28f, 0.08f), new Vector3(0.42f, -0.58f, 0.18f), new Color(1f, 0.42f, 0.10f, 0.90f), 0.014f);
                 DetachPart("Left Leg", new Vector3(-0.38f, 0.12f, -0.25f), new Color(0.82f, 0.32f, 0.12f, 0.66f));
                 DetachPart("Right Leg", new Vector3(0.38f, 0.12f, -0.25f), new Color(0.82f, 0.32f, 0.12f, 0.66f));
                 SpawnDamageBurst(SectionWorldPoint(new Vector3(0f, -0.45f, 0f)), 1.0f);
@@ -252,6 +262,11 @@ namespace MC2Demo.Presentation
         {
             CreateTransient("Section Spark", PrimitiveType.Sphere, position, new Color(1f, 0.50f, 0.08f, 0.72f), 0.42f, Vector3.one * (0.10f * scale), Vector3.one * (0.70f * scale));
             CreateTransient("Section Smoke", PrimitiveType.Sphere, position + Vector3.up * 0.18f, new Color(0.10f, 0.10f, 0.10f, 0.45f), 1.25f, Vector3.one * (0.18f * scale), Vector3.one * (0.95f * scale));
+        }
+
+        public static string SectionDamageCueSummary()
+        {
+            return "Arms=missing-socket+flag Legs=collapse+red-cross Cockpit=breach+ejection-pod";
         }
 
         private void SpawnCockpitEjection()
@@ -393,6 +408,54 @@ namespace MC2Demo.Presentation
             if (beaconCollider != null)
             {
                 Destroy(beaconCollider);
+            }
+        }
+
+        private void CreateDamageFlag(string flagName, Vector3 localPosition, Vector3 localScale, Color color)
+        {
+            GameObject flag = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            flag.name = Unit.Id + " " + flagName;
+            flag.transform.SetParent(transform, false);
+            flag.transform.localPosition = localPosition;
+            flag.transform.localScale = localScale;
+            Renderer flagRenderer = flag.GetComponent<Renderer>();
+            if (flagRenderer != null)
+            {
+                flagRenderer.sharedMaterial = CreateOwnedMaterial(color);
+            }
+
+            Collider flagCollider = flag.GetComponent<Collider>();
+            if (flagCollider != null)
+            {
+                Destroy(flagCollider);
+            }
+        }
+
+        private void CreateDamageLink(string linkName, Vector3 localStart, Vector3 localEnd, Color color, float radius)
+        {
+            Vector3 direction = localEnd - localStart;
+            float length = direction.magnitude;
+            if (length <= 0.01f)
+            {
+                return;
+            }
+
+            GameObject link = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            link.name = Unit.Id + " " + linkName;
+            link.transform.SetParent(transform, false);
+            link.transform.localPosition = (localStart + localEnd) * 0.5f;
+            link.transform.localRotation = Quaternion.FromToRotation(Vector3.up, direction.normalized);
+            link.transform.localScale = new Vector3(radius, length * 0.5f, radius);
+            Renderer linkRenderer = link.GetComponent<Renderer>();
+            if (linkRenderer != null)
+            {
+                linkRenderer.sharedMaterial = CreateOwnedMaterial(color);
+            }
+
+            Collider linkCollider = link.GetComponent<Collider>();
+            if (linkCollider != null)
+            {
+                Destroy(linkCollider);
             }
         }
 

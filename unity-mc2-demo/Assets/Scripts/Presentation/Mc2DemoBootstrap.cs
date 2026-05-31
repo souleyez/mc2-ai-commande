@@ -2085,6 +2085,10 @@ namespace MC2Demo.Presentation
             bool weaponFxOk = weaponFx.IndexOf("Energy=beam+pillar", StringComparison.Ordinal) >= 0
                 && weaponFx.IndexOf("Missile=arc+blast", StringComparison.Ordinal) >= 0
                 && weaponFx.IndexOf("Ballistic=tracer+sparks", StringComparison.Ordinal) >= 0;
+            string sectionFx = DemoUnitView.SectionDamageCueSummary();
+            bool sectionFxOk = sectionFx.IndexOf("Arms=missing-socket+flag", StringComparison.Ordinal) >= 0
+                && sectionFx.IndexOf("Legs=collapse+red-cross", StringComparison.Ordinal) >= 0
+                && sectionFx.IndexOf("Cockpit=breach+ejection-pod", StringComparison.Ordinal) >= 0;
             string summary = "squad="
                 + playerReady.ToString(CultureInfo.InvariantCulture)
                 + "/"
@@ -2103,12 +2107,14 @@ namespace MC2Demo.Presentation
                 + MissionMapBackButtonLabel
                 + " fx="
                 + weaponFx
+                + " sectionFx="
+                + sectionFx
                 + " text="
                 + text;
 
             return new CombatSituationAssertionResult
             {
-                Accepted = textOk && countsOk && mapBackOk && topModeOk && fundsOk && weaponFxOk,
+                Accepted = textOk && countsOk && mapBackOk && topModeOk && fundsOk && weaponFxOk && sectionFxOk,
                 Summary = summary
             };
         }
