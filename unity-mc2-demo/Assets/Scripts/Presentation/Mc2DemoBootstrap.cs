@@ -204,6 +204,8 @@ namespace MC2Demo.Presentation
         private BattleMission mission;
         private MissionScriptBridge scriptBridge;
         private CommanderCommandPort commandPort;
+        private CommanderCommandResult lastStartupCommanderCommandResult;
+        private string lastStartupCommanderCommandLine = "";
         private CommanderObservationPort observationPort;
         private CombatProfileCatalog combatProfiles = CombatProfileCatalog.Empty;
         private MechBayInventoryContract demoInventory;
@@ -908,6 +910,9 @@ namespace MC2Demo.Presentation
                     case StartupCommanderScriptActionKind.AssertDebriefSummary:
                         RunStartupDebriefSummaryAssertion();
                         break;
+                    case StartupCommanderScriptActionKind.AssertCommandResult:
+                        RunStartupCommandResultAssertion(action.ExpectedCommandBlocked, action.ExpectedCommandAcceptedCount);
+                        break;
                     case StartupCommanderScriptActionKind.AssertCombatSituation:
                         RunStartupCombatSituationAssertion(action.ExpectedCombatTempo, action.ExpectedSoloCount, action.ExpectedJumpingCount);
                         break;
@@ -970,6 +975,8 @@ namespace MC2Demo.Presentation
 
         private void LogStartupCommanderCommand(string commandLine, CommanderCommandResult result)
         {
+            lastStartupCommanderCommandLine = commandLine ?? "";
+            lastStartupCommanderCommandResult = result;
             string line = "CLI command: " + (string.IsNullOrWhiteSpace(commandLine) ? "<empty>" : commandLine);
             line += result.Accepted ? " accepted=" + result.AcceptedCount : " blocked";
             AddCombatLogLine(line);
@@ -2097,6 +2104,51 @@ namespace MC2Demo.Presentation
             statusText = "Debrief summary assertion failed";
             AddCombatLogLine("CLI debrief summary assert failed: " + result.Summary);
             Debug.LogError("MC2 debrief summary assertion failed: " + result.Summary);
+        }
+
+        private void RunStartupCommandResultAssertion(bool expectedBlocked, int expectedAcceptedCount)
+        {
+            CommandResultAssertionResult result = BuildStartupCommandResultAssertion(expectedBlocked, expectedAcceptedCount);
+            if (result.Accepted)
+            {
+                AddCombatLogLine("CLI command result assert OK: " + result.Summary);
+                Debug.Log("MC2 command result assertion OK: " + result.Summary);
+                return;
+            }
+
+            startupSmokeFailed = true;
+            statusText = "Command result assertion failed";
+            AddCombatLogLine("CLI command result assert failed: " + result.Summary);
+            Debug.LogError("MC2 command result assertion failed: " + result.Summary);
+        }
+
+        private CommandResultAssertionResult BuildStartupCommandResultAssertion(bool expectedBlocked, int expectedAcceptedCount)
+        {
+            if (lastStartupCommanderCommandResult == null)
+            {
+                return CommandResultAssertionResult.Blocked("No command result");
+            }
+
+            bool blockedOk = !expectedBlocked || !lastStartupCommanderCommandResult.Accepted;
+            bool acceptedCountOk = expectedAcceptedCount < 0
+                || (lastStartupCommanderCommandResult.Accepted
+                    && lastStartupCommanderCommandResult.AcceptedCount == expectedAcceptedCount);
+            string summary = "lastCommand="
+                + (string.IsNullOrWhiteSpace(lastStartupCommanderCommandLine) ? "<empty>" : lastStartupCommanderCommandLine)
+                + " accepted="
+                + lastStartupCommanderCommandResult.Accepted
+                + " count="
+                + lastStartupCommanderCommandResult.AcceptedCount.ToString(CultureInfo.InvariantCulture)
+                + (expectedBlocked ? " expected=blocked" : "")
+                + (expectedAcceptedCount < 0 ? "" : " expectedAccepted=" + expectedAcceptedCount.ToString(CultureInfo.InvariantCulture))
+                + " message="
+                + lastStartupCommanderCommandResult.Message;
+
+            return new CommandResultAssertionResult
+            {
+                Accepted = blockedOk && acceptedCountOk,
+                Summary = summary
+            };
         }
 
         private void RunStartupCombatSituationAssertion(string expectedTempoMode, int expectedSoloCount, int expectedJumpingCount)
@@ -10568,6 +10620,21 @@ namespace MC2Demo.Presentation
             public static DebriefSummaryAssertionResult Blocked(string summary)
             {
                 return new DebriefSummaryAssertionResult
+                {
+                    Accepted = false,
+                    Summary = summary ?? "blocked"
+                };
+            }
+        }
+
+        private struct CommandResultAssertionResult
+        {
+            public bool Accepted { get; set; }
+            public string Summary { get; set; }
+
+            public static CommandResultAssertionResult Blocked(string summary)
+            {
+                return new CommandResultAssertionResult
                 {
                     Accepted = false,
                     Summary = summary ?? "blocked"

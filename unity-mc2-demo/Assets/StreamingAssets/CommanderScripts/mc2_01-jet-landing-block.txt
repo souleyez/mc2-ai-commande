@@ -1,0 +1,6 @@
+# Proves an illegal Jet landing is blocked and does not detach or launch the mech.
+assert-combat-situation quiet solo=0 jumping=0
+command unit unit-1 jump 3221 -277
+assert-command-result blocked
+assert-combat-situation quiet solo=0 jumping=0
+report

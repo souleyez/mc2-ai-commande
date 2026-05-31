@@ -888,6 +888,7 @@ Tasks:
 - A command-file `assert-combat-situation` hook and `mc2_01-combat-situation.txt` smoke path now verify that row, with quiet/contact driven by recent combat events instead of generic log entries.
 - A command-file `mc2_01-solo-order-state.txt` smoke path now verifies a single-unit order moves the combat situation row to `Solo 1`, stays isolated through a later squad command, returns to `Solo 0` after arrival, and keeps the solo-order cue contract guarded.
 - A command-file `mc2_01-solo-jet-state.txt` smoke path now verifies a single-unit Jet order enters `jumping=1`, keeps the mech in `Solo 1`, and returns to `Solo 0` after landing.
+- A command-file `assert-command-result` hook and `mc2_01-jet-landing-block.txt` smoke path now verify illegal Jet landings are blocked without detaching or launching the mech.
 - Weapon selection, move, place, and selected-slot reset results now report `W# Moved @a,b>c,d` or `W# Base @a,b` in the top status.
 - The selected weapon summary and payload detail now show the selected block as a concrete `WxH` footprint, making vertical and wide weapon shapes readable without counting cells.
 - The payload weapon detail row now uses compact weapon short codes such as `AC10` instead of repeating full source weapon names.

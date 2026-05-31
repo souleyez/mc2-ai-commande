@@ -1,6 +1,7 @@
 # Proves a single-unit Jet order enters brief flight, keeps solo state, and returns after landing.
 assert-combat-situation quiet solo=0 jumping=0
 command unit unit-1 jump 2600 -1941
+assert-command-result accepted=1
 assert-combat-situation quiet solo=1 jumping=1
 advance 1
 assert-combat-situation solo=0 jumping=0

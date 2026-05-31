@@ -307,6 +307,62 @@ namespace MC2Demo.Presentation
                 return true;
             }
 
+            if (string.Equals(verb, "assert-command-result", StringComparison.OrdinalIgnoreCase))
+            {
+                bool hasExpectation = false;
+                bool expectedBlocked = false;
+                int expectedAcceptedCount = -1;
+                if (string.IsNullOrWhiteSpace(payload))
+                {
+                    error = "Assert command result action needs blocked or accepted=N.";
+                    return false;
+                }
+
+                string[] tokens = payload.Split(TokenSeparators, StringSplitOptions.RemoveEmptyEntries);
+                for (int index = 0; index < tokens.Length; index++)
+                {
+                    string token = tokens[index].Trim().ToLowerInvariant();
+                    if (string.Equals(token, "blocked", StringComparison.Ordinal))
+                    {
+                        if (hasExpectation)
+                        {
+                            error = "Assert command result action accepts only one expectation.";
+                            return false;
+                        }
+
+                        hasExpectation = true;
+                        expectedBlocked = true;
+                        continue;
+                    }
+
+                    if (token.StartsWith("accepted=", StringComparison.Ordinal))
+                    {
+                        if (hasExpectation)
+                        {
+                            error = "Assert command result action accepts only one expectation.";
+                            return false;
+                        }
+
+                        string value = token.Substring("accepted=".Length);
+                        if (!int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out expectedAcceptedCount)
+                            || expectedAcceptedCount <= 0)
+                        {
+                            error = "Assert command result accepted argument must be accepted=N with a positive integer.";
+                            return false;
+                        }
+
+                        hasExpectation = true;
+                        continue;
+                    }
+
+                    error = "Assert command result action only accepts blocked or accepted=N.";
+                    return false;
+                }
+
+                action = StartupCommanderScriptAction.AssertCommandResult(lineNumber, rawLine, expectedBlocked, expectedAcceptedCount);
+                return true;
+            }
+
             if (string.Equals(verb, "assert-combat-situation", StringComparison.OrdinalIgnoreCase))
             {
                 string expectedTempo = "";
@@ -398,7 +454,7 @@ namespace MC2Demo.Presentation
                 return true;
             }
 
-            error = "Command file action must be command, advance, report, restart, mech-bay-launch, hide-squad-preview, saved-account-report, saved-account-save-load-preview, saved-account-export, saved-account-import-preview, saved-account-import-apply-preview, saved-account-import-apply, saved-account-load-default-preview, saved-account-save-current-default, saved-account-load-default-apply, prepare-depot-candidate, prepare-local-candidate, squad-swap, assert-restart-identity, assert-debrief-summary, assert-combat-situation, assert-encounter-pacing, assert-objective-graph, or assert-loadout-compact.";
+            error = "Command file action must be command, advance, report, restart, mech-bay-launch, hide-squad-preview, saved-account-report, saved-account-save-load-preview, saved-account-export, saved-account-import-preview, saved-account-import-apply-preview, saved-account-import-apply, saved-account-load-default-preview, saved-account-save-current-default, saved-account-load-default-apply, prepare-depot-candidate, prepare-local-candidate, squad-swap, assert-restart-identity, assert-debrief-summary, assert-command-result, assert-combat-situation, assert-encounter-pacing, assert-objective-graph, or assert-loadout-compact.";
             return false;
         }
     }
@@ -415,6 +471,8 @@ namespace MC2Demo.Presentation
         public string ExpectedCombatTempo { get; private set; }
         public int ExpectedSoloCount { get; private set; } = -1;
         public int ExpectedJumpingCount { get; private set; } = -1;
+        public bool ExpectedCommandBlocked { get; private set; }
+        public int ExpectedCommandAcceptedCount { get; private set; } = -1;
 
         private StartupCommanderScriptAction()
         {
@@ -640,6 +698,22 @@ namespace MC2Demo.Presentation
             };
         }
 
+        public static StartupCommanderScriptAction AssertCommandResult(
+            int lineNumber,
+            string sourceLine,
+            bool expectedBlocked,
+            int expectedAcceptedCount)
+        {
+            return new StartupCommanderScriptAction
+            {
+                Kind = StartupCommanderScriptActionKind.AssertCommandResult,
+                LineNumber = lineNumber,
+                SourceLine = sourceLine ?? string.Empty,
+                ExpectedCommandBlocked = expectedBlocked,
+                ExpectedCommandAcceptedCount = expectedAcceptedCount
+            };
+        }
+
         public static StartupCommanderScriptAction AssertCombatSituation(
             int lineNumber,
             string sourceLine,
@@ -712,6 +786,7 @@ namespace MC2Demo.Presentation
         SquadSwap,
         AssertRestartIdentity,
         AssertDebriefSummary,
+        AssertCommandResult,
         AssertCombatSituation,
         AssertEncounterPacing,
         AssertObjectiveGraph,
