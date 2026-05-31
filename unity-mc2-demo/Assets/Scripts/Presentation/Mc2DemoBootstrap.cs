@@ -2163,7 +2163,7 @@ namespace MC2Demo.Presentation
                 && funds.IndexOf("TOKEN", StringComparison.OrdinalIgnoreCase) < 0;
             string weaponFx = WeaponFxCueSummary();
             bool weaponFxOk = weaponFx.IndexOf("Energy=beam+pillar+muzzle", StringComparison.Ordinal) >= 0
-                && weaponFx.IndexOf("Missile=arc+blast+salvo", StringComparison.Ordinal) >= 0
+                && weaponFx.IndexOf("Missile=arc+blast+salvo-spread", StringComparison.Ordinal) >= 0
                 && weaponFx.IndexOf("Ballistic=tracer+sparks+muzzle", StringComparison.Ordinal) >= 0;
             string hitSeverityFx = HitSeverityCueSummary();
             bool hitSeverityFxOk = hitSeverityFx.IndexOf("HitSeverity=damage+kill+shock", StringComparison.Ordinal) >= 0;
@@ -4494,7 +4494,7 @@ namespace MC2Demo.Presentation
 
         private static string WeaponFxCueSummary()
         {
-            return "Energy=beam+pillar+muzzle Missile=arc+blast+salvo Ballistic=tracer+sparks+muzzle";
+            return "Energy=beam+pillar+muzzle Missile=arc+blast+salvo-spread Ballistic=tracer+sparks+muzzle";
         }
 
         private static string HitSeverityCueSummary()
@@ -4781,16 +4781,23 @@ namespace MC2Demo.Presentation
 
             CreateMuzzleFlash(from, color, 0.46f, 0.25f);
             CreateMissileMuzzleCue(from, direction, color);
-            Vector3 side = LateralVector(direction) * 0.12f;
+            Vector3 side = LateralVector(direction);
             float arcHeight = Mathf.Clamp(distance * 0.16f, 0.45f, 2.2f);
             for (int index = 0; index < 3; index++)
             {
-                float startT = 0.10f + index * 0.21f;
-                float endT = Mathf.Min(0.95f, startT + 0.18f);
-                Vector3 offset = side * (index - 1);
-                Vector3 segmentStart = ArcPoint(from, to, startT, arcHeight) + offset;
-                Vector3 segmentEnd = ArcPoint(from, to, endT, arcHeight) + offset * 0.45f;
-                CreateBeam(segmentStart, segmentEnd, color, 0.34f, 0.055f);
+                float lane = index - 1f;
+                float startT = 0.09f + index * 0.045f;
+                float midT = 0.52f + index * 0.035f;
+                float endT = Mathf.Min(0.96f, 0.86f + index * 0.035f);
+                float laneArc = arcHeight * (0.92f + index * 0.08f);
+                Vector3 laneOffset = side * (lane * 0.26f);
+                Vector3 laneFrom = from + laneOffset + Vector3.up * (0.04f * index);
+                Vector3 laneTo = to + laneOffset * 0.38f;
+                Vector3 segmentStart = ArcPoint(laneFrom, laneTo, startT, laneArc);
+                Vector3 segmentMid = ArcPoint(laneFrom, laneTo, midT, laneArc);
+                Vector3 segmentEnd = ArcPoint(laneFrom, laneTo, endT, laneArc);
+                CreateBeam(segmentStart, segmentMid, color, 0.28f, 0.046f);
+                CreateBeam(segmentMid, segmentEnd, new Color(color.r, color.g, color.b, 0.58f), 0.22f, 0.034f);
                 CreateImpact(segmentStart - direction.normalized * 0.08f, new Color(0.20f, 0.20f, 0.18f, 0.34f), false, 0.28f + index * 0.08f);
             }
 
@@ -4876,6 +4883,7 @@ namespace MC2Demo.Presentation
             Vector3 side = LateralVector(forward) * 0.16f;
             Vector3 lift = Vector3.up * 0.05f;
             CreateBeam(from - side + lift, from + forward * 0.46f - side * 0.35f + Vector3.up * 0.12f, color, 0.18f, 0.026f);
+            CreateBeam(from + lift * 0.75f, from + forward * 0.52f + Vector3.up * 0.14f, new Color(color.r, color.g, color.b, 0.62f), 0.16f, 0.020f);
             CreateBeam(from + side + lift, from + forward * 0.46f + side * 0.35f + Vector3.up * 0.12f, color, 0.18f, 0.026f);
             CreateImpact(from - forward * 0.08f + Vector3.up * 0.02f, new Color(0.16f, 0.15f, 0.13f, 0.36f), false, 0.34f);
         }

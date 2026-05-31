@@ -703,8 +703,8 @@ Tasks:
 
 ### Completed Context
 
-- Battle readability pass has begun with family-specific hit cues: energy beam plus pillar/ring, missile arc plus blast/smoke, and ballistic tracer plus sparks.
-- The combat situation smoke now guards the current weapon FX cue contract with `Energy=beam+pillar+muzzle Missile=arc+blast+salvo Ballistic=tracer+sparks+muzzle`.
+- Battle readability pass has begun with family-specific hit cues: energy beam plus pillar/ring, staggered missile salvo-spread arcs plus blast/smoke, and ballistic tracer plus sparks.
+- The combat situation smoke now guards the current weapon FX cue contract with `Energy=beam+pillar+muzzle Missile=arc+blast+salvo-spread Ballistic=tracer+sparks+muzzle`.
 - Tactical target lines now vary color and thickness for ready, cooling, and blocked shots, keeping weapon cadence visible without adding HUD rows.
 - Player weapon readiness now shows compact ready, cooling, and blocked rings on active targeting mechs without adding combat HUD rows.
 - Target acquisition now pulses compact auto/command lock rings at target points without adding combat HUD rows.
@@ -870,7 +870,7 @@ Tasks:
 - Reserve prep logs and save-result labels now use Reserve Prep wording instead of local/candidate terminology while keeping existing command names stable.
 - The fitting drawer header and selector now use Mech Lab wording, nudging the current IMGUI drawer toward the dedicated Mech Lab surface planned next.
 - Destroyed cockpit, arm, and leg sections now leave persistent tactical-view damage beacons in addition to the existing flashes, detached parts, and ejection effects; critical but not-yet-destroyed sections now vent small smoke/spark cues without adding more combat HUD text.
-- Missile, ballistic, and energy attacks now have clearer family-specific muzzle, trace, and hit accents layered over the existing primitive combat effects.
+- Missile, ballistic, and energy attacks now have clearer family-specific muzzle, trace, and hit accents layered over the existing primitive combat effects, with missiles using staggered salvo-spread arcs.
 - Hit effects now scale by incoming damage and kill state, with killing blows adding shock rings so light hits, heavy hits, and kills separate visually at tactical zoom.
 - Combat hits now add short inbound direction slashes at the impact point, making attack direction readable without adding combat HUD rows.
 - Weapon traces now start from family-specific arm or shoulder hardpoints, so energy, missile, and ballistic fire no longer originates from the mech center.
