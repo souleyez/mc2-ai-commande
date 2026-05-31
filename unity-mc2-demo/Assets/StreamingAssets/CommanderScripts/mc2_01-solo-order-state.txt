@@ -1,7 +1,9 @@
-# Proves the simplified single-unit order flow marks one detached mech, then returns it to squad control after arrival.
+# Proves the simplified single-unit order flow keeps a detached mech on its solo order through squad commands, then returns it after arrival.
 assert-combat-situation quiet solo=0
 command unit unit-1 move 3221 -277
 assert-combat-situation quiet solo=1
+command squad move 3136 -789
+assert-combat-situation solo=1
 advance 9
 assert-combat-situation solo=0
 report

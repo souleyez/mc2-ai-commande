@@ -160,7 +160,7 @@ Current demo behavior:
 - supports a command-file `mech-bay-launch` smoke action for the mech-bay Launch handoff
 - supports a command-file `hide-squad-preview` smoke action that proves the general next-mission handoff keeps the completed replacement cue before Launch
 - includes `mc2_01-visible-flow-audit.txt` as the Phase A smoke path for battle HUD, debrief, Mech Lab, squad swap, hidden handoff, launch, and identity checks
-- includes `mc2_01-solo-order-state.txt` as the single-unit order smoke path for detached solo count, automatic return, and solo-order cue contract
+- includes `mc2_01-solo-order-state.txt` as the single-unit order smoke path for detached solo count, squad-command isolation, automatic return, and solo-order cue contract
 - supports a command-file `saved-account-report` smoke action that validates and logs a JSON dry-run of the local account snapshot without writing persistent data
 - supports a command-file `saved-account-save-load-preview` smoke action that explicitly round-trips the local account JSON without writing a save file
 - supports explicit command-file `saved-account-export <path>` and `saved-account-import-preview <path>` actions for manual local account JSON file checks
