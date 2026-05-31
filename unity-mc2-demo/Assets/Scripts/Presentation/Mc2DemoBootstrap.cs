@@ -2162,7 +2162,7 @@ namespace MC2Demo.Presentation
             bool fundsOk = string.Equals(funds, "Funds 1,234", StringComparison.Ordinal)
                 && funds.IndexOf("TOKEN", StringComparison.OrdinalIgnoreCase) < 0;
             string weaponFx = WeaponFxCueSummary();
-            bool weaponFxOk = weaponFx.IndexOf("Energy=beam+pillar+muzzle", StringComparison.Ordinal) >= 0
+            bool weaponFxOk = weaponFx.IndexOf("Energy=beam+pillar+muzzle+flash", StringComparison.Ordinal) >= 0
                 && weaponFx.IndexOf("Missile=arc+blast+salvo-spread", StringComparison.Ordinal) >= 0
                 && weaponFx.IndexOf("Ballistic=tracer+sparks+muzzle+punch", StringComparison.Ordinal) >= 0;
             string hitSeverityFx = HitSeverityCueSummary();
@@ -4494,7 +4494,7 @@ namespace MC2Demo.Presentation
 
         private static string WeaponFxCueSummary()
         {
-            return "Energy=beam+pillar+muzzle Missile=arc+blast+salvo-spread Ballistic=tracer+sparks+muzzle+punch";
+            return "Energy=beam+pillar+muzzle+flash Missile=arc+blast+salvo-spread Ballistic=tracer+sparks+muzzle+punch";
         }
 
         private static string HitSeverityCueSummary()
@@ -4587,15 +4587,30 @@ namespace MC2Demo.Presentation
 
         private void CreateEnergyImpactCue(Vector3 targetPoint, Color color, float severityScale)
         {
-            Color pillar = new(color.r, color.g, color.b, 0.55f);
-            CreateBeam(targetPoint + Vector3.up * 0.08f, targetPoint + Vector3.up * (1.20f * severityScale), pillar, 0.24f, 0.038f * severityScale);
+            float flashScale = Mathf.Clamp(severityScale, 0.82f, 1.50f);
+            Color pillar = new(color.r, color.g, color.b, 0.70f);
+            CreateBeam(targetPoint + Vector3.up * 0.08f, targetPoint + Vector3.up * (1.20f * flashScale), pillar, 0.16f, 0.046f * flashScale);
+            CreateBeam(
+                targetPoint + Vector3.up * 0.10f,
+                targetPoint + Vector3.up * (0.74f * flashScale),
+                new Color(0.86f, 1f, 1f, 0.94f),
+                0.10f,
+                0.018f * flashScale);
+            CreateImpactDisc(
+                "Energy Flash Ring",
+                targetPoint + Vector3.up * 0.065f,
+                new Color(0.72f, 1f, 1f, 0.46f),
+                0.14f,
+                0.14f * flashScale,
+                0.58f * flashScale,
+                0.012f);
             CreateImpactDisc(
                 "Energy Ion Ring",
                 targetPoint + Vector3.up * 0.06f,
-                new Color(0.35f, 0.95f, 1f, 0.34f),
-                0.28f,
-                0.32f * severityScale,
-                0.88f * severityScale,
+                new Color(0.35f, 0.95f, 1f, 0.38f),
+                0.22f,
+                0.32f * flashScale,
+                0.88f * flashScale,
                 0.025f);
         }
 
@@ -4861,14 +4876,14 @@ namespace MC2Demo.Presentation
         private void CreateEnergyTrace(Vector3 from, Vector3 to, Color color)
         {
             Vector3 direction = to - from;
-            Color halo = new(color.r, color.g, color.b, 0.26f);
-            Color core = new(0.72f, 1f, 1f, 0.92f);
-            CreateMuzzleFlash(from, new Color(0.48f, 0.96f, 1f, 0.68f), 0.34f, 0.18f);
+            Color halo = new(color.r, color.g, color.b, 0.36f);
+            Color core = new(0.82f, 1f, 1f, 0.98f);
+            CreateMuzzleFlash(from, new Color(0.56f, 1f, 1f, 0.82f), 0.38f, 0.12f);
             CreateEnergyMuzzleCue(from, direction, color);
-            CreateBeam(from, to, halo, 0.16f, 0.070f);
-            CreateBeam(from, to, color, 0.13f, 0.038f);
-            CreateBeam(from + Vector3.up * 0.04f, to + Vector3.up * 0.04f, core, 0.08f, 0.016f);
-            CreateImpact(to + Vector3.up * 0.05f, new Color(0.50f, 0.95f, 1f, 0.50f), false, 0.48f);
+            CreateBeam(from, to, halo, 0.12f, 0.074f);
+            CreateBeam(from, to, new Color(color.r, color.g, color.b, 0.92f), 0.095f, 0.040f);
+            CreateBeam(from + Vector3.up * 0.04f, to + Vector3.up * 0.04f, core, 0.055f, 0.018f);
+            CreateImpact(to + Vector3.up * 0.05f, new Color(0.62f, 1f, 1f, 0.60f), false, 0.50f);
         }
 
         private static Vector3 ArcPoint(Vector3 from, Vector3 to, float t, float arcHeight)

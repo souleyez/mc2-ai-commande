@@ -57,7 +57,7 @@ Current demo behavior:
 - shows a subtle weapon range ring for selected, detached, attacking, or firing units
 - varies tactical target-line color and thickness for ready, cooling, and blocked shots
 - shows compact local weapon-readiness rings for ready, cooling, and blocked player mechs
-- renders short weapon beams, hit flashes, and impact bursts for combat events, with energy pillar/ring, staggered missile salvo arcs/blast, and ballistic punch/spark cues
+- renders short weapon beams, hit flashes, and impact bursts for combat events, with bright short energy flash/pillar cues, staggered missile salvo arcs/blast, and ballistic punch/spark cues
 - scales hit flash, impact, pulse size, and kill shock rings by incoming damage and kill state so heavy hits read harder
 - draws short inbound hit slashes at impact points so the attack direction reads at tactical zoom
 - starts weapon traces from family-specific mech hardpoints for energy, missile, and ballistic fire
@@ -199,7 +199,7 @@ Current demo behavior:
 - shows a compact debrief Outcome row for objectives, kills, player damage, net funds, and salvage
 - summarizes completed objectives, enemy kills, and damaged player mechs in the debrief without expanding the panel
 - auto-acquires hostile units in weapon range
-- gives missile, ballistic, and energy attacks distinct muzzle, trace, and hit accents, including staggered missile salvo-spread arcs and ballistic punch rings
+- gives missile, ballistic, and energy attacks distinct muzzle, trace, and hit accents, including bright brief energy cores, staggered missile salvo-spread arcs, and ballistic punch rings
 - scales weapon impacts, target pulses, and kill shock rings by hit severity so light hits and killing blows differ at tactical zoom
 - adds compact inbound hit-direction slashes without adding combat HUD rows
 - starts those weapon traces from simple arm or shoulder hardpoints instead of the mech center
