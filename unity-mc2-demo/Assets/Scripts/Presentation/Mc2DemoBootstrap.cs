@@ -2657,6 +2657,7 @@ namespace MC2Demo.Presentation
             string fillerClearLabel = FillerButtonLabel(LoadoutItemCategory.HeatSink, true, 1);
             string fillerLockLabel = FillerButtonLabel(null, false, 0);
             string fillerStackLabel = FillerButtonLabel(null, true, 2);
+            string targetDetail = SyntheticTargetPlacementDetail();
             bool accepted = string.Equals(targetPlaceLabel, "Place", StringComparison.Ordinal)
                 && string.Equals(targetBlockLabel, "Block", StringComparison.Ordinal)
                 && string.Equals(targetPickLabel, "Pick", StringComparison.Ordinal)
@@ -2667,7 +2668,11 @@ namespace MC2Demo.Presentation
                 && string.Equals(fillerStackLabel, "Stk", StringComparison.Ordinal)
                 && LoadoutTargetControlOffset <= 148f
                 && LoadoutTargetButtonWidth <= 62f
-                && LoadoutTargetStatusMinWidth <= 80f;
+                && LoadoutTargetStatusMinWidth <= 80f
+                && targetDetail.StartsWith("T 2,0 OK / +Armor for W1 AC10", StringComparison.Ordinal)
+                && targetDetail.IndexOf("Autocannon", StringComparison.OrdinalIgnoreCase) < 0
+                && targetDetail.IndexOf("(", StringComparison.Ordinal) < 0
+                && targetDetail.Length <= 42;
             return new LoadoutCompactCheck(
                 accepted,
                 "target="
@@ -2686,8 +2691,48 @@ namespace MC2Demo.Presentation
                 + fillerLockLabel
                 + "/"
                 + fillerStackLabel
+                + " targetDetail="
+                + targetDetail
                 + " targetW="
                 + LoadoutTargetButtonWidth.ToString(CultureInfo.InvariantCulture));
+        }
+
+        private static string SyntheticTargetPlacementDetail()
+        {
+            CombatLoadoutPreviewGridCell left = new(
+                0,
+                0,
+                0,
+                "synthetic-ac10",
+                "Autocannon (AC10)",
+                "",
+                "");
+            CombatLoadoutPreviewGridCell right = new(
+                1,
+                0,
+                0,
+                "synthetic-ac10",
+                "Autocannon (AC10)",
+                "",
+                "");
+            CombatLoadoutPreviewItem item = new(
+                0,
+                0,
+                0,
+                "synthetic-ac10",
+                "Autocannon (AC10)",
+                "",
+                "");
+            CombatLoadoutPreview preview = new(
+                new LoadoutValidationResult(),
+                8,
+                4,
+                4,
+                new[] { left, right },
+                new[] { item },
+                0f,
+                0f);
+            return LoadoutTargetPlacementDetailText(null, preview, 0, new Vector2Int(2, 0));
         }
 
         private static LoadoutCompactCheck BuildLoadoutNudgeCompactCheck()
@@ -9241,6 +9286,7 @@ namespace MC2Demo.Presentation
             string shapeText = LoadoutBlockShapeText(preview, selectedCell);
             CombatWeaponDefinition weapon = LoadoutWeaponForCell(unit, selectedCell);
             string weaponName = string.IsNullOrWhiteSpace(weapon?.name) ? selectedItem.DisplayName : weapon.name;
+            string weaponLabel = LoadoutTargetWeaponShortLabel(selectedWeaponIndex, weaponName);
             string targetIssue = LoadoutTargetPlacementIssueText(preview, selectedWeaponIndex, targetCell);
             string targetState = string.IsNullOrEmpty(targetIssue) ? "OK" : "Block " + targetIssue;
             string fillerActionSuffix = LoadoutTargetFillerActionSuffix(preview, targetCell);
@@ -9252,13 +9298,22 @@ namespace MC2Demo.Presentation
                 + targetState
                 + fillerActionSuffix
                 + " for "
-                + (selectedWeaponIndex + 1).ToString(CultureInfo.InvariantCulture)
-                + " "
-                + TruncateText(weaponName, 14)
+                + weaponLabel
                 + " C"
                 + cells.ToString(CultureInfo.InvariantCulture)
                 + " "
                 + shapeText;
+        }
+
+        private static string LoadoutTargetWeaponShortLabel(int selectedWeaponIndex, string weaponName)
+        {
+            string shortName = ShortLoadoutItemName(weaponName);
+            if (string.IsNullOrWhiteSpace(shortName))
+            {
+                shortName = "Weapon";
+            }
+
+            return LoadoutWeaponStateLabel(selectedWeaponIndex, shortName);
         }
 
         private static int CountLoadoutBlockCells(CombatLoadoutPreview preview, CombatLoadoutPreviewGridCell blockCell)

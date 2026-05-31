@@ -107,6 +107,7 @@ The Unity demo currently supports:
 - blocked selected-weapon targets now disable the Place action and label it Block instead of letting a clearly invalid target be placed by accident
 - the payload detail line now reports target placement as compact T coordinate, OK/Block state, cell count, and footprint shape, while the target status row colors those states
 - the compact target status row echoes the selected target coordinate beside OK/Block/Same state
+- target placement detail now uses compact weapon references such as `for W1 AC10` instead of repeating the full weapon name
 - clicked-slot status and the compact target status row use consistent +Armor, +Sink, or Clear filler hints
 - completed filler clicks report `T x,y +Armor/+Sink/Clear` in the top status
 - selected mounted weapons now show a compact Pick hint until a target grid cell is selected
@@ -831,6 +832,7 @@ Tasks:
 - The loadout compact smoke now also asserts the Apply/Reset strip's short label set and narrow button geometry, guarding the `Done/Apply/Invalid/Stock` plus `Clean/Reset` language without assuming every current fit can apply.
 - The loadout compact smoke now also asserts the selected-weapon Base/Reset control, keeping that no-op/dirty-state button short and narrow beside the nudge pad.
 - The loadout compact smoke now also asserts target action labels and geometry, guarding compact `Place/Block/Pick` and `+Armor/+Sink/Clear/Lock/Stk` controls beside the payload grid.
+- The loadout compact smoke now also asserts the compact target detail weapon reference, keeping placement details on `for W# code` wording.
 - The loadout compact smoke now also asserts the nudge pad labels and geometry, guarding `N/W/E/S` plus `Move OK/Block` feedback as compact selected-weapon movement controls.
 - The loadout compact smoke now also asserts the selected-weapon summary row, guarding the compact `W# Base/Moved`, `D/R/CD/H/W/C`, and `WxH` readouts that explain the active weapon block.
 - The loadout compact smoke now also asserts the selected-weapon edit-control header, keeping it to a short `W# Base/Moved @x,y` coordinate line.

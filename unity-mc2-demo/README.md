@@ -72,6 +72,7 @@ Current demo behavior:
 - draws a green/red target ghost for the selected mounted weapon before Place applies the draft move
 - disables the Place action and labels it Block while the selected weapon target overlaps another payload item or leaves the grid
 - reports target detail as compact T coordinate, OK/Block state, cell count, and footprint shape
+- uses compact target weapon references such as `for W1 AC10` in placement detail
 - echoes the selected target coordinate in the compact OK/Block/Same target status row beside Place and Fill
 - uses +Armor, +Sink, or Clear filler hints consistently across target-row and clicked-slot feedback
 - reports completed filler clicks as T x,y +Armor, +Sink, or Clear in the top status
