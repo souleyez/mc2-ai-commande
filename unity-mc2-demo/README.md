@@ -48,7 +48,7 @@ Current demo behavior:
 - pulses short target-lock rings when squad weapons auto-acquire or commanded attacks change target
 - keeps a subtle squad-focus pressure ring and beacon on targets shared by multiple player mechs
 - keeps a subtle hostile-focus warning ring and beacon on player mechs targeted by multiple enemies
-- marks damaged or section-penalized player mechs with compact warning and critical rings
+- marks damaged or section-penalized player mechs with compact warning and critical rings and beacons
 - shows a commander-centered combat-pressure ring and beacon for tracking, contact, and fire tempo
 - shows a hostile-pressure center ring and beacon over the active enemy cluster
 - shows a compact mission brief with objective progress and target structure integrity
@@ -215,7 +215,7 @@ Current demo behavior:
 - shows compact target-lock rings for auto-acquired and commanded targets
 - shows a compact squad-focus pressure ring and beacon when multiple player mechs share a target
 - shows a compact hostile-focus warning ring and beacon when multiple enemies share a player target
-- shows compact player-damage warning and critical rings without adding combat HUD rows
+- shows compact player-damage warning and critical rings and beacons without adding combat HUD rows
 - shows commander-centered combat-pressure rings and beacons for tracking, contact, and fire tempo
 - shows hostile-pressure center rings and beacons for active enemy clusters
 - makes armor hardness mitigation visible through compact battlefield glint/spark cues

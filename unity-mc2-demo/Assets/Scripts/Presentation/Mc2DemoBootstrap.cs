@@ -154,6 +154,7 @@ namespace MC2Demo.Presentation
         private readonly Dictionary<string, GameObject> unitOrderLines = new();
         private readonly Dictionary<string, GameObject> unitFocusMarkers = new();
         private readonly Dictionary<string, GameObject> unitDamageWarningMarkers = new();
+        private readonly Dictionary<string, GameObject> unitDamageWarningBeacons = new();
         private readonly Dictionary<string, GameObject> unitRangeMarkers = new();
         private readonly Dictionary<string, GameObject> unitWeaponReadinessMarkers = new();
         private readonly Dictionary<string, GameObject> unitCommanderAnchors = new();
@@ -528,6 +529,7 @@ namespace MC2Demo.Presentation
             unitOrderLines.Clear();
             unitFocusMarkers.Clear();
             unitDamageWarningMarkers.Clear();
+            unitDamageWarningBeacons.Clear();
             unitRangeMarkers.Clear();
             unitWeaponReadinessMarkers.Clear();
             unitCommanderAnchors.Clear();
@@ -2200,7 +2202,7 @@ namespace MC2Demo.Presentation
             string threatFocusFx = ThreatFocusCueSummary();
             bool threatFocusFxOk = threatFocusFx.IndexOf("ThreatFocus=ring+warning+beacon", StringComparison.Ordinal) >= 0;
             string playerDamageFx = PlayerDamageCueSummary();
-            bool playerDamageFxOk = playerDamageFx.IndexOf("PlayerDamage=warning+critical", StringComparison.Ordinal) >= 0;
+            bool playerDamageFxOk = playerDamageFx.IndexOf("PlayerDamage=warning+critical+beacon", StringComparison.Ordinal) >= 0;
             string combatPressureFx = CombatPressureCueSummary();
             bool combatPressureFxOk = combatPressureFx.IndexOf("CombatPressure=tracking+contact+fire+beacon", StringComparison.Ordinal) >= 0;
             string hostilePressureFx = HostilePressureCueSummary();
@@ -2430,7 +2432,7 @@ namespace MC2Demo.Presentation
 
         private static string PlayerDamageCueSummary()
         {
-            return "PlayerDamage=warning+critical";
+            return "PlayerDamage=warning+critical+beacon";
         }
 
         private static string CombatPressureCueSummary()
@@ -6406,6 +6408,11 @@ namespace MC2Demo.Presentation
                     "PlayerDamageWarning",
                     new Color(1f, 0.44f, 0.10f, 0.36f),
                     new Vector3(1.16f, 0.018f, 1.16f));
+                unitDamageWarningBeacons[unit.Id] = CreateMarkerDisc(
+                    unit.Id + " Damage Warning Beacon",
+                    "PlayerDamageBeacon",
+                    new Color(1f, 0.34f, 0.08f, 0.50f),
+                    new Vector3(0.078f, 0.36f, 0.078f));
                 unitRangeMarkers[unit.Id] = CreateMarkerDisc(
                     unit.Id + " Weapon Range",
                     "CommandWeaponRange",
@@ -6730,7 +6737,9 @@ namespace MC2Demo.Presentation
 
         private void UpdatePlayerDamageWarningMarker(UnitState unit)
         {
-            if (!unitDamageWarningMarkers.TryGetValue(unit.Id, out GameObject marker))
+            bool hasMarker = unitDamageWarningMarkers.TryGetValue(unit.Id, out GameObject marker);
+            bool hasBeacon = unitDamageWarningBeacons.TryGetValue(unit.Id, out GameObject beacon);
+            if (!hasMarker && !hasBeacon)
             {
                 return;
             }
@@ -6739,7 +6748,16 @@ namespace MC2Demo.Presentation
             bool isVisible = unit.IsActive
                 && !unit.IsDestroyed
                 && (unit.Structure < 0.82f || hasSectionPenalty);
-            marker.SetActive(isVisible);
+            if (hasMarker)
+            {
+                marker.SetActive(isVisible);
+            }
+
+            if (hasBeacon)
+            {
+                beacon.SetActive(isVisible);
+            }
+
             if (!isVisible)
             {
                 return;
@@ -6750,13 +6768,29 @@ namespace MC2Demo.Presentation
                 || unit.FirepowerRatio <= 0.55f;
             float pulseSpeed = isCritical ? 7.2f : 4.8f;
             float pulse = 0.96f + Mathf.Sin(Time.time * pulseSpeed) * (isCritical ? 0.10f : 0.06f);
-            float scale = (isCritical ? 1.34f : 1.14f) * pulse;
-            marker.transform.position = GroundMarkerPosition(unit.MissionPosition, 0.115f);
-            marker.transform.localScale = new Vector3(scale, 0.018f, scale);
-            AssignMaterial(
-                marker,
-                isCritical ? "PlayerDamageCritical" : "PlayerDamageWarning",
-                isCritical ? new Color(1f, 0.12f, 0.08f, 0.48f) : new Color(1f, 0.46f, 0.10f, 0.34f));
+            if (hasMarker)
+            {
+                float scale = (isCritical ? 1.34f : 1.14f) * pulse;
+                marker.transform.position = GroundMarkerPosition(unit.MissionPosition, 0.115f);
+                marker.transform.localScale = new Vector3(scale, 0.018f, scale);
+                AssignMaterial(
+                    marker,
+                    isCritical ? "PlayerDamageCritical" : "PlayerDamageWarning",
+                    isCritical ? new Color(1f, 0.12f, 0.08f, 0.48f) : new Color(1f, 0.46f, 0.10f, 0.34f));
+            }
+
+            if (hasBeacon)
+            {
+                beacon.transform.position = GroundMarkerPosition(unit.MissionPosition, isCritical ? 0.58f : 0.48f);
+                beacon.transform.localScale = new Vector3(
+                    0.078f * pulse,
+                    (isCritical ? 0.48f : 0.32f) + pulse * 0.08f,
+                    0.078f * pulse);
+                AssignMaterial(
+                    beacon,
+                    isCritical ? "PlayerDamageBeaconCritical" : "PlayerDamageBeaconWarning",
+                    isCritical ? new Color(1f, 0.08f, 0.06f, 0.54f) : new Color(1f, 0.42f, 0.10f, 0.42f));
+            }
         }
 
         private void UpdateRangeMarker(UnitState unit)
