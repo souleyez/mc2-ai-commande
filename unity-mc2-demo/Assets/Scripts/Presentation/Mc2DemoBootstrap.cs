@@ -2855,14 +2855,16 @@ namespace MC2Demo.Presentation
                 && armorDetail.IndexOf("W0.5", StringComparison.Ordinal) >= 0
                 && sinkDetail.IndexOf("C+1.5", StringComparison.Ordinal) >= 0
                 && sinkDetail.IndexOf("W1", StringComparison.Ordinal) >= 0
+                && armorDetail.IndexOf("Armor", StringComparison.OrdinalIgnoreCase) < 0
+                && sinkDetail.IndexOf("Sink", StringComparison.OrdinalIgnoreCase) < 0
                 && armorDetail.IndexOf("Hard", StringComparison.OrdinalIgnoreCase) < 0
                 && armorDetail.IndexOf("Load ", StringComparison.OrdinalIgnoreCase) < 0
                 && armorDetail.IndexOf("Plate", StringComparison.OrdinalIgnoreCase) < 0
                 && sinkDetail.IndexOf("Cool", StringComparison.OrdinalIgnoreCase) < 0
                 && sinkDetail.IndexOf("Load ", StringComparison.OrdinalIgnoreCase) < 0
                 && sinkDetail.IndexOf("Heat ", StringComparison.OrdinalIgnoreCase) < 0
-                && armorDetail.Length <= 26
-                && sinkDetail.Length <= 26;
+                && armorDetail.Length <= 18
+                && sinkDetail.Length <= 18;
             return new LoadoutCompactCheck(
                 accepted,
                 "componentDetail="
@@ -9234,12 +9236,12 @@ namespace MC2Demo.Presentation
             string compactShapeText = LoadoutBlockCompactShapeText(cells, shapeText);
             if (detailCell.Category == LoadoutItemCategory.ArmorPlate)
             {
-                return "Armor  A+1 W0.5  " + compactShapeText;
+                return "A+1 W0.5  " + compactShapeText;
             }
 
             if (detailCell.Category == LoadoutItemCategory.HeatSink)
             {
-                return "Sink  C+1.5 W1  " + compactShapeText;
+                return "C+1.5 W1  " + compactShapeText;
             }
 
             CombatWeaponDefinition weapon = LoadoutWeaponForCell(unit, detailCell);

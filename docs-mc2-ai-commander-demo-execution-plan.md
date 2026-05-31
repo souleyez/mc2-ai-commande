@@ -45,7 +45,7 @@ The Unity demo currently supports:
 - focused mech bay fitting view with compact squad buttons, pending-fit markers, and selected-mech fit-pressure bars so one selected payload grid owns the drawer
 - selected fitting card titles now show chassis and pilot only, hiding runtime or owned-mech ids from the visible Mech Lab surface
 - selected fitting pressure now uses compact `H/W/G` heat, weight, and grid readouts guarded by loadout smoke
-- payload component detail now uses compact `A+`, `C+`, and `W` readouts for armor plates and heat sinks
+- payload component detail now uses compact `A+`, `C+`, and `W` readouts without repeating Armor or Sink names
 - payload open-slot detail now uses a shared compact `Slot x,y open` line for hovered and selected empty cells
 - initial BattleCore loadout contract for chassis grids, item shapes, heat, weight, armor plates, heat sinks, radar slots, and jump jet slots
 - deterministic BattleCore loadout validator for grid bounds, blocked cells, overlap, rotation, heat caps, weight caps, and special-slot compatibility
@@ -824,7 +824,7 @@ Tasks:
 - The fitting Apply/Reset row now sits inside a compact status strip with stock/draft/applied cue borders, matching the rest of the right-drawer control language.
 - The selected fitting card title now uses a short `Fit` label with chassis and pilot text only, keeping owned/runtime ids out of the visible card.
 - The selected fitting pressure row now uses compact `H/W/G` labels instead of longer Heat/Load/Grid wording.
-- The payload component detail row now uses compact `A+`, `C+`, and `W` labels instead of Hard/Cool/Load wording.
+- The payload component detail row now uses compact `A+`, `C+`, and `W` labels without repeating Armor/Sink or Hard/Cool/Load wording.
 - The payload open-slot detail row now uses compact `Slot x,y open` wording instead of separate Empty/Selected Slot labels.
 - A command-file `assert-loadout-compact` hook and `mc2_01-loadout-compact.txt` smoke path now guard the compact fitting title, mounted-weapon button labels, and grid-section height contract.
 - The selected fitting card condition row now uses compact `Cond` text and a narrower Repair action, keeping the repair/state readout aligned with the denser loadout controls.

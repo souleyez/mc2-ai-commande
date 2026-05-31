@@ -60,7 +60,7 @@ Current demo behavior:
 - renders projected payload items as larger whole-block grid pieces with original-style empty/short/mid/long/component color bands
 - prefers compact weapon short codes such as `AC10` inside weapon blocks when source names include a parenthetical code
 - labels armor and heat-sink component blocks as compact `A+` and `C+` grid symbols
-- shows selected or hovered payload details for weapon heat, weight, damage, range, cooldown, and compact component bonuses
+- shows selected or hovered payload details for weapon heat, weight, damage, range, cooldown, and compact `A+` or `C+` component bonuses
 - highlights hovered payload blocks and empty cells so the grid reads as direct block editing instead of tiny cell picking
 - keeps clicked component or empty cells selected with compact slot detail so armor/sink tradeoffs can be inspected without holding the pointer still
 - lets the mech bay select and nudge projected weapons to preview overlap and bounds validation
