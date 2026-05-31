@@ -704,6 +704,7 @@ Tasks:
 
 - Battle readability pass has begun with family-specific hit cues: energy beam plus pillar/ring, missile arc plus blast/smoke, and ballistic tracer plus sparks.
 - The combat situation smoke now guards the current weapon FX cue contract with `Energy=beam+pillar+muzzle Missile=arc+blast+salvo Ballistic=tracer+sparks+muzzle`.
+- Tactical target lines now vary color and thickness for ready, cooling, and blocked shots, keeping weapon cadence visible without adding HUD rows.
 - The combat situation smoke now also guards the compact battle pulse with explicit quiet, contact, and fire expectations tied to mission events.
 - The combat situation smoke now also guards source-group contact pressure internally, so active Airfield and North groups remain verifiable without occupying default battle HUD space.
 - The combat situation smoke now also guards the commanded Focus contract, keeping the current target readable without exposing internal target ids.
@@ -907,6 +908,7 @@ Tasks:
 - The Mech Lab now opens as a desktop-width two-column surface on normal Windows demo resolutions, with Company Bay actions separated from the Loadout fitting grid and the compact drawer kept as fallback.
 - The first dedicated Mech Lab visual audit is done, and Company Bay density is reduced with Ops/Roster paging; the next low-risk step is to switch to battle readability unless another Mech Lab visible blocker appears in play.
 - Enemy contact activation now has a smoke-guarded visual cue contract: `ContactWake=ring+beacon+ping`.
+- Weapon target lines now have a smoke-guarded battlefield cue contract: `TargetLine=ready+cooling+blocked`.
 - Visible objective events now have a smoke-guarded battlefield cue contract: `ObjectivePulse=active+complete+target`.
 - Jet movement now has a smoke-guarded battlefield cue contract: `Jet=takeoff+trail+landing`.
 - Target structure damage now has a smoke-guarded battlefield cue contract: `Structure=scar+smoke+collapse`.

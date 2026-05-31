@@ -43,6 +43,7 @@ Current demo behavior:
 - keeps mission brief objective names compact enough for North island and Extraction to remain readable in the fixed right HUD
 - shows compact world health bars for damaged or player-targeted enemies and structures
 - shows a subtle weapon range ring for selected, detached, attacking, or firing units
+- varies tactical target-line color and thickness for ready, cooling, and blocked shots
 - renders short weapon beams, hit flashes, and impact bursts for combat events, with energy pillar/ring, missile blast, and ballistic spark cues
 - shows animated limb breakoff, persistent missing-part flags, red leg-collapse cues, section sparks, smoke, cockpit ejection cues, and destroyed-mech wreck markers
 - applies simple section penalties: destroyed arms reduce firepower, destroyed legs slow movement and disable Jet
@@ -179,6 +180,7 @@ Current demo behavior:
 - summarizes completed objectives, enemy kills, and damaged player mechs in the debrief without expanding the panel
 - auto-acquires hostile units in weapon range
 - gives missile, ballistic, and energy attacks distinct muzzle, trace, and hit accents
+- makes ready, cooling, and blocked weapon target lines read differently in the tactical view
 - renders Jet takeoff flame, midair smoke, and landing dust cues
 - shows hot and heat-locked mechs with battlefield vent/lock cues
 - keeps the camera-follow commander readable with a small anchor/beacon cue

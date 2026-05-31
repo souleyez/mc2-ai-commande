@@ -2135,6 +2135,8 @@ namespace MC2Demo.Presentation
             bool weaponFxOk = weaponFx.IndexOf("Energy=beam+pillar+muzzle", StringComparison.Ordinal) >= 0
                 && weaponFx.IndexOf("Missile=arc+blast+salvo", StringComparison.Ordinal) >= 0
                 && weaponFx.IndexOf("Ballistic=tracer+sparks+muzzle", StringComparison.Ordinal) >= 0;
+            string targetLineFx = TargetLineCueSummary();
+            bool targetLineFxOk = targetLineFx.IndexOf("TargetLine=ready+cooling+blocked", StringComparison.Ordinal) >= 0;
             string sectionFx = DemoUnitView.SectionDamageCueSummary();
             bool sectionFxOk = sectionFx.IndexOf("Arms=missing-socket+flag", StringComparison.Ordinal) >= 0
                 && sectionFx.IndexOf("Legs=collapse+red-cross", StringComparison.Ordinal) >= 0
@@ -2187,6 +2189,8 @@ namespace MC2Demo.Presentation
                 + MissionMapBackButtonLabel
                 + " fx="
                 + weaponFx
+                + " targetLineFx="
+                + targetLineFx
                 + " sectionFx="
                 + sectionFx
                 + " heatFx="
@@ -2229,6 +2233,7 @@ namespace MC2Demo.Presentation
                     && topModeOk
                     && fundsOk
                     && weaponFxOk
+                    && targetLineFxOk
                     && sectionFxOk
                     && heatFxOk
                     && objectiveFxOk
@@ -2256,6 +2261,11 @@ namespace MC2Demo.Presentation
         private static string SoloReturnCueSummary()
         {
             return "SoloReturn=ring+beacon";
+        }
+
+        private static string TargetLineCueSummary()
+        {
+            return "TargetLine=ready+cooling+blocked";
         }
 
         private bool CombatTempoTextMatchesState(string tempoText)
@@ -5881,7 +5891,7 @@ namespace MC2Demo.Presentation
 
             Vector3 unitPoint = unitView.transform.position + Vector3.up * 0.18f;
             targetPoint += Vector3.up * 0.18f;
-            PositionLine(line, unitPoint, targetPoint, 0.028f);
+            PositionLine(line, unitPoint, targetPoint, TargetLineRadius(unit, targetId));
             AssignMaterial(line, TargetLineMaterialName(unit, targetId), TargetLineColor(unit, targetId));
         }
 
@@ -5977,6 +5987,28 @@ namespace MC2Demo.Presentation
 
             StructureState targetStructure = mission.FindStructure(targetId);
             return targetStructure != null && unit.IsInWeaponRange(targetStructure);
+        }
+
+        private float TargetLineRadius(UnitState unit, string targetId)
+        {
+            if (unit == null)
+            {
+                return 0.028f;
+            }
+
+            if (unit.IsHeatLocked || !IsTargetInWeaponRange(unit, targetId))
+            {
+                return 0.040f;
+            }
+
+            if (unit.IsWeaponCoolingDown)
+            {
+                float readiness = Mathf.Clamp01(unit.WeaponReadinessRatio);
+                float pulse = 0.0035f + Mathf.Sin(Time.time * 7.0f) * 0.0035f;
+                return 0.018f + readiness * 0.012f + pulse;
+            }
+
+            return 0.032f;
         }
 
         private void UpdateTargetHealthBars()
