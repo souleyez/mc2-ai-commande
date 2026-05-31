@@ -2139,6 +2139,8 @@ namespace MC2Demo.Presentation
             bool pressureOk = CombatContactPressureTextMatchesState(pressureText);
             string focusText = CombatFocusText();
             bool focusOk = CombatFocusTextMatchesState(focusText);
+            string pulseText = CombatTacticalPulseText();
+            bool pulseOk = CombatTacticalPulseTextMatchesState(pulseText);
             LoadoutCompactCheck missionBrief = BuildMissionBriefPanelTextCheck();
             string summary = "squad="
                 + playerReady.ToString(CultureInfo.InvariantCulture)
@@ -2169,6 +2171,8 @@ namespace MC2Demo.Presentation
                 + pressureText
                 + " focus="
                 + focusText
+                + " pulse="
+                + pulseText
                 + " "
                 + missionBrief.Summary
                 + " text="
@@ -2187,6 +2191,7 @@ namespace MC2Demo.Presentation
                     && expectedTempoOk
                     && pressureOk
                     && focusOk
+                    && pulseOk
                     && missionBrief.Accepted,
                 Summary = summary
             };
@@ -2290,6 +2295,33 @@ namespace MC2Demo.Presentation
                 && focusText.IndexOf(" x" + focusCount.ToString(CultureInfo.InvariantCulture), StringComparison.Ordinal) >= 0
                 && focusText.IndexOf(" HP ", StringComparison.Ordinal) >= 0
                 && stateOk;
+        }
+
+        private bool CombatTacticalPulseTextMatchesState(string pulseText)
+        {
+            if (string.IsNullOrWhiteSpace(pulseText)
+                || pulseText.Length > 56
+                || pulseText.IndexOf("Contacts ", StringComparison.OrdinalIgnoreCase) >= 0
+                || pulseText.IndexOf("unit-", StringComparison.OrdinalIgnoreCase) >= 0
+                || pulseText.IndexOf("structure-", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return false;
+            }
+
+            string mode = CombatTempoMode();
+            bool modeOk = string.Equals(mode, "fire", StringComparison.Ordinal)
+                ? pulseText.StartsWith("Fire hostiles ", StringComparison.Ordinal)
+                : string.Equals(mode, "contact", StringComparison.Ordinal)
+                    ? pulseText.StartsWith("Contact ", StringComparison.Ordinal)
+                    : string.Equals(mode, "tracking", StringComparison.Ordinal)
+                        ? pulseText.StartsWith("Tracking hostiles ", StringComparison.Ordinal)
+                        : string.Equals(pulseText, "Quiet", StringComparison.Ordinal) || pulseText.StartsWith("Quiet  Focus ", StringComparison.Ordinal);
+            string targetId = PrimaryCommandedFocusTargetId(out int focusCount);
+            bool focusOk = string.IsNullOrEmpty(targetId) || focusCount <= 0
+                ? pulseText.IndexOf("Focus ", StringComparison.Ordinal) < 0
+                : pulseText.IndexOf("Focus " + TruncateText(CombatTargetLabel(targetId), 14), StringComparison.Ordinal) >= 0
+                    && pulseText.IndexOf(" x" + focusCount.ToString(CultureInfo.InvariantCulture), StringComparison.Ordinal) >= 0;
+            return modeOk && focusOk;
         }
 
         private LoadoutCompactCheck BuildMissionBriefPanelTextCheck()
@@ -6675,12 +6707,9 @@ namespace MC2Demo.Presentation
             Rect panel = CombatPanelRect();
             float x = panel.x;
             DrawDesignPanelFrame(panel, "Combat / 战况", UiCyanColor);
-            GUI.Label(new Rect(x + 12f, panel.y + 36f, 320f, 22f), "Active units: " + CountLiveUnits() + " / " + mission.Units.Count);
-            GUI.Label(new Rect(x + 12f, panel.y + 56f, panel.width - 24f, 18f), CombatSituationText());
-            DrawCombatTempoLine(x + 12f, panel.y + 76f, panel.width - 24f);
-            DrawCombatContactPressureLine(x + 12f, panel.y + 96f, panel.width - 24f);
-            DrawCombatFocusLine(x + 12f, panel.y + 116f, panel.width - 24f);
-            float y = panel.y + 140f;
+            GUI.Label(new Rect(x + 12f, panel.y + 36f, panel.width - 24f, 18f), CombatSituationText());
+            DrawCombatTacticalPulseLine(x + 12f, panel.y + 58f, panel.width - 24f);
+            float y = panel.y + 84f;
             foreach (string line in combatLog)
             {
                 if (y > panel.yMax - 22f)
@@ -6694,27 +6723,11 @@ namespace MC2Demo.Presentation
             }
         }
 
-        private void DrawCombatTempoLine(float x, float y, float width)
+        private void DrawCombatTacticalPulseLine(float x, float y, float width)
         {
             Color previous = GUI.color;
             GUI.color = CombatTempoColor();
-            GUI.Label(new Rect(x, y, width, 18f), CombatTempoText());
-            GUI.color = previous;
-        }
-
-        private void DrawCombatContactPressureLine(float x, float y, float width)
-        {
-            Color previous = GUI.color;
-            GUI.color = CountActiveHostileUnits() > 0 ? new Color(1f, 0.78f, 0.32f) : new Color(0.58f, 0.72f, 0.78f);
-            GUI.Label(new Rect(x, y, width, 18f), CombatContactPressureText());
-            GUI.color = previous;
-        }
-
-        private void DrawCombatFocusLine(float x, float y, float width)
-        {
-            Color previous = GUI.color;
-            GUI.color = CountCommandedFocusTargets() > 0 ? new Color(0.52f, 0.88f, 1f) : new Color(0.58f, 0.72f, 0.78f);
-            GUI.Label(new Rect(x, y, width, 18f), CombatFocusText());
+            GUI.Label(new Rect(x, y, width, 18f), CombatTacticalPulseText());
             GUI.color = previous;
         }
 
@@ -6836,6 +6849,54 @@ namespace MC2Demo.Presentation
                 + health.ToString(CultureInfo.InvariantCulture)
                 + "% "
                 + state;
+        }
+
+        private string CombatTacticalPulseText()
+        {
+            string pulse = CombatTempoCompactText();
+            string focus = CombatFocusCompactText();
+            return string.IsNullOrEmpty(focus) ? pulse : pulse + "  " + focus;
+        }
+
+        private string CombatTempoCompactText()
+        {
+            string mode = CombatTempoMode();
+            int activeHostiles = CountActiveHostileUnits();
+            if (string.Equals(mode, "fire", StringComparison.Ordinal))
+            {
+                return "Fire hostiles " + activeHostiles.ToString(CultureInfo.InvariantCulture);
+            }
+
+            if (string.Equals(mode, "contact", StringComparison.Ordinal))
+            {
+                string count = lastContactCount > 1 ? " x" + lastContactCount.ToString(CultureInfo.InvariantCulture) : "";
+                return "Contact " + TruncateText(lastContactLabel, 18) + count;
+            }
+
+            if (string.Equals(mode, "tracking", StringComparison.Ordinal))
+            {
+                return "Tracking hostiles " + activeHostiles.ToString(CultureInfo.InvariantCulture);
+            }
+
+            return "Quiet";
+        }
+
+        private string CombatFocusCompactText()
+        {
+            string targetId = PrimaryCommandedFocusTargetId(out int focusCount);
+            if (string.IsNullOrEmpty(targetId) || focusCount <= 0)
+            {
+                return "";
+            }
+
+            return "Focus "
+                + TruncateText(CombatTargetLabel(targetId), 14)
+                + " x"
+                + focusCount.ToString(CultureInfo.InvariantCulture)
+                + " "
+                + CombatTargetHealthPercent(targetId).ToString(CultureInfo.InvariantCulture)
+                + "% "
+                + CombatFocusStateText(targetId);
         }
 
         private string PrimaryCommandedFocusTargetId(out int focusCount)
@@ -13092,7 +13153,7 @@ namespace MC2Demo.Presentation
 
         private Rect CombatPanelRect()
         {
-            return new Rect(Screen.width - 360f, 12f, 344f, 198f);
+            return new Rect(Screen.width - 360f, 12f, 344f, 154f);
         }
 
         private Rect MissionBriefPanelRect()
