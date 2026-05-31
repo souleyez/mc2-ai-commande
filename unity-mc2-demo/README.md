@@ -176,6 +176,7 @@ Current demo behavior:
   and destruction
 - keeps destroyed cockpit, arm, and leg sections readable from the tactical view
   with persistent damage beacons in addition to flashes and detached parts
+- marks critical but not-yet-destroyed sections with small persistent smoke/spark cues
 - shows player unit structure and section damage in the left status panel
 - prints recent combat events in the top-right combat panel
 - shows a compact combat situation row for squad readiness, active hostiles, live targets, target focus, and contact tempo

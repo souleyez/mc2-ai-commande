@@ -707,7 +707,7 @@ Tasks:
 - The combat situation smoke now also guards the compact battle pulse with explicit quiet, contact, and fire expectations tied to mission events.
 - The combat situation smoke now also guards source-group contact pressure internally, so active Airfield and North groups remain verifiable without occupying default battle HUD space.
 - The combat situation smoke now also guards the commanded Focus contract, keeping the current target readable without exposing internal target ids.
-- Section damage readability now has persistent missing-arm flags, red leg-collapse cues, cockpit breach/ejection markers, and a smoke-guarded cue contract.
+- Section damage readability now has persistent missing-arm flags, red leg-collapse cues, cockpit breach/ejection markers, critical-section smoke/spark vents, and a smoke-guarded cue contract.
 - The first `mc2_01` encounter pacing smoke now proves the airfield beat: initial hostiles held, Airfield/North patrols armed after objective 0, infantry ambush held until hangar damage, and Starslayer held for area 7.
 - The objective graph smoke now guards the source mission skeleton: 6 visible objectives, 3 hidden glue objectives, flag edges, hidden first-patrol flag `3`, north-island unlock, Starslayer area trigger, and Starslayer VO target count.
 - The combat-situation smoke now also guards compact mission-panel objective lines so the North island and Extraction objectives remain readable in the fixed right HUD.
@@ -845,7 +845,7 @@ Tasks:
 - The roster fit detail now replaces internal owned-mech ids with Ready Bay or Reserve Bay labels, keeping the line player-facing.
 - Reserve prep logs and save-result labels now use Reserve Prep wording instead of local/candidate terminology while keeping existing command names stable.
 - The fitting drawer header and selector now use Mech Lab wording, nudging the current IMGUI drawer toward the dedicated Mech Lab surface planned next.
-- Destroyed cockpit, arm, and leg sections now leave persistent tactical-view damage beacons in addition to the existing flashes, detached parts, and ejection effects.
+- Destroyed cockpit, arm, and leg sections now leave persistent tactical-view damage beacons in addition to the existing flashes, detached parts, and ejection effects; critical but not-yet-destroyed sections now vent small smoke/spark cues without adding more combat HUD text.
 - Missile, ballistic, and energy attacks now have clearer family-specific muzzle, trace, and hit accents layered over the existing primitive combat effects.
 - The debrief now compresses completed objectives, enemy kills, and damaged player mechs into readable summary rows with `+n` overflow counts.
 - A command-file `assert-debrief-summary` hook and `mc2_01-debrief-summary.txt` smoke path now verify result counters and the compact combat summary row.

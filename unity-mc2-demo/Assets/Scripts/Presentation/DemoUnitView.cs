@@ -7,6 +7,8 @@ namespace MC2Demo.Presentation
 {
     public sealed class DemoUnitView : MonoBehaviour
     {
+        private const float CriticalSectionRatio = 0.35f;
+
         public UnitState Unit { get; private set; }
         private Vector3 liveScale;
         private Renderer unitRenderer;
@@ -19,6 +21,7 @@ namespace MC2Demo.Presentation
         private bool ejectionEffectSpawned;
         private readonly Dictionary<string, GameObject> sectionParts = new(StringComparer.OrdinalIgnoreCase);
         private readonly HashSet<string> destroyedSections = new(StringComparer.OrdinalIgnoreCase);
+        private readonly HashSet<string> criticalSections = new(StringComparer.OrdinalIgnoreCase);
         private readonly List<Material> ownedMaterials = new();
 
         public void Bind(UnitState unit)
@@ -85,12 +88,20 @@ namespace MC2Demo.Presentation
             for (int index = 0; index < Unit.Sections.Length; index++)
             {
                 DamageSection section = Unit.Sections[index];
-                if (!section.IsDestroyed || !destroyedSections.Add(section.Name))
+                if (section.IsDestroyed)
                 {
+                    if (destroyedSections.Add(section.Name))
+                    {
+                        SpawnSectionDestroyedEffect(section.Name);
+                    }
+
                     continue;
                 }
 
-                SpawnSectionDestroyedEffect(section.Name);
+                if (section.Ratio < CriticalSectionRatio && criticalSections.Add(section.Name))
+                {
+                    SpawnCriticalSectionEffect(section.Name);
+                }
             }
         }
 
@@ -264,9 +275,17 @@ namespace MC2Demo.Presentation
             CreateTransient("Section Smoke", PrimitiveType.Sphere, position + Vector3.up * 0.18f, new Color(0.10f, 0.10f, 0.10f, 0.45f), 1.25f, Vector3.one * (0.18f * scale), Vector3.one * (0.95f * scale));
         }
 
+        private void SpawnCriticalSectionEffect(string sectionName)
+        {
+            Vector3 local = CriticalSectionLocalPoint(sectionName);
+            CreateDamagePuff("Critical Section Smoke", local + Vector3.up * 0.10f, new Vector3(0.18f, 0.12f, 0.18f), new Color(0.12f, 0.11f, 0.10f, 0.72f));
+            CreateDamagePuff("Critical Section Smoke Vent", local + Vector3.up * 0.26f + Vector3.forward * 0.03f, new Vector3(0.11f, 0.18f, 0.11f), new Color(0.08f, 0.08f, 0.08f, 0.56f));
+            CreateDamageFlag("Critical Section Spark", local + Vector3.up * 0.34f, new Vector3(0.18f, 0.04f, 0.06f), new Color(1f, 0.46f, 0.08f, 1f));
+        }
+
         public static string SectionDamageCueSummary()
         {
-            return "Arms=missing-socket+flag Legs=collapse+red-cross Cockpit=breach+ejection-pod";
+            return "Arms=missing-socket+flag Legs=collapse+red-cross Cockpit=breach+ejection-pod Critical=smoke+sparks";
         }
 
         private void SpawnCockpitEjection()
@@ -351,6 +370,31 @@ namespace MC2Demo.Presentation
             return string.Equals(sectionName, expected, StringComparison.OrdinalIgnoreCase);
         }
 
+        private static Vector3 CriticalSectionLocalPoint(string sectionName)
+        {
+            if (IsSectionName(sectionName, "Cockpit") || IsSectionName(sectionName, "Turret"))
+            {
+                return new Vector3(0f, 0.52f, 0.30f);
+            }
+
+            if (IsSectionName(sectionName, "Left Arm") || IsSectionName(sectionName, "Left"))
+            {
+                return new Vector3(-0.54f, 0.12f, 0.08f);
+            }
+
+            if (IsSectionName(sectionName, "Right Arm") || IsSectionName(sectionName, "Right"))
+            {
+                return new Vector3(0.54f, 0.12f, 0.08f);
+            }
+
+            if (IsSectionName(sectionName, "Legs"))
+            {
+                return new Vector3(0f, -0.34f, 0.10f);
+            }
+
+            return new Vector3(0f, 0.12f, 0.18f);
+        }
+
         private Color SectionDamageColor(DamageSection section)
         {
             if (section.IsDestroyed)
@@ -358,7 +402,7 @@ namespace MC2Demo.Presentation
                 return new Color(0.10f, 0.08f, 0.06f, 1f);
             }
 
-            if (section.Ratio < 0.35f)
+            if (section.Ratio < CriticalSectionRatio)
             {
                 return Color.Lerp(liveColor, new Color(1f, 0.16f, 0.08f, 1f), 0.82f);
             }
@@ -388,6 +432,26 @@ namespace MC2Demo.Presentation
             if (scarCollider != null)
             {
                 Destroy(scarCollider);
+            }
+        }
+
+        private void CreateDamagePuff(string puffName, Vector3 localPosition, Vector3 localScale, Color color)
+        {
+            GameObject puff = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            puff.name = Unit.Id + " " + puffName;
+            puff.transform.SetParent(transform, false);
+            puff.transform.localPosition = localPosition;
+            puff.transform.localScale = localScale;
+            Renderer puffRenderer = puff.GetComponent<Renderer>();
+            if (puffRenderer != null)
+            {
+                puffRenderer.sharedMaterial = CreateOwnedMaterial(color);
+            }
+
+            Collider puffCollider = puff.GetComponent<Collider>();
+            if (puffCollider != null)
+            {
+                Destroy(puffCollider);
             }
         }
 
