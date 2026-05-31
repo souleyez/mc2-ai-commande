@@ -45,7 +45,7 @@ The Unity demo currently supports:
 - focused mech bay fitting view with compact squad buttons, pending-fit markers, and selected-mech fit-pressure bars so one selected payload grid owns the drawer
 - selected fitting card titles now show chassis and pilot only, hiding runtime or owned-mech ids from the visible Mech Lab surface
 - selected fitting pressure now uses compact `Fit OK` or `Review` state plus `H/W/G` heat, weight, and grid readouts guarded by loadout smoke
-- selected fitting condition now hides zero repair cost while still showing repair cost for damaged mechs
+- selected fitting condition now hides zero repair cost and shows an `OK` repair button state until a damaged mech needs repair
 - payload component detail now uses compact `A+`, `C+`, and `W` readouts without repeating Armor or Sink names
 - payload open-slot detail now uses a shared compact `Slot x,y open` line for hovered and selected empty cells
 - initial BattleCore loadout contract for chassis grids, item shapes, heat, weight, armor plates, heat sinks, radar slots, and jump jet slots
@@ -829,7 +829,7 @@ Tasks:
 - The payload open-slot detail row now uses compact `Slot x,y open` wording instead of separate Empty/Selected Slot labels.
 - A command-file `assert-loadout-compact` hook and `mc2_01-loadout-compact.txt` smoke path now guard the compact fitting title, mounted-weapon button labels, and grid-section height contract.
 - The selected fitting card condition row now uses compact `Cond` text and a narrower Repair action, keeping the repair/state readout aligned with the denser loadout controls.
-- The selected fitting card condition row now hides zero repair cost for healthy mechs while still showing damaged-mech repair cost.
+- The selected fitting card condition row now hides zero repair cost for healthy mechs and changes the repair button to `OK` until damaged-mech repair is needed.
 - The loadout compact smoke now also asserts the condition row contract, including the short `Cond` label and narrow Repair action geometry.
 - The loadout compact smoke now also asserts the Apply/Reset strip's short label set and narrow button geometry, guarding the `Done/Apply/Invalid/Stock` plus `Clean/Reset` language without assuming every current fit can apply.
 - The loadout compact smoke now also asserts the selected-weapon Base/Reset control, keeping that no-op/dirty-state button short and narrow beside the nudge pad.

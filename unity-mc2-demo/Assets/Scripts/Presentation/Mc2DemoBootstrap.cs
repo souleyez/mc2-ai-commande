@@ -2536,10 +2536,14 @@ namespace MC2Demo.Presentation
             string conditionLine = MechConditionCompactText(unit);
             string healthyLine = MechConditionCompactText(100, 0);
             string damagedLine = MechConditionCompactText(74, 1200);
+            string healthyRepairLabel = LoadoutRepairButtonLabel(0);
+            string damagedRepairLabel = LoadoutRepairButtonLabel(1200);
             bool accepted = conditionLine.StartsWith(LoadoutConditionPrefix, StringComparison.Ordinal)
                 && conditionLine.IndexOf("Condition", StringComparison.OrdinalIgnoreCase) < 0
                 && string.Equals(healthyLine, "Cond 100%", StringComparison.Ordinal)
                 && string.Equals(damagedLine, "Cond 74%  Repair 1,200", StringComparison.Ordinal)
+                && string.Equals(healthyRepairLabel, "OK", StringComparison.Ordinal)
+                && string.Equals(damagedRepairLabel, "Repair", StringComparison.Ordinal)
                 && healthyLine.IndexOf("Repair", StringComparison.OrdinalIgnoreCase) < 0
                 && damagedLine.IndexOf("Repair 0", StringComparison.OrdinalIgnoreCase) < 0
                 && LoadoutRepairButtonWidth <= 64f
@@ -2550,6 +2554,10 @@ namespace MC2Demo.Presentation
                 + conditionLine
                 + " damaged="
                 + damagedLine
+                + " repairButton="
+                + healthyRepairLabel
+                + "/"
+                + damagedRepairLabel
                 + " repairW="
                 + LoadoutRepairButtonWidth.ToString(CultureInfo.InvariantCulture));
         }
@@ -8555,7 +8563,7 @@ namespace MC2Demo.Presentation
                 && repairCost > 0
                 && demoInventory != null
                 && demoInventory.tokenBalance >= repairCost;
-            if (GUI.Button(new Rect(right, y - 2f, LoadoutRepairButtonWidth, 22f), "Repair"))
+            if (GUI.Button(new Rect(right, y - 2f, LoadoutRepairButtonWidth, 22f), LoadoutRepairButtonLabel(repairCost)))
             {
                 MechBayRepairResult result = MechBayRepairService.TryRepair(demoInventory, unit);
                 RefreshDemoInventoryValidation();
@@ -8599,6 +8607,11 @@ namespace MC2Demo.Presentation
             }
 
             return text + "  Repair " + FormatTokens(repairCost);
+        }
+
+        private static string LoadoutRepairButtonLabel(int repairCost)
+        {
+            return repairCost > 0 ? "Repair" : "OK";
         }
 
         private static string UnitMissionStateText(UnitState unit)
