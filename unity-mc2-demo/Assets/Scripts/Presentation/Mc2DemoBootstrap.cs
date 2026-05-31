@@ -166,6 +166,8 @@ namespace MC2Demo.Presentation
         private readonly Dictionary<string, GameObject> structureHealthBarBacks = new();
         private readonly Dictionary<string, GameObject> structureHealthBarFills = new();
         private readonly HashSet<string> detachedUnitIdsLastFrame = new(StringComparer.OrdinalIgnoreCase);
+        private readonly HashSet<string> movingUnitIdsLastFrame = new(StringComparer.OrdinalIgnoreCase);
+        private readonly HashSet<string> jumpingUnitIdsLastFrame = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, Material> materialCache = new(StringComparer.Ordinal);
         private readonly Dictionary<string, CombatLoadoutPlacementOverride[]> loadoutPlacementOverridesByUnit = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, List<CombatLoadoutFillerOverride>> loadoutFillerOverridesByUnit = new(StringComparer.OrdinalIgnoreCase);
@@ -530,6 +532,8 @@ namespace MC2Demo.Presentation
             structureHealthBarBacks.Clear();
             structureHealthBarFills.Clear();
             detachedUnitIdsLastFrame.Clear();
+            movingUnitIdsLastFrame.Clear();
+            jumpingUnitIdsLastFrame.Clear();
             loadoutPlacementOverridesByUnit.Clear();
             loadoutFillerOverridesByUnit.Clear();
             appliedLoadoutPlacementOverridesByUnit.Clear();
@@ -2199,6 +2203,8 @@ namespace MC2Demo.Presentation
             bool commandFxOk = commandFx.IndexOf("Command=move+attack+single", StringComparison.Ordinal) >= 0;
             string orderPathFx = OrderPathCueSummary();
             bool orderPathFxOk = orderPathFx.IndexOf("OrderPath=move+jet", StringComparison.Ordinal) >= 0;
+            string orderArrivalFx = OrderArrivalCueSummary();
+            bool orderArrivalFxOk = orderArrivalFx.IndexOf("OrderArrival=move+jet", StringComparison.Ordinal) >= 0;
             string commanderFx = CommanderCueSummary();
             bool commanderFxOk = commanderFx.IndexOf("Commander=anchor+beacon", StringComparison.Ordinal) >= 0;
             string soloReturnFx = SoloReturnCueSummary();
@@ -2275,6 +2281,8 @@ namespace MC2Demo.Presentation
                 + commandFx
                 + " orderPathFx="
                 + orderPathFx
+                + " orderArrivalFx="
+                + orderArrivalFx
                 + " commanderFx="
                 + commanderFx
                 + " soloReturnFx="
@@ -2324,6 +2332,7 @@ namespace MC2Demo.Presentation
                     && scriptFxOk
                     && commandFxOk
                     && orderPathFxOk
+                    && orderArrivalFxOk
                     && commanderFxOk
                     && soloReturnFxOk
                     && tempoOk
@@ -5339,6 +5348,11 @@ namespace MC2Demo.Presentation
             return "OrderPath=move+jet";
         }
 
+        private static string OrderArrivalCueSummary()
+        {
+            return "OrderArrival=move+jet";
+        }
+
         private void SpawnAcceptedCommandCue(CommanderCommand command, CommanderCommandResult result)
         {
             if (command == null || result == null || !result.Accepted)
@@ -6043,6 +6057,7 @@ namespace MC2Demo.Presentation
             foreach (UnitState unit in mission.PlayerUnits())
             {
                 UpdateSoloReturnCue(unit);
+                UpdateOrderArrivalCue(unit);
                 UpdateCommanderMarker(unit, commander);
                 UpdateSelectionMarker(unit);
                 UpdateOrderMarker(unit);
@@ -6058,6 +6073,51 @@ namespace MC2Demo.Presentation
             UpdateCombatPressureMarker(commander);
             UpdateHostilePressureMarker();
             UpdateTargetHealthBars();
+        }
+
+        private void UpdateOrderArrivalCue(UnitState unit)
+        {
+            if (unit == null || string.IsNullOrEmpty(unit.Id))
+            {
+                return;
+            }
+
+            bool wasMoving = movingUnitIdsLastFrame.Contains(unit.Id);
+            bool wasJumping = jumpingUnitIdsLastFrame.Contains(unit.Id);
+            bool isMoving = unit.IsActive && !unit.IsDestroyed && (unit.HasMoveOrder || unit.IsJumping);
+            if (wasMoving && !isMoving && unit.IsActive && !unit.IsDestroyed)
+            {
+                SpawnOrderArrivalCue(unit, wasJumping);
+            }
+
+            if (isMoving)
+            {
+                movingUnitIdsLastFrame.Add(unit.Id);
+                if (unit.IsJumping)
+                {
+                    jumpingUnitIdsLastFrame.Add(unit.Id);
+                }
+                else
+                {
+                    jumpingUnitIdsLastFrame.Remove(unit.Id);
+                }
+            }
+            else
+            {
+                movingUnitIdsLastFrame.Remove(unit.Id);
+                jumpingUnitIdsLastFrame.Remove(unit.Id);
+            }
+        }
+
+        private void SpawnOrderArrivalCue(UnitState unit, bool wasJumping)
+        {
+            Vector3 center = GroundMarkerPosition(unit.MissionPosition, wasJumping ? 0.17f : 0.13f);
+            Color color = wasJumping
+                ? new Color(0.56f, 0.96f, 1f, 0.68f)
+                : new Color(0.30f, 0.82f, 1f, 0.58f);
+            float scale = wasJumping ? 1.18f : 0.94f;
+            CreateImpactDisc("Order Arrival Pulse", center, new Color(color.r, color.g, color.b, 0.30f), 0.48f, 0.20f * scale, 0.92f * scale, 0.020f);
+            CreateBeam(center + Vector3.up * 0.04f, center + Vector3.up * (wasJumping ? 0.72f : 0.48f), new Color(color.r, color.g, color.b, 0.42f), 0.34f, wasJumping ? 0.022f : 0.016f);
         }
 
         private void UpdateSoloReturnCue(UnitState unit)
