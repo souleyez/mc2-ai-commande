@@ -35,6 +35,7 @@ Current demo behavior:
 - renders command rings for selected units, order destinations, and focused targets
 - pulses accepted move, attack, Jet, and single-unit commands at the battlefield point without adding HUD rows
 - marks the first squad mech as the mission commander with a subtle battlefield anchor and beacon
+- pulses a short return-to-squad cue when a single-unit order finishes and the mech rejoins squad control
 - shows world objective area hints only for the current active objective
 - pulses visible objective activation and completion at the battlefield target position
 - draws tactical target lines from player units to active targets, colored by weapon readiness
@@ -181,6 +182,7 @@ Current demo behavior:
 - renders Jet takeoff flame, midair smoke, and landing dust cues
 - shows hot and heat-locked mechs with battlefield vent/lock cues
 - keeps the camera-follow commander readable with a small anchor/beacon cue
+- shows single-order completion with a compact return-to-squad pulse
 - keeps target structures readable with persistent scorch, smoke, flame, and collapse cues
 - resolves temporary weapon cooldown, damage, cockpit/torso/arms/legs sections,
   and destruction

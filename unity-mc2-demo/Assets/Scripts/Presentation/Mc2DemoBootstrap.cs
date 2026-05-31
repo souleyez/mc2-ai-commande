@@ -160,6 +160,7 @@ namespace MC2Demo.Presentation
         private readonly Dictionary<int, List<GameObject>> objectiveAreaMarkers = new();
         private readonly Dictionary<string, GameObject> structureHealthBarBacks = new();
         private readonly Dictionary<string, GameObject> structureHealthBarFills = new();
+        private readonly HashSet<string> detachedUnitIdsLastFrame = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, Material> materialCache = new(StringComparer.Ordinal);
         private readonly Dictionary<string, CombatLoadoutPlacementOverride[]> loadoutPlacementOverridesByUnit = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, List<CombatLoadoutFillerOverride>> loadoutFillerOverridesByUnit = new(StringComparer.OrdinalIgnoreCase);
@@ -514,6 +515,7 @@ namespace MC2Demo.Presentation
             objectiveAreaMarkers.Clear();
             structureHealthBarBacks.Clear();
             structureHealthBarFills.Clear();
+            detachedUnitIdsLastFrame.Clear();
             loadoutPlacementOverridesByUnit.Clear();
             loadoutFillerOverridesByUnit.Clear();
             appliedLoadoutPlacementOverridesByUnit.Clear();
@@ -2153,6 +2155,8 @@ namespace MC2Demo.Presentation
             bool commandFxOk = commandFx.IndexOf("Command=move+attack+single", StringComparison.Ordinal) >= 0;
             string commanderFx = CommanderCueSummary();
             bool commanderFxOk = commanderFx.IndexOf("Commander=anchor+beacon", StringComparison.Ordinal) >= 0;
+            string soloReturnFx = SoloReturnCueSummary();
+            bool soloReturnFxOk = soloReturnFx.IndexOf("SoloReturn=ring+beacon", StringComparison.Ordinal) >= 0;
             string tempoText = CombatTempoText();
             string tempoMode = CombatTempoMode();
             bool tempoOk = CombatTempoTextMatchesState(tempoText);
@@ -2199,6 +2203,8 @@ namespace MC2Demo.Presentation
                 + commandFx
                 + " commanderFx="
                 + commanderFx
+                + " soloReturnFx="
+                + soloReturnFx
                 + " tempoMode="
                 + tempoMode
                 + " tempo="
@@ -2231,6 +2237,7 @@ namespace MC2Demo.Presentation
                     && scriptFxOk
                     && commandFxOk
                     && commanderFxOk
+                    && soloReturnFxOk
                     && tempoOk
                     && expectedTempoOk
                     && pressureOk
@@ -2244,6 +2251,11 @@ namespace MC2Demo.Presentation
         private static string CommanderCueSummary()
         {
             return "Commander=anchor+beacon";
+        }
+
+        private static string SoloReturnCueSummary()
+        {
+            return "SoloReturn=ring+beacon";
         }
 
         private bool CombatTempoTextMatchesState(string tempoText)
@@ -5672,6 +5684,7 @@ namespace MC2Demo.Presentation
             UnitState commander = FirstPlayerUnit();
             foreach (UnitState unit in mission.PlayerUnits())
             {
+                UpdateSoloReturnCue(unit);
                 UpdateCommanderMarker(unit, commander);
                 UpdateSelectionMarker(unit);
                 UpdateOrderMarker(unit);
@@ -5681,6 +5694,39 @@ namespace MC2Demo.Presentation
             }
 
             UpdateTargetHealthBars();
+        }
+
+        private void UpdateSoloReturnCue(UnitState unit)
+        {
+            if (unit == null || string.IsNullOrEmpty(unit.Id))
+            {
+                return;
+            }
+
+            bool wasDetached = detachedUnitIdsLastFrame.Contains(unit.Id);
+            bool isDetached = unit.IsActive && !unit.IsDestroyed && unit.IsDetached;
+            if (wasDetached && !isDetached && unit.IsActive && !unit.IsDestroyed)
+            {
+                SpawnSoloReturnCue(unit);
+            }
+
+            if (isDetached)
+            {
+                detachedUnitIdsLastFrame.Add(unit.Id);
+            }
+            else
+            {
+                detachedUnitIdsLastFrame.Remove(unit.Id);
+            }
+        }
+
+        private void SpawnSoloReturnCue(UnitState unit)
+        {
+            Vector3 center = GroundMarkerPosition(unit.MissionPosition, 0.16f);
+            Color color = new(0.34f, 1f, 0.62f, 0.70f);
+            CreateImpactDisc("Solo Return Pulse", center, new Color(color.r, color.g, color.b, 0.32f), 0.58f, 0.24f, 1.04f, 0.024f);
+            CreateBeam(center + Vector3.up * 0.06f, center + Vector3.up * 0.78f, new Color(color.r, color.g, color.b, 0.48f), 0.44f, 0.022f);
+            CreateImpact(center + Vector3.up * 0.14f, new Color(color.r, color.g, color.b, 0.42f), false, 0.34f);
         }
 
         private void UpdateUnitVisibility()
