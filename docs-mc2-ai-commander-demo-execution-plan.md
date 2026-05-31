@@ -877,7 +877,7 @@ Tasks:
 - Unit hit effects now land on section-aware cockpit, arm, leg, or torso points, so combat hits line up better with the reported damage section.
 - Section-aware hit points now carry compact cockpit, arm, leg, and torso flash accents, improving hit readability without adding combat HUD rows.
 - Armor hardness mitigation now emits short battlefield glint/spark cues, so armor plates read during hits without adding combat HUD rows.
-- The debrief now compresses completed objectives, enemy kills, and damaged player mechs into readable summary rows with `+n` overflow counts.
+- The debrief now compresses completed objectives, enemy kills, and damaged player mechs into readable summary rows with compact section damage tags and `+n` overflow counts.
 - The debrief now highlights one compact Outcome row with objectives, kills, damage, net funds, and salvage before the detailed payout rows.
 - A command-file `assert-debrief-summary` hook and `mc2_01-debrief-summary.txt` smoke path now verify result counters and the compact combat summary row.
 - The combat HUD now includes a compact situation row for squad readiness, active hostiles, live targets, and contact tempo above the recent event log.
@@ -937,6 +937,7 @@ Tasks:
 - Section-aware hit placement now has a smoke-guarded battlefield cue contract: `SectionHitPoint=cockpit+arms+legs+torso`.
 - Section-aware hit flashes now have a smoke-guarded battlefield cue contract: `SectionHitCue=cockpit+arms+legs+torso`.
 - Section status labels now have a smoke-guarded UI cue contract: `SectionStatus=bar+short-label+critical+destroyed`.
+- Debrief player damage rows now have a smoke-guarded summary contract: `DebriefDamage=unit+section+overflow`.
 - Cockpit ejection now extends the section damage contract with `Cockpit=breach+ejection-pod+chute`.
 - Armor mitigation now has a smoke-guarded battlefield cue contract: `ArmorMitigation=glint+spark`.
 - Weapon target lines now have a smoke-guarded battlefield cue contract: `TargetLine=ready+cooling+blocked`.

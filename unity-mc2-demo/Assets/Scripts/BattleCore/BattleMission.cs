@@ -1,11 +1,14 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using UnityEngine;
 
 namespace MC2Demo.BattleCore
 {
     public sealed class BattleMission
     {
+        private const float CriticalSectionSummaryRatio = 0.35f;
+
         public MissionContract Contract { get; }
         public IReadOnlyList<UnitState> Units => units;
         public IReadOnlyList<StructureState> Structures => structures;
@@ -745,7 +748,7 @@ namespace MC2Demo.BattleCore
                 {
                     if (IsPlayerUnitDamaged(unit))
                     {
-                        damagedPlayers.Add(UnitSummaryLabel(unit));
+                        damagedPlayers.Add(UnitDamageSummaryLabel(unit));
                     }
 
                     repairCostResourcePoints += EstimateRepairCostResourcePoints(unit);
@@ -828,6 +831,86 @@ namespace MC2Demo.BattleCore
         private static string UnitSummaryLabel(UnitState unit)
         {
             return unit.Id + " " + unit.UnitType;
+        }
+
+        private static string UnitDamageSummaryLabel(UnitState unit)
+        {
+            string sections = UnitDamageSectionSummary(unit);
+            string displayName = string.IsNullOrWhiteSpace(unit.UnitType) ? unit.Id : unit.UnitType;
+            return string.IsNullOrEmpty(sections)
+                ? displayName
+                : displayName + " " + sections;
+        }
+
+        private static string UnitDamageSectionSummary(UnitState unit)
+        {
+            if (unit?.Sections == null || unit.Sections.Length == 0)
+            {
+                return "";
+            }
+
+            List<string> damagedSections = new();
+            for (int index = 0; index < unit.Sections.Length; index++)
+            {
+                DamageSection section = unit.Sections[index];
+                if (section == null || section.Ratio >= 0.995f)
+                {
+                    continue;
+                }
+
+                damagedSections.Add(DamageSectionSummaryLabel(section));
+            }
+
+            if (damagedSections.Count == 0)
+            {
+                return "";
+            }
+
+            int shown = Math.Min(2, damagedSections.Count);
+            string text = string.Join("/", damagedSections.GetRange(0, shown));
+            int remaining = damagedSections.Count - shown;
+            return remaining > 0 ? text + " +" + remaining.ToString(CultureInfo.InvariantCulture) : text;
+        }
+
+        private static string DamageSectionSummaryLabel(DamageSection section)
+        {
+            if (section.IsDestroyed)
+            {
+                return ShortSectionName(section.Name) + " X";
+            }
+
+            int percent = Mathf.RoundToInt(Mathf.Clamp01(section.Ratio) * 100f);
+            string marker = section.Ratio < CriticalSectionSummaryRatio ? " !" : " ";
+            return ShortSectionName(section.Name) + marker + percent.ToString(CultureInfo.InvariantCulture);
+        }
+
+        private static string ShortSectionName(string sectionName)
+        {
+            switch (sectionName)
+            {
+                case "Cockpit":
+                    return "CP";
+                case "Torso":
+                    return "TR";
+                case "Left Arm":
+                    return "LA";
+                case "Right Arm":
+                    return "RA";
+                case "Legs":
+                    return "LG";
+                case "Front":
+                    return "FR";
+                case "Rear":
+                    return "RR";
+                case "Turret":
+                    return "TU";
+                case "Left":
+                    return "L";
+                case "Right":
+                    return "R";
+                default:
+                    return string.IsNullOrWhiteSpace(sectionName) ? "SEC" : sectionName;
+            }
         }
 
         private static string StructureSummaryLabel(StructureState structure)

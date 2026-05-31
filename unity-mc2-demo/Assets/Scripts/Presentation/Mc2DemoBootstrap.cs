@@ -4020,6 +4020,16 @@ namespace MC2Demo.Presentation
                 && DebriefNextStepText.IndexOf("launch again", StringComparison.OrdinalIgnoreCase) < 0;
             string resultFx = MissionResultCueSummary();
             bool resultFxOk = resultFx.IndexOf("ResultCue=complete+failed", StringComparison.Ordinal) >= 0;
+            string debriefDamageFx = DebriefDamageCueSummary();
+            string syntheticDamageLine = MissionResultCombatLine(new MissionResultSummary
+            {
+                destroyedEnemyUnitLabels = new[] { "enemy-1 LRMC", "enemy-2 Harasser", "enemy-3 UrbanMech" },
+                damagedPlayerUnitLabels = new[] { "W CP X", "B LA !30", "B LG 72" }
+            });
+            bool debriefDamageFxOk = debriefDamageFx.IndexOf("DebriefDamage=unit+section+overflow", StringComparison.Ordinal) >= 0
+                && syntheticDamageLine.IndexOf("CP X", StringComparison.Ordinal) >= 0
+                && syntheticDamageLine.IndexOf("LA !30", StringComparison.Ordinal) >= 0
+                && syntheticDamageLine.IndexOf("+1", StringComparison.Ordinal) >= 0;
             string debriefTopMode = TopStatusModeText(DemoFlowScreen.Debrief);
             string debriefFunds = TopStatusFundsText(null);
             string debriefFundsRow = MissionResultFundsLine(new MissionResultSummary
@@ -4073,6 +4083,8 @@ namespace MC2Demo.Presentation
                 + DebriefBountyLabel
                 + " resultFx="
                 + resultFx
+                + " debriefDamageFx="
+                + debriefDamageFx
                 + " flow="
                 + ContractsOpenStatusText
                 + "/"
@@ -4103,6 +4115,7 @@ namespace MC2Demo.Presentation
                     && endRunLabelOk
                     && debriefCopyOk
                     && resultFxOk
+                    && debriefDamageFxOk
                     && flowStatusCopyOk,
                 Summary = result
             };
@@ -5553,6 +5566,11 @@ namespace MC2Demo.Presentation
         private static string MissionResultCueSummary()
         {
             return "ResultCue=complete+failed";
+        }
+
+        private static string DebriefDamageCueSummary()
+        {
+            return "DebriefDamage=unit+section+overflow";
         }
 
         private static string CommandCueSummary()
