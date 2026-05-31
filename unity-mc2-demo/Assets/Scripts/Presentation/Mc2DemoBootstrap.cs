@@ -2164,7 +2164,7 @@ namespace MC2Demo.Presentation
             string weaponFx = WeaponFxCueSummary();
             bool weaponFxOk = weaponFx.IndexOf("Energy=beam+pillar+muzzle", StringComparison.Ordinal) >= 0
                 && weaponFx.IndexOf("Missile=arc+blast+salvo-spread", StringComparison.Ordinal) >= 0
-                && weaponFx.IndexOf("Ballistic=tracer+sparks+muzzle", StringComparison.Ordinal) >= 0;
+                && weaponFx.IndexOf("Ballistic=tracer+sparks+muzzle+punch", StringComparison.Ordinal) >= 0;
             string hitSeverityFx = HitSeverityCueSummary();
             bool hitSeverityFxOk = hitSeverityFx.IndexOf("HitSeverity=damage+kill+shock", StringComparison.Ordinal) >= 0;
             string hitDirectionFx = HitDirectionCueSummary();
@@ -4494,7 +4494,7 @@ namespace MC2Demo.Presentation
 
         private static string WeaponFxCueSummary()
         {
-            return "Energy=beam+pillar+muzzle Missile=arc+blast+salvo-spread Ballistic=tracer+sparks+muzzle";
+            return "Energy=beam+pillar+muzzle Missile=arc+blast+salvo-spread Ballistic=tracer+sparks+muzzle+punch";
         }
 
         private static string HitSeverityCueSummary()
@@ -4622,11 +4622,35 @@ namespace MC2Demo.Presentation
         private void CreateBallisticImpactCue(Vector3 from, Vector3 to, Color color, float severityScale)
         {
             Vector3 direction = to - from;
+            Vector3 forward = SafeDirection(direction);
             Vector3 side = LateralVector(direction);
             Vector3 sparkBase = to + Vector3.up * 0.08f;
             CreateBeam(sparkBase, sparkBase + side * (0.62f * severityScale) + Vector3.up * (0.12f * severityScale), new Color(1f, 0.88f, 0.36f, 0.70f), 0.075f, 0.012f * severityScale);
             CreateBeam(sparkBase, sparkBase - side * (0.58f * severityScale) + Vector3.up * (0.10f * severityScale), new Color(1f, 0.64f, 0.18f, 0.62f), 0.070f, 0.010f * severityScale);
             CreateBeam(sparkBase, sparkBase + Vector3.up * (0.52f * severityScale), color, 0.065f, 0.010f * severityScale);
+
+            float punchScale = Mathf.Clamp(severityScale, 0.78f, 1.55f);
+            Vector3 punchCenter = to - forward * (0.08f * punchScale) + Vector3.up * 0.06f;
+            CreateImpactDisc(
+                "Ballistic Punch Ring",
+                punchCenter,
+                new Color(1f, 0.78f, 0.22f, 0.38f),
+                0.16f,
+                0.10f * punchScale,
+                0.36f * punchScale,
+                0.010f);
+            CreateBeam(
+                punchCenter - side * (0.20f * punchScale),
+                punchCenter + side * (0.28f * punchScale) + Vector3.up * (0.04f * punchScale),
+                new Color(1f, 0.95f, 0.48f, 0.62f),
+                0.055f,
+                0.010f * punchScale);
+            CreateBeam(
+                punchCenter - forward * (0.18f * punchScale),
+                punchCenter + forward * (0.12f * punchScale) + Vector3.up * (0.05f * punchScale),
+                new Color(1f, 0.56f, 0.18f, 0.56f),
+                0.050f,
+                0.012f * punchScale);
         }
 
         private void CreateHitDirectionCue(Vector3 from, Vector3 to, float severityScale)
