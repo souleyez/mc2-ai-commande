@@ -40,7 +40,7 @@ The Unity demo currently supports:
 - enemy activation and lightweight patrol orders
 - player squad orders, detached unit orders, focused unit/structure attacks, and Jet orders
 - heat, cooldown, weapon range/readiness, simple section damage, section penalties, and animated breakoff/ejection effects
-- compact tactical UI with unit status, mech bay preview, mission brief, current-objective map, world objective hints, health bars, command rings, command-accept pulses, range rings, target lines, and weapon-readiness rings
+- compact tactical UI with unit status, mech bay preview, mission brief, current-objective map, world objective hints, health bars, command rings, command-accept pulses, range rings, target lines, and weapon-readiness rings/beacons
 - the combat situation row names the commander mech, squad readiness, detached single-order count, hostiles, targets, and recent contact tempo
 - the combat panel keeps a lean two-line HUD: squad/hostile basics plus one compact battle pulse for tempo and current focus
 - source-group Contacts pressure remains smoke-guarded for mission pacing, but is not shown as another default combat HUD row
@@ -706,7 +706,7 @@ Tasks:
 - Battle readability pass has begun with family-specific hit cues: bright brief energy beam plus flash/pillar/ring, staggered missile salvo-spread arcs plus blast/smoke, and ballistic tracer plus punch/sparks.
 - The combat situation smoke now guards the current weapon FX cue contract with `Energy=beam+pillar+muzzle+flash Missile=arc+blast+salvo-spread Ballistic=tracer+sparks+muzzle+punch`.
 - Tactical target lines now vary color and thickness for ready, cooling, and blocked shots, keeping weapon cadence visible without adding HUD rows.
-- Player weapon readiness now shows compact ready, cooling, and blocked rings on active targeting mechs without adding combat HUD rows.
+- Player weapon readiness now shows compact ready, cooling, and blocked rings and beacons on active targeting mechs without adding combat HUD rows.
 - Target acquisition now pulses compact auto/command lock rings at target points without adding combat HUD rows.
 - Squad focus now keeps a compact pressure ring and beacon on targets shared by multiple player mechs without adding combat HUD rows.
 - Hostile focus now keeps a compact warning ring and beacon on player mechs targeted by multiple enemies without adding combat HUD rows.
@@ -944,7 +944,7 @@ Tasks:
 - Cockpit ejection now extends the section damage contract with `Cockpit=breach+ejection-pod+chute`.
 - Armor mitigation now has a smoke-guarded battlefield cue contract: `ArmorMitigation=glint+spark`.
 - Weapon target lines now have a smoke-guarded battlefield cue contract: `TargetLine=ready+cooling+blocked`.
-- Player weapon readiness now has a smoke-guarded battlefield cue contract: `WeaponReadiness=ready+cooling+blocked`.
+- Player weapon readiness now has a smoke-guarded battlefield cue contract: `WeaponReadiness=ready+cooling+blocked+beacon`.
 - Target lock acquisition now has a smoke-guarded battlefield cue contract: `TargetLock=auto+command`.
 - Squad focus pressure now has a smoke-guarded battlefield cue contract: `SquadFocus=ring+pressure+beacon`.
 - Hostile focus warning now has a smoke-guarded battlefield cue contract: `ThreatFocus=ring+warning+beacon`.

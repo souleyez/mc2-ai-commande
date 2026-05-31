@@ -157,6 +157,7 @@ namespace MC2Demo.Presentation
         private readonly Dictionary<string, GameObject> unitDamageWarningBeacons = new();
         private readonly Dictionary<string, GameObject> unitRangeMarkers = new();
         private readonly Dictionary<string, GameObject> unitWeaponReadinessMarkers = new();
+        private readonly Dictionary<string, GameObject> unitWeaponReadinessBeacons = new();
         private readonly Dictionary<string, GameObject> unitCommanderAnchors = new();
         private readonly Dictionary<string, GameObject> unitCommanderBeacons = new();
         private readonly Dictionary<string, GameObject> unitTargetLines = new();
@@ -532,6 +533,7 @@ namespace MC2Demo.Presentation
             unitDamageWarningBeacons.Clear();
             unitRangeMarkers.Clear();
             unitWeaponReadinessMarkers.Clear();
+            unitWeaponReadinessBeacons.Clear();
             unitCommanderAnchors.Clear();
             unitCommanderBeacons.Clear();
             unitTargetLines.Clear();
@@ -2194,7 +2196,7 @@ namespace MC2Demo.Presentation
             string targetLineFx = TargetLineCueSummary();
             bool targetLineFxOk = targetLineFx.IndexOf("TargetLine=ready+cooling+blocked", StringComparison.Ordinal) >= 0;
             string weaponReadinessFx = WeaponReadinessCueSummary();
-            bool weaponReadinessFxOk = weaponReadinessFx.IndexOf("WeaponReadiness=ready+cooling+blocked", StringComparison.Ordinal) >= 0;
+            bool weaponReadinessFxOk = weaponReadinessFx.IndexOf("WeaponReadiness=ready+cooling+blocked+beacon", StringComparison.Ordinal) >= 0;
             string targetLockFx = TargetLockCueSummary();
             bool targetLockFxOk = targetLockFx.IndexOf("TargetLock=auto+command", StringComparison.Ordinal) >= 0;
             string squadFocusFx = SquadFocusCueSummary();
@@ -2412,7 +2414,7 @@ namespace MC2Demo.Presentation
 
         private static string WeaponReadinessCueSummary()
         {
-            return "WeaponReadiness=ready+cooling+blocked";
+            return "WeaponReadiness=ready+cooling+blocked+beacon";
         }
 
         private static string TargetLockCueSummary()
@@ -6423,6 +6425,11 @@ namespace MC2Demo.Presentation
                     "WeaponReadinessReady",
                     new Color(0.34f, 1f, 0.62f, 0.26f),
                     new Vector3(0.84f, 0.012f, 0.84f));
+                unitWeaponReadinessBeacons[unit.Id] = CreateMarkerDisc(
+                    unit.Id + " Weapon Readiness Beacon",
+                    "WeaponReadinessBeaconReady",
+                    new Color(0.34f, 1f, 0.62f, 0.42f),
+                    new Vector3(0.062f, 0.24f, 0.062f));
                 unitCommanderAnchors[unit.Id] = CreateMarkerDisc(
                     unit.Id + " Commander Anchor",
                     "CommanderAnchor",
@@ -6817,7 +6824,9 @@ namespace MC2Demo.Presentation
 
         private void UpdateWeaponReadinessMarker(UnitState unit)
         {
-            if (!unitWeaponReadinessMarkers.TryGetValue(unit.Id, out GameObject marker))
+            bool hasMarker = unitWeaponReadinessMarkers.TryGetValue(unit.Id, out GameObject marker);
+            bool hasBeacon = unitWeaponReadinessBeacons.TryGetValue(unit.Id, out GameObject beacon);
+            if (!hasMarker && !hasBeacon)
             {
                 return;
             }
@@ -6828,7 +6837,16 @@ namespace MC2Demo.Presentation
                 && !unit.IsDestroyed
                 && hasTarget
                 && unit.CombatWeaponRange > 0f;
-            marker.SetActive(isVisible);
+            if (hasMarker)
+            {
+                marker.SetActive(isVisible);
+            }
+
+            if (hasBeacon)
+            {
+                beacon.SetActive(isVisible);
+            }
+
             if (!isVisible)
             {
                 return;
@@ -6839,20 +6857,37 @@ namespace MC2Demo.Presentation
             float readiness = Mathf.Clamp01(unit.WeaponReadinessRatio);
             float pulse = blocked
                 ? 0.96f + Mathf.Sin(Time.time * 6.2f) * 0.10f
-                : cooling
-                    ? 0.92f + Mathf.Sin(Time.time * 4.8f) * 0.08f
-                    : 0.98f + Mathf.Sin(Time.time * 3.2f) * 0.04f;
-            float baseScale = blocked ? 1.02f : cooling ? Mathf.Lerp(0.72f, 0.96f, readiness) : 0.88f;
-            marker.transform.position = GroundMarkerPosition(unit.MissionPosition, 0.095f);
-            marker.transform.localScale = new Vector3(baseScale * pulse, 0.012f, baseScale * pulse);
-            AssignMaterial(
-                marker,
-                blocked ? "WeaponReadinessBlocked" : cooling ? "WeaponReadinessCooling" : "WeaponReadinessReady",
-                blocked
-                    ? new Color(1f, 0.16f, 0.10f, 0.36f)
                     : cooling
-                        ? new Color(1f, 0.62f, 0.14f, 0.30f)
-                        : new Color(0.34f, 1f, 0.62f, 0.26f));
+                        ? 0.92f + Mathf.Sin(Time.time * 4.8f) * 0.08f
+                        : 0.98f + Mathf.Sin(Time.time * 3.2f) * 0.04f;
+            string materialName = blocked ? "WeaponReadinessBlocked" : cooling ? "WeaponReadinessCooling" : "WeaponReadinessReady";
+            Color color = blocked
+                ? new Color(1f, 0.16f, 0.10f, 0.36f)
+                : cooling
+                    ? new Color(1f, 0.62f, 0.14f, 0.30f)
+                    : new Color(0.34f, 1f, 0.62f, 0.26f);
+            if (hasMarker)
+            {
+                float baseScale = blocked ? 1.02f : cooling ? Mathf.Lerp(0.72f, 0.96f, readiness) : 0.88f;
+                marker.transform.position = GroundMarkerPosition(unit.MissionPosition, 0.095f);
+                marker.transform.localScale = new Vector3(baseScale * pulse, 0.012f, baseScale * pulse);
+                AssignMaterial(marker, materialName, color);
+            }
+
+            if (hasBeacon)
+            {
+                float beaconHeight = blocked ? 0.38f : cooling ? Mathf.Lerp(0.18f, 0.32f, readiness) : 0.24f;
+                beacon.transform.position = GroundMarkerPosition(unit.MissionPosition, blocked ? 0.47f : 0.39f);
+                beacon.transform.localScale = new Vector3(0.062f * pulse, beaconHeight + pulse * 0.045f, 0.062f * pulse);
+                AssignMaterial(
+                    beacon,
+                    materialName + "Beacon",
+                    blocked
+                        ? new Color(1f, 0.12f, 0.08f, 0.48f)
+                        : cooling
+                            ? new Color(1f, 0.58f, 0.10f, 0.40f)
+                            : new Color(0.34f, 1f, 0.62f, 0.36f));
+            }
         }
 
         private void UpdateTargetLine(UnitState unit)
