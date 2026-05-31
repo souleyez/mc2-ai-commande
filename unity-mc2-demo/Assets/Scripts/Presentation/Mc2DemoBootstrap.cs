@@ -95,6 +95,7 @@ namespace MC2Demo.Presentation
         private const string MissionMapBackButtonLabel = "Back";
         private const string MechLabBackButtonLabel = "Back";
         private const string TopStatusModePrefix = "MODE ";
+        private const string TopStatusFundsPrefix = "Funds ";
         private const string SquadSelectionBackButtonLabel = "Back";
         private const string SquadSelectionUnavailableStatusText = "Squad plan unavailable";
         private const string ReserveFitBackButtonLabel = "Back";
@@ -2064,6 +2065,9 @@ namespace MC2Demo.Presentation
                 && MissionMapBackButtonLabel.IndexOf("Close", StringComparison.OrdinalIgnoreCase) < 0;
             bool topModeOk = string.Equals(topMode, "MODE Battle", StringComparison.Ordinal)
                 && topMode.IndexOf("FLOW", StringComparison.OrdinalIgnoreCase) < 0;
+            string funds = TopStatusFundsText(1234);
+            bool fundsOk = string.Equals(funds, "Funds 1,234", StringComparison.Ordinal)
+                && funds.IndexOf("TOKEN", StringComparison.OrdinalIgnoreCase) < 0;
             string summary = "squad="
                 + playerReady.ToString(CultureInfo.InvariantCulture)
                 + "/"
@@ -2076,6 +2080,8 @@ namespace MC2Demo.Presentation
                 + liveTargets.ToString(CultureInfo.InvariantCulture)
                 + " top="
                 + topMode
+                + " funds="
+                + funds
                 + " mapBack="
                 + MissionMapBackButtonLabel
                 + " text="
@@ -2083,7 +2089,7 @@ namespace MC2Demo.Presentation
 
             return new CombatSituationAssertionResult
             {
-                Accepted = textOk && countsOk && mapBackOk && topModeOk,
+                Accepted = textOk && countsOk && mapBackOk && topModeOk && fundsOk,
                 Summary = summary
             };
         }
@@ -2214,10 +2220,15 @@ namespace MC2Demo.Presentation
             string topMode = TopStatusModeText(demoFlowScreen);
             bool topModeOk = string.Equals(topMode, "MODE Mech Lab", StringComparison.Ordinal)
                 && topMode.IndexOf("FLOW", StringComparison.OrdinalIgnoreCase) < 0;
+            string funds = TopStatusFundsText(5678);
+            bool fundsOk = string.Equals(funds, "Funds 5,678", StringComparison.Ordinal)
+                && funds.IndexOf("TOKEN", StringComparison.OrdinalIgnoreCase) < 0;
             string summary = "route="
                 + flow
                 + " top="
                 + topMode
+                + " funds="
+                + funds
                 + " panel="
                 + panelOk
                 + " status="
@@ -2225,7 +2236,7 @@ namespace MC2Demo.Presentation
                 + " back="
                 + MechLabBackButtonLabel;
 
-            return new LoadoutCompactCheck(panelOk && flowOk && statusOk && titleOk && backOk && topModeOk, summary);
+            return new LoadoutCompactCheck(panelOk && flowOk && statusOk && titleOk && backOk && topModeOk && fundsOk, summary);
         }
 
         private static LoadoutCompactCheck BuildMechLabSummaryLabelCheck()
@@ -2767,6 +2778,7 @@ namespace MC2Demo.Presentation
                 && DebriefNextStepText.IndexOf("save", StringComparison.OrdinalIgnoreCase) < 0
                 && DebriefNextStepText.IndexOf("launch again", StringComparison.OrdinalIgnoreCase) < 0;
             string debriefTopMode = TopStatusModeText(DemoFlowScreen.Debrief);
+            string debriefFunds = TopStatusFundsText(null);
             bool flowStatusCopyOk = SaveSlotNeedsReviewText.IndexOf("slot", StringComparison.OrdinalIgnoreCase) >= 0
                 && SaveSlotNeedsReviewText.IndexOf("review", StringComparison.OrdinalIgnoreCase) >= 0
                 && NoSaveSlotText.IndexOf("default", StringComparison.OrdinalIgnoreCase) < 0
@@ -2784,7 +2796,9 @@ namespace MC2Demo.Presentation
                 && AfterActionMechLabStatusText.StartsWith("After Action", StringComparison.Ordinal)
                 && AfterActionContractsStatusText.StartsWith("After Action", StringComparison.Ordinal)
                 && string.Equals(debriefTopMode, "MODE Debrief", StringComparison.Ordinal)
-                && debriefTopMode.IndexOf("FLOW", StringComparison.OrdinalIgnoreCase) < 0;
+                && debriefTopMode.IndexOf("FLOW", StringComparison.OrdinalIgnoreCase) < 0
+                && string.Equals(debriefFunds, "Funds --", StringComparison.Ordinal)
+                && debriefFunds.IndexOf("TOKEN", StringComparison.OrdinalIgnoreCase) < 0;
 
             string result = "objectives="
                 + summary.completedVisibleObjectives.ToString(CultureInfo.InvariantCulture)
@@ -2814,6 +2828,8 @@ namespace MC2Demo.Presentation
                 + AfterActionMechLabStatusText
                 + " top="
                 + debriefTopMode
+                + " funds="
+                + debriefFunds
                 + " combatLine="
                 + combatLine;
 
@@ -4763,16 +4779,14 @@ namespace MC2Demo.Presentation
             DrawColorRect(new Rect(strip.x, strip.y, 4f, strip.height), UiCyanColor);
 
             string flow = TopStatusModeText(demoFlowScreen);
-            string token = demoInventory == null
-                ? "TOKEN --"
-                : "TOKEN " + FormatTokens(Mathf.Max(0, demoInventory.tokenBalance));
+            string funds = TopStatusFundsText(demoInventory?.tokenBalance);
             GUI.Label(
                 new Rect(strip.x + 14f, strip.y + 8f, strip.width - 170f, 18f),
                 flow + "  " + TruncateText(statusText, 58),
                 uiStatusStyle);
             GUI.Label(
                 new Rect(strip.xMax - 142f, strip.y + 8f, 126f, 18f),
-                token,
+                funds,
                 uiStatusStyle);
         }
 
@@ -11117,6 +11131,16 @@ namespace MC2Demo.Presentation
         private static string TopStatusModeText(DemoFlowScreen screen)
         {
             return TopStatusModePrefix + DemoFlowScreenName(screen);
+        }
+
+        private static string TopStatusFundsText(int? tokenBalance)
+        {
+            if (!tokenBalance.HasValue)
+            {
+                return TopStatusFundsPrefix + "--";
+            }
+
+            return TopStatusFundsPrefix + FormatTokens(Math.Max(0, tokenBalance.Value));
         }
 
         private bool IsGuiPointBlocked(Vector2 guiPoint)

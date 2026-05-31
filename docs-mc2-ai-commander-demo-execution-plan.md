@@ -62,6 +62,7 @@ The Unity demo currently supports:
 - the post-battle fitting drawer now presents itself as Mech Lab instead of a generic prep/squad-fit panel
 - contracts, debrief, flow breadcrumb, drawer frame, and top status now route fitting/editing entries through Mech Lab wording while keeping the underlying mech bay state stable
 - the top status strip now uses a player-facing `MODE` label instead of developer-style flow wording
+- the top status strip now labels the resource balance as `Funds` instead of variable-style token copy
 - the loadout compact smoke now asserts that the opened fitting route, panel title, and top status all stay on Mech Lab wording
 - Mech Lab's default summary now uses Bay Ready/Bay Review, Company, and no-recent-save wording instead of Inventory, Account, or idle save/load phrasing
 - Mech Lab loading, unavailable, repair, and launch-blocked states now keep Bay wording instead of surfacing Inventory terminology
@@ -832,6 +833,7 @@ Tasks:
 - The System and Debrief restart action now reads Restart Mission, and the System close action reads Back, keeping the pause/system flow closer to player intent and guarded by the debrief smoke.
 - The Mission Map and Mech Lab top-right close actions now read Back, with both labels guarded by combat-situation and loadout compact smoke paths.
 - The top status strip now says `MODE Battle/Mech Lab/Debrief` instead of `FLOW ...`, guarded by combat-situation, debrief, and loadout smoke paths.
+- The top status resource readout now says `Funds` instead of `TOKEN`, guarded by combat-situation, debrief, and loadout smoke paths.
 - The Mech Lab save-file check row now uses Check, Load Check, and No save checked wording instead of preview-language controls, guarded by the loadout compact smoke.
 - The Save Slot reset result now says fresh save and old copy instead of default-save wording, with the no-saved-game case guarded by the loadout compact smoke.
 - The Next Contract Squad and Reserve Fit Review subpanels now use Back instead of Hide, guarded by the hidden handoff launch smoke.

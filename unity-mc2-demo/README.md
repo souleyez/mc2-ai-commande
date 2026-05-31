@@ -20,7 +20,7 @@ Current demo behavior:
 - exposes a CLI-ready commander observation JSON for compact AI planning summaries
 - supports repeatable scriptable runtime restart from startup args or command files
 - tracks a lightweight demo mode state across title, battle, mech bay, contracts, Save Slot, system, and debrief
-- shows the current mode state in the top status strip with a player-facing `MODE` label
+- shows the current mode state and resource balance in the top status strip with player-facing `MODE` and `Funds` labels
 - opens a Contracts shell from the system panel with the current `mc2_01` contract, launch, mech bay, system, and return-battle actions
 - routes the post-battle debrief through Mech Bay or Contracts, hiding the debrief overlay before repair, save, or relaunch work
 - shows a compact After Action or Ready Bay flow lane for Repair All, Save, Contracts, and Launch after battle or during pre-mission prep
