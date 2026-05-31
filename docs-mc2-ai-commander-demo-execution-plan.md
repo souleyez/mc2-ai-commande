@@ -708,7 +708,7 @@ Tasks:
 - Tactical target lines now vary color and thickness for ready, cooling, and blocked shots, keeping weapon cadence visible without adding HUD rows.
 - Player weapon readiness now shows compact ready, cooling, and blocked rings on active targeting mechs without adding combat HUD rows.
 - Target acquisition now pulses compact auto/command lock rings at target points without adding combat HUD rows.
-- Squad focus now keeps a compact pressure ring on targets shared by multiple player mechs without adding combat HUD rows.
+- Squad focus now keeps a compact pressure ring and beacon on targets shared by multiple player mechs without adding combat HUD rows.
 - Hostile focus now keeps a compact warning ring and beacon on player mechs targeted by multiple enemies without adding combat HUD rows.
 - Player mech damage now shows compact warning and critical rings for structure loss or section penalties without adding combat HUD rows.
 - Combat tempo now shows a commander-centered pressure ring for tracking, contact, and fire states without adding combat HUD rows.
@@ -946,7 +946,7 @@ Tasks:
 - Weapon target lines now have a smoke-guarded battlefield cue contract: `TargetLine=ready+cooling+blocked`.
 - Player weapon readiness now has a smoke-guarded battlefield cue contract: `WeaponReadiness=ready+cooling+blocked`.
 - Target lock acquisition now has a smoke-guarded battlefield cue contract: `TargetLock=auto+command`.
-- Squad focus pressure now has a smoke-guarded battlefield cue contract: `SquadFocus=ring+pressure`.
+- Squad focus pressure now has a smoke-guarded battlefield cue contract: `SquadFocus=ring+pressure+beacon`.
 - Hostile focus warning now has a smoke-guarded battlefield cue contract: `ThreatFocus=ring+warning+beacon`.
 - Player mech damage now has a smoke-guarded battlefield cue contract: `PlayerDamage=warning+critical`.
 - Combat tempo pressure now has a smoke-guarded battlefield cue contract: `CombatPressure=tracking+contact+fire`.

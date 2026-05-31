@@ -183,6 +183,7 @@ namespace MC2Demo.Presentation
         private readonly List<Material> ownedMaterials = new();
         private readonly List<string> combatLog = new();
         private GameObject squadFocusMarker;
+        private GameObject squadFocusBeacon;
         private GameObject hostileFocusMarker;
         private GameObject hostileFocusBeacon;
         private GameObject combatPressureMarker;
@@ -553,6 +554,7 @@ namespace MC2Demo.Presentation
             selectedLoadoutGridCellByUnit.Clear();
             combatLog.Clear();
             squadFocusMarker = null;
+            squadFocusBeacon = null;
             hostileFocusMarker = null;
             hostileFocusBeacon = null;
             combatPressureMarker = null;
@@ -2192,7 +2194,7 @@ namespace MC2Demo.Presentation
             string targetLockFx = TargetLockCueSummary();
             bool targetLockFxOk = targetLockFx.IndexOf("TargetLock=auto+command", StringComparison.Ordinal) >= 0;
             string squadFocusFx = SquadFocusCueSummary();
-            bool squadFocusFxOk = squadFocusFx.IndexOf("SquadFocus=ring+pressure", StringComparison.Ordinal) >= 0;
+            bool squadFocusFxOk = squadFocusFx.IndexOf("SquadFocus=ring+pressure+beacon", StringComparison.Ordinal) >= 0;
             string threatFocusFx = ThreatFocusCueSummary();
             bool threatFocusFxOk = threatFocusFx.IndexOf("ThreatFocus=ring+warning+beacon", StringComparison.Ordinal) >= 0;
             string playerDamageFx = PlayerDamageCueSummary();
@@ -2416,7 +2418,7 @@ namespace MC2Demo.Presentation
 
         private static string SquadFocusCueSummary()
         {
-            return "SquadFocus=ring+pressure";
+            return "SquadFocus=ring+pressure+beacon";
         }
 
         private static string ThreatFocusCueSummary()
@@ -6430,6 +6432,11 @@ namespace MC2Demo.Presentation
                 "SquadFocusPressure",
                 new Color(1f, 0.72f, 0.18f, 0.34f),
                 new Vector3(1.40f, 0.018f, 1.40f));
+            squadFocusBeacon = CreateMarkerDisc(
+                "Squad Focus Beacon",
+                "SquadFocusBeacon",
+                new Color(1f, 0.76f, 0.18f, 0.50f),
+                new Vector3(0.080f, 0.38f, 0.080f));
             hostileFocusMarker = CreateMarkerDisc(
                 "Hostile Focus Warning",
                 "HostileFocusWarning",
@@ -6879,7 +6886,7 @@ namespace MC2Demo.Presentation
 
         private void UpdateSquadFocusMarker()
         {
-            if (squadFocusMarker == null)
+            if (squadFocusMarker == null && squadFocusBeacon == null)
             {
                 return;
             }
@@ -6888,16 +6895,41 @@ namespace MC2Demo.Presentation
             Vector2 position = default;
             float radius = 0f;
             bool isVisible = focusCount >= 2 && TryGetTargetMarker(targetId, out position, out radius);
-            squadFocusMarker.SetActive(isVisible);
+            if (squadFocusMarker != null)
+            {
+                squadFocusMarker.SetActive(isVisible);
+            }
+
+            if (squadFocusBeacon != null)
+            {
+                squadFocusBeacon.SetActive(isVisible);
+            }
+
             if (!isVisible)
             {
                 return;
             }
 
             float pulse = 0.96f + Mathf.Sin(Time.time * 4.4f) * 0.06f;
-            float scale = Mathf.Clamp(radius / 88f, 1.35f, 4.8f) * pulse;
-            squadFocusMarker.transform.position = GroundMarkerPosition(position, 0.12f);
-            squadFocusMarker.transform.localScale = new Vector3(scale, 0.018f, scale);
+            if (squadFocusMarker != null)
+            {
+                float scale = Mathf.Clamp(radius / 88f, 1.35f, 4.8f) * pulse;
+                squadFocusMarker.transform.position = GroundMarkerPosition(position, 0.12f);
+                squadFocusMarker.transform.localScale = new Vector3(scale, 0.018f, scale);
+            }
+
+            if (squadFocusBeacon != null)
+            {
+                squadFocusBeacon.transform.position = GroundMarkerPosition(position, 0.54f);
+                squadFocusBeacon.transform.localScale = new Vector3(
+                    0.080f * pulse,
+                    0.34f + pulse * 0.12f,
+                    0.080f * pulse);
+                AssignMaterial(
+                    squadFocusBeacon,
+                    "SquadFocusBeacon",
+                    new Color(1f, 0.70f, 0.16f, 0.48f));
+            }
         }
 
         private string PrimaryVisibleSquadFocusTargetId(out int focusCount)
