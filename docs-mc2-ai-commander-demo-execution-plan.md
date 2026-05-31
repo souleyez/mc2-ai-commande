@@ -576,7 +576,7 @@ Definition of done:
 2. Destroyed arms, legs, cockpit hits, and pilot ejection are visible enough to understand at tactical zoom.
 3. Enemy activation and encounter pacing in `mc2_01` follow the reference mission rhythm without adding strong AI.
 4. The combat HUD clearly communicates commander mech, squad readiness, solo orders, current hostiles, target pressure, and recent contact.
-5. Debrief summarizes objectives, kills, player damage, payout, and salvage in compact player-facing rows.
+5. Debrief summarizes objectives, kills, destroyed targets, player damage, payout, and salvage in compact player-facing rows.
 
 Next work:
 
@@ -877,7 +877,7 @@ Tasks:
 - Unit hit effects now land on section-aware cockpit, arm, leg, or torso points, so combat hits line up better with the reported damage section.
 - Section-aware hit points now carry compact cockpit, arm, leg, and torso flash accents, improving hit readability without adding combat HUD rows.
 - Armor hardness mitigation now emits short battlefield glint/spark cues, so armor plates read during hits without adding combat HUD rows.
-- The debrief now compresses completed objectives, enemy kills, and damaged player mechs into readable summary rows with compact section damage tags and `+n` overflow counts.
+- The debrief now compresses completed objectives, enemy kills, destroyed targets, and damaged player mechs into readable summary rows with compact section damage tags and `+n` overflow counts.
 - The debrief now highlights one compact Outcome row with objectives, kills, damage, net funds, and salvage before the detailed payout rows.
 - A command-file `assert-debrief-summary` hook and `mc2_01-debrief-summary.txt` smoke path now verify result counters and the compact combat summary row.
 - The combat HUD now includes a compact situation row for squad readiness, active hostiles, live targets, and contact tempo above the recent event log.
@@ -938,6 +938,7 @@ Tasks:
 - Section-aware hit flashes now have a smoke-guarded battlefield cue contract: `SectionHitCue=cockpit+arms+legs+torso`.
 - Section status labels now have a smoke-guarded UI cue contract: `SectionStatus=bar+short-label+critical+destroyed`.
 - Debrief player damage rows now have a smoke-guarded summary contract: `DebriefDamage=unit+section+overflow`.
+- Debrief destroyed target rows now have a smoke-guarded summary contract: `DebriefTargets=count+labels+overflow`.
 - Cockpit ejection now extends the section damage contract with `Cockpit=breach+ejection-pod+chute`.
 - Armor mitigation now has a smoke-guarded battlefield cue contract: `ArmorMitigation=glint+spark`.
 - Weapon target lines now have a smoke-guarded battlefield cue contract: `TargetLine=ready+cooling+blocked`.

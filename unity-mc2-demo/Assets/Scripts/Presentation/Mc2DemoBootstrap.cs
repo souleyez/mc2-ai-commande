@@ -3980,6 +3980,7 @@ namespace MC2Demo.Presentation
             }
 
             int destroyedLabelCount = summary.destroyedEnemyUnitLabels?.Length ?? 0;
+            int destroyedStructureLabelCount = summary.destroyedStructureLabels?.Length ?? 0;
             int damagedLabelCount = summary.damagedPlayerUnitLabels?.Length ?? 0;
             int completedLabelCount = summary.completedVisibleObjectiveTitles?.Length ?? 0;
             bool objectiveTotalsOk = summary.visibleObjectives > 0
@@ -3987,6 +3988,7 @@ namespace MC2Demo.Presentation
                 && summary.completedVisibleObjectives <= summary.visibleObjectives
                 && completedLabelCount == summary.completedVisibleObjectives;
             bool combatTotalsOk = destroyedLabelCount == summary.destroyedEnemyUnits
+                && destroyedStructureLabelCount == summary.destroyedStructures
                 && damagedLabelCount == summary.damagedPlayerUnits
                 && summary.salvageClaimCount == summary.destroyedEnemyUnits;
             bool economyTotalsOk = summary.visibleRewardResourcePoints >= summary.completedRewardResourcePoints
@@ -4030,6 +4032,17 @@ namespace MC2Demo.Presentation
                 && syntheticDamageLine.IndexOf("CP X", StringComparison.Ordinal) >= 0
                 && syntheticDamageLine.IndexOf("LA !30", StringComparison.Ordinal) >= 0
                 && syntheticDamageLine.IndexOf("+1", StringComparison.Ordinal) >= 0;
+            string debriefTargetFx = DebriefTargetCueSummary();
+            string syntheticTargetLine = MissionResultSalvageTargetLine(new MissionResultSummary
+            {
+                salvageClaimCount = 2,
+                visibleRewardResourcePoints = 3000,
+                destroyedStructures = 3,
+                destroyedStructureLabels = new[] { "Hangar", "Generator", "Tower" }
+            });
+            bool debriefTargetFxOk = debriefTargetFx.IndexOf("DebriefTargets=count+labels+overflow", StringComparison.Ordinal) >= 0
+                && syntheticTargetLine.IndexOf("Targets Hangar, Generator +1", StringComparison.Ordinal) >= 0
+                && syntheticTargetLine.IndexOf("Bounty 3,000", StringComparison.Ordinal) >= 0;
             string debriefTopMode = TopStatusModeText(DemoFlowScreen.Debrief);
             string debriefFunds = TopStatusFundsText(null);
             string debriefFundsRow = MissionResultFundsLine(new MissionResultSummary
@@ -4071,6 +4084,8 @@ namespace MC2Demo.Presentation
                 + summary.destroyedEnemyUnits.ToString(CultureInfo.InvariantCulture)
                 + " damaged="
                 + summary.damagedPlayerUnits.ToString(CultureInfo.InvariantCulture)
+                + " targets="
+                + summary.destroyedStructures.ToString(CultureInfo.InvariantCulture)
                 + " net="
                 + summary.netResourcePoints.ToString(CultureInfo.InvariantCulture)
                 + " end="
@@ -4085,6 +4100,8 @@ namespace MC2Demo.Presentation
                 + resultFx
                 + " debriefDamageFx="
                 + debriefDamageFx
+                + " debriefTargetFx="
+                + debriefTargetFx
                 + " flow="
                 + ContractsOpenStatusText
                 + "/"
@@ -4102,7 +4119,9 @@ namespace MC2Demo.Presentation
                 + " outcomeLine="
                 + outcomeLine
                 + " combatLine="
-                + combatLine;
+                + combatLine
+                + " targetLine="
+                + syntheticTargetLine;
 
             return new DebriefSummaryAssertionResult
             {
@@ -4116,6 +4135,7 @@ namespace MC2Demo.Presentation
                     && debriefCopyOk
                     && resultFxOk
                     && debriefDamageFxOk
+                    && debriefTargetFxOk
                     && flowStatusCopyOk,
                 Summary = result
             };
@@ -5571,6 +5591,11 @@ namespace MC2Demo.Presentation
         private static string DebriefDamageCueSummary()
         {
             return "DebriefDamage=unit+section+overflow";
+        }
+
+        private static string DebriefTargetCueSummary()
+        {
+            return "DebriefTargets=count+labels+overflow";
         }
 
         private static string CommandCueSummary()
@@ -14540,8 +14565,7 @@ namespace MC2Demo.Presentation
 
             GUI.Label(
                 new Rect(panel.x + 18f, y, panel.width - 36f, 20f),
-                DebriefSalvageLabel + " " + summary.salvageClaimCount
-                + "    " + DebriefBountyLabel + " " + FormatTokens(summary.visibleRewardResourcePoints));
+                MissionResultSalvageTargetLine(summary));
             y += 22f;
 
             if (missionReceipt != null)
@@ -14604,6 +14628,17 @@ namespace MC2Demo.Presentation
             string killText = string.IsNullOrEmpty(kills) ? "none" : TruncateText(kills, 26);
             string damageText = string.IsNullOrEmpty(damaged) ? "none" : TruncateText(damaged, 24);
             return "Combat: Kills " + killText + "    Damage " + damageText;
+        }
+
+        private static string MissionResultSalvageTargetLine(MissionResultSummary summary)
+        {
+            string targets = SummaryItemsText(summary?.destroyedStructureLabels, 2);
+            string targetText = string.IsNullOrEmpty(targets)
+                ? (summary?.destroyedStructures ?? 0).ToString(CultureInfo.InvariantCulture)
+                : TruncateText(targets, 24);
+            return DebriefSalvageLabel + " " + (summary?.salvageClaimCount ?? 0).ToString(CultureInfo.InvariantCulture)
+                + "    Targets " + targetText
+                + "    " + DebriefBountyLabel + " " + FormatTokens(summary?.visibleRewardResourcePoints ?? 0);
         }
 
         private static string MissionResultFundsLine(MissionResultSummary summary)
