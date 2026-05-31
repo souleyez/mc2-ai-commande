@@ -161,6 +161,7 @@ namespace MC2Demo.Presentation
         private readonly Dictionary<string, GameObject> unitCommanderAnchors = new();
         private readonly Dictionary<string, GameObject> unitCommanderBeacons = new();
         private readonly Dictionary<string, GameObject> unitTargetLines = new();
+        private readonly Dictionary<string, GameObject> unitTargetLineEndMarkers = new();
         private readonly Dictionary<string, string> lastTargetLockByUnit = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, int> visibleFocusTargetCounts = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, int> hostileFocusTargetCounts = new(StringComparer.OrdinalIgnoreCase);
@@ -537,6 +538,7 @@ namespace MC2Demo.Presentation
             unitCommanderAnchors.Clear();
             unitCommanderBeacons.Clear();
             unitTargetLines.Clear();
+            unitTargetLineEndMarkers.Clear();
             lastTargetLockByUnit.Clear();
             visibleFocusTargetCounts.Clear();
             hostileFocusTargetCounts.Clear();
@@ -2194,7 +2196,7 @@ namespace MC2Demo.Presentation
             bool sectionStatusFxOk = sectionStatusFx.IndexOf("SectionStatus=bar+short-label+critical+destroyed", StringComparison.Ordinal) >= 0
                 && SectionStatusLabelSamplesOk();
             string targetLineFx = TargetLineCueSummary();
-            bool targetLineFxOk = targetLineFx.IndexOf("TargetLine=ready+cooling+blocked", StringComparison.Ordinal) >= 0;
+            bool targetLineFxOk = targetLineFx.IndexOf("TargetLine=ready+cooling+blocked+endcap", StringComparison.Ordinal) >= 0;
             string weaponReadinessFx = WeaponReadinessCueSummary();
             bool weaponReadinessFxOk = weaponReadinessFx.IndexOf("WeaponReadiness=ready+cooling+blocked+beacon", StringComparison.Ordinal) >= 0;
             string targetLockFx = TargetLockCueSummary();
@@ -2409,7 +2411,7 @@ namespace MC2Demo.Presentation
 
         private static string TargetLineCueSummary()
         {
-            return "TargetLine=ready+cooling+blocked";
+            return "TargetLine=ready+cooling+blocked+endcap";
         }
 
         private static string WeaponReadinessCueSummary()
@@ -6441,6 +6443,11 @@ namespace MC2Demo.Presentation
                     new Color(1f, 0.84f, 0.26f, 0.70f),
                     new Vector3(0.085f, 0.42f, 0.085f));
                 unitTargetLines[unit.Id] = CreateTargetLine(unit.Id + " Target Line");
+                unitTargetLineEndMarkers[unit.Id] = CreateMarkerDisc(
+                    unit.Id + " Target Line End",
+                    "TargetLineEndReady",
+                    new Color(0.28f, 0.78f, 1f, 0.34f),
+                    new Vector3(0.36f, 0.014f, 0.36f));
             }
 
             squadFocusMarker = CreateMarkerDisc(
@@ -6892,7 +6899,9 @@ namespace MC2Demo.Presentation
 
         private void UpdateTargetLine(UnitState unit)
         {
-            if (!unitTargetLines.TryGetValue(unit.Id, out GameObject line))
+            bool hasLine = unitTargetLines.TryGetValue(unit.Id, out GameObject line);
+            bool hasEndMarker = unitTargetLineEndMarkers.TryGetValue(unit.Id, out GameObject endMarker);
+            if (!hasLine && !hasEndMarker)
             {
                 return;
             }
@@ -6906,7 +6915,16 @@ namespace MC2Demo.Presentation
                 && hasTargetId
                 && hasTargetPoint
                 && hasUnitView;
-            line.SetActive(isVisible);
+            if (hasLine)
+            {
+                line.SetActive(isVisible);
+            }
+
+            if (hasEndMarker)
+            {
+                endMarker.SetActive(isVisible);
+            }
+
             if (!isVisible)
             {
                 lastTargetLockByUnit.Remove(unit.Id);
@@ -6915,9 +6933,32 @@ namespace MC2Demo.Presentation
 
             Vector3 unitPoint = unitView.transform.position + Vector3.up * 0.18f;
             SpawnTargetLockCueIfChanged(unit, targetId, targetPoint);
-            targetPoint += Vector3.up * 0.18f;
-            PositionLine(line, unitPoint, targetPoint, TargetLineRadius(unit, targetId));
-            AssignMaterial(line, TargetLineMaterialName(unit, targetId), TargetLineColor(unit, targetId));
+            Vector3 lineTargetPoint = targetPoint + Vector3.up * 0.18f;
+            string materialName = TargetLineMaterialName(unit, targetId);
+            Color color = TargetLineColor(unit, targetId);
+            if (hasLine)
+            {
+                PositionLine(line, unitPoint, lineTargetPoint, TargetLineRadius(unit, targetId));
+                AssignMaterial(line, materialName, color);
+            }
+
+            if (hasEndMarker)
+            {
+                bool blocked = unit.IsHeatLocked || !IsTargetInWeaponRange(unit, targetId);
+                bool cooling = !blocked && unit.IsWeaponCoolingDown;
+                float pulse = blocked
+                    ? 0.98f + Mathf.Sin(Time.time * 6.4f) * 0.12f
+                    : cooling
+                        ? 0.94f + Mathf.Sin(Time.time * 4.6f) * 0.08f
+                        : 1f + Mathf.Sin(Time.time * 3.0f) * 0.04f;
+                float scale = blocked ? 0.46f : cooling ? 0.38f : 0.34f;
+                endMarker.transform.position = targetPoint + Vector3.up * 0.105f;
+                endMarker.transform.localScale = new Vector3(scale * pulse, 0.014f, scale * pulse);
+                AssignMaterial(
+                    endMarker,
+                    materialName + "End",
+                    new Color(color.r, color.g, color.b, blocked ? 0.42f : cooling ? 0.36f : 0.32f));
+            }
         }
 
         private void SpawnTargetLockCueIfChanged(UnitState unit, string targetId, Vector3 targetPoint)
