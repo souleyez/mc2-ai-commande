@@ -76,6 +76,7 @@ The Unity demo currently supports:
 - System and debrief exit actions now read End Run instead of Exit Demo, and the debrief smoke guards that player-facing label
 - Debrief copy now says Payout and points players to repair, inspect Mech Lab, and choose the next contract instead of receipt/launch-again wording
 - Debrief reward rows now use short Salvage and Bounty labels instead of claims/total-bounty wording
+- Debrief now has a compact Outcome row for objectives, kills, player damage, net funds, and salvage
 - mission payout combat-log entries now use Payout and Salvage wording instead of Receipt/token/fragments copy
 - System and debrief status copy now uses Save slot, Contracts open, and After Action wording instead of default/post-mission labels
 - Mech Lab apply feedback now uses Stock short and Fit applied wording instead of inventory/demo-fit status text
@@ -873,6 +874,7 @@ Tasks:
 - Section-aware hit points now carry compact cockpit, arm, leg, and torso flash accents, improving hit readability without adding combat HUD rows.
 - Armor hardness mitigation now emits short battlefield glint/spark cues, so armor plates read during hits without adding combat HUD rows.
 - The debrief now compresses completed objectives, enemy kills, and damaged player mechs into readable summary rows with `+n` overflow counts.
+- The debrief now highlights one compact Outcome row with objectives, kills, damage, net funds, and salvage before the detailed payout rows.
 - A command-file `assert-debrief-summary` hook and `mc2_01-debrief-summary.txt` smoke path now verify result counters and the compact combat summary row.
 - The combat HUD now includes a compact situation row for squad readiness, active hostiles, live targets, and contact tempo above the recent event log.
 - A command-file `assert-combat-situation` hook and `mc2_01-combat-situation.txt` smoke path now verify that row, with quiet/contact driven by recent combat events instead of generic log entries.

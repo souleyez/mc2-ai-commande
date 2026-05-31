@@ -3959,6 +3959,13 @@ namespace MC2Demo.Presentation
             bool economyTotalsOk = summary.visibleRewardResourcePoints >= summary.completedRewardResourcePoints
                 && summary.repairCostResourcePoints >= 0
                 && summary.netResourcePoints == summary.completedRewardResourcePoints - summary.repairCostResourcePoints;
+            string outcomeLine = MissionResultOutcomeLine(summary);
+            bool outcomeLineOk = outcomeLine.StartsWith("Outcome Obj ", StringComparison.Ordinal)
+                && outcomeLine.IndexOf(" Kills ", StringComparison.Ordinal) >= 0
+                && outcomeLine.IndexOf(" Dmg ", StringComparison.Ordinal) >= 0
+                && outcomeLine.IndexOf(" Net ", StringComparison.Ordinal) >= 0
+                && outcomeLine.IndexOf(" Salvage ", StringComparison.Ordinal) >= 0
+                && outcomeLine.Length <= 72;
             string combatLine = MissionResultCombatLine(summary);
             bool combatLineOk = combatLine.IndexOf("Combat: Kills ", StringComparison.OrdinalIgnoreCase) >= 0
                 && combatLine.IndexOf("Damage ", StringComparison.OrdinalIgnoreCase) >= 0;
@@ -4043,6 +4050,8 @@ namespace MC2Demo.Presentation
                 + debriefFunds
                 + " fundsRow="
                 + debriefFundsRow
+                + " outcomeLine="
+                + outcomeLine
                 + " combatLine="
                 + combatLine;
 
@@ -4051,6 +4060,7 @@ namespace MC2Demo.Presentation
                 Accepted = objectiveTotalsOk
                     && combatTotalsOk
                     && economyTotalsOk
+                    && outcomeLineOk
                     && combatLineOk
                     && overflowOk
                     && endRunLabelOk
@@ -14156,17 +14166,12 @@ namespace MC2Demo.Presentation
             }
 
             float y = panel.y + 82f;
+            Rect outcomeRect = new(panel.x + 18f, y - 3f, panel.width - 36f, 26f);
+            DrawDesignInsetFrame(outcomeRect, summary.netResourcePoints >= 0 ? UiCyanColor : UiAmberColor);
             GUI.Label(
-                new Rect(panel.x + 18f, y, panel.width - 36f, 20f),
-                "Objectives " + summary.completedVisibleObjectives + "/" + summary.visibleObjectives
-                + "    Structures " + summary.destroyedStructures);
-            y += 22f;
-
-            GUI.Label(
-                new Rect(panel.x + 18f, y, panel.width - 36f, 20f),
-                "Enemy kills " + summary.destroyedEnemyUnits
-                + "    Player damage " + summary.damagedPlayerUnits);
-            y += 22f;
+                new Rect(panel.x + 28f, y, panel.width - 56f, 20f),
+                MissionResultOutcomeLine(summary));
+            y += 30f;
 
             GUI.Label(
                 new Rect(panel.x + 18f, y, panel.width - 36f, 20f),
@@ -14214,6 +14219,22 @@ namespace MC2Demo.Presentation
         private static string MissionResultDoneText(MissionResultSummary summary)
         {
             return SummaryItemsText(summary?.completedVisibleObjectiveTitles, 2);
+        }
+
+        private static string MissionResultOutcomeLine(MissionResultSummary summary)
+        {
+            return "Outcome Obj "
+                + (summary?.completedVisibleObjectives ?? 0).ToString(CultureInfo.InvariantCulture)
+                + "/"
+                + (summary?.visibleObjectives ?? 0).ToString(CultureInfo.InvariantCulture)
+                + "  Kills "
+                + (summary?.destroyedEnemyUnits ?? 0).ToString(CultureInfo.InvariantCulture)
+                + "  Dmg "
+                + (summary?.damagedPlayerUnits ?? 0).ToString(CultureInfo.InvariantCulture)
+                + "  Net "
+                + SignedTokens(summary?.netResourcePoints ?? 0)
+                + "  Salvage "
+                + (summary?.salvageClaimCount ?? 0).ToString(CultureInfo.InvariantCulture);
         }
 
         private static string MissionResultCombatLine(MissionResultSummary summary)
