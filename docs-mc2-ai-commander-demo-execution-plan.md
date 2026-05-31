@@ -702,6 +702,7 @@ Tasks:
 - The combat situation smoke now guards the current weapon FX cue contract with `Energy=beam+pillar Missile=arc+blast Ballistic=tracer+sparks`.
 - Section damage readability now has persistent missing-arm flags, red leg-collapse cues, cockpit breach/ejection markers, and a smoke-guarded cue contract.
 - The first `mc2_01` encounter pacing smoke now proves the airfield beat: initial hostiles held, Airfield/North patrols armed after objective 0, infantry ambush held until hangar damage, and Starslayer held for area 7.
+- The objective graph smoke now guards the source mission skeleton: 6 visible objectives, 3 hidden glue objectives, flag edges, hidden first-patrol flag `3`, north-island unlock, Starslayer area trigger, and Starslayer VO target count.
 - The hangar ambush smoke now attacks `structure-1-0`, captures combat/script/contact events during startup advance, and verifies infantry activation only after Hangar damage.
 - The Starslayer trigger smoke now moves into the hidden area-7 zone, treats destroyed enemies as already-activated for pacing counts, and verifies the west lance wakes only after the area trigger; the same pacing assertion now requires the hidden Starslayer VO hook once the lance is cleared.
 - Mission rewards now add funds and salvage fragments, and ready fragment sets become local warehouse mechs.

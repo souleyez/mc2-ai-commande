@@ -848,6 +848,9 @@ namespace MC2Demo.Presentation
                     case StartupCommanderScriptActionKind.AssertEncounterPacing:
                         RunStartupEncounterPacingAssertion();
                         break;
+                    case StartupCommanderScriptActionKind.AssertObjectiveGraph:
+                        RunStartupObjectiveGraphAssertion();
+                        break;
                     case StartupCommanderScriptActionKind.AssertLoadoutCompact:
                         RunStartupLoadoutCompactAssertion();
                         break;
@@ -2062,6 +2065,22 @@ namespace MC2Demo.Presentation
             Debug.LogError("MC2 encounter pacing assertion failed: " + result.Summary);
         }
 
+        private void RunStartupObjectiveGraphAssertion()
+        {
+            ObjectiveGraphAssertionResult result = BuildObjectiveGraphAssertion();
+            if (result.Accepted)
+            {
+                AddCombatLogLine("CLI objective graph assert OK: " + result.Summary);
+                Debug.Log("MC2 objective graph assertion OK: " + result.Summary);
+                return;
+            }
+
+            startupSmokeFailed = true;
+            statusText = "Objective graph assertion failed";
+            AddCombatLogLine("CLI objective graph assert failed: " + result.Summary);
+            Debug.LogError("MC2 objective graph assertion failed: " + result.Summary);
+        }
+
         private CombatSituationAssertionResult BuildCombatSituationAssertion()
         {
             if (mission == null)
@@ -2133,6 +2152,250 @@ namespace MC2Demo.Presentation
                 Accepted = textOk && countsOk && mapBackOk && topModeOk && fundsOk && weaponFxOk && sectionFxOk,
                 Summary = summary
             };
+        }
+
+        private ObjectiveGraphAssertionResult BuildObjectiveGraphAssertion()
+        {
+            if (mission?.Contract?.objectives == null)
+            {
+                return ObjectiveGraphAssertionResult.Blocked("No mission objectives");
+            }
+
+            int visibleObjectives = 0;
+            int hiddenObjectives = 0;
+            foreach (ObjectiveDefinition objective in mission.Contract.objectives)
+            {
+                if (objective == null)
+                {
+                    continue;
+                }
+
+                if (objective.hidden)
+                {
+                    hiddenObjectives++;
+                }
+                else
+                {
+                    visibleObjectives++;
+                }
+            }
+
+            ObjectiveDefinition airfield = FindContractObjective(0);
+            ObjectiveDefinition hangar = FindContractObjective(1);
+            ObjectiveDefinition firstPatrol = FindContractObjective(2);
+            ObjectiveDefinition northRoute = FindContractObjective(3);
+            ObjectiveDefinition northBandits = FindContractObjective(4);
+            ObjectiveDefinition extraction = FindContractObjective(5);
+            ObjectiveDefinition hiddenFirstPatrol = FindContractObjective(6);
+            ObjectiveDefinition starslayerArea = FindContractObjective(7);
+            ObjectiveDefinition starslayerVo = FindContractObjective(8);
+
+            int firstPatrolTargets = CountContractConditions(firstPatrol, "DestroySpecificEnemyUnit");
+            int hiddenFirstPatrolTargets = CountContractConditions(hiddenFirstPatrol, "DestroySpecificEnemyUnit");
+            int northBanditTargets = CountContractConditions(northBandits, "DestroySpecificEnemyUnit");
+            int starslayerVoTargets = CountContractConditions(starslayerVo, "DestroySpecificEnemyUnit");
+
+            bool totalsOk = visibleObjectives == 6 && hiddenObjectives == 3;
+            bool objectivePresenceOk = airfield != null
+                && hangar != null
+                && firstPatrol != null
+                && northRoute != null
+                && northBandits != null
+                && extraction != null
+                && hiddenFirstPatrol != null
+                && starslayerArea != null
+                && starslayerVo != null;
+            bool edgeOk = HasObjectiveEdge(0, 1, "0")
+                && HasObjectiveEdge(1, 2, "2")
+                && HasObjectiveEdge(6, 3, "3")
+                && HasObjectiveEdge(3, 4, "4")
+                && HasObjectiveEdge(4, 5, "5");
+            bool firstPatrolOk = firstPatrolTargets == 8
+                && hiddenFirstPatrolTargets == 8
+                && HasFlagAction(hiddenFirstPatrol, "3", true)
+                && firstPatrol != null
+                && !HasFlagAction(firstPatrol, "3", true);
+            bool northRouteOk = northRoute != null
+                && northRoute.activateOnFlag
+                && string.Equals(northRoute.activateFlagId, "3", StringComparison.Ordinal)
+                && HasMoveAreaCondition(northRoute, "MoveAnyUnitToArea", 832f, 2752f, 256f);
+            bool northBanditOk = northBandits != null
+                && northBandits.activateOnFlag
+                && string.Equals(northBandits.activateFlagId, "4", StringComparison.Ordinal)
+                && northBanditTargets == 4
+                && HasFlagAction(northBandits, "5", true);
+            bool extractionOk = extraction != null
+                && extraction.activateOnFlag
+                && string.Equals(extraction.activateFlagId, "5", StringComparison.Ordinal)
+                && extraction.requiresAllPreviousPrimary
+                && HasMoveAreaCondition(extraction, "MoveAllSurvivingMechsToArea", -4117.333f, 513.333f, 256f);
+            bool starslayerOk = starslayerArea != null
+                && starslayerArea.hidden
+                && HasMoveAreaCondition(starslayerArea, "MoveAnyUnitToArea", -2240f, 1600f, 500f)
+                && starslayerVo != null
+                && starslayerVo.hidden
+                && starslayerVoTargets == 6;
+            string summary = "visible="
+                + visibleObjectives.ToString(CultureInfo.InvariantCulture)
+                + " hidden="
+                + hiddenObjectives.ToString(CultureInfo.InvariantCulture)
+                + " edges="
+                + CountObjectiveEdges().ToString(CultureInfo.InvariantCulture)
+                + " firstPatrol="
+                + firstPatrolTargets.ToString(CultureInfo.InvariantCulture)
+                + "/"
+                + hiddenFirstPatrolTargets.ToString(CultureInfo.InvariantCulture)
+                + " hidden6=flag3"
+                + " north=flag3@832,2752"
+                + " northBandits="
+                + northBanditTargets.ToString(CultureInfo.InvariantCulture)
+                + " extraction=flag5"
+                + " starslayer=area7+vo"
+                + starslayerVoTargets.ToString(CultureInfo.InvariantCulture);
+
+            return new ObjectiveGraphAssertionResult
+            {
+                Accepted = totalsOk
+                    && objectivePresenceOk
+                    && edgeOk
+                    && firstPatrolOk
+                    && northRouteOk
+                    && northBanditOk
+                    && extractionOk
+                    && starslayerOk,
+                Summary = summary
+            };
+        }
+
+        private ObjectiveDefinition FindContractObjective(int objectiveIndex)
+        {
+            if (mission?.Contract?.objectives == null)
+            {
+                return null;
+            }
+
+            foreach (ObjectiveDefinition objective in mission.Contract.objectives)
+            {
+                if (objective != null && objective.index == objectiveIndex)
+                {
+                    return objective;
+                }
+            }
+
+            return null;
+        }
+
+        private int CountContractConditions(ObjectiveDefinition objective, string conditionType)
+        {
+            if (objective?.conditions == null)
+            {
+                return 0;
+            }
+
+            int count = 0;
+            foreach (ObjectiveCondition condition in objective.conditions)
+            {
+                if (condition != null && string.Equals(condition.type, conditionType, StringComparison.Ordinal))
+                {
+                    count++;
+                }
+            }
+
+            return count;
+        }
+
+        private bool HasFlagAction(ObjectiveDefinition objective, string flagId, bool value)
+        {
+            if (objective?.actions == null)
+            {
+                return false;
+            }
+
+            foreach (ObjectiveAction action in objective.actions)
+            {
+                if (action?.flag != null
+                    && string.Equals(action.type, "SetBooleanFlag", StringComparison.Ordinal)
+                    && string.Equals(action.flag.id, flagId, StringComparison.Ordinal)
+                    && action.flag.value == value)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private bool HasMoveAreaCondition(
+            ObjectiveDefinition objective,
+            string conditionType,
+            float x,
+            float y,
+            float radius)
+        {
+            if (objective?.conditions == null)
+            {
+                return false;
+            }
+
+            foreach (ObjectiveCondition condition in objective.conditions)
+            {
+                TargetArea area = condition?.targetArea;
+                if (area != null
+                    && string.Equals(condition.type, conditionType, StringComparison.Ordinal)
+                    && Approximately(area.x, x)
+                    && Approximately(area.y, y)
+                    && Approximately(area.radius, radius))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private bool HasObjectiveEdge(int from, int to, string flagId)
+        {
+            if (mission?.Contract?.objectiveEdges == null)
+            {
+                return false;
+            }
+
+            foreach (ObjectiveEdge edge in mission.Contract.objectiveEdges)
+            {
+                if (edge != null
+                    && edge.from == from
+                    && edge.to == to
+                    && string.Equals(edge.flagId, flagId, StringComparison.Ordinal))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private int CountObjectiveEdges()
+        {
+            int count = 0;
+            if (mission?.Contract?.objectiveEdges == null)
+            {
+                return count;
+            }
+
+            foreach (ObjectiveEdge edge in mission.Contract.objectiveEdges)
+            {
+                if (edge != null)
+                {
+                    count++;
+                }
+            }
+
+            return count;
+        }
+
+        private static bool Approximately(float actual, float expected)
+        {
+            return Mathf.Abs(actual - expected) <= 0.05f;
         }
 
         private EncounterPacingAssertionResult BuildEncounterPacingAssertion()
@@ -7433,6 +7696,21 @@ namespace MC2Demo.Presentation
             public static EncounterPacingAssertionResult Blocked(string summary)
             {
                 return new EncounterPacingAssertionResult
+                {
+                    Accepted = false,
+                    Summary = summary ?? "blocked"
+                };
+            }
+        }
+
+        private struct ObjectiveGraphAssertionResult
+        {
+            public bool Accepted { get; set; }
+            public string Summary { get; set; }
+
+            public static ObjectiveGraphAssertionResult Blocked(string summary)
+            {
+                return new ObjectiveGraphAssertionResult
                 {
                     Accepted = false,
                     Summary = summary ?? "blocked"

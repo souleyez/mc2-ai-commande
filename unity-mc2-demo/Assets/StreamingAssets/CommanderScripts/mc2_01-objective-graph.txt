@@ -1,0 +1,3 @@
+# Proves the source mc2_01 objective graph keeps hidden glue objectives and flag edges intact.
+assert-objective-graph
+report
