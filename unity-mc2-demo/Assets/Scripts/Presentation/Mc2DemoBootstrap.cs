@@ -164,6 +164,8 @@ namespace MC2Demo.Presentation
         private readonly Dictionary<string, GameObject> unitHealthBarBacks = new();
         private readonly Dictionary<string, GameObject> unitHealthBarFills = new();
         private readonly Dictionary<int, List<GameObject>> objectiveAreaMarkers = new();
+        private GameObject activeObjectiveGuideMarker;
+        private GameObject activeObjectiveGuideBeacon;
         private readonly Dictionary<string, GameObject> structureHealthBarBacks = new();
         private readonly Dictionary<string, GameObject> structureHealthBarFills = new();
         private readonly HashSet<string> detachedUnitIdsLastFrame = new(StringComparer.OrdinalIgnoreCase);
@@ -531,6 +533,8 @@ namespace MC2Demo.Presentation
             unitHealthBarBacks.Clear();
             unitHealthBarFills.Clear();
             objectiveAreaMarkers.Clear();
+            activeObjectiveGuideMarker = null;
+            activeObjectiveGuideBeacon = null;
             structureHealthBarBacks.Clear();
             structureHealthBarFills.Clear();
             detachedUnitIdsLastFrame.Clear();
@@ -2197,6 +2201,8 @@ namespace MC2Demo.Presentation
             bool heatFxOk = heatFx.IndexOf("Heat=vent+lock", StringComparison.Ordinal) >= 0;
             string objectiveFx = ObjectiveEventCueSummary();
             bool objectiveFxOk = objectiveFx.IndexOf("ObjectivePulse=active+complete+target", StringComparison.Ordinal) >= 0;
+            string objectiveGuideFx = ObjectiveGuideCueSummary();
+            bool objectiveGuideFxOk = objectiveGuideFx.IndexOf("ObjectiveGuide=active+beacon+target", StringComparison.Ordinal) >= 0;
             string jetFx = DemoUnitView.JetCueSummary();
             bool jetFxOk = jetFx.IndexOf("Jet=takeoff+trail+landing", StringComparison.Ordinal) >= 0;
             string structureFx = DemoStructureView.StructureDamageCueSummary();
@@ -2279,6 +2285,8 @@ namespace MC2Demo.Presentation
                 + heatFx
                 + " objectiveFx="
                 + objectiveFx
+                + " objectiveGuideFx="
+                + objectiveGuideFx
                 + " jetFx="
                 + jetFx
                 + " structureFx="
@@ -2338,6 +2346,7 @@ namespace MC2Demo.Presentation
                     && sectionFxOk
                     && heatFxOk
                     && objectiveFxOk
+                    && objectiveGuideFxOk
                     && jetFxOk
                     && structureFxOk
                     && scriptFxOk
@@ -5032,6 +5041,11 @@ namespace MC2Demo.Presentation
             return "ObjectivePulse=active+complete+target";
         }
 
+        private static string ObjectiveGuideCueSummary()
+        {
+            return "ObjectiveGuide=active+beacon+target";
+        }
+
         private void CaptureUnitActivationEvents()
         {
             List<string> contactKeys = new();
@@ -6005,6 +6019,16 @@ namespace MC2Demo.Presentation
                 }
             }
 
+            activeObjectiveGuideMarker = CreateMarkerDisc(
+                "Active Objective Guide",
+                "ObjectiveGuideActive",
+                new Color(1f, 0.82f, 0.24f, 0.30f),
+                new Vector3(1.05f, 0.014f, 1.05f));
+            activeObjectiveGuideBeacon = CreateMarkerDisc(
+                "Active Objective Beacon",
+                "ObjectiveGuideBeacon",
+                new Color(1f, 0.88f, 0.32f, 0.58f),
+                new Vector3(0.06f, 0.42f, 0.06f));
             UpdateObjectiveAreaVisibility();
         }
 
@@ -6023,14 +6047,25 @@ namespace MC2Demo.Presentation
 
         private void UpdateObjectiveAreaVisibility()
         {
+            ObjectiveState activeObjective = null;
             foreach (ObjectiveState objective in mission.Objectives)
             {
                 if (!objectiveAreaMarkers.TryGetValue(objective.Definition.index, out List<GameObject> markers))
                 {
+                    if (ShouldShowCurrentObjectiveHint(objective))
+                    {
+                        activeObjective ??= objective;
+                    }
+
                     continue;
                 }
 
                 bool visible = ShouldShowCurrentObjectiveHint(objective);
+                if (visible)
+                {
+                    activeObjective ??= objective;
+                }
+
                 foreach (GameObject marker in markers)
                 {
                     if (marker != null)
@@ -6038,6 +6073,50 @@ namespace MC2Demo.Presentation
                         marker.SetActive(visible);
                     }
                 }
+            }
+
+            UpdateActiveObjectiveGuide(activeObjective);
+        }
+
+        private void UpdateActiveObjectiveGuide(ObjectiveState activeObjective)
+        {
+            Vector2 missionPoint = default;
+            float missionRadius = 0f;
+            bool visible = activeObjective != null
+                && mission != null
+                && mission.Result == MissionResultState.InProgress
+                && TryGetObjectiveCuePoint(activeObjective.Definition, out missionPoint, out missionRadius);
+            if (activeObjectiveGuideMarker != null)
+            {
+                activeObjectiveGuideMarker.SetActive(visible);
+            }
+
+            if (activeObjectiveGuideBeacon != null)
+            {
+                activeObjectiveGuideBeacon.SetActive(visible);
+            }
+
+            if (!visible)
+            {
+                return;
+            }
+
+            float pulse = 0.98f + Mathf.Sin(Time.time * 3.4f) * 0.06f;
+            float scale = Mathf.Clamp(missionRadius / 165f, 0.84f, 2.05f) * pulse;
+            Color color = new(1f, 0.82f, 0.24f, 0.34f);
+            if (activeObjectiveGuideMarker != null)
+            {
+                activeObjectiveGuideMarker.transform.position = GroundMarkerPosition(missionPoint, 0.085f);
+                activeObjectiveGuideMarker.transform.localScale = new Vector3(0.82f * scale, 0.014f, 0.82f * scale);
+                AssignMaterial(activeObjectiveGuideMarker, "ObjectiveGuideActive", color);
+            }
+
+            if (activeObjectiveGuideBeacon != null)
+            {
+                activeObjectiveGuideBeacon.transform.position = GroundMarkerPosition(missionPoint, 0.52f);
+                float beaconScale = Mathf.Clamp(0.055f * scale, 0.045f, 0.095f);
+                activeObjectiveGuideBeacon.transform.localScale = new Vector3(beaconScale, 0.42f * pulse, beaconScale);
+                AssignMaterial(activeObjectiveGuideBeacon, "ObjectiveGuideBeacon", new Color(1f, 0.90f, 0.34f, 0.56f));
             }
         }
 
