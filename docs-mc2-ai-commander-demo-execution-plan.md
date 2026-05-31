@@ -858,6 +858,7 @@ Tasks:
 - Destroyed cockpit, arm, and leg sections now leave persistent tactical-view damage beacons in addition to the existing flashes, detached parts, and ejection effects; critical but not-yet-destroyed sections now vent small smoke/spark cues without adding more combat HUD text.
 - Missile, ballistic, and energy attacks now have clearer family-specific muzzle, trace, and hit accents layered over the existing primitive combat effects.
 - Hit effects now scale by incoming damage and kill state, so light hits, heavy hits, and killing blows separate visually at tactical zoom.
+- Combat hits now add short inbound direction slashes at the impact point, making attack direction readable without adding combat HUD rows.
 - Weapon traces now start from family-specific arm or shoulder hardpoints, so energy, missile, and ballistic fire no longer originates from the mech center.
 - Unit hit effects now land on section-aware cockpit, arm, leg, or torso points, so combat hits line up better with the reported damage section.
 - Section-aware hit points now carry compact cockpit, arm, leg, and torso flash accents, improving hit readability without adding combat HUD rows.
@@ -914,6 +915,7 @@ Tasks:
 - The first dedicated Mech Lab visual audit is done, and Company Bay density is reduced with Ops/Roster paging; the next low-risk step is to switch to battle readability unless another Mech Lab visible blocker appears in play.
 - Enemy contact activation now has a smoke-guarded visual cue contract: `ContactWake=ring+beacon+ping`.
 - Hit severity now has a smoke-guarded battlefield cue contract: `HitSeverity=damage+kill`.
+- Hit direction now has a smoke-guarded battlefield cue contract: `HitDirection=inbound+slash`.
 - Weapon muzzle placement now has a smoke-guarded battlefield cue contract: `WeaponMuzzlePoint=energy+missile+ballistic`.
 - Section-aware hit placement now has a smoke-guarded battlefield cue contract: `SectionHitPoint=cockpit+arms+legs+torso`.
 - Section-aware hit flashes now have a smoke-guarded battlefield cue contract: `SectionHitCue=cockpit+arms+legs+torso`.

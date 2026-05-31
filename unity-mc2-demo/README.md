@@ -46,6 +46,7 @@ Current demo behavior:
 - varies tactical target-line color and thickness for ready, cooling, and blocked shots
 - renders short weapon beams, hit flashes, and impact bursts for combat events, with energy pillar/ring, missile blast, and ballistic spark cues
 - scales hit flash, impact, and pulse size by incoming damage and kill state so heavy hits read harder
+- draws short inbound hit slashes at impact points so the attack direction reads at tactical zoom
 - starts weapon traces from family-specific mech hardpoints for energy, missile, and ballistic fire
 - offsets unit hit effects toward cockpit, arms, legs, or torso based on the reported damage section
 - flashes section-specific cockpit, arm, leg, or torso hit cues at the impact point
@@ -186,6 +187,7 @@ Current demo behavior:
 - auto-acquires hostile units in weapon range
 - gives missile, ballistic, and energy attacks distinct muzzle, trace, and hit accents
 - scales weapon impacts and target pulses by hit severity so light hits and killing blows differ at tactical zoom
+- adds compact inbound hit-direction slashes without adding combat HUD rows
 - starts those weapon traces from simple arm or shoulder hardpoints instead of the mech center
 - lands unit hit effects on section-aware cockpit, arm, leg, or torso points instead of always at unit center
 - gives those section hit points distinct cockpit, arm, leg, and torso flash accents

@@ -2137,6 +2137,8 @@ namespace MC2Demo.Presentation
                 && weaponFx.IndexOf("Ballistic=tracer+sparks+muzzle", StringComparison.Ordinal) >= 0;
             string hitSeverityFx = HitSeverityCueSummary();
             bool hitSeverityFxOk = hitSeverityFx.IndexOf("HitSeverity=damage+kill", StringComparison.Ordinal) >= 0;
+            string hitDirectionFx = HitDirectionCueSummary();
+            bool hitDirectionFxOk = hitDirectionFx.IndexOf("HitDirection=inbound+slash", StringComparison.Ordinal) >= 0;
             string muzzleFx = WeaponMuzzlePointCueSummary();
             bool muzzleFxOk = muzzleFx.IndexOf("WeaponMuzzlePoint=energy+missile+ballistic", StringComparison.Ordinal) >= 0;
             string armorFx = ArmorMitigationCueSummary();
@@ -2201,6 +2203,8 @@ namespace MC2Demo.Presentation
                 + weaponFx
                 + " hitSeverityFx="
                 + hitSeverityFx
+                + " hitDirectionFx="
+                + hitDirectionFx
                 + " muzzleFx="
                 + muzzleFx
                 + " armorFx="
@@ -2254,6 +2258,7 @@ namespace MC2Demo.Presentation
                     && fundsOk
                     && weaponFxOk
                     && hitSeverityFxOk
+                    && hitDirectionFxOk
                     && muzzleFxOk
                     && armorFxOk
                     && sectionHitFxOk
@@ -4191,6 +4196,7 @@ namespace MC2Demo.Presentation
             CreateWeaponTrace(attackerPoint, targetPoint, combatEvent, weaponColor);
             CreateImpact(targetPoint, weaponColor, combatEvent.DestroyedTarget, ImpactScale(combatEvent.WeaponType) * severityScale);
             CreateWeaponImpactCue(attackerPoint, targetPoint, combatEvent, weaponColor, severityScale);
+            CreateHitDirectionCue(attackerPoint, targetPoint, severityScale);
             CreateSectionHitCue(attackerPoint, targetPoint, combatEvent.SectionName, combatEvent.DestroyedTarget, severityScale);
             CreateArmorMitigationCue(attackerPoint, targetPoint, combatEvent);
             PulseTarget(combatEvent.TargetId, new Color(1f, 0.9f, 0.52f), Mathf.Clamp((combatEvent.DestroyedTarget ? 0.28f : 0.18f) * severityScale, 0.14f, 0.42f));
@@ -4350,6 +4356,11 @@ namespace MC2Demo.Presentation
             return "HitSeverity=damage+kill";
         }
 
+        private static string HitDirectionCueSummary()
+        {
+            return "HitDirection=inbound+slash";
+        }
+
         private static string WeaponMuzzlePointCueSummary()
         {
             return "WeaponMuzzlePoint=energy+missile+ballistic";
@@ -4470,6 +4481,18 @@ namespace MC2Demo.Presentation
             CreateBeam(sparkBase, sparkBase + side * (0.62f * severityScale) + Vector3.up * (0.12f * severityScale), new Color(1f, 0.88f, 0.36f, 0.70f), 0.075f, 0.012f * severityScale);
             CreateBeam(sparkBase, sparkBase - side * (0.58f * severityScale) + Vector3.up * (0.10f * severityScale), new Color(1f, 0.64f, 0.18f, 0.62f), 0.070f, 0.010f * severityScale);
             CreateBeam(sparkBase, sparkBase + Vector3.up * (0.52f * severityScale), color, 0.065f, 0.010f * severityScale);
+        }
+
+        private void CreateHitDirectionCue(Vector3 from, Vector3 to, float severityScale)
+        {
+            Vector3 direction = SafeDirection(to - from);
+            Vector3 side = LateralVector(direction);
+            float scale = Mathf.Clamp(severityScale, 0.78f, 1.55f);
+            Vector3 lift = Vector3.up * 0.10f;
+            Vector3 strikeStart = to - direction * (0.58f * scale) + side * (0.08f * scale) + lift;
+            Vector3 strikeEnd = to + direction * (0.10f * scale) - side * (0.02f * scale) + lift * 0.65f;
+            CreateBeam(strikeStart, strikeEnd, new Color(1f, 0.95f, 0.58f, 0.56f), 0.090f, 0.010f * scale);
+            CreateBeam(to - direction * (0.34f * scale) - side * (0.10f * scale) + lift * 0.60f, to - direction * (0.02f * scale) + side * (0.12f * scale) + lift * 0.92f, new Color(1f, 0.52f, 0.16f, 0.42f), 0.075f, 0.007f * scale);
         }
 
         private void CreateSectionHitCue(Vector3 from, Vector3 to, string sectionName, bool destroyedTarget, float hitSeverityScale)
