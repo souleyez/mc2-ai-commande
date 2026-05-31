@@ -42,6 +42,7 @@ The Unity demo currently supports:
 - heat, cooldown, weapon range/readiness, simple section damage, section penalties, and animated breakoff/ejection effects
 - compact tactical UI with unit status, mech bay preview, mission brief, current-objective map, world objective hints, health bars, command rings, range rings, and target lines
 - the combat situation row names the commander mech, squad readiness, detached single-order count, hostiles, targets, and recent contact tempo
+- the battle mission panel uses compact objective names so later `mc2_01` tasks such as North island and Extraction stay readable in the fixed right HUD
 - focused mech bay fitting view with compact squad buttons, pending-fit markers, and selected-mech fit-pressure bars so one selected payload grid owns the drawer
 - selected fitting card titles now show chassis and pilot only, hiding runtime or owned-mech ids from the visible Mech Lab surface
 - selected fitting pressure now uses compact `Fit OK` or `Review` state plus `H/W/G` heat, weight, and grid readouts guarded by loadout smoke
@@ -533,6 +534,7 @@ Visible-flow audit notes, 2026-05-31:
 - The current Mech Lab pass starts that larger step by giving desktop Windows a centered, wider two-column surface: Company Bay on the left, Loadout fitting on the right, with compact layout kept as a fallback.
 - Follow-up visual capture showed the right Loadout column is readable, while Company Bay needed more width; the current pass widens Company Bay to about 429px at 1280x720 while preserving a 520px-plus Loadout area.
 - The Company Bay left column now defaults to an Ops page for repair, contracts, shop, hire, and launch actions, with dense roster and reserve-pilot details moved behind a Roster page.
+- The battle mission panel now replaces truncated long objective titles with compact objective names, guarded by the combat-situation smoke.
 
 ## Frozen Development Plan
 
@@ -703,6 +705,7 @@ Tasks:
 - Section damage readability now has persistent missing-arm flags, red leg-collapse cues, cockpit breach/ejection markers, and a smoke-guarded cue contract.
 - The first `mc2_01` encounter pacing smoke now proves the airfield beat: initial hostiles held, Airfield/North patrols armed after objective 0, infantry ambush held until hangar damage, and Starslayer held for area 7.
 - The objective graph smoke now guards the source mission skeleton: 6 visible objectives, 3 hidden glue objectives, flag edges, hidden first-patrol flag `3`, north-island unlock, Starslayer area trigger, and Starslayer VO target count.
+- The combat-situation smoke now also guards compact mission-panel objective lines so the North island and Extraction objectives remain readable in the fixed right HUD.
 - The hangar ambush smoke now attacks `structure-1-0`, captures combat/script/contact events during startup advance, and verifies infantry activation only after Hangar damage.
 - The Starslayer trigger smoke now moves into the hidden area-7 zone, treats destroyed enemies as already-activated for pacing counts, and verifies the west lance wakes only after the area trigger; the same pacing assertion now requires the hidden Starslayer VO hook once the lance is cleared.
 - Mission rewards now add funds and salvage fragments, and ready fragment sets become local warehouse mechs.

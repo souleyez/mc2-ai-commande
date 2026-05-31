@@ -2124,6 +2124,7 @@ namespace MC2Demo.Presentation
             bool sectionFxOk = sectionFx.IndexOf("Arms=missing-socket+flag", StringComparison.Ordinal) >= 0
                 && sectionFx.IndexOf("Legs=collapse+red-cross", StringComparison.Ordinal) >= 0
                 && sectionFx.IndexOf("Cockpit=breach+ejection-pod", StringComparison.Ordinal) >= 0;
+            LoadoutCompactCheck missionBrief = BuildMissionBriefPanelTextCheck();
             string summary = "squad="
                 + playerReady.ToString(CultureInfo.InvariantCulture)
                 + "/"
@@ -2144,14 +2145,83 @@ namespace MC2Demo.Presentation
                 + weaponFx
                 + " sectionFx="
                 + sectionFx
+                + " "
+                + missionBrief.Summary
                 + " text="
                 + text;
 
             return new CombatSituationAssertionResult
             {
-                Accepted = textOk && countsOk && mapBackOk && topModeOk && fundsOk && weaponFxOk && sectionFxOk,
+                Accepted = textOk
+                    && countsOk
+                    && mapBackOk
+                    && topModeOk
+                    && fundsOk
+                    && weaponFxOk
+                    && sectionFxOk
+                    && missionBrief.Accepted,
                 Summary = summary
             };
+        }
+
+        private LoadoutCompactCheck BuildMissionBriefPanelTextCheck()
+        {
+            if (mission?.Objectives == null)
+            {
+                return new LoadoutCompactCheck(false, "missionBrief=unavailable");
+            }
+
+            int visible = 0;
+            int compact = 0;
+            bool stateOk = true;
+            bool noEllipsis = true;
+            bool hasAirfield = false;
+            bool hasNorthIsland = false;
+            bool hasExtraction = false;
+            List<string> samples = new();
+            foreach (ObjectiveState objective in mission.Objectives)
+            {
+                if (objective?.Definition == null || objective.Definition.hidden)
+                {
+                    continue;
+                }
+
+                string line = MissionBriefObjectiveLine(objective);
+                visible++;
+                if (line.Length <= 28)
+                {
+                    compact++;
+                }
+
+                stateOk = stateOk
+                    && (line.StartsWith("[done] ", StringComparison.Ordinal)
+                        || line.StartsWith("[active] ", StringComparison.Ordinal)
+                        || line.StartsWith("[locked] ", StringComparison.Ordinal));
+                noEllipsis = noEllipsis && line.IndexOf("...", StringComparison.Ordinal) < 0;
+                hasAirfield = hasAirfield || line.IndexOf("1 Airfield", StringComparison.OrdinalIgnoreCase) >= 0;
+                hasNorthIsland = hasNorthIsland || line.IndexOf("4 North island", StringComparison.OrdinalIgnoreCase) >= 0;
+                hasExtraction = hasExtraction || line.IndexOf("6 Extraction", StringComparison.OrdinalIgnoreCase) >= 0;
+
+                if (samples.Count < 6)
+                {
+                    samples.Add(line);
+                }
+            }
+
+            bool accepted = visible == 6
+                && compact == visible
+                && stateOk
+                && noEllipsis
+                && hasAirfield
+                && hasNorthIsland
+                && hasExtraction;
+            string summary = "missionBrief="
+                + compact.ToString(CultureInfo.InvariantCulture)
+                + "/"
+                + visible.ToString(CultureInfo.InvariantCulture)
+                + " "
+                + string.Join("|", samples);
+            return new LoadoutCompactCheck(accepted, summary);
         }
 
         private ObjectiveGraphAssertionResult BuildObjectiveGraphAssertion()
@@ -6243,7 +6313,7 @@ namespace MC2Demo.Presentation
                 GUI.color = objective.IsComplete
                     ? new Color(0.55f, 1f, 0.55f)
                     : objective.IsActive ? new Color(1f, 0.88f, 0.42f) : new Color(0.62f, 0.68f, 0.72f);
-                GUI.Label(new Rect(x, y, width, 20f), ObjectiveStateLabel(objective) + TruncateText(objective.Definition.title, 36));
+                GUI.Label(new Rect(x, y, width, 20f), MissionBriefObjectiveLine(objective));
                 GUI.color = previous;
                 y += 20f;
             }
@@ -6281,6 +6351,109 @@ namespace MC2Demo.Presentation
             }
 
             return objective.IsActive ? "[active] " : "[locked] ";
+        }
+
+        private static string MissionBriefObjectiveLine(ObjectiveState objective)
+        {
+            if (objective == null)
+            {
+                return "[locked] Objective";
+            }
+
+            return ObjectiveStateLabel(objective) + MissionBriefObjectiveTitle(objective?.Definition);
+        }
+
+        private static string MissionBriefObjectiveTitle(ObjectiveDefinition definition)
+        {
+            if (definition == null)
+            {
+                return "Objective";
+            }
+
+            string sourceTitle = string.IsNullOrWhiteSpace(definition.title) ? "Objective" : definition.title.Trim();
+            string number = MissionBriefObjectiveNumber(sourceTitle, definition.index);
+            string body = StripObjectiveNumber(sourceTitle);
+            return number + " " + CompactMissionBriefObjectiveBody(body);
+        }
+
+        private static string MissionBriefObjectiveNumber(string sourceTitle, int objectiveIndex)
+        {
+            if (!string.IsNullOrWhiteSpace(sourceTitle))
+            {
+                int dotIndex = sourceTitle.IndexOf('.');
+                if (dotIndex > 0 && dotIndex <= 3)
+                {
+                    string prefix = sourceTitle.Substring(0, dotIndex).Trim();
+                    if (int.TryParse(prefix, NumberStyles.Integer, CultureInfo.InvariantCulture, out int parsed)
+                        && parsed > 0)
+                    {
+                        return parsed.ToString(CultureInfo.InvariantCulture);
+                    }
+                }
+            }
+
+            return (objectiveIndex + 1).ToString(CultureInfo.InvariantCulture);
+        }
+
+        private static string StripObjectiveNumber(string sourceTitle)
+        {
+            if (string.IsNullOrWhiteSpace(sourceTitle))
+            {
+                return "Objective";
+            }
+
+            int dotIndex = sourceTitle.IndexOf('.');
+            if (dotIndex > 0 && dotIndex < sourceTitle.Length - 1 && dotIndex <= 3)
+            {
+                string prefix = sourceTitle.Substring(0, dotIndex).Trim();
+                if (int.TryParse(prefix, NumberStyles.Integer, CultureInfo.InvariantCulture, out _))
+                {
+                    return sourceTitle.Substring(dotIndex + 1).Trim();
+                }
+            }
+
+            return sourceTitle.Trim();
+        }
+
+        private static string CompactMissionBriefObjectiveBody(string body)
+        {
+            if (string.IsNullOrWhiteSpace(body))
+            {
+                return "Objective";
+            }
+
+            if (body.IndexOf("Abandoned Airfield", StringComparison.OrdinalIgnoreCase) >= 0
+                || body.IndexOf("Airfield", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return "Airfield";
+            }
+
+            if (body.IndexOf("Hangar", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return "Hangar";
+            }
+
+            if (body.IndexOf("Bandit Patrol", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return "Bandit patrol";
+            }
+
+            if (body.IndexOf("North Island", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return "North island";
+            }
+
+            if (body.IndexOf("Bandits", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return "Bandits";
+            }
+
+            if (body.IndexOf("Extraction", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return "Extraction";
+            }
+
+            return TruncateText(body.Replace("'Mechs", "Mechs"), 24);
         }
 
         private void DrawStructureBrief(StructureState structure, float x, float y, float width)
