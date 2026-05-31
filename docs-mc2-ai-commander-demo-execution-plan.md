@@ -504,15 +504,25 @@ Tasks:
 
 ## Current Recommended Next Task
 
-Start with **playable loop closure and flow polish**.
+Start with **a full visible-flow audit, then move out of text-only polish**.
 
 Reason:
 
 - The old starter mission restart polish, roster swap, hidden developer save harness, post-battle lane, and first design-image-inspired UI pass are now implemented.
-- The current risk is no longer raw feature absence; it is that the playable loop still depends on dense IMGUI prototype panels and too many debug-flavored rows.
-- The next demo milestone should make one private Windows build feel like a coherent local game: battle, debrief, repair, contracts, mech bay, squad swap, and relaunch.
+- The recent Mech Lab copy and density pass has smoke coverage for the highest-noise fitting rows, including compact weapon codes, component details, repair state, route labels, and funds wording.
+- The current risk is no longer raw feature absence or obvious debug labels; it is whether the whole private Windows loop feels coherent when played end to end.
+- The next demo milestone should make one private Windows build feel like a coherent local game: battle, debrief, repair, contracts, mech lab, squad swap, and relaunch.
+- Further tiny text-only Mech Lab commits should stop unless a visible-flow audit finds a concrete confusing label or dead-end action.
 - AI remains intentionally bounded to high-level directives and capability preview; do not expand model-driven combat until the local loop feels good.
 - Content replacement remains a package boundary, not a blocker for private reference validation.
+
+Current stage snapshot:
+
+- Phase A Local Playable Loop is late active work: the private Windows loop is mostly present, but still needs one manual visible-flow audit and a small pass on any confusing dead ends.
+- Phase B Battle Readability has a working foundation: weapon families, section damage, cockpit/ejection cues, combat HUD, and debrief rows exist, but the first mission still needs stronger encounter rhythm and clearer tactical spectacle.
+- Phase C Mech Lab Experience has core fitting rules and block editing in place: the next meaningful improvement is a calmer dedicated Mech Lab surface, not more right-drawer microcopy.
+- Phase D Public-Safe Content Pack remains later: public capture still requires replacement names, text, UI identity, models, textures, audio, and mission-facing story copy.
+- Phase E AI and Platform remain bounded architecture: keep AI to high-level directives until the local single-player Windows demo is convincing.
 
 ## Frozen Development Plan
 
@@ -520,7 +530,7 @@ This is the current locked execution plan for the private Windows demo. When the
 
 ### Phase A: Local Playable Loop
 
-Status: active.
+Status: active, late flow polish.
 
 Goal: make one private Windows build understandable without developer narration.
 
@@ -534,13 +544,14 @@ Definition of done:
 
 Next work:
 
-1. Run a visible-flow audit from title to relaunch and record any remaining confusing labels or dead-end actions.
-2. Tighten or hide the highest-noise UI rows first; avoid adding new systems.
-3. Keep commits small, with exact file staging and a smoke or validator command in the commit notes.
+1. Run a manual visible-flow audit from startup through battle, debrief, repair, contracts, Mech Lab, squad swap, and relaunch.
+2. Record concrete blockers in this plan before fixing them; prefer flow dead ends, misleading actions, and layout pressure over small wording tweaks.
+3. Fix only the highest-impact audit findings first, with one smoke or validator command per meaningful polish step.
+4. After the audit, choose the next larger lane: dedicated Mech Lab surface if fitting still feels cramped, or battle readability if the mission does not feel exciting enough.
 
 ### Phase B: Battle Readability
 
-Status: next.
+Status: next, with foundation already implemented.
 
 Goal: make `mc2_01` feel like a readable tactical mech battle, not just a functional simulation.
 
@@ -554,13 +565,14 @@ Definition of done:
 
 Next work:
 
-1. Improve primitive/generated combat effects before importing or replacing major art.
-2. Strengthen persistent section-damage markers and ejection readability.
-3. Tune one encounter at a time against `docs-mc2-01-mission-analysis.md`.
+1. Improve primitive/generated combat effects before importing or replacing major art, focusing on hit readability at the fixed tactical camera.
+2. Strengthen persistent arm, leg, cockpit, and ejection readability so section damage is understood without zooming into tiny placeholders.
+3. Tune one encounter at a time against `docs-mc2-01-mission-analysis.md`, preserving source-triggered enemies instead of adding strong AI.
+4. Keep debrief counters and combat HUD smoke paths updated when battle readability changes visible flow.
 
 ### Phase C: Mech Lab Experience
 
-Status: after Phase B first pass, with small supporting polish allowed during Phase A.
+Status: parallel support track after the Phase A audit; core fitting rules exist, dedicated surface still needed.
 
 Goal: turn the current fitting drawer into an original-style mech customization surface.
 
@@ -574,9 +586,10 @@ Definition of done:
 
 Next work:
 
-1. Preserve the current validator and content-pack data boundary.
-2. Move interaction toward large block placement and fewer text-heavy rows.
-3. Keep armor math simple: armor plates raise overall hardness; section damage and cockpit risk stay visible.
+1. Preserve the current validator, command-file smoke coverage, and content-pack data boundary.
+2. Move from the current right-side IMGUI drawer toward a dedicated Mech Lab surface with the same block-placement rules.
+3. Keep weapons, armor plates, and heat sinks as large whole blocks with compact short-code details.
+4. Keep armor math simple: armor plates raise overall hardness; section damage and cockpit risk stay visible.
 
 ### Phase D: Public-Safe Content Pack
 
@@ -622,6 +635,7 @@ Next work:
 4. Use original assets and values only for private reference validation.
 5. Never commit private generated reference dumps or ignored content-pack output.
 6. When uncertain, improve the current playable Windows demo before expanding product scope.
+7. Stop taking text-only Mech Lab density passes once existing smoke covers the label family; use the next turn for visible-flow audit, dedicated layout, or battle readability.
 
 ### Immediate Plan: Local Playable Loop
 
@@ -629,9 +643,9 @@ Goal: make the current Windows demo understandable without developer narration.
 
 Tasks:
 
-1. Audit the visible flow from manual startup through battle, debrief, repair, contracts, mech bay, squad swap, and relaunch.
-2. Remove or hide debug-only rows from player-facing panels while preserving command-file and log coverage.
-3. Tighten button wording around Repair All, Contracts, Launch, Reserve, Set, and squad replacement.
+1. Launch the current Windows build manually and walk the visible path from startup through battle, debrief, repair, contracts, Mech Lab, squad swap, and relaunch.
+2. Record any confusing labels, cramped controls, dead-end actions, or missing feedback directly in this plan.
+3. Fix only the top visible blocker from that audit before returning to another planning checkpoint.
 4. Keep every action guarded by the existing validated BattleCore paths.
 5. Add or update one command-file smoke path that proves the visible loop still works after each polish step.
 
@@ -644,7 +658,7 @@ Tasks:
 1. Improve weapon-effect identity for missile, ballistic, and energy fire using primitive or generated Unity visuals.
 2. Make destroyed arms, destroyed legs, cockpit destruction, and ejection more visible on placeholder mechs.
 3. Tighten `mc2_01` enemy activation and encounter pacing against the mission-analysis notes.
-4. Add a compact mission result summary for destroyed enemies, player damage, completed objectives, token reward, and salvage fragments.
+4. Add or tighten compact mission result summaries for destroyed enemies, player damage, completed objectives, funds reward, and salvage.
 5. Keep enemy AI lightweight and source-triggered; no strong AI director in this stage.
 
 ### Next Plan: Mech Lab Experience
@@ -856,5 +870,5 @@ Tasks:
 - The Save Slot reset result now says fresh save and old copy instead of default-save wording, with the no-saved-game case guarded by the loadout compact smoke.
 - The Next Contract Squad and Reserve Fit Review subpanels now use Back instead of Hide, guarded by the hidden handoff launch smoke.
 - The README and current-plan baseline now describe the same Reserve, Fit Review, and Funds wording that the guarded Mech Lab UI exposes.
-- The next low-risk step is to keep tuning the selected fitting card density and then migrate these flow screens beyond IMGUI once the layout direction feels right.
+- The next low-risk step is no longer more text-only Mech Lab density polish; run a full visible-flow audit, then choose a dedicated Mech Lab surface pass or a battle-readability pass from the audit findings.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.
