@@ -727,7 +727,7 @@ Tasks:
 - The first `mc2_01` encounter pacing smoke now proves the airfield beat: initial hostiles held, Airfield/North patrols armed after objective 0, infantry ambush held until hangar damage, and Starslayer held for area 7.
 - The objective graph smoke now guards the source mission skeleton: 6 visible objectives, 3 hidden glue objectives, flag edges, hidden first-patrol flag `3`, north-island unlock, Starslayer area trigger, and Starslayer VO target count.
 - The combat-situation smoke now also guards compact mission-panel objective lines so the North island and Extraction objectives remain readable in the fixed right HUD.
-- Enemy activation events now spawn a short tactical wake ring, beacon, and ping at the activated group center, making source-paced contact beats visible without adding another combat HUD row.
+- Enemy activation events now spawn a short tactical wake ring, beacon, ping, and group-count pips at the activated group center, making source-paced contact beats visible without adding another combat HUD row.
 - Current active objectives now keep a compact battlefield guide ring and beacon at the target point, improving fixed-camera navigation without adding HUD rows.
 - Current active objectives now also draw a thin commander-to-target route line with endpoint markers, making objective direction readable without changing command flow.
 - Current active structure objectives now tint guide and route cues from steady to damaged and critical as the target loses structure.
@@ -933,7 +933,7 @@ Tasks:
 - The first dedicated Mech Lab visual audit is done, and Company Bay density is reduced with Ops/Roster paging; the next low-risk step is to switch to battle readability unless another Mech Lab visible blocker appears in play.
 - Cockpit destruction now extends the ejection cue with a short chute, cord, descending pod, and landing beacon so pilot escape reads at fixed tactical zoom without adding HUD text.
 - Destroyed mechs now add short hot/metal debris pieces over the existing wreck blast, smoke, scorch, and marker cues so a full kill separates from ordinary hit severity at tactical zoom.
-- Enemy contact activation now has a smoke-guarded visual cue contract: `ContactWake=ring+beacon+ping`.
+- Enemy contact activation now has a smoke-guarded visual cue contract: `ContactWake=ring+beacon+ping+pips`.
 - Hit severity now has a smoke-guarded battlefield cue contract: `HitSeverity=damage+kill+shock`.
 - Hit direction now has a smoke-guarded battlefield cue contract: `HitDirection=inbound+slash`.
 - Weapon muzzle placement now has a smoke-guarded battlefield cue contract: `WeaponMuzzlePoint=energy+missile+ballistic`.

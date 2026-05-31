@@ -2914,7 +2914,7 @@ namespace MC2Demo.Presentation
             bool totalsOk = airfield.Total > 0 && north.Total > 0 && ambush.Total > 0 && starslayer.Total > 0;
             bool voiceOverOk = !starslayerCleared || starslayerVoReady;
             string activationFx = EncounterActivationCueSummary();
-            bool activationFxOk = activationFx.IndexOf("ContactWake=ring+beacon+ping", StringComparison.Ordinal) >= 0;
+            bool activationFxOk = activationFx.IndexOf("ContactWake=ring+beacon+ping+pips", StringComparison.Ordinal) >= 0;
             bool activeOk;
             if (!airfieldComplete)
             {
@@ -2990,7 +2990,7 @@ namespace MC2Demo.Presentation
 
         private static string EncounterActivationCueSummary()
         {
-            return "ContactWake=ring+beacon+ping";
+            return "ContactWake=ring+beacon+ping+pips";
         }
 
         private EncounterPacingCounts CountEncounterGroup(string groupKey)
@@ -5310,6 +5310,28 @@ namespace MC2Demo.Presentation
                 0.72f,
                 0.035f);
             CreateImpact(center + Vector3.up * 0.22f, new Color(color.r, color.g, color.b, 0.52f), false, 0.42f * scale);
+            CreateEncounterActivationPips(center, color, count, scale);
+        }
+
+        private void CreateEncounterActivationPips(Vector3 center, Color color, int count, float scale)
+        {
+            int pipCount = Mathf.Clamp(count, 1, 8);
+            float ringRadius = 0.58f * scale;
+            float pipStart = 0.055f * scale;
+            float pipEnd = 0.16f * scale;
+            for (int index = 0; index < pipCount; index++)
+            {
+                float angle = Mathf.PI * 2f * index / pipCount;
+                Vector3 offset = new(Mathf.Cos(angle) * ringRadius, 0.035f, Mathf.Sin(angle) * ringRadius);
+                CreateImpactDisc(
+                    "Encounter Wake Pip",
+                    center + offset,
+                    new Color(color.r, color.g, color.b, 0.48f),
+                    0.74f,
+                    pipStart,
+                    pipEnd,
+                    0.018f);
+            }
         }
 
         private static Color EncounterActivationCueColor(string key)
