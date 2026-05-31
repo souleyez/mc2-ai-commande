@@ -184,6 +184,7 @@ namespace MC2Demo.Presentation
         private readonly List<string> combatLog = new();
         private GameObject squadFocusMarker;
         private GameObject hostileFocusMarker;
+        private GameObject hostileFocusBeacon;
         private GameObject combatPressureMarker;
         private GameObject hostilePressureMarker;
         private string selectedMechBayLoadoutUnitId;
@@ -552,6 +553,7 @@ namespace MC2Demo.Presentation
             combatLog.Clear();
             squadFocusMarker = null;
             hostileFocusMarker = null;
+            hostileFocusBeacon = null;
             combatPressureMarker = null;
             hostilePressureMarker = null;
             lastCombatEventTimeSeconds = -999f;
@@ -2190,7 +2192,7 @@ namespace MC2Demo.Presentation
             string squadFocusFx = SquadFocusCueSummary();
             bool squadFocusFxOk = squadFocusFx.IndexOf("SquadFocus=ring+pressure", StringComparison.Ordinal) >= 0;
             string threatFocusFx = ThreatFocusCueSummary();
-            bool threatFocusFxOk = threatFocusFx.IndexOf("ThreatFocus=ring+warning", StringComparison.Ordinal) >= 0;
+            bool threatFocusFxOk = threatFocusFx.IndexOf("ThreatFocus=ring+warning+beacon", StringComparison.Ordinal) >= 0;
             string playerDamageFx = PlayerDamageCueSummary();
             bool playerDamageFxOk = playerDamageFx.IndexOf("PlayerDamage=warning+critical", StringComparison.Ordinal) >= 0;
             string combatPressureFx = CombatPressureCueSummary();
@@ -2417,7 +2419,7 @@ namespace MC2Demo.Presentation
 
         private static string ThreatFocusCueSummary()
         {
-            return "ThreatFocus=ring+warning";
+            return "ThreatFocus=ring+warning+beacon";
         }
 
         private static string PlayerDamageCueSummary()
@@ -6431,6 +6433,11 @@ namespace MC2Demo.Presentation
                 "HostileFocusWarning",
                 new Color(1f, 0.22f, 0.10f, 0.38f),
                 new Vector3(1.34f, 0.020f, 1.34f));
+            hostileFocusBeacon = CreateMarkerDisc(
+                "Hostile Focus Beacon",
+                "HostileFocusBeacon",
+                new Color(1f, 0.16f, 0.08f, 0.58f),
+                new Vector3(0.095f, 0.46f, 0.095f));
             combatPressureMarker = CreateMarkerDisc(
                 "Combat Pressure Ring",
                 "CombatPressureTracking",
@@ -6920,7 +6927,7 @@ namespace MC2Demo.Presentation
 
         private void UpdateHostileFocusMarker()
         {
-            if (hostileFocusMarker == null)
+            if (hostileFocusMarker == null && hostileFocusBeacon == null)
             {
                 return;
             }
@@ -6929,16 +6936,41 @@ namespace MC2Demo.Presentation
             Vector2 position = default;
             float radius = 0f;
             bool isVisible = focusCount >= 2 && TryGetTargetMarker(targetId, out position, out radius);
-            hostileFocusMarker.SetActive(isVisible);
+            if (hostileFocusMarker != null)
+            {
+                hostileFocusMarker.SetActive(isVisible);
+            }
+
+            if (hostileFocusBeacon != null)
+            {
+                hostileFocusBeacon.SetActive(isVisible);
+            }
+
             if (!isVisible)
             {
                 return;
             }
 
             float pulse = 0.95f + Mathf.Sin(Time.time * 5.2f) * 0.08f;
-            float scale = Mathf.Clamp(radius / 92f, 1.28f, 4.6f) * pulse;
-            hostileFocusMarker.transform.position = GroundMarkerPosition(position, 0.14f);
-            hostileFocusMarker.transform.localScale = new Vector3(scale, 0.020f, scale);
+            if (hostileFocusMarker != null)
+            {
+                float scale = Mathf.Clamp(radius / 92f, 1.28f, 4.6f) * pulse;
+                hostileFocusMarker.transform.position = GroundMarkerPosition(position, 0.14f);
+                hostileFocusMarker.transform.localScale = new Vector3(scale, 0.020f, scale);
+            }
+
+            if (hostileFocusBeacon != null)
+            {
+                hostileFocusBeacon.transform.position = GroundMarkerPosition(position, 0.62f);
+                hostileFocusBeacon.transform.localScale = new Vector3(
+                    0.095f * pulse,
+                    0.42f + pulse * 0.14f,
+                    0.095f * pulse);
+                AssignMaterial(
+                    hostileFocusBeacon,
+                    "HostileFocusBeacon",
+                    new Color(1f, 0.14f, 0.08f, 0.54f));
+            }
         }
 
         private string PrimaryHostileFocusTargetId(out int focusCount)
