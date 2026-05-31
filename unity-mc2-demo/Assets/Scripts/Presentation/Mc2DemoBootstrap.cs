@@ -2135,6 +2135,8 @@ namespace MC2Demo.Presentation
             bool weaponFxOk = weaponFx.IndexOf("Energy=beam+pillar+muzzle", StringComparison.Ordinal) >= 0
                 && weaponFx.IndexOf("Missile=arc+blast+salvo", StringComparison.Ordinal) >= 0
                 && weaponFx.IndexOf("Ballistic=tracer+sparks+muzzle", StringComparison.Ordinal) >= 0;
+            string hitSeverityFx = HitSeverityCueSummary();
+            bool hitSeverityFxOk = hitSeverityFx.IndexOf("HitSeverity=damage+kill", StringComparison.Ordinal) >= 0;
             string muzzleFx = WeaponMuzzlePointCueSummary();
             bool muzzleFxOk = muzzleFx.IndexOf("WeaponMuzzlePoint=energy+missile+ballistic", StringComparison.Ordinal) >= 0;
             string armorFx = ArmorMitigationCueSummary();
@@ -2197,6 +2199,8 @@ namespace MC2Demo.Presentation
                 + MissionMapBackButtonLabel
                 + " fx="
                 + weaponFx
+                + " hitSeverityFx="
+                + hitSeverityFx
                 + " muzzleFx="
                 + muzzleFx
                 + " armorFx="
@@ -2249,6 +2253,7 @@ namespace MC2Demo.Presentation
                     && topModeOk
                     && fundsOk
                     && weaponFxOk
+                    && hitSeverityFxOk
                     && muzzleFxOk
                     && armorFxOk
                     && sectionHitFxOk
@@ -4182,12 +4187,13 @@ namespace MC2Demo.Presentation
             Color weaponColor = combatEvent.DestroyedTarget
                 ? new Color(1f, 0.42f, 0.08f, 0.85f)
                 : WeaponColor(combatEvent.WeaponType);
+            float severityScale = HitSeverityScale(combatEvent);
             CreateWeaponTrace(attackerPoint, targetPoint, combatEvent, weaponColor);
-            CreateImpact(targetPoint, weaponColor, combatEvent.DestroyedTarget, ImpactScale(combatEvent.WeaponType));
-            CreateWeaponImpactCue(attackerPoint, targetPoint, combatEvent, weaponColor);
-            CreateSectionHitCue(attackerPoint, targetPoint, combatEvent.SectionName, combatEvent.DestroyedTarget);
+            CreateImpact(targetPoint, weaponColor, combatEvent.DestroyedTarget, ImpactScale(combatEvent.WeaponType) * severityScale);
+            CreateWeaponImpactCue(attackerPoint, targetPoint, combatEvent, weaponColor, severityScale);
+            CreateSectionHitCue(attackerPoint, targetPoint, combatEvent.SectionName, combatEvent.DestroyedTarget, severityScale);
             CreateArmorMitigationCue(attackerPoint, targetPoint, combatEvent);
-            PulseTarget(combatEvent.TargetId, new Color(1f, 0.9f, 0.52f), combatEvent.DestroyedTarget ? 0.28f : 0.18f);
+            PulseTarget(combatEvent.TargetId, new Color(1f, 0.9f, 0.52f), Mathf.Clamp((combatEvent.DestroyedTarget ? 0.28f : 0.18f) * severityScale, 0.14f, 0.42f));
         }
 
         private bool TryGetCombatPoint(string id, out Vector3 point)
@@ -4339,6 +4345,11 @@ namespace MC2Demo.Presentation
             return "Energy=beam+pillar+muzzle Missile=arc+blast+salvo Ballistic=tracer+sparks+muzzle";
         }
 
+        private static string HitSeverityCueSummary()
+        {
+            return "HitSeverity=damage+kill";
+        }
+
         private static string WeaponMuzzlePointCueSummary()
         {
             return "WeaponMuzzlePoint=energy+missile+ballistic";
@@ -4385,43 +4396,55 @@ namespace MC2Demo.Presentation
                 && weaponType.IndexOf(value, StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
-        private void CreateWeaponImpactCue(Vector3 from, Vector3 to, CombatEvent combatEvent, Color color)
+        private static float HitSeverityScale(CombatEvent combatEvent)
+        {
+            float incomingDamage = Mathf.Max(0f, combatEvent.Damage + combatEvent.MitigatedDamage);
+            float scale = Mathf.Lerp(0.82f, 1.28f, Mathf.InverseLerp(2f, 18f, incomingDamage));
+            if (combatEvent.DestroyedTarget)
+            {
+                scale += 0.30f;
+            }
+
+            return Mathf.Clamp(scale, 0.78f, 1.68f);
+        }
+
+        private void CreateWeaponImpactCue(Vector3 from, Vector3 to, CombatEvent combatEvent, Color color, float severityScale)
         {
             if (ContainsWeaponType(combatEvent.WeaponType, "Missile"))
             {
-                CreateMissileImpactCue(to, color, combatEvent.DestroyedTarget);
+                CreateMissileImpactCue(to, color, combatEvent.DestroyedTarget, severityScale);
                 return;
             }
 
             if (ContainsWeaponType(combatEvent.WeaponType, "Ballistic"))
             {
-                CreateBallisticImpactCue(from, to, color);
+                CreateBallisticImpactCue(from, to, color, severityScale);
                 return;
             }
 
             if (ContainsWeaponType(combatEvent.WeaponType, "Energy"))
             {
-                CreateEnergyImpactCue(to, color);
+                CreateEnergyImpactCue(to, color, severityScale);
             }
         }
 
-        private void CreateEnergyImpactCue(Vector3 targetPoint, Color color)
+        private void CreateEnergyImpactCue(Vector3 targetPoint, Color color, float severityScale)
         {
             Color pillar = new(color.r, color.g, color.b, 0.55f);
-            CreateBeam(targetPoint + Vector3.up * 0.08f, targetPoint + Vector3.up * 1.20f, pillar, 0.24f, 0.038f);
+            CreateBeam(targetPoint + Vector3.up * 0.08f, targetPoint + Vector3.up * (1.20f * severityScale), pillar, 0.24f, 0.038f * severityScale);
             CreateImpactDisc(
                 "Energy Ion Ring",
                 targetPoint + Vector3.up * 0.06f,
                 new Color(0.35f, 0.95f, 1f, 0.34f),
                 0.28f,
-                0.32f,
-                0.88f,
+                0.32f * severityScale,
+                0.88f * severityScale,
                 0.025f);
         }
 
-        private void CreateMissileImpactCue(Vector3 targetPoint, Color color, bool destroyedTarget)
+        private void CreateMissileImpactCue(Vector3 targetPoint, Color color, bool destroyedTarget, float severityScale)
         {
-            float scale = destroyedTarget ? 1.35f : 1f;
+            float scale = (destroyedTarget ? 1.35f : 1f) * severityScale;
             CreateImpactDisc(
                 "Missile Blast Ring",
                 targetPoint + Vector3.up * 0.04f,
@@ -4439,21 +4462,21 @@ namespace MC2Demo.Presentation
             CreateImpact(targetPoint + Vector3.up * 0.18f, color, destroyedTarget, 0.62f * scale);
         }
 
-        private void CreateBallisticImpactCue(Vector3 from, Vector3 to, Color color)
+        private void CreateBallisticImpactCue(Vector3 from, Vector3 to, Color color, float severityScale)
         {
             Vector3 direction = to - from;
             Vector3 side = LateralVector(direction);
             Vector3 sparkBase = to + Vector3.up * 0.08f;
-            CreateBeam(sparkBase, sparkBase + side * 0.62f + Vector3.up * 0.12f, new Color(1f, 0.88f, 0.36f, 0.70f), 0.075f, 0.012f);
-            CreateBeam(sparkBase, sparkBase - side * 0.58f + Vector3.up * 0.10f, new Color(1f, 0.64f, 0.18f, 0.62f), 0.070f, 0.010f);
-            CreateBeam(sparkBase, sparkBase + Vector3.up * 0.52f, color, 0.065f, 0.010f);
+            CreateBeam(sparkBase, sparkBase + side * (0.62f * severityScale) + Vector3.up * (0.12f * severityScale), new Color(1f, 0.88f, 0.36f, 0.70f), 0.075f, 0.012f * severityScale);
+            CreateBeam(sparkBase, sparkBase - side * (0.58f * severityScale) + Vector3.up * (0.10f * severityScale), new Color(1f, 0.64f, 0.18f, 0.62f), 0.070f, 0.010f * severityScale);
+            CreateBeam(sparkBase, sparkBase + Vector3.up * (0.52f * severityScale), color, 0.065f, 0.010f * severityScale);
         }
 
-        private void CreateSectionHitCue(Vector3 from, Vector3 to, string sectionName, bool destroyedTarget)
+        private void CreateSectionHitCue(Vector3 from, Vector3 to, string sectionName, bool destroyedTarget, float hitSeverityScale)
         {
             Vector3 direction = to - from;
             Vector3 side = LateralVector(direction);
-            float scale = destroyedTarget ? 1.15f : 1f;
+            float scale = (destroyedTarget ? 1.15f : 1f) * hitSeverityScale;
             if (IsCombatSectionName(sectionName, "Cockpit") || IsCombatSectionName(sectionName, "Turret"))
             {
                 Color cockpit = new(0.62f, 0.96f, 1f, 0.62f);
