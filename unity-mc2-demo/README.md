@@ -34,7 +34,7 @@ Current demo behavior:
 - lets map clicks on hostile units or targetable buildings issue focused attack orders
 - renders command rings for selected units, order destinations, and focused targets
 - pulses accepted move, attack, Jet, and single-unit commands at the battlefield point without adding HUD rows
-- draws compact move and Jet order path lines from player mechs to their destinations
+- draws compact move and Jet order path lines with destination endcaps from player mechs to their destinations
 - pulses compact move and Jet arrival cues when player mechs reach their destinations
 - marks the first squad mech as the mission commander with a subtle battlefield anchor and beacon
 - pulses a short return-to-squad cue when a single-unit order finishes and the mech rejoins squad control
@@ -208,7 +208,7 @@ Current demo behavior:
 - lands unit hit effects on section-aware cockpit, arm, leg, or torso points instead of always at unit center
 - gives those section hit points distinct cockpit, arm, leg, and torso flash accents
 - keeps section status readable with compact bar labels for normal, critical, and destroyed parts
-- draws compact move and Jet order path lines while player mechs are traveling
+- draws compact move and Jet order path lines with destination endcaps while player mechs are traveling
 - pulses compact arrival cues after move and Jet orders complete
 - makes ready, cooling, and blocked weapon target lines and target endcaps read differently in the tactical view
 - shows compact ready, cooling, and blocked weapon-readiness rings and beacons on actively targeting player mechs

@@ -2244,7 +2244,7 @@ namespace MC2Demo.Presentation
             string commandFx = CommandCueSummary();
             bool commandFxOk = commandFx.IndexOf("Command=move+attack+single", StringComparison.Ordinal) >= 0;
             string orderPathFx = OrderPathCueSummary();
-            bool orderPathFxOk = orderPathFx.IndexOf("OrderPath=move+jet", StringComparison.Ordinal) >= 0;
+            bool orderPathFxOk = orderPathFx.IndexOf("OrderPath=move+jet+endcap", StringComparison.Ordinal) >= 0;
             string orderArrivalFx = OrderArrivalCueSummary();
             bool orderArrivalFxOk = orderArrivalFx.IndexOf("OrderArrival=move+jet", StringComparison.Ordinal) >= 0;
             string commanderFx = CommanderCueSummary();
@@ -5633,7 +5633,7 @@ namespace MC2Demo.Presentation
 
         private static string OrderPathCueSummary()
         {
-            return "OrderPath=move+jet";
+            return "OrderPath=move+jet+endcap";
         }
 
         private static string OrderArrivalCueSummary()
@@ -6746,7 +6746,24 @@ namespace MC2Demo.Presentation
             marker.SetActive(isVisible);
             if (isVisible)
             {
+                bool isJet = unit.IsJumping;
+                bool isAttack = !isJet && unit.HasAttackOrder;
+                float pulse = isJet
+                    ? 0.96f + Mathf.Sin(Time.time * 5.4f) * 0.10f
+                    : isAttack
+                        ? 0.98f + Mathf.Sin(Time.time * 4.2f) * 0.07f
+                        : 1f + Mathf.Sin(Time.time * 3.1f) * 0.04f;
+                float scale = (isJet ? 1.04f : isAttack ? 0.96f : 0.84f) * pulse;
                 marker.transform.position = GroundMarkerPosition(unit.MoveTarget, 0.08f);
+                marker.transform.localScale = new Vector3(scale, 0.014f, scale);
+                AssignMaterial(
+                    marker,
+                    isJet ? "CommandJetEndcap" : isAttack ? "CommandAttackEndcap" : "CommandMoveEndcap",
+                    isJet
+                        ? new Color(0.58f, 0.96f, 1f, 0.50f)
+                        : isAttack
+                            ? new Color(1f, 0.54f, 0.12f, 0.46f)
+                            : new Color(0.18f, 0.70f, 1f, 0.42f));
             }
         }
 
