@@ -2363,6 +2363,8 @@ namespace MC2Demo.Presentation
             string purchaseReady = PlayerMechLabActionStatusText("Ready demo purchase");
             string hireReady = PlayerMechLabActionStatusText("Ready demo hire");
             string unavailable = PlayerMechLabActionStatusText("Inventory missing");
+            string repairBlocked = RepairAllBlockedFundsText(1200);
+            string repairDone = RepairAllCompleteStatusText(1, 1200);
             string shopSummary = WeaponShopPreviewText(new MechBayWeaponShopPreview
             {
                 Entries = new[]
@@ -2396,6 +2398,10 @@ namespace MC2Demo.Presentation
                 && string.Equals(hireReady, "Ready to hire", StringComparison.Ordinal)
                 && hireReady.IndexOf("demo", StringComparison.OrdinalIgnoreCase) < 0
                 && string.Equals(unavailable, MechLabUnavailableText, StringComparison.Ordinal)
+                && string.Equals(repairBlocked, "Need 1,200 funds for all repairs", StringComparison.Ordinal)
+                && repairBlocked.IndexOf("token", StringComparison.OrdinalIgnoreCase) < 0
+                && string.Equals(repairDone, "Repaired 1 mech for 1,200 funds", StringComparison.Ordinal)
+                && repairDone.IndexOf("token", StringComparison.OrdinalIgnoreCase) < 0
                 && shopSummary.IndexOf("400 funds", StringComparison.OrdinalIgnoreCase) >= 0
                 && shopSummary.IndexOf("token", StringComparison.OrdinalIgnoreCase) < 0
                 && purchaseSummary.IndexOf("450 funds", StringComparison.OrdinalIgnoreCase) >= 0
@@ -2411,6 +2417,10 @@ namespace MC2Demo.Presentation
                 + hireReady
                 + "/"
                 + unavailable
+                + " repair="
+                + repairBlocked
+                + "/"
+                + repairDone
                 + " shop="
                 + shopSummary
                 + " buy="
@@ -5933,7 +5943,7 @@ namespace MC2Demo.Presentation
 
             if (demoInventory.tokenBalance < repairCost)
             {
-                statusText = "Need " + FundsCostText(repairCost) + " for all repairs";
+                statusText = RepairAllBlockedFundsText(repairCost);
                 AddCombatLogLine(statusText);
                 return;
             }
@@ -5964,11 +5974,26 @@ namespace MC2Demo.Presentation
             bool saved = TryAutoSaveSavedAccount("repair all");
             if (saved)
             {
-                statusText = "Repaired " + repaired.ToString(CultureInfo.InvariantCulture)
-                    + " mechs for " + FormatTokens(spent);
+                statusText = RepairAllCompleteStatusText(repaired, spent);
             }
 
             AddCombatLogLine(statusText);
+        }
+
+        private static string RepairAllBlockedFundsText(int repairCost)
+        {
+            return "Need " + FundsCostText(repairCost) + " for all repairs";
+        }
+
+        private static string RepairAllCompleteStatusText(int repaired, int spent)
+        {
+            int safeRepaired = Math.Max(0, repaired);
+            string mechLabel = safeRepaired == 1 ? " mech" : " mechs";
+            return "Repaired "
+                + safeRepaired.ToString(CultureInfo.InvariantCulture)
+                + mechLabel
+                + " for "
+                + FundsCostText(spent);
         }
 
         private void TrySaveCurrentFromMechBayLane()

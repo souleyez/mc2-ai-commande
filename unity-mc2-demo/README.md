@@ -97,7 +97,7 @@ Current demo behavior:
 - previews an ordinary weapon shop as the future source of spare depot weapons
 - supports a demo ordinary weapon purchase that spends local tokens and adds one spare weapon
 - supports demo NPC pilot hiring that spends local tokens and assigns a warehouse pilot
-- shows visible shop, hire, and repair costs as funds so player-facing cost rows match the top resource strip
+- shows visible shop, hire, and repair costs and Repair All feedback as funds so player-facing cost rows match the top resource strip
 - exposes a compact Reserve action that builds, hires, buys, draft-fits, and opens the next-squad preview for a depot mech
 - enables a Draft Fit readiness gate when a warehouse mech has both spare weapon stock and a pilot
 - opens a read-only warehouse draft-fit preview showing the selected pilot and spare weapon before real fitting exists
