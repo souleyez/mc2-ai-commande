@@ -86,28 +86,28 @@ Current demo behavior:
 - hands applied demo fits to combat readiness, range, heat, cooldown, and weapon display stats
 - applies armor hardness as simple incoming damage reduction and heat sinks as faster cooling
 - shows applied armor/cooling bonuses in unit weapon status and blocked damage in combat logs
-- builds a starter mech bay inventory summary for owned mechs, weapons, armor plates, heat sinks, and demo token balance
-- shows a compact owned-mech roster and read-only roster detail preview in the mech bay, including assembled depot mechs
-- marks assembled depot mechs as held with a pending-loadout placeholder before any future deployment flow
-- shows a disabled Draft Fit affordance for depot mechs so the future fitting path is visible but inactive
-- previews depot fitting requirements such as spare weapon stock and pilot assignment
-- shows a read-only pilot placeholder for depot mechs before the future pilot/social loop exists
-- previews spare weapon stock counts for future depot fitting
+- builds a starter mech bay inventory summary for owned mechs, weapons, armor plates, heat sinks, and funds balance
+- shows a compact owned-mech roster and read-only roster detail in the mech bay, including assembled reserve mechs
+- marks assembled reserve mechs as held with a pending-fit placeholder before next-contract selection
+- shows a disabled Fit Review affordance for reserve mechs so the future fitting path is visible but inactive
+- previews reserve fitting requirements such as spare weapon stock and pilot assignment
+- shows a read-only pilot placeholder for reserve mechs before the future pilot/social loop exists
+- previews spare weapon stock counts for reserve fitting
 - shows a read-only local demo account snapshot summary built from the current mech bay inventory
-- previews an ordinary weapon shop as the future source of spare depot weapons
-- supports a demo ordinary weapon purchase that spends local tokens and adds one spare weapon
-- supports demo NPC pilot hiring that spends local tokens and assigns a warehouse pilot
+- previews an ordinary weapon shop as the future source of spare reserve weapons
+- supports an ordinary weapon purchase that spends local funds and adds one spare weapon
+- supports NPC pilot hiring that spends local funds and assigns a warehouse pilot
 - shows visible shop, hire, and repair costs and Repair All feedback as funds so player-facing cost rows match the top resource strip
-- exposes a compact Reserve action that builds, hires, buys, draft-fits, and opens the next-squad preview for a depot mech
-- enables a Draft Fit readiness gate when a warehouse mech has both spare weapon stock and a pilot
-- opens a read-only warehouse draft-fit preview showing the selected pilot and spare weapon before real fitting exists
-- applies a demo warehouse draft fit that consumes one spare weapon and keeps the mech non-deployable
+- exposes a compact Reserve action that builds, hires, buys, fit-reviews, and opens the next-squad panel for a reserve mech
+- enables a Fit Review readiness gate when a warehouse mech has both spare weapon stock and a pilot
+- opens a read-only reserve fit review showing the selected pilot and spare weapon before real fitting exists
+- applies a reserve fit review that consumes one spare weapon and keeps the mech non-deployable
 - marks fitted warehouse mechs as ready for the next-contract squad selection path
 - shows a player-facing Next Squad entry for choosing future contract replacements
-- opens a Next Contract Squad preview listing current contract slots and fitted depot candidates
-- preselects the clicked mission mech as Out or clicked depot candidate as In when opening squad selection
-- stages the first current slot and fitted depot candidate in a local squad-selection draft state
-- lets the local squad-selection draft cycle outgoing mission slots and incoming depot candidates
+- opens a Next Contract Squad panel listing current contract slots and ready reserve mechs
+- preselects the clicked mission mech as Out or clicked reserve mech as In when opening squad selection
+- stages the first current slot and ready reserve mech in a local squad-selection plan state
+- lets the local squad-selection plan cycle outgoing mission slots and incoming reserve mechs
 - highlights Out/In rows with direction cues before setting the next squad
 - shows one replace plan that names the outgoing and incoming mechs before Set
 - uses short player-facing Set and Launch status text after squad swaps
@@ -127,7 +127,7 @@ Current demo behavior:
 - supports explicit command-file `saved-account-load-default-preview` and `saved-account-load-default-apply` actions for the persistent demo save file
 - supports explicit command-file `saved-account-save-current-default` to write the active account to the persistent demo save file
 - supports `-mc2LoadDefaultSave` to explicitly restore the persistent demo save during startup when that file exists
-- shows a lightweight Continue/New Company startup panel for manual runs when the persistent demo save exists, including account summary, token/depot/item counts, delta, and save timestamp
+- shows a hidden developer Continue/New Company startup panel for manual save-slot checks, including account summary, funds/reserve/item counts, delta, and save timestamp
 - exposes the same Save Slot entry from the pause/system panel, with Save Current, Export Copy, Reset Slot confirmation, inline Last Save feedback, Back support, and an explicit New Company confirmation that resets the active demo run while keeping the persistent save slot
 - exposes that same guarded import apply path as a mech bay Apply action that stays disabled until a matching preview is ready
 - includes a mech bay JSON path field and Preview action for manually generating the guarded import apply preview
@@ -135,14 +135,14 @@ Current demo behavior:
 - includes a guarded Load helper for the persistent demo save path when that file exists
 - shows a compact Last Save result line for the latest export, preview, apply, or blocked save/load outcome
 - auto-saves the current local account snapshot to the persistent demo save path after guarded account-changing actions
-- logs a read-only saved-account delta after local candidate prep so candidate inventory growth is inspectable before real save/load is wired
+- logs a read-only saved-account delta after reserve prep so reserve inventory growth is inspectable before real save/load is wired
 - applies pending squad swap confirmation by exchanging local mission availability flags
-- refreshes squad-selection status after confirmation so the joined depot mech is no longer shown as a candidate
+- refreshes squad-selection status after confirmation so the joined reserve mech is no longer shown as an incoming option
 - keeps the squad-selection preview visible inside the mech bay and exposes the guarded next-mission Launch handoff there
 - previews the next-mission handoff roster from `availableForMission` without restarting the current battle
 - shows a player-facing next-mission Ready/Blocked summary with a guarded Launch action and lineup preview
 - maps the handoff roster into restart spawn intents behind the Launch guard
-- supports shared UI and command-file local candidate setup that runs receipt assembly, NPC hiring, weapon purchase, draft fit, squad swap, and restart identity assertions
+- supports shared UI and command-file reserve setup that runs payout assembly, NPC hiring, weapon purchase, fit review, squad swap, and restart identity assertions
 - enables Launch only after a validated BattleMission construction path is available
 - keeps MissionContract clone and BattleMission construction validation behind that guarded Launch path
 - can restart the active battle by building a replacement BattleMission, immediately disabling old runtime scene roots, and rebuilding Unity views from the guarded path
@@ -150,14 +150,14 @@ Current demo behavior:
 - shows a post-restart mission-state roster line with active, deployed, ready, repair, held, fit, and unavailable counts
 - carries restart handoff identity into runtime player units with owned mech id, pilot display name, and active loadout id
 - warns when draft armor plate or heat sink usage exceeds starter inventory and blocks applying that fit
-- shows starter mech condition and one-click demo repair that spends local token balance
-- applies a local mission receipt for completed bounty tokens and salvaged mech fragments at mission end
+- shows starter mech condition and one-click demo repair that spends local funds
+- applies a local mission payout for completed bounty funds and salvaged mech fragments at mission end
 - reports mission payout combat-log entries as Payout and Salvage instead of receipt/token wording
 - previews starter mech assembly progress and auto-assembles ready fragment sets into local warehouse mechs
 - supports one-shot Jet orders with terrain-aware landing rejection
 - provides a toggleable current-objective mission map and a pause/restart/end system panel
 - resolves mission victory or defeat through BattleCore result state
-- estimates contract bounty, repair cost, net token result, and salvage claims in mission debriefs
+- estimates contract bounty, repair cost, net funds result, and salvage claims in mission debriefs
 - summarizes completed objectives, enemy kills, and damaged player mechs in the debrief without expanding the panel
 - auto-acquires hostile units in weapon range
 - gives missile, ballistic, and energy attacks distinct muzzle and trace accents
@@ -239,7 +239,7 @@ Run the player with a startup command file that restarts and rebuilds the active
   -logFile "$PWD\..\analysis-output\unity-player-restart-command-file.log"
 ```
 
-Run the player with a startup command file that applies a demo depot squad swap, restarts, and asserts owned-mech identity:
+Run the player with a startup command file that applies a demo reserve squad swap, restarts, and asserts owned-mech identity:
 
 ```powershell
 & .\Builds\Windows\MC2UnityDemo.exe `
@@ -248,7 +248,7 @@ Run the player with a startup command file that applies a demo depot squad swap,
   -logFile "$PWD\..\analysis-output\unity-player-restart-identity-swap.log"
 ```
 
-Run the player with a startup command file that applies a demo depot squad swap, uses the mech-bay Launch path, and asserts the updated squad was loaded while the bay stayed open:
+Run the player with a startup command file that applies a demo reserve squad swap, uses the mech-bay Launch path, and asserts the updated squad was loaded while the bay stayed open:
 
 ```powershell
 & .\Builds\Windows\MC2UnityDemo.exe `
@@ -257,7 +257,7 @@ Run the player with a startup command file that applies a demo depot squad swap,
   -logFile "$PWD\..\analysis-output\unity-player-mech-bay-launch-swap.log"
 ```
 
-Run the player with a startup command file that applies a demo depot squad swap, hides the squad preview, then launches from the general next-mission handoff:
+Run the player with a startup command file that applies a demo reserve squad swap, hides the squad preview, then launches from the general next-mission handoff:
 
 ```powershell
 & .\Builds\Windows\MC2UnityDemo.exe `
@@ -266,7 +266,7 @@ Run the player with a startup command file that applies a demo depot squad swap,
   -logFile "$PWD\..\analysis-output\unity-player-hidden-handoff-launch-swap.log"
 ```
 
-Run the player with a startup command file that reports saved-account snapshots before and after local candidate prep without writing persistent data:
+Run the player with a startup command file that reports saved-account snapshots before and after reserve prep without writing persistent data:
 
 ```powershell
 & .\Builds\Windows\MC2UnityDemo.exe `
@@ -369,7 +369,7 @@ command unit unit-1 move 3221 -277
 
 Relative command-file paths are checked from the current working directory first, then from the player `StreamingAssets` folder.
 
-Command files also support `prepare-local-candidate`, `prepare-depot-candidate`, `squad-swap`, `hide-squad-preview`, `saved-account-report`, `saved-account-save-load-preview`, `saved-account-export <path>`, `saved-account-import-preview <path>`, `saved-account-import-apply-preview <path>`, `saved-account-import-apply <path>`, `saved-account-load-default-preview`, `saved-account-save-current-default`, `saved-account-load-default-apply`, `mech-bay-launch`, `assert-restart-identity depot`, `assert-debrief-summary`, `assert-combat-situation`, and `assert-loadout-compact`. `prepare-local-candidate` runs the demo receipt, assembly, NPC hire, weapon shop, and warehouse draft-fit services before the swap, then logs a read-only saved-account delta and auto-saves the account snapshot; `hide-squad-preview` verifies the completed replacement cue survives into the general next-mission handoff; `assert-debrief-summary` verifies result counters and compact debrief combat rows; `assert-combat-situation` verifies the combat HUD situation row counters and recent-contact tempo; `assert-loadout-compact` verifies compact mech-bay fitting title, weapon-button, and grid-spacing contracts; `saved-account-report` validates and logs a JSON dry-run of the local account snapshot without writing a file; `saved-account-save-load-preview` serializes and loads that snapshot in memory to prove the future save/load boundary; `saved-account-export` writes a JSON file only when the script provides a path, `saved-account-import-preview` validates a file without applying it to the mech bay, `saved-account-import-apply-preview` adds the identity guard plus would-change delta for a future apply, then exposes the latest preview as a guarded mech bay Apply row with a manual JSON path Preview field, Default/Export/Load helpers, and a compact Last Save result line, `saved-account-import-apply` requires that matching accepted preview before replacing the local mech bay with a cloned loaded inventory, then auto-saves the resulting local account, `saved-account-save-current-default` writes the active account to the persistent demo save path, and the default-load commands reuse the same guard against that path; `prepare-depot-candidate` remains a direct smoke fallback.
+Command files also support `prepare-local-candidate`, `prepare-depot-candidate`, `squad-swap`, `hide-squad-preview`, `saved-account-report`, `saved-account-save-load-preview`, `saved-account-export <path>`, `saved-account-import-preview <path>`, `saved-account-import-apply-preview <path>`, `saved-account-import-apply <path>`, `saved-account-load-default-preview`, `saved-account-save-current-default`, `saved-account-load-default-apply`, `mech-bay-launch`, `assert-restart-identity depot`, `assert-debrief-summary`, `assert-combat-situation`, and `assert-loadout-compact`. `prepare-local-candidate` runs the payout, assembly, NPC hire, weapon shop, and warehouse fit-review services before the swap, then logs a read-only saved-account delta and auto-saves the account snapshot; `hide-squad-preview` verifies the completed replacement cue survives into the general next-mission handoff; `assert-debrief-summary` verifies result counters and compact debrief combat rows; `assert-combat-situation` verifies the combat HUD situation row counters and recent-contact tempo; `assert-loadout-compact` verifies compact mech-bay fitting title, weapon-button, and grid-spacing contracts; `saved-account-report` validates and logs a JSON dry-run of the local account snapshot without writing a file; `saved-account-save-load-preview` serializes and loads that snapshot in memory to prove the future save/load boundary; `saved-account-export` writes a JSON file only when the script provides a path, `saved-account-import-preview` validates a file without applying it to the mech bay, `saved-account-import-apply-preview` adds the identity guard plus would-change delta for a future apply, then exposes the latest preview as a guarded mech bay Apply row with a manual JSON path Preview field, Default/Export/Load helpers, and a compact Last Save result line, `saved-account-import-apply` requires that matching accepted preview before replacing the local mech bay with a cloned loaded inventory, then auto-saves the resulting local account, `saved-account-save-current-default` writes the active account to the persistent demo save path, and the default-load commands reuse the same guard against that path; `prepare-depot-candidate` remains a legacy direct smoke fallback.
 
 Commander observation reports include `reportIndex` and `missionTimeSeconds` so future AI adapters can correlate decisions with elapsed battle time.
 
