@@ -2166,7 +2166,7 @@ namespace MC2Demo.Presentation
                 && weaponFx.IndexOf("Missile=arc+blast+salvo", StringComparison.Ordinal) >= 0
                 && weaponFx.IndexOf("Ballistic=tracer+sparks+muzzle", StringComparison.Ordinal) >= 0;
             string hitSeverityFx = HitSeverityCueSummary();
-            bool hitSeverityFxOk = hitSeverityFx.IndexOf("HitSeverity=damage+kill", StringComparison.Ordinal) >= 0;
+            bool hitSeverityFxOk = hitSeverityFx.IndexOf("HitSeverity=damage+kill+shock", StringComparison.Ordinal) >= 0;
             string hitDirectionFx = HitDirectionCueSummary();
             bool hitDirectionFxOk = hitDirectionFx.IndexOf("HitDirection=inbound+slash", StringComparison.Ordinal) >= 0;
             string muzzleFx = WeaponMuzzlePointCueSummary();
@@ -4343,6 +4343,7 @@ namespace MC2Demo.Presentation
             CreateWeaponImpactCue(attackerPoint, targetPoint, combatEvent, weaponColor, severityScale);
             CreateHitDirectionCue(attackerPoint, targetPoint, severityScale);
             CreateSectionHitCue(attackerPoint, targetPoint, combatEvent.SectionName, combatEvent.DestroyedTarget, severityScale);
+            CreateKillShockCue(targetPoint, combatEvent.DestroyedTarget, severityScale);
             CreateArmorMitigationCue(attackerPoint, targetPoint, combatEvent);
             PulseTarget(combatEvent.TargetId, new Color(1f, 0.9f, 0.52f), Mathf.Clamp((combatEvent.DestroyedTarget ? 0.28f : 0.18f) * severityScale, 0.14f, 0.42f));
         }
@@ -4498,7 +4499,7 @@ namespace MC2Demo.Presentation
 
         private static string HitSeverityCueSummary()
         {
-            return "HitSeverity=damage+kill";
+            return "HitSeverity=damage+kill+shock";
         }
 
         private static string HitDirectionCueSummary()
@@ -4638,6 +4639,39 @@ namespace MC2Demo.Presentation
             Vector3 strikeEnd = to + direction * (0.10f * scale) - side * (0.02f * scale) + lift * 0.65f;
             CreateBeam(strikeStart, strikeEnd, new Color(1f, 0.95f, 0.58f, 0.56f), 0.090f, 0.010f * scale);
             CreateBeam(to - direction * (0.34f * scale) - side * (0.10f * scale) + lift * 0.60f, to - direction * (0.02f * scale) + side * (0.12f * scale) + lift * 0.92f, new Color(1f, 0.52f, 0.16f, 0.42f), 0.075f, 0.007f * scale);
+        }
+
+        private void CreateKillShockCue(Vector3 targetPoint, bool destroyedTarget, float severityScale)
+        {
+            if (!destroyedTarget)
+            {
+                return;
+            }
+
+            float scale = Mathf.Clamp(severityScale, 1.0f, 1.72f);
+            Vector3 center = targetPoint + Vector3.up * 0.04f;
+            CreateImpactDisc(
+                "Kill Shock Ring",
+                center,
+                new Color(1f, 0.20f, 0.06f, 0.46f),
+                0.46f,
+                0.34f * scale,
+                1.46f * scale,
+                0.030f);
+            CreateImpactDisc(
+                "Kill Shock Outer Ring",
+                center + Vector3.up * 0.02f,
+                new Color(1f, 0.72f, 0.22f, 0.28f),
+                0.62f,
+                0.62f * scale,
+                2.10f * scale,
+                0.018f);
+            CreateBeam(
+                targetPoint + Vector3.up * 0.10f,
+                targetPoint + Vector3.up * (1.32f * scale),
+                new Color(1f, 0.36f, 0.08f, 0.42f),
+                0.34f,
+                0.055f * scale);
         }
 
         private void CreateSectionHitCue(Vector3 from, Vector3 to, string sectionName, bool destroyedTarget, float hitSeverityScale)

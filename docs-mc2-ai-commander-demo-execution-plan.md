@@ -871,7 +871,7 @@ Tasks:
 - The fitting drawer header and selector now use Mech Lab wording, nudging the current IMGUI drawer toward the dedicated Mech Lab surface planned next.
 - Destroyed cockpit, arm, and leg sections now leave persistent tactical-view damage beacons in addition to the existing flashes, detached parts, and ejection effects; critical but not-yet-destroyed sections now vent small smoke/spark cues without adding more combat HUD text.
 - Missile, ballistic, and energy attacks now have clearer family-specific muzzle, trace, and hit accents layered over the existing primitive combat effects.
-- Hit effects now scale by incoming damage and kill state, so light hits, heavy hits, and killing blows separate visually at tactical zoom.
+- Hit effects now scale by incoming damage and kill state, with killing blows adding shock rings so light hits, heavy hits, and kills separate visually at tactical zoom.
 - Combat hits now add short inbound direction slashes at the impact point, making attack direction readable without adding combat HUD rows.
 - Weapon traces now start from family-specific arm or shoulder hardpoints, so energy, missile, and ballistic fire no longer originates from the mech center.
 - Unit hit effects now land on section-aware cockpit, arm, leg, or torso points, so combat hits line up better with the reported damage section.
@@ -931,7 +931,7 @@ Tasks:
 - Cockpit destruction now extends the ejection cue with a short chute, cord, descending pod, and landing beacon so pilot escape reads at fixed tactical zoom without adding HUD text.
 - Destroyed mechs now add short hot/metal debris pieces over the existing wreck blast, smoke, scorch, and marker cues so a full kill separates from ordinary hit severity at tactical zoom.
 - Enemy contact activation now has a smoke-guarded visual cue contract: `ContactWake=ring+beacon+ping`.
-- Hit severity now has a smoke-guarded battlefield cue contract: `HitSeverity=damage+kill`.
+- Hit severity now has a smoke-guarded battlefield cue contract: `HitSeverity=damage+kill+shock`.
 - Hit direction now has a smoke-guarded battlefield cue contract: `HitDirection=inbound+slash`.
 - Weapon muzzle placement now has a smoke-guarded battlefield cue contract: `WeaponMuzzlePoint=energy+missile+ballistic`.
 - Section-aware hit placement now has a smoke-guarded battlefield cue contract: `SectionHitPoint=cockpit+arms+legs+torso`.
