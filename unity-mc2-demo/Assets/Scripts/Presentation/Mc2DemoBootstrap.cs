@@ -2198,7 +2198,7 @@ namespace MC2Demo.Presentation
             string weaponReadinessFx = WeaponReadinessCueSummary();
             bool weaponReadinessFxOk = weaponReadinessFx.IndexOf("WeaponReadiness=ready+cooling+blocked+beacon", StringComparison.Ordinal) >= 0;
             string targetLockFx = TargetLockCueSummary();
-            bool targetLockFxOk = targetLockFx.IndexOf("TargetLock=auto+command", StringComparison.Ordinal) >= 0;
+            bool targetLockFxOk = targetLockFx.IndexOf("TargetLock=auto+command+beacon", StringComparison.Ordinal) >= 0;
             string squadFocusFx = SquadFocusCueSummary();
             bool squadFocusFxOk = squadFocusFx.IndexOf("SquadFocus=ring+pressure+beacon", StringComparison.Ordinal) >= 0;
             string threatFocusFx = ThreatFocusCueSummary();
@@ -2419,7 +2419,7 @@ namespace MC2Demo.Presentation
 
         private static string TargetLockCueSummary()
         {
-            return "TargetLock=auto+command";
+            return "TargetLock=auto+command+beacon";
         }
 
         private static string SquadFocusCueSummary()
@@ -6952,12 +6952,21 @@ namespace MC2Demo.Presentation
                 0.20f * scale,
                 0.72f * scale,
                 0.018f);
+            float beaconHeight = commanded ? 0.82f : 0.64f;
             CreateBeam(
                 center + Vector3.up * 0.04f,
-                center + Vector3.up * (0.62f * scale),
-                new Color(color.r, color.g, color.b, 0.48f),
-                0.28f,
-                0.014f * scale);
+                center + Vector3.up * beaconHeight,
+                new Color(color.r, color.g, color.b, commanded ? 0.58f : 0.46f),
+                commanded ? 0.34f : 0.28f,
+                (commanded ? 0.020f : 0.016f) * scale);
+            CreateImpactDisc(
+                "Target Lock Beacon Cap",
+                center + Vector3.up * beaconHeight,
+                new Color(color.r, color.g, color.b, commanded ? 0.42f : 0.34f),
+                commanded ? 0.30f : 0.24f,
+                0.08f * scale,
+                0.24f * scale,
+                0.010f);
         }
 
         private void UpdateSquadFocusMarker()

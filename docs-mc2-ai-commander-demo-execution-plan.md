@@ -707,7 +707,7 @@ Tasks:
 - The combat situation smoke now guards the current weapon FX cue contract with `Energy=beam+pillar+muzzle+flash Missile=arc+blast+salvo-spread Ballistic=tracer+sparks+muzzle+punch`.
 - Tactical target lines now vary color and thickness for ready, cooling, and blocked shots, keeping weapon cadence visible without adding HUD rows.
 - Player weapon readiness now shows compact ready, cooling, and blocked rings and beacons on active targeting mechs without adding combat HUD rows.
-- Target acquisition now pulses compact auto/command lock rings at target points without adding combat HUD rows.
+- Target acquisition now pulses compact auto/command lock rings and beacons at target points without adding combat HUD rows.
 - Squad focus now keeps a compact pressure ring and beacon on targets shared by multiple player mechs without adding combat HUD rows.
 - Hostile focus now keeps a compact warning ring and beacon on player mechs targeted by multiple enemies without adding combat HUD rows.
 - Player mech damage now shows compact warning and critical rings and beacons for structure loss or section penalties without adding combat HUD rows.
@@ -945,7 +945,7 @@ Tasks:
 - Armor mitigation now has a smoke-guarded battlefield cue contract: `ArmorMitigation=glint+spark`.
 - Weapon target lines now have a smoke-guarded battlefield cue contract: `TargetLine=ready+cooling+blocked`.
 - Player weapon readiness now has a smoke-guarded battlefield cue contract: `WeaponReadiness=ready+cooling+blocked+beacon`.
-- Target lock acquisition now has a smoke-guarded battlefield cue contract: `TargetLock=auto+command`.
+- Target lock acquisition now has a smoke-guarded battlefield cue contract: `TargetLock=auto+command+beacon`.
 - Squad focus pressure now has a smoke-guarded battlefield cue contract: `SquadFocus=ring+pressure+beacon`.
 - Hostile focus warning now has a smoke-guarded battlefield cue contract: `ThreatFocus=ring+warning+beacon`.
 - Player mech damage now has a smoke-guarded battlefield cue contract: `PlayerDamage=warning+critical+beacon`.

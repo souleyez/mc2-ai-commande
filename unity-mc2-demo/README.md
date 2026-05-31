@@ -45,7 +45,7 @@ Current demo behavior:
 - pulses visible objective activation and completion at the battlefield target position
 - pulses a distinct mission-complete or mission-failed result cue before the debrief panel takes over
 - draws tactical target lines from player units to active targets, colored by weapon readiness
-- pulses short target-lock rings when squad weapons auto-acquire or commanded attacks change target
+- pulses short target-lock rings and beacons when squad weapons auto-acquire or commanded attacks change target
 - keeps a subtle squad-focus pressure ring and beacon on targets shared by multiple player mechs
 - keeps a subtle hostile-focus warning ring and beacon on player mechs targeted by multiple enemies
 - marks damaged or section-penalized player mechs with compact warning and critical rings and beacons
@@ -212,7 +212,7 @@ Current demo behavior:
 - pulses compact arrival cues after move and Jet orders complete
 - makes ready, cooling, and blocked weapon target lines read differently in the tactical view
 - shows compact ready, cooling, and blocked weapon-readiness rings and beacons on actively targeting player mechs
-- shows compact target-lock rings for auto-acquired and commanded targets
+- shows compact target-lock rings and beacons for auto-acquired and commanded targets
 - shows a compact squad-focus pressure ring and beacon when multiple player mechs share a target
 - shows a compact hostile-focus warning ring and beacon when multiple enemies share a player target
 - shows compact player-damage warning and critical rings and beacons without adding combat HUD rows
