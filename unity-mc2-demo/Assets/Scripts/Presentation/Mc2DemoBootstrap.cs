@@ -35,6 +35,9 @@ namespace MC2Demo.Presentation
         private const float MechLabDedicatedLayoutMinWidth = 900f;
         private const float MechLabDedicatedLayoutMinHeight = 560f;
         private const float MechLabDedicatedBaySummaryHeight = 520f;
+        private const float MechLabDedicatedBayMinWidth = 330f;
+        private const float MechLabDedicatedBayMaxWidth = 460f;
+        private const float MechLabDedicatedLoadoutMinWidth = 520f;
         private const float LoadoutRepairButtonWidth = 64f;
         private const float LoadoutRepairStateOffset = 70f;
         private const float LoadoutEditStatusReservedWidth = 146f;
@@ -2237,9 +2240,15 @@ namespace MC2Demo.Presentation
             bool titleOk = LoadoutPanelFrameTitle.StartsWith("Mech Lab", StringComparison.Ordinal)
                 && LoadoutPanelHeaderTitle.StartsWith("Mech Lab", StringComparison.Ordinal);
             Rect desktopPanel = LoadoutPanelRectFor(1280f, 720f);
+            float desktopInnerWidth = desktopPanel.width - 28f;
+            float desktopGap = 14f;
+            float desktopBayWidth = MechLabDedicatedBayWidthFor(desktopInnerWidth, desktopGap);
+            float desktopLoadoutWidth = desktopInnerWidth - desktopBayWidth - desktopGap;
             bool dedicatedLayoutOk = ShouldUseDedicatedMechLabLayout(desktopPanel)
                 && desktopPanel.width >= 1000f
                 && desktopPanel.x <= 120f
+                && desktopBayWidth >= 420f
+                && desktopLoadoutWidth >= MechLabDedicatedLoadoutMinWidth
                 && string.Equals(MechLabCompanyBayPanelTitle, "Company Bay", StringComparison.Ordinal)
                 && string.Equals(MechLabLoadoutPanelTitle, "Loadout", StringComparison.Ordinal)
                 && MechLabDedicatedBaySummaryHeight >= 500f;
@@ -2263,6 +2272,10 @@ namespace MC2Demo.Presentation
                 + (dedicatedLayoutOk ? "Dedicated" : "Compact")
                 + " layoutW="
                 + FormatDecimal(desktopPanel.width)
+                + " bayW="
+                + FormatDecimal(desktopBayWidth)
+                + " fitW="
+                + FormatDecimal(desktopLoadoutWidth)
                 + " bay="
                 + MechLabCompanyBayPanelTitle
                 + " fit="
@@ -5906,8 +5919,8 @@ namespace MC2Demo.Presentation
         {
             float gap = 14f;
             float columnHeight = Mathf.Max(260f, panel.yMax - y - 14f);
-            float bayWidth = Mathf.Clamp(width * 0.35f, 330f, 410f);
-            float loadoutWidth = Mathf.Max(420f, width - bayWidth - gap);
+            float bayWidth = MechLabDedicatedBayWidthFor(width, gap);
+            float loadoutWidth = width - bayWidth - gap;
             Rect bayColumn = new(x, y, bayWidth, columnHeight);
             Rect loadoutColumn = new(bayColumn.xMax + gap, y, loadoutWidth, columnHeight);
 
@@ -5982,6 +5995,23 @@ namespace MC2Demo.Presentation
             DrawColorRect(rect, new Color(0.015f, 0.025f, 0.03f, 0.74f));
             DrawRectBorder(rect, new Color(accent.r, accent.g, accent.b, 0.42f), 1f);
             GUI.Label(new Rect(rect.x + 10f, rect.y + 6f, rect.width - 20f, 18f), title);
+        }
+
+        private static float MechLabDedicatedBayWidthFor(float availableWidth, float gap)
+        {
+            float bayWidth = Mathf.Clamp(
+                availableWidth * 0.40f,
+                MechLabDedicatedBayMinWidth,
+                MechLabDedicatedBayMaxWidth);
+            float loadoutWidth = availableWidth - bayWidth - gap;
+            if (loadoutWidth < MechLabDedicatedLoadoutMinWidth)
+            {
+                bayWidth = Mathf.Max(
+                    MechLabDedicatedBayMinWidth,
+                    availableWidth - gap - MechLabDedicatedLoadoutMinWidth);
+            }
+
+            return bayWidth;
         }
 
         private void DrawMechBayInventorySummary(float x, float y, float width, bool showRosterDetail)
