@@ -127,6 +127,7 @@ namespace MC2Demo.Presentation
         private const float LoadoutNudgeButtonWidth = 40f;
         private const float LoadoutNudgeEastButtonWidth = 44f;
         private const float LoadoutNudgeStatusWidth = 142f;
+        private const float CriticalSectionStatusRatio = 0.35f;
         private const string LoadoutConditionPrefix = "Cond ";
         private const string LoadoutFitOkLabel = "Fit OK";
         private const string LoadoutFitReviewPrefix = "Review ";
@@ -2177,6 +2178,9 @@ namespace MC2Demo.Presentation
             bool sectionHitFxOk = sectionHitFx.IndexOf("SectionHitPoint=cockpit+arms+legs+torso", StringComparison.Ordinal) >= 0;
             string sectionFlashFx = SectionHitCueSummary();
             bool sectionFlashFxOk = sectionFlashFx.IndexOf("SectionHitCue=cockpit+arms+legs+torso", StringComparison.Ordinal) >= 0;
+            string sectionStatusFx = SectionStatusCueSummary();
+            bool sectionStatusFxOk = sectionStatusFx.IndexOf("SectionStatus=bar+short-label+critical+destroyed", StringComparison.Ordinal) >= 0
+                && SectionStatusLabelSamplesOk();
             string targetLineFx = TargetLineCueSummary();
             bool targetLineFxOk = targetLineFx.IndexOf("TargetLine=ready+cooling+blocked", StringComparison.Ordinal) >= 0;
             string weaponReadinessFx = WeaponReadinessCueSummary();
@@ -2269,6 +2273,8 @@ namespace MC2Demo.Presentation
                 + sectionHitFx
                 + " sectionFlashFx="
                 + sectionFlashFx
+                + " sectionStatusFx="
+                + sectionStatusFx
                 + " targetLineFx="
                 + targetLineFx
                 + " weaponReadinessFx="
@@ -2345,6 +2351,7 @@ namespace MC2Demo.Presentation
                     && armorFxOk
                     && sectionHitFxOk
                     && sectionFlashFxOk
+                    && sectionStatusFxOk
                     && targetLineFxOk
                     && weaponReadinessFxOk
                     && targetLockFxOk
@@ -4525,6 +4532,23 @@ namespace MC2Demo.Presentation
         private static string SectionHitCueSummary()
         {
             return "SectionHitCue=cockpit+arms+legs+torso";
+        }
+
+        private static string SectionStatusCueSummary()
+        {
+            return "SectionStatus=bar+short-label+critical+destroyed";
+        }
+
+        private static bool SectionStatusLabelSamplesOk()
+        {
+            DamageSection healthy = new("Legs", 10f);
+            DamageSection critical = new("Left Arm", 10f);
+            DamageSection destroyed = new("Cockpit", 10f, true);
+            critical.ApplyDamage(7f);
+            destroyed.ApplyDamage(10f);
+            return string.Equals(SectionStatusLabel(healthy), "LG 100", StringComparison.Ordinal)
+                && string.Equals(SectionStatusLabel(critical), "LA !30", StringComparison.Ordinal)
+                && string.Equals(SectionStatusLabel(destroyed), "CP X", StringComparison.Ordinal);
         }
 
         private static float ImpactScale(string weaponType)
@@ -12119,8 +12143,7 @@ namespace MC2Demo.Presentation
                 Rect back = new(segmentX, y, segmentWidth, 7f);
                 DrawColorRect(back, new Color(0.08f, 0.09f, 0.10f, 1f));
                 DrawColorRect(new Rect(segmentX, y, segmentWidth * section.Ratio, 7f), SectionHealthColor(section));
-                string value = section.IsDestroyed ? "X" : Mathf.RoundToInt(section.Ratio * 100f).ToString(CultureInfo.InvariantCulture);
-                GUI.Label(new Rect(segmentX, y + 8f, segmentWidth + 4f, 16f), ShortSectionName(section.Name) + " " + value);
+                DrawSectionStatusLabel(new Rect(segmentX, y + 8f, segmentWidth + 4f, 16f), section);
             }
         }
 
@@ -14978,10 +15001,57 @@ namespace MC2Demo.Presentation
                 Rect back = new(x, y, width, 7);
                 DrawColorRect(back, new Color(0.08f, 0.09f, 0.10f, 1f));
                 DrawColorRect(new Rect(x, y, width * section.Ratio, 7), SectionHealthColor(section));
-                string value = section.IsDestroyed ? "X" : Mathf.RoundToInt(section.Ratio * 100f).ToString();
-                GUI.Label(new Rect(x, y + 8, width + 8, 16), ShortSectionName(section.Name) + " " + value);
+                DrawSectionStatusLabel(new Rect(x, y + 8, width + 8, 16), section);
                 x += 58f;
             }
+        }
+
+        private void DrawSectionStatusLabel(Rect rect, DamageSection section)
+        {
+            Color labelColor = SectionStatusLabelColor(section);
+            if (section.IsDestroyed || section.Ratio < CriticalSectionStatusRatio)
+            {
+                DrawColorRect(new Rect(rect.x - 1f, rect.y + 1f, rect.width - 3f, rect.height - 3f), new Color(labelColor.r, labelColor.g, labelColor.b, 0.12f));
+            }
+
+            Color previous = GUI.color;
+            GUI.color = labelColor;
+            GUI.Label(rect, SectionStatusLabel(section));
+            GUI.color = previous;
+        }
+
+        private static string SectionStatusLabel(DamageSection section)
+        {
+            string sectionName = ShortSectionName(section.Name);
+            if (section.IsDestroyed)
+            {
+                return sectionName + " X";
+            }
+
+            int percent = Mathf.RoundToInt(Mathf.Clamp01(section.Ratio) * 100f);
+            return section.Ratio < CriticalSectionStatusRatio
+                ? sectionName + " !" + percent.ToString(CultureInfo.InvariantCulture)
+                : sectionName + " " + percent.ToString(CultureInfo.InvariantCulture);
+        }
+
+        private static Color SectionStatusLabelColor(DamageSection section)
+        {
+            if (section.IsDestroyed)
+            {
+                return new Color(1f, 0.22f, 0.14f, 1f);
+            }
+
+            if (section.Ratio < CriticalSectionStatusRatio)
+            {
+                return new Color(1f, 0.58f, 0.18f, 1f);
+            }
+
+            if (section.Ratio < 0.70f)
+            {
+                return new Color(1f, 0.82f, 0.32f, 1f);
+            }
+
+            return UiTextColor;
         }
 
         private Color SectionHealthColor(DamageSection section)
@@ -14991,7 +15061,7 @@ namespace MC2Demo.Presentation
                 return new Color(0.95f, 0.08f, 0.05f, 1f);
             }
 
-            if (section.Ratio < 0.35f)
+            if (section.Ratio < CriticalSectionStatusRatio)
             {
                 return new Color(1f, 0.24f, 0.08f, 1f);
             }
@@ -15004,7 +15074,7 @@ namespace MC2Demo.Presentation
             return new Color(0.20f, 0.88f, 0.92f, 1f);
         }
 
-        private string ShortSectionName(string sectionName)
+        private static string ShortSectionName(string sectionName)
         {
             switch (sectionName)
             {

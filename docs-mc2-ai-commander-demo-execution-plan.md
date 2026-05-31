@@ -719,7 +719,7 @@ Tasks:
 - Accepted player and CLI commands now pulse move, attack, Jet, and single-unit cues on the battlefield so command acknowledgement reads without adding another HUD row.
 - Move and Jet orders now draw compact travel path lines from player mechs to their destinations without adding combat HUD rows.
 - Move and Jet orders now pulse compact arrival cues when player mechs reach their destinations without adding combat HUD rows.
-- Section damage readability now has persistent missing-arm flags, red leg-collapse cues, cockpit breach/ejection/chute markers, critical-section smoke/spark vents, destroyed-mech wreck blast/smoke/marker/debris cues, and a smoke-guarded cue contract.
+- Section damage readability now has persistent missing-arm flags, red leg-collapse cues, cockpit breach/ejection/chute markers, critical-section smoke/spark vents, destroyed-mech wreck blast/smoke/marker/debris cues, compact critical/destroyed section status labels, and smoke-guarded cue contracts.
 - Hot and heat-locked mechs now show battlefield vent/lock cues, so heat pressure reads at the fixed tactical camera without adding another combat HUD row.
 - The first squad mech now has a subtle commander anchor/beacon in the battlefield, matching the fixed camera follow rule without adding combat HUD rows.
 - Single-unit orders now emit a short return-to-squad pulse when the mech automatically rejoins squad control after completing its solo order.
@@ -936,6 +936,7 @@ Tasks:
 - Weapon muzzle placement now has a smoke-guarded battlefield cue contract: `WeaponMuzzlePoint=energy+missile+ballistic`.
 - Section-aware hit placement now has a smoke-guarded battlefield cue contract: `SectionHitPoint=cockpit+arms+legs+torso`.
 - Section-aware hit flashes now have a smoke-guarded battlefield cue contract: `SectionHitCue=cockpit+arms+legs+torso`.
+- Section status labels now have a smoke-guarded UI cue contract: `SectionStatus=bar+short-label+critical+destroyed`.
 - Cockpit ejection now extends the section damage contract with `Cockpit=breach+ejection-pod+chute`.
 - Armor mitigation now has a smoke-guarded battlefield cue contract: `ArmorMitigation=glint+spark`.
 - Weapon target lines now have a smoke-guarded battlefield cue contract: `TargetLine=ready+cooling+blocked`.
