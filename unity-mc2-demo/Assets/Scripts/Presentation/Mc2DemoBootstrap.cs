@@ -47,6 +47,10 @@ namespace MC2Demo.Presentation
         private const string LoadoutPanelHeaderTitle = "Mech Lab  /  机库整备";
         private const string MechLabCompanyBayPanelTitle = "Company Bay";
         private const string MechLabLoadoutPanelTitle = "Loadout";
+        private const string MechLabBayOpsPageLabel = "Ops";
+        private const string MechLabBayRosterPageLabel = "Roster";
+        private const int MechLabBayOpsPageIndex = 0;
+        private const int MechLabBayRosterPageIndex = 1;
         private const string MechLabReadyLabel = "Bay Ready";
         private const string MechLabReviewPrefix = "Bay Review: ";
         private const string MechLabLoadingText = "Bay loading";
@@ -195,6 +199,7 @@ namespace MC2Demo.Presentation
         private Camera mainCamera;
         private Vector2 loadoutScroll;
         private Vector2 mechLabBayScroll;
+        private int selectedMechLabBayPage;
         private int selectedRosterIndex;
         private bool showWarehouseDraftFitPreview;
         private bool showSquadSelectionPreview;
@@ -2252,6 +2257,9 @@ namespace MC2Demo.Presentation
                 && string.Equals(MechLabCompanyBayPanelTitle, "Company Bay", StringComparison.Ordinal)
                 && string.Equals(MechLabLoadoutPanelTitle, "Loadout", StringComparison.Ordinal)
                 && MechLabDedicatedBaySummaryHeight >= 500f;
+            bool bayPageOk = selectedMechLabBayPage == MechLabBayOpsPageIndex
+                && string.Equals(MechLabBayOpsPageLabel, "Ops", StringComparison.Ordinal)
+                && string.Equals(MechLabBayRosterPageLabel, "Roster", StringComparison.Ordinal);
             bool backOk = string.Equals(MechLabBackButtonLabel, "Back", StringComparison.Ordinal)
                 && MechLabBackButtonLabel.IndexOf("Close", StringComparison.OrdinalIgnoreCase) < 0;
             string topMode = TopStatusModeText(demoFlowScreen);
@@ -2280,13 +2288,17 @@ namespace MC2Demo.Presentation
                 + MechLabCompanyBayPanelTitle
                 + " fit="
                 + MechLabLoadoutPanelTitle
+                + " page="
+                + MechLabBayOpsPageLabel
+                + "/"
+                + MechLabBayRosterPageLabel
                 + " status="
                 + TruncateText(statusText ?? string.Empty, 30)
                 + " back="
                 + MechLabBackButtonLabel;
 
             return new LoadoutCompactCheck(
-                panelOk && flowOk && statusOk && titleOk && dedicatedLayoutOk && backOk && topModeOk && fundsOk,
+                panelOk && flowOk && statusOk && titleOk && dedicatedLayoutOk && bayPageOk && backOk && topModeOk && fundsOk,
                 summary);
         }
 
@@ -2303,6 +2315,8 @@ namespace MC2Demo.Presentation
                 && MechLabBuildPrefix.StartsWith("Build", StringComparison.Ordinal)
                 && string.Equals(MechLabFundsText(13500), "Funds 13,500", StringComparison.Ordinal)
                 && MechLabFundsText(13500).IndexOf("Token", StringComparison.OrdinalIgnoreCase) < 0
+                && string.Equals(MechLabBayOpsPageLabel, "Ops", StringComparison.Ordinal)
+                && string.Equals(MechLabBayRosterPageLabel, "Roster", StringComparison.Ordinal)
                 && SavedAccountIdleLabel.IndexOf("save/load", StringComparison.OrdinalIgnoreCase) < 0
                 && SavedAccountIdleLabel.IndexOf("Idle", StringComparison.OrdinalIgnoreCase) < 0
                 && SavedAccountPathReadyStatusText.StartsWith("Save slot", StringComparison.Ordinal)
@@ -2373,6 +2387,10 @@ namespace MC2Demo.Presentation
                 + MechLabLoadingText
                 + "/"
                 + MechLabUnavailableText
+                + " bayPages="
+                + MechLabBayOpsPageLabel
+                + "/"
+                + MechLabBayRosterPageLabel
                 + " saveCopy="
                 + SavedAccountPathReadyStatusText
                 + "/"
@@ -5933,6 +5951,12 @@ namespace MC2Demo.Presentation
                 bayColumn.y + 28f,
                 bayColumn.width - bayInset * 2f,
                 bayColumn.height - 38f);
+            selectedMechLabBayPage = Mathf.Clamp(
+                selectedMechLabBayPage,
+                MechLabBayOpsPageIndex,
+                MechLabBayRosterPageIndex);
+            float pageY = 136f;
+            float pageHeight = selectedMechLabBayPage == MechLabBayRosterPageIndex ? 324f : 194f;
             float previewHeight = showWarehouseDraftFitPreview
                 ? 118f
                 : showSquadSelectionPreview ? 252f : 0f;
@@ -5940,10 +5964,11 @@ namespace MC2Demo.Presentation
                 0f,
                 0f,
                 bayViewport.width - 20f,
-                Mathf.Max(bayViewport.height, MechLabDedicatedBaySummaryHeight + previewHeight + 12f));
+                Mathf.Max(bayViewport.height, pageY + pageHeight + previewHeight + 22f));
             mechLabBayScroll = GUI.BeginScrollView(bayViewport, mechLabBayScroll, bayContent);
-            DrawMechBayInventorySummary(0f, 0f, bayContent.width, true);
-            float previewY = MechLabDedicatedBaySummaryHeight;
+            DrawMechBayInventorySummary(0f, 0f, bayContent.width, false);
+            DrawDedicatedMechLabBayPages(0f, pageY, bayContent.width);
+            float previewY = pageY + pageHeight + 10f;
             if (showWarehouseDraftFitPreview)
             {
                 DrawWarehouseDraftFitPreview(0f, previewY, bayContent.width);
@@ -5961,6 +5986,80 @@ namespace MC2Demo.Presentation
                 loadoutColumn.y + 28f,
                 loadoutColumn.width - loadoutInset * 2f,
                 loadoutColumn.yMax - 10f);
+        }
+
+        private void DrawDedicatedMechLabBayPages(float x, float y, float width)
+        {
+            Rect tabStrip = new(x, y - 2f, width, 26f);
+            DrawColorRect(tabStrip, new Color(0.015f, 0.025f, 0.03f, 0.74f));
+            DrawRectBorder(tabStrip, new Color(UiAmberColor.r, UiAmberColor.g, UiAmberColor.b, 0.36f), 1f);
+
+            bool previousEnabled = GUI.enabled;
+            GUI.enabled = previousEnabled;
+            if (GUI.Button(new Rect(x + 4f, y, 58f, 22f), MechLabBayOpsPageLabel))
+            {
+                selectedMechLabBayPage = MechLabBayOpsPageIndex;
+                mechLabBayScroll = Vector2.zero;
+                statusText = "Company Bay: Ops";
+            }
+
+            if (GUI.Button(new Rect(x + 68f, y, 70f, 22f), MechLabBayRosterPageLabel))
+            {
+                selectedMechLabBayPage = MechLabBayRosterPageIndex;
+                mechLabBayScroll = Vector2.zero;
+                statusText = "Company Bay: Roster";
+            }
+
+            GUI.enabled = previousEnabled;
+            Rect selectedTab = selectedMechLabBayPage == MechLabBayRosterPageIndex
+                ? new Rect(x + 68f, y, 70f, 22f)
+                : new Rect(x + 4f, y, 58f, 22f);
+            DrawRectBorder(selectedTab, UiAmberColor, 2f);
+
+            float contentY = y + 32f;
+            if (selectedMechLabBayPage == MechLabBayRosterPageIndex)
+            {
+                DrawDedicatedMechLabRosterPage(x, contentY, width);
+                return;
+            }
+
+            DrawDedicatedMechLabOpsPage(x, contentY, width);
+        }
+
+        private void DrawDedicatedMechLabOpsPage(float x, float y, float width)
+        {
+            MechBayWeaponShopPreview shopPreview = MechBayWeaponShopPreviewService.BuildPreview(demoInventory);
+            GUI.Label(new Rect(x, y, width, 18f), "Shop " + WeaponShopPreviewText(shopPreview));
+            DrawWeaponShopPurchaseStub(x, y + 22f, width, shopPreview, demoInventory);
+
+            MechBayPilotHirePreview pilotHirePreview = MechBayPilotHirePreviewService.BuildPreview(demoInventory);
+            GUI.Label(new Rect(x, y + 48f, width, 18f), "Pilot Hire " + PilotHirePreviewText(pilotHirePreview));
+
+            MechBayMissionHandoffPreview handoffPreview =
+                MechBayMissionHandoffPreviewService.BuildPreview(demoInventory);
+            MechBayMissionRestartApplyGuard restartGuard =
+                MechBayMissionHandoffPreviewService.BuildRestartApplyGuard(
+                    demoInventory,
+                    mission?.Contract,
+                    combatProfiles);
+            string handoffSummary = HasSquadSelectionCompletedReplacement()
+                ? MissionHandoffCompletedSummaryText(handoffPreview, restartGuard)
+                : MissionHandoffPlayerSummaryText(handoffPreview, restartGuard);
+            GUI.Label(
+                new Rect(x, y + 76f, width, 18f),
+                "Next Contract " + TruncateText(handoffSummary, 62));
+            DrawMissionHandoffLaunchAction(x, y + 100f, width, handoffPreview, restartGuard);
+            DrawMissionHandoffLineup(x, y + 126f, width, handoffPreview);
+        }
+
+        private void DrawDedicatedMechLabRosterPage(float x, float y, float width)
+        {
+            MechBayOwnedRosterEntry[] roster = MechBayOwnedRosterService.BuildRosterPreview(demoInventory);
+            ClampSelectedRosterIndex(roster);
+            GUI.Label(new Rect(x, y, width, 18f), "Roster " + TruncateText(OwnedRosterText(roster), 62));
+            DrawRosterMissionStateLine(x, y + 22f, width, roster);
+            MechBayPilotHirePreview pilotHirePreview = MechBayPilotHirePreviewService.BuildPreview(demoInventory);
+            DrawOwnedRosterDetail(x, y + 48f, width, roster, pilotHirePreview);
         }
 
         private void DrawSelectedMechLabLoadoutEditor(float x, float y, float width, float bottomY)

@@ -532,6 +532,7 @@ Visible-flow audit notes, 2026-05-31:
 - The audit found visible leftover `Token` wording in the Mech Lab inventory summary and debrief funds row; the current pass fixes those to the `Funds` and `Payout` wording family and guards them in smoke.
 - The current Mech Lab pass starts that larger step by giving desktop Windows a centered, wider two-column surface: Company Bay on the left, Loadout fitting on the right, with compact layout kept as a fallback.
 - Follow-up visual capture showed the right Loadout column is readable, while Company Bay needed more width; the current pass widens Company Bay to about 429px at 1280x720 while preserving a 520px-plus Loadout area.
+- The Company Bay left column now defaults to an Ops page for repair, contracts, shop, hire, and launch actions, with dense roster and reserve-pilot details moved behind a Roster page.
 
 ## Frozen Development Plan
 
@@ -880,5 +881,5 @@ Tasks:
 - The Next Contract Squad and Reserve Fit Review subpanels now use Back instead of Hide, guarded by the hidden handoff launch smoke.
 - The README and current-plan baseline now describe the same Reserve, Fit Review, and Funds wording that the guarded Mech Lab UI exposes.
 - The Mech Lab now opens as a desktop-width two-column surface on normal Windows demo resolutions, with Company Bay actions separated from the Loadout fitting grid and the compact drawer kept as fallback.
-- The first dedicated Mech Lab visual audit is done; the next low-risk step is either grouping/paging the remaining dense Company Bay rows or switching to battle readability if the lab is good enough for the next demo pass.
+- The first dedicated Mech Lab visual audit is done, and Company Bay density is reduced with Ops/Roster paging; the next low-risk step is to switch to battle readability unless another Mech Lab visible blocker appears in play.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.
