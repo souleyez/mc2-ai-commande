@@ -19,6 +19,7 @@ Current demo behavior:
 - marks activated enemy contact groups with a short tactical wake ring, beacon, ping, and group-count pips in the battlefield
 - follows the first player mech as commander
 - defaults to squad orders, with status-bar click for detached single-unit order
+- marks pending and active single-unit orders with a compact battlefield ring and beacon
 - routes player commands through a CLI-ready commander command port for AI draft/directive tests
 - exposes a CLI-ready commander observation JSON for compact AI planning summaries
 - supports repeatable scriptable runtime restart from startup args or command files
@@ -34,6 +35,7 @@ Current demo behavior:
 - lets map clicks on hostile units or targetable buildings issue focused attack orders
 - renders command rings for selected units, order destinations, and focused targets
 - pulses accepted move, attack, Jet, and single-unit commands at the battlefield point without adding HUD rows
+- keeps pending and active single-unit orders visible with compact battlefield rings and beacons
 - draws compact move and Jet order path lines with destination endcaps from player mechs to their destinations
 - pulses compact move and Jet arrival cues when player mechs reach their destinations
 - marks the first squad mech as the mission commander with a subtle battlefield anchor and beacon

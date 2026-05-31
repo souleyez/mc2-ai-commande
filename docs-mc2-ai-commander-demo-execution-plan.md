@@ -40,7 +40,7 @@ The Unity demo currently supports:
 - enemy activation and lightweight patrol orders
 - player squad orders, detached unit orders, focused unit/structure attacks, and Jet orders
 - heat, cooldown, weapon range/readiness, simple section damage, section penalties, and animated breakoff/ejection effects
-- compact tactical UI with unit status, mech bay preview, mission brief, current-objective map, world objective hints, health bars, command rings, command-accept pulses, state-colored range rings, target lines/endcaps, and weapon-readiness rings/beacons
+- compact tactical UI with unit status, mech bay preview, mission brief, current-objective map, world objective hints, health bars, command rings, solo-order rings/beacons, command-accept pulses, state-colored range rings, target lines/endcaps, and weapon-readiness rings/beacons
 - the combat situation row names the commander mech, squad readiness, detached single-order count, hostiles, targets, and recent contact tempo
 - the combat panel keeps a lean two-line HUD: squad/hostile basics plus one compact battle pulse for tempo and current focus
 - source-group Contacts pressure remains smoke-guarded for mission pacing, but is not shown as another default combat HUD row
@@ -718,6 +718,7 @@ Tasks:
 - The combat situation smoke now also guards source-group contact pressure internally, so active Airfield and North groups remain verifiable without occupying default battle HUD space.
 - The combat situation smoke now also guards the commanded Focus contract, keeping the current target readable without exposing internal target ids.
 - Accepted player and CLI commands now pulse move, attack, Jet, and single-unit cues on the battlefield so command acknowledgement reads without adding another HUD row.
+- Pending and active single-unit orders now keep a compact battlefield ring and beacon on the detached mech, making the simplified mobile command state visible without adding HUD rows.
 - Move and Jet orders now draw compact travel path lines with destination endcaps from player mechs to their destinations without adding combat HUD rows.
 - Move and Jet orders now pulse compact arrival cues when player mechs reach their destinations without adding combat HUD rows.
 - Section damage readability now has persistent missing-arm flags, red leg-collapse cues, cockpit breach/ejection/chute/landing markers, critical-section smoke/spark vents, destroyed-mech wreck blast/smoke/marker/debris cues, compact critical/destroyed section status labels, and smoke-guarded cue contracts.
@@ -963,6 +964,7 @@ Tasks:
 - Mission result transition cues now have a smoke-guarded battlefield cue contract: `ResultCue=complete+failed`.
 - Destroyed mech wreck cues now have a smoke-guarded battlefield cue contract: `Wreck=blast+smoke+marker+debris`.
 - Accepted command cues now have a smoke-guarded battlefield cue contract: `Command=move+attack+single`.
+- Pending and active solo orders now have a smoke-guarded battlefield cue contract: `SoloOrder=ring+beacon`.
 - Move and Jet order paths now have a smoke-guarded battlefield cue contract: `OrderPath=move+jet+endcap`.
 - Move and Jet arrivals now have a smoke-guarded battlefield cue contract: `OrderArrival=move+jet`.
 - Heat pressure cues now have a smoke-guarded battlefield cue contract: `Heat=vent+lock`.

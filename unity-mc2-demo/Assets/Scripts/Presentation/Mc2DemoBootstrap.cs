@@ -150,6 +150,7 @@ namespace MC2Demo.Presentation
         private readonly Dictionary<string, DemoUnitView> unitViews = new();
         private readonly Dictionary<string, DemoStructureView> structureViews = new();
         private readonly Dictionary<string, GameObject> unitSelectionMarkers = new();
+        private readonly Dictionary<string, GameObject> unitSoloOrderBeacons = new();
         private readonly Dictionary<string, GameObject> unitOrderMarkers = new();
         private readonly Dictionary<string, GameObject> unitOrderLines = new();
         private readonly Dictionary<string, GameObject> unitFocusMarkers = new();
@@ -529,6 +530,7 @@ namespace MC2Demo.Presentation
             unitViews.Clear();
             structureViews.Clear();
             unitSelectionMarkers.Clear();
+            unitSoloOrderBeacons.Clear();
             unitOrderMarkers.Clear();
             unitOrderLines.Clear();
             unitFocusMarkers.Clear();
@@ -2243,6 +2245,8 @@ namespace MC2Demo.Presentation
             bool resultFxOk = resultFx.IndexOf("ResultCue=complete+failed", StringComparison.Ordinal) >= 0;
             string commandFx = CommandCueSummary();
             bool commandFxOk = commandFx.IndexOf("Command=move+attack+single", StringComparison.Ordinal) >= 0;
+            string soloOrderFx = SoloOrderCueSummary();
+            bool soloOrderFxOk = soloOrderFx.IndexOf("SoloOrder=ring+beacon", StringComparison.Ordinal) >= 0;
             string orderPathFx = OrderPathCueSummary();
             bool orderPathFxOk = orderPathFx.IndexOf("OrderPath=move+jet+endcap", StringComparison.Ordinal) >= 0;
             string orderArrivalFx = OrderArrivalCueSummary();
@@ -2335,6 +2339,8 @@ namespace MC2Demo.Presentation
                 + resultFx
                 + " commandFx="
                 + commandFx
+                + " soloOrderFx="
+                + soloOrderFx
                 + " orderPathFx="
                 + orderPathFx
                 + " orderArrivalFx="
@@ -2394,6 +2400,7 @@ namespace MC2Demo.Presentation
                     && scriptFxOk
                     && resultFxOk
                     && commandFxOk
+                    && soloOrderFxOk
                     && orderPathFxOk
                     && orderArrivalFxOk
                     && commanderFxOk
@@ -2416,6 +2423,11 @@ namespace MC2Demo.Presentation
         private static string SoloReturnCueSummary()
         {
             return "SoloReturn=ring+beacon";
+        }
+
+        private static string SoloOrderCueSummary()
+        {
+            return "SoloOrder=ring+beacon";
         }
 
         private static string TargetLineCueSummary()
@@ -6467,6 +6479,11 @@ namespace MC2Demo.Presentation
                     "CommandSelection",
                     new Color(0.22f, 0.92f, 1f, 0.32f),
                     new Vector3(1.45f, 0.012f, 1.45f));
+                unitSoloOrderBeacons[unit.Id] = CreateMarkerDisc(
+                    unit.Id + " Solo Order Beacon",
+                    "SoloOrderBeacon",
+                    new Color(1f, 0.62f, 0.18f, 0.52f),
+                    new Vector3(0.072f, 0.36f, 0.072f));
                 unitOrderMarkers[unit.Id] = CreateMarkerDisc(
                     unit.Id + " Order Marker",
                     "CommandMove",
@@ -6744,16 +6761,52 @@ namespace MC2Demo.Presentation
 
         private void UpdateSelectionMarker(UnitState unit)
         {
-            if (!unitSelectionMarkers.TryGetValue(unit.Id, out GameObject marker))
+            bool hasMarker = unitSelectionMarkers.TryGetValue(unit.Id, out GameObject marker);
+            bool hasBeacon = unitSoloOrderBeacons.TryGetValue(unit.Id, out GameObject beacon);
+            if (!hasMarker && !hasBeacon)
             {
                 return;
             }
 
-            bool isVisible = !unit.IsDestroyed && (unit.IsDetached || pendingDetachedUnitId == unit.Id);
-            marker.SetActive(isVisible);
-            if (isVisible)
+            bool isPending = pendingDetachedUnitId == unit.Id;
+            bool isVisible = unit.IsActive && !unit.IsDestroyed && (unit.IsDetached || isPending);
+            if (hasMarker)
             {
+                marker.SetActive(isVisible);
+            }
+
+            if (hasBeacon)
+            {
+                beacon.SetActive(isVisible);
+            }
+
+            if (!isVisible)
+            {
+                return;
+            }
+
+            float pulse = isPending
+                ? 0.94f + Mathf.Sin(Time.time * 5.2f) * 0.09f
+                : 0.96f + Mathf.Sin(Time.time * 4.0f) * 0.06f;
+            Color color = isPending
+                ? new Color(0.30f, 0.92f, 1f, 0.44f)
+                : new Color(1f, 0.60f, 0.16f, 0.48f);
+            if (hasMarker)
+            {
+                float scale = (isPending ? 1.52f : 1.34f) * pulse;
                 marker.transform.position = GroundMarkerPosition(unit.MissionPosition, 0.06f);
+                marker.transform.localScale = new Vector3(scale, 0.012f, scale);
+                AssignMaterial(marker, isPending ? "SoloOrderPending" : "SoloOrderActive", color);
+            }
+
+            if (hasBeacon)
+            {
+                beacon.transform.position = GroundMarkerPosition(unit.MissionPosition, isPending ? 0.50f : 0.44f);
+                beacon.transform.localScale = new Vector3(0.072f * pulse, (isPending ? 0.42f : 0.34f) + pulse * 0.055f, 0.072f * pulse);
+                AssignMaterial(
+                    beacon,
+                    isPending ? "SoloOrderBeaconPending" : "SoloOrderBeaconActive",
+                    isPending ? new Color(0.30f, 0.92f, 1f, 0.56f) : new Color(1f, 0.60f, 0.16f, 0.54f));
             }
         }
 
