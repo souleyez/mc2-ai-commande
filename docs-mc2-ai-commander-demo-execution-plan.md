@@ -698,6 +698,8 @@ Tasks:
 
 ### Completed Context
 
+- Battle readability pass has begun with family-specific hit cues: energy beam plus pillar/ring, missile arc plus blast/smoke, and ballistic tracer plus sparks.
+- The combat situation smoke now guards the current weapon FX cue contract with `Energy=beam+pillar Missile=arc+blast Ballistic=tracer+sparks`.
 - Mission rewards now add funds and salvage fragments, and ready fragment sets become local warehouse mechs.
 - The mech bay now has a compact roster line and a read-only detail view for owned mechs.
 - Assembled reserve mechs now stay held with `pending-loadout`, so they cannot be confused with deployable squad mechs.

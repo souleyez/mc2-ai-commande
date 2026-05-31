@@ -35,7 +35,7 @@ Current demo behavior:
 - shows a compact mission brief with objective progress and target structure integrity
 - shows compact world health bars for damaged or player-targeted enemies and structures
 - shows a subtle weapon range ring for selected, detached, attacking, or firing units
-- renders short weapon beams, hit flashes, and impact bursts for combat events
+- renders short weapon beams, hit flashes, and impact bursts for combat events, with energy pillar/ring, missile blast, and ballistic spark cues
 - shows animated limb breakoff, section sparks, smoke, and cockpit ejection cues
 - applies simple section penalties: destroyed arms reduce firepower, destroyed legs slow movement and disable Jet
 - tracks source-derived weapon heat, cooling, and heat lockouts in combat

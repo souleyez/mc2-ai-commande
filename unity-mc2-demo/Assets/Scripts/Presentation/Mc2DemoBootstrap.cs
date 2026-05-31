@@ -2081,6 +2081,10 @@ namespace MC2Demo.Presentation
             string funds = TopStatusFundsText(1234);
             bool fundsOk = string.Equals(funds, "Funds 1,234", StringComparison.Ordinal)
                 && funds.IndexOf("TOKEN", StringComparison.OrdinalIgnoreCase) < 0;
+            string weaponFx = WeaponFxCueSummary();
+            bool weaponFxOk = weaponFx.IndexOf("Energy=beam+pillar", StringComparison.Ordinal) >= 0
+                && weaponFx.IndexOf("Missile=arc+blast", StringComparison.Ordinal) >= 0
+                && weaponFx.IndexOf("Ballistic=tracer+sparks", StringComparison.Ordinal) >= 0;
             string summary = "squad="
                 + playerReady.ToString(CultureInfo.InvariantCulture)
                 + "/"
@@ -2097,12 +2101,14 @@ namespace MC2Demo.Presentation
                 + funds
                 + " mapBack="
                 + MissionMapBackButtonLabel
+                + " fx="
+                + weaponFx
                 + " text="
                 + text;
 
             return new CombatSituationAssertionResult
             {
-                Accepted = textOk && countsOk && mapBackOk && topModeOk && fundsOk,
+                Accepted = textOk && countsOk && mapBackOk && topModeOk && fundsOk && weaponFxOk,
                 Summary = summary
             };
         }
@@ -3399,6 +3405,7 @@ namespace MC2Demo.Presentation
                 : WeaponColor(combatEvent.WeaponType);
             CreateWeaponTrace(attackerPoint, targetPoint, combatEvent, weaponColor);
             CreateImpact(targetPoint, weaponColor, combatEvent.DestroyedTarget, ImpactScale(combatEvent.WeaponType));
+            CreateWeaponImpactCue(attackerPoint, targetPoint, combatEvent, weaponColor);
             PulseTarget(combatEvent.TargetId, new Color(1f, 0.9f, 0.52f), combatEvent.DestroyedTarget ? 0.28f : 0.18f);
         }
 
@@ -3474,6 +3481,11 @@ namespace MC2Demo.Presentation
             return "Weapon";
         }
 
+        private static string WeaponFxCueSummary()
+        {
+            return "Energy=beam+pillar Missile=arc+blast Ballistic=tracer+sparks";
+        }
+
         private static float ImpactScale(string weaponType)
         {
             if (ContainsWeaponType(weaponType, "Missile"))
@@ -3498,6 +3510,70 @@ namespace MC2Demo.Presentation
         {
             return !string.IsNullOrEmpty(weaponType)
                 && weaponType.IndexOf(value, StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        private void CreateWeaponImpactCue(Vector3 from, Vector3 to, CombatEvent combatEvent, Color color)
+        {
+            if (ContainsWeaponType(combatEvent.WeaponType, "Missile"))
+            {
+                CreateMissileImpactCue(to, color, combatEvent.DestroyedTarget);
+                return;
+            }
+
+            if (ContainsWeaponType(combatEvent.WeaponType, "Ballistic"))
+            {
+                CreateBallisticImpactCue(from, to, color);
+                return;
+            }
+
+            if (ContainsWeaponType(combatEvent.WeaponType, "Energy"))
+            {
+                CreateEnergyImpactCue(to, color);
+            }
+        }
+
+        private void CreateEnergyImpactCue(Vector3 targetPoint, Color color)
+        {
+            Color pillar = new(color.r, color.g, color.b, 0.55f);
+            CreateBeam(targetPoint + Vector3.up * 0.08f, targetPoint + Vector3.up * 1.20f, pillar, 0.24f, 0.038f);
+            CreateImpactDisc(
+                "Energy Ion Ring",
+                targetPoint + Vector3.up * 0.06f,
+                new Color(0.35f, 0.95f, 1f, 0.34f),
+                0.28f,
+                0.32f,
+                0.88f,
+                0.025f);
+        }
+
+        private void CreateMissileImpactCue(Vector3 targetPoint, Color color, bool destroyedTarget)
+        {
+            float scale = destroyedTarget ? 1.35f : 1f;
+            CreateImpactDisc(
+                "Missile Blast Ring",
+                targetPoint + Vector3.up * 0.04f,
+                new Color(1f, 0.46f, 0.08f, 0.42f),
+                0.42f,
+                0.30f * scale,
+                1.25f * scale,
+                0.035f);
+            CreateBeam(
+                targetPoint + Vector3.up * 0.10f,
+                targetPoint + Vector3.up * (1.05f * scale),
+                new Color(0.16f, 0.14f, 0.12f, 0.38f),
+                0.72f,
+                0.085f * scale);
+            CreateImpact(targetPoint + Vector3.up * 0.18f, color, destroyedTarget, 0.62f * scale);
+        }
+
+        private void CreateBallisticImpactCue(Vector3 from, Vector3 to, Color color)
+        {
+            Vector3 direction = to - from;
+            Vector3 side = LateralVector(direction);
+            Vector3 sparkBase = to + Vector3.up * 0.08f;
+            CreateBeam(sparkBase, sparkBase + side * 0.62f + Vector3.up * 0.12f, new Color(1f, 0.88f, 0.36f, 0.70f), 0.075f, 0.012f);
+            CreateBeam(sparkBase, sparkBase - side * 0.58f + Vector3.up * 0.10f, new Color(1f, 0.64f, 0.18f, 0.62f), 0.070f, 0.010f);
+            CreateBeam(sparkBase, sparkBase + Vector3.up * 0.52f, color, 0.065f, 0.010f);
         }
 
         private void CreateWeaponTrace(Vector3 from, Vector3 to, CombatEvent combatEvent, Color color)
@@ -3650,6 +3726,25 @@ namespace MC2Demo.Presentation
             Vector3 toScale = Vector3.one * (destroyedTarget ? 1.25f : 0.72f) * scale;
             DemoTransientEffect transient = impact.AddComponent<DemoTransientEffect>();
             transient.Begin(color, duration, fromScale, toScale);
+        }
+
+        private void CreateImpactDisc(string effectName, Vector3 position, Color color, float duration, float startRadius, float endRadius, float height)
+        {
+            GameObject disc = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            disc.name = effectName;
+            disc.transform.position = position;
+            Collider discCollider = disc.GetComponent<Collider>();
+            if (discCollider != null)
+            {
+                Destroy(discCollider);
+            }
+
+            DemoTransientEffect transient = disc.AddComponent<DemoTransientEffect>();
+            transient.Begin(
+                color,
+                duration,
+                new Vector3(startRadius, height, startRadius),
+                new Vector3(endRadius, height * 0.35f, endRadius));
         }
 
         private void CaptureObjectiveEvents()
