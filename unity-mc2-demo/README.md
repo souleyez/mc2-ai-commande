@@ -105,6 +105,7 @@ Current demo behavior:
 - supports NPC pilot hiring that spends local funds and assigns a warehouse pilot
 - shows visible shop, hire, and repair costs and Repair All feedback as funds so player-facing cost rows match the top resource strip
 - keeps Mech Lab inventory balance and debrief funds rows on Funds/Payout wording instead of legacy token copy
+- opens the Mech Lab as a wider desktop two-column surface, separating Company Bay actions from Loadout fitting while keeping the compact fallback layout
 - exposes a compact Reserve action that builds, hires, buys, fit-reviews, and opens the next-squad panel for a reserve mech
 - enables a Fit Review readiness gate when a warehouse mech has both spare weapon stock and a pilot
 - opens a read-only reserve fit review showing the selected pilot and spare weapon before real fitting exists

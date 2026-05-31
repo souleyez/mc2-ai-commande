@@ -32,6 +32,9 @@ namespace MC2Demo.Presentation
         private const float LoadoutCardHeight = 456f;
         private const float LoadoutCardStride = 468f;
         private const float LoadoutGridSectionMinHeight = 204f;
+        private const float MechLabDedicatedLayoutMinWidth = 900f;
+        private const float MechLabDedicatedLayoutMinHeight = 560f;
+        private const float MechLabDedicatedBaySummaryHeight = 520f;
         private const float LoadoutRepairButtonWidth = 64f;
         private const float LoadoutRepairStateOffset = 70f;
         private const float LoadoutEditStatusReservedWidth = 146f;
@@ -39,6 +42,8 @@ namespace MC2Demo.Presentation
         private const float LoadoutApplyButtonWidth = 66f;
         private const string LoadoutPanelFrameTitle = "Mech Lab / 机库整备";
         private const string LoadoutPanelHeaderTitle = "Mech Lab  /  机库整备";
+        private const string MechLabCompanyBayPanelTitle = "Company Bay";
+        private const string MechLabLoadoutPanelTitle = "Loadout";
         private const string MechLabReadyLabel = "Bay Ready";
         private const string MechLabReviewPrefix = "Bay Review: ";
         private const string MechLabLoadingText = "Bay loading";
@@ -186,6 +191,7 @@ namespace MC2Demo.Presentation
         private MissionResultState lastMissionResult = MissionResultState.InProgress;
         private Camera mainCamera;
         private Vector2 loadoutScroll;
+        private Vector2 mechLabBayScroll;
         private int selectedRosterIndex;
         private bool showWarehouseDraftFitPreview;
         private bool showSquadSelectionPreview;
@@ -2230,6 +2236,13 @@ namespace MC2Demo.Presentation
             bool statusOk = statusText?.IndexOf("Mech Lab", StringComparison.OrdinalIgnoreCase) >= 0;
             bool titleOk = LoadoutPanelFrameTitle.StartsWith("Mech Lab", StringComparison.Ordinal)
                 && LoadoutPanelHeaderTitle.StartsWith("Mech Lab", StringComparison.Ordinal);
+            Rect desktopPanel = LoadoutPanelRectFor(1280f, 720f);
+            bool dedicatedLayoutOk = ShouldUseDedicatedMechLabLayout(desktopPanel)
+                && desktopPanel.width >= 1000f
+                && desktopPanel.x <= 120f
+                && string.Equals(MechLabCompanyBayPanelTitle, "Company Bay", StringComparison.Ordinal)
+                && string.Equals(MechLabLoadoutPanelTitle, "Loadout", StringComparison.Ordinal)
+                && MechLabDedicatedBaySummaryHeight >= 500f;
             bool backOk = string.Equals(MechLabBackButtonLabel, "Back", StringComparison.Ordinal)
                 && MechLabBackButtonLabel.IndexOf("Close", StringComparison.OrdinalIgnoreCase) < 0;
             string topMode = TopStatusModeText(demoFlowScreen);
@@ -2246,12 +2259,22 @@ namespace MC2Demo.Presentation
                 + funds
                 + " panel="
                 + panelOk
+                + " layout="
+                + (dedicatedLayoutOk ? "Dedicated" : "Compact")
+                + " layoutW="
+                + FormatDecimal(desktopPanel.width)
+                + " bay="
+                + MechLabCompanyBayPanelTitle
+                + " fit="
+                + MechLabLoadoutPanelTitle
                 + " status="
                 + TruncateText(statusText ?? string.Empty, 30)
                 + " back="
                 + MechLabBackButtonLabel;
 
-            return new LoadoutCompactCheck(panelOk && flowOk && statusOk && titleOk && backOk && topModeOk && fundsOk, summary);
+            return new LoadoutCompactCheck(
+                panelOk && flowOk && statusOk && titleOk && dedicatedLayoutOk && backOk && topModeOk && fundsOk,
+                summary);
         }
 
         private static LoadoutCompactCheck BuildMechLabSummaryLabelCheck()
@@ -5852,7 +5875,17 @@ namespace MC2Demo.Presentation
             }
 
             y += 30f;
-            bool showInlineMechBayPreview = showWarehouseDraftFitPreview || showSquadSelectionPreview;
+            if (ShouldUseDedicatedMechLabLayout(panel))
+            {
+                DrawDedicatedMechLabSurface(panel, x, y, width);
+                return;
+            }
+
+            DrawCompactMechLabSurface(panel, x, y, width);
+        }
+
+        private void DrawCompactMechLabSurface(Rect panel, float x, float y, float width)
+        {
             DrawMechBayInventorySummary(x, y, width, false);
             y += 178f;
             if (showWarehouseDraftFitPreview)
@@ -5866,6 +5899,59 @@ namespace MC2Demo.Presentation
                 y += 250f;
             }
 
+            DrawSelectedMechLabLoadoutEditor(x, y, width, panel.yMax - 12f);
+        }
+
+        private void DrawDedicatedMechLabSurface(Rect panel, float x, float y, float width)
+        {
+            float gap = 14f;
+            float columnHeight = Mathf.Max(260f, panel.yMax - y - 14f);
+            float bayWidth = Mathf.Clamp(width * 0.35f, 330f, 410f);
+            float loadoutWidth = Mathf.Max(420f, width - bayWidth - gap);
+            Rect bayColumn = new(x, y, bayWidth, columnHeight);
+            Rect loadoutColumn = new(bayColumn.xMax + gap, y, loadoutWidth, columnHeight);
+
+            DrawMechLabColumnFrame(bayColumn, MechLabCompanyBayPanelTitle, UiAmberColor);
+            DrawMechLabColumnFrame(loadoutColumn, MechLabLoadoutPanelTitle, UiCyanColor);
+
+            float bayInset = 10f;
+            Rect bayViewport = new(
+                bayColumn.x + bayInset,
+                bayColumn.y + 28f,
+                bayColumn.width - bayInset * 2f,
+                bayColumn.height - 38f);
+            float previewHeight = showWarehouseDraftFitPreview
+                ? 118f
+                : showSquadSelectionPreview ? 252f : 0f;
+            Rect bayContent = new(
+                0f,
+                0f,
+                bayViewport.width - 20f,
+                Mathf.Max(bayViewport.height, MechLabDedicatedBaySummaryHeight + previewHeight + 12f));
+            mechLabBayScroll = GUI.BeginScrollView(bayViewport, mechLabBayScroll, bayContent);
+            DrawMechBayInventorySummary(0f, 0f, bayContent.width, true);
+            float previewY = MechLabDedicatedBaySummaryHeight;
+            if (showWarehouseDraftFitPreview)
+            {
+                DrawWarehouseDraftFitPreview(0f, previewY, bayContent.width);
+            }
+            else if (showSquadSelectionPreview)
+            {
+                DrawSquadSelectionPreview(0f, previewY, bayContent.width);
+            }
+
+            GUI.EndScrollView();
+
+            float loadoutInset = 10f;
+            DrawSelectedMechLabLoadoutEditor(
+                loadoutColumn.x + loadoutInset,
+                loadoutColumn.y + 28f,
+                loadoutColumn.width - loadoutInset * 2f,
+                loadoutColumn.yMax - 10f);
+        }
+
+        private void DrawSelectedMechLabLoadoutEditor(float x, float y, float width, float bottomY)
+        {
             UnitState selectedLoadoutUnit = SelectedMechBayLoadoutUnit();
             int unitCount = CountPlayerUnits();
             if (unitCount > 0)
@@ -5874,7 +5960,7 @@ namespace MC2Demo.Presentation
                 y += 52f;
             }
 
-            float viewportHeight = Mathf.Max(40f, panel.yMax - y - 12f);
+            float viewportHeight = Mathf.Max(40f, bottomY - y);
             Rect viewport = new(x, y, width, viewportHeight);
             float contentHeight = selectedLoadoutUnit == null ? viewport.height : LoadoutCardStride;
             Rect content = new(0f, 0f, width - 20f, Mathf.Max(viewport.height, contentHeight));
@@ -5889,6 +5975,13 @@ namespace MC2Demo.Presentation
             }
 
             GUI.EndScrollView();
+        }
+
+        private void DrawMechLabColumnFrame(Rect rect, string title, Color accent)
+        {
+            DrawColorRect(rect, new Color(0.015f, 0.025f, 0.03f, 0.74f));
+            DrawRectBorder(rect, new Color(accent.r, accent.g, accent.b, 0.42f), 1f);
+            GUI.Label(new Rect(rect.x + 10f, rect.y + 6f, rect.width - 20f, 18f), title);
         }
 
         private void DrawMechBayInventorySummary(float x, float y, float width, bool showRosterDetail)
@@ -11588,12 +11681,24 @@ namespace MC2Demo.Presentation
 
         private Rect LoadoutPanelRect()
         {
-            float width = Mathf.Clamp(Screen.width * 0.54f, 560f, 760f);
-            float height = Mathf.Clamp(Screen.height * 0.88f, 420f, 720f);
-            float x = Screen.width >= 1050f
-                ? Screen.width - width - 24f
-                : (Screen.width - width) * 0.5f;
-            return new Rect(Mathf.Max(12f, x), (Screen.height - height) * 0.5f, width, height);
+            return LoadoutPanelRectFor(Screen.width, Screen.height);
+        }
+
+        private static Rect LoadoutPanelRectFor(float screenWidth, float screenHeight)
+        {
+            float width = Mathf.Clamp(screenWidth * 0.86f, 760f, 1160f);
+            float height = Mathf.Clamp(screenHeight * 0.90f, 420f, 760f);
+            return new Rect(
+                Mathf.Max(12f, (screenWidth - width) * 0.5f),
+                (screenHeight - height) * 0.5f,
+                width,
+                height);
+        }
+
+        private static bool ShouldUseDedicatedMechLabLayout(Rect panel)
+        {
+            return panel.width >= MechLabDedicatedLayoutMinWidth
+                && panel.height >= MechLabDedicatedLayoutMinHeight;
         }
 
         private Rect CombatPanelRect()

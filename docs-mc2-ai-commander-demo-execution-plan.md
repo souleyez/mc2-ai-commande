@@ -530,6 +530,7 @@ Visible-flow audit notes, 2026-05-31:
 - A real window capture of the Battle view shows the fixed camera and left/right HUD are readable enough for the next audit pass, though the right mission panel still truncates later objective names.
 - A real window capture of the Mech Lab view confirms the fitting drawer is functional but still cramped; the larger next step should be a dedicated Mech Lab surface, not more microcopy.
 - The audit found visible leftover `Token` wording in the Mech Lab inventory summary and debrief funds row; the current pass fixes those to the `Funds` and `Payout` wording family and guards them in smoke.
+- The current Mech Lab pass starts that larger step by giving desktop Windows a centered, wider two-column surface: Company Bay on the left, Loadout fitting on the right, with compact layout kept as a fallback.
 
 ## Frozen Development Plan
 
@@ -877,5 +878,6 @@ Tasks:
 - The Save Slot reset result now says fresh save and old copy instead of default-save wording, with the no-saved-game case guarded by the loadout compact smoke.
 - The Next Contract Squad and Reserve Fit Review subpanels now use Back instead of Hide, guarded by the hidden handoff launch smoke.
 - The README and current-plan baseline now describe the same Reserve, Fit Review, and Funds wording that the guarded Mech Lab UI exposes.
-- The next low-risk step is no longer more text-only Mech Lab density polish; run a full visible-flow audit, then choose a dedicated Mech Lab surface pass or a battle-readability pass from the audit findings.
+- The Mech Lab now opens as a desktop-width two-column surface on normal Windows demo resolutions, with Company Bay actions separated from the Loadout fitting grid and the compact drawer kept as fallback.
+- The next low-risk step is to visually audit the new dedicated Mech Lab surface, then continue either spacing/selection polish there or switch to battle readability if the lab is acceptable.
 - Selecting assembled mechs for future missions, saved accounts, event drop tables, and multiplayer support still come later.
