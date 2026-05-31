@@ -310,20 +310,41 @@ namespace MC2Demo.Presentation
             if (string.Equals(verb, "assert-combat-situation", StringComparison.OrdinalIgnoreCase))
             {
                 string expectedTempo = "";
+                int expectedSoloCount = -1;
                 if (!string.IsNullOrWhiteSpace(payload))
                 {
-                    expectedTempo = payload.Trim().ToLowerInvariant();
-                    if (!string.Equals(expectedTempo, "quiet", StringComparison.Ordinal)
-                        && !string.Equals(expectedTempo, "contact", StringComparison.Ordinal)
-                        && !string.Equals(expectedTempo, "tracking", StringComparison.Ordinal)
-                        && !string.Equals(expectedTempo, "fire", StringComparison.Ordinal))
+                    string[] tokens = payload.Split(TokenSeparators, StringSplitOptions.RemoveEmptyEntries);
+                    for (int index = 0; index < tokens.Length; index++)
                     {
-                        error = "Assert combat situation action only accepts optional quiet, contact, tracking, or fire.";
+                        string token = tokens[index].Trim().ToLowerInvariant();
+                        if (string.Equals(token, "quiet", StringComparison.Ordinal)
+                            || string.Equals(token, "contact", StringComparison.Ordinal)
+                            || string.Equals(token, "tracking", StringComparison.Ordinal)
+                            || string.Equals(token, "fire", StringComparison.Ordinal))
+                        {
+                            expectedTempo = token;
+                            continue;
+                        }
+
+                        if (token.StartsWith("solo=", StringComparison.Ordinal))
+                        {
+                            string value = token.Substring("solo=".Length);
+                            if (!int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out expectedSoloCount)
+                                || expectedSoloCount < 0)
+                            {
+                                error = "Assert combat situation solo argument must be solo=N with a non-negative integer.";
+                                return false;
+                            }
+
+                            continue;
+                        }
+
+                        error = "Assert combat situation action only accepts optional quiet, contact, tracking, fire, or solo=N.";
                         return false;
                     }
                 }
 
-                action = StartupCommanderScriptAction.AssertCombatSituation(lineNumber, rawLine, expectedTempo);
+                action = StartupCommanderScriptAction.AssertCombatSituation(lineNumber, rawLine, expectedTempo, expectedSoloCount);
                 return true;
             }
 
@@ -378,6 +399,7 @@ namespace MC2Demo.Presentation
         public float AdvanceSeconds { get; private set; }
         public bool RequireDepotIdentity { get; private set; }
         public string ExpectedCombatTempo { get; private set; }
+        public int ExpectedSoloCount { get; private set; } = -1;
 
         private StartupCommanderScriptAction()
         {
@@ -603,14 +625,19 @@ namespace MC2Demo.Presentation
             };
         }
 
-        public static StartupCommanderScriptAction AssertCombatSituation(int lineNumber, string sourceLine, string expectedTempo)
+        public static StartupCommanderScriptAction AssertCombatSituation(
+            int lineNumber,
+            string sourceLine,
+            string expectedTempo,
+            int expectedSoloCount)
         {
             return new StartupCommanderScriptAction
             {
                 Kind = StartupCommanderScriptActionKind.AssertCombatSituation,
                 LineNumber = lineNumber,
                 SourceLine = sourceLine ?? string.Empty,
-                ExpectedCombatTempo = expectedTempo ?? string.Empty
+                ExpectedCombatTempo = expectedTempo ?? string.Empty,
+                ExpectedSoloCount = expectedSoloCount
             };
         }
 

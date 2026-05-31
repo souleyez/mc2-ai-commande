@@ -1,0 +1,5 @@
+# Proves the simplified single-unit order flow marks one detached mech without changing the default squad command model.
+assert-combat-situation quiet solo=0
+command unit unit-1 move 3221 -277
+assert-combat-situation quiet solo=1
+report

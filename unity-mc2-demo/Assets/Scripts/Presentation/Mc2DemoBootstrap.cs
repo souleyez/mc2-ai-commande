@@ -909,7 +909,7 @@ namespace MC2Demo.Presentation
                         RunStartupDebriefSummaryAssertion();
                         break;
                     case StartupCommanderScriptActionKind.AssertCombatSituation:
-                        RunStartupCombatSituationAssertion(action.ExpectedCombatTempo);
+                        RunStartupCombatSituationAssertion(action.ExpectedCombatTempo, action.ExpectedSoloCount);
                         break;
                     case StartupCommanderScriptActionKind.AssertEncounterPacing:
                         RunStartupEncounterPacingAssertion();
@@ -2099,9 +2099,9 @@ namespace MC2Demo.Presentation
             Debug.LogError("MC2 debrief summary assertion failed: " + result.Summary);
         }
 
-        private void RunStartupCombatSituationAssertion(string expectedTempoMode)
+        private void RunStartupCombatSituationAssertion(string expectedTempoMode, int expectedSoloCount)
         {
-            CombatSituationAssertionResult result = BuildCombatSituationAssertion(expectedTempoMode);
+            CombatSituationAssertionResult result = BuildCombatSituationAssertion(expectedTempoMode, expectedSoloCount);
             if (result.Accepted)
             {
                 AddCombatLogLine("CLI combat situation assert OK: " + result.Summary);
@@ -2147,7 +2147,7 @@ namespace MC2Demo.Presentation
             Debug.LogError("MC2 objective graph assertion failed: " + result.Summary);
         }
 
-        private CombatSituationAssertionResult BuildCombatSituationAssertion(string expectedTempoMode)
+        private CombatSituationAssertionResult BuildCombatSituationAssertion(string expectedTempoMode, int expectedSoloCount)
         {
             if (mission == null)
             {
@@ -2260,6 +2260,7 @@ namespace MC2Demo.Presentation
             bool tempoOk = CombatTempoTextMatchesState(tempoText);
             bool expectedTempoOk = string.IsNullOrWhiteSpace(expectedTempoMode)
                 || string.Equals(tempoMode, expectedTempoMode, StringComparison.OrdinalIgnoreCase);
+            bool expectedSoloOk = expectedSoloCount < 0 || detached == expectedSoloCount;
             string pressureText = CombatContactPressureText();
             bool pressureOk = CombatContactPressureTextMatchesState(pressureText);
             string focusText = CombatFocusText();
@@ -2273,6 +2274,7 @@ namespace MC2Demo.Presentation
                 + playerSlots.ToString(CultureInfo.InvariantCulture)
                 + " solo="
                 + detached.ToString(CultureInfo.InvariantCulture)
+                + (expectedSoloCount < 0 ? "" : " expectedSolo=" + expectedSoloCount.ToString(CultureInfo.InvariantCulture))
                 + " hostiles="
                 + activeHostiles.ToString(CultureInfo.InvariantCulture)
                 + " targets="
@@ -2407,6 +2409,7 @@ namespace MC2Demo.Presentation
                     && soloReturnFxOk
                     && tempoOk
                     && expectedTempoOk
+                    && expectedSoloOk
                     && pressureOk
                     && focusOk
                     && pulseOk
