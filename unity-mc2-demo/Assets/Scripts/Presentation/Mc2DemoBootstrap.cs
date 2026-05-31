@@ -113,6 +113,11 @@ namespace MC2Demo.Presentation
         private const float LoadoutNudgeEastButtonWidth = 44f;
         private const float LoadoutNudgeStatusWidth = 142f;
         private const string LoadoutConditionPrefix = "Cond ";
+        private const string LoadoutFitOkLabel = "Fit OK";
+        private const string LoadoutFitReviewPrefix = "Fit Review: ";
+        private const string LoadoutHeatPressureLabel = "H ";
+        private const string LoadoutWeightPressureLabel = "W ";
+        private const string LoadoutGridPressureLabel = "G ";
         private static readonly Color UiPanelColor = new(0.035f, 0.045f, 0.055f, 0.92f);
         private static readonly Color UiButtonColor = new(0.075f, 0.105f, 0.125f, 0.96f);
         private static readonly Color UiTrackColor = new(0.015f, 0.02f, 0.025f, 0.9f);
@@ -2123,6 +2128,7 @@ namespace MC2Demo.Presentation
                 && button.IndexOf(TruncateText(weapons[0].name, 4), StringComparison.OrdinalIgnoreCase) < 0;
             bool heightOk = LoadoutGridSectionMinHeight >= 204f;
             LoadoutCompactCheck conditionCheck = BuildLoadoutConditionCompactCheck(unit);
+            LoadoutCompactCheck pressureCheck = BuildProjectedLoadoutStatusCompactCheck(preview);
             LoadoutCompactCheck editCheck = BuildLoadoutEditControlsCompactCheck(preview);
             LoadoutCompactCheck selectedResetCheck = BuildLoadoutSelectedResetCompactCheck();
             LoadoutCompactCheck targetCheck = BuildLoadoutTargetControlsCompactCheck();
@@ -2140,6 +2146,8 @@ namespace MC2Demo.Presentation
                 + LoadoutGridSectionMinHeight.ToString(CultureInfo.InvariantCulture)
                 + " "
                 + conditionCheck.Summary
+                + " "
+                + pressureCheck.Summary
                 + " "
                 + editCheck.Summary
                 + " "
@@ -2165,6 +2173,7 @@ namespace MC2Demo.Presentation
                     && buttonOk
                     && heightOk
                     && conditionCheck.Accepted
+                    && pressureCheck.Accepted
                     && editCheck.Accepted
                     && selectedResetCheck.Accepted
                     && targetCheck.Accepted
@@ -2431,6 +2440,29 @@ namespace MC2Demo.Presentation
                 + conditionLine
                 + " repairW="
                 + LoadoutRepairButtonWidth.ToString(CultureInfo.InvariantCulture));
+        }
+
+        private static LoadoutCompactCheck BuildProjectedLoadoutStatusCompactCheck(CombatLoadoutPreview preview)
+        {
+            string stateText = ProjectedLoadoutStateText(preview);
+            string pressureText = ProjectedLoadoutPressureText(preview);
+            bool stateOk = string.Equals(stateText, LoadoutFitOkLabel, StringComparison.Ordinal)
+                || stateText.StartsWith(LoadoutFitReviewPrefix, StringComparison.Ordinal);
+            bool accepted = stateOk
+                && pressureText.StartsWith(LoadoutHeatPressureLabel, StringComparison.Ordinal)
+                && pressureText.IndexOf("  " + LoadoutWeightPressureLabel, StringComparison.Ordinal) >= 0
+                && pressureText.IndexOf("  " + LoadoutGridPressureLabel, StringComparison.Ordinal) >= 0
+                && !ContainsPrototypeCopy(stateText)
+                && pressureText.IndexOf("Heat", StringComparison.OrdinalIgnoreCase) < 0
+                && pressureText.IndexOf("Load ", StringComparison.OrdinalIgnoreCase) < 0
+                && pressureText.IndexOf("Grid", StringComparison.OrdinalIgnoreCase) < 0
+                && pressureText.Length <= 38;
+            return new LoadoutCompactCheck(
+                accepted,
+                "pressure="
+                + stateText
+                + "/"
+                + pressureText);
         }
 
         private static LoadoutCompactCheck BuildLoadoutEditControlsCompactCheck(CombatLoadoutPreview preview)
@@ -6021,14 +6053,12 @@ namespace MC2Demo.Presentation
             GUI.color = result.IsValid ? new Color(0.50f, 1f, 0.62f, 1f) : new Color(1f, 0.78f, 0.28f, 1f);
             GUI.Label(
                 new Rect(left, y, width * 0.46f, 18f),
-                result.IsValid ? "Fit OK" : "Fit Review: " + TruncateText(FirstLoadoutError(result), 28));
+                ProjectedLoadoutStateText(preview));
             GUI.color = previous;
 
             GUI.Label(
                 new Rect(right, y, width * 0.46f, 18f),
-                "Heat " + FormatDecimal(result.TotalHeat) + "/" + FormatDecimal(preview.HeatLimit)
-                + "  Load " + FormatDecimal(result.TotalWeight) + "/" + FormatDecimal(preview.WeightLimit)
-                + "  Grid " + result.OccupiedGridCells + "/" + preview.GridCapacity);
+                ProjectedLoadoutPressureText(preview));
             float meterWidth = width * 0.46f;
             float meterGap = 6f;
             float thirdMeter = Mathf.Max(26f, (meterWidth - meterGap * 2f) / 3f);
@@ -6047,6 +6077,50 @@ namespace MC2Demo.Presentation
                 result.OccupiedGridCells,
                 preview.GridCapacity,
                 LoadoutComponentColor);
+        }
+
+        private static string ProjectedLoadoutStateText(CombatLoadoutPreview preview)
+        {
+            LoadoutValidationResult result = preview?.Validation;
+            if (result == null)
+            {
+                return LoadoutFitReviewPrefix + "unavailable";
+            }
+
+            return result.IsValid
+                ? LoadoutFitOkLabel
+                : LoadoutFitReviewPrefix + ProjectedLoadoutReviewReasonText(result);
+        }
+
+        private static string ProjectedLoadoutPressureText(CombatLoadoutPreview preview)
+        {
+            LoadoutValidationResult result = preview?.Validation;
+            if (preview == null || result == null)
+            {
+                return LoadoutHeatPressureLabel + "-/-  "
+                    + LoadoutWeightPressureLabel + "-/-  "
+                    + LoadoutGridPressureLabel + "-/-";
+            }
+
+            return LoadoutHeatPressureLabel + FormatDecimal(result.TotalHeat) + "/" + FormatDecimal(preview.HeatLimit)
+                + "  " + LoadoutWeightPressureLabel + FormatDecimal(result.TotalWeight) + "/" + FormatDecimal(preview.WeightLimit)
+                + "  " + LoadoutGridPressureLabel + result.OccupiedGridCells + "/" + preview.GridCapacity;
+        }
+
+        private static string ProjectedLoadoutReviewReasonText(LoadoutValidationResult result)
+        {
+            string reason = PlayerFitStatusText(FirstLoadoutError(result));
+            if (reason.StartsWith("Fit ", StringComparison.Ordinal))
+            {
+                reason = reason.Substring(4);
+            }
+
+            if (reason.Length > 0)
+            {
+                reason = char.ToUpperInvariant(reason[0]) + reason.Substring(1);
+            }
+
+            return TruncateText(reason, 28);
         }
 
         private void DrawLoadoutUsageBar(Rect rect, float value, float limit, Color normalColor)
