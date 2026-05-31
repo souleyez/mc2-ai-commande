@@ -45,6 +45,7 @@ Current demo behavior:
 - shows animated limb breakoff, persistent missing-part flags, red leg-collapse cues, section sparks, smoke, cockpit ejection cues, and destroyed-mech wreck markers
 - applies simple section penalties: destroyed arms reduce firepower, destroyed legs slow movement and disable Jet
 - tracks source-derived weapon heat, cooling, and heat lockouts in combat
+- shows heat vent and heat-lock cues on hot mechs without adding combat HUD rows
 - carries source weapon type and special-effect metadata into combat visuals
 - shows weapon name, range, cooldown, heat lock, and range readiness in the unit panel
 - opens a mech bay preview with source weapon loadout, heat, weight, range, damage, and section status
@@ -177,6 +178,7 @@ Current demo behavior:
 - auto-acquires hostile units in weapon range
 - gives missile, ballistic, and energy attacks distinct muzzle, trace, and hit accents
 - renders Jet takeoff flame, midair smoke, and landing dust cues
+- shows hot and heat-locked mechs with battlefield vent/lock cues
 - keeps target structures readable with persistent scorch, smoke, flame, and collapse cues
 - resolves temporary weapon cooldown, damage, cockpit/torso/arms/legs sections,
   and destruction

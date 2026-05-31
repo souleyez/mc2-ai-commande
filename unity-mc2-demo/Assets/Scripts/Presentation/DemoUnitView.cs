@@ -8,6 +8,7 @@ namespace MC2Demo.Presentation
     public sealed class DemoUnitView : MonoBehaviour
     {
         private const float CriticalSectionRatio = 0.35f;
+        private const float HeatCueRatio = 0.62f;
 
         public UnitState Unit { get; private set; }
         private Vector3 liveScale;
@@ -20,7 +21,10 @@ namespace MC2Demo.Presentation
         private bool legFailurePoseApplied;
         private bool ejectionEffectSpawned;
         private bool wasJumping;
+        private bool wasHeatLocked;
         private float jetTrailCooldown;
+        private GameObject heatVentCue;
+        private GameObject heatLockCue;
         private readonly Dictionary<string, GameObject> sectionParts = new(StringComparer.OrdinalIgnoreCase);
         private readonly HashSet<string> destroyedSections = new(StringComparer.OrdinalIgnoreCase);
         private readonly HashSet<string> criticalSections = new(StringComparer.OrdinalIgnoreCase);
@@ -38,6 +42,7 @@ namespace MC2Demo.Presentation
             }
 
             CreateSectionParts();
+            CreateHeatCueParts();
             ApplyPosition();
         }
 
@@ -45,6 +50,7 @@ namespace MC2Demo.Presentation
         {
             ApplyPosition();
             ApplyJetVisuals();
+            ApplyHeatVisuals();
             ApplyHitFlash();
             ApplySectionPartDamageColors();
             ApplySectionDamageVisuals();
@@ -110,6 +116,43 @@ namespace MC2Demo.Presentation
             }
 
             wasJumping = Unit.IsJumping;
+        }
+
+        private void ApplyHeatVisuals()
+        {
+            if (Unit == null || Unit.IsDestroyed)
+            {
+                SetHeatCueVisible(false, false);
+                wasHeatLocked = Unit?.IsHeatLocked == true;
+                return;
+            }
+
+            float heatRatio = Mathf.Clamp01(Unit.HeatRatio);
+            bool heatLocked = Unit.IsHeatLocked;
+            bool heatVisible = heatLocked || heatRatio >= HeatCueRatio;
+            SetHeatCueVisible(heatVisible, heatLocked);
+
+            if (heatLocked && !wasHeatLocked)
+            {
+                SpawnHeatLockPulse();
+            }
+
+            if (heatVisible && heatVentCue != null)
+            {
+                float pulse = 0.88f + Mathf.Sin(Time.time * (heatLocked ? 8.5f : 5.0f)) * 0.12f;
+                float width = Mathf.Lerp(0.62f, 0.92f, heatRatio) * pulse;
+                heatVentCue.transform.localScale = new Vector3(width, 0.016f, width);
+                SetCueColor(heatVentCue, new Color(1f, Mathf.Lerp(0.42f, 0.16f, heatRatio), 0.06f, Mathf.Lerp(0.34f, 0.78f, heatRatio)));
+            }
+
+            if (heatLocked && heatLockCue != null)
+            {
+                float pulse = 0.85f + Mathf.Sin(Time.time * 10f) * 0.15f;
+                heatLockCue.transform.localScale = new Vector3(0.13f * pulse, 0.46f + heatRatio * 0.22f, 0.13f * pulse);
+                SetCueColor(heatLockCue, new Color(1f, 0.11f, 0.04f, 0.82f));
+            }
+
+            wasHeatLocked = heatLocked;
         }
 
         private void ApplySectionDamageVisuals()
@@ -211,6 +254,13 @@ namespace MC2Demo.Presentation
             CreateSectionPart("Right Leg", PrimitiveType.Cube, new Vector3(0.20f, -0.52f, 0f), new Vector3(0.14f, 0.28f, 0.16f));
         }
 
+        private void CreateHeatCueParts()
+        {
+            heatVentCue = CreateHeatCuePart("Heat Vent Ring", PrimitiveType.Cylinder, new Vector3(0f, -0.46f, 0f), new Vector3(0.70f, 0.016f, 0.70f), new Color(1f, 0.40f, 0.06f, 0.36f));
+            heatLockCue = CreateHeatCuePart("Heat Lock Beacon", PrimitiveType.Cylinder, new Vector3(0f, 0.78f, 0.04f), new Vector3(0.13f, 0.46f, 0.13f), new Color(1f, 0.11f, 0.04f, 0.82f));
+            SetHeatCueVisible(false, false);
+        }
+
         private void CreateSectionPart(string sectionName, PrimitiveType primitive, Vector3 localPosition, Vector3 localScale)
         {
             GameObject part = GameObject.CreatePrimitive(primitive);
@@ -225,6 +275,28 @@ namespace MC2Demo.Presentation
             }
 
             sectionParts[sectionName] = part;
+        }
+
+        private GameObject CreateHeatCuePart(string cueName, PrimitiveType primitive, Vector3 localPosition, Vector3 localScale, Color color)
+        {
+            GameObject cue = GameObject.CreatePrimitive(primitive);
+            cue.name = Unit.Id + " " + cueName;
+            cue.transform.SetParent(transform, false);
+            cue.transform.localPosition = localPosition;
+            cue.transform.localScale = localScale;
+            Renderer renderer = cue.GetComponent<Renderer>();
+            if (renderer != null)
+            {
+                renderer.sharedMaterial = CreateOwnedTransparentMaterial(color);
+            }
+
+            Collider collider = cue.GetComponent<Collider>();
+            if (collider != null)
+            {
+                Destroy(collider);
+            }
+
+            return cue;
         }
 
         private void SpawnSectionDestroyedEffect(string sectionName)
@@ -346,6 +418,11 @@ namespace MC2Demo.Presentation
             return "Jet=takeoff+trail+landing";
         }
 
+        public static string HeatCueSummary()
+        {
+            return "Heat=vent+lock";
+        }
+
         private void SpawnJetTakeoffCue()
         {
             Vector3 ground = JetGroundPosition();
@@ -383,6 +460,13 @@ namespace MC2Demo.Presentation
             Vector3 ground = MissionToWorld(Unit.MissionPosition);
             ground.y = DemoTerrainView.HeightAt(Unit.MissionPosition) + 0.055f;
             return ground;
+        }
+
+        private void SpawnHeatLockPulse()
+        {
+            Vector3 center = SectionWorldPoint(new Vector3(0f, 0.45f, 0.10f));
+            CreateTransient("Heat Lock Flash", PrimitiveType.Sphere, center, new Color(1f, 0.20f, 0.04f, 0.72f), 0.46f, Vector3.one * 0.16f, Vector3.one * 0.86f);
+            CreateTransient("Heat Vent Smoke", PrimitiveType.Sphere, center + Vector3.up * 0.24f, new Color(0.10f, 0.08f, 0.06f, 0.46f), 0.96f, Vector3.one * 0.16f, Vector3.one * 0.68f);
         }
 
         private void SpawnCockpitEjection()
@@ -641,6 +725,28 @@ namespace MC2Demo.Presentation
             marker.transform.SetParent(transform, true);
         }
 
+        private void SetHeatCueVisible(bool heatVisible, bool heatLocked)
+        {
+            if (heatVentCue != null)
+            {
+                heatVentCue.SetActive(heatVisible);
+            }
+
+            if (heatLockCue != null)
+            {
+                heatLockCue.SetActive(heatLocked);
+            }
+        }
+
+        private static void SetCueColor(GameObject cue, Color color)
+        {
+            Renderer renderer = cue.GetComponent<Renderer>();
+            if (renderer != null && renderer.sharedMaterial != null)
+            {
+                renderer.sharedMaterial.color = color;
+            }
+        }
+
         private Material CreateOwnedMaterial(Color color)
         {
             Shader shader = Shader.Find("Standard") ?? Shader.Find("Hidden/Internal-Colored");
@@ -649,6 +755,20 @@ namespace MC2Demo.Presentation
                 color = color
             };
             ownedMaterials.Add(material);
+            return material;
+        }
+
+        private Material CreateOwnedTransparentMaterial(Color color)
+        {
+            Material material = CreateOwnedMaterial(color);
+            material.SetFloat("_Mode", 3f);
+            material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+            material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+            material.SetInt("_ZWrite", 0);
+            material.DisableKeyword("_ALPHATEST_ON");
+            material.EnableKeyword("_ALPHABLEND_ON");
+            material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+            material.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
             return material;
         }
 
