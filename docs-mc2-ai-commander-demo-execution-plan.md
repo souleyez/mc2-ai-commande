@@ -97,6 +97,7 @@ The Unity demo currently supports:
 - projected mech bay slot grid visualization with placeholder multi-cell weapon shapes exposed from BattleCore preview data
 - temporary projected weapon placement edits with overlap and out-of-bounds validator feedback
 - spare-load armor plate and heat sink filler projection with hardness and cooling totals
+- weapon blocks prefer compact parenthetical short codes such as `AC10` when source names include them
 - component blocks now use compact `A+` and `C+` grid labels for armor and heat-sink fillers
 - toggleable projected filler cells that cycle between armor, heat sink, and empty
 - the filler button now labels its next action as Armor, Sink, or Clear for clearer original-style slot editing
@@ -834,6 +835,7 @@ Tasks:
 - The loadout compact smoke now also asserts the selected-weapon summary row, guarding the compact `W# Base/Moved`, `D/R/CD/H/W/C`, and `WxH` readouts that explain the active weapon block.
 - The loadout compact smoke now also asserts the selected-weapon edit-control header, keeping it to a short `W# Base/Moved @x,y` coordinate line.
 - The loadout compact smoke now also asserts compact `A+` and `C+` grid labels for armor and heat-sink component blocks.
+- The loadout compact smoke now also asserts compact weapon block short codes such as `AC10`, avoiding duplicated `AC (AC10)` text inside small grid blocks.
 - The loadout compact assertion is now split into small check helpers, keeping the growing UI contract readable before more fitting-card density rules are added.
 - The fitting Apply/Reset strip now uses compact Fit OK, Pending, and Stock state text, guarded by the loadout compact smoke.
 - The Save Slot title, result row, reset confirmation, and New Company confirmation now use calmer player-facing wording guarded by the loadout compact smoke.

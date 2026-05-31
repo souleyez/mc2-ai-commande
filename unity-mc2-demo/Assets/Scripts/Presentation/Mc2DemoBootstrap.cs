@@ -2759,9 +2759,10 @@ namespace MC2Demo.Presentation
                     "Heat Sink",
                     LoadoutItemCategory.HeatSink,
                     ""));
-            bool accepted = weaponLabel.StartsWith("1 ", StringComparison.Ordinal)
+            bool accepted = string.Equals(weaponLabel, "1 AC10", StringComparison.Ordinal)
                 && weaponLabel.IndexOf("Autocannon", StringComparison.OrdinalIgnoreCase) < 0
-                && weaponLabel.Length <= 12
+                && weaponLabel.IndexOf("(", StringComparison.Ordinal) < 0
+                && weaponLabel.Length <= 8
                 && string.Equals(armorLabel, "A+", StringComparison.Ordinal)
                 && string.Equals(sinkLabel, "C+", StringComparison.Ordinal)
                 && armorLabel.IndexOf("ARM", StringComparison.OrdinalIgnoreCase) < 0
@@ -9329,7 +9330,19 @@ namespace MC2Demo.Presentation
                 return "";
             }
 
-            string normalized = name.Trim()
+            string trimmed = name.Trim();
+            int open = trimmed.LastIndexOf('(');
+            int close = trimmed.LastIndexOf(')');
+            if (open >= 0 && close > open + 1)
+            {
+                string code = trimmed.Substring(open + 1, close - open - 1).Trim();
+                if (code.Length > 0 && code.Length <= 8 && code.IndexOf(' ') < 0)
+                {
+                    return code;
+                }
+            }
+
+            string normalized = trimmed
                 .Replace("Large ", "L ")
                 .Replace("Medium ", "M ")
                 .Replace("Small ", "S ")
