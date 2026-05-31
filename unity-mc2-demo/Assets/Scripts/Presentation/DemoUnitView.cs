@@ -428,7 +428,7 @@ namespace MC2Demo.Presentation
 
         public static string SectionDamageCueSummary()
         {
-            return "Arms=missing-socket+flag Legs=collapse+red-cross Cockpit=breach+ejection-pod+chute Critical=smoke+sparks Wreck=blast+smoke+marker+debris";
+            return "Arms=missing-socket+flag Legs=collapse+red-cross Cockpit=breach+ejection-pod+chute+landing Critical=smoke+sparks Wreck=blast+smoke+marker+debris";
         }
 
         public static string JetCueSummary()
@@ -518,6 +518,8 @@ namespace MC2Demo.Presentation
             CreateBeam("Pilot Chute Cord R", canopy + right * 0.24f, podPoint, new Color(0.86f, 0.96f, 1f, 0.58f), 2.2f, 0.010f);
             CreateMovingTransient("Pilot Chute Pod", PrimitiveType.Sphere, podPoint, landing + Vector3.up * 0.08f, new Color(0.88f, 0.95f, 1f, 0.72f), 2.2f, Vector3.one * 0.16f, Vector3.one * 0.22f);
             CreateTransient("Pilot Landing Beacon", PrimitiveType.Cylinder, landing, new Color(0.58f, 0.92f, 1f, 0.48f), 2.6f, new Vector3(0.18f, 0.012f, 0.18f), new Vector3(0.62f, 0.006f, 0.62f));
+            CreateBeam("Pilot Landing Signal", landing + Vector3.up * 0.06f, landing + Vector3.up * 0.92f, new Color(0.58f, 0.92f, 1f, 0.56f), 2.35f, 0.022f);
+            CreateTransient("Pilot Landing Smoke", PrimitiveType.Sphere, landing + Vector3.up * 0.12f, new Color(0.08f, 0.11f, 0.13f, 0.36f), 2.1f, Vector3.one * 0.12f, new Vector3(0.72f, 0.34f, 0.72f));
         }
 
         private static Vector3 GroundAtWorld(Vector3 worldPoint)
