@@ -169,6 +169,9 @@ namespace MC2Demo.Presentation
         private readonly List<string> combatLog = new();
         private string selectedMechBayLoadoutUnitId;
         private float lastCombatEventTimeSeconds = -999f;
+        private float lastContactEventTimeSeconds = -999f;
+        private string lastContactLabel = "";
+        private int lastContactCount;
         private BattleMission mission;
         private MissionScriptBridge scriptBridge;
         private CommanderCommandPort commandPort;
@@ -515,6 +518,9 @@ namespace MC2Demo.Presentation
             selectedLoadoutGridCellByUnit.Clear();
             combatLog.Clear();
             lastCombatEventTimeSeconds = -999f;
+            lastContactEventTimeSeconds = -999f;
+            lastContactLabel = "";
+            lastContactCount = 0;
             mainCamera = null;
 
             int clearedRoots = 0;
@@ -2124,6 +2130,8 @@ namespace MC2Demo.Presentation
             bool sectionFxOk = sectionFx.IndexOf("Arms=missing-socket+flag", StringComparison.Ordinal) >= 0
                 && sectionFx.IndexOf("Legs=collapse+red-cross", StringComparison.Ordinal) >= 0
                 && sectionFx.IndexOf("Cockpit=breach+ejection-pod", StringComparison.Ordinal) >= 0;
+            string tempoText = CombatTempoText();
+            bool tempoOk = CombatTempoTextMatchesState(tempoText);
             LoadoutCompactCheck missionBrief = BuildMissionBriefPanelTextCheck();
             string summary = "squad="
                 + playerReady.ToString(CultureInfo.InvariantCulture)
@@ -2145,6 +2153,8 @@ namespace MC2Demo.Presentation
                 + weaponFx
                 + " sectionFx="
                 + sectionFx
+                + " tempo="
+                + tempoText
                 + " "
                 + missionBrief.Summary
                 + " text="
@@ -2159,9 +2169,37 @@ namespace MC2Demo.Presentation
                     && fundsOk
                     && weaponFxOk
                     && sectionFxOk
+                    && tempoOk
                     && missionBrief.Accepted,
                 Summary = summary
             };
+        }
+
+        private bool CombatTempoTextMatchesState(string tempoText)
+        {
+            if (string.IsNullOrWhiteSpace(tempoText) || !tempoText.StartsWith("Tempo ", StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            if (HasRecentCombatEvent())
+            {
+                return tempoText.StartsWith("Tempo Fire  hostile pressure ", StringComparison.Ordinal);
+            }
+
+            if (HasRecentContactEvent())
+            {
+                return tempoText.StartsWith("Tempo Contact  ", StringComparison.Ordinal)
+                    && !string.IsNullOrWhiteSpace(lastContactLabel)
+                    && tempoText.IndexOf(TruncateText(lastContactLabel, 24), StringComparison.Ordinal) >= 0;
+            }
+
+            if (CountActiveHostileUnits() > 0)
+            {
+                return tempoText.StartsWith("Tempo Tracking  hostiles ", StringComparison.Ordinal);
+            }
+
+            return string.Equals(tempoText, "Tempo Quiet  no contact", StringComparison.Ordinal);
         }
 
         private LoadoutCompactCheck BuildMissionBriefPanelTextCheck()
@@ -4297,7 +4335,11 @@ namespace MC2Demo.Presentation
             {
                 string key = contactKeys[index];
                 int count = contactCounts[key];
-                string line = "Contact: " + contactLabels[key] + (count > 1 ? " x" + count.ToString(CultureInfo.InvariantCulture) : "");
+                string label = contactLabels[key];
+                string line = "Contact: " + label + (count > 1 ? " x" + count.ToString(CultureInfo.InvariantCulture) : "");
+                lastContactEventTimeSeconds = mission?.MissionTimeSeconds ?? Time.time;
+                lastContactLabel = label;
+                lastContactCount = count;
                 AddCombatLogLine(line);
                 Debug.Log("MC2 enemy contact group: " + key + " count=" + count.ToString(CultureInfo.InvariantCulture));
             }
@@ -6521,7 +6563,8 @@ namespace MC2Demo.Presentation
             DrawDesignPanelFrame(panel, "Combat / 战况", UiCyanColor);
             GUI.Label(new Rect(x + 12f, panel.y + 36f, 320f, 22f), "Active units: " + CountLiveUnits() + " / " + mission.Units.Count);
             GUI.Label(new Rect(x + 12f, panel.y + 56f, panel.width - 24f, 18f), CombatSituationText());
-            float y = panel.y + 80f;
+            DrawCombatTempoLine(x + 12f, panel.y + 76f, panel.width - 24f);
+            float y = panel.y + 100f;
             foreach (string line in combatLog)
             {
                 if (y > panel.yMax - 22f)
@@ -6533,6 +6576,14 @@ namespace MC2Demo.Presentation
                 GUI.Label(new Rect(x + 12f, y, 320f, 20f), TruncateText(line, 58));
                 y += 20f;
             }
+        }
+
+        private void DrawCombatTempoLine(float x, float y, float width)
+        {
+            Color previous = GUI.color;
+            GUI.color = CombatTempoColor();
+            GUI.Label(new Rect(x, y, width, 18f), CombatTempoText());
+            GUI.color = previous;
         }
 
         private string CombatSituationText()
@@ -6559,6 +6610,45 @@ namespace MC2Demo.Presentation
                 + tempo;
         }
 
+        private string CombatTempoText()
+        {
+            int activeHostiles = CountActiveHostileUnits();
+            if (HasRecentCombatEvent())
+            {
+                return "Tempo Fire  hostile pressure "
+                    + activeHostiles.ToString(CultureInfo.InvariantCulture);
+            }
+
+            if (HasRecentContactEvent())
+            {
+                string count = lastContactCount > 1 ? " x" + lastContactCount.ToString(CultureInfo.InvariantCulture) : "";
+                return "Tempo Contact  " + TruncateText(lastContactLabel, 24) + count;
+            }
+
+            if (activeHostiles > 0)
+            {
+                return "Tempo Tracking  hostiles "
+                    + activeHostiles.ToString(CultureInfo.InvariantCulture);
+            }
+
+            return "Tempo Quiet  no contact";
+        }
+
+        private Color CombatTempoColor()
+        {
+            if (HasRecentCombatEvent())
+            {
+                return new Color(1f, 0.46f, 0.26f);
+            }
+
+            if (HasRecentContactEvent() || CountActiveHostileUnits() > 0)
+            {
+                return new Color(1f, 0.84f, 0.34f);
+            }
+
+            return new Color(0.62f, 0.78f, 0.86f);
+        }
+
         private string CommanderUnitLabel()
         {
             if (mission == null)
@@ -6583,6 +6673,16 @@ namespace MC2Demo.Presentation
             }
 
             return mission.MissionTimeSeconds - lastCombatEventTimeSeconds <= 4f;
+        }
+
+        private bool HasRecentContactEvent()
+        {
+            if (mission == null || lastContactEventTimeSeconds < 0f)
+            {
+                return false;
+            }
+
+            return mission.MissionTimeSeconds - lastContactEventTimeSeconds <= 8f;
         }
 
         private void DrawMissionMap()
