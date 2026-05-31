@@ -2197,6 +2197,8 @@ namespace MC2Demo.Presentation
                 && SectionStatusLabelSamplesOk();
             string targetLineFx = TargetLineCueSummary();
             bool targetLineFxOk = targetLineFx.IndexOf("TargetLine=ready+cooling+blocked+endcap", StringComparison.Ordinal) >= 0;
+            string rangeRingFx = RangeRingCueSummary();
+            bool rangeRingFxOk = rangeRingFx.IndexOf("RangeRing=selection+target+heat", StringComparison.Ordinal) >= 0;
             string weaponReadinessFx = WeaponReadinessCueSummary();
             bool weaponReadinessFxOk = weaponReadinessFx.IndexOf("WeaponReadiness=ready+cooling+blocked+beacon", StringComparison.Ordinal) >= 0;
             string targetLockFx = TargetLockCueSummary();
@@ -2291,6 +2293,8 @@ namespace MC2Demo.Presentation
                 + sectionStatusFx
                 + " targetLineFx="
                 + targetLineFx
+                + " rangeRingFx="
+                + rangeRingFx
                 + " weaponReadinessFx="
                 + weaponReadinessFx
                 + " targetLockFx="
@@ -2367,6 +2371,7 @@ namespace MC2Demo.Presentation
                     && sectionFlashFxOk
                     && sectionStatusFxOk
                     && targetLineFxOk
+                    && rangeRingFxOk
                     && weaponReadinessFxOk
                     && targetLockFxOk
                     && squadFocusFxOk
@@ -2412,6 +2417,11 @@ namespace MC2Demo.Presentation
         private static string TargetLineCueSummary()
         {
             return "TargetLine=ready+cooling+blocked+endcap";
+        }
+
+        private static string RangeRingCueSummary()
+        {
+            return "RangeRing=selection+target+heat";
         }
 
         private static string WeaponReadinessCueSummary()
@@ -6823,9 +6833,28 @@ namespace MC2Demo.Presentation
             marker.SetActive(isVisible);
             if (isVisible)
             {
+                bool isSelectionRange = pendingDetachedUnitId == unit.Id || unit.IsDetached;
+                bool isTargetingRange = unit.HasAttackOrder || !string.IsNullOrEmpty(unit.CurrentTargetId);
+                bool isHeatRange = unit.IsHeatLocked;
+                float pulse = isHeatRange
+                    ? 0.97f + Mathf.Sin(Time.time * 5.8f) * 0.06f
+                    : isTargetingRange
+                        ? 0.99f + Mathf.Sin(Time.time * 3.6f) * 0.035f
+                        : 1f;
+                Color color = isHeatRange
+                    ? new Color(1f, 0.18f, 0.12f, 0.18f)
+                    : isTargetingRange
+                        ? new Color(1f, 0.62f, 0.14f, 0.16f)
+                        : isSelectionRange
+                            ? new Color(0.25f, 0.82f, 1f, 0.13f)
+                            : new Color(0.25f, 0.82f, 1f, 0.10f);
                 marker.transform.position = GroundMarkerPosition(unit.MissionPosition, 0.045f);
                 float worldDiameter = Mathf.Clamp((unit.CombatWeaponRange / 100f) * 2f, 1.2f, 8f);
-                marker.transform.localScale = new Vector3(worldDiameter, 0.01f, worldDiameter);
+                marker.transform.localScale = new Vector3(worldDiameter * pulse, 0.01f, worldDiameter * pulse);
+                AssignMaterial(
+                    marker,
+                    isHeatRange ? "CommandWeaponRangeHeat" : isTargetingRange ? "CommandWeaponRangeTarget" : "CommandWeaponRangeSelection",
+                    color);
             }
         }
 

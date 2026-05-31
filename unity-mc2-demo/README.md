@@ -54,7 +54,7 @@ Current demo behavior:
 - shows a compact mission brief with objective progress and target structure integrity
 - keeps mission brief objective names compact enough for North island and Extraction to remain readable in the fixed right HUD
 - shows compact world health bars for damaged or player-targeted enemies and structures
-- shows a subtle weapon range ring for selected, detached, attacking, or firing units
+- shows a subtle state-colored weapon range ring for selected, detached, attacking, or heat-locked units
 - varies tactical target-line color and thickness for ready, cooling, and blocked shots
 - shows compact local weapon-readiness rings and beacons for ready, cooling, and blocked player mechs
 - renders short weapon beams, hit flashes, and impact bursts for combat events, with bright short energy flash/pillar cues, staggered missile salvo arcs/blast, and ballistic punch/spark cues
