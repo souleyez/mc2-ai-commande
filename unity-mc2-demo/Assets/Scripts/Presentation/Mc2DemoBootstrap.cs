@@ -2135,6 +2135,7 @@ namespace MC2Demo.Presentation
             LoadoutCompactCheck nudgeCheck = BuildLoadoutNudgeCompactCheck();
             LoadoutCompactCheck selectedSummaryCheck = BuildLoadoutSelectedSummaryCompactCheck(unit, preview, weapons[0]);
             LoadoutCompactCheck componentDetailCheck = BuildLoadoutComponentDetailCompactCheck();
+            LoadoutCompactCheck openSlotDetailCheck = BuildLoadoutOpenSlotDetailCompactCheck();
             LoadoutCompactCheck routeCheck = BuildLoadoutRouteCompactCheck();
             LoadoutCompactCheck baySummaryCheck = BuildMechLabSummaryLabelCheck();
             LoadoutCompactCheck actionCopyCheck = BuildMechLabActionCopyCheck();
@@ -2162,6 +2163,8 @@ namespace MC2Demo.Presentation
                 + " "
                 + componentDetailCheck.Summary
                 + " "
+                + openSlotDetailCheck.Summary
+                + " "
                 + routeCheck.Summary
                 + " "
                 + baySummaryCheck.Summary
@@ -2183,6 +2186,7 @@ namespace MC2Demo.Presentation
                     && nudgeCheck.Accepted
                     && selectedSummaryCheck.Accepted
                     && componentDetailCheck.Accepted
+                    && openSlotDetailCheck.Accepted
                     && routeCheck.Accepted
                     && baySummaryCheck.Accepted
                     && actionCopyCheck.Accepted
@@ -2675,6 +2679,40 @@ namespace MC2Demo.Presentation
                 0f,
                 0f);
             return LoadoutBlockDetailText(null, preview, cell, 0, 0, false, default, -1);
+        }
+
+        private static LoadoutCompactCheck BuildLoadoutOpenSlotDetailCompactCheck()
+        {
+            string emptyDetail = SyntheticOpenSlotDetail(false);
+            string selectedDetail = SyntheticOpenSlotDetail(true);
+            bool accepted = string.Equals(emptyDetail, "Slot 2,3 open", StringComparison.Ordinal)
+                && string.Equals(selectedDetail, "Slot 2,3 open", StringComparison.Ordinal)
+                && emptyDetail.IndexOf("Empty", StringComparison.OrdinalIgnoreCase) < 0
+                && selectedDetail.IndexOf("Selected", StringComparison.OrdinalIgnoreCase) < 0
+                && emptyDetail.Length <= 16
+                && selectedDetail.Length <= 16;
+            return new LoadoutCompactCheck(
+                accepted,
+                "openSlot="
+                + emptyDetail
+                + "/"
+                + selectedDetail);
+        }
+
+        private static string SyntheticOpenSlotDetail(bool selected)
+        {
+            CombatLoadoutPreview preview = new(
+                new LoadoutValidationResult(),
+                16,
+                4,
+                4,
+                Array.Empty<CombatLoadoutPreviewGridCell>(),
+                Array.Empty<CombatLoadoutPreviewItem>(),
+                0f,
+                0f);
+            return selected
+                ? LoadoutBlockDetailText(null, preview, null, -1, -1, true, new Vector2Int(2, 3), -1)
+                : LoadoutBlockDetailText(null, preview, null, 2, 3, false, default, -1);
         }
 
         private DebriefSummaryAssertionResult BuildDebriefSummaryAssertion()
@@ -8919,9 +8957,9 @@ namespace MC2Demo.Presentation
 
             if (hoveredColumn >= 0 && hoveredRow >= 0 && hoveredCell == null)
             {
-                return "Empty Slot " + hoveredColumn.ToString(CultureInfo.InvariantCulture)
+                return "Slot " + hoveredColumn.ToString(CultureInfo.InvariantCulture)
                     + "," + hoveredRow.ToString(CultureInfo.InvariantCulture)
-                    + "  open";
+                    + " open";
             }
 
             CombatLoadoutPreviewGridCell detailCell = hoveredCell;
@@ -8930,9 +8968,9 @@ namespace MC2Demo.Presentation
                 detailCell = LoadoutCellAt(preview, selectedGridCell.x, selectedGridCell.y);
                 if (detailCell == null)
                 {
-                    return "Selected Slot " + selectedGridCell.x.ToString(CultureInfo.InvariantCulture)
+                    return "Slot " + selectedGridCell.x.ToString(CultureInfo.InvariantCulture)
                         + "," + selectedGridCell.y.ToString(CultureInfo.InvariantCulture)
-                        + "  open";
+                        + " open";
                 }
             }
 
