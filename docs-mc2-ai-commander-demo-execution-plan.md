@@ -57,7 +57,7 @@ The Unity demo currently supports:
 - selected weapon summary labels Base or Moved with cyan/amber border cues for draft placement state
 - selected weapon edit controls mirror the same Base or Moved grid-position chain as the summary
 - selected weapon edit controls now use a compact `W# Base/Moved @x,y` header instead of repeating the weapon name
-- payload detail text uses compact `C` and `WxH` shape readouts and labels unapplied edits as Pending fit
+- payload detail text uses compact weapon short codes plus `C` and `WxH` shape readouts, and labels unapplied edits as Pending fit
 - mech bay selector and squad replacement status text now use Pending/Outgoing/Reserve wording instead of player-facing draft language
 - roster fit detail now shows Ready Bay or Reserve Bay instead of exposing internal owned-mech ids
 - reserve prep logs and save-result labels now use Reserve Prep wording instead of local/candidate terminology
@@ -814,6 +814,7 @@ Tasks:
 - A command-file `assert-combat-situation` hook and `mc2_01-combat-situation.txt` smoke path now verify that row, with quiet/contact driven by recent combat events instead of generic log entries.
 - Weapon selection, move, place, and selected-slot reset results now report `W# Moved @a,b>c,d` or `W# Base @a,b` in the top status.
 - The selected weapon summary and payload detail now show the selected block as a concrete `WxH` footprint, making vertical and wide weapon shapes readable without counting cells.
+- The payload weapon detail row now uses compact weapon short codes such as `AC10` instead of repeating full source weapon names.
 - The mounted weapon buttons also include that `WxH` footprint, so the selection list itself reads as block inventory instead of plain weapon toggles.
 - The selected-weapon Reset control now reads Base, stays disabled, and uses the done-state color when there is no placement override, reducing no-op clicks in the fitting controls.
 - The fit Apply control now reads and colors itself as Done, Invalid, Stock, or Apply depending on draft, validation, and inventory state.

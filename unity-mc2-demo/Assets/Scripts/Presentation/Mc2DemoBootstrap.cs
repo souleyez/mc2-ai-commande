@@ -2147,6 +2147,7 @@ namespace MC2Demo.Presentation
             LoadoutCompactCheck placementHeaderCheck = BuildLoadoutPlacementHeaderCompactCheck(unit, preview);
             LoadoutCompactCheck blockLabelCheck = BuildLoadoutBlockLabelCompactCheck(unit, preview);
             LoadoutCompactCheck selectedSummaryCheck = BuildLoadoutSelectedSummaryCompactCheck(unit, preview, weapons[0]);
+            LoadoutCompactCheck weaponDetailCheck = BuildLoadoutWeaponDetailCompactCheck(unit, preview);
             LoadoutCompactCheck componentDetailCheck = BuildLoadoutComponentDetailCompactCheck();
             LoadoutCompactCheck openSlotDetailCheck = BuildLoadoutOpenSlotDetailCompactCheck();
             LoadoutCompactCheck routeCheck = BuildLoadoutRouteCompactCheck();
@@ -2179,6 +2180,8 @@ namespace MC2Demo.Presentation
                 + " "
                 + selectedSummaryCheck.Summary
                 + " "
+                + weaponDetailCheck.Summary
+                + " "
                 + componentDetailCheck.Summary
                 + " "
                 + openSlotDetailCheck.Summary
@@ -2207,6 +2210,7 @@ namespace MC2Demo.Presentation
                     && placementHeaderCheck.Accepted
                     && blockLabelCheck.Accepted
                     && selectedSummaryCheck.Accepted
+                    && weaponDetailCheck.Accepted
                     && componentDetailCheck.Accepted
                     && openSlotDetailCheck.Accepted
                     && routeCheck.Accepted
@@ -2864,6 +2868,36 @@ namespace MC2Demo.Presentation
             return new LoadoutCompactCheck(
                 accepted,
                 "selectedSummary=" + selectedSummary);
+        }
+
+        private static LoadoutCompactCheck BuildLoadoutWeaponDetailCompactCheck(UnitState unit, CombatLoadoutPreview preview)
+        {
+            CombatLoadoutPreviewGridCell selectedCell = LoadoutCellForSelectedWeapon(preview, 0);
+            string weaponDetail = LoadoutBlockDetailText(
+                unit,
+                preview,
+                selectedCell,
+                selectedCell?.X ?? 0,
+                selectedCell?.Y ?? 0,
+                false,
+                default,
+                0);
+            bool accepted = weaponDetail.StartsWith("1 AC10", StringComparison.Ordinal)
+                && weaponDetail.IndexOf(" H", StringComparison.Ordinal) >= 0
+                && weaponDetail.IndexOf(" W", StringComparison.Ordinal) >= 0
+                && weaponDetail.IndexOf(" D", StringComparison.Ordinal) >= 0
+                && weaponDetail.IndexOf(" R", StringComparison.Ordinal) >= 0
+                && weaponDetail.IndexOf(" CD", StringComparison.Ordinal) >= 0
+                && weaponDetail.IndexOf(" C", StringComparison.Ordinal) >= 0
+                && weaponDetail.IndexOf("x", StringComparison.Ordinal) >= 0
+                && weaponDetail.IndexOf("Autocannon", StringComparison.OrdinalIgnoreCase) < 0
+                && weaponDetail.IndexOf("(", StringComparison.Ordinal) < 0
+                && weaponDetail.IndexOf("Cells", StringComparison.OrdinalIgnoreCase) < 0
+                && weaponDetail.IndexOf("Shape", StringComparison.OrdinalIgnoreCase) < 0
+                && weaponDetail.Length <= 48;
+            return new LoadoutCompactCheck(
+                accepted,
+                "weaponDetail=" + weaponDetail);
         }
 
         private static LoadoutCompactCheck BuildLoadoutComponentDetailCompactCheck()
@@ -9286,8 +9320,14 @@ namespace MC2Demo.Presentation
                     + compactShapeText;
             }
 
+            string weaponName = ShortLoadoutItemName(weapon.name);
+            if (string.IsNullOrWhiteSpace(weaponName))
+            {
+                weaponName = "Weapon";
+            }
+
             return (detailCell.SourceWeaponIndex + 1).ToString(CultureInfo.InvariantCulture)
-                + " " + TruncateText(weapon.name, 16)
+                + " " + weaponName
                 + "  H" + FormatDecimal(weapon.heat)
                 + " W" + FormatDecimal(weapon.weight)
                 + " D" + FormatDecimal(weapon.damage)
