@@ -183,7 +183,7 @@ namespace MC2Demo.BattleCore
                 return "Delta none";
             }
 
-            return "Delta token "
+            return "Delta funds "
                 + FormatSigned(delta.tokenDelta)
                 + "  mechs "
                 + FormatSigned(delta.ownedMechDelta)

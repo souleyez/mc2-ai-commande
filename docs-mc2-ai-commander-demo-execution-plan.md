@@ -524,6 +524,13 @@ Current stage snapshot:
 - Phase D Public-Safe Content Pack remains later: public capture still requires replacement names, text, UI identity, models, textures, audio, and mission-facing story copy.
 - Phase E AI and Platform remain bounded architecture: keep AI to high-level directives until the local single-player Windows demo is convincing.
 
+Visible-flow audit notes, 2026-05-31:
+
+- Smoke paths for combat situation, debrief summary, loadout compact, and hidden handoff launch all pass on the current Windows build.
+- A real window capture of the Battle view shows the fixed camera and left/right HUD are readable enough for the next audit pass, though the right mission panel still truncates later objective names.
+- A real window capture of the Mech Lab view confirms the fitting drawer is functional but still cramped; the larger next step should be a dedicated Mech Lab surface, not more microcopy.
+- The audit found visible leftover `Token` wording in the Mech Lab inventory summary and debrief funds row; the current pass fixes those to the `Funds` and `Payout` wording family and guards them in smoke.
+
 ## Frozen Development Plan
 
 This is the current locked execution plan for the private Windows demo. When the user says "continue by the plan", follow this order unless a bug blocks the build or the user explicitly changes priority.

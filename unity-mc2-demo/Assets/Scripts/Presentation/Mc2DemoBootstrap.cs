@@ -2265,6 +2265,8 @@ namespace MC2Demo.Presentation
                 && MechLabCompanyPrefix.StartsWith("Company", StringComparison.Ordinal)
                 && string.Equals(MechLabPartsLabel, "Parts", StringComparison.Ordinal)
                 && MechLabBuildPrefix.StartsWith("Build", StringComparison.Ordinal)
+                && string.Equals(MechLabFundsText(13500), "Funds 13,500", StringComparison.Ordinal)
+                && MechLabFundsText(13500).IndexOf("Token", StringComparison.OrdinalIgnoreCase) < 0
                 && SavedAccountIdleLabel.IndexOf("save/load", StringComparison.OrdinalIgnoreCase) < 0
                 && SavedAccountIdleLabel.IndexOf("Idle", StringComparison.OrdinalIgnoreCase) < 0
                 && SavedAccountPathReadyStatusText.StartsWith("Save slot", StringComparison.Ordinal)
@@ -2329,6 +2331,8 @@ namespace MC2Demo.Presentation
                 + MechLabBuildPrefix.Trim()
                 + "/"
                 + SavedAccountIdleLabel
+                + " bayFunds="
+                + MechLabFundsText(13500)
                 + " bayState="
                 + MechLabLoadingText
                 + "/"
@@ -3024,6 +3028,12 @@ namespace MC2Demo.Presentation
                 && DebriefNextStepText.IndexOf("launch again", StringComparison.OrdinalIgnoreCase) < 0;
             string debriefTopMode = TopStatusModeText(DemoFlowScreen.Debrief);
             string debriefFunds = TopStatusFundsText(null);
+            string debriefFundsRow = MissionResultFundsLine(new MissionResultSummary
+            {
+                completedRewardResourcePoints = 3000,
+                repairCostResourcePoints = 400,
+                netResourcePoints = 2600
+            });
             bool flowStatusCopyOk = SaveSlotNeedsReviewText.IndexOf("slot", StringComparison.OrdinalIgnoreCase) >= 0
                 && SaveSlotNeedsReviewText.IndexOf("review", StringComparison.OrdinalIgnoreCase) >= 0
                 && NoSaveSlotText.IndexOf("default", StringComparison.OrdinalIgnoreCase) < 0
@@ -3043,7 +3053,11 @@ namespace MC2Demo.Presentation
                 && string.Equals(debriefTopMode, "MODE Debrief", StringComparison.Ordinal)
                 && debriefTopMode.IndexOf("FLOW", StringComparison.OrdinalIgnoreCase) < 0
                 && string.Equals(debriefFunds, "Funds --", StringComparison.Ordinal)
-                && debriefFunds.IndexOf("TOKEN", StringComparison.OrdinalIgnoreCase) < 0;
+                && debriefFunds.IndexOf("TOKEN", StringComparison.OrdinalIgnoreCase) < 0
+                && debriefFundsRow.StartsWith(DebriefPayoutLabel + " +3,000", StringComparison.Ordinal)
+                && debriefFundsRow.IndexOf("Token", StringComparison.OrdinalIgnoreCase) < 0
+                && debriefFundsRow.IndexOf("Repair -400", StringComparison.Ordinal) >= 0
+                && debriefFundsRow.IndexOf("Net +2,600", StringComparison.Ordinal) >= 0;
 
             string result = "objectives="
                 + summary.completedVisibleObjectives.ToString(CultureInfo.InvariantCulture)
@@ -3075,6 +3089,8 @@ namespace MC2Demo.Presentation
                 + debriefTopMode
                 + " funds="
                 + debriefFunds
+                + " fundsRow="
+                + debriefFundsRow
                 + " combatLine="
                 + combatLine;
 
@@ -5897,7 +5913,7 @@ namespace MC2Demo.Presentation
 
             GUI.Label(
                 new Rect(x + width * 0.48f, y, width * 0.50f, 18f),
-                "Token " + summary.TokenBalance.ToString(CultureInfo.InvariantCulture));
+                MechLabFundsText(summary.TokenBalance));
             GUI.Label(
                 new Rect(x, y + 20f, width, 18f),
                 "Mechs " + summary.MechCount.ToString(CultureInfo.InvariantCulture)
@@ -11182,9 +11198,7 @@ namespace MC2Demo.Presentation
 
             GUI.Label(
                 new Rect(panel.x + 18f, y, panel.width - 36f, 20f),
-                "Token " + SignedTokens(summary.completedRewardResourcePoints)
-                + "    Repair " + SignedTokens(-summary.repairCostResourcePoints)
-                + "    Net " + SignedTokens(summary.netResourcePoints));
+                MissionResultFundsLine(summary));
             y += 22f;
 
             GUI.Label(
@@ -11239,6 +11253,13 @@ namespace MC2Demo.Presentation
             return "Combat: Kills " + killText + "    Damage " + damageText;
         }
 
+        private static string MissionResultFundsLine(MissionResultSummary summary)
+        {
+            return DebriefPayoutLabel + " " + SignedTokens(summary?.completedRewardResourcePoints ?? 0)
+                + "    Repair " + SignedTokens(-(summary?.repairCostResourcePoints ?? 0))
+                + "    Net " + SignedTokens(summary?.netResourcePoints ?? 0);
+        }
+
         private static string SummaryItemsText(string[] values, int maxItems)
         {
             if (values == null || values.Length == 0 || maxItems <= 0)
@@ -11271,6 +11292,11 @@ namespace MC2Demo.Presentation
         private static string FundsCostText(int value)
         {
             return FormatTokens(Math.Max(0, value)) + " funds";
+        }
+
+        private static string MechLabFundsText(int tokenBalance)
+        {
+            return TopStatusFundsText(tokenBalance);
         }
 
         private static string FormatDecimal(float value)
