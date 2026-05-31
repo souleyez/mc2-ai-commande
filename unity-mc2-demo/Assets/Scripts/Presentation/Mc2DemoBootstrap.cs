@@ -94,6 +94,7 @@ namespace MC2Demo.Presentation
         private const string SystemBackButtonLabel = "Back";
         private const string MissionMapBackButtonLabel = "Back";
         private const string MechLabBackButtonLabel = "Back";
+        private const string TopStatusModePrefix = "MODE ";
         private const string SquadSelectionBackButtonLabel = "Back";
         private const string SquadSelectionUnavailableStatusText = "Squad plan unavailable";
         private const string ReserveFitBackButtonLabel = "Back";
@@ -2058,8 +2059,11 @@ namespace MC2Demo.Presentation
                 && detached <= playerSlots
                 && activeHostiles >= 0
                 && liveTargets >= 0;
+            string topMode = TopStatusModeText(DemoFlowScreen.Battle);
             bool mapBackOk = string.Equals(MissionMapBackButtonLabel, "Back", StringComparison.Ordinal)
                 && MissionMapBackButtonLabel.IndexOf("Close", StringComparison.OrdinalIgnoreCase) < 0;
+            bool topModeOk = string.Equals(topMode, "MODE Battle", StringComparison.Ordinal)
+                && topMode.IndexOf("FLOW", StringComparison.OrdinalIgnoreCase) < 0;
             string summary = "squad="
                 + playerReady.ToString(CultureInfo.InvariantCulture)
                 + "/"
@@ -2070,6 +2074,8 @@ namespace MC2Demo.Presentation
                 + activeHostiles.ToString(CultureInfo.InvariantCulture)
                 + " targets="
                 + liveTargets.ToString(CultureInfo.InvariantCulture)
+                + " top="
+                + topMode
                 + " mapBack="
                 + MissionMapBackButtonLabel
                 + " text="
@@ -2077,7 +2083,7 @@ namespace MC2Demo.Presentation
 
             return new CombatSituationAssertionResult
             {
-                Accepted = textOk && countsOk && mapBackOk,
+                Accepted = textOk && countsOk && mapBackOk && topModeOk,
                 Summary = summary
             };
         }
@@ -2205,8 +2211,13 @@ namespace MC2Demo.Presentation
                 && LoadoutPanelHeaderTitle.StartsWith("Mech Lab", StringComparison.Ordinal);
             bool backOk = string.Equals(MechLabBackButtonLabel, "Back", StringComparison.Ordinal)
                 && MechLabBackButtonLabel.IndexOf("Close", StringComparison.OrdinalIgnoreCase) < 0;
+            string topMode = TopStatusModeText(demoFlowScreen);
+            bool topModeOk = string.Equals(topMode, "MODE Mech Lab", StringComparison.Ordinal)
+                && topMode.IndexOf("FLOW", StringComparison.OrdinalIgnoreCase) < 0;
             string summary = "route="
                 + flow
+                + " top="
+                + topMode
                 + " panel="
                 + panelOk
                 + " status="
@@ -2214,7 +2225,7 @@ namespace MC2Demo.Presentation
                 + " back="
                 + MechLabBackButtonLabel;
 
-            return new LoadoutCompactCheck(panelOk && flowOk && statusOk && titleOk && backOk, summary);
+            return new LoadoutCompactCheck(panelOk && flowOk && statusOk && titleOk && backOk && topModeOk, summary);
         }
 
         private static LoadoutCompactCheck BuildMechLabSummaryLabelCheck()
@@ -2755,6 +2766,7 @@ namespace MC2Demo.Presentation
                 && DebriefNextStepText.IndexOf("choose next contract", StringComparison.OrdinalIgnoreCase) >= 0
                 && DebriefNextStepText.IndexOf("save", StringComparison.OrdinalIgnoreCase) < 0
                 && DebriefNextStepText.IndexOf("launch again", StringComparison.OrdinalIgnoreCase) < 0;
+            string debriefTopMode = TopStatusModeText(DemoFlowScreen.Debrief);
             bool flowStatusCopyOk = SaveSlotNeedsReviewText.IndexOf("slot", StringComparison.OrdinalIgnoreCase) >= 0
                 && SaveSlotNeedsReviewText.IndexOf("review", StringComparison.OrdinalIgnoreCase) >= 0
                 && NoSaveSlotText.IndexOf("default", StringComparison.OrdinalIgnoreCase) < 0
@@ -2770,7 +2782,9 @@ namespace MC2Demo.Presentation
                 && SystemRestartButtonLabel.IndexOf("Contract", StringComparison.OrdinalIgnoreCase) < 0
                 && string.Equals(SystemBackButtonLabel, "Back", StringComparison.Ordinal)
                 && AfterActionMechLabStatusText.StartsWith("After Action", StringComparison.Ordinal)
-                && AfterActionContractsStatusText.StartsWith("After Action", StringComparison.Ordinal);
+                && AfterActionContractsStatusText.StartsWith("After Action", StringComparison.Ordinal)
+                && string.Equals(debriefTopMode, "MODE Debrief", StringComparison.Ordinal)
+                && debriefTopMode.IndexOf("FLOW", StringComparison.OrdinalIgnoreCase) < 0;
 
             string result = "objectives="
                 + summary.completedVisibleObjectives.ToString(CultureInfo.InvariantCulture)
@@ -2798,6 +2812,8 @@ namespace MC2Demo.Presentation
                 + SystemRestartButtonLabel
                 + "/"
                 + AfterActionMechLabStatusText
+                + " top="
+                + debriefTopMode
                 + " combatLine="
                 + combatLine;
 
@@ -4746,7 +4762,7 @@ namespace MC2Demo.Presentation
             DrawRectBorder(strip, UiBorderColor, 1f);
             DrawColorRect(new Rect(strip.x, strip.y, 4f, strip.height), UiCyanColor);
 
-            string flow = "FLOW " + DemoFlowScreenName(demoFlowScreen);
+            string flow = TopStatusModeText(demoFlowScreen);
             string token = demoInventory == null
                 ? "TOKEN --"
                 : "TOKEN " + FormatTokens(Mathf.Max(0, demoInventory.tokenBalance));
@@ -11096,6 +11112,11 @@ namespace MC2Demo.Presentation
                 DemoFlowScreen.Debrief => "Debrief",
                 _ => "Unknown"
             };
+        }
+
+        private static string TopStatusModeText(DemoFlowScreen screen)
+        {
+            return TopStatusModePrefix + DemoFlowScreenName(screen);
         }
 
         private bool IsGuiPointBlocked(Vector2 guiPoint)

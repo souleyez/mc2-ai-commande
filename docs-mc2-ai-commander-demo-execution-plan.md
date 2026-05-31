@@ -61,6 +61,7 @@ The Unity demo currently supports:
 - reserve prep logs and save-result labels now use Reserve Prep wording instead of local/candidate terminology
 - the post-battle fitting drawer now presents itself as Mech Lab instead of a generic prep/squad-fit panel
 - contracts, debrief, flow breadcrumb, drawer frame, and top status now route fitting/editing entries through Mech Lab wording while keeping the underlying mech bay state stable
+- the top status strip now uses a player-facing `MODE` label instead of developer-style flow wording
 - the loadout compact smoke now asserts that the opened fitting route, panel title, and top status all stay on Mech Lab wording
 - Mech Lab's default summary now uses Bay Ready/Bay Review, Company, and no-recent-save wording instead of Inventory, Account, or idle save/load phrasing
 - Mech Lab loading, unavailable, repair, and launch-blocked states now keep Bay wording instead of surfacing Inventory terminology
@@ -173,7 +174,7 @@ The Unity demo currently supports:
 - manual demo startup now bypasses the save-game gate and enters the playable loop directly
 - the saved-account panel and Continue/New Company shell are retained only as hidden developer tooling
 - the runtime now tracks a lightweight demo flow screen across title, battle, mech bay, contracts, system, debrief, and hidden save-tooling states
-- the top status strip now exposes the current flow state, giving the future title shell a visible state boundary before the IMGUI migration
+- the top status strip now exposes the current mode state, giving the future title shell a visible state boundary before the IMGUI migration
 - the system panel now opens a Contracts shell with the current `mc2_01` contract, launch, mech bay, system, and return-battle actions
 - the pause/system panel now keeps the player loop focused on Resume, Restart Mission, Contracts, End Run, and Back
 - hidden save tooling still has guarded Save Current, Export Copy, Reset Slot, and Back paths for command-file/developer validation
@@ -733,7 +734,7 @@ Tasks:
 - System-opened Save Slot now has a Save Current action that writes the active account to the persistent save slot and refreshes the displayed Continue summary.
 - System-opened Save Slot now shows the latest save/load result inline, so Save Current feedback stays visible inside the same panel.
 - System-opened Save Slot now has Export Copy and Reset Slot controls; Reset Slot requires confirmation, copies the old save first, then replaces the default slot with a fresh demo snapshot.
-- A first lightweight demo-flow state now tracks title, battle, mech bay, contracts, Save Slot, system, and debrief, with the current state visible in the top status strip.
+- A first lightweight demo mode state now tracks title, battle, mech bay, contracts, Save Slot, system, and debrief, with the current state visible in the top status strip.
 - The system panel now opens a player-facing Contracts shell for `mc2_01`, with launch, mech bay, system, and return-battle actions.
 - The debrief panel now routes post-battle flow through Mech Bay or Contracts, hiding the debrief overlay before the player repairs, saves, or chooses the next launch.
 - The Contracts return action now goes back to Debrief after a completed mission, keeping the post-battle flow reversible.
@@ -830,6 +831,7 @@ Tasks:
 - The Contracts panel now uses simpler player-facing task-card and navigation labels such as Available Contracts, Mission map ready, Launch, Back to Battle, and Back to Debrief guarded by the debrief smoke.
 - The System and Debrief restart action now reads Restart Mission, and the System close action reads Back, keeping the pause/system flow closer to player intent and guarded by the debrief smoke.
 - The Mission Map and Mech Lab top-right close actions now read Back, with both labels guarded by combat-situation and loadout compact smoke paths.
+- The top status strip now says `MODE Battle/Mech Lab/Debrief` instead of `FLOW ...`, guarded by combat-situation, debrief, and loadout smoke paths.
 - The Mech Lab save-file check row now uses Check, Load Check, and No save checked wording instead of preview-language controls, guarded by the loadout compact smoke.
 - The Save Slot reset result now says fresh save and old copy instead of default-save wording, with the no-saved-game case guarded by the loadout compact smoke.
 - The Next Contract Squad and Reserve Fit Review subpanels now use Back instead of Hide, guarded by the hidden handoff launch smoke.
