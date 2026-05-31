@@ -19,6 +19,8 @@ namespace MC2Demo.Presentation
         private bool destroyedPoseApplied;
         private bool legFailurePoseApplied;
         private bool ejectionEffectSpawned;
+        private bool wasJumping;
+        private float jetTrailCooldown;
         private readonly Dictionary<string, GameObject> sectionParts = new(StringComparer.OrdinalIgnoreCase);
         private readonly HashSet<string> destroyedSections = new(StringComparer.OrdinalIgnoreCase);
         private readonly HashSet<string> criticalSections = new(StringComparer.OrdinalIgnoreCase);
@@ -42,6 +44,7 @@ namespace MC2Demo.Presentation
         private void Update()
         {
             ApplyPosition();
+            ApplyJetVisuals();
             ApplyHitFlash();
             ApplySectionPartDamageColors();
             ApplySectionDamageVisuals();
@@ -76,6 +79,37 @@ namespace MC2Demo.Presentation
             }
 
             transform.position = position;
+        }
+
+        private void ApplyJetVisuals()
+        {
+            if (Unit == null || Unit.IsDestroyed)
+            {
+                wasJumping = Unit?.IsJumping == true;
+                return;
+            }
+
+            if (Unit.IsJumping && !wasJumping)
+            {
+                SpawnJetTakeoffCue();
+                jetTrailCooldown = 0f;
+            }
+
+            if (Unit.IsJumping)
+            {
+                jetTrailCooldown -= Time.deltaTime;
+                if (jetTrailCooldown <= 0f)
+                {
+                    SpawnJetTrailCue();
+                    jetTrailCooldown = 0.09f;
+                }
+            }
+            else if (wasJumping)
+            {
+                SpawnJetLandingCue();
+            }
+
+            wasJumping = Unit.IsJumping;
         }
 
         private void ApplySectionDamageVisuals()
@@ -286,6 +320,50 @@ namespace MC2Demo.Presentation
         public static string SectionDamageCueSummary()
         {
             return "Arms=missing-socket+flag Legs=collapse+red-cross Cockpit=breach+ejection-pod Critical=smoke+sparks";
+        }
+
+        public static string JetCueSummary()
+        {
+            return "Jet=takeoff+trail+landing";
+        }
+
+        private void SpawnJetTakeoffCue()
+        {
+            Vector3 ground = JetGroundPosition();
+            Vector3 body = transform.position + Vector3.up * 0.08f;
+            Vector3 left = transform.TransformDirection(new Vector3(-0.20f, 0f, -0.04f));
+            Vector3 right = transform.TransformDirection(new Vector3(0.20f, 0f, -0.04f));
+            Color flame = new(0.48f, 0.96f, 1f, 0.78f);
+            CreateBeam("Jet Takeoff Flame L", body + left * 0.35f, ground + left * 0.62f, flame, 0.24f, 0.036f);
+            CreateBeam("Jet Takeoff Flame R", body + right * 0.35f, ground + right * 0.62f, flame, 0.24f, 0.036f);
+            CreateTransient("Jet Takeoff Dust", PrimitiveType.Cylinder, ground, new Color(0.66f, 0.58f, 0.42f, 0.34f), 0.48f, new Vector3(0.38f, 0.018f, 0.38f), new Vector3(1.08f, 0.006f, 1.08f));
+            CreateTransient("Jet Takeoff Flash", PrimitiveType.Sphere, ground + Vector3.up * 0.08f, new Color(1f, 0.82f, 0.32f, 0.58f), 0.22f, Vector3.one * 0.14f, Vector3.one * 0.68f);
+        }
+
+        private void SpawnJetTrailCue()
+        {
+            Vector3 position = transform.position + Vector3.down * 0.28f;
+            CreateTransient("Jet Smoke Trail", PrimitiveType.Sphere, position, new Color(0.10f, 0.12f, 0.13f, 0.34f), 0.72f, Vector3.one * 0.12f, Vector3.one * 0.58f);
+            CreateTransient("Jet Heat Flicker", PrimitiveType.Sphere, position + Vector3.up * 0.06f, new Color(0.42f, 0.92f, 1f, 0.42f), 0.18f, Vector3.one * 0.08f, Vector3.one * 0.28f);
+        }
+
+        private void SpawnJetLandingCue()
+        {
+            Vector3 ground = JetGroundPosition();
+            CreateTransient("Jet Landing Dust Ring", PrimitiveType.Cylinder, ground, new Color(0.72f, 0.62f, 0.42f, 0.38f), 0.62f, new Vector3(0.42f, 0.018f, 0.42f), new Vector3(1.42f, 0.006f, 1.42f));
+            CreateTransient("Jet Landing Shock", PrimitiveType.Sphere, ground + Vector3.up * 0.06f, new Color(1f, 0.76f, 0.28f, 0.42f), 0.28f, Vector3.one * 0.16f, Vector3.one * 0.82f);
+        }
+
+        private Vector3 JetGroundPosition()
+        {
+            if (Unit == null)
+            {
+                return transform.position;
+            }
+
+            Vector3 ground = MissionToWorld(Unit.MissionPosition);
+            ground.y = DemoTerrainView.HeightAt(Unit.MissionPosition) + 0.055f;
+            return ground;
         }
 
         private void SpawnCockpitEjection()

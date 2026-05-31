@@ -2133,6 +2133,8 @@ namespace MC2Demo.Presentation
                 && sectionFx.IndexOf("Critical=smoke+sparks", StringComparison.Ordinal) >= 0;
             string objectiveFx = ObjectiveEventCueSummary();
             bool objectiveFxOk = objectiveFx.IndexOf("ObjectivePulse=active+complete+target", StringComparison.Ordinal) >= 0;
+            string jetFx = DemoUnitView.JetCueSummary();
+            bool jetFxOk = jetFx.IndexOf("Jet=takeoff+trail+landing", StringComparison.Ordinal) >= 0;
             string tempoText = CombatTempoText();
             string tempoMode = CombatTempoMode();
             bool tempoOk = CombatTempoTextMatchesState(tempoText);
@@ -2167,6 +2169,8 @@ namespace MC2Demo.Presentation
                 + sectionFx
                 + " objectiveFx="
                 + objectiveFx
+                + " jetFx="
+                + jetFx
                 + " tempoMode="
                 + tempoMode
                 + " tempo="
@@ -2193,6 +2197,7 @@ namespace MC2Demo.Presentation
                     && weaponFxOk
                     && sectionFxOk
                     && objectiveFxOk
+                    && jetFxOk
                     && tempoOk
                     && expectedTempoOk
                     && pressureOk
