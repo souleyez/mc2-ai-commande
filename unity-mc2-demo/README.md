@@ -41,6 +41,7 @@ Current demo behavior:
 - shows world objective area hints only for the current active objective
 - keeps a compact active-objective guide ring and beacon on the current battlefield target
 - draws a thin commander-to-objective route line for the current active battlefield target
+- shifts active objective guide color and strength as target structures become damaged or critical
 - pulses visible objective activation and completion at the battlefield target position
 - pulses a distinct mission-complete or mission-failed result cue before the debrief panel takes over
 - draws tactical target lines from player units to active targets, colored by weapon readiness
@@ -222,6 +223,7 @@ Current demo behavior:
 - shows mission complete and failed result cues as a stronger battlefield transition into debrief
 - keeps the current active objective readable with a compact target guide ring and beacon
 - keeps objective direction readable with a thin route line from the commander mech to the active target
+- makes active objective target damage readable by tinting guide and route cues toward damaged and critical states
 - keeps target structures readable with persistent scorch, smoke, flame, and collapse cues
 - resolves temporary weapon cooldown, damage, cockpit/torso/arms/legs sections,
   and destruction

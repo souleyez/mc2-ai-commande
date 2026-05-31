@@ -2207,6 +2207,8 @@ namespace MC2Demo.Presentation
             bool objectiveGuideFxOk = objectiveGuideFx.IndexOf("ObjectiveGuide=active+beacon+target", StringComparison.Ordinal) >= 0;
             string objectiveRouteFx = ObjectiveRouteCueSummary();
             bool objectiveRouteFxOk = objectiveRouteFx.IndexOf("ObjectiveRoute=commander+target", StringComparison.Ordinal) >= 0;
+            string objectivePressureFx = ObjectivePressureCueSummary();
+            bool objectivePressureFxOk = objectivePressureFx.IndexOf("ObjectivePressure=steady+damaged+critical", StringComparison.Ordinal) >= 0;
             string jetFx = DemoUnitView.JetCueSummary();
             bool jetFxOk = jetFx.IndexOf("Jet=takeoff+trail+landing", StringComparison.Ordinal) >= 0;
             string structureFx = DemoStructureView.StructureDamageCueSummary();
@@ -2293,6 +2295,8 @@ namespace MC2Demo.Presentation
                 + objectiveGuideFx
                 + " objectiveRouteFx="
                 + objectiveRouteFx
+                + " objectivePressureFx="
+                + objectivePressureFx
                 + " jetFx="
                 + jetFx
                 + " structureFx="
@@ -2354,6 +2358,7 @@ namespace MC2Demo.Presentation
                     && objectiveFxOk
                     && objectiveGuideFxOk
                     && objectiveRouteFxOk
+                    && objectivePressureFxOk
                     && jetFxOk
                     && structureFxOk
                     && scriptFxOk
@@ -5058,6 +5063,11 @@ namespace MC2Demo.Presentation
             return "ObjectiveRoute=commander+target";
         }
 
+        private static string ObjectivePressureCueSummary()
+        {
+            return "ObjectivePressure=steady+damaged+critical";
+        }
+
         private void CaptureUnitActivationEvents()
         {
             List<string> contactKeys = new();
@@ -6125,8 +6135,9 @@ namespace MC2Demo.Presentation
             }
 
             float pulse = 0.98f + Mathf.Sin(Time.time * 3.4f) * 0.06f;
-            float scale = Mathf.Clamp(missionRadius / 165f, 0.84f, 2.05f) * pulse;
-            Color color = new(1f, 0.82f, 0.24f, 0.34f);
+            float pressure = ObjectiveTargetPressure(activeObjective);
+            float scale = Mathf.Clamp(missionRadius / 165f, 0.84f, 2.05f) * pulse * Mathf.Lerp(1f, 1.16f, pressure);
+            Color color = ObjectivePressureColor(pressure, 0.34f);
             if (activeObjectiveGuideMarker != null)
             {
                 activeObjectiveGuideMarker.transform.position = GroundMarkerPosition(missionPoint, 0.085f);
@@ -6139,7 +6150,7 @@ namespace MC2Demo.Presentation
                 activeObjectiveGuideBeacon.transform.position = GroundMarkerPosition(missionPoint, 0.52f);
                 float beaconScale = Mathf.Clamp(0.055f * scale, 0.045f, 0.095f);
                 activeObjectiveGuideBeacon.transform.localScale = new Vector3(beaconScale, 0.42f * pulse, beaconScale);
-                AssignMaterial(activeObjectiveGuideBeacon, "ObjectiveGuideBeacon", new Color(1f, 0.90f, 0.34f, 0.56f));
+                AssignMaterial(activeObjectiveGuideBeacon, "ObjectiveGuideBeacon", ObjectivePressureColor(pressure, 0.56f));
             }
 
             if (routeVisible && activeObjectiveRouteLine != null)
@@ -6147,8 +6158,71 @@ namespace MC2Demo.Presentation
                 Vector3 commanderPoint = GroundMarkerPosition(commander.MissionPosition, 0.20f);
                 Vector3 targetPoint = GroundMarkerPosition(missionPoint, 0.20f);
                 PositionLine(activeObjectiveRouteLine, commanderPoint, targetPoint, 0.014f);
-                AssignMaterial(activeObjectiveRouteLine, "ObjectiveRoute", new Color(1f, 0.82f, 0.24f, 0.36f));
+                AssignMaterial(activeObjectiveRouteLine, "ObjectiveRoute", ObjectivePressureColor(pressure, 0.36f));
             }
+        }
+
+        private float ObjectiveTargetPressure(ObjectiveState activeObjective)
+        {
+            StructureState target = ActiveObjectiveTargetStructure(activeObjective);
+            return target == null ? 0f : 1f - Mathf.Clamp01(target.Structure);
+        }
+
+        private StructureState ActiveObjectiveTargetStructure(ObjectiveState activeObjective)
+        {
+            if (activeObjective?.Definition?.conditions == null || mission == null)
+            {
+                return null;
+            }
+
+            foreach (ObjectiveCondition condition in activeObjective.Definition.conditions)
+            {
+                if (condition?.targetStructure?.position == null)
+                {
+                    continue;
+                }
+
+                Vector2 targetPoint = new(condition.targetStructure.position.x, condition.targetStructure.position.y);
+                StructureState best = null;
+                float bestDistance = float.MaxValue;
+                foreach (StructureState structure in mission.Structures)
+                {
+                    if (structure == null || !structure.IsTargetable)
+                    {
+                        continue;
+                    }
+
+                    float distance = Vector2.Distance(structure.MissionPosition, targetPoint);
+                    if (distance < bestDistance)
+                    {
+                        bestDistance = distance;
+                        best = structure;
+                    }
+                }
+
+                if (best != null && bestDistance <= Mathf.Max(220f, best.Radius + 80f))
+                {
+                    return best;
+                }
+            }
+
+            return null;
+        }
+
+        private static Color ObjectivePressureColor(float pressure, float alpha)
+        {
+            float clamped = Mathf.Clamp01(pressure);
+            if (clamped >= 0.68f)
+            {
+                return new Color(1f, 0.26f, 0.12f, alpha);
+            }
+
+            if (clamped >= 0.34f)
+            {
+                return new Color(1f, 0.58f, 0.16f, alpha);
+            }
+
+            return new Color(1f, 0.82f, 0.24f, alpha);
         }
 
         private void CreateCommandOverlays()
