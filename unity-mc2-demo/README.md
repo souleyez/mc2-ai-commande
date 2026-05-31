@@ -41,6 +41,7 @@ Current demo behavior:
 - draws tactical target lines from player units to active targets, colored by weapon readiness
 - pulses short target-lock rings when squad weapons auto-acquire or commanded attacks change target
 - keeps a subtle squad-focus pressure ring on targets shared by multiple player mechs
+- keeps a subtle hostile-focus warning ring on player mechs targeted by multiple enemies
 - shows a compact mission brief with objective progress and target structure integrity
 - keeps mission brief objective names compact enough for North island and Extraction to remain readable in the fixed right HUD
 - shows compact world health bars for damaged or player-targeted enemies and structures
@@ -196,6 +197,7 @@ Current demo behavior:
 - makes ready, cooling, and blocked weapon target lines read differently in the tactical view
 - shows compact target-lock rings for auto-acquired and commanded targets
 - shows a compact squad-focus pressure ring when multiple player mechs share a target
+- shows a compact hostile-focus warning ring when multiple enemies share a player target
 - makes armor hardness mitigation visible through compact battlefield glint/spark cues
 - renders Jet takeoff flame, midair smoke, and landing dust cues
 - shows hot and heat-locked mechs with battlefield vent/lock cues
