@@ -311,6 +311,7 @@ namespace MC2Demo.Presentation
             {
                 string expectedTempo = "";
                 int expectedSoloCount = -1;
+                int expectedJumpingCount = -1;
                 if (!string.IsNullOrWhiteSpace(payload))
                 {
                     string[] tokens = payload.Split(TokenSeparators, StringSplitOptions.RemoveEmptyEntries);
@@ -339,12 +340,25 @@ namespace MC2Demo.Presentation
                             continue;
                         }
 
-                        error = "Assert combat situation action only accepts optional quiet, contact, tracking, fire, or solo=N.";
+                        if (token.StartsWith("jumping=", StringComparison.Ordinal))
+                        {
+                            string value = token.Substring("jumping=".Length);
+                            if (!int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out expectedJumpingCount)
+                                || expectedJumpingCount < 0)
+                            {
+                                error = "Assert combat situation jumping argument must be jumping=N with a non-negative integer.";
+                                return false;
+                            }
+
+                            continue;
+                        }
+
+                        error = "Assert combat situation action only accepts optional quiet, contact, tracking, fire, solo=N, or jumping=N.";
                         return false;
                     }
                 }
 
-                action = StartupCommanderScriptAction.AssertCombatSituation(lineNumber, rawLine, expectedTempo, expectedSoloCount);
+                action = StartupCommanderScriptAction.AssertCombatSituation(lineNumber, rawLine, expectedTempo, expectedSoloCount, expectedJumpingCount);
                 return true;
             }
 
@@ -400,6 +414,7 @@ namespace MC2Demo.Presentation
         public bool RequireDepotIdentity { get; private set; }
         public string ExpectedCombatTempo { get; private set; }
         public int ExpectedSoloCount { get; private set; } = -1;
+        public int ExpectedJumpingCount { get; private set; } = -1;
 
         private StartupCommanderScriptAction()
         {
@@ -629,7 +644,8 @@ namespace MC2Demo.Presentation
             int lineNumber,
             string sourceLine,
             string expectedTempo,
-            int expectedSoloCount)
+            int expectedSoloCount,
+            int expectedJumpingCount)
         {
             return new StartupCommanderScriptAction
             {
@@ -637,7 +653,8 @@ namespace MC2Demo.Presentation
                 LineNumber = lineNumber,
                 SourceLine = sourceLine ?? string.Empty,
                 ExpectedCombatTempo = expectedTempo ?? string.Empty,
-                ExpectedSoloCount = expectedSoloCount
+                ExpectedSoloCount = expectedSoloCount,
+                ExpectedJumpingCount = expectedJumpingCount
             };
         }
 
