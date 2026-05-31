@@ -728,6 +728,7 @@ Tasks:
 - The combat-situation smoke now also guards compact mission-panel objective lines so the North island and Extraction objectives remain readable in the fixed right HUD.
 - Enemy activation events now spawn a short tactical wake ring, beacon, and ping at the activated group center, making source-paced contact beats visible without adding another combat HUD row.
 - Visible objective activation and completion events now spawn short target-position pulses, keeping mission progress readable in the battlefield without expanding the combat HUD.
+- Mission complete and failed script events now spawn a stronger result cue before the debrief panel takes over, keeping the battle-to-debrief transition visible without adding HUD rows.
 - Jet orders now show takeoff flame, in-flight smoke trail, and landing dust cues so short jumps read clearly at the fixed tactical camera.
 - Target structures now carry persistent scorch, smoke/flame, and collapsed-rubble cues so the Hangar objective reads in the battlefield without extra HUD rows.
 - ABL-style script bridge signals now spawn short source-position pulses, making Hangar, patrol, Starslayer, and result beats visible without adding HUD rows.
@@ -943,6 +944,7 @@ Tasks:
 - Jet movement now has a smoke-guarded battlefield cue contract: `Jet=takeoff+trail+landing`.
 - Target structure damage now has a smoke-guarded battlefield cue contract: `Structure=scar+smoke+collapse`.
 - Script bridge events now have a smoke-guarded battlefield cue contract: `ScriptCue=ring+beacon+signal`.
+- Mission result transition cues now have a smoke-guarded battlefield cue contract: `ResultCue=complete+failed`.
 - Destroyed mech wreck cues now have a smoke-guarded battlefield cue contract: `Wreck=blast+smoke+marker`.
 - Accepted command cues now have a smoke-guarded battlefield cue contract: `Command=move+attack+single`.
 - Move and Jet order paths now have a smoke-guarded battlefield cue contract: `OrderPath=move+jet`.

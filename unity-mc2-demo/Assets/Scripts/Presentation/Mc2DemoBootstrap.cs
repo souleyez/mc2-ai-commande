@@ -2203,6 +2203,8 @@ namespace MC2Demo.Presentation
             bool structureFxOk = structureFx.IndexOf("Structure=scar+smoke+collapse", StringComparison.Ordinal) >= 0;
             string scriptFx = ScriptEventCueSummary();
             bool scriptFxOk = scriptFx.IndexOf("ScriptCue=ring+beacon+signal", StringComparison.Ordinal) >= 0;
+            string resultFx = MissionResultCueSummary();
+            bool resultFxOk = resultFx.IndexOf("ResultCue=complete+failed", StringComparison.Ordinal) >= 0;
             string commandFx = CommandCueSummary();
             bool commandFxOk = commandFx.IndexOf("Command=move+attack+single", StringComparison.Ordinal) >= 0;
             string orderPathFx = OrderPathCueSummary();
@@ -2283,6 +2285,8 @@ namespace MC2Demo.Presentation
                 + structureFx
                 + " scriptFx="
                 + scriptFx
+                + " resultFx="
+                + resultFx
                 + " commandFx="
                 + commandFx
                 + " orderPathFx="
@@ -2337,6 +2341,7 @@ namespace MC2Demo.Presentation
                     && jetFxOk
                     && structureFxOk
                     && scriptFxOk
+                    && resultFxOk
                     && commandFxOk
                     && orderPathFxOk
                     && orderArrivalFxOk
@@ -3985,6 +3990,8 @@ namespace MC2Demo.Presentation
                 && DebriefNextStepText.IndexOf("choose next contract", StringComparison.OrdinalIgnoreCase) >= 0
                 && DebriefNextStepText.IndexOf("save", StringComparison.OrdinalIgnoreCase) < 0
                 && DebriefNextStepText.IndexOf("launch again", StringComparison.OrdinalIgnoreCase) < 0;
+            string resultFx = MissionResultCueSummary();
+            bool resultFxOk = resultFx.IndexOf("ResultCue=complete+failed", StringComparison.Ordinal) >= 0;
             string debriefTopMode = TopStatusModeText(DemoFlowScreen.Debrief);
             string debriefFunds = TopStatusFundsText(null);
             string debriefFundsRow = MissionResultFundsLine(new MissionResultSummary
@@ -4036,6 +4043,8 @@ namespace MC2Demo.Presentation
                 + DebriefSalvageLabel
                 + " bounty="
                 + DebriefBountyLabel
+                + " resultFx="
+                + resultFx
                 + " flow="
                 + ContractsOpenStatusText
                 + "/"
@@ -4065,6 +4074,7 @@ namespace MC2Demo.Presentation
                     && overflowOk
                     && endRunLabelOk
                     && debriefCopyOk
+                    && resultFxOk
                     && flowStatusCopyOk,
                 Summary = result
             };
@@ -5220,6 +5230,12 @@ namespace MC2Demo.Presentation
                 return;
             }
 
+            if (scriptEvent.Kind == MissionScriptEventKind.MissionResult)
+            {
+                SpawnMissionResultCue(scriptEvent, missionPoint, missionRadius);
+                return;
+            }
+
             Vector3 center = GroundMarkerPosition(missionPoint, 0.16f);
             Color color = ScriptEventCueColor(scriptEvent);
             float scale = Mathf.Clamp(missionRadius / 160f, 0.85f, 2.25f);
@@ -5238,6 +5254,39 @@ namespace MC2Demo.Presentation
                 0.62f,
                 0.026f);
             CreateImpact(center + Vector3.up * 0.22f, new Color(color.r, color.g, color.b, 0.44f), false, 0.34f * scale);
+        }
+
+        private void SpawnMissionResultCue(MissionScriptEvent scriptEvent, Vector2 missionPoint, float missionRadius)
+        {
+            bool failed = ContainsIgnoreCase(scriptEvent?.Signal, "Player");
+            Color color = failed
+                ? new Color(1f, 0.18f, 0.12f, 0.86f)
+                : new Color(0.28f, 1f, 0.56f, 0.86f);
+            Vector3 center = GroundMarkerPosition(missionPoint, 0.18f);
+            float scale = Mathf.Clamp(missionRadius / 145f, 0.95f, 2.45f);
+            CreateImpactDisc(
+                failed ? "Mission Failed Result Ring" : "Mission Complete Result Ring",
+                center,
+                new Color(color.r, color.g, color.b, 0.34f),
+                1.10f,
+                0.42f * scale,
+                1.90f * scale,
+                0.030f);
+            CreateImpactDisc(
+                failed ? "Mission Failed Result Shock" : "Mission Complete Result Shock",
+                center + Vector3.up * 0.025f,
+                new Color(color.r, color.g, color.b, 0.24f),
+                0.72f,
+                0.18f * scale,
+                1.15f * scale,
+                0.020f);
+            CreateBeam(
+                center + Vector3.up * 0.10f,
+                center + Vector3.up * Mathf.Clamp(1.42f * scale, 1.20f, 2.45f),
+                new Color(color.r, color.g, color.b, 0.58f),
+                0.92f,
+                failed ? 0.034f : 0.038f);
+            CreateImpact(center + Vector3.up * 0.30f, new Color(color.r, color.g, color.b, 0.52f), false, 0.48f * scale);
         }
 
         private bool TryGetScriptEventCuePoint(MissionScriptEvent scriptEvent, out Vector2 missionPoint, out float missionRadius)
@@ -5358,6 +5407,11 @@ namespace MC2Demo.Presentation
         private static string ScriptEventCueSummary()
         {
             return "ScriptCue=ring+beacon+signal";
+        }
+
+        private static string MissionResultCueSummary()
+        {
+            return "ResultCue=complete+failed";
         }
 
         private static string CommandCueSummary()
