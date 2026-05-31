@@ -2198,7 +2198,7 @@ namespace MC2Demo.Presentation
                 && sectionFx.IndexOf("Legs=collapse+red-cross", StringComparison.Ordinal) >= 0
                 && sectionFx.IndexOf("Cockpit=breach+ejection-pod+chute", StringComparison.Ordinal) >= 0
                 && sectionFx.IndexOf("Critical=smoke+sparks", StringComparison.Ordinal) >= 0
-                && sectionFx.IndexOf("Wreck=blast+smoke+marker", StringComparison.Ordinal) >= 0;
+                && sectionFx.IndexOf("Wreck=blast+smoke+marker+debris", StringComparison.Ordinal) >= 0;
             string heatFx = DemoUnitView.HeatCueSummary();
             bool heatFxOk = heatFx.IndexOf("Heat=vent+lock", StringComparison.Ordinal) >= 0;
             string objectiveFx = ObjectiveEventCueSummary();

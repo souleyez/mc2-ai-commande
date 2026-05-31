@@ -394,10 +394,28 @@ namespace MC2Demo.Presentation
 
             CreateTransient("Mech Wreck Blast", PrimitiveType.Sphere, wreckCenter + Vector3.up * 0.18f, new Color(1f, 0.42f, 0.08f, 0.72f), 0.55f, Vector3.one * 0.20f, new Vector3(1.35f, 0.85f, 1.35f));
             CreateTransient("Mech Wreck Smoke", PrimitiveType.Sphere, wreckCenter + Vector3.up * 0.48f, new Color(0.08f, 0.08f, 0.08f, 0.52f), 1.65f, Vector3.one * 0.28f, new Vector3(1.15f, 1.80f, 1.15f));
+            SpawnWreckDebris(wreckCenter);
             CreateWorldDamageObject("Wreck Scorch", PrimitiveType.Cylinder, ground, Quaternion.identity, new Vector3(0.72f, 0.018f, 0.72f), new Color(0.04f, 0.03f, 0.02f, 0.95f));
             CreateWorldDamageObject("Wreck Heat Beacon", PrimitiveType.Cylinder, ground + Vector3.up * 0.20f, Quaternion.identity, new Vector3(0.06f, 0.22f, 0.06f), new Color(1f, 0.20f, 0.05f, 1f));
             CreateWorldDamageObject("Wreck Marker", PrimitiveType.Cube, ground + Vector3.up * 0.04f, Quaternion.identity, new Vector3(0.80f, 0.030f, 0.12f), new Color(1f, 0.16f, 0.08f, 1f));
             CreateWorldDamageObject("Wreck Marker Crossbar", PrimitiveType.Cube, ground + Vector3.up * 0.045f, Quaternion.Euler(0f, 90f, 0f), new Vector3(0.68f, 0.030f, 0.10f), new Color(1f, 0.24f, 0.06f, 1f));
+        }
+
+        private void SpawnWreckDebris(Vector3 wreckCenter)
+        {
+            Vector3 center = wreckCenter + Vector3.up * 0.22f;
+            Color hot = new(1f, 0.46f, 0.10f, 0.78f);
+            Color metal = new(0.62f, 0.66f, 0.68f, 0.82f);
+            SpawnWreckDebrisPiece(center, new Vector3(0.86f, 0.34f, 0.42f), hot, 0.12f, 2.1f);
+            SpawnWreckDebrisPiece(center, new Vector3(-0.78f, 0.26f, 0.34f), metal, 0.10f, 2.0f);
+            SpawnWreckDebrisPiece(center, new Vector3(0.28f, 0.42f, -0.84f), hot, 0.09f, 1.9f);
+            SpawnWreckDebrisPiece(center, new Vector3(-0.36f, 0.22f, -0.72f), metal, 0.08f, 1.8f);
+        }
+
+        private void SpawnWreckDebrisPiece(Vector3 center, Vector3 localImpulse, Color color, float size, float duration)
+        {
+            Vector3 target = center + transform.TransformDirection(localImpulse);
+            CreateMovingTransient("Mech Wreck Debris", PrimitiveType.Cube, center, target, color, duration, Vector3.one * size, Vector3.one * (size * 0.35f));
         }
 
         private void SpawnCriticalSectionEffect(string sectionName)
@@ -410,7 +428,7 @@ namespace MC2Demo.Presentation
 
         public static string SectionDamageCueSummary()
         {
-            return "Arms=missing-socket+flag Legs=collapse+red-cross Cockpit=breach+ejection-pod+chute Critical=smoke+sparks Wreck=blast+smoke+marker";
+            return "Arms=missing-socket+flag Legs=collapse+red-cross Cockpit=breach+ejection-pod+chute Critical=smoke+sparks Wreck=blast+smoke+marker+debris";
         }
 
         public static string JetCueSummary()
