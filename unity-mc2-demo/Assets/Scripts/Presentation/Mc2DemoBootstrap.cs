@@ -171,6 +171,8 @@ namespace MC2Demo.Presentation
         private GameObject activeObjectiveGuideMarker;
         private GameObject activeObjectiveGuideBeacon;
         private GameObject activeObjectiveRouteLine;
+        private GameObject activeObjectiveRouteStartMarker;
+        private GameObject activeObjectiveRouteEndMarker;
         private readonly Dictionary<string, GameObject> structureHealthBarBacks = new();
         private readonly Dictionary<string, GameObject> structureHealthBarFills = new();
         private readonly HashSet<string> detachedUnitIdsLastFrame = new(StringComparer.OrdinalIgnoreCase);
@@ -548,6 +550,8 @@ namespace MC2Demo.Presentation
             activeObjectiveGuideMarker = null;
             activeObjectiveGuideBeacon = null;
             activeObjectiveRouteLine = null;
+            activeObjectiveRouteStartMarker = null;
+            activeObjectiveRouteEndMarker = null;
             structureHealthBarBacks.Clear();
             structureHealthBarFills.Clear();
             detachedUnitIdsLastFrame.Clear();
@@ -2226,7 +2230,7 @@ namespace MC2Demo.Presentation
             string objectiveGuideFx = ObjectiveGuideCueSummary();
             bool objectiveGuideFxOk = objectiveGuideFx.IndexOf("ObjectiveGuide=active+beacon+target", StringComparison.Ordinal) >= 0;
             string objectiveRouteFx = ObjectiveRouteCueSummary();
-            bool objectiveRouteFxOk = objectiveRouteFx.IndexOf("ObjectiveRoute=commander+target", StringComparison.Ordinal) >= 0;
+            bool objectiveRouteFxOk = objectiveRouteFx.IndexOf("ObjectiveRoute=commander+target+endcaps", StringComparison.Ordinal) >= 0;
             string objectivePressureFx = ObjectivePressureCueSummary();
             bool objectivePressureFxOk = objectivePressureFx.IndexOf("ObjectivePressure=steady+damaged+critical", StringComparison.Ordinal) >= 0;
             string jetFx = DemoUnitView.JetCueSummary();
@@ -5222,7 +5226,7 @@ namespace MC2Demo.Presentation
 
         private static string ObjectiveRouteCueSummary()
         {
-            return "ObjectiveRoute=commander+target";
+            return "ObjectiveRoute=commander+target+endcaps";
         }
 
         private static string ObjectivePressureCueSummary()
@@ -6224,6 +6228,16 @@ namespace MC2Demo.Presentation
                 new Color(1f, 0.88f, 0.32f, 0.58f),
                 new Vector3(0.06f, 0.42f, 0.06f));
             activeObjectiveRouteLine = CreateTargetLine("Active Objective Route");
+            activeObjectiveRouteStartMarker = CreateMarkerDisc(
+                "Active Objective Route Start",
+                "ObjectiveRouteStart",
+                new Color(1f, 0.86f, 0.30f, 0.32f),
+                new Vector3(0.34f, 0.014f, 0.34f));
+            activeObjectiveRouteEndMarker = CreateMarkerDisc(
+                "Active Objective Route End",
+                "ObjectiveRouteEnd",
+                new Color(1f, 0.86f, 0.30f, 0.38f),
+                new Vector3(0.46f, 0.014f, 0.46f));
             UpdateObjectiveAreaVisibility();
         }
 
@@ -6301,6 +6315,16 @@ namespace MC2Demo.Presentation
                 activeObjectiveRouteLine.SetActive(routeVisible);
             }
 
+            if (activeObjectiveRouteStartMarker != null)
+            {
+                activeObjectiveRouteStartMarker.SetActive(routeVisible);
+            }
+
+            if (activeObjectiveRouteEndMarker != null)
+            {
+                activeObjectiveRouteEndMarker.SetActive(routeVisible);
+            }
+
             if (!visible)
             {
                 return;
@@ -6331,6 +6355,21 @@ namespace MC2Demo.Presentation
                 Vector3 targetPoint = GroundMarkerPosition(missionPoint, 0.20f);
                 PositionLine(activeObjectiveRouteLine, commanderPoint, targetPoint, 0.014f);
                 AssignMaterial(activeObjectiveRouteLine, "ObjectiveRoute", ObjectivePressureColor(pressure, 0.36f));
+                Color routeCapColor = ObjectivePressureColor(pressure, 0.42f);
+                if (activeObjectiveRouteStartMarker != null)
+                {
+                    activeObjectiveRouteStartMarker.transform.position = GroundMarkerPosition(commander.MissionPosition, 0.092f);
+                    activeObjectiveRouteStartMarker.transform.localScale = new Vector3(0.30f * pulse, 0.014f, 0.30f * pulse);
+                    AssignMaterial(activeObjectiveRouteStartMarker, "ObjectiveRouteStart", routeCapColor);
+                }
+
+                if (activeObjectiveRouteEndMarker != null)
+                {
+                    float endScale = Mathf.Lerp(0.38f, 0.54f, pressure) * pulse;
+                    activeObjectiveRouteEndMarker.transform.position = GroundMarkerPosition(missionPoint, 0.105f);
+                    activeObjectiveRouteEndMarker.transform.localScale = new Vector3(endScale, 0.014f, endScale);
+                    AssignMaterial(activeObjectiveRouteEndMarker, "ObjectiveRouteEnd", ObjectivePressureColor(pressure, 0.48f));
+                }
             }
         }
 
