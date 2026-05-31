@@ -703,6 +703,7 @@ Tasks:
 - Section damage readability now has persistent missing-arm flags, red leg-collapse cues, cockpit breach/ejection markers, and a smoke-guarded cue contract.
 - The first `mc2_01` encounter pacing smoke now proves the airfield beat: initial hostiles held, Airfield/North patrols armed after objective 0, infantry ambush held until hangar damage, and Starslayer held for area 7.
 - The hangar ambush smoke now attacks `structure-1-0`, captures combat/script/contact events during startup advance, and verifies infantry activation only after Hangar damage.
+- The Starslayer trigger smoke now moves into the hidden area-7 zone, treats destroyed enemies as already-activated for pacing counts, and verifies the west lance wakes only after the area trigger.
 - Mission rewards now add funds and salvage fragments, and ready fragment sets become local warehouse mechs.
 - The mech bay now has a compact roster line and a read-only detail view for owned mechs.
 - Assembled reserve mechs now stay held with `pending-loadout`, so they cannot be confused with deployable squad mechs.

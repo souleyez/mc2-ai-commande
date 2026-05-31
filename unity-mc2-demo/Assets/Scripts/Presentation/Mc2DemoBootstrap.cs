@@ -2223,7 +2223,7 @@ namespace MC2Demo.Presentation
             EncounterPacingCounts counts = new();
             foreach (UnitState unit in mission.Units)
             {
-                if (unit.IsPlayerUnit || unit.IsDestroyed)
+                if (unit.IsPlayerUnit)
                 {
                     continue;
                 }
@@ -2234,7 +2234,7 @@ namespace MC2Demo.Presentation
                 }
 
                 counts.Total++;
-                if (unit.IsActive)
+                if (unit.IsActive || unit.IsDestroyed)
                 {
                     counts.Active++;
                 }
