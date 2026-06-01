@@ -2297,7 +2297,7 @@ namespace MC2Demo.Presentation
             string resultFx = MissionResultCueSummary();
             bool resultFxOk = resultFx.IndexOf("ResultCue=complete+failed", StringComparison.Ordinal) >= 0;
             string commandFx = CommandCueSummary();
-            bool commandFxOk = commandFx.IndexOf("Command=move+attack+single+blocked", StringComparison.Ordinal) >= 0;
+            bool commandFxOk = commandFx.IndexOf("Command=move+attack+single+blocked+partial", StringComparison.Ordinal) >= 0;
             string soloOrderFx = SoloOrderCueSummary();
             bool soloOrderFxOk = soloOrderFx.IndexOf("SoloOrder=ring+beacon", StringComparison.Ordinal) >= 0;
             string orderPathFx = OrderPathCueSummary();
@@ -5723,7 +5723,7 @@ namespace MC2Demo.Presentation
 
         private static string CommandCueSummary()
         {
-            return "Command=move+attack+single+blocked";
+            return "Command=move+attack+single+blocked+partial";
         }
 
         private static string OrderPathCueSummary()
@@ -5746,6 +5746,12 @@ namespace MC2Demo.Presentation
             if (result.Accepted)
             {
                 SpawnAcceptedCommandCue(command, result);
+                int expectedCount = CountCommandEligiblePlayerUnits(command);
+                if (expectedCount > result.AcceptedCount && result.AcceptedCount > 0)
+                {
+                    SpawnPartialCommandCue(command, result.AcceptedCount, expectedCount);
+                }
+
                 return;
             }
 
@@ -5793,6 +5799,46 @@ namespace MC2Demo.Presentation
             CreateImpactDisc("Command Blocked Pulse", center, new Color(color.r, color.g, color.b, 0.32f), 0.56f, 0.28f * scale, 1.10f * scale, 0.026f);
             CreateBeam(center + Vector3.up * 0.05f, center + Vector3.up * Mathf.Clamp(0.74f * scale, 0.62f, 1.20f), new Color(color.r, color.g, color.b, 0.52f), 0.42f, 0.030f);
             CreateImpact(center + Vector3.up * 0.12f, new Color(color.r, color.g, color.b, 0.44f), false, 0.30f * scale);
+        }
+
+        private void SpawnPartialCommandCue(CommanderCommand command, int acceptedCount, int expectedCount)
+        {
+            if (!TryGetCommandCuePoint(command, out Vector2 missionPoint, out float radius))
+            {
+                return;
+            }
+
+            float ratio = Mathf.Clamp01(expectedCount <= 0 ? 0f : acceptedCount / (float)expectedCount);
+            Vector3 center = GroundMarkerPosition(missionPoint, 0.23f);
+            float scale = Mathf.Clamp(radius / 150f, 0.90f, 1.90f);
+            Color color = Color.Lerp(new Color(1f, 0.16f, 0.08f, 0.74f), new Color(1f, 0.78f, 0.18f, 0.72f), ratio);
+            CreateImpactDisc("Command Partial Pulse", center, new Color(color.r, color.g, color.b, 0.28f), 0.62f, 0.34f * scale, 1.34f * scale, 0.024f);
+            CreateBeam(center + Vector3.up * 0.06f, center + Vector3.up * Mathf.Clamp(0.92f * scale, 0.72f, 1.42f), new Color(color.r, color.g, color.b, 0.48f), 0.48f, 0.024f);
+        }
+
+        private int CountCommandEligiblePlayerUnits(CommanderCommand command)
+        {
+            if (command == null || mission == null)
+            {
+                return 0;
+            }
+
+            if (command.Scope == CommanderCommandScope.Unit)
+            {
+                UnitState unit = mission.FindUnit(command.UnitId);
+                return unit != null && unit.IsPlayerUnit && unit.IsActive && !unit.IsDestroyed ? 1 : 0;
+            }
+
+            int count = 0;
+            foreach (UnitState unit in mission.PlayerUnits())
+            {
+                if (unit.IsActive && !unit.IsDestroyed && !unit.IsDetached)
+                {
+                    count++;
+                }
+            }
+
+            return count;
         }
 
         private bool TryGetCommandCuePoint(CommanderCommand command, out Vector2 missionPoint, out float radius)
@@ -8101,11 +8147,16 @@ namespace MC2Demo.Presentation
             }
             else
             {
+                CommanderCommand command = CommanderCommand.SquadJump(target);
                 result = commandPort.JumpSquad(target);
+                int eligibleCount = CountCommandEligiblePlayerUnits(command);
                 statusText = result.Accepted
-                    ? (string.IsNullOrEmpty(label) ? "Squad jet: " + result.AcceptedCount : "Squad jet vector: " + result.AcceptedCount)
+                    ? (string.IsNullOrEmpty(label) ? "Squad jet: " : "Squad jet vector: ")
+                        + result.AcceptedCount
+                        + "/"
+                        + Mathf.Max(result.AcceptedCount, eligibleCount).ToString(CultureInfo.InvariantCulture)
                     : result.Message;
-                SpawnCommandResultCue(CommanderCommand.SquadJump(target), result);
+                SpawnCommandResultCue(command, result);
             }
 
             pendingDetachedUnitId = null;

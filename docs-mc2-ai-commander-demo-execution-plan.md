@@ -717,7 +717,7 @@ Tasks:
 - The combat situation smoke now also guards the compact battle pulse with explicit quiet, contact, and fire expectations tied to mission events.
 - The combat situation smoke now also guards source-group contact pressure internally, so active Airfield and North groups remain verifiable without occupying default battle HUD space.
 - The combat situation smoke now also guards the commanded Focus contract, keeping the current target readable without exposing internal target ids.
-- Accepted and blocked player or CLI commands now pulse move, attack, Jet, single-unit, and blocked cues on the battlefield so command acknowledgement and rejection read without adding another HUD row.
+- Accepted, blocked, and partially accepted player or CLI commands now pulse move, attack, Jet, single-unit, blocked, and partial cues on the battlefield so command acknowledgement and rejection read without adding another HUD row.
 - Pending and active single-unit orders now keep a compact battlefield ring and beacon on the detached mech, making the simplified mobile command state visible without adding HUD rows.
 - Move and Jet orders now draw compact travel path lines with destination endcaps from player mechs to their destinations without adding combat HUD rows.
 - Move and Jet orders now pulse compact arrival cues when player mechs reach their destinations without adding combat HUD rows.
@@ -890,7 +890,7 @@ Tasks:
 - A command-file `mc2_01-solo-attack-isolation.txt` smoke path now verifies a single-unit structure attack stays detached while a later squad move is accepted only by the non-detached mechs.
 - A command-file `mc2_01-solo-jet-state.txt` smoke path now verifies a single-unit Jet order enters `jumping=1`, keeps the mech in `Solo 1`, and returns to `Solo 0` after landing.
 - A command-file `assert-command-result` hook and `mc2_01-jet-landing-block.txt` smoke path now verify illegal Jet landings are blocked without detaching or launching the mech.
-- A command-file `mc2_01-squad-jet-partial.txt` smoke path now verifies squad Jet orders are accepted per mech, so illegal landings stay grounded while valid landings jump without creating solo state.
+- A command-file `mc2_01-squad-jet-partial.txt` smoke path now verifies squad Jet orders are accepted per mech, so illegal landings stay grounded while valid landings jump without creating solo state or hiding the partial command cue.
 - Weapon selection, move, place, and selected-slot reset results now report `W# Moved @a,b>c,d` or `W# Base @a,b` in the top status.
 - The selected weapon summary and payload detail now show the selected block as a concrete `WxH` footprint, making vertical and wide weapon shapes readable without counting cells.
 - The payload weapon detail row now uses compact weapon short codes such as `AC10` instead of repeating full source weapon names.
@@ -968,7 +968,7 @@ Tasks:
 - Script bridge events now have a smoke-guarded battlefield cue contract: `ScriptCue=ring+beacon+signal`.
 - Mission result transition cues now have a smoke-guarded battlefield cue contract: `ResultCue=complete+failed`.
 - Destroyed mech wreck cues now have a smoke-guarded battlefield cue contract: `Wreck=blast+smoke+marker+debris`.
-- Accepted and blocked command cues now have a smoke-guarded battlefield cue contract: `Command=move+attack+single+blocked`.
+- Accepted, blocked, and partially accepted command cues now have a smoke-guarded battlefield cue contract: `Command=move+attack+single+blocked+partial`.
 - Pending and active solo orders now have a smoke-guarded battlefield cue contract: `SoloOrder=ring+beacon`.
 - Move and Jet order paths now have a smoke-guarded battlefield cue contract: `OrderPath=move+jet+endcap`.
 - Move and Jet arrivals now have a smoke-guarded battlefield cue contract: `OrderArrival=move+jet`.
