@@ -719,7 +719,7 @@ Tasks:
 - The combat situation smoke now also guards the commanded Focus contract, keeping the current target readable without exposing internal target ids.
 - Accepted, blocked, and partially accepted player or CLI commands now pulse move, attack, Jet, single-unit, blocked, partial target, and rejected-unit cues on the battlefield so command acknowledgement and rejection read without adding another HUD row.
 - Pending and active single-unit orders now keep a compact battlefield ring and beacon on the detached mech, making the simplified mobile command state visible without adding HUD rows.
-- Move and Jet orders now draw compact travel path lines with destination endcaps from player mechs to their destinations without adding combat HUD rows.
+- Move, Jet, and attack orders now draw compact travel or pursuit path lines with destination or target endcaps from player mechs to their destinations without adding combat HUD rows.
 - Move and Jet orders now pulse compact arrival cues when player mechs reach their destinations without adding combat HUD rows.
 - Section damage readability now has persistent missing-arm flags, red leg-collapse cues, cockpit breach/ejection/chute/landing markers, critical-section smoke/spark vents, destroyed-mech wreck blast/smoke/marker/debris cues, compact critical/destroyed section status labels, and smoke-guarded cue contracts.
 - Hot and heat-locked mechs now show battlefield vent/lock cues, so heat pressure reads at the fixed tactical camera without adding another combat HUD row.
@@ -970,7 +970,7 @@ Tasks:
 - Destroyed mech wreck cues now have a smoke-guarded battlefield cue contract: `Wreck=blast+smoke+marker+debris`.
 - Accepted, blocked, and partially accepted command cues now have a smoke-guarded battlefield cue contract: `Command=move+attack+single+blocked+partial+reject-unit`.
 - Pending and active solo orders now have a smoke-guarded battlefield cue contract: `SoloOrder=ring+beacon`.
-- Move and Jet order paths now have a smoke-guarded battlefield cue contract: `OrderPath=move+jet+endcap`.
+- Move, Jet, and attack order paths now have a smoke-guarded battlefield cue contract: `OrderPath=move+jet+attack+endcap`.
 - Move and Jet arrivals now have a smoke-guarded battlefield cue contract: `OrderArrival=move+jet`.
 - Heat pressure cues now have a smoke-guarded battlefield cue contract: `Heat=vent+lock`.
 - Commander follow cues now have a smoke-guarded battlefield cue contract: `Commander=anchor+beacon`.

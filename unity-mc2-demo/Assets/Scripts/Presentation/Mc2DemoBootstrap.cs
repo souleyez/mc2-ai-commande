@@ -2301,7 +2301,7 @@ namespace MC2Demo.Presentation
             string soloOrderFx = SoloOrderCueSummary();
             bool soloOrderFxOk = soloOrderFx.IndexOf("SoloOrder=ring+beacon", StringComparison.Ordinal) >= 0;
             string orderPathFx = OrderPathCueSummary();
-            bool orderPathFxOk = orderPathFx.IndexOf("OrderPath=move+jet+endcap", StringComparison.Ordinal) >= 0;
+            bool orderPathFxOk = orderPathFx.IndexOf("OrderPath=move+jet+attack+endcap", StringComparison.Ordinal) >= 0;
             string orderArrivalFx = OrderArrivalCueSummary();
             bool orderArrivalFxOk = orderArrivalFx.IndexOf("OrderArrival=move+jet", StringComparison.Ordinal) >= 0;
             string commanderFx = CommanderCueSummary();
@@ -5728,7 +5728,7 @@ namespace MC2Demo.Presentation
 
         private static string OrderPathCueSummary()
         {
-            return "OrderPath=move+jet+endcap";
+            return "OrderPath=move+jet+attack+endcap";
         }
 
         private static string OrderArrivalCueSummary()
@@ -7049,11 +7049,16 @@ namespace MC2Demo.Presentation
 
             Vector3 unitPoint = unitView.transform.position + Vector3.up * 0.14f;
             Vector3 targetPoint = GroundMarkerPosition(unit.MoveTarget, unit.IsJumping ? 0.24f : 0.14f);
-            PositionLine(line, unitPoint, targetPoint, unit.IsJumping ? 0.034f : 0.024f);
+            bool isAttack = !unit.IsJumping && unit.HasAttackOrder;
+            PositionLine(line, unitPoint, targetPoint, unit.IsJumping ? 0.034f : isAttack ? 0.030f : 0.024f);
             AssignMaterial(
                 line,
-                unit.IsJumping ? "OrderPathJet" : "OrderPathMove",
-                unit.IsJumping ? new Color(0.64f, 0.96f, 1f, 0.46f) : new Color(0.24f, 0.72f, 1f, 0.34f));
+                unit.IsJumping ? "OrderPathJet" : isAttack ? "OrderPathAttack" : "OrderPathMove",
+                unit.IsJumping
+                    ? new Color(0.64f, 0.96f, 1f, 0.46f)
+                    : isAttack
+                        ? new Color(1f, 0.52f, 0.12f, 0.44f)
+                        : new Color(0.24f, 0.72f, 1f, 0.34f));
         }
 
         private void UpdateFocusMarker(UnitState unit)
