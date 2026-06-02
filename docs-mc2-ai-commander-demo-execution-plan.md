@@ -716,7 +716,7 @@ Tasks:
 - Active hostile clusters now show a compact pressure-center ring and beacon, making enemy pressure location readable without adding combat HUD rows.
 - The combat situation smoke now also guards the compact battle pulse with explicit quiet, contact, and fire expectations tied to mission events.
 - The combat situation smoke now also guards source-group contact pressure internally, so active Airfield and North groups remain verifiable without occupying default battle HUD space.
-- The combat situation smoke now also guards the commanded Focus contract, keeping the current target readable without exposing internal target ids.
+- The combat situation smoke now also guards the commanded Focus contract and state-colored battlefield focus rings, keeping the current target readable without exposing internal target ids.
 - Accepted, blocked, and partially accepted player or CLI commands now pulse move, attack, Jet, single-unit, blocked, partial target, and rejected-unit cues on the battlefield so command acknowledgement and rejection read without adding another HUD row.
 - Pending and active single-unit orders now keep a compact battlefield ring and beacon on the detached mech, making the simplified mobile command state visible without adding HUD rows.
 - Move, Jet, and attack orders now draw compact travel or pursuit path lines with destination or target endcaps from player mechs to their destinations without adding combat HUD rows.
@@ -954,6 +954,7 @@ Tasks:
 - Weapon range rings now have a smoke-guarded battlefield cue contract: `RangeRing=selection+target+heat`.
 - Player weapon readiness now has a smoke-guarded battlefield cue contract: `WeaponReadiness=ready+cooling+blocked+beacon`.
 - Target lock acquisition now has a smoke-guarded battlefield cue contract: `TargetLock=auto+command+beacon`.
+- Commanded focus rings now have a smoke-guarded battlefield cue contract: `CommandFocus=closing+ready+hot+cycling`.
 - Squad focus pressure now has a smoke-guarded battlefield cue contract: `SquadFocus=ring+pressure+beacon`.
 - Hostile focus warning now has a smoke-guarded battlefield cue contract: `ThreatFocus=ring+warning+beacon`.
 - Player mech damage now has a smoke-guarded battlefield cue contract: `PlayerDamage=warning+critical+beacon`.

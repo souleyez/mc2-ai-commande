@@ -2262,6 +2262,8 @@ namespace MC2Demo.Presentation
             bool weaponReadinessFxOk = weaponReadinessFx.IndexOf("WeaponReadiness=ready+cooling+blocked+beacon", StringComparison.Ordinal) >= 0;
             string targetLockFx = TargetLockCueSummary();
             bool targetLockFxOk = targetLockFx.IndexOf("TargetLock=auto+command+beacon", StringComparison.Ordinal) >= 0;
+            string commandFocusFx = CommandFocusCueSummary();
+            bool commandFocusFxOk = commandFocusFx.IndexOf("CommandFocus=closing+ready+hot+cycling", StringComparison.Ordinal) >= 0;
             string squadFocusFx = SquadFocusCueSummary();
             bool squadFocusFxOk = squadFocusFx.IndexOf("SquadFocus=ring+pressure+beacon", StringComparison.Ordinal) >= 0;
             string threatFocusFx = ThreatFocusCueSummary();
@@ -2366,6 +2368,8 @@ namespace MC2Demo.Presentation
                 + weaponReadinessFx
                 + " targetLockFx="
                 + targetLockFx
+                + " commandFocusFx="
+                + commandFocusFx
                 + " squadFocusFx="
                 + squadFocusFx
                 + " threatFocusFx="
@@ -2443,6 +2447,7 @@ namespace MC2Demo.Presentation
                     && rangeRingFxOk
                     && weaponReadinessFxOk
                     && targetLockFxOk
+                    && commandFocusFxOk
                     && squadFocusFxOk
                     && threatFocusFxOk
                     && playerDamageFxOk
@@ -2509,6 +2514,11 @@ namespace MC2Demo.Presentation
         private static string TargetLockCueSummary()
         {
             return "TargetLock=auto+command+beacon";
+        }
+
+        private static string CommandFocusCueSummary()
+        {
+            return "CommandFocus=closing+ready+hot+cycling";
         }
 
         private static string SquadFocusCueSummary()
@@ -7077,16 +7087,100 @@ namespace MC2Demo.Presentation
 
             Vector2 position = default;
             float radius = 0f;
-            bool isVisible = !unit.IsDestroyed
+            bool isVisible = unit.IsActive
+                && !unit.IsDestroyed
                 && unit.HasAttackOrder
                 && TryGetTargetMarker(unit.AttackTargetId, out position, out radius);
             marker.SetActive(isVisible);
             if (isVisible)
             {
+                string state = CommandFocusStateKey(unit, unit.AttackTargetId);
+                float pulse = 0.96f + Mathf.Sin(Time.time * CommandFocusPulseSpeed(state)) * CommandFocusPulseRange(state);
                 marker.transform.position = GroundMarkerPosition(position, 0.1f);
-                float scale = Mathf.Clamp(radius / 95f, 1.1f, 4.2f);
+                float scale = Mathf.Clamp(radius / 95f, 1.1f, 4.2f) * CommandFocusScale(state) * pulse;
                 marker.transform.localScale = new Vector3(scale, 0.016f, scale);
+                AssignMaterial(marker, "CommandFocus" + state, CommandFocusColor(state));
             }
+        }
+
+        private string CommandFocusStateKey(UnitState unit, string targetId)
+        {
+            if (unit == null || string.IsNullOrEmpty(targetId))
+            {
+                return "Tracking";
+            }
+
+            if (!IsTargetInWeaponRange(unit, targetId))
+            {
+                return "Closing";
+            }
+
+            if (unit.IsHeatLocked)
+            {
+                return "Hot";
+            }
+
+            if (unit.IsWeaponCoolingDown)
+            {
+                return "Cycling";
+            }
+
+            return "Ready";
+        }
+
+        private static Color CommandFocusColor(string state)
+        {
+            if (string.Equals(state, "Ready", StringComparison.Ordinal))
+            {
+                return new Color(0.34f, 1f, 0.62f, 0.42f);
+            }
+
+            if (string.Equals(state, "Hot", StringComparison.Ordinal))
+            {
+                return new Color(1f, 0.18f, 0.10f, 0.48f);
+            }
+
+            if (string.Equals(state, "Cycling", StringComparison.Ordinal))
+            {
+                return new Color(1f, 0.68f, 0.16f, 0.40f);
+            }
+
+            return new Color(1f, 0.48f, 0.12f, 0.42f);
+        }
+
+        private static float CommandFocusScale(string state)
+        {
+            if (string.Equals(state, "Hot", StringComparison.Ordinal))
+            {
+                return 1.08f;
+            }
+
+            if (string.Equals(state, "Ready", StringComparison.Ordinal))
+            {
+                return 1.02f;
+            }
+
+            return 0.96f;
+        }
+
+        private static float CommandFocusPulseSpeed(string state)
+        {
+            if (string.Equals(state, "Hot", StringComparison.Ordinal))
+            {
+                return 6.4f;
+            }
+
+            if (string.Equals(state, "Cycling", StringComparison.Ordinal))
+            {
+                return 4.8f;
+            }
+
+            return 3.8f;
+        }
+
+        private static float CommandFocusPulseRange(string state)
+        {
+            return string.Equals(state, "Hot", StringComparison.Ordinal) ? 0.10f : 0.06f;
         }
 
         private void UpdatePlayerDamageWarningMarker(UnitState unit)
