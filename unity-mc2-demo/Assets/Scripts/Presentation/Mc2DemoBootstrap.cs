@@ -2297,7 +2297,7 @@ namespace MC2Demo.Presentation
             string resultFx = MissionResultCueSummary();
             bool resultFxOk = resultFx.IndexOf("ResultCue=complete+failed", StringComparison.Ordinal) >= 0;
             string commandFx = CommandCueSummary();
-            bool commandFxOk = commandFx.IndexOf("Command=move+attack+single+blocked+partial", StringComparison.Ordinal) >= 0;
+            bool commandFxOk = commandFx.IndexOf("Command=move+attack+single+blocked+partial+reject-unit", StringComparison.Ordinal) >= 0;
             string soloOrderFx = SoloOrderCueSummary();
             bool soloOrderFxOk = soloOrderFx.IndexOf("SoloOrder=ring+beacon", StringComparison.Ordinal) >= 0;
             string orderPathFx = OrderPathCueSummary();
@@ -5723,7 +5723,7 @@ namespace MC2Demo.Presentation
 
         private static string CommandCueSummary()
         {
-            return "Command=move+attack+single+blocked+partial";
+            return "Command=move+attack+single+blocked+partial+reject-unit";
         }
 
         private static string OrderPathCueSummary()
@@ -5750,6 +5750,7 @@ namespace MC2Demo.Presentation
                 if (expectedCount > result.AcceptedCount && result.AcceptedCount > 0)
                 {
                     SpawnPartialCommandCue(command, result.AcceptedCount, expectedCount);
+                    SpawnPartialRejectedUnitCues(command);
                 }
 
                 return;
@@ -5814,6 +5815,31 @@ namespace MC2Demo.Presentation
             Color color = Color.Lerp(new Color(1f, 0.16f, 0.08f, 0.74f), new Color(1f, 0.78f, 0.18f, 0.72f), ratio);
             CreateImpactDisc("Command Partial Pulse", center, new Color(color.r, color.g, color.b, 0.28f), 0.62f, 0.34f * scale, 1.34f * scale, 0.024f);
             CreateBeam(center + Vector3.up * 0.06f, center + Vector3.up * Mathf.Clamp(0.92f * scale, 0.72f, 1.42f), new Color(color.r, color.g, color.b, 0.48f), 0.48f, 0.024f);
+        }
+
+        private void SpawnPartialRejectedUnitCues(CommanderCommand command)
+        {
+            if (mission == null
+                || command == null
+                || command.Scope != CommanderCommandScope.Squad
+                || command.Kind != CommanderCommandKind.Jump)
+            {
+                return;
+            }
+
+            foreach (UnitState unit in mission.PlayerUnits())
+            {
+                if (!unit.IsActive || unit.IsDestroyed || unit.IsDetached || unit.IsJumping)
+                {
+                    continue;
+                }
+
+                Vector3 center = GroundMarkerPosition(unit.MissionPosition, 0.18f);
+                Color color = new(1f, 0.22f, 0.10f, 0.68f);
+                CreateImpactDisc("Command Rejected Unit Pulse", center, new Color(color.r, color.g, color.b, 0.30f), 0.52f, 0.24f, 0.88f, 0.022f);
+                CreateBeam(center + Vector3.up * 0.05f, center + Vector3.up * 0.78f, new Color(color.r, color.g, color.b, 0.46f), 0.34f, 0.020f);
+                CreateImpact(center + Vector3.up * 0.14f, new Color(color.r, color.g, color.b, 0.42f), false, 0.28f);
+            }
         }
 
         private int CountCommandEligiblePlayerUnits(CommanderCommand command)
