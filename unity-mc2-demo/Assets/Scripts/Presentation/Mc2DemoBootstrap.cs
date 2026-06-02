@@ -2998,7 +2998,7 @@ namespace MC2Demo.Presentation
             bool totalsOk = airfield.Total > 0 && north.Total > 0 && ambush.Total > 0 && starslayer.Total > 0;
             bool voiceOverOk = !starslayerCleared || starslayerVoReady;
             string activationFx = EncounterActivationCueSummary();
-            bool activationFxOk = activationFx.IndexOf("ContactWake=ring+beacon+ping+pips", StringComparison.Ordinal) >= 0;
+            bool activationFxOk = activationFx.IndexOf("ContactWake=ring+beacon+ping+pips+vector", StringComparison.Ordinal) >= 0;
             bool activeOk;
             if (!airfieldComplete)
             {
@@ -3074,7 +3074,7 @@ namespace MC2Demo.Presentation
 
         private static string EncounterActivationCueSummary()
         {
-            return "ContactWake=ring+beacon+ping+pips";
+            return "ContactWake=ring+beacon+ping+pips+vector";
         }
 
         private EncounterPacingCounts CountEncounterGroup(string groupKey)
@@ -5395,6 +5395,67 @@ namespace MC2Demo.Presentation
                 0.035f);
             CreateImpact(center + Vector3.up * 0.22f, new Color(color.r, color.g, color.b, 0.52f), false, 0.42f * scale);
             CreateEncounterActivationPips(center, color, count, scale);
+            CreateEncounterActivationVector(missionPoint, center, color, scale);
+        }
+
+        private void CreateEncounterActivationVector(Vector2 missionPoint, Vector3 center, Color color, float scale)
+        {
+            if (!TryGetClosestPlayerMissionPosition(missionPoint, out Vector2 playerPoint))
+            {
+                return;
+            }
+
+            Vector2 missionDirection = playerPoint - missionPoint;
+            if (missionDirection.sqrMagnitude <= 0.01f)
+            {
+                return;
+            }
+
+            Vector3 direction = SafeDirection(new Vector3(missionDirection.x, 0f, missionDirection.y));
+            Vector3 side = LateralVector(direction);
+            Vector3 start = center + direction * (0.42f * scale) + Vector3.up * 0.045f;
+            Vector3 end = center + direction * (1.36f * scale) + Vector3.up * 0.045f;
+            Color vectorColor = new(color.r, color.g, color.b, 0.52f);
+            CreateBeam(start, end, vectorColor, 0.82f, 0.026f * scale);
+            CreateBeam(end - direction * (0.22f * scale), end - direction * (0.45f * scale) + side * (0.26f * scale), vectorColor, 0.72f, 0.018f * scale);
+            CreateBeam(end - direction * (0.22f * scale), end - direction * (0.45f * scale) - side * (0.26f * scale), vectorColor, 0.72f, 0.018f * scale);
+            CreateImpactDisc(
+                "Encounter Wake Vector End",
+                end + Vector3.down * 0.025f,
+                new Color(color.r, color.g, color.b, 0.36f),
+                0.78f,
+                0.10f * scale,
+                0.28f * scale,
+                0.016f);
+        }
+
+        private bool TryGetClosestPlayerMissionPosition(Vector2 from, out Vector2 playerPoint)
+        {
+            UnitState best = null;
+            float bestDistanceSqr = float.MaxValue;
+            foreach (UnitState unit in mission.PlayerUnits())
+            {
+                if (unit == null || !unit.IsActive || unit.IsDestroyed)
+                {
+                    continue;
+                }
+
+                float distanceSqr = (unit.MissionPosition - from).sqrMagnitude;
+                if (distanceSqr < bestDistanceSqr)
+                {
+                    bestDistanceSqr = distanceSqr;
+                    best = unit;
+                }
+            }
+
+            if (best == null)
+            {
+                playerPoint = default;
+                return false;
+            }
+
+            playerPoint = best.MissionPosition;
+            return true;
         }
 
         private void CreateEncounterActivationPips(Vector3 center, Color color, int count, float scale)
