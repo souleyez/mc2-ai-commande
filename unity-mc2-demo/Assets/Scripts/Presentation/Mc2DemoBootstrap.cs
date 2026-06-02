@@ -2303,7 +2303,7 @@ namespace MC2Demo.Presentation
             string orderPathFx = OrderPathCueSummary();
             bool orderPathFxOk = orderPathFx.IndexOf("OrderPath=move+jet+attack+endcap", StringComparison.Ordinal) >= 0;
             string orderArrivalFx = OrderArrivalCueSummary();
-            bool orderArrivalFxOk = orderArrivalFx.IndexOf("OrderArrival=move+jet", StringComparison.Ordinal) >= 0;
+            bool orderArrivalFxOk = orderArrivalFx.IndexOf("OrderArrival=move+jet+attack-ready", StringComparison.Ordinal) >= 0;
             string commanderFx = CommanderCueSummary();
             bool commanderFxOk = commanderFx.IndexOf("Commander=anchor+beacon", StringComparison.Ordinal) >= 0;
             string soloReturnFx = SoloReturnCueSummary();
@@ -5733,7 +5733,7 @@ namespace MC2Demo.Presentation
 
         private static string OrderArrivalCueSummary()
         {
-            return "OrderArrival=move+jet";
+            return "OrderArrival=move+jet+attack-ready";
         }
 
         private void SpawnCommandResultCue(CommanderCommand command, CommanderCommandResult result)
@@ -6825,7 +6825,7 @@ namespace MC2Demo.Presentation
             bool isMoving = unit.IsActive && !unit.IsDestroyed && (unit.HasMoveOrder || unit.IsJumping);
             if (wasMoving && !isMoving && unit.IsActive && !unit.IsDestroyed)
             {
-                SpawnOrderArrivalCue(unit, wasJumping);
+                SpawnOrderArrivalCue(unit, wasJumping, !wasJumping && unit.HasAttackOrder);
             }
 
             if (isMoving)
@@ -6847,15 +6847,22 @@ namespace MC2Demo.Presentation
             }
         }
 
-        private void SpawnOrderArrivalCue(UnitState unit, bool wasJumping)
+        private void SpawnOrderArrivalCue(UnitState unit, bool wasJumping, bool attackReady)
         {
-            Vector3 center = GroundMarkerPosition(unit.MissionPosition, wasJumping ? 0.17f : 0.13f);
+            Vector3 center = GroundMarkerPosition(unit.MissionPosition, wasJumping ? 0.17f : attackReady ? 0.16f : 0.13f);
             Color color = wasJumping
                 ? new Color(0.56f, 0.96f, 1f, 0.68f)
-                : new Color(0.30f, 0.82f, 1f, 0.58f);
-            float scale = wasJumping ? 1.18f : 0.94f;
+                : attackReady
+                    ? new Color(1f, 0.56f, 0.14f, 0.68f)
+                    : new Color(0.30f, 0.82f, 1f, 0.58f);
+            float scale = wasJumping ? 1.18f : attackReady ? 1.06f : 0.94f;
             CreateImpactDisc("Order Arrival Pulse", center, new Color(color.r, color.g, color.b, 0.30f), 0.48f, 0.20f * scale, 0.92f * scale, 0.020f);
-            CreateBeam(center + Vector3.up * 0.04f, center + Vector3.up * (wasJumping ? 0.72f : 0.48f), new Color(color.r, color.g, color.b, 0.42f), 0.34f, wasJumping ? 0.022f : 0.016f);
+            CreateBeam(
+                center + Vector3.up * 0.04f,
+                center + Vector3.up * (wasJumping ? 0.72f : attackReady ? 0.64f : 0.48f),
+                new Color(color.r, color.g, color.b, 0.42f),
+                0.34f,
+                wasJumping ? 0.022f : attackReady ? 0.020f : 0.016f);
         }
 
         private void UpdateSoloReturnCue(UnitState unit)
