@@ -196,6 +196,8 @@ namespace MC2Demo.Presentation
         private GameObject combatPressureBeacon;
         private GameObject hostilePressureMarker;
         private GameObject hostilePressureBeacon;
+        private GameObject hostilePressureVectorLine;
+        private GameObject hostilePressureVectorEndMarker;
         private string selectedMechBayLoadoutUnitId;
         private float lastCombatEventTimeSeconds = -999f;
         private float lastContactEventTimeSeconds = -999f;
@@ -576,6 +578,8 @@ namespace MC2Demo.Presentation
             combatPressureBeacon = null;
             hostilePressureMarker = null;
             hostilePressureBeacon = null;
+            hostilePressureVectorLine = null;
+            hostilePressureVectorEndMarker = null;
             lastCombatEventTimeSeconds = -999f;
             lastContactEventTimeSeconds = -999f;
             lastContactLabel = "";
@@ -2273,7 +2277,7 @@ namespace MC2Demo.Presentation
             string combatPressureFx = CombatPressureCueSummary();
             bool combatPressureFxOk = combatPressureFx.IndexOf("CombatPressure=tracking+contact+fire+beacon", StringComparison.Ordinal) >= 0;
             string hostilePressureFx = HostilePressureCueSummary();
-            bool hostilePressureFxOk = hostilePressureFx.IndexOf("HostilePressure=centroid+tempo+beacon", StringComparison.Ordinal) >= 0;
+            bool hostilePressureFxOk = hostilePressureFx.IndexOf("HostilePressure=centroid+tempo+beacon+vector", StringComparison.Ordinal) >= 0;
             string sectionFx = DemoUnitView.SectionDamageCueSummary();
             bool sectionFxOk = sectionFx.IndexOf("Arms=missing-socket+flag", StringComparison.Ordinal) >= 0
                 && sectionFx.IndexOf("Legs=collapse+red-cross", StringComparison.Ordinal) >= 0
@@ -2544,7 +2548,7 @@ namespace MC2Demo.Presentation
 
         private static string HostilePressureCueSummary()
         {
-            return "HostilePressure=centroid+tempo+beacon";
+            return "HostilePressure=centroid+tempo+beacon+vector";
         }
 
         private bool CombatTempoTextMatchesState(string tempoText)
@@ -6837,6 +6841,12 @@ namespace MC2Demo.Presentation
                 "HostilePressureBeacon",
                 new Color(1f, 0.34f, 0.10f, 0.44f),
                 new Vector3(0.075f, 0.36f, 0.075f));
+            hostilePressureVectorLine = CreateTargetLine("Hostile Pressure Vector");
+            hostilePressureVectorEndMarker = CreateMarkerDisc(
+                "Hostile Pressure Vector End",
+                "HostilePressureVectorEnd",
+                new Color(1f, 0.46f, 0.12f, 0.38f),
+                new Vector3(0.32f, 0.014f, 0.32f));
         }
 
         private GameObject CreateMarkerDisc(string objectName, string materialName, Color color, Vector3 scale)
@@ -6881,7 +6891,7 @@ namespace MC2Demo.Presentation
             UpdateSquadFocusMarker();
             UpdateHostileFocusMarker();
             UpdateCombatPressureMarker(commander);
-            UpdateHostilePressureMarker();
+            UpdateHostilePressureMarker(commander);
             UpdateTargetHealthBars();
         }
 
@@ -7751,9 +7761,12 @@ namespace MC2Demo.Presentation
             }
         }
 
-        private void UpdateHostilePressureMarker()
+        private void UpdateHostilePressureMarker(UnitState commander)
         {
-            if (hostilePressureMarker == null && hostilePressureBeacon == null)
+            if (hostilePressureMarker == null
+                && hostilePressureBeacon == null
+                && hostilePressureVectorLine == null
+                && hostilePressureVectorEndMarker == null)
             {
                 return;
             }
@@ -7767,6 +7780,20 @@ namespace MC2Demo.Presentation
             if (hostilePressureBeacon != null)
             {
                 hostilePressureBeacon.SetActive(isVisible);
+            }
+
+            bool vectorVisible = isVisible
+                && commander != null
+                && commander.IsActive
+                && !commander.IsDestroyed;
+            if (hostilePressureVectorLine != null)
+            {
+                hostilePressureVectorLine.SetActive(vectorVisible);
+            }
+
+            if (hostilePressureVectorEndMarker != null)
+            {
+                hostilePressureVectorEndMarker.SetActive(vectorVisible);
             }
 
             if (!isVisible)
@@ -7808,6 +7835,28 @@ namespace MC2Demo.Presentation
                     hostilePressureBeacon,
                     isFire ? "HostilePressureBeaconFire" : isContact ? "HostilePressureBeaconContact" : "HostilePressureBeaconTracking",
                     new Color(color.r, color.g, color.b, isFire ? 0.48f : isContact ? 0.40f : 0.32f));
+            }
+
+            if (vectorVisible)
+            {
+                Vector3 hostilePoint = GroundMarkerPosition(center, 0.18f);
+                Vector3 commanderPoint = GroundMarkerPosition(commander.MissionPosition, 0.18f);
+                PositionLine(hostilePressureVectorLine, hostilePoint, commanderPoint, isFire ? 0.024f : isContact ? 0.020f : 0.016f);
+                Color vectorColor = new(color.r, color.g, color.b, isFire ? 0.46f : isContact ? 0.38f : 0.30f);
+                AssignMaterial(
+                    hostilePressureVectorLine,
+                    isFire ? "HostilePressureVectorFire" : isContact ? "HostilePressureVectorContact" : "HostilePressureVectorTracking",
+                    vectorColor);
+                if (hostilePressureVectorEndMarker != null)
+                {
+                    float endPulse = 0.92f + Mathf.Sin(Time.time * (isFire ? 6.8f : 4.6f)) * (isFire ? 0.10f : 0.06f);
+                    hostilePressureVectorEndMarker.transform.position = GroundMarkerPosition(commander.MissionPosition, 0.105f);
+                    hostilePressureVectorEndMarker.transform.localScale = new Vector3(0.30f * endPulse, 0.014f, 0.30f * endPulse);
+                    AssignMaterial(
+                        hostilePressureVectorEndMarker,
+                        isFire ? "HostilePressureVectorEndFire" : isContact ? "HostilePressureVectorEndContact" : "HostilePressureVectorEndTracking",
+                        new Color(color.r, color.g, color.b, isFire ? 0.44f : isContact ? 0.36f : 0.28f));
+                }
             }
         }
 
