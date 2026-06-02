@@ -939,6 +939,7 @@ Tasks:
 - The first dedicated Mech Lab visual audit is done, and Company Bay density is reduced with Ops/Roster paging; the next low-risk step is to switch to battle readability unless another Mech Lab visible blocker appears in play.
 - Cockpit destruction now extends the ejection cue with a short chute, cord, descending pod, landing beacon, landing signal, and landing smoke so pilot escape reads at fixed tactical zoom without adding HUD text.
 - Destroyed mechs now add short hot/metal debris pieces over the existing wreck blast, smoke, scorch, and marker cues so a full kill separates from ordinary hit severity at tactical zoom.
+- Section damage now also has a compact ground cue for critical, lost, and pilot-risk states, making arm, leg, and cockpit damage readable from the fixed tactical camera without adding HUD rows.
 - Enemy contact activation now has a smoke-guarded visual cue contract: `ContactWake=ring+beacon+ping+pips`.
 - Hit severity now has a smoke-guarded battlefield cue contract: `HitSeverity=damage+kill+shock`.
 - Hit direction now has a smoke-guarded battlefield cue contract: `HitDirection=inbound+slash`.
@@ -948,7 +949,7 @@ Tasks:
 - Section status labels now have a smoke-guarded UI cue contract: `SectionStatus=bar+short-label+critical+destroyed`.
 - Debrief player damage rows now have a smoke-guarded summary contract: `DebriefDamage=unit+section+overflow`.
 - Debrief destroyed target rows now have a smoke-guarded summary contract: `DebriefTargets=count+labels+overflow`.
-- Cockpit ejection now extends the section damage contract with `Cockpit=breach+ejection-pod+chute+landing`.
+- Cockpit ejection now extends the section damage contract with `Cockpit=breach+ejection-pod+chute+landing`, and section ground cues extend it with `Ground=critical+lost+pilot`.
 - Armor mitigation now has a smoke-guarded battlefield cue contract: `ArmorMitigation=glint+spark`.
 - Weapon target lines now have a smoke-guarded battlefield cue contract: `TargetLine=ready+cooling+blocked+endcap`.
 - Weapon range rings now have a smoke-guarded battlefield cue contract: `RangeRing=selection+target+heat`.

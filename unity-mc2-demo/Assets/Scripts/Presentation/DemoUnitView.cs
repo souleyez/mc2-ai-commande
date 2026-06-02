@@ -25,6 +25,8 @@ namespace MC2Demo.Presentation
         private float jetTrailCooldown;
         private GameObject heatVentCue;
         private GameObject heatLockCue;
+        private GameObject sectionDamageRingCue;
+        private GameObject sectionDamageBeaconCue;
         private readonly Dictionary<string, GameObject> sectionParts = new(StringComparer.OrdinalIgnoreCase);
         private readonly HashSet<string> destroyedSections = new(StringComparer.OrdinalIgnoreCase);
         private readonly HashSet<string> criticalSections = new(StringComparer.OrdinalIgnoreCase);
@@ -54,6 +56,7 @@ namespace MC2Demo.Presentation
             ApplyHitFlash();
             ApplySectionPartDamageColors();
             ApplySectionDamageVisuals();
+            ApplySectionDamageGroundCue();
             ApplyDamagePose();
         }
 
@@ -258,7 +261,10 @@ namespace MC2Demo.Presentation
         {
             heatVentCue = CreateHeatCuePart("Heat Vent Ring", PrimitiveType.Cylinder, new Vector3(0f, -0.46f, 0f), new Vector3(0.70f, 0.016f, 0.70f), new Color(1f, 0.40f, 0.06f, 0.36f));
             heatLockCue = CreateHeatCuePart("Heat Lock Beacon", PrimitiveType.Cylinder, new Vector3(0f, 0.78f, 0.04f), new Vector3(0.13f, 0.46f, 0.13f), new Color(1f, 0.11f, 0.04f, 0.82f));
+            sectionDamageRingCue = CreateHeatCuePart("Section Damage Ground Ring", PrimitiveType.Cylinder, new Vector3(0f, -0.58f, 0f), new Vector3(0.84f, 0.014f, 0.84f), new Color(1f, 0.52f, 0.08f, 0.34f));
+            sectionDamageBeaconCue = CreateHeatCuePart("Section Damage Beacon", PrimitiveType.Cylinder, new Vector3(0f, 0.64f, 0.10f), new Vector3(0.052f, 0.34f, 0.052f), new Color(1f, 0.34f, 0.08f, 0.62f));
             SetHeatCueVisible(false, false);
+            SetSectionDamageGroundCueVisible(false);
         }
 
         private void CreateSectionPart(string sectionName, PrimitiveType primitive, Vector3 localPosition, Vector3 localScale)
@@ -426,9 +432,111 @@ namespace MC2Demo.Presentation
             CreateDamageFlag("Critical Section Spark", local + Vector3.up * 0.34f, new Vector3(0.18f, 0.04f, 0.06f), new Color(1f, 0.46f, 0.08f, 1f));
         }
 
+        private void ApplySectionDamageGroundCue()
+        {
+            string cue = SectionDamageGroundCueMode();
+            bool visible = !string.Equals(cue, "none", StringComparison.Ordinal);
+            SetSectionDamageGroundCueVisible(visible);
+            if (!visible)
+            {
+                return;
+            }
+
+            float pulseSpeed = string.Equals(cue, "pilot", StringComparison.Ordinal) ? 5.8f : string.Equals(cue, "lost", StringComparison.Ordinal) ? 4.8f : 3.7f;
+            float pulseRange = string.Equals(cue, "critical", StringComparison.Ordinal) ? 0.055f : 0.085f;
+            float pulse = 0.96f + Mathf.Sin(Time.time * pulseSpeed) * pulseRange;
+            float baseScale = string.Equals(cue, "pilot", StringComparison.Ordinal) ? 1.16f : string.Equals(cue, "lost", StringComparison.Ordinal) ? 1.04f : 0.92f;
+            Color cueColor = SectionDamageGroundCueColor(cue);
+            if (sectionDamageRingCue != null)
+            {
+                sectionDamageRingCue.transform.localPosition = new Vector3(0f, -0.58f, 0f);
+                sectionDamageRingCue.transform.localRotation = Quaternion.Inverse(transform.rotation);
+                sectionDamageRingCue.transform.localScale = new Vector3(baseScale * pulse, 0.014f, baseScale * pulse);
+                SetCueColor(sectionDamageRingCue, new Color(cueColor.r, cueColor.g, cueColor.b, string.Equals(cue, "critical", StringComparison.Ordinal) ? 0.30f : 0.42f));
+            }
+
+            if (sectionDamageBeaconCue != null)
+            {
+                sectionDamageBeaconCue.transform.localPosition = new Vector3(0f, 0.64f, 0.10f);
+                sectionDamageBeaconCue.transform.localScale = new Vector3(0.052f * pulse, 0.34f + pulse * 0.05f, 0.052f * pulse);
+                SetCueColor(sectionDamageBeaconCue, new Color(cueColor.r, cueColor.g, cueColor.b, string.Equals(cue, "critical", StringComparison.Ordinal) ? 0.54f : 0.72f));
+            }
+        }
+
+        private void SetSectionDamageGroundCueVisible(bool visible)
+        {
+            if (sectionDamageRingCue != null)
+            {
+                sectionDamageRingCue.SetActive(visible);
+            }
+
+            if (sectionDamageBeaconCue != null)
+            {
+                sectionDamageBeaconCue.SetActive(visible);
+            }
+        }
+
+        private string SectionDamageGroundCueMode()
+        {
+            if (Unit == null || Unit.Sections == null)
+            {
+                return "none";
+            }
+
+            bool hasCritical = false;
+            bool hasLost = false;
+            bool hasPilotRisk = false;
+            for (int index = 0; index < Unit.Sections.Length; index++)
+            {
+                DamageSection section = Unit.Sections[index];
+                if (section.IsDestroyed)
+                {
+                    hasLost = true;
+                    if (section.IsCritical || IsSectionName(section.Name, "Cockpit") || IsSectionName(section.Name, "Turret"))
+                    {
+                        hasPilotRisk = true;
+                    }
+
+                    continue;
+                }
+
+                if (section.Ratio < CriticalSectionRatio)
+                {
+                    hasCritical = true;
+                }
+            }
+
+            if (hasPilotRisk)
+            {
+                return "pilot";
+            }
+
+            if (hasLost)
+            {
+                return "lost";
+            }
+
+            return hasCritical ? "critical" : "none";
+        }
+
+        private static Color SectionDamageGroundCueColor(string cue)
+        {
+            if (string.Equals(cue, "pilot", StringComparison.Ordinal))
+            {
+                return new Color(0.58f, 0.92f, 1f, 1f);
+            }
+
+            if (string.Equals(cue, "lost", StringComparison.Ordinal))
+            {
+                return new Color(1f, 0.18f, 0.08f, 1f);
+            }
+
+            return new Color(1f, 0.58f, 0.12f, 1f);
+        }
+
         public static string SectionDamageCueSummary()
         {
-            return "Arms=missing-socket+flag Legs=collapse+red-cross Cockpit=breach+ejection-pod+chute+landing Critical=smoke+sparks Wreck=blast+smoke+marker+debris";
+            return "Arms=missing-socket+flag Legs=collapse+red-cross Cockpit=breach+ejection-pod+chute+landing Critical=smoke+sparks Ground=critical+lost+pilot Wreck=blast+smoke+marker+debris";
         }
 
         public static string JetCueSummary()
