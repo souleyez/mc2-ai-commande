@@ -704,7 +704,8 @@ Tasks:
 ### Completed Context
 
 - Battle readability pass has begun with family-specific hit cues: bright brief energy beam plus flash/pillar/ring, staggered missile salvo-spread arcs plus blast/smoke, and ballistic tracer plus punch/sparks.
-- The combat situation smoke now guards the current weapon FX cue contract with `Energy=beam+pillar+muzzle+flash Missile=arc+blast+salvo-spread Ballistic=tracer+sparks+muzzle+punch`.
+- The combat situation smoke now guards the current weapon FX cue contract with `Energy=beam+pillar+muzzle+flash+scorch Missile=arc+blast+salvo-spread+crater Ballistic=tracer+sparks+muzzle+punch+debris`.
+- Weapon family hits now leave short impact aftermath cues, so energy scorch, missile crater/smoke, and ballistic bite/debris remain readable for a moment at fixed tactical zoom.
 - Tactical target lines now vary color, thickness, and target endcaps for ready, cooling, and blocked shots, keeping weapon cadence visible without adding HUD rows.
 - Weapon range rings now vary color for selection, active targeting, and heat-locked states without adding combat HUD rows.
 - Player weapon readiness now shows compact ready, cooling, and blocked rings and beacons on active targeting mechs without adding combat HUD rows.

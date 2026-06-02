@@ -2240,9 +2240,9 @@ namespace MC2Demo.Presentation
             bool fundsOk = string.Equals(funds, "Funds 1,234", StringComparison.Ordinal)
                 && funds.IndexOf("TOKEN", StringComparison.OrdinalIgnoreCase) < 0;
             string weaponFx = WeaponFxCueSummary();
-            bool weaponFxOk = weaponFx.IndexOf("Energy=beam+pillar+muzzle+flash", StringComparison.Ordinal) >= 0
-                && weaponFx.IndexOf("Missile=arc+blast+salvo-spread", StringComparison.Ordinal) >= 0
-                && weaponFx.IndexOf("Ballistic=tracer+sparks+muzzle+punch", StringComparison.Ordinal) >= 0;
+            bool weaponFxOk = weaponFx.IndexOf("Energy=beam+pillar+muzzle+flash+scorch", StringComparison.Ordinal) >= 0
+                && weaponFx.IndexOf("Missile=arc+blast+salvo-spread+crater", StringComparison.Ordinal) >= 0
+                && weaponFx.IndexOf("Ballistic=tracer+sparks+muzzle+punch+debris", StringComparison.Ordinal) >= 0;
             string hitSeverityFx = HitSeverityCueSummary();
             bool hitSeverityFxOk = hitSeverityFx.IndexOf("HitSeverity=damage+kill+shock", StringComparison.Ordinal) >= 0;
             string hitDirectionFx = HitDirectionCueSummary();
@@ -4497,6 +4497,7 @@ namespace MC2Demo.Presentation
             CreateWeaponTrace(attackerPoint, targetPoint, combatEvent, weaponColor);
             CreateImpact(targetPoint, weaponColor, combatEvent.DestroyedTarget, ImpactScale(combatEvent.WeaponType) * severityScale);
             CreateWeaponImpactCue(attackerPoint, targetPoint, combatEvent, weaponColor, severityScale);
+            CreateWeaponImpactAftermath(attackerPoint, targetPoint, combatEvent, weaponColor, severityScale);
             CreateHitDirectionCue(attackerPoint, targetPoint, severityScale);
             CreateSectionHitCue(attackerPoint, targetPoint, combatEvent.SectionName, combatEvent.DestroyedTarget, severityScale);
             CreateKillShockCue(targetPoint, combatEvent.DestroyedTarget, severityScale);
@@ -4650,7 +4651,7 @@ namespace MC2Demo.Presentation
 
         private static string WeaponFxCueSummary()
         {
-            return "Energy=beam+pillar+muzzle+flash Missile=arc+blast+salvo-spread Ballistic=tracer+sparks+muzzle+punch";
+            return "Energy=beam+pillar+muzzle+flash+scorch Missile=arc+blast+salvo-spread+crater Ballistic=tracer+sparks+muzzle+punch+debris";
         }
 
         private static string HitSeverityCueSummary()
@@ -4839,6 +4840,94 @@ namespace MC2Demo.Presentation
                 new Color(1f, 0.56f, 0.18f, 0.56f),
                 0.050f,
                 0.012f * punchScale);
+        }
+
+        private void CreateWeaponImpactAftermath(Vector3 from, Vector3 to, CombatEvent combatEvent, Color color, float severityScale)
+        {
+            if (ContainsWeaponType(combatEvent.WeaponType, "Missile"))
+            {
+                CreateMissileImpactAftermath(to, severityScale, combatEvent.DestroyedTarget);
+                return;
+            }
+
+            if (ContainsWeaponType(combatEvent.WeaponType, "Ballistic"))
+            {
+                CreateBallisticImpactAftermath(from, to, severityScale);
+                return;
+            }
+
+            if (ContainsWeaponType(combatEvent.WeaponType, "Energy"))
+            {
+                CreateEnergyImpactAftermath(to, color, severityScale);
+            }
+        }
+
+        private void CreateEnergyImpactAftermath(Vector3 targetPoint, Color color, float severityScale)
+        {
+            float scale = Mathf.Clamp(severityScale, 0.82f, 1.50f);
+            CreateImpactDisc(
+                "Energy Scorch Glow",
+                targetPoint + Vector3.up * 0.055f,
+                new Color(0.42f, 1f, 1f, 0.24f),
+                0.82f,
+                0.18f * scale,
+                0.42f * scale,
+                0.010f);
+            CreateBeam(
+                targetPoint + Vector3.up * 0.12f,
+                targetPoint + Vector3.up * (0.42f * scale),
+                new Color(color.r, color.g, color.b, 0.30f),
+                0.58f,
+                0.012f * scale);
+        }
+
+        private void CreateMissileImpactAftermath(Vector3 targetPoint, float severityScale, bool destroyedTarget)
+        {
+            float scale = Mathf.Clamp(severityScale + (destroyedTarget ? 0.24f : 0f), 0.95f, 1.85f);
+            CreateImpactDisc(
+                "Missile Crater Afterglow",
+                targetPoint + Vector3.up * 0.040f,
+                new Color(1f, 0.30f, 0.08f, 0.24f),
+                0.96f,
+                0.42f * scale,
+                0.94f * scale,
+                0.014f);
+            CreateImpactDisc(
+                "Missile Smoke Footprint",
+                targetPoint + Vector3.up * 0.070f,
+                new Color(0.08f, 0.07f, 0.06f, 0.22f),
+                1.20f,
+                0.28f * scale,
+                1.18f * scale,
+                0.018f);
+        }
+
+        private void CreateBallisticImpactAftermath(Vector3 from, Vector3 to, float severityScale)
+        {
+            Vector3 direction = SafeDirection(to - from);
+            Vector3 side = LateralVector(direction);
+            float scale = Mathf.Clamp(severityScale, 0.78f, 1.55f);
+            Vector3 center = to - direction * (0.06f * scale) + Vector3.up * 0.055f;
+            CreateImpactDisc(
+                "Ballistic Bite Mark",
+                center,
+                new Color(1f, 0.72f, 0.22f, 0.24f),
+                0.62f,
+                0.08f * scale,
+                0.22f * scale,
+                0.008f);
+            CreateBeam(
+                center + side * (0.06f * scale),
+                center + side * (0.36f * scale) + Vector3.up * (0.05f * scale),
+                new Color(0.82f, 0.76f, 0.62f, 0.38f),
+                0.42f,
+                0.008f * scale);
+            CreateBeam(
+                center - side * (0.05f * scale),
+                center - side * (0.30f * scale) + direction * (0.12f * scale) + Vector3.up * (0.04f * scale),
+                new Color(1f, 0.56f, 0.18f, 0.32f),
+                0.36f,
+                0.007f * scale);
         }
 
         private void CreateHitDirectionCue(Vector3 from, Vector3 to, float severityScale)
