@@ -2243,6 +2243,11 @@ namespace MC2Demo.Presentation
             bool weaponFxOk = weaponFx.IndexOf("Energy=beam+pillar+muzzle+flash+scorch", StringComparison.Ordinal) >= 0
                 && weaponFx.IndexOf("Missile=arc+blast+salvo-spread+crater", StringComparison.Ordinal) >= 0
                 && weaponFx.IndexOf("Ballistic=tracer+sparks+muzzle+punch+debris", StringComparison.Ordinal) >= 0;
+            string weaponStatusFx = WeaponStatusCueSummary();
+            bool weaponStatusFxOk = weaponStatusFx.IndexOf("WeaponStatus=ENG-burn+MSL-blast+BAL-punch+D+B+KILL", StringComparison.Ordinal) >= 0
+                && weaponStatusFx.IndexOf("ENG burn Alpha > Target Torso D24 B4", StringComparison.Ordinal) >= 0
+                && weaponStatusFx.IndexOf("MSL blast Alpha > Target Legs D32 KILL", StringComparison.Ordinal) >= 0
+                && weaponStatusFx.IndexOf("BAL punch Alpha > Target Arms D18", StringComparison.Ordinal) >= 0;
             string hitSeverityFx = HitSeverityCueSummary();
             bool hitSeverityFxOk = hitSeverityFx.IndexOf("HitSeverity=damage+kill+shock", StringComparison.Ordinal) >= 0;
             string hitDirectionFx = HitDirectionCueSummary();
@@ -2351,6 +2356,8 @@ namespace MC2Demo.Presentation
                 + MissionMapBackButtonLabel
                 + " fx="
                 + weaponFx
+                + " weaponStatusFx="
+                + weaponStatusFx
                 + " hitSeverityFx="
                 + hitSeverityFx
                 + " hitDirectionFx="
@@ -2441,6 +2448,7 @@ namespace MC2Demo.Presentation
                     && topModeOk
                     && fundsOk
                     && weaponFxOk
+                    && weaponStatusFxOk
                     && hitSeverityFxOk
                     && hitDirectionFxOk
                     && muzzleFxOk
@@ -4455,30 +4463,36 @@ namespace MC2Demo.Presentation
         {
             foreach (CombatEvent combatEvent in mission.RecentCombatEvents)
             {
-                string line = WeaponLabel(combatEvent.WeaponType)
-                    + " "
-                    + combatEvent.AttackerId
-                    + " hit "
-                    + combatEvent.TargetId
-                    + " "
-                    + combatEvent.SectionName
-                    + " for "
-                    + Mathf.RoundToInt(combatEvent.Damage);
-                if (combatEvent.MitigatedDamage > 0.4f)
-                {
-                    line += " block " + Mathf.RoundToInt(combatEvent.MitigatedDamage);
-                }
-
-                if (combatEvent.DestroyedTarget)
-                {
-                    line += " destroyed";
-                }
-
+                string line = BuildCombatLogLine(combatEvent);
                 lastCombatEventTimeSeconds = mission?.MissionTimeSeconds ?? Time.time;
                 AddCombatLogLine(line);
                 SpawnCombatEffect(combatEvent);
                 Debug.Log("MC2 combat: " + line);
             }
+        }
+
+        private static string BuildCombatLogLine(CombatEvent combatEvent)
+        {
+            string line = WeaponStatusLabel(combatEvent.WeaponType)
+                + " "
+                + TruncateText(combatEvent.AttackerId, 16)
+                + " > "
+                + TruncateText(combatEvent.TargetId, 16)
+                + " "
+                + CombatSectionLabel(combatEvent.SectionName)
+                + " D"
+                + Mathf.RoundToInt(combatEvent.Damage).ToString(CultureInfo.InvariantCulture);
+            if (combatEvent.MitigatedDamage > 0.4f)
+            {
+                line += " B" + Mathf.RoundToInt(combatEvent.MitigatedDamage).ToString(CultureInfo.InvariantCulture);
+            }
+
+            if (combatEvent.DestroyedTarget)
+            {
+                line += " KILL";
+            }
+
+            return line;
         }
 
         private void SpawnCombatEffect(CombatEvent combatEvent)
@@ -4649,9 +4663,77 @@ namespace MC2Demo.Presentation
             return "Weapon";
         }
 
+        private static string WeaponStatusLabel(string weaponType)
+        {
+            if (ContainsWeaponType(weaponType, "Energy"))
+            {
+                return "ENG burn";
+            }
+
+            if (ContainsWeaponType(weaponType, "Missile"))
+            {
+                return "MSL blast";
+            }
+
+            if (ContainsWeaponType(weaponType, "Ballistic"))
+            {
+                return "BAL punch";
+            }
+
+            return "WPN hit";
+        }
+
+        private static string CombatSectionLabel(string sectionName)
+        {
+            if (string.IsNullOrWhiteSpace(sectionName))
+            {
+                return "Section";
+            }
+
+            if (sectionName.IndexOf("Cockpit", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return "Cockpit";
+            }
+
+            if (sectionName.IndexOf("Arm", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return "Arms";
+            }
+
+            if (sectionName.IndexOf("Leg", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return "Legs";
+            }
+
+            if (sectionName.IndexOf("Structure", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return "Structure";
+            }
+
+            if (sectionName.IndexOf("Torso", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return "Torso";
+            }
+
+            return TruncateText(sectionName, 9);
+        }
+
         private static string WeaponFxCueSummary()
         {
             return "Energy=beam+pillar+muzzle+flash+scorch Missile=arc+blast+salvo-spread+crater Ballistic=tracer+sparks+muzzle+punch+debris";
+        }
+
+        private static string WeaponStatusCueSummary()
+        {
+            string energy = BuildCombatLogLine(new CombatEvent("Alpha", "Target", "Torso", 24f, false, "Energy", mitigatedDamage: 4f));
+            string missile = BuildCombatLogLine(new CombatEvent("Alpha", "Target", "Legs", 32f, true, "Missile"));
+            string ballistic = BuildCombatLogLine(new CombatEvent("Alpha", "Target", "Arms", 18f, false, "Ballistic"));
+            return "WeaponStatus=ENG-burn+MSL-blast+BAL-punch+D+B+KILL samples="
+                + energy
+                + "|"
+                + missile
+                + "|"
+                + ballistic;
         }
 
         private static string HitSeverityCueSummary()
