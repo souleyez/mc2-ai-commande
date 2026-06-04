@@ -72,6 +72,7 @@ analysis-output/unity-demo-contract/
 analysis-output/unity-combat-data/
 analysis-output/*saved-account*.json
 analysis-output/*validator*.json
+analysis-output/*.png
 
 # Unity demo generated state
 unity-mc2-demo/Library/
