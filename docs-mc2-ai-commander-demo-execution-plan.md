@@ -42,7 +42,7 @@ The Unity demo currently supports:
 - heat, cooldown, weapon range/readiness, simple section damage, section penalties, and animated breakoff/ejection effects
 - compact tactical UI with unit status, mech bay preview, mission brief, current-objective map, world objective hints, health bars, command rings, solo-order rings/beacons, command-accept pulses, state-colored range rings, target lines/endcaps, and weapon-readiness rings/beacons
 - the combat situation row names the commander mech, squad readiness, detached single-order count, hostiles, targets, and recent contact tempo
-- the combat panel keeps a lean two-line HUD: squad/hostile basics plus one compact battle pulse for tempo and current focus
+- the combat panel keeps a lean two-line HUD: squad/hostile basics plus one compact battle pulse for tempo, encounter stage, and current focus
 - source-group Contacts pressure remains smoke-guarded for mission pacing, but is not shown as another default combat HUD row
 - the battle mission panel uses compact objective names so later `mc2_01` tasks such as North island and Extraction stay readable in the fixed right HUD
 - focused mech bay fitting view with compact squad buttons, pending-fit markers, and selected-mech fit-pressure bars so one selected payload grid owns the drawer
@@ -508,7 +508,7 @@ Tasks:
 
 ## Current Recommended Next Task
 
-Start the **first-mission encounter rhythm and battle readability pass**, using the fixed visible flow as the baseline.
+Continue the **first-mission encounter rhythm and battle readability pass**, using the fixed visible flow as the baseline.
 
 Reason:
 
@@ -517,7 +517,8 @@ Reason:
 - The visible Debrief gap from the 2026-06-04 audit is fixed: command-file smoke can now resolve the mission, open the actual Debrief panel, and assert that the Debrief screen is visible.
 - The right mission panel objective overflow from the 2026-06-04 audit is fixed: Battle now shows all six `mc2_01` visible objectives at 1280 x 720 without hiding later objectives behind `...`.
 - The Mech Lab right-column decision blocker from the 2026-06-04 audit is fixed: fitting state now reads as compact issues such as `Review Weight`, pressure values flag overloads with `!`, and the selected fit identity avoids pilot-name truncation.
-- The current risk is no longer raw feature absence or obvious debug labels; it is whether the first mission feels like a readable tactical mech battle instead of a scripted UI harness.
+- The first Phase B pass has begun by adding source-paced encounter stage words to the compact battle pulse: Initial, Airfield, Hangar, and Star now line up with the same trigger states guarded by `assert-encounter-pacing`.
+- The current risk is no longer raw feature absence or obvious debug labels; it is whether the first mission's battlefield action and encounter beats feel readable enough moment to moment.
 - The next demo milestone should make one private Windows build feel like a coherent local game: battle, debrief, repair, contracts, mech lab, squad swap, and relaunch.
 - Further tiny text-only Mech Lab commits should stop unless a visible-flow audit finds a concrete confusing label or dead-end action.
 - AI remains intentionally bounded to high-level directives and capability preview; do not expand model-driven combat until the local loop feels good.
@@ -572,6 +573,12 @@ Mech Lab truncation fix notes, 2026-06-04:
 - The loadout compact smoke now guards both `pressure=Review Weight/H 18/27  W 36/32!  G 16/20` and `fitIdentity=Bushwacker  Applied  Review Weight  S 211/211`.
 - Verification: Unity validator passed, Windows build passed, combined visible-flow smoke exited 0, and `analysis-output/visible-mechlab-truncation-fixed.png` confirms the 1280 x 720 Mech Lab view no longer shows the decision-blocking truncation.
 
+Encounter-stage pulse notes, 2026-06-04:
+
+- The compact battle pulse now includes the source-paced encounter stage without adding another HUD row: `Quiet Initial`, `Contact Airfield ...`, `Fire Hangar ...`, and `Star` for the Starslayer area beat.
+- The encounter-pacing smoke now guards the short stage labels with `stageText=Initial/Airfield/Hangar/Star`, keeping them aligned with objective 0, Hangar damage, and hidden objective 7.
+- Verification: Unity validator passed, Windows build passed, `mc2_01-encounter-pacing.txt`, `mc2_01-hangar-ambush.txt`, `mc2_01-starslayer-trigger.txt`, `mc2_01-combat-situation.txt`, and the combined visible-flow smoke passed; `analysis-output/visible-encounter-stage-pulse.png` confirms `Fire Hangar hostiles ...` is visible in the battle HUD.
+
 ## Frozen Development Plan
 
 This is the current locked execution plan for the private Windows demo. When the user says "continue by the plan", follow this order unless a bug blocks the build or the user explicitly changes priority.
@@ -614,7 +621,7 @@ Next work:
 
 1. Improve primitive/generated combat effects before importing or replacing major art, focusing on hit readability at the fixed tactical camera.
 2. Strengthen persistent arm, leg, cockpit, and ejection readability so section damage is understood without zooming into tiny placeholders.
-3. Tune one encounter at a time against `docs-mc2-01-mission-analysis.md`, preserving source-triggered enemies instead of adding strong AI.
+3. Continue tuning one encounter at a time against `docs-mc2-01-mission-analysis.md`, preserving source-triggered enemies instead of adding strong AI.
 4. Keep debrief counters and combat HUD smoke paths updated when battle readability changes visible flow.
 
 ### Phase C: Mech Lab Experience
@@ -749,6 +756,7 @@ Tasks:
 - Combat tempo now shows a commander-centered pressure ring and beacon for tracking, contact, and fire states without adding combat HUD rows.
 - Active hostile clusters now show a compact pressure-center ring and beacon, making enemy pressure location readable without adding combat HUD rows.
 - The combat situation smoke now also guards the compact battle pulse with explicit quiet, contact, and fire expectations tied to mission events.
+- The compact battle pulse now includes source-paced encounter stages, so the same two-line HUD can show `Quiet Initial`, `Contact Airfield ...`, `Fire Hangar ...`, and the Starslayer `Star` beat without adding another row.
 - The combat situation smoke now also guards source-group contact pressure internally, so active Airfield and North groups remain verifiable without occupying default battle HUD space.
 - Hostile pressure now also draws a compact vector from the active hostile centroid toward the commander, making pressure direction readable without adding combat HUD rows.
 - The combat situation smoke now also guards the commanded Focus contract and state-colored battlefield focus rings, keeping the current target readable without exposing internal target ids.

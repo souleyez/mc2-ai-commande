@@ -2783,13 +2783,15 @@ namespace MC2Demo.Presentation
             }
 
             string mode = CombatTempoMode();
+            string stage = EncounterPacingStageText();
             bool modeOk = string.Equals(mode, "fire", StringComparison.Ordinal)
-                ? pulseText.StartsWith("Fire hostiles ", StringComparison.Ordinal)
+                ? pulseText.StartsWith("Fire " + stage + " hostiles ", StringComparison.Ordinal)
                 : string.Equals(mode, "contact", StringComparison.Ordinal)
-                    ? pulseText.StartsWith("Contact ", StringComparison.Ordinal)
+                    ? pulseText.StartsWith("Contact " + stage + " ", StringComparison.Ordinal)
                     : string.Equals(mode, "tracking", StringComparison.Ordinal)
-                        ? pulseText.StartsWith("Tracking hostiles ", StringComparison.Ordinal)
-                        : string.Equals(pulseText, "Quiet", StringComparison.Ordinal) || pulseText.StartsWith("Quiet  Focus ", StringComparison.Ordinal);
+                        ? pulseText.StartsWith("Tracking " + stage + " hostiles ", StringComparison.Ordinal)
+                        : string.Equals(pulseText, "Quiet " + stage, StringComparison.Ordinal)
+                            || pulseText.StartsWith("Quiet " + stage + "  Focus ", StringComparison.Ordinal);
             string targetId = PrimaryCommandedFocusTargetId(out int focusCount);
             bool focusOk = string.IsNullOrEmpty(targetId) || focusCount <= 0
                 ? pulseText.IndexOf("Focus ", StringComparison.Ordinal) < 0
@@ -3131,10 +3133,14 @@ namespace MC2Demo.Presentation
             bool starslayerVoReady = IsObjectiveCompleteForAssertion(8);
             bool starslayerCleared = starslayer.Total > 0 && starslayer.Destroyed == starslayer.Total;
             string stage = EncounterPacingStage(airfieldComplete, hangarDamaged, starslayerTriggered);
+            string stageText = EncounterPacingStageLabel(stage);
             bool totalsOk = airfield.Total > 0 && north.Total > 0 && ambush.Total > 0 && starslayer.Total > 0;
             bool voiceOverOk = !starslayerCleared || starslayerVoReady;
             string activationFx = EncounterActivationCueSummary();
             bool activationFxOk = activationFx.IndexOf("ContactWake=ring+beacon+ping+pips+vector", StringComparison.Ordinal) >= 0;
+            bool stageTextOk = !string.IsNullOrWhiteSpace(stageText)
+                && stageText.IndexOf(" ", StringComparison.Ordinal) < 0
+                && stageText.Length <= 9;
             bool activeOk;
             if (!airfieldComplete)
             {
@@ -3164,6 +3170,8 @@ namespace MC2Demo.Presentation
 
             string summary = "stage="
                 + stage
+                + " stageText="
+                + stageText
                 + " airfield="
                 + airfield.Summary
                 + " north="
@@ -3183,7 +3191,7 @@ namespace MC2Demo.Presentation
 
             return new EncounterPacingAssertionResult
             {
-                Accepted = totalsOk && activeOk && voiceOverOk && activationFxOk,
+                Accepted = totalsOk && activeOk && voiceOverOk && activationFxOk && stageTextOk,
                 Summary = summary
             };
         }
@@ -3201,6 +3209,31 @@ namespace MC2Demo.Presentation
             }
 
             return starslayerTriggered ? "starslayer" : "hangar";
+        }
+
+        private string EncounterPacingStageText()
+        {
+            return EncounterPacingStageLabel(EncounterPacingStage(
+                IsObjectiveCompleteForAssertion(0),
+                IsHangarDamagedForAssertion(),
+                IsObjectiveCompleteForAssertion(7)));
+        }
+
+        private static string EncounterPacingStageLabel(string stage)
+        {
+            switch (stage)
+            {
+                case "initial":
+                    return "Initial";
+                case "airfield":
+                    return "Airfield";
+                case "hangar":
+                    return "Hangar";
+                case "starslayer":
+                    return "Star";
+                default:
+                    return "Battle";
+            }
         }
 
         private static string EncounterPacingCueSummary()
@@ -9879,23 +9912,30 @@ namespace MC2Demo.Presentation
         {
             string mode = CombatTempoMode();
             int activeHostiles = CountActiveHostileUnits();
+            string stage = EncounterPacingStageText();
             if (string.Equals(mode, "fire", StringComparison.Ordinal))
             {
-                return "Fire hostiles " + activeHostiles.ToString(CultureInfo.InvariantCulture);
+                return "Fire "
+                    + stage
+                    + " hostiles "
+                    + activeHostiles.ToString(CultureInfo.InvariantCulture);
             }
 
             if (string.Equals(mode, "contact", StringComparison.Ordinal))
             {
                 string count = lastContactCount > 1 ? " x" + lastContactCount.ToString(CultureInfo.InvariantCulture) : "";
-                return "Contact " + TruncateText(lastContactLabel, 18) + count;
+                return "Contact " + stage + " " + TruncateText(lastContactLabel, 16) + count;
             }
 
             if (string.Equals(mode, "tracking", StringComparison.Ordinal))
             {
-                return "Tracking hostiles " + activeHostiles.ToString(CultureInfo.InvariantCulture);
+                return "Tracking "
+                    + stage
+                    + " hostiles "
+                    + activeHostiles.ToString(CultureInfo.InvariantCulture);
             }
 
-            return "Quiet";
+            return "Quiet " + stage;
         }
 
         private string CombatFocusCompactText()
