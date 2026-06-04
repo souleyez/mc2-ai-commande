@@ -508,13 +508,14 @@ Tasks:
 
 ## Current Recommended Next Task
 
-Fix the **visible debrief opening gap found by the full visible-flow audit**, then move out of text-only polish.
+Address the **next visible-flow readability blocker: right mission panel objective overflow**, then move out of text-only polish.
 
 Reason:
 
 - The old starter mission restart polish, roster swap, hidden developer save harness, post-battle lane, and first design-image-inspired UI pass are now implemented.
 - The recent Mech Lab copy and density pass has smoke coverage for the highest-noise fitting rows, including compact weapon codes, component details, repair state, route labels, and funds wording.
-- The current risk is no longer raw feature absence or obvious debug labels; the 2026-06-04 audit shows the automated loop passes, but the visible debrief panel is not actually opened by the command-file audit path.
+- The visible Debrief gap from the 2026-06-04 audit is fixed: command-file smoke can now resolve the mission, open the actual Debrief panel, and assert that the Debrief screen is visible.
+- The current risk is no longer raw feature absence or obvious debug labels; it is whether the Battle and post-battle surfaces stay readable at 1280 x 720 without needing developer narration.
 - The next demo milestone should make one private Windows build feel like a coherent local game: battle, debrief, repair, contracts, mech lab, squad swap, and relaunch.
 - Further tiny text-only Mech Lab commits should stop unless a visible-flow audit finds a concrete confusing label or dead-end action.
 - AI remains intentionally bounded to high-level directives and capability preview; do not expand model-driven combat until the local loop feels good.
@@ -522,7 +523,7 @@ Reason:
 
 Current stage snapshot:
 
-- Phase A Local Playable Loop is late active work: the private Windows loop passes the combined command-file smoke, but the visible debrief surface still needs a command-file/manual path that actually opens the panel before the loop is considered coherent end to end.
+- Phase A Local Playable Loop is late active work: the private Windows loop now passes the combined command-file smoke with a real visible Debrief opening assertion; the next visible-flow blocker is right mission panel objective overflow, followed by small Mech Lab truncation cleanup only where it blocks play.
 - Phase B Battle Readability has a working foundation: weapon families, section damage, cockpit/ejection cues, combat HUD, and debrief rows exist, but the first mission still needs stronger encounter rhythm and clearer tactical spectacle.
 - Phase C Mech Lab Experience has core fitting rules and block editing in place: the next meaningful improvement is a calmer dedicated Mech Lab surface, not more right-drawer microcopy.
 - Phase D Public-Safe Content Pack remains later: public capture still requires replacement names, text, UI identity, models, textures, audio, and mission-facing story copy.
@@ -547,6 +548,14 @@ Visible-flow audit notes, 2026-06-04:
 - The debrief command-file path is the top Phase A blocker: `assert-debrief-summary` passes, but the visible window remains in Battle mode and only logs `CLI debrief summary assert OK`; it does not open the actual Debrief panel. The next Phase A fix should add a guarded visible debrief open/result path to the command-file/manual flow.
 - Mech Lab is usable in the dedicated two-column layout: Company Bay actions and Loadout grid are visible. Remaining lower-priority issue: a few right-column labels still truncate, including the selected mech tab and `Review Weight exceeds chassis li...`.
 
+Visible-flow fix notes, 2026-06-04:
+
+- The command-file language now has `complete-visible-objectives`, `open-debrief`, and `assert-debrief-visible` actions so audit scripts can prove the real Debrief panel is open, not only that summary copy builds.
+- `mc2_01-visible-flow-audit.txt` now resolves and opens Debrief before moving into reserve prep, squad swap, hidden handoff, Mech Bay launch, restart identity, and loadout compact checks.
+- `mc2_01-debrief-summary.txt` now also opens the visible Debrief panel before asserting summary rows, keeping the standalone Debrief smoke honest.
+- Verification: Unity validator passed, Windows build passed, the combined visible-flow smoke exited 0 with `MC2 debrief visible assertion OK`, and the standalone debrief smoke also exited 0.
+- A fresh local window capture `analysis-output/visible-debrief-fix.png` shows `MODE Debrief`, the result panel, and the post-mission action buttons at 1280 x 720. Local screenshots are ignored by git.
+
 ## Frozen Development Plan
 
 This is the current locked execution plan for the private Windows demo. When the user says "continue by the plan", follow this order unless a bug blocks the build or the user explicitly changes priority.
@@ -567,9 +576,9 @@ Definition of done:
 
 Next work:
 
-1. Fix the visible debrief opening gap so the command-file/manual flow can actually show Debrief after a result, not only assert summary text internally.
-2. Keep the existing debrief summary assertion, but add or update one command-file smoke path that proves the visible debrief panel can be reached before Mech Lab or Contracts.
-3. Then address only the next highest audit finding: either right mission panel objective overflow or Mech Lab right-column truncation.
+1. Fix the right mission panel objective overflow so all active/locked/done objectives are visible or reachable without hiding later objectives behind a bare ellipsis.
+2. Then address only the next highest audit finding: Mech Lab right-column truncation where labels still block decision-making.
+3. Rerun the combined visible-flow smoke and one targeted window capture after each UI-facing fix.
 4. After those Phase A blockers, choose the next larger lane: first-mission encounter rhythm or the calmer dedicated Mech Lab surface.
 
 ### Phase B: Battle Readability

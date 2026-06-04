@@ -133,6 +133,30 @@ namespace MC2Demo.Presentation
                 return true;
             }
 
+            if (string.Equals(verb, "complete-visible-objectives", StringComparison.OrdinalIgnoreCase))
+            {
+                if (!string.IsNullOrWhiteSpace(payload))
+                {
+                    error = "Complete visible objectives action does not accept arguments.";
+                    return false;
+                }
+
+                action = StartupCommanderScriptAction.CompleteVisibleObjectives(lineNumber, rawLine);
+                return true;
+            }
+
+            if (string.Equals(verb, "open-debrief", StringComparison.OrdinalIgnoreCase))
+            {
+                if (!string.IsNullOrWhiteSpace(payload))
+                {
+                    error = "Open debrief action does not accept arguments.";
+                    return false;
+                }
+
+                action = StartupCommanderScriptAction.OpenDebrief(lineNumber, rawLine);
+                return true;
+            }
+
             if (string.Equals(verb, "saved-account-report", StringComparison.OrdinalIgnoreCase))
             {
                 if (!string.IsNullOrWhiteSpace(payload))
@@ -307,6 +331,18 @@ namespace MC2Demo.Presentation
                 return true;
             }
 
+            if (string.Equals(verb, "assert-debrief-visible", StringComparison.OrdinalIgnoreCase))
+            {
+                if (!string.IsNullOrWhiteSpace(payload))
+                {
+                    error = "Assert debrief visible action does not accept arguments.";
+                    return false;
+                }
+
+                action = StartupCommanderScriptAction.AssertDebriefVisible(lineNumber, rawLine);
+                return true;
+            }
+
             if (string.Equals(verb, "assert-command-result", StringComparison.OrdinalIgnoreCase))
             {
                 bool hasExpectation = false;
@@ -454,7 +490,7 @@ namespace MC2Demo.Presentation
                 return true;
             }
 
-            error = "Command file action must be command, advance, report, restart, mech-bay-launch, hide-squad-preview, saved-account-report, saved-account-save-load-preview, saved-account-export, saved-account-import-preview, saved-account-import-apply-preview, saved-account-import-apply, saved-account-load-default-preview, saved-account-save-current-default, saved-account-load-default-apply, prepare-depot-candidate, prepare-local-candidate, squad-swap, assert-restart-identity, assert-debrief-summary, assert-command-result, assert-combat-situation, assert-encounter-pacing, assert-objective-graph, or assert-loadout-compact.";
+            error = "Command file action must be command, advance, report, restart, mech-bay-launch, hide-squad-preview, complete-visible-objectives, open-debrief, saved-account-report, saved-account-save-load-preview, saved-account-export, saved-account-import-preview, saved-account-import-apply-preview, saved-account-import-apply, saved-account-load-default-preview, saved-account-save-current-default, saved-account-load-default-apply, prepare-depot-candidate, prepare-local-candidate, squad-swap, assert-restart-identity, assert-debrief-summary, assert-debrief-visible, assert-command-result, assert-combat-situation, assert-encounter-pacing, assert-objective-graph, or assert-loadout-compact.";
             return false;
         }
     }
@@ -545,6 +581,26 @@ namespace MC2Demo.Presentation
             return new StartupCommanderScriptAction
             {
                 Kind = StartupCommanderScriptActionKind.HideSquadPreview,
+                LineNumber = lineNumber,
+                SourceLine = sourceLine ?? string.Empty
+            };
+        }
+
+        public static StartupCommanderScriptAction CompleteVisibleObjectives(int lineNumber, string sourceLine)
+        {
+            return new StartupCommanderScriptAction
+            {
+                Kind = StartupCommanderScriptActionKind.CompleteVisibleObjectives,
+                LineNumber = lineNumber,
+                SourceLine = sourceLine ?? string.Empty
+            };
+        }
+
+        public static StartupCommanderScriptAction OpenDebrief(int lineNumber, string sourceLine)
+        {
+            return new StartupCommanderScriptAction
+            {
+                Kind = StartupCommanderScriptActionKind.OpenDebrief,
                 LineNumber = lineNumber,
                 SourceLine = sourceLine ?? string.Empty
             };
@@ -698,6 +754,16 @@ namespace MC2Demo.Presentation
             };
         }
 
+        public static StartupCommanderScriptAction AssertDebriefVisible(int lineNumber, string sourceLine)
+        {
+            return new StartupCommanderScriptAction
+            {
+                Kind = StartupCommanderScriptActionKind.AssertDebriefVisible,
+                LineNumber = lineNumber,
+                SourceLine = sourceLine ?? string.Empty
+            };
+        }
+
         public static StartupCommanderScriptAction AssertCommandResult(
             int lineNumber,
             string sourceLine,
@@ -772,6 +838,8 @@ namespace MC2Demo.Presentation
         Restart,
         MechBayLaunch,
         HideSquadPreview,
+        CompleteVisibleObjectives,
+        OpenDebrief,
         SavedAccountReport,
         SavedAccountSaveLoadPreview,
         SavedAccountExport,
@@ -786,6 +854,7 @@ namespace MC2Demo.Presentation
         SquadSwap,
         AssertRestartIdentity,
         AssertDebriefSummary,
+        AssertDebriefVisible,
         AssertCommandResult,
         AssertCombatSituation,
         AssertEncounterPacing,

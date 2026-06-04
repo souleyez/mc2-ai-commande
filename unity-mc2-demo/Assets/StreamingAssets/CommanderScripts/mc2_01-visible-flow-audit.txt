@@ -6,6 +6,9 @@ assert-combat-situation contact
 command squad attack structure structure-1-0
 advance 8
 assert-combat-situation fire
+complete-visible-objectives
+open-debrief
+assert-debrief-visible
 assert-debrief-summary
 prepare-local-candidate
 squad-swap

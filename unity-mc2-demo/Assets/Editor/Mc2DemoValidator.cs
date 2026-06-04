@@ -2738,6 +2738,36 @@ namespace MC2Demo.EditorTools
             }
 
             if (!StartupCommanderScript.TryParseLine(
+                    "complete-visible-objectives",
+                    1,
+                    out StartupCommanderScriptAction completeVisibleObjectivesAction,
+                    out _)
+                || completeVisibleObjectivesAction.Kind != StartupCommanderScriptActionKind.CompleteVisibleObjectives)
+            {
+                throw new InvalidDataException("Expected command file parser to read complete-visible-objectives actions.");
+            }
+
+            if (!StartupCommanderScript.TryParseLine(
+                    "open-debrief",
+                    1,
+                    out StartupCommanderScriptAction openDebriefAction,
+                    out _)
+                || openDebriefAction.Kind != StartupCommanderScriptActionKind.OpenDebrief)
+            {
+                throw new InvalidDataException("Expected command file parser to read open-debrief actions.");
+            }
+
+            if (!StartupCommanderScript.TryParseLine(
+                    "assert-debrief-visible",
+                    1,
+                    out StartupCommanderScriptAction assertDebriefVisibleAction,
+                    out _)
+                || assertDebriefVisibleAction.Kind != StartupCommanderScriptActionKind.AssertDebriefVisible)
+            {
+                throw new InvalidDataException("Expected command file parser to read assert-debrief-visible actions.");
+            }
+
+            if (!StartupCommanderScript.TryParseLine(
                     "saved-account-report",
                     1,
                     out StartupCommanderScriptAction savedAccountAction,
@@ -2928,6 +2958,9 @@ namespace MC2Demo.EditorTools
                 || StartupCommanderScript.TryParseLine("restart now", 1, out _, out _)
                 || StartupCommanderScript.TryParseLine("prepare-local-candidate now", 1, out _, out _)
                 || StartupCommanderScript.TryParseLine("hide-squad-preview now", 1, out _, out _)
+                || StartupCommanderScript.TryParseLine("complete-visible-objectives now", 1, out _, out _)
+                || StartupCommanderScript.TryParseLine("open-debrief now", 1, out _, out _)
+                || StartupCommanderScript.TryParseLine("assert-debrief-visible now", 1, out _, out _)
                 || StartupCommanderScript.TryParseLine("saved-account-report now", 1, out _, out _)
                 || StartupCommanderScript.TryParseLine("saved-account-save-load-preview now", 1, out _, out _)
                 || StartupCommanderScript.TryParseLine("saved-account-export", 1, out _, out _)

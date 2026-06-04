@@ -872,6 +872,12 @@ namespace MC2Demo.Presentation
                     case StartupCommanderScriptActionKind.HideSquadPreview:
                         RunStartupHideSquadPreview();
                         break;
+                    case StartupCommanderScriptActionKind.CompleteVisibleObjectives:
+                        RunStartupCompleteVisibleObjectives();
+                        break;
+                    case StartupCommanderScriptActionKind.OpenDebrief:
+                        RunStartupOpenDebrief();
+                        break;
                     case StartupCommanderScriptActionKind.SavedAccountReport:
                         RunStartupSavedAccountReport();
                         break;
@@ -913,6 +919,9 @@ namespace MC2Demo.Presentation
                         break;
                     case StartupCommanderScriptActionKind.AssertDebriefSummary:
                         RunStartupDebriefSummaryAssertion();
+                        break;
+                    case StartupCommanderScriptActionKind.AssertDebriefVisible:
+                        RunStartupDebriefVisibleAssertion();
                         break;
                     case StartupCommanderScriptActionKind.AssertCommandResult:
                         RunStartupCommandResultAssertion(action.ExpectedCommandBlocked, action.ExpectedCommandAcceptedCount);
@@ -2094,6 +2103,61 @@ namespace MC2Demo.Presentation
             Debug.LogError("MC2 restart identity assertion failed: " + result.Summary);
         }
 
+        private void RunStartupCompleteVisibleObjectives()
+        {
+            if (mission == null)
+            {
+                startupSmokeFailed = true;
+                statusText = "Debrief resolve failed";
+                AddCombatLogLine("CLI resolve debrief failed: no mission");
+                Debug.LogError("MC2 debrief resolve failed: no mission");
+                return;
+            }
+
+            int completed = mission.CompleteVisibleObjectivesForPresentationAudit();
+            CaptureMissionResult();
+            MissionResultSummary summary = mission.ResultSummary;
+            bool accepted = mission.Result != MissionResultState.InProgress
+                && summary != null
+                && summary.visibleObjectives > 0
+                && summary.completedVisibleObjectives == summary.visibleObjectives;
+            string result = "completed="
+                + completed.ToString(CultureInfo.InvariantCulture)
+                + " objectives="
+                + (summary?.completedVisibleObjectives ?? 0).ToString(CultureInfo.InvariantCulture)
+                + "/"
+                + (summary?.visibleObjectives ?? 0).ToString(CultureInfo.InvariantCulture)
+                + " result="
+                + mission.Result;
+
+            if (accepted)
+            {
+                AddCombatLogLine("CLI resolve debrief OK: " + result);
+                Debug.Log("MC2 debrief resolve OK: " + result);
+                return;
+            }
+
+            startupSmokeFailed = true;
+            statusText = "Debrief resolve failed";
+            AddCombatLogLine("CLI resolve debrief failed: " + result);
+            Debug.LogError("MC2 debrief resolve failed: " + result);
+        }
+
+        private void RunStartupOpenDebrief()
+        {
+            if (TryOpenDebriefPanelForStartup(out string summary))
+            {
+                AddCombatLogLine("CLI debrief open OK: " + summary);
+                Debug.Log("MC2 debrief open OK: " + summary);
+                return;
+            }
+
+            startupSmokeFailed = true;
+            statusText = "Debrief open failed";
+            AddCombatLogLine("CLI debrief open failed: " + summary);
+            Debug.LogError("MC2 debrief open failed: " + summary);
+        }
+
         private void RunStartupDebriefSummaryAssertion()
         {
             DebriefSummaryAssertionResult result = BuildDebriefSummaryAssertion();
@@ -2108,6 +2172,54 @@ namespace MC2Demo.Presentation
             statusText = "Debrief summary assertion failed";
             AddCombatLogLine("CLI debrief summary assert failed: " + result.Summary);
             Debug.LogError("MC2 debrief summary assertion failed: " + result.Summary);
+        }
+
+        private void RunStartupDebriefVisibleAssertion()
+        {
+            DebriefVisibleAssertionResult result = BuildDebriefVisibleAssertion();
+            if (result.Accepted)
+            {
+                AddCombatLogLine("CLI debrief visible assert OK: " + result.Summary);
+                Debug.Log("MC2 debrief visible assertion OK: " + result.Summary);
+                return;
+            }
+
+            startupSmokeFailed = true;
+            statusText = "Debrief visible assertion failed";
+            AddCombatLogLine("CLI debrief visible assert failed: " + result.Summary);
+            Debug.LogError("MC2 debrief visible assertion failed: " + result.Summary);
+        }
+
+        private bool TryOpenDebriefPanelForStartup(out string summary)
+        {
+            if (mission == null)
+            {
+                summary = "no mission";
+                return false;
+            }
+
+            if (mission.Result == MissionResultState.InProgress)
+            {
+                summary = "mission still in progress";
+                return false;
+            }
+
+            ApplyMissionReceiptOnce();
+            showMissionResultPanel = true;
+            showLoadoutPanel = false;
+            showSystemPanel = false;
+            showMissionListPanel = false;
+            showStartupContinuePanel = false;
+            showMissionMap = false;
+            CloseTransientMechBayDrafts();
+            pendingDetachedUnitId = null;
+            pendingJumpOrder = false;
+            SetPaused(true);
+            SetDemoFlowScreen(DemoFlowScreen.Debrief);
+            statusText = "Debrief open";
+            DebriefVisibleAssertionResult assertion = BuildDebriefVisibleAssertion();
+            summary = assertion.Summary;
+            return assertion.Accepted;
         }
 
         private void RunStartupCommandResultAssertion(bool expectedBlocked, int expectedAcceptedCount)
@@ -4261,6 +4373,42 @@ namespace MC2Demo.Presentation
                     && debriefDamageFxOk
                     && debriefTargetFxOk
                     && flowStatusCopyOk,
+                Summary = result
+            };
+        }
+
+        private DebriefVisibleAssertionResult BuildDebriefVisibleAssertion()
+        {
+            MissionResultSummary summary = mission?.ResultSummary;
+            bool resultReady = mission != null && mission.Result != MissionResultState.InProgress;
+            bool summaryReady = summary != null && summary.visibleObjectives > 0;
+            bool flowOk = demoFlowScreen == DemoFlowScreen.Debrief;
+            bool panelOk = showMissionResultPanel;
+            bool overlayOk = !showLoadoutPanel
+                && !showSystemPanel
+                && !showMissionListPanel
+                && !showStartupContinuePanel;
+            bool pausedOk = isPaused;
+            string result = "result="
+                + (mission == null ? "none" : mission.Result.ToString())
+                + " panel="
+                + showMissionResultPanel
+                + " flow="
+                + DemoFlowScreenName(demoFlowScreen)
+                + " paused="
+                + isPaused
+                + " overlays="
+                + (overlayOk ? "clear" : "blocked")
+                + " objectives="
+                + (summary?.completedVisibleObjectives ?? 0).ToString(CultureInfo.InvariantCulture)
+                + "/"
+                + (summary?.visibleObjectives ?? 0).ToString(CultureInfo.InvariantCulture)
+                + " status="
+                + statusText;
+
+            return new DebriefVisibleAssertionResult
+            {
+                Accepted = resultReady && summaryReady && flowOk && panelOk && overlayOk && pausedOk,
                 Summary = result
             };
         }
@@ -11139,6 +11287,21 @@ namespace MC2Demo.Presentation
             public static DebriefSummaryAssertionResult Blocked(string summary)
             {
                 return new DebriefSummaryAssertionResult
+                {
+                    Accepted = false,
+                    Summary = summary ?? "blocked"
+                };
+            }
+        }
+
+        private struct DebriefVisibleAssertionResult
+        {
+            public bool Accepted { get; set; }
+            public string Summary { get; set; }
+
+            public static DebriefVisibleAssertionResult Blocked(string summary)
+            {
+                return new DebriefVisibleAssertionResult
                 {
                     Accepted = false,
                     Summary = summary ?? "blocked"

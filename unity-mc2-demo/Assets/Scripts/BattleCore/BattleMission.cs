@@ -303,6 +303,36 @@ namespace MC2Demo.BattleCore
             EvaluateMissionResult();
         }
 
+        public int CompleteVisibleObjectivesForPresentationAudit()
+        {
+            if (Result != MissionResultState.InProgress)
+            {
+                return 0;
+            }
+
+            int completed = 0;
+            foreach (ObjectiveState state in objectives)
+            {
+                if (state.Definition.hidden)
+                {
+                    continue;
+                }
+
+                state.IsActive = true;
+                if (!state.IsComplete)
+                {
+                    state.IsComplete = true;
+                    completed++;
+                }
+
+                ApplyActions(state.Definition.actions);
+            }
+
+            RefreshUnitActivation(reportEvents: true);
+            EvaluateMissionResult();
+            return completed;
+        }
+
         private UnitState AcquireTarget(UnitState attacker)
         {
             if (!attacker.IsActive || attacker.IsDestroyed)
