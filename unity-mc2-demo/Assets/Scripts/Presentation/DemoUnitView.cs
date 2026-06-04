@@ -591,7 +591,7 @@ namespace MC2Demo.Presentation
 
         public static string SectionDamageCueSummary()
         {
-            return "Arms=missing-socket+flag+flight+landing-debris Legs=collapse+red-cross Cockpit=breach+ejection-pod+chute+landing Critical=smoke+sparks Ground=critical+lost+pilot Wreck=blast+smoke+marker+debris";
+            return "Arms=missing-socket+flag+flight+landing-debris Legs=collapse+red-cross Cockpit=breach+ejection-pod+chute+landing+arc+distress Critical=smoke+sparks Ground=critical+lost+pilot Wreck=blast+smoke+marker+debris";
         }
 
         public static string JetCueSummary()
@@ -662,10 +662,19 @@ namespace MC2Demo.Presentation
             Vector3 end = start + Vector3.up * 2.65f + transform.TransformDirection(new Vector3(0.45f, 0f, 0.36f));
             CreateBeam("Ejection Trail", start, end, new Color(0.72f, 0.9f, 1f, 0.68f), 1.2f, 0.045f);
             CreateBeam("Ejection Smoke Trail", start + Vector3.down * 0.08f, end + Vector3.down * 0.35f, new Color(0.08f, 0.10f, 0.12f, 0.36f), 1.6f, 0.075f);
+            SpawnEjectionArcCue(start, end);
             CreateTransient("Ejection Flash", PrimitiveType.Sphere, start, new Color(1f, 0.75f, 0.28f, 0.78f), 0.48f, Vector3.one * 0.18f, Vector3.one * 0.95f);
             CreateMovingTransient("Pilot Ejection Pod", PrimitiveType.Sphere, start, end, new Color(0.88f, 0.95f, 1f, 0.92f), 1.75f, Vector3.one * 0.18f, Vector3.one * 0.38f);
             SpawnEjectionChuteCue(end);
             SpawnDamageBurst(start, 1.05f);
+        }
+
+        private void SpawnEjectionArcCue(Vector3 start, Vector3 end)
+        {
+            Vector3 apex = Vector3.Lerp(start, end, 0.48f) + Vector3.up * 0.56f;
+            CreateBeam("Ejection Arc Signal A", start, apex, new Color(0.58f, 0.94f, 1f, 0.70f), 1.70f, 0.026f);
+            CreateBeam("Ejection Arc Signal B", apex, end, new Color(0.58f, 0.94f, 1f, 0.58f), 1.95f, 0.020f);
+            CreateTransient("Ejection Apex Flash", PrimitiveType.Sphere, apex, new Color(0.72f, 0.96f, 1f, 0.62f), 0.95f, Vector3.one * 0.10f, Vector3.one * 0.42f);
         }
 
         private void SpawnEjectionChuteCue(Vector3 apex)
@@ -682,7 +691,20 @@ namespace MC2Demo.Presentation
             CreateMovingTransient("Pilot Chute Pod", PrimitiveType.Sphere, podPoint, landing + Vector3.up * 0.08f, new Color(0.88f, 0.95f, 1f, 0.72f), 2.2f, Vector3.one * 0.16f, Vector3.one * 0.22f);
             CreateTransient("Pilot Landing Beacon", PrimitiveType.Cylinder, landing, new Color(0.58f, 0.92f, 1f, 0.48f), 2.6f, new Vector3(0.18f, 0.012f, 0.18f), new Vector3(0.62f, 0.006f, 0.62f));
             CreateBeam("Pilot Landing Signal", landing + Vector3.up * 0.06f, landing + Vector3.up * 0.92f, new Color(0.58f, 0.92f, 1f, 0.56f), 2.35f, 0.022f);
+            CreatePilotDistressMarker(landing);
             CreateTransient("Pilot Landing Smoke", PrimitiveType.Sphere, landing + Vector3.up * 0.12f, new Color(0.08f, 0.11f, 0.13f, 0.36f), 2.1f, Vector3.one * 0.12f, new Vector3(0.72f, 0.34f, 0.72f));
+        }
+
+        private void CreatePilotDistressMarker(Vector3 landing)
+        {
+            Quaternion forwardYaw = Quaternion.LookRotation(transform.TransformDirection(Vector3.forward), Vector3.up);
+            Quaternion sideYaw = forwardYaw * Quaternion.Euler(0f, 90f, 0f);
+            Vector3 marker = landing + Vector3.up * 0.030f;
+            Color signal = new(0.58f, 0.92f, 1f, 0.88f);
+            CreateWorldDamageObject("Pilot Distress Marker", PrimitiveType.Cube, marker, forwardYaw, new Vector3(0.62f, 0.030f, 0.075f), signal);
+            CreateWorldDamageObject("Pilot Distress Marker Crossbar", PrimitiveType.Cube, marker + Vector3.up * 0.006f, sideYaw, new Vector3(0.50f, 0.026f, 0.065f), signal);
+            CreateWorldDamageObject("Pilot Distress Beacon", PrimitiveType.Cylinder, landing + Vector3.up * 0.22f, Quaternion.identity, new Vector3(0.045f, 0.32f, 0.045f), new Color(0.58f, 0.92f, 1f, 0.96f));
+            CreateTransient("Pilot Distress Flare", PrimitiveType.Sphere, landing + Vector3.up * 0.42f, new Color(0.68f, 0.95f, 1f, 0.62f), 2.45f, Vector3.one * 0.09f, Vector3.one * 0.46f);
         }
 
         private static Vector3 GroundAtWorld(Vector3 worldPoint)

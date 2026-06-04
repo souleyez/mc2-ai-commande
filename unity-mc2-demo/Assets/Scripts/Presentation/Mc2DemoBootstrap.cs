@@ -2286,7 +2286,7 @@ namespace MC2Demo.Presentation
             string sectionFx = DemoUnitView.SectionDamageCueSummary();
             bool sectionFxOk = sectionFx.IndexOf("Arms=missing-socket+flag+flight+landing-debris", StringComparison.Ordinal) >= 0
                 && sectionFx.IndexOf("Legs=collapse+red-cross", StringComparison.Ordinal) >= 0
-                && sectionFx.IndexOf("Cockpit=breach+ejection-pod+chute+landing", StringComparison.Ordinal) >= 0
+                && sectionFx.IndexOf("Cockpit=breach+ejection-pod+chute+landing+arc+distress", StringComparison.Ordinal) >= 0
                 && sectionFx.IndexOf("Critical=smoke+sparks", StringComparison.Ordinal) >= 0
                 && sectionFx.IndexOf("Ground=critical+lost+pilot", StringComparison.Ordinal) >= 0
                 && sectionFx.IndexOf("Wreck=blast+smoke+marker+debris", StringComparison.Ordinal) >= 0;
