@@ -2842,17 +2842,29 @@ namespace MC2Demo.Presentation
                 }
             }
 
+            Rect panel = MissionBriefPanelRect();
+            float objectiveStartY = MissionBriefObjectiveStartY(panel);
+            float lineHeight = MissionBriefObjectiveLineHeight(panel, objectiveStartY, visible);
+            int drawableRows = MissionBriefDrawableObjectiveRows(panel, objectiveStartY, lineHeight);
+            bool panelFitsAllObjectives = drawableRows >= visible;
             bool accepted = visible == 6
                 && compact == visible
                 && stateOk
                 && noEllipsis
                 && hasAirfield
                 && hasNorthIsland
-                && hasExtraction;
+                && hasExtraction
+                && panelFitsAllObjectives;
             string summary = "missionBrief="
                 + compact.ToString(CultureInfo.InvariantCulture)
                 + "/"
                 + visible.ToString(CultureInfo.InvariantCulture)
+                + " rows="
+                + drawableRows.ToString(CultureInfo.InvariantCulture)
+                + "/"
+                + visible.ToString(CultureInfo.InvariantCulture)
+                + " lineH="
+                + lineHeight.ToString("0.#", CultureInfo.InvariantCulture)
                 + " "
                 + string.Join("|", samples);
             return new LoadoutCompactCheck(accepted, summary);
@@ -9432,6 +9444,7 @@ namespace MC2Demo.Presentation
                 "Bounty " + FormatTokens(summary.completedRewardResourcePoints) + " / " + FormatTokens(summary.visibleRewardResourcePoints));
             y += 22f;
 
+            float objectiveLineHeight = MissionBriefObjectiveLineHeight(panel, y, visibleObjectives);
             foreach (ObjectiveState objective in mission.Objectives)
             {
                 if (objective.Definition.hidden)
@@ -9439,10 +9452,8 @@ namespace MC2Demo.Presentation
                     continue;
                 }
 
-                if (y > panel.yMax - 54f)
+                if (y + objectiveLineHeight > panel.yMax - 8f)
                 {
-                    GUI.Label(new Rect(x, y, width, 20f), "...");
-                    y += 20f;
                     break;
                 }
 
@@ -9450,12 +9461,12 @@ namespace MC2Demo.Presentation
                 GUI.color = objective.IsComplete
                     ? new Color(0.55f, 1f, 0.55f)
                     : objective.IsActive ? new Color(1f, 0.88f, 0.42f) : new Color(0.62f, 0.68f, 0.72f);
-                GUI.Label(new Rect(x, y, width, 20f), MissionBriefObjectiveLine(objective));
+                GUI.Label(new Rect(x, y, width, objectiveLineHeight), MissionBriefObjectiveLine(objective));
                 GUI.color = previous;
-                y += 20f;
+                y += objectiveLineHeight;
             }
 
-            if (mission.Structures.Count == 0 || y > panel.yMax - 42f)
+            if (mission.Structures.Count == 0 || y + 52f > panel.yMax - 6f)
             {
                 return;
             }
@@ -9465,7 +9476,7 @@ namespace MC2Demo.Presentation
             y += 20f;
             foreach (StructureState structure in mission.Structures)
             {
-                if (y > panel.yMax - 22f)
+                if (y + 24f > panel.yMax - 6f)
                 {
                     break;
                 }
@@ -9478,6 +9489,33 @@ namespace MC2Demo.Presentation
         private bool ShouldDrawMissionBriefPanel()
         {
             return !showMissionMap && mission.Result == MissionResultState.InProgress;
+        }
+
+        private static float MissionBriefObjectiveStartY(Rect panel)
+        {
+            return panel.y + 32f + 24f + 22f;
+        }
+
+        private static float MissionBriefObjectiveLineHeight(Rect panel, float objectiveStartY, int visibleObjectives)
+        {
+            if (visibleObjectives <= 0)
+            {
+                return 18f;
+            }
+
+            float available = Mathf.Max(0f, panel.yMax - objectiveStartY - 8f);
+            return Mathf.Clamp(available / visibleObjectives, 14f, 18f);
+        }
+
+        private static int MissionBriefDrawableObjectiveRows(Rect panel, float objectiveStartY, float objectiveLineHeight)
+        {
+            if (objectiveLineHeight <= 0f)
+            {
+                return 0;
+            }
+
+            float available = Mathf.Max(0f, panel.yMax - objectiveStartY - 8f);
+            return Mathf.FloorToInt(available / objectiveLineHeight);
         }
 
         private static string ObjectiveStateLabel(ObjectiveState objective)
