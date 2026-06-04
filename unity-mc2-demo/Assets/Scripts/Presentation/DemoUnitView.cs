@@ -483,6 +483,19 @@ namespace MC2Demo.Presentation
             CreateWorldDamageObject("Wreck Heat Beacon", PrimitiveType.Cylinder, ground + Vector3.up * 0.20f, Quaternion.identity, new Vector3(0.06f, 0.22f, 0.06f), new Color(1f, 0.20f, 0.05f, 1f));
             CreateWorldDamageObject("Wreck Marker", PrimitiveType.Cube, ground + Vector3.up * 0.04f, Quaternion.identity, new Vector3(0.80f, 0.030f, 0.12f), new Color(1f, 0.16f, 0.08f, 1f));
             CreateWorldDamageObject("Wreck Marker Crossbar", PrimitiveType.Cube, ground + Vector3.up * 0.045f, Quaternion.Euler(0f, 90f, 0f), new Vector3(0.68f, 0.030f, 0.10f), new Color(1f, 0.24f, 0.06f, 1f));
+            if (Unit != null && !Unit.IsPlayerUnit)
+            {
+                SpawnEnemySalvageCue(ground);
+            }
+        }
+
+        private void SpawnEnemySalvageCue(Vector3 ground)
+        {
+            Color signal = new(0.28f, 0.95f, 0.62f, 0.92f);
+            CreateWorldDamageObject("Enemy Salvage Ring", PrimitiveType.Cylinder, ground + Vector3.up * 0.025f, Quaternion.identity, new Vector3(0.46f, 0.010f, 0.46f), new Color(signal.r, signal.g, signal.b, 0.38f));
+            CreateWorldDamageObject("Enemy Salvage Tag", PrimitiveType.Cube, ground + Vector3.up * 0.35f, Quaternion.identity, new Vector3(0.34f, 0.040f, 0.10f), signal);
+            CreateWorldDamageObject("Enemy Salvage Tag Crossbar", PrimitiveType.Cube, ground + Vector3.up * 0.37f, Quaternion.Euler(0f, 90f, 0f), new Vector3(0.26f, 0.034f, 0.085f), new Color(signal.r, signal.g, signal.b, 0.84f));
+            CreateWorldDamageObject("Enemy Salvage Beacon", PrimitiveType.Cylinder, ground + Vector3.up * 0.58f, Quaternion.identity, new Vector3(0.040f, 0.30f, 0.040f), new Color(signal.r, signal.g, signal.b, 0.82f));
         }
 
         private void SpawnWreckDebris(Vector3 wreckCenter)
@@ -614,7 +627,7 @@ namespace MC2Demo.Presentation
 
         public static string SectionDamageCueSummary()
         {
-            return "Arms=missing-socket+flag+flight+landing-debris Legs=collapse+red-cross+skid+dust Cockpit=breach+ejection-pod+chute+landing+arc+distress Critical=smoke+sparks Ground=critical+lost+pilot Wreck=blast+smoke+marker+debris";
+            return "Arms=missing-socket+flag+flight+landing-debris Legs=collapse+red-cross+skid+dust Cockpit=breach+ejection-pod+chute+landing+arc+distress Critical=smoke+sparks Ground=critical+lost+pilot Wreck=blast+smoke+marker+debris+salvage";
         }
 
         public static string JetCueSummary()

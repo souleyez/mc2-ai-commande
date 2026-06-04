@@ -518,6 +518,7 @@ Reason:
 - The right mission panel objective overflow from the 2026-06-04 audit is fixed: Battle now shows all six `mc2_01` visible objectives at 1280 x 720 without hiding later objectives behind `...`.
 - The Mech Lab right-column decision blocker from the 2026-06-04 audit is fixed: fitting state now reads as compact issues such as `Review Weight`, pressure values flag overloads with `!`, and the selected fit identity avoids pilot-name truncation.
 - The first Phase B pass has begun by adding source-paced encounter stage words to the compact battle pulse: Initial, Airfield, Hangar, and Star now line up with the same trigger states guarded by `assert-encounter-pacing`.
+- This pass also marks destroyed hostile wrecks with a small salvage cue, guarded by `Wreck=blast+smoke+marker+debris+salvage`.
 - The current risk is no longer raw feature absence or obvious debug labels; it is whether the first mission's battlefield action and encounter beats feel readable enough moment to moment.
 - The next demo milestone should make one private Windows build feel like a coherent local game: battle, debrief, repair, contracts, mech lab, squad swap, and relaunch.
 - Further tiny text-only Mech Lab commits should stop unless a visible-flow audit finds a concrete confusing label or dead-end action.
@@ -527,7 +528,7 @@ Reason:
 Current stage snapshot:
 
 - Phase A Local Playable Loop is late active work: the private Windows loop now passes the combined command-file smoke with real visible Debrief, all six visible Battle objectives, and readable Mech Lab fitting pressure.
-- Phase B Battle Readability is the next main lane: weapon families, section damage, cockpit/ejection cues, combat HUD, and debrief rows exist, but the first mission still needs stronger encounter rhythm and clearer tactical spectacle.
+- Phase B Battle Readability is the next main lane: weapon families, section damage, cockpit/ejection cues, combat HUD, and debrief rows exist, but the first mission still needs stronger encounter rhythm, clearer tactical spectacle, and more battlefield reward readability.
 - Phase C Mech Lab Experience has core fitting rules and block editing in place: the next meaningful improvement is a calmer dedicated Mech Lab surface, not more right-column microcopy.
 - Phase D Public-Safe Content Pack remains later: public capture still requires replacement names, text, UI identity, models, textures, audio, and mission-facing story copy.
 - Phase E AI and Platform remain bounded architecture: keep AI to high-level directives until the local single-player Windows demo is convincing.
@@ -578,6 +579,12 @@ Encounter-stage pulse notes, 2026-06-04:
 - The compact battle pulse now includes the source-paced encounter stage without adding another HUD row: `Quiet Initial`, `Contact Airfield ...`, `Fire Hangar ...`, and `Star` for the Starslayer area beat.
 - The encounter-pacing smoke now guards the short stage labels with `stageText=Initial/Airfield/Hangar/Star`, keeping them aligned with objective 0, Hangar damage, and hidden objective 7.
 - Verification: Unity validator passed, Windows build passed, `mc2_01-encounter-pacing.txt`, `mc2_01-hangar-ambush.txt`, `mc2_01-starslayer-trigger.txt`, `mc2_01-combat-situation.txt`, and the combined visible-flow smoke passed; `analysis-output/visible-encounter-stage-pulse.png` confirms `Fire Hangar hostiles ...` is visible in the battle HUD.
+
+Enemy salvage wreck cue notes, 2026-06-04:
+
+- Destroyed hostile mechs now spawn a small teal salvage ring, tag, crossbar, and beacon on the wreck marker, while player wrecks keep the existing distress and damage cues only.
+- The cue is visual only for now; it does not change reward, salvage, or drop calculations.
+- Verification: Unity validator passed, Windows build passed, `mc2_01-combat-situation.txt`, and the combined visible-flow smoke passed with `Wreck=blast+smoke+marker+debris+salvage`.
 
 ## Frozen Development Plan
 
@@ -1012,7 +1019,7 @@ Tasks:
 - Target structure damage now has a smoke-guarded battlefield cue contract: `Structure=scar+smoke+collapse+rubble`.
 - Script bridge events now have a smoke-guarded battlefield cue contract: `ScriptCue=ring+beacon+signal`.
 - Mission result transition cues now have a smoke-guarded battlefield cue contract: `ResultCue=complete+failed`.
-- Destroyed mech wreck cues now have a smoke-guarded battlefield cue contract: `Wreck=blast+smoke+marker+debris`.
+- Destroyed hostile mech wreck cues now have a smoke-guarded battlefield cue contract: `Wreck=blast+smoke+marker+debris+salvage`.
 - Accepted, blocked, and partially accepted command cues now have a smoke-guarded battlefield cue contract: `Command=move+attack+single+blocked+partial+reject-unit`.
 - Pending and active solo orders now have a smoke-guarded battlefield cue contract: `SoloOrder=ring+beacon`.
 - Move, Jet, and attack order paths now have a smoke-guarded battlefield cue contract: `OrderPath=move+jet+attack+endcap`.
