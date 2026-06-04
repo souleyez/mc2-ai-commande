@@ -350,6 +350,7 @@ namespace MC2Demo.Presentation
                 CreateDamageLink("Right Leg Broken Cable", new Vector3(0.18f, -0.28f, 0.08f), new Vector3(0.42f, -0.58f, 0.18f), new Color(1f, 0.42f, 0.10f, 0.90f), 0.014f);
                 DetachPart("Left Leg", new Vector3(-0.38f, 0.12f, -0.25f), new Color(0.82f, 0.32f, 0.12f, 0.66f));
                 DetachPart("Right Leg", new Vector3(0.38f, 0.12f, -0.25f), new Color(0.82f, 0.32f, 0.12f, 0.66f));
+                SpawnLegFailureGroundCues();
                 SpawnDamageBurst(SectionWorldPoint(new Vector3(0f, -0.45f, 0f)), 1.0f);
                 return;
             }
@@ -436,6 +437,28 @@ namespace MC2Demo.Presentation
         {
             return !string.IsNullOrWhiteSpace(partName)
                 && partName.IndexOf("Arm", StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        private void SpawnLegFailureGroundCues()
+        {
+            Vector3 center = GroundAtWorld(SectionWorldPoint(new Vector3(0f, -0.56f, 0f)));
+            Vector3 forward = transform.TransformDirection(Vector3.forward);
+            forward.y = 0f;
+            if (forward.sqrMagnitude < 0.0001f)
+            {
+                forward = Vector3.forward;
+            }
+
+            forward.Normalize();
+            Vector3 right = Vector3.Cross(Vector3.up, forward).normalized;
+            Quaternion forwardYaw = Quaternion.LookRotation(forward, Vector3.up);
+            Color scorch = new(0.07f, 0.045f, 0.030f, 0.92f);
+            Color signal = new(1f, 0.18f, 0.06f, 0.92f);
+            CreateWorldDamageObject("Leg Collapse Skid L", PrimitiveType.Cube, center - right * 0.22f - forward * 0.20f, forwardYaw, new Vector3(0.11f, 0.018f, 0.66f), scorch);
+            CreateWorldDamageObject("Leg Collapse Skid R", PrimitiveType.Cube, center + right * 0.22f - forward * 0.18f, forwardYaw, new Vector3(0.11f, 0.018f, 0.58f), scorch);
+            CreateWorldDamageObject("Leg Immobilized Ground Bar", PrimitiveType.Cube, center + Vector3.up * 0.035f, forwardYaw * Quaternion.Euler(0f, 90f, 0f), new Vector3(0.84f, 0.026f, 0.070f), signal);
+            CreateTransient("Leg Collapse Dust Ring", PrimitiveType.Cylinder, center, new Color(0.62f, 0.52f, 0.38f, 0.34f), 1.35f, new Vector3(0.34f, 0.012f, 0.34f), new Vector3(1.22f, 0.006f, 1.22f));
+            CreateMovingTransient("Leg Drag Spark", PrimitiveType.Sphere, center + right * 0.20f + Vector3.up * 0.10f, center - forward * 0.46f + right * 0.08f + Vector3.up * 0.05f, new Color(1f, 0.44f, 0.08f, 0.66f), 0.85f, Vector3.one * 0.07f, Vector3.one * 0.23f);
         }
 
         private void SpawnDamageBurst(Vector3 position, float scale)
@@ -591,7 +614,7 @@ namespace MC2Demo.Presentation
 
         public static string SectionDamageCueSummary()
         {
-            return "Arms=missing-socket+flag+flight+landing-debris Legs=collapse+red-cross Cockpit=breach+ejection-pod+chute+landing+arc+distress Critical=smoke+sparks Ground=critical+lost+pilot Wreck=blast+smoke+marker+debris";
+            return "Arms=missing-socket+flag+flight+landing-debris Legs=collapse+red-cross+skid+dust Cockpit=breach+ejection-pod+chute+landing+arc+distress Critical=smoke+sparks Ground=critical+lost+pilot Wreck=blast+smoke+marker+debris";
         }
 
         public static string JetCueSummary()
