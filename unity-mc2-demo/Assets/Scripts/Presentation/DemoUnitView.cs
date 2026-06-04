@@ -381,6 +381,61 @@ namespace MC2Demo.Presentation
 
             DemoTransientEffect transient = part.AddComponent<DemoTransientEffect>();
             transient.BeginMoving(color, 2.85f, startScale, startScale * 0.62f, endPosition);
+            if (IsDetachedArmPart(partName))
+            {
+                SpawnDetachedArmCues(startPosition, endPosition, color);
+            }
+        }
+
+        private void SpawnDetachedArmCues(Vector3 startPosition, Vector3 endPosition, Color color)
+        {
+            Vector3 apex = Vector3.Lerp(startPosition, endPosition, 0.52f) + Vector3.up * 0.38f;
+            Vector3 landing = GroundAtWorld(endPosition);
+            Vector3 side = transform.TransformDirection(endPosition.x >= startPosition.x ? Vector3.right : Vector3.left);
+            Vector3 forward = transform.TransformDirection(Vector3.forward);
+            CreateBeam("Detached Arm Flight Trail A", startPosition, apex, new Color(0.96f, 0.54f, 0.16f, 0.46f), 0.92f, 0.020f);
+            CreateBeam("Detached Arm Flight Trail B", apex, endPosition, new Color(0.10f, 0.09f, 0.08f, 0.34f), 1.12f, 0.030f);
+            CreateMovingTransient(
+                "Detached Arm Spark",
+                PrimitiveType.Sphere,
+                startPosition + Vector3.up * 0.05f,
+                endPosition,
+                new Color(1f, 0.58f, 0.12f, 0.70f),
+                0.78f,
+                Vector3.one * 0.075f,
+                Vector3.one * 0.24f);
+            CreateTransient(
+                "Detached Arm Landing Dust",
+                PrimitiveType.Cylinder,
+                landing,
+                new Color(0.62f, 0.52f, 0.38f, 0.34f),
+                1.30f,
+                new Vector3(0.20f, 0.012f, 0.20f),
+                new Vector3(0.72f, 0.006f, 0.72f));
+            CreateMovingTransient(
+                "Detached Arm Landing Debris",
+                PrimitiveType.Cube,
+                endPosition,
+                landing + side * 0.30f + Vector3.up * 0.08f,
+                new Color(color.r, color.g, color.b, 0.58f),
+                1.45f,
+                Vector3.one * 0.085f,
+                Vector3.one * 0.035f);
+            CreateMovingTransient(
+                "Detached Arm Hot Fragment",
+                PrimitiveType.Cube,
+                endPosition + Vector3.up * 0.04f,
+                landing - side * 0.18f + forward * 0.22f + Vector3.up * 0.06f,
+                new Color(1f, 0.36f, 0.08f, 0.64f),
+                1.20f,
+                Vector3.one * 0.070f,
+                Vector3.one * 0.030f);
+        }
+
+        private static bool IsDetachedArmPart(string partName)
+        {
+            return !string.IsNullOrWhiteSpace(partName)
+                && partName.IndexOf("Arm", StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
         private void SpawnDamageBurst(Vector3 position, float scale)
@@ -536,7 +591,7 @@ namespace MC2Demo.Presentation
 
         public static string SectionDamageCueSummary()
         {
-            return "Arms=missing-socket+flag Legs=collapse+red-cross Cockpit=breach+ejection-pod+chute+landing Critical=smoke+sparks Ground=critical+lost+pilot Wreck=blast+smoke+marker+debris";
+            return "Arms=missing-socket+flag+flight+landing-debris Legs=collapse+red-cross Cockpit=breach+ejection-pod+chute+landing Critical=smoke+sparks Ground=critical+lost+pilot Wreck=blast+smoke+marker+debris";
         }
 
         public static string JetCueSummary()

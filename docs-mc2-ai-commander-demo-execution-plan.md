@@ -724,7 +724,7 @@ Tasks:
 - Pending and active single-unit orders now keep a compact battlefield ring and beacon on the detached mech, making the simplified mobile command state visible without adding HUD rows.
 - Move, Jet, and attack orders now draw compact travel or pursuit path lines with destination or target endcaps from player mechs to their destinations without adding combat HUD rows.
 - Move, Jet, and attack orders now pulse compact arrival or attack-ready cues when player mechs reach destinations or firing range without adding combat HUD rows.
-- Section damage readability now has persistent missing-arm flags, red leg-collapse cues, cockpit breach/ejection/chute/landing markers, critical-section smoke/spark vents, destroyed-mech wreck blast/smoke/marker/debris cues, compact critical/destroyed section status labels, and smoke-guarded cue contracts.
+- Section damage readability now has persistent missing-arm flags plus detached-arm flight and landing debris, red leg-collapse cues, cockpit breach/ejection/chute/landing markers, critical-section smoke/spark vents, destroyed-mech wreck blast/smoke/marker/debris cues, compact critical/destroyed section status labels, and smoke-guarded cue contracts.
 - Hot and heat-locked mechs now show battlefield vent/lock cues, so heat pressure reads at the fixed tactical camera without adding another combat HUD row.
 - The first squad mech now has a subtle commander anchor/beacon in the battlefield, matching the fixed camera follow rule without adding combat HUD rows.
 - Single-unit orders now emit a short return-to-squad pulse when the mech automatically rejoins squad control after completing its solo order.
