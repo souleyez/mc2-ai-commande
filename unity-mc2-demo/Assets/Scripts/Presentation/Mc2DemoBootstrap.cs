@@ -268,7 +268,7 @@ namespace MC2Demo.Presentation
         private Texture2D uiButtonHoverTexture;
         private Texture2D uiTextFieldTexture;
         private const string StartupSmokeDepotOwnedMechId = "assembled-smoke-depot";
-        private const string UpdatedSquadLoadedStatusText = "Updated squad loaded - Mech Lab open";
+        private const string UpdatedSquadLoadedStatusText = "Mech Lab squad loaded";
 
         private void Start()
         {
@@ -3333,6 +3333,7 @@ namespace MC2Demo.Presentation
             bool heightOk = LoadoutGridSectionMinHeight >= 204f;
             LoadoutCompactCheck conditionCheck = BuildLoadoutConditionCompactCheck(unit);
             LoadoutCompactCheck pressureCheck = BuildProjectedLoadoutStatusCompactCheck(preview);
+            LoadoutCompactCheck fitIdentityCheck = BuildMechBayFitIdentityCompactCheck(unit, preview);
             LoadoutCompactCheck editCheck = BuildLoadoutEditControlsCompactCheck(preview);
             LoadoutCompactCheck selectedResetCheck = BuildLoadoutSelectedResetCompactCheck();
             LoadoutCompactCheck targetCheck = BuildLoadoutTargetControlsCompactCheck();
@@ -3358,6 +3359,8 @@ namespace MC2Demo.Presentation
                 + conditionCheck.Summary
                 + " "
                 + pressureCheck.Summary
+                + " "
+                + fitIdentityCheck.Summary
                 + " "
                 + editCheck.Summary
                 + " "
@@ -3396,6 +3399,7 @@ namespace MC2Demo.Presentation
                     && heightOk
                     && conditionCheck.Accepted
                     && pressureCheck.Accepted
+                    && fitIdentityCheck.Accepted
                     && editCheck.Accepted
                     && selectedResetCheck.Accepted
                     && targetCheck.Accepted
@@ -3807,12 +3811,24 @@ namespace MC2Demo.Presentation
         {
             string stateText = ProjectedLoadoutStateText(preview);
             string pressureText = ProjectedLoadoutPressureText(preview);
+            LoadoutValidationResult result = preview?.Validation;
             bool stateOk = string.Equals(stateText, LoadoutFitOkLabel, StringComparison.Ordinal)
                 || stateText.StartsWith(LoadoutFitReviewPrefix, StringComparison.Ordinal);
+            bool overLimit = preview != null
+                && result != null
+                && ((preview.HeatLimit > 0f && result.TotalHeat > preview.HeatLimit)
+                    || (preview.WeightLimit > 0f && result.TotalWeight > preview.WeightLimit)
+                    || (preview.GridCapacity > 0 && result.OccupiedGridCells > preview.GridCapacity));
             bool accepted = stateOk
+                && stateText.Length <= 22
+                && stateText.IndexOf("...", StringComparison.Ordinal) < 0
+                && stateText.IndexOf(".", StringComparison.Ordinal) < 0
+                && stateText.IndexOf("exceeds", StringComparison.OrdinalIgnoreCase) < 0
+                && stateText.IndexOf("limit", StringComparison.OrdinalIgnoreCase) < 0
                 && pressureText.StartsWith(LoadoutHeatPressureLabel, StringComparison.Ordinal)
                 && pressureText.IndexOf("  " + LoadoutWeightPressureLabel, StringComparison.Ordinal) >= 0
                 && pressureText.IndexOf("  " + LoadoutGridPressureLabel, StringComparison.Ordinal) >= 0
+                && (pressureText.IndexOf("!", StringComparison.Ordinal) >= 0) == overLimit
                 && !ContainsPrototypeCopy(stateText)
                 && stateText.IndexOf("Fit Review", StringComparison.OrdinalIgnoreCase) < 0
                 && pressureText.IndexOf("Heat", StringComparison.OrdinalIgnoreCase) < 0
@@ -3825,6 +3841,20 @@ namespace MC2Demo.Presentation
                 + stateText
                 + "/"
                 + pressureText);
+        }
+
+        private LoadoutCompactCheck BuildMechBayFitIdentityCompactCheck(UnitState unit, CombatLoadoutPreview preview)
+        {
+            string identity = MechBayFitIdentityText(unit, preview, HasPendingLoadoutEdits(unit));
+            bool accepted = identity.Length <= 58
+                && identity.IndexOf("...", StringComparison.Ordinal) < 0
+                && identity.IndexOf("Pilot", StringComparison.OrdinalIgnoreCase) < 0
+                && identity.IndexOf("exceeds", StringComparison.OrdinalIgnoreCase) < 0
+                && identity.IndexOf("limit", StringComparison.OrdinalIgnoreCase) < 0
+                && identity.IndexOf("  S ", StringComparison.Ordinal) >= 0
+                && (identity.IndexOf(LoadoutFitOkLabel, StringComparison.Ordinal) >= 0
+                    || identity.IndexOf(LoadoutFitReviewPrefix, StringComparison.Ordinal) >= 0);
+            return new LoadoutCompactCheck(accepted, "fitIdentity=" + identity);
         }
 
         private static LoadoutCompactCheck BuildLoadoutEditControlsCompactCheck(CombatLoadoutPreview preview)
@@ -10788,24 +10818,9 @@ namespace MC2Demo.Presentation
 
             if (selectedUnit != null)
             {
-                string fitState = HasPendingLoadoutEdits(selectedUnit) ? "Pending" : "Applied";
                 CombatLoadoutPreview preview = LoadoutPreviewFor(selectedUnit);
                 LoadoutValidationResult result = preview.Validation;
-                string fitReview = result.IsValid ? "Fit OK" : "Review " + TruncateText(FirstLoadoutError(result), 12);
-                string pilot = string.IsNullOrWhiteSpace(selectedUnit.PilotDisplayName)
-                    ? "No pilot"
-                    : selectedUnit.PilotDisplayName;
-                string identity = TruncateText(selectedUnit.UnitType, 18)
-                    + "  "
-                    + fitState
-                    + "  "
-                    + fitReview
-                    + "  Pilot "
-                    + TruncateText(pilot, 12)
-                    + "  S "
-                    + Mathf.RoundToInt(selectedUnit.CurrentStructure).ToString(CultureInfo.InvariantCulture)
-                    + "/"
-                    + Mathf.RoundToInt(selectedUnit.Profile.MaxStructure).ToString(CultureInfo.InvariantCulture);
+                string identity = MechBayFitIdentityText(selectedUnit, preview, HasPendingLoadoutEdits(selectedUnit));
                 DrawSelectedMechBayFitPressureLine(
                     x,
                     y + 24f,
@@ -10849,6 +10864,32 @@ namespace MC2Demo.Presentation
                 preview.GridCapacity,
                 LoadoutComponentColor,
                 barWidth);
+        }
+
+        private static string MechBayFitIdentityText(
+            UnitState selectedUnit,
+            CombatLoadoutPreview preview,
+            bool hasPendingEdits)
+        {
+            if (selectedUnit == null)
+            {
+                return "";
+            }
+
+            string fitState = hasPendingEdits ? "Pending" : "Applied";
+            string fitReview = ProjectedLoadoutStateText(preview);
+            float maxStructure = selectedUnit.Profile == null
+                ? selectedUnit.CurrentStructure
+                : selectedUnit.Profile.MaxStructure;
+            return TruncateText(selectedUnit.UnitType, 18)
+                + "  "
+                + fitState
+                + "  "
+                + fitReview
+                + "  S "
+                + Mathf.RoundToInt(selectedUnit.CurrentStructure).ToString(CultureInfo.InvariantCulture)
+                + "/"
+                + Mathf.RoundToInt(maxStructure).ToString(CultureInfo.InvariantCulture);
         }
 
         private void DrawMechBayFitPressureBar(
@@ -10977,7 +11018,7 @@ namespace MC2Demo.Presentation
             LoadoutValidationResult result = preview?.Validation;
             if (result == null)
             {
-                return LoadoutFitReviewPrefix + "unavailable";
+                return LoadoutFitReviewPrefix + "Missing";
             }
 
             return result.IsValid
@@ -10995,13 +11036,31 @@ namespace MC2Demo.Presentation
                     + LoadoutGridPressureLabel + "-/-";
             }
 
-            return LoadoutHeatPressureLabel + FormatDecimal(result.TotalHeat) + "/" + FormatDecimal(preview.HeatLimit)
-                + "  " + LoadoutWeightPressureLabel + FormatDecimal(result.TotalWeight) + "/" + FormatDecimal(preview.WeightLimit)
-                + "  " + LoadoutGridPressureLabel + result.OccupiedGridCells + "/" + preview.GridCapacity;
+            return LoadoutHeatPressureLabel + LoadoutPressureValueText(result.TotalHeat, preview.HeatLimit)
+                + "  " + LoadoutWeightPressureLabel + LoadoutPressureValueText(result.TotalWeight, preview.WeightLimit)
+                + "  " + LoadoutGridPressureLabel + LoadoutPressureValueText(result.OccupiedGridCells, preview.GridCapacity);
         }
 
         private static string ProjectedLoadoutReviewReasonText(LoadoutValidationResult result)
         {
+            if (result == null)
+            {
+                return "Missing";
+            }
+
+            List<string> reasons = new();
+            AddCompactLoadoutIssue(reasons, result, "weight", "Weight");
+            AddCompactLoadoutIssue(reasons, result, "heat", "Heat");
+            AddCompactLoadoutIssue(reasons, result, "grid", "Grid");
+            AddCompactLoadoutIssue(reasons, result, "cell", "Grid");
+            AddCompactLoadoutIssue(reasons, result, "slot", "Slot");
+            AddCompactLoadoutIssue(reasons, result, "unknown chassis", "Chassis");
+            AddCompactLoadoutIssue(reasons, result, "item", "Item");
+            if (reasons.Count > 0)
+            {
+                return TruncateText(string.Join("+", reasons), 18);
+            }
+
             string reason = PlayerFitStatusText(FirstLoadoutError(result));
             if (reason.StartsWith("Fit ", StringComparison.Ordinal))
             {
@@ -11013,7 +11072,35 @@ namespace MC2Demo.Presentation
                 reason = char.ToUpperInvariant(reason[0]) + reason.Substring(1);
             }
 
-            return TruncateText(reason, 28);
+            return string.IsNullOrWhiteSpace(reason) ? "Blocked" : TruncateText(reason, 18);
+        }
+
+        private static void AddCompactLoadoutIssue(
+            List<string> reasons,
+            LoadoutValidationResult result,
+            string needle,
+            string label)
+        {
+            if (reasons.Contains(label))
+            {
+                return;
+            }
+
+            foreach (string error in result.Errors)
+            {
+                if (!string.IsNullOrWhiteSpace(error)
+                    && error.IndexOf(needle, StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    reasons.Add(label);
+                    return;
+                }
+            }
+        }
+
+        private static string LoadoutPressureValueText(float value, float limit)
+        {
+            string text = FormatDecimal(value) + "/" + FormatDecimal(limit);
+            return limit > 0f && value > limit ? text + "!" : text;
         }
 
         private void DrawLoadoutUsageBar(Rect rect, float value, float limit, Color normalColor)

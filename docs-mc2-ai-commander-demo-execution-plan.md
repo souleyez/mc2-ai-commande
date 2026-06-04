@@ -508,7 +508,7 @@ Tasks:
 
 ## Current Recommended Next Task
 
-Address the **remaining Mech Lab right-column truncation that blocks decision-making**, then move out of text-only polish.
+Start the **first-mission encounter rhythm and battle readability pass**, using the fixed visible flow as the baseline.
 
 Reason:
 
@@ -516,7 +516,8 @@ Reason:
 - The recent Mech Lab copy and density pass has smoke coverage for the highest-noise fitting rows, including compact weapon codes, component details, repair state, route labels, and funds wording.
 - The visible Debrief gap from the 2026-06-04 audit is fixed: command-file smoke can now resolve the mission, open the actual Debrief panel, and assert that the Debrief screen is visible.
 - The right mission panel objective overflow from the 2026-06-04 audit is fixed: Battle now shows all six `mc2_01` visible objectives at 1280 x 720 without hiding later objectives behind `...`.
-- The current risk is no longer raw feature absence or obvious debug labels; it is whether the remaining Mech Lab fitting pressure lines stay readable enough at 1280 x 720 without needing developer narration.
+- The Mech Lab right-column decision blocker from the 2026-06-04 audit is fixed: fitting state now reads as compact issues such as `Review Weight`, pressure values flag overloads with `!`, and the selected fit identity avoids pilot-name truncation.
+- The current risk is no longer raw feature absence or obvious debug labels; it is whether the first mission feels like a readable tactical mech battle instead of a scripted UI harness.
 - The next demo milestone should make one private Windows build feel like a coherent local game: battle, debrief, repair, contracts, mech lab, squad swap, and relaunch.
 - Further tiny text-only Mech Lab commits should stop unless a visible-flow audit finds a concrete confusing label or dead-end action.
 - AI remains intentionally bounded to high-level directives and capability preview; do not expand model-driven combat until the local loop feels good.
@@ -524,9 +525,9 @@ Reason:
 
 Current stage snapshot:
 
-- Phase A Local Playable Loop is late active work: the private Windows loop now passes the combined command-file smoke with real visible Debrief and all six visible Battle objectives; the next small blocker is Mech Lab right-column truncation only where it blocks decisions.
-- Phase B Battle Readability has a working foundation: weapon families, section damage, cockpit/ejection cues, combat HUD, and debrief rows exist, but the first mission still needs stronger encounter rhythm and clearer tactical spectacle.
-- Phase C Mech Lab Experience has core fitting rules and block editing in place: the next meaningful improvement is a calmer dedicated Mech Lab surface, not more right-drawer microcopy.
+- Phase A Local Playable Loop is late active work: the private Windows loop now passes the combined command-file smoke with real visible Debrief, all six visible Battle objectives, and readable Mech Lab fitting pressure.
+- Phase B Battle Readability is the next main lane: weapon families, section damage, cockpit/ejection cues, combat HUD, and debrief rows exist, but the first mission still needs stronger encounter rhythm and clearer tactical spectacle.
+- Phase C Mech Lab Experience has core fitting rules and block editing in place: the next meaningful improvement is a calmer dedicated Mech Lab surface, not more right-column microcopy.
 - Phase D Public-Safe Content Pack remains later: public capture still requires replacement names, text, UI identity, models, textures, audio, and mission-facing story copy.
 - Phase E AI and Platform remain bounded architecture: keep AI to high-level directives until the local single-player Windows demo is convincing.
 
@@ -547,7 +548,7 @@ Visible-flow audit notes, 2026-06-04:
 - Real window captures were taken for startup battle, debrief-script state, and Mech Lab: `analysis-output/visible-flow-audit-battle-start.png`, `analysis-output/visible-flow-audit-debrief.png`, and `analysis-output/visible-flow-audit-mech-lab.png`. Local screenshots are ignored by git.
 - Startup Battle is readable at 1280 x 720: fixed camera, left squad panel, combat panel, and mission panel are usable. Remaining issue: the right mission panel still shows only the first four objectives plus an ellipsis, so later objective visibility remains cramped.
 - The debrief command-file path is the top Phase A blocker: `assert-debrief-summary` passes, but the visible window remains in Battle mode and only logs `CLI debrief summary assert OK`; it does not open the actual Debrief panel. The next Phase A fix should add a guarded visible debrief open/result path to the command-file/manual flow.
-- Mech Lab is usable in the dedicated two-column layout: Company Bay actions and Loadout grid are visible. Remaining lower-priority issue: a few right-column labels still truncate, including the selected mech tab and `Review Weight exceeds chassis li...`.
+- Mech Lab is usable in the dedicated two-column layout: Company Bay actions and Loadout grid are visible. The follow-up fix below resolves the decision-blocking `Review Weight exceeds chassis li...` truncation.
 
 Visible-flow fix notes, 2026-06-04:
 
@@ -563,13 +564,21 @@ Mission-panel readability notes, 2026-06-04:
 - The combat-situation smoke now guards panel capacity with `missionBrief=6/6 rows=6/6`, covering Airfield, Hangar, Bandit patrol, North island, Bandits, and Extraction without `...`.
 - Verification: Unity validator passed, Windows build passed, combined visible-flow smoke exited 0 with `missionBrief=6/6 rows=6/6`, and `analysis-output/visible-mission-brief-overflow.png` confirms all six objectives are visible at 1280 x 720.
 
+Mech Lab truncation fix notes, 2026-06-04:
+
+- Loadout review state now maps validation errors to compact decision labels such as `Review Weight` instead of surfacing long validator sentences.
+- Heat, weight, and grid pressure values now append `!` when over limit, so `W 36/32!` carries the blocked-fit reason without extra text.
+- The selected Mech Lab fit identity now shows chassis, Applied/Pending, compact review state, and structure only; pilot name remains in the card title instead of causing right-column ellipsis.
+- The loadout compact smoke now guards both `pressure=Review Weight/H 18/27  W 36/32!  G 16/20` and `fitIdentity=Bushwacker  Applied  Review Weight  S 211/211`.
+- Verification: Unity validator passed, Windows build passed, combined visible-flow smoke exited 0, and `analysis-output/visible-mechlab-truncation-fixed.png` confirms the 1280 x 720 Mech Lab view no longer shows the decision-blocking truncation.
+
 ## Frozen Development Plan
 
 This is the current locked execution plan for the private Windows demo. When the user says "continue by the plan", follow this order unless a bug blocks the build or the user explicitly changes priority.
 
 ### Phase A: Local Playable Loop
 
-Status: active, late flow polish.
+Status: active, late flow closure.
 
 Goal: make one private Windows build understandable without developer narration.
 
@@ -583,13 +592,13 @@ Definition of done:
 
 Next work:
 
-1. Fix only the Mech Lab right-column truncation that blocks fitting decisions, especially pressure/status labels that still collapse into unclear fragments.
-2. Rerun the combined visible-flow smoke and one targeted Mech Lab window capture after the UI-facing fix.
-3. After those Phase A blockers, choose the next larger lane: first-mission encounter rhythm or the calmer dedicated Mech Lab surface.
+1. Keep the combined visible-flow smoke green while Phase B changes the battle.
+2. Run one manual/window audit after the next encounter-rhythm change to catch any new visible-flow regression.
+3. Do not take more Mech Lab microcopy passes unless a fresh visible audit finds a concrete confusing label or blocked action.
 
 ### Phase B: Battle Readability
 
-Status: next, with foundation already implemented.
+Status: next active lane, with foundation already implemented.
 
 Goal: make `mc2_01` feel like a readable tactical mech battle, not just a functional simulation.
 
