@@ -927,7 +927,7 @@ namespace MC2Demo.Presentation
                         RunStartupCommandResultAssertion(action.ExpectedCommandBlocked, action.ExpectedCommandAcceptedCount);
                         break;
                     case StartupCommanderScriptActionKind.AssertCombatSituation:
-                        RunStartupCombatSituationAssertion(action.ExpectedCombatTempo, action.ExpectedSoloCount, action.ExpectedJumpingCount);
+                        RunStartupCombatSituationAssertion(action.ExpectedCombatTempo, action.ExpectedSoloCount, action.ExpectedJumpingCount, action.ExpectedSalvageCount);
                         break;
                     case StartupCommanderScriptActionKind.AssertEncounterPacing:
                         RunStartupEncounterPacingAssertion();
@@ -2267,9 +2267,9 @@ namespace MC2Demo.Presentation
             };
         }
 
-        private void RunStartupCombatSituationAssertion(string expectedTempoMode, int expectedSoloCount, int expectedJumpingCount)
+        private void RunStartupCombatSituationAssertion(string expectedTempoMode, int expectedSoloCount, int expectedJumpingCount, int expectedSalvageCount)
         {
-            CombatSituationAssertionResult result = BuildCombatSituationAssertion(expectedTempoMode, expectedSoloCount, expectedJumpingCount);
+            CombatSituationAssertionResult result = BuildCombatSituationAssertion(expectedTempoMode, expectedSoloCount, expectedJumpingCount, expectedSalvageCount);
             if (result.Accepted)
             {
                 AddCombatLogLine("CLI combat situation assert OK: " + result.Summary);
@@ -2315,7 +2315,7 @@ namespace MC2Demo.Presentation
             Debug.LogError("MC2 objective graph assertion failed: " + result.Summary);
         }
 
-        private CombatSituationAssertionResult BuildCombatSituationAssertion(string expectedTempoMode, int expectedSoloCount, int expectedJumpingCount)
+        private CombatSituationAssertionResult BuildCombatSituationAssertion(string expectedTempoMode, int expectedSoloCount, int expectedJumpingCount, int expectedSalvageCount)
         {
             if (mission == null)
             {
@@ -2329,11 +2329,15 @@ namespace MC2Demo.Presentation
             int jumping = CountJumpingPlayerUnits();
             int activeHostiles = CountActiveHostileUnits();
             int liveTargets = CountLiveStructures();
+            int salvage = CountDestroyedHostileUnits();
             bool textOk = text.IndexOf("Cmd ", StringComparison.OrdinalIgnoreCase) >= 0
                 && text.IndexOf("Squad ", StringComparison.OrdinalIgnoreCase) >= 0
                 && text.IndexOf("Solo ", StringComparison.OrdinalIgnoreCase) >= 0
                 && text.IndexOf("Hostiles ", StringComparison.OrdinalIgnoreCase) >= 0
                 && text.IndexOf("Targets ", StringComparison.OrdinalIgnoreCase) >= 0
+                && (salvage <= 0
+                    ? text.IndexOf("Salvage ", StringComparison.OrdinalIgnoreCase) < 0
+                    : text.IndexOf("Salvage " + salvage.ToString(CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase) >= 0)
                 && (text.EndsWith("quiet", StringComparison.OrdinalIgnoreCase)
                     || text.EndsWith("contact", StringComparison.OrdinalIgnoreCase));
             bool countsOk = playerSlots > 0
@@ -2439,6 +2443,7 @@ namespace MC2Demo.Presentation
                 || string.Equals(tempoMode, expectedTempoMode, StringComparison.OrdinalIgnoreCase);
             bool expectedSoloOk = expectedSoloCount < 0 || detached == expectedSoloCount;
             bool expectedJumpingOk = expectedJumpingCount < 0 || jumping == expectedJumpingCount;
+            bool expectedSalvageOk = expectedSalvageCount < 0 || salvage == expectedSalvageCount;
             string pressureText = CombatContactPressureText();
             bool pressureOk = CombatContactPressureTextMatchesState(pressureText);
             string focusText = CombatFocusText();
@@ -2460,6 +2465,9 @@ namespace MC2Demo.Presentation
                 + activeHostiles.ToString(CultureInfo.InvariantCulture)
                 + " targets="
                 + liveTargets.ToString(CultureInfo.InvariantCulture)
+                + " salvage="
+                + salvage.ToString(CultureInfo.InvariantCulture)
+                + (expectedSalvageCount < 0 ? "" : " expectedSalvage=" + expectedSalvageCount.ToString(CultureInfo.InvariantCulture))
                 + " top="
                 + topMode
                 + " funds="
@@ -2598,6 +2606,7 @@ namespace MC2Demo.Presentation
                     && expectedTempoOk
                     && expectedSoloOk
                     && expectedJumpingOk
+                    && expectedSalvageOk
                     && pressureOk
                     && focusOk
                     && pulseOk
@@ -9788,6 +9797,7 @@ namespace MC2Demo.Presentation
             int detached = CountDetachedPlayerUnits();
             int activeHostiles = CountActiveHostileUnits();
             int liveTargets = CountLiveStructures();
+            int salvage = CountDestroyedHostileUnits();
             string tempo = HasRecentCombatEvent() ? "contact" : "quiet";
             return "Cmd "
                 + CommanderUnitLabel()
@@ -9801,6 +9811,7 @@ namespace MC2Demo.Presentation
                 + activeHostiles.ToString(CultureInfo.InvariantCulture)
                 + "  Targets "
                 + liveTargets.ToString(CultureInfo.InvariantCulture)
+                + (salvage <= 0 ? "" : "  Salvage " + salvage.ToString(CultureInfo.InvariantCulture))
                 + "  "
                 + tempo;
         }
@@ -16584,6 +16595,25 @@ namespace MC2Demo.Presentation
             foreach (UnitState unit in mission.Units)
             {
                 if (!unit.IsPlayerUnit && unit.IsActive && !unit.IsDestroyed)
+                {
+                    count++;
+                }
+            }
+
+            return count;
+        }
+
+        private int CountDestroyedHostileUnits()
+        {
+            int count = 0;
+            if (mission == null)
+            {
+                return count;
+            }
+
+            foreach (UnitState unit in mission.Units)
+            {
+                if (!unit.IsPlayerUnit && unit.IsDestroyed)
                 {
                     count++;
                 }

@@ -404,6 +404,7 @@ namespace MC2Demo.Presentation
                 string expectedTempo = "";
                 int expectedSoloCount = -1;
                 int expectedJumpingCount = -1;
+                int expectedSalvageCount = -1;
                 if (!string.IsNullOrWhiteSpace(payload))
                 {
                     string[] tokens = payload.Split(TokenSeparators, StringSplitOptions.RemoveEmptyEntries);
@@ -445,12 +446,25 @@ namespace MC2Demo.Presentation
                             continue;
                         }
 
-                        error = "Assert combat situation action only accepts optional quiet, contact, tracking, fire, solo=N, or jumping=N.";
+                        if (token.StartsWith("salvage=", StringComparison.Ordinal))
+                        {
+                            string value = token.Substring("salvage=".Length);
+                            if (!int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out expectedSalvageCount)
+                                || expectedSalvageCount < 0)
+                            {
+                                error = "Assert combat situation salvage argument must be salvage=N with a non-negative integer.";
+                                return false;
+                            }
+
+                            continue;
+                        }
+
+                        error = "Assert combat situation action only accepts optional quiet, contact, tracking, fire, solo=N, jumping=N, or salvage=N.";
                         return false;
                     }
                 }
 
-                action = StartupCommanderScriptAction.AssertCombatSituation(lineNumber, rawLine, expectedTempo, expectedSoloCount, expectedJumpingCount);
+                action = StartupCommanderScriptAction.AssertCombatSituation(lineNumber, rawLine, expectedTempo, expectedSoloCount, expectedJumpingCount, expectedSalvageCount);
                 return true;
             }
 
@@ -507,6 +521,7 @@ namespace MC2Demo.Presentation
         public string ExpectedCombatTempo { get; private set; }
         public int ExpectedSoloCount { get; private set; } = -1;
         public int ExpectedJumpingCount { get; private set; } = -1;
+        public int ExpectedSalvageCount { get; private set; } = -1;
         public bool ExpectedCommandBlocked { get; private set; }
         public int ExpectedCommandAcceptedCount { get; private set; } = -1;
 
@@ -785,7 +800,8 @@ namespace MC2Demo.Presentation
             string sourceLine,
             string expectedTempo,
             int expectedSoloCount,
-            int expectedJumpingCount)
+            int expectedJumpingCount,
+            int expectedSalvageCount)
         {
             return new StartupCommanderScriptAction
             {
@@ -794,7 +810,8 @@ namespace MC2Demo.Presentation
                 SourceLine = sourceLine ?? string.Empty,
                 ExpectedCombatTempo = expectedTempo ?? string.Empty,
                 ExpectedSoloCount = expectedSoloCount,
-                ExpectedJumpingCount = expectedJumpingCount
+                ExpectedJumpingCount = expectedJumpingCount,
+                ExpectedSalvageCount = expectedSalvageCount
             };
         }
 

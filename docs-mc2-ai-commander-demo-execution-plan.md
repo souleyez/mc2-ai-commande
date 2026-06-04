@@ -519,6 +519,7 @@ Reason:
 - The Mech Lab right-column decision blocker from the 2026-06-04 audit is fixed: fitting state now reads as compact issues such as `Review Weight`, pressure values flag overloads with `!`, and the selected fit identity avoids pilot-name truncation.
 - The first Phase B pass has begun by adding source-paced encounter stage words to the compact battle pulse: Initial, Airfield, Hangar, and Star now line up with the same trigger states guarded by `assert-encounter-pacing`.
 - This pass also marks destroyed hostile wrecks with a small salvage cue, guarded by `Wreck=blast+smoke+marker+debris+salvage`.
+- The combat situation row now shows compact `Salvage N` only after hostile wrecks exist, and `assert-combat-situation salvage=N` guards that reward-readability state.
 - The current risk is no longer raw feature absence or obvious debug labels; it is whether the first mission's battlefield action and encounter beats feel readable enough moment to moment.
 - The next demo milestone should make one private Windows build feel like a coherent local game: battle, debrief, repair, contracts, mech lab, squad swap, and relaunch.
 - Further tiny text-only Mech Lab commits should stop unless a visible-flow audit finds a concrete confusing label or dead-end action.
@@ -585,6 +586,12 @@ Enemy salvage wreck cue notes, 2026-06-04:
 - Destroyed hostile mechs now spawn a small teal salvage ring, tag, crossbar, and beacon on the wreck marker, while player wrecks keep the existing distress and damage cues only.
 - The cue is visual only for now; it does not change reward, salvage, or drop calculations.
 - Verification: Unity validator passed, Windows build passed, `mc2_01-combat-situation.txt`, and the combined visible-flow smoke passed with `Wreck=blast+smoke+marker+debris+salvage`.
+
+Combat salvage count notes, 2026-06-04:
+
+- The combat situation row now appends `Salvage N` only when hostile wrecks exist, keeping the quiet opening HUD unchanged while making natural kills feel connected to later debrief salvage.
+- Command files can now use `assert-combat-situation salvage=N`; the new `mc2_01-salvage-wrecks.txt` path moves through the airfield, attacks the hangar, advances to the west encounter, and verifies `salvage=11` from natural enemy kills.
+- Verification: Unity validator passed, Windows build passed, `mc2_01-salvage-wrecks.txt`, `mc2_01-combat-situation.txt`, and the combined visible-flow smoke passed.
 
 ## Frozen Development Plan
 
@@ -775,6 +782,7 @@ Tasks:
 - Hot and heat-locked mechs now show battlefield vent/lock cues, so heat pressure reads at the fixed tactical camera without adding another combat HUD row.
 - The first squad mech now has a subtle commander anchor/beacon in the battlefield, matching the fixed camera follow rule without adding combat HUD rows.
 - Single-unit orders now emit a short return-to-squad pulse when the mech automatically rejoins squad control after completing its solo order.
+- The combat HUD now appends compact `Salvage N` only after destroyed hostile wrecks exist, guarded by `assert-combat-situation salvage=N` and the natural-kill `mc2_01-salvage-wrecks.txt` smoke path.
 - The first `mc2_01` encounter pacing smoke now proves the airfield beat: initial hostiles held, Airfield/North patrols armed after objective 0, infantry ambush held until hangar damage, and Starslayer held for area 7.
 - The objective graph smoke now guards the source mission skeleton: 6 visible objectives, 3 hidden glue objectives, flag edges, hidden first-patrol flag `3`, north-island unlock, Starslayer area trigger, and Starslayer VO target count.
 - The combat-situation smoke now also guards compact mission-panel objective lines so the North island and Extraction objectives remain readable in the fixed right HUD.
