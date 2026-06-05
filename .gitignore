@@ -70,6 +70,8 @@ analysis-output/mission-analysis/
 analysis-output/mission-packet-audit/
 analysis-output/unity-demo-contract/
 analysis-output/unity-combat-data/
+analysis-output/tgl-obj/
+analysis-output/unity-reference-art/
 analysis-output/*saved-account*.json
 analysis-output/*validator*.json
 analysis-output/*.png
@@ -85,6 +87,7 @@ unity-mc2-demo/Builds/
 unity-mc2-demo/MemoryCaptures/
 !unity-mc2-demo/Assets/
 !unity-mc2-demo/Assets/**
+unity-mc2-demo/Assets/PrivateReferenceArt/
 unity-mc2-demo/Assets/StreamingAssets/Missions/*/mission-contract.json
 unity-mc2-demo/Assets/StreamingAssets/Missions/*/mission-contract.json.meta
 unity-mc2-demo/Assets/StreamingAssets/Data/combat-data.json

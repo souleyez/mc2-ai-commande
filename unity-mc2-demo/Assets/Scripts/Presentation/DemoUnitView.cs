@@ -13,6 +13,7 @@ namespace MC2Demo.Presentation
         public UnitState Unit { get; private set; }
         private Vector3 liveScale;
         private Renderer unitRenderer;
+        private Vector3 presentationOffset;
         private Color liveColor = Color.white;
         private Color hitFlashColor = Color.white;
         private float hitFlashRemaining;
@@ -27,6 +28,7 @@ namespace MC2Demo.Presentation
         private GameObject heatLockCue;
         private GameObject sectionDamageRingCue;
         private GameObject sectionDamageBeaconCue;
+        private bool usesReferenceVisual;
         private readonly Dictionary<string, GameObject> sectionParts = new(StringComparer.OrdinalIgnoreCase);
         private readonly HashSet<string> destroyedSections = new(StringComparer.OrdinalIgnoreCase);
         private readonly HashSet<string> criticalSections = new(StringComparer.OrdinalIgnoreCase);
@@ -43,8 +45,30 @@ namespace MC2Demo.Presentation
                 liveColor = unitRenderer.sharedMaterial.color;
             }
 
+            if (ReferenceObjMeshLibrary.TryAttachReferenceVisual(unit, transform, liveColor, out Renderer referenceRenderer))
+            {
+                if (unitRenderer != null)
+                {
+                    unitRenderer.enabled = false;
+                }
+
+                unitRenderer = referenceRenderer;
+                if (unitRenderer.sharedMaterial != null)
+                {
+                    liveColor = unitRenderer.sharedMaterial.color;
+                }
+
+                usesReferenceVisual = true;
+            }
+
             CreateSectionParts();
             CreateHeatCueParts();
+            ApplyPosition();
+        }
+
+        public void SetPresentationOffset(Vector3 offset)
+        {
+            presentationOffset = offset;
             ApplyPosition();
         }
 
@@ -81,6 +105,7 @@ namespace MC2Demo.Presentation
             }
 
             Vector3 position = MissionToWorld(Unit.MissionPosition);
+            position += presentationOffset;
             position.y = DemoTerrainView.HeightAt(Unit.MissionPosition) + Mathf.Max(0.2f, transform.localScale.y * 0.5f);
             if (Unit.IsJumping)
             {
@@ -245,6 +270,11 @@ namespace MC2Demo.Presentation
 
         private void CreateSectionParts()
         {
+            if (usesReferenceVisual)
+            {
+                return;
+            }
+
             if (unitRenderer == null || unitRenderer.sharedMaterial == null)
             {
                 return;

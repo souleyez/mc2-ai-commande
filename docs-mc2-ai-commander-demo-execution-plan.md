@@ -508,7 +508,7 @@ Tasks:
 
 ## Current Recommended Next Task
 
-Continue the **first-mission encounter rhythm and battle readability pass**, using the fixed visible flow as the baseline.
+Execute the **Reference Visual Restoration** lane in `docs-reference-visual-restoration-plan.md`, starting by freezing the current private reference-art bridge and then restoring first-slice model materials, source terrain textures, and airfield props.
 
 Reason:
 
@@ -521,6 +521,9 @@ Reason:
 - This pass also marks destroyed hostile wrecks with a small salvage cue, guarded by `Wreck=blast+smoke+marker+debris+salvage`.
 - The combat situation row now shows compact `Salvage N` only after hostile wrecks exist, and `assert-combat-situation salvage=N` guards that reward-readability state.
 - The current risk is no longer raw feature absence or obvious debug labels; it is whether the first mission's battlefield action and encounter beats feel readable enough moment to moment.
+- The latest visual review found that battlefield units still read as primitive placeholder blobs, because Unity is using source data and generated effects but not the original local TGL models or TGA textures.
+- The local reference pack already contains the needed first-slice assets in `tgl.fst`: Werewolf, Bushwacker, Centipede, Harasser, LRMC, UrbanMech, Starslayer, their damaged/LOD variants, detached arm shapes, weapon/jump/cockpit helper nodes, and 128px TGA textures.
+- The next technical lane is therefore tracked in `docs-reference-visual-restoration-plan.md`: make the private reference-art bridge stable, then restore source-like TGL/TGA/TXM materials, PAK terrain texture regions, and packet-1 map props with generated original-art outputs ignored.
 - The next demo milestone should make one private Windows build feel like a coherent local game: battle, debrief, repair, contracts, mech lab, squad swap, and relaunch.
 - Further tiny text-only Mech Lab commits should stop unless a visible-flow audit finds a concrete confusing label or dead-end action.
 - AI remains intentionally bounded to high-level directives and capability preview; do not expand model-driven combat until the local loop feels good.
@@ -529,7 +532,7 @@ Reason:
 Current stage snapshot:
 
 - Phase A Local Playable Loop is late active work: the private Windows loop now passes the combined command-file smoke with real visible Debrief, all six visible Battle objectives, and readable Mech Lab fitting pressure.
-- Phase B Battle Readability is the next main lane: weapon families, section damage, cockpit/ejection cues, combat HUD, and debrief rows exist, but the first mission still needs stronger encounter rhythm, clearer tactical spectacle, and more battlefield reward readability.
+- Phase B Battle Readability is the active lane: weapon families, section damage, cockpit/ejection cues, combat HUD, and debrief rows exist, but the battlefield needs real private reference silhouettes before more placeholder spectacle will pay off.
 - Phase C Mech Lab Experience has core fitting rules and block editing in place: the next meaningful improvement is a calmer dedicated Mech Lab surface, not more right-column microcopy.
 - Phase D Public-Safe Content Pack remains later: public capture still requires replacement names, text, UI identity, models, textures, audio, and mission-facing story copy.
 - Phase E AI and Platform remain bounded architecture: keep AI to high-level directives until the local single-player Windows demo is convincing.
@@ -633,10 +636,13 @@ Definition of done:
 
 Next work:
 
-1. Improve primitive/generated combat effects before importing or replacing major art, focusing on hit readability at the fixed tactical camera.
-2. Strengthen persistent arm, leg, cockpit, and ejection readability so section damage is understood without zooming into tiny placeholders.
-3. Continue tuning one encounter at a time against `docs-mc2-01-mission-analysis.md`, preserving source-triggered enemies instead of adding strong AI.
-4. Keep debrief counters and combat HUD smoke paths updated when battle readability changes visible flow.
+1. Build the private reference-art bridge before adding more placeholder effects:
+   selected `tgl.fst` shapes -> ignored OBJ/MTL/TGA or runtime mesh outputs -> Unity unit presentation.
+2. Map first-slice unit visuals by source `unitType` and `appearanceName`: Werewolf, Bushwacker, Centipede, Harasser, LRMC, UrbanMech, and Starslayer.
+3. Preserve fallback primitive units only when a private reference asset is absent, and make that fallback visually obvious in development.
+4. Reuse source helper nodes for weapon muzzle points, jump jets, cockpit/ejection, and later detached-arm cues.
+5. Continue tuning one encounter at a time against `docs-mc2-01-mission-analysis.md`, preserving source-triggered enemies instead of adding strong AI.
+6. Keep debrief counters and combat HUD smoke paths updated when battle readability changes visible flow.
 
 ### Phase C: Mech Lab Experience
 
@@ -723,11 +729,26 @@ Goal: make the first mission feel closer to the original tactical rhythm before 
 
 Tasks:
 
-1. Improve weapon-effect identity for missile, ballistic, and energy fire using primitive or generated Unity visuals.
-2. Make destroyed arms, destroyed legs, cockpit destruction, and ejection more visible on placeholder mechs.
-3. Tighten `mc2_01` enemy activation and encounter pacing against the mission-analysis notes.
-4. Add or tighten compact mission result summaries for destroyed enemies, player damage, completed objectives, funds reward, and salvage.
-5. Keep enemy AI lightweight and source-triggered; no strong AI director in this stage.
+1. Use the private local reference pack during development so battle silhouettes come from original TGL models instead of primitive placeholders.
+2. Keep exported original-art intermediates ignored and replaceable as a whole content pack; commit only scripts, mappings, and loaders.
+3. First bridge target: export Werewolf, Bushwacker, Centipede, Harasser, LRMC, UrbanMech, and Starslayer to Unity-readable OBJ/MTL/TGA or equivalent runtime meshes.
+4. Map source helper nodes into weapon muzzle, jump jet, cockpit, smoke, hit, and detached-arm anchors.
+5. Keep primitive fallback available only as a missing-asset warning path.
+6. Tighten `mc2_01` enemy activation and encounter pacing against the mission-analysis notes.
+7. Keep enemy AI lightweight and source-triggered; no strong AI director in this stage.
+
+### Immediate Plan: Private Reference-Art Bridge
+
+Goal: stop the Windows demo from reading as colored placeholder blobs during private development.
+
+Tasks:
+
+1. Keep `analysis-output/fst-unpack/tgl.fst` and generated OBJ/TGA outputs ignored.
+2. Export a single Werewolf static model from TGL to OBJ and verify node, vertex, triangle, and texture counts.
+3. Export the full first-slice set: Werewolf, Bushwacker, Centipede, Harasser, LRMC, UrbanMech, and Starslayer.
+4. Add a Unity presentation loader or editor-time import path that binds those generated assets by `unitType`/`appearanceName`.
+5. Replace `DemoUnitView` primitive bodies with real private meshes when present, while retaining section-state overlays and fallback placeholders.
+6. Run a window capture at 1280 x 720 and judge whether the battlefield now reads as mechs/vehicles instead of blobs.
 
 ### Next Plan: Mech Lab Experience
 

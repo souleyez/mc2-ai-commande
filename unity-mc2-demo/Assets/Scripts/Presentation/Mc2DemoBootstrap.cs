@@ -276,6 +276,7 @@ namespace MC2Demo.Presentation
             BuildWorld();
             RunStartupCommanderSequence();
             ConfigureStartupContinuePanel(Environment.GetCommandLineArgs());
+            ScheduleStartupScreenshotIfRequested();
             ScheduleSmokeTestQuitIfRequested();
         }
 
@@ -621,6 +622,80 @@ namespace MC2Demo.Presentation
         {
             yield return new WaitForSecondsRealtime(0.25f);
             QuitSmokeTest();
+        }
+
+        private void ScheduleStartupScreenshotIfRequested()
+        {
+            string[] args = Environment.GetCommandLineArgs();
+            for (int index = 0; index < args.Length; index++)
+            {
+                if (args[index] != "-mc2CaptureScreenshot")
+                {
+                    continue;
+                }
+
+                if (index + 1 >= args.Length || string.IsNullOrWhiteSpace(args[index + 1]))
+                {
+                    Debug.LogWarning("MC2 screenshot capture blocked: missing path after -mc2CaptureScreenshot.");
+                    return;
+                }
+
+                StartCoroutine(CaptureStartupScreenshotAfterRealtimeDelay(args[index + 1], HasCommandLineArg(args, "-mc2CaptureQuit")));
+                return;
+            }
+        }
+
+        private IEnumerator CaptureStartupScreenshotAfterRealtimeDelay(string path, bool quitAfterCapture)
+        {
+            yield return new WaitForSecondsRealtime(1.0f);
+            yield return new WaitForEndOfFrame();
+
+            int exitCode = 0;
+            string fullPath = "";
+            try
+            {
+                fullPath = Path.GetFullPath(path);
+                string folder = Path.GetDirectoryName(fullPath);
+                if (!string.IsNullOrWhiteSpace(folder) && !Directory.Exists(folder))
+                {
+                    Directory.CreateDirectory(folder);
+                }
+
+                ScreenCapture.CaptureScreenshot(fullPath);
+                Debug.Log("MC2 screenshot capture requested: " + fullPath);
+            }
+            catch (Exception ex)
+            {
+                exitCode = 1;
+                Debug.LogError("MC2 screenshot capture failed"
+                    + (string.IsNullOrWhiteSpace(fullPath) ? "" : " path=" + fullPath)
+                    + " error="
+                    + ex.Message);
+            }
+
+            if (quitAfterCapture)
+            {
+                yield return new WaitForSecondsRealtime(0.75f);
+                Application.Quit(exitCode);
+            }
+        }
+
+        private static bool HasCommandLineArg(string[] args, string expected)
+        {
+            if (args == null)
+            {
+                return false;
+            }
+
+            for (int index = 0; index < args.Length; index++)
+            {
+                if (string.Equals(args[index], expected, StringComparison.Ordinal))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private void RunStartupCommanderSequence()
@@ -6595,7 +6670,7 @@ namespace MC2Demo.Presentation
             GameObject cameraObject = new("Demo Camera");
             mainCamera = cameraObject.AddComponent<Camera>();
             mainCamera.orthographic = true;
-            mainCamera.orthographicSize = 42f;
+            mainCamera.orthographicSize = 24f;
             mainCamera.clearFlags = CameraClearFlags.SolidColor;
             mainCamera.backgroundColor = new Color(0.06f, 0.07f, 0.075f);
             Camera.SetupCurrent(mainCamera);
@@ -6603,11 +6678,14 @@ namespace MC2Demo.Presentation
 
         private void CreateUnits()
         {
+            int playerPresentationIndex = 0;
             foreach (UnitState unit in mission.Units)
             {
+                int presentationIndex = unit.IsPlayerUnit ? playerPresentationIndex++ : -1;
                 PrimitiveType primitive = unit.IsPlayerUnit ? PrimitiveType.Capsule : PrimitiveType.Cube;
                 GameObject unitObject = GameObject.CreatePrimitive(primitive);
-                unitObject.transform.localScale = unit.IsPlayerUnit
+                bool tallUnit = unit.IsPlayerUnit || ReferenceObjMeshLibrary.IsTallReferenceUnit(unit.UnitType);
+                unitObject.transform.localScale = tallUnit
                     ? new Vector3(1.3f, 1.5f, 1.3f)
                     : new Vector3(1.2f, 0.7f, 1.2f);
                 AssignMaterial(
@@ -6617,8 +6695,34 @@ namespace MC2Demo.Presentation
 
                 DemoUnitView view = unitObject.AddComponent<DemoUnitView>();
                 view.Bind(unit);
+                if (unit.IsPlayerUnit)
+                {
+                    view.SetPresentationOffset(PlayerPresentationOffset(presentationIndex));
+                }
+
                 unitObject.SetActive(unit.IsActive || unit.IsPlayerUnit || unit.IsDestroyed);
                 unitViews[unit.Id] = view;
+            }
+        }
+
+        private static Vector3 PlayerPresentationOffset(int index)
+        {
+            switch (index)
+            {
+                case 0:
+                    return new Vector3(0f, 0f, 1.35f);
+                case 1:
+                    return new Vector3(-2.25f, 0f, -0.65f);
+                case 2:
+                    return new Vector3(2.25f, 0f, -0.65f);
+                case 3:
+                    return new Vector3(0f, 0f, -2.45f);
+                case 4:
+                    return new Vector3(-3.25f, 0f, 1.25f);
+                case 5:
+                    return new Vector3(3.25f, 0f, 1.25f);
+                default:
+                    return Vector3.zero;
             }
         }
 

@@ -2,7 +2,9 @@
 
 This Unity 6 project is the first playable shell for the MC2-style command demo.
 It reads `mc2-unity-demo-contract-v1` from `StreamingAssets` and builds a
-placeholder battlefield at runtime.
+reference-derived battlefield at runtime. Current committed visuals still fall
+back to generated placeholders unless a private, ignored reference-art export is
+prepared locally.
 
 Current demo behavior:
 
@@ -72,6 +74,8 @@ Current demo behavior:
 - tracks source-derived weapon heat, cooling, and heat lockouts in combat
 - shows heat vent and heat-lock cues on hot mechs without adding combat HUD rows
 - carries source weapon type and special-effect metadata into combat visuals
+- can use ignored private reference-art exports from local TGL/TGA assets during
+  development; public builds must replace that pack with project-owned art
 - shows weapon name, range, cooldown, heat lock, and range readiness in the unit panel
 - opens a mech bay preview with source weapon loadout, heat, weight, range, damage, and section status
 - focuses the mech bay fitting view on one selected squad mech at a time with compact squad buttons, draft markers, selected-mech fit-pressure bars, and player-facing chassis/pilot titles
