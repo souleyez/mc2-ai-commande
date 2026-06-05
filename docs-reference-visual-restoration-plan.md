@@ -354,9 +354,20 @@ Internal screenshot:
 
 **Files:**
 
+- Modify: `.gitignore`
 - Modify: `unity-mc2-demo/Assets/Scripts/Presentation/Mc2DemoBootstrap.cs`
 - Create: `scripts/unity/capture_reference_visuals.ps1`
 - Create: `analysis-output/reference-visual-captures/` (ignored output)
+
+**Status:** Completed 2026-06-05. The demo now supports named visual capture presets, writes a JSON sidecar beside each screenshot, and the PowerShell capture script can produce and sanity-check visual proof images for the reference slice.
+
+**Validation Evidence:**
+
+- Build log: `analysis-output/unity-build-reference-captures.log`
+- Capture script: `scripts/unity/capture_reference_visuals.ps1`
+- Capture output folder: `analysis-output/reference-visual-captures/`
+- Verified presets: `spawn`, `airfield`, `hangar-contact`, `north-patrol`, `damage-demo`
+- Sidecar highlights: `spawn` recorded 0 active hostiles; `airfield` recorded 12 active hostiles and 8 visible hostiles.
 
 **Steps:**
 

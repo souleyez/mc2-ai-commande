@@ -31,6 +31,11 @@ namespace MC2Demo.Presentation
         private const float MiniMaxCommanderAdvanceSeconds = 8f;
         private const float DefaultCameraOrthographicSize = 24f;
         private const float CameraZoomWheelStep = 0.08f;
+        private const string CapturePresetSpawn = "spawn";
+        private const string CapturePresetAirfield = "airfield";
+        private const string CapturePresetHangarContact = "hangar-contact";
+        private const string CapturePresetNorthPatrol = "north-patrol";
+        private const string CapturePresetDamageDemo = "damage-demo";
         private const float LoadoutCardHeight = 456f;
         private const float LoadoutCardStride = 468f;
         private const float LoadoutGridSectionMinHeight = 204f;
@@ -149,6 +154,68 @@ namespace MC2Demo.Presentation
         private static readonly Color LoadoutLongWeaponColor = new(0.78f, 0.14f, 0.14f, 1f);
         private static readonly Color LoadoutComponentColor = new(0.90f, 0.72f, 0.16f, 1f);
 
+        [Serializable]
+        private sealed class VisualCaptureSidecar
+        {
+            public string preset;
+            public string screenshot;
+            public string missionId;
+            public string result;
+            public string status;
+            public string flowScreen;
+            public float missionTimeSeconds;
+            public int screenWidth;
+            public int screenHeight;
+            public int playerUnitCount;
+            public int activeHostileCount;
+            public int visibleHostileCount;
+            public int targetableStructureCount;
+            public int currentObjectiveCount;
+            public string[] activeHostiles;
+            public string[] visibleHostiles;
+            public string[] currentObjectives;
+            public VisualCaptureCameraState camera;
+            public VisualCaptureReferenceState referenceAssets;
+        }
+
+        [Serializable]
+        private sealed class VisualCaptureCameraState
+        {
+            public float orthographicSize;
+            public float zoomScale;
+            public float pitch;
+            public float yaw;
+            public CaptureVector3 position;
+            public CaptureVector3 rotationEuler;
+            public CaptureVector3 followOffset;
+        }
+
+        [Serializable]
+        private sealed class VisualCaptureReferenceState
+        {
+            public string terrain;
+            public string structures;
+            public string props;
+        }
+
+        [Serializable]
+        private struct CaptureVector3
+        {
+            public float x;
+            public float y;
+            public float z;
+
+            public static CaptureVector3 From(Vector3 value)
+            {
+                return new CaptureVector3
+                {
+                    x = value.x,
+                    y = value.y,
+                    z = value.z
+                };
+            }
+        }
+
         private readonly Dictionary<string, DemoUnitView> unitViews = new();
         private readonly Dictionary<string, DemoStructureView> structureViews = new();
         private readonly Dictionary<string, GameObject> unitSelectionMarkers = new();
@@ -242,6 +309,10 @@ namespace MC2Demo.Presentation
         private float cameraZoomScale = 1f;
         private float cameraZoomMin = 0.76f;
         private float cameraZoomMax = 1.2f;
+        private string lastCapturePreset = CapturePresetSpawn;
+        private string lastTerrainTextureSummary = "terrain texture not attempted";
+        private string lastReferencePropSummary = "ReferenceProps=not attempted";
+        private string lastReferenceStructureSummary = "ReferenceStructures=not attempted";
         private Vector2 loadoutScroll;
         private Vector2 mechLabBayScroll;
         private int selectedMechLabBayPage;
@@ -662,12 +733,13 @@ namespace MC2Demo.Presentation
                     return;
                 }
 
-                StartCoroutine(CaptureStartupScreenshotAfterRealtimeDelay(args[index + 1], HasCommandLineArg(args, "-mc2CaptureQuit")));
+                string sidecarPath = CommandLineValue(args, "-mc2CaptureSidecar");
+                StartCoroutine(CaptureStartupScreenshotAfterRealtimeDelay(args[index + 1], sidecarPath, HasCommandLineArg(args, "-mc2CaptureQuit")));
                 return;
             }
         }
 
-        private IEnumerator CaptureStartupScreenshotAfterRealtimeDelay(string path, bool quitAfterCapture)
+        private IEnumerator CaptureStartupScreenshotAfterRealtimeDelay(string path, string sidecarPath, bool quitAfterCapture)
         {
             yield return new WaitForSecondsRealtime(1.0f);
             yield return new WaitForEndOfFrame();
@@ -685,6 +757,7 @@ namespace MC2Demo.Presentation
 
                 ScreenCapture.CaptureScreenshot(fullPath);
                 Debug.Log("MC2 screenshot capture requested: " + fullPath);
+                WriteCaptureSidecar(SidecarPathFor(fullPath, sidecarPath), fullPath);
             }
             catch (Exception ex)
             {
@@ -700,6 +773,34 @@ namespace MC2Demo.Presentation
                 yield return new WaitForSecondsRealtime(0.75f);
                 Application.Quit(exitCode);
             }
+        }
+
+        private static string CommandLineValue(string[] args, string expected)
+        {
+            if (args == null)
+            {
+                return "";
+            }
+
+            for (int index = 0; index < args.Length - 1; index++)
+            {
+                if (string.Equals(args[index], expected, StringComparison.Ordinal))
+                {
+                    return args[index + 1] ?? "";
+                }
+            }
+
+            return "";
+        }
+
+        private static string SidecarPathFor(string screenshotPath, string requestedSidecarPath)
+        {
+            if (!string.IsNullOrWhiteSpace(requestedSidecarPath))
+            {
+                return Path.GetFullPath(requestedSidecarPath);
+            }
+
+            return Path.ChangeExtension(screenshotPath, ".json");
         }
 
         private static bool HasCommandLineArg(string[] args, string expected)
@@ -740,6 +841,9 @@ namespace MC2Demo.Presentation
                         break;
                     case "-mc2AdvanceSeconds":
                         index = RunStartupSimulationAdvance(args, index);
+                        break;
+                    case "-mc2CapturePreset":
+                        index = RunStartupCapturePreset(args, index);
                         break;
                     case "-mc2ReportState":
                         ReportStartupCommanderState();
@@ -875,6 +979,7 @@ namespace MC2Demo.Presentation
                     || string.Equals(arg, "-mc2Command", StringComparison.Ordinal)
                     || string.Equals(arg, "-mc2CommandFile", StringComparison.Ordinal)
                     || string.Equals(arg, "-mc2AdvanceSeconds", StringComparison.Ordinal)
+                    || string.Equals(arg, "-mc2CapturePreset", StringComparison.Ordinal)
                     || string.Equals(arg, "-mc2ReportState", StringComparison.Ordinal)
                     || string.Equals(arg, "-mc2RestartMission", StringComparison.Ordinal)
                     || string.Equals(arg, "-mc2LoadDefaultSave", StringComparison.Ordinal)
@@ -4673,6 +4778,84 @@ namespace MC2Demo.Presentation
             return index + 1;
         }
 
+        private int RunStartupCapturePreset(string[] args, int index)
+        {
+            if (index + 1 >= args.Length)
+            {
+                Debug.LogWarning("MC2 capture preset blocked: missing preset after -mc2CapturePreset.");
+                return index;
+            }
+
+            RunStartupCapturePreset(args[index + 1]);
+            return index + 1;
+        }
+
+        private void RunStartupCapturePreset(string preset)
+        {
+            string normalizedPreset = NormalizeCapturePreset(preset);
+            lastCapturePreset = normalizedPreset;
+            Debug.Log("MC2 capture preset: " + normalizedPreset);
+
+            switch (normalizedPreset)
+            {
+                case CapturePresetSpawn:
+                    AdvanceStartupSimulation(0.25f);
+                    break;
+                case CapturePresetAirfield:
+                    RunStartupAirfieldCapturePrelude();
+                    break;
+                case CapturePresetHangarContact:
+                    RunStartupHangarContactCapturePrelude();
+                    break;
+                case CapturePresetNorthPatrol:
+                    RunStartupNorthPatrolCapturePrelude();
+                    break;
+                case CapturePresetDamageDemo:
+                    RunStartupDamageDemoCapturePrelude();
+                    break;
+                default:
+                    startupSmokeFailed = true;
+                    Debug.LogWarning("MC2 capture preset blocked: unknown preset '" + preset + "'.");
+                    break;
+            }
+        }
+
+        private static string NormalizeCapturePreset(string preset)
+        {
+            if (string.IsNullOrWhiteSpace(preset))
+            {
+                return CapturePresetSpawn;
+            }
+
+            return preset.Trim().ToLowerInvariant().Replace("_", "-");
+        }
+
+        private void RunStartupAirfieldCapturePrelude()
+        {
+            RunStartupCommanderCommand("squad move 3136 -789");
+            AdvanceStartupSimulation(12f);
+        }
+
+        private void RunStartupHangarContactCapturePrelude()
+        {
+            RunStartupAirfieldCapturePrelude();
+            RunStartupCommanderCommand("squad attack structure structure-1-0");
+            AdvanceStartupSimulation(8f);
+        }
+
+        private void RunStartupNorthPatrolCapturePrelude()
+        {
+            RunStartupHangarContactCapturePrelude();
+            RunStartupCommanderCommand("squad move -2240 1600");
+            AdvanceStartupSimulation(34f);
+        }
+
+        private void RunStartupDamageDemoCapturePrelude()
+        {
+            RunStartupHangarContactCapturePrelude();
+            AdvanceStartupSimulation(18f);
+        }
+
         private void AdvanceStartupSimulation(float seconds)
         {
             float clampedSeconds = Mathf.Clamp(seconds, 0f, 60f);
@@ -4709,6 +4892,179 @@ namespace MC2Demo.Presentation
             string json = JsonUtility.ToJson(observation);
             AddCombatLogLine("CLI report: state #" + observation.reportIndex);
             Debug.Log("MC2 commander observation #" + observation.reportIndex + ": " + json);
+        }
+
+        private void WriteCaptureSidecar(string sidecarPath, string screenshotPath)
+        {
+            if (string.IsNullOrWhiteSpace(sidecarPath))
+            {
+                return;
+            }
+
+            string folder = Path.GetDirectoryName(sidecarPath);
+            if (!string.IsNullOrWhiteSpace(folder) && !Directory.Exists(folder))
+            {
+                Directory.CreateDirectory(folder);
+            }
+
+            VisualCaptureSidecar sidecar = BuildCaptureSidecar(screenshotPath);
+            File.WriteAllText(sidecarPath, JsonUtility.ToJson(sidecar, true));
+            Debug.Log("MC2 capture sidecar written: " + sidecarPath);
+        }
+
+        private VisualCaptureSidecar BuildCaptureSidecar(string screenshotPath)
+        {
+            CommanderObservation observation = observationPort?.Observe();
+            return new VisualCaptureSidecar
+            {
+                preset = lastCapturePreset,
+                screenshot = screenshotPath,
+                missionId = mission?.Contract?.mission?.id ?? "",
+                result = mission == null ? "Unavailable" : mission.Result.ToString(),
+                status = statusText ?? "",
+                flowScreen = DemoFlowScreenName(demoFlowScreen),
+                missionTimeSeconds = mission?.MissionTimeSeconds ?? 0f,
+                screenWidth = Screen.width,
+                screenHeight = Screen.height,
+                playerUnitCount = observation?.playerUnits?.Length ?? CountCapturePlayerUnits(),
+                activeHostileCount = observation?.activeHostiles?.Length ?? CountActiveHostiles(),
+                visibleHostileCount = VisibleHostileLabels().Length,
+                targetableStructureCount = observation?.targetableStructures?.Length ?? 0,
+                currentObjectiveCount = observation?.currentObjectives?.Length ?? 0,
+                activeHostiles = UnitLabels(observation?.activeHostiles),
+                visibleHostiles = VisibleHostileLabels(),
+                currentObjectives = ObjectiveLabels(observation?.currentObjectives),
+                camera = BuildCaptureCameraState(),
+                referenceAssets = new VisualCaptureReferenceState
+                {
+                    terrain = lastTerrainTextureSummary,
+                    structures = lastReferenceStructureSummary,
+                    props = lastReferencePropSummary
+                }
+            };
+        }
+
+        private VisualCaptureCameraState BuildCaptureCameraState()
+        {
+            Transform cameraTransform = mainCamera == null ? null : mainCamera.transform;
+            return new VisualCaptureCameraState
+            {
+                orthographicSize = mainCamera == null ? 0f : mainCamera.orthographicSize,
+                zoomScale = cameraZoomScale,
+                pitch = cameraPitch,
+                yaw = cameraYaw,
+                followOffset = CaptureVector3.From(cameraFollowWorldOffset),
+                position = cameraTransform == null ? new CaptureVector3() : CaptureVector3.From(cameraTransform.position),
+                rotationEuler = cameraTransform == null ? new CaptureVector3() : CaptureVector3.From(cameraTransform.rotation.eulerAngles)
+            };
+        }
+
+        private int CountCapturePlayerUnits()
+        {
+            int count = 0;
+            if (mission == null)
+            {
+                return count;
+            }
+
+            foreach (UnitState unit in mission.PlayerUnits())
+            {
+                if (unit != null)
+                {
+                    count++;
+                }
+            }
+
+            return count;
+        }
+
+        private int CountActiveHostiles()
+        {
+            int count = 0;
+            if (mission == null)
+            {
+                return count;
+            }
+
+            foreach (UnitState unit in mission.Units)
+            {
+                if (unit != null && !unit.IsPlayerUnit && unit.IsActive && !unit.IsDestroyed)
+                {
+                    count++;
+                }
+            }
+
+            return count;
+        }
+
+        private string[] VisibleHostileLabels()
+        {
+            List<string> labels = new();
+            if (mission == null || mainCamera == null)
+            {
+                return labels.ToArray();
+            }
+
+            foreach (UnitState unit in mission.Units)
+            {
+                if (unit == null || unit.IsPlayerUnit || !unit.IsActive || unit.IsDestroyed)
+                {
+                    continue;
+                }
+
+                Vector3 position = DemoUnitView.MissionToWorld(unit.MissionPosition);
+                position.y = DemoTerrainView.HeightAt(unit.MissionPosition) + 1f;
+                Vector3 viewport = mainCamera.WorldToViewportPoint(position);
+                if (viewport.z > 0f && viewport.x >= 0f && viewport.x <= 1f && viewport.y >= 0f && viewport.y <= 1f)
+                {
+                    labels.Add(UnitLabel(unit.Id, unit.UnitType));
+                }
+            }
+
+            return labels.ToArray();
+        }
+
+        private static string[] UnitLabels(CommanderUnitObservation[] units)
+        {
+            if (units == null || units.Length == 0)
+            {
+                return Array.Empty<string>();
+            }
+
+            string[] labels = new string[units.Length];
+            for (int index = 0; index < units.Length; index++)
+            {
+                CommanderUnitObservation unit = units[index];
+                labels[index] = unit == null ? "" : UnitLabel(unit.id, unit.type);
+            }
+
+            return labels;
+        }
+
+        private static string[] ObjectiveLabels(CommanderObjectiveObservation[] objectives)
+        {
+            if (objectives == null || objectives.Length == 0)
+            {
+                return Array.Empty<string>();
+            }
+
+            string[] labels = new string[objectives.Length];
+            for (int index = 0; index < objectives.Length; index++)
+            {
+                CommanderObjectiveObservation objective = objectives[index];
+                labels[index] = objective == null
+                    ? ""
+                    : objective.index.ToString(CultureInfo.InvariantCulture) + " " + objective.title;
+            }
+
+            return labels;
+        }
+
+        private static string UnitLabel(string id, string type)
+        {
+            return (string.IsNullOrWhiteSpace(id) ? "<unit>" : id)
+                + " "
+                + (string.IsNullOrWhiteSpace(type) ? "<unknown>" : type);
         }
 
         private int RunStartupMiniMaxCommander(string[] args, int index)
@@ -6592,10 +6948,12 @@ namespace MC2Demo.Presentation
             {
                 terrainTexture = compositeTexture;
                 ownedTextures.Add(compositeTexture);
+                lastTerrainTextureSummary = terrainTextureSummary;
                 Debug.Log("Loaded private terrain texture composite: " + terrainTextureSummary);
             }
             else
             {
+                lastTerrainTextureSummary = terrainTextureSummary;
                 Debug.Log("Using source terrain vertex colors without private terrain textures: " + terrainTextureSummary);
             }
 
@@ -6879,6 +7237,8 @@ namespace MC2Demo.Presentation
 
         private void CreateStaticObjects()
         {
+            int referenceStructures = 0;
+            int fallbackStructures = 0;
             foreach (StructureState structure in mission.Structures)
             {
                 GameObject structureObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -6891,17 +7251,27 @@ namespace MC2Demo.Presentation
                 Renderer visualRenderer = null;
                 if (ReferencePropLibrary.TryAttachStructure(structure, structureObject.transform, structureColor, out Renderer referenceRenderer))
                 {
+                    referenceStructures++;
                     visualRenderer = referenceRenderer;
                     if (rootRenderer != null)
                     {
                         rootRenderer.enabled = false;
                     }
                 }
+                else
+                {
+                    fallbackStructures++;
+                }
 
                 DemoStructureView view = structureObject.AddComponent<DemoStructureView>();
                 view.Bind(structure, visualRenderer);
                 structureViews[structure.Id] = view;
             }
+
+            lastReferenceStructureSummary = "ReferenceStructures=loaded "
+                + referenceStructures.ToString(CultureInfo.InvariantCulture)
+                + " fallback "
+                + fallbackStructures.ToString(CultureInfo.InvariantCulture);
         }
 
         private Vector3 StructureScale(StructureState structure)
@@ -6965,7 +7335,8 @@ namespace MC2Demo.Presentation
                 }
             }
 
-            Debug.Log("MC2 reference prop visuals: " + ReferencePropLibrary.Summary(referenceProps, fallbackProps));
+            lastReferencePropSummary = ReferencePropLibrary.Summary(referenceProps, fallbackProps);
+            Debug.Log("MC2 reference prop visuals: " + lastReferencePropSummary);
         }
 
         private bool IsCoveredByTargetStructure(TerrainObjectSpawn terrainObject)
