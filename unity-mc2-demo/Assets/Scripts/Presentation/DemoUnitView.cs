@@ -14,6 +14,7 @@ namespace MC2Demo.Presentation
         private Vector3 liveScale;
         private Renderer unitRenderer;
         private Vector3 presentationOffset;
+        private Quaternion liveRotation = Quaternion.identity;
         private Color liveColor = Color.white;
         private Color hitFlashColor = Color.white;
         private float hitFlashRemaining;
@@ -39,6 +40,8 @@ namespace MC2Demo.Presentation
             Unit = unit;
             name = unit.Id + " " + unit.UnitType;
             liveScale = transform.localScale;
+            liveRotation = MissionYawRotation(unit.SpawnRotationDegrees);
+            transform.rotation = liveRotation;
             unitRenderer = GetComponent<Renderer>();
             if (unitRenderer != null && unitRenderer.sharedMaterial != null)
             {
@@ -252,8 +255,13 @@ namespace MC2Demo.Presentation
             if (!Unit.IsDestroyed && !legFailurePoseApplied && HasDestroyedSection("Legs"))
             {
                 transform.localScale = new Vector3(liveScale.x, liveScale.y * 0.62f, liveScale.z);
-                transform.rotation = Quaternion.Euler(0f, 0f, Unit.IsPlayerUnit ? -7f : 7f);
+                transform.rotation = liveRotation * Quaternion.Euler(0f, 0f, Unit.IsPlayerUnit ? -7f : 7f);
                 legFailurePoseApplied = true;
+            }
+
+            if (!Unit.IsDestroyed && !legFailurePoseApplied)
+            {
+                transform.rotation = liveRotation;
             }
 
             if (!Unit.IsDestroyed || destroyedPoseApplied)
@@ -263,7 +271,7 @@ namespace MC2Demo.Presentation
 
             Vector3 wreckCenter = transform.position;
             transform.localScale = new Vector3(liveScale.x, liveScale.y * 0.18f, liveScale.z);
-            transform.rotation = Quaternion.Euler(0f, 0f, 90f);
+            transform.rotation = liveRotation * Quaternion.Euler(0f, 0f, 90f);
             SpawnDestroyedUnitCue(wreckCenter);
             destroyedPoseApplied = true;
         }
@@ -1143,6 +1151,11 @@ namespace MC2Demo.Presentation
         public static Vector2 WorldToMission(Vector3 worldPoint)
         {
             return DemoTerrainView.WorldToMission(worldPoint);
+        }
+
+        private static Quaternion MissionYawRotation(float degrees)
+        {
+            return Quaternion.Euler(0f, -degrees, 0f);
         }
     }
 }

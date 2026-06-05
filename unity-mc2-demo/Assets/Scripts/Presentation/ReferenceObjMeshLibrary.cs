@@ -9,8 +9,9 @@ namespace MC2Demo.Presentation
 {
     internal static class ReferenceObjMeshLibrary
     {
-        private const float ReferenceVisualScale = 3.0f;
-        private static readonly Dictionary<string, Mesh> MeshCache = new(StringComparer.OrdinalIgnoreCase);
+        private const float DefaultReferenceVisualScale = 3.0f;
+        private const float DefaultGroundOffsetY = -0.5f;
+        private static readonly Dictionary<string, ReferenceVisualMeshSet> MeshSetCache = new(StringComparer.OrdinalIgnoreCase);
         private static readonly Dictionary<string, bool> MissingCache = new(StringComparer.OrdinalIgnoreCase);
         private static readonly Dictionary<string, Texture2D> TextureCache = new(StringComparer.OrdinalIgnoreCase);
         private static readonly Dictionary<string, bool> MissingTextureCache = new(StringComparer.OrdinalIgnoreCase);
@@ -33,23 +34,37 @@ namespace MC2Demo.Presentation
                 return false;
             }
 
-            if (!TryLoadMesh(assetName, out Mesh mesh))
+            if (!TryLoadMeshSet(assetName, out ReferenceVisualMeshSet meshSet))
             {
                 return false;
             }
 
+            TryGetManifestEntry(assetName, out ReferenceVisualManifestEntry manifestEntry, out _, out _);
             GameObject visual = new(unit.Id + " reference " + assetName);
             visual.transform.SetParent(parent, false);
-            visual.transform.localPosition = new Vector3(0f, -0.5f, 0f);
-            visual.transform.localRotation = Quaternion.identity;
-            visual.transform.localScale = Vector3.one * ReferenceVisualScale;
+            visual.transform.localPosition = new Vector3(0f, GroundOffsetYFor(manifestEntry), 0f);
+            visual.transform.localRotation = Quaternion.Euler(0f, UnityYawDegreesFor(manifestEntry), 0f);
+            visual.transform.localScale = Vector3.one * UnityScaleFor(manifestEntry);
 
-            MeshFilter filter = visual.AddComponent<MeshFilter>();
-            filter.sharedMesh = mesh;
-            MeshRenderer meshRenderer = visual.AddComponent<MeshRenderer>();
-            meshRenderer.sharedMaterial = CreateMaterial(assetName, unit.IsPlayerUnit, color);
-            renderer = meshRenderer;
-            return true;
+            Material material = CreateMaterial(assetName, unit.IsPlayerUnit, color);
+            Renderer firstRenderer = null;
+            HashSet<string> childNames = new(StringComparer.OrdinalIgnoreCase);
+            foreach (ReferenceVisualNodeMesh nodeMesh in meshSet.Nodes)
+            {
+                GameObject child = new(string.IsNullOrWhiteSpace(nodeMesh.Name) ? assetName + " shape" : nodeMesh.Name);
+                child.transform.SetParent(visual.transform, false);
+                childNames.Add(child.name);
+
+                MeshFilter filter = child.AddComponent<MeshFilter>();
+                filter.sharedMesh = nodeMesh.Mesh;
+                MeshRenderer meshRenderer = child.AddComponent<MeshRenderer>();
+                meshRenderer.sharedMaterial = material;
+                firstRenderer ??= meshRenderer;
+            }
+
+            CreateManifestNodeAnchors(visual.transform, manifestEntry, childNames);
+            renderer = firstRenderer;
+            return renderer != null;
         }
 
         public static bool IsTallReferenceUnit(string unitType)
@@ -61,15 +76,16 @@ namespace MC2Demo.Presentation
                 || string.Equals(assetName, "starslayer", StringComparison.OrdinalIgnoreCase);
         }
 
-        private static bool TryLoadMesh(string assetName, out Mesh mesh)
+        private static bool TryLoadMeshSet(string assetName, out ReferenceVisualMeshSet meshSet)
         {
-            if (MeshCache.TryGetValue(assetName, out mesh))
+            if (MeshSetCache.TryGetValue(assetName, out meshSet))
             {
                 return true;
             }
 
             if (MissingCache.ContainsKey(assetName))
             {
+                meshSet = null;
                 return false;
             }
 
@@ -82,27 +98,26 @@ namespace MC2Demo.Presentation
 
             try
             {
-                mesh = LoadObjMesh(objPath, assetName);
-                MeshCache[assetName] = mesh;
-                Debug.Log("Loaded private reference OBJ mesh: " + objPath);
+                meshSet = LoadObjMeshSet(objPath, assetName);
+                MeshSetCache[assetName] = meshSet;
+                Debug.Log("Loaded private reference OBJ mesh: " + objPath + " groups=" + meshSet.Nodes.Length.ToString(CultureInfo.InvariantCulture));
                 return true;
             }
             catch (Exception ex)
             {
                 MissingCache[assetName] = true;
                 Debug.LogWarning("Failed to load private reference OBJ mesh " + objPath + ": " + ex.Message);
-                mesh = null;
+                meshSet = null;
                 return false;
             }
         }
 
-        private static Mesh LoadObjMesh(string path, string assetName)
+        private static ReferenceVisualMeshSet LoadObjMeshSet(string path, string assetName)
         {
             List<Vector3> sourceVertices = new();
             List<Vector2> sourceUvs = new();
-            List<Vector3> vertices = new();
-            List<Vector2> uvs = new();
-            List<int> triangles = new();
+            List<ObjGroupBuilder> groups = new();
+            ObjGroupBuilder currentGroup = null;
 
             foreach (string rawLine in File.ReadLines(path))
             {
@@ -126,58 +141,95 @@ namespace MC2Demo.Presentation
                     continue;
                 }
 
+                if (line.StartsWith("g ", StringComparison.Ordinal))
+                {
+                    string groupName = line.Length > 2 ? line.Substring(2).Trim() : "shape";
+                    currentGroup = new ObjGroupBuilder(groupName);
+                    groups.Add(currentGroup);
+                    continue;
+                }
+
                 if (!line.StartsWith("f ", StringComparison.Ordinal))
                 {
                     continue;
                 }
 
+                currentGroup ??= EnsureDefaultGroup(groups);
                 string[] faceParts = line.Split((char[])null, StringSplitOptions.RemoveEmptyEntries);
                 if (faceParts.Length < 4)
                 {
                     continue;
                 }
 
-                int faceStart = vertices.Count;
+                int faceStart = currentGroup.Vertices.Count;
                 for (int index = 1; index < faceParts.Length; index++)
                 {
                     ParseFaceToken(faceParts[index], out int vertexIndex, out int uvIndex);
                     if (vertexIndex < 0 || vertexIndex >= sourceVertices.Count)
                     {
-                        vertices.Add(Vector3.zero);
+                        currentGroup.Vertices.Add(Vector3.zero);
                     }
                     else
                     {
-                        vertices.Add(sourceVertices[vertexIndex]);
+                        currentGroup.Vertices.Add(sourceVertices[vertexIndex]);
                     }
 
                     if (uvIndex >= 0 && uvIndex < sourceUvs.Count)
                     {
-                        uvs.Add(sourceUvs[uvIndex]);
+                        currentGroup.Uvs.Add(sourceUvs[uvIndex]);
                     }
                     else
                     {
-                        uvs.Add(Vector2.zero);
+                        currentGroup.Uvs.Add(Vector2.zero);
                     }
                 }
 
                 for (int index = 1; index < faceParts.Length - 2; index++)
                 {
-                    triangles.Add(faceStart);
-                    triangles.Add(faceStart + index);
-                    triangles.Add(faceStart + index + 1);
+                    currentGroup.Triangles.Add(faceStart);
+                    currentGroup.Triangles.Add(faceStart + index);
+                    currentGroup.Triangles.Add(faceStart + index + 1);
                 }
             }
 
-            Mesh mesh = new()
+            List<ReferenceVisualNodeMesh> nodeMeshes = new();
+            foreach (ObjGroupBuilder group in groups)
             {
-                name = "Reference " + assetName
-            };
-            mesh.SetVertices(vertices);
-            mesh.SetUVs(0, uvs);
-            mesh.SetTriangles(triangles, 0);
-            mesh.RecalculateNormals();
-            mesh.RecalculateBounds();
-            return mesh;
+                if (group.Triangles.Count == 0)
+                {
+                    continue;
+                }
+
+                Mesh mesh = new()
+                {
+                    name = "Reference " + assetName + " " + group.Name
+                };
+                mesh.SetVertices(group.Vertices);
+                mesh.SetUVs(0, group.Uvs);
+                mesh.SetTriangles(group.Triangles, 0);
+                mesh.RecalculateNormals();
+                mesh.RecalculateBounds();
+                nodeMeshes.Add(new ReferenceVisualNodeMesh(group.Name, mesh));
+            }
+
+            if (nodeMeshes.Count == 0)
+            {
+                throw new InvalidDataException("OBJ does not contain drawable groups.");
+            }
+
+            return new ReferenceVisualMeshSet(nodeMeshes.ToArray());
+        }
+
+        private static ObjGroupBuilder EnsureDefaultGroup(List<ObjGroupBuilder> groups)
+        {
+            if (groups.Count > 0)
+            {
+                return groups[groups.Count - 1];
+            }
+
+            ObjGroupBuilder group = new("shape");
+            groups.Add(group);
+            return group;
         }
 
         private static void ParseFaceToken(string token, out int vertexIndex, out int uvIndex)
@@ -236,6 +288,58 @@ namespace MC2Demo.Presentation
 
             string manifestAsset = string.IsNullOrWhiteSpace(entry.assetId) ? "<unnamed>" : entry.assetId;
             Debug.Log("Mapped private reference visual manifest asset: " + assetName + " -> " + manifestAsset + " obj=" + objPath);
+        }
+
+        private static void CreateManifestNodeAnchors(
+            Transform visual,
+            ReferenceVisualManifestEntry manifestEntry,
+            HashSet<string> existingNames)
+        {
+            if (visual == null || manifestEntry == null)
+            {
+                return;
+            }
+
+            foreach (string nodeName in manifestEntry.shapeNodeNames ?? Array.Empty<string>())
+            {
+                CreateEmptyNodeAnchor(visual, nodeName, existingNames);
+            }
+
+            foreach (string helperName in manifestEntry.helperNodeNames ?? Array.Empty<string>())
+            {
+                CreateEmptyNodeAnchor(visual, helperName, existingNames);
+            }
+        }
+
+        private static void CreateEmptyNodeAnchor(Transform visual, string nodeName, HashSet<string> existingNames)
+        {
+            if (string.IsNullOrWhiteSpace(nodeName) || existingNames.Contains(nodeName))
+            {
+                return;
+            }
+
+            GameObject anchor = new(nodeName);
+            anchor.transform.SetParent(visual, false);
+            existingNames.Add(nodeName);
+        }
+
+        private static float UnityScaleFor(ReferenceVisualManifestEntry entry)
+        {
+            return entry != null && entry.unityScale > 0f
+                ? entry.unityScale
+                : DefaultReferenceVisualScale;
+        }
+
+        private static float UnityYawDegreesFor(ReferenceVisualManifestEntry entry)
+        {
+            return entry?.unityYawDegrees ?? 0f;
+        }
+
+        private static float GroundOffsetYFor(ReferenceVisualManifestEntry entry)
+        {
+            return entry != null && Math.Abs(entry.groundOffsetY) > float.Epsilon
+                ? entry.groundOffsetY
+                : DefaultGroundOffsetY;
         }
 
         private static IEnumerable<string> CandidateRoots()
@@ -718,6 +822,9 @@ namespace MC2Demo.Presentation
             public int shapeNodeCount;
             public int vertices;
             public int triangles;
+            public float unityScale;
+            public float unityYawDegrees;
+            public float groundOffsetY;
         }
 
         private sealed class LoadedReferenceManifest
@@ -732,6 +839,41 @@ namespace MC2Demo.Presentation
             public string ManifestPath { get; }
             public string ManifestDirectory { get; }
             public ReferenceVisualManifest Manifest { get; }
+        }
+
+        private sealed class ReferenceVisualMeshSet
+        {
+            public ReferenceVisualMeshSet(ReferenceVisualNodeMesh[] nodes)
+            {
+                Nodes = nodes ?? Array.Empty<ReferenceVisualNodeMesh>();
+            }
+
+            public ReferenceVisualNodeMesh[] Nodes { get; }
+        }
+
+        private sealed class ReferenceVisualNodeMesh
+        {
+            public ReferenceVisualNodeMesh(string name, Mesh mesh)
+            {
+                Name = name ?? "";
+                Mesh = mesh;
+            }
+
+            public string Name { get; }
+            public Mesh Mesh { get; }
+        }
+
+        private sealed class ObjGroupBuilder
+        {
+            public ObjGroupBuilder(string name)
+            {
+                Name = string.IsNullOrWhiteSpace(name) ? "shape" : name;
+            }
+
+            public string Name { get; }
+            public List<Vector3> Vertices { get; } = new();
+            public List<Vector2> Uvs { get; } = new();
+            public List<int> Triangles { get; } = new();
         }
     }
 }

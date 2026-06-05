@@ -58,6 +58,7 @@ namespace MC2Demo.BattleCore
         public float WeaponCooldownRatio => CombatWeaponCooldown <= 0f ? 0f : WeaponCooldownRemaining / CombatWeaponCooldown;
         public float WeaponReadinessRatio => Mathf.Clamp01(1f - WeaponCooldownRatio);
         public Vector2 SpawnPosition { get; }
+        public float SpawnRotationDegrees { get; }
         public Vector2 MissionPosition { get; private set; }
         public Vector2 MoveTarget { get; private set; }
         private UnitLoadoutCombatOverride appliedLoadout;
@@ -82,7 +83,11 @@ namespace MC2Demo.BattleCore
             Sections = CreateSections(Profile);
             IsActive = true;
             CurrentStructure = Profile.MaxStructure;
-            SpawnPosition = new Vector2(spawn.position.x, spawn.position.y);
+            MissionPose spawnPose = spawn.position;
+            SpawnPosition = spawnPose == null
+                ? Vector2.zero
+                : new Vector2(spawnPose.x, spawnPose.y);
+            SpawnRotationDegrees = spawnPose?.rotation ?? 0f;
             MissionPosition = SpawnPosition;
             MoveTarget = MissionPosition;
         }

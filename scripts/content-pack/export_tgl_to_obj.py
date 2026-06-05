@@ -23,6 +23,18 @@ TYPE_VERTEX_SIZE = 28
 TYPE_TRIANGLE_SIZE = 56
 TINY_TEXTURE_SIZE = 12
 NODE_ID_SIZE = 25
+DEFAULT_UNITY_VISUAL_SCALE = 3.0
+DEFAULT_UNITY_GROUND_OFFSET_Y = -0.5
+
+UNITY_VISUAL_OVERRIDES: dict[str, dict[str, float]] = {
+    "werewolf": {"unityScale": 3.0, "unityYawDegrees": 0.0, "groundOffsetY": -0.5},
+    "bushwacker": {"unityScale": 3.0, "unityYawDegrees": 0.0, "groundOffsetY": -0.5},
+    "urbanmech": {"unityScale": 3.0, "unityYawDegrees": 0.0, "groundOffsetY": -0.5},
+    "starslayer": {"unityScale": 3.0, "unityYawDegrees": 0.0, "groundOffsetY": -0.5},
+    "centipede": {"unityScale": 3.0, "unityYawDegrees": 0.0, "groundOffsetY": -0.5},
+    "harasser": {"unityScale": 3.0, "unityYawDegrees": 0.0, "groundOffsetY": -0.5},
+    "lrmc": {"unityScale": 3.0, "unityYawDegrees": 0.0, "groundOffsetY": -0.5},
+}
 
 
 @dataclass
@@ -230,6 +242,14 @@ def write_obj(
 ) -> dict[str, object]:
     output_dir.mkdir(parents=True, exist_ok=True)
     shape_name = shape.path.stem.lower()
+    unity_override = UNITY_VISUAL_OVERRIDES.get(
+        shape_name,
+        {
+            "unityScale": DEFAULT_UNITY_VISUAL_SCALE,
+            "unityYawDegrees": 0.0,
+            "groundOffsetY": DEFAULT_UNITY_GROUND_OFFSET_Y,
+        },
+    )
     obj_path = output_dir / f"{shape_name}.obj"
     mtl_path = output_dir / f"{shape_name}.mtl"
 
@@ -357,6 +377,9 @@ def write_obj(
         "copiedTexturePaths": sorted(set(copied_texture_paths)),
         "scale": scale,
         "flipX": flip_x,
+        "unityScale": unity_override["unityScale"],
+        "unityYawDegrees": unity_override["unityYawDegrees"],
+        "groundOffsetY": unity_override["groundOffsetY"],
     }
     (output_dir / f"{shape_name}.summary.json").write_text(
         json.dumps(summary, indent=2),
