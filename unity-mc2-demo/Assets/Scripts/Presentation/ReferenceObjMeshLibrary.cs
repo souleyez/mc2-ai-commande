@@ -10,6 +10,7 @@ namespace MC2Demo.Presentation
     internal static class ReferenceObjMeshLibrary
     {
         private const float DefaultReferenceVisualScale = 3.0f;
+        private const float UnitReferenceVisualScaleMultiplier = 0.84f;
         private const float DefaultGroundOffsetY = -0.5f;
         private static readonly Dictionary<string, ReferenceVisualMeshSet> MeshSetCache = new(StringComparer.OrdinalIgnoreCase);
         private static readonly Dictionary<string, bool> MissingCache = new(StringComparer.OrdinalIgnoreCase);
@@ -34,7 +35,16 @@ namespace MC2Demo.Presentation
                 return false;
             }
 
-            return TryAttachReferenceAsset(assetName, parent, color, useTeamColor: true, isPlayerTeam: unit.IsPlayerUnit, out renderer);
+            return TryAttachReferenceAsset(
+                assetName,
+                parent,
+                color,
+                useTeamColor: true,
+                isPlayerTeam: unit.IsPlayerUnit,
+                visualScaleMultiplier: UnitReferenceVisualScaleMultiplier,
+                compensateParentScale: true,
+                groundOffsetY: float.NaN,
+                out renderer);
         }
 
         public static bool TryAttachReferenceAsset(

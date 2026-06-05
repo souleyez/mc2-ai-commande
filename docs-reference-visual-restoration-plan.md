@@ -308,6 +308,8 @@ Internal screenshot:
 
 **Status:** Completed 2026-06-05. Reference OBJ nodes are now bucketed by common cockpit/arm/leg/torso names, detached damage effects clone the real reference nodes before falling back to primitives, and the `damage-demo` capture preset forces a reproducible left-arm, leg-collapse, and cockpit-ejection scene. The local source pack has independent arm-damage TGL variants for Werewolf/Bushwacker; this slice records section node manifests and uses live real-node clones first, leaving exact damaged-variant asset swaps as the next fidelity pass.
 
+**Readability Follow-Up:** Completed 2026-06-05. Squad commands now assign deterministic formation slots instead of one shared point, enemy AI attack orders spread around their player target, and BattleCore resolves lightweight physical occupancy with mech/vehicle/infantry collision radii after movement. Unit reference OBJ visuals now compensate for the placeholder parent scale and the `damage-demo` capture zooms out slightly, so dense hangar fights read as clustered combat instead of same-coordinate blobs.
+
 **Validation Evidence:**
 
 - Python syntax check: `$env:PYTHONDONTWRITEBYTECODE='1'; python -m py_compile scripts/content-pack/export_tgl_to_obj.py`
@@ -316,6 +318,7 @@ Internal screenshot:
 - Damage capture: `analysis-output/reference-visual-captures/damage-demo.png`
 - Damage sidecar/log: `analysis-output/reference-visual-captures/damage-demo.json`, `analysis-output/reference-visual-captures/damage-demo.log`
 - Damage log proves real-node paths: `Left Arm: ww_larm`, `Left Leg: bw_lfoot, bw_llleg, bw_luleg`, `Right Leg: bw_rfoot, bw_ruleg`, `Cockpit: bw_torso`
+- Follow-up validation: `analysis-output/unity-validate-unit-collision-r4.log`, `analysis-output/unity-build-unit-collision-r1.log`, `analysis-output/unity-player-unit-collision-smoke-r1.log`, and refreshed `analysis-output/reference-visual-captures/damage-demo.png`
 
 **Steps:**
 

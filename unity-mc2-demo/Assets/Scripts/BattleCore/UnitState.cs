@@ -62,6 +62,7 @@ namespace MC2Demo.BattleCore
         public Vector2 MissionPosition { get; private set; }
         public Vector2 MoveTarget { get; private set; }
         private UnitLoadoutCombatOverride appliedLoadout;
+        private Vector2 attackTargetOffset;
         private Vector2 jumpStart;
         private Vector2 jumpEnd;
         private float jumpElapsed;
@@ -108,6 +109,7 @@ namespace MC2Demo.BattleCore
                 JumpLift = 0f;
                 AttackTargetId = null;
                 CurrentTargetId = null;
+                attackTargetOffset = Vector2.zero;
                 MoveTarget = MissionPosition;
             }
         }
@@ -147,6 +149,7 @@ namespace MC2Demo.BattleCore
             IsDetached = false;
             AttackTargetId = null;
             CurrentTargetId = null;
+            attackTargetOffset = Vector2.zero;
             LastHitSection = null;
             LastDamageTaken = 0f;
             WeaponCooldownRemaining = 0f;
@@ -164,9 +167,15 @@ namespace MC2Demo.BattleCore
             HasMoveOrder = true;
             IsDetached = detached;
             AttackTargetId = null;
+            attackTargetOffset = Vector2.zero;
         }
 
         public void SetAttackOrder(string targetId, Vector2 targetPosition, bool detached)
+        {
+            SetAttackOrder(targetId, targetPosition, detached, Vector2.zero);
+        }
+
+        public void SetAttackOrder(string targetId, Vector2 targetPosition, bool detached, Vector2 targetOffset)
         {
             if (!IsActive || IsDestroyed || string.IsNullOrEmpty(targetId))
             {
@@ -175,7 +184,8 @@ namespace MC2Demo.BattleCore
 
             AttackTargetId = targetId;
             CurrentTargetId = targetId;
-            MoveTarget = targetPosition;
+            attackTargetOffset = targetOffset;
+            MoveTarget = targetPosition + attackTargetOffset;
             HasMoveOrder = true;
             IsDetached = detached;
         }
@@ -187,14 +197,17 @@ namespace MC2Demo.BattleCore
                 return;
             }
 
-            MoveTarget = targetPosition;
-            HasMoveOrder = !targetInRange;
+            MoveTarget = targetPosition + attackTargetOffset;
+            bool hasFormationSlot = attackTargetOffset.sqrMagnitude > 0.01f;
+            bool reachedFormationSlot = (MoveTarget - MissionPosition).sqrMagnitude <= ArriveDistance * ArriveDistance;
+            HasMoveOrder = !targetInRange || (hasFormationSlot && !reachedFormationSlot);
         }
 
         public void CompleteAttackOrder()
         {
             AttackTargetId = null;
             CurrentTargetId = null;
+            attackTargetOffset = Vector2.zero;
             HasMoveOrder = false;
             IsDetached = false;
         }
@@ -229,6 +242,7 @@ namespace MC2Demo.BattleCore
             JumpLift = 0f;
             AttackTargetId = null;
             CurrentTargetId = null;
+            attackTargetOffset = Vector2.zero;
             return true;
         }
 
@@ -273,6 +287,20 @@ namespace MC2Demo.BattleCore
 
             float step = EffectiveMoveSpeed() * deltaTime;
             MissionPosition += toTarget.normalized * Mathf.Min(step, distance);
+        }
+
+        public void ApplyCollisionDisplacement(Vector2 displacement)
+        {
+            if (!IsActive || IsDestroyed || IsJumping || displacement.sqrMagnitude <= 0.0001f)
+            {
+                return;
+            }
+
+            MissionPosition += displacement;
+            if (!HasMoveOrder && !HasAttackOrder)
+            {
+                MoveTarget += displacement;
+            }
         }
 
         private void TickJump(float deltaTime)
@@ -441,6 +469,7 @@ namespace MC2Demo.BattleCore
                 IsDetached = false;
                 AttackTargetId = null;
                 CurrentTargetId = null;
+                attackTargetOffset = Vector2.zero;
                 CurrentStructure = 0f;
             }
         }

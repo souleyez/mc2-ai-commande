@@ -126,6 +126,8 @@ namespace MC2Demo.EditorTools
             ValidateAirfieldToHangarObjectiveFlow(BattleMission.FromJson(contractJson, combatProfiles));
             ValidateScriptBridgeSignals(BattleMission.FromJson(contractJson, combatProfiles));
             ValidateNavMarkerPatrolOrders();
+            ValidateEnemyAttackFormationSpacing();
+            ValidateUnitCollisionSeparation();
             ValidateJumpCommand(BattleMission.FromJson(contractJson, combatProfiles));
             ValidateCombatSimulation(mission);
             ValidateStructureObjective(new BattleMission(MakeStructureObjectiveContract(), CombatProfileCatalog.Empty));
@@ -2254,6 +2256,84 @@ namespace MC2Demo.EditorTools
             }
         }
 
+        private static void ValidateEnemyAttackFormationSpacing()
+        {
+            BattleMission mission = new(MakeEnemyAttackFormationContract(), CombatProfileCatalog.Empty);
+            UnitState player = mission.FindUnit("formation-player");
+            UnitState firstEnemy = mission.FindUnit("enemy-1");
+            UnitState secondEnemy = mission.FindUnit("enemy-2");
+            UnitState thirdEnemy = mission.FindUnit("enemy-3");
+            if (player == null || firstEnemy == null || secondEnemy == null || thirdEnemy == null)
+            {
+                throw new InvalidDataException("Enemy attack formation validation requires one player and three enemies.");
+            }
+
+            mission.Tick(0.1f);
+            UnitState[] enemies = { firstEnemy, secondEnemy, thirdEnemy };
+            for (int index = 0; index < enemies.Length; index++)
+            {
+                UnitState enemy = enemies[index];
+                if (!enemy.HasAttackOrder || enemy.AttackTargetId != player.Id)
+                {
+                    throw new InvalidDataException(
+                        "Expected enemy to acquire the player target with an attack order. enemy="
+                        + enemy.Id
+                        + " active="
+                        + enemy.IsActive
+                        + " destroyed="
+                        + enemy.IsDestroyed
+                        + " hasMove="
+                        + enemy.HasMoveOrder
+                        + " hasAttack="
+                        + enemy.HasAttackOrder
+                        + " target="
+                        + enemy.AttackTargetId
+                        + " result="
+                        + mission.Result
+                        + " reason="
+                        + mission.ResultReason);
+                }
+
+                if (Vector2.Distance(enemy.MoveTarget, player.MissionPosition) < 30f)
+                {
+                    throw new InvalidDataException("Expected enemy attack order to avoid stacking on the player target.");
+                }
+            }
+
+            for (int outer = 0; outer < enemies.Length; outer++)
+            {
+                for (int inner = outer + 1; inner < enemies.Length; inner++)
+                {
+                    if (Vector2.Distance(enemies[outer].MoveTarget, enemies[inner].MoveTarget) < 20f)
+                    {
+                        throw new InvalidDataException("Expected enemy attack formation slots to be separated.");
+                    }
+                }
+            }
+        }
+
+        private static void ValidateUnitCollisionSeparation()
+        {
+            BattleMission mission = new(MakeUnitCollisionContract(), CombatProfileCatalog.Empty);
+            UnitState first = mission.FindUnit("collision-enemy-1");
+            UnitState second = mission.FindUnit("collision-enemy-2");
+            if (first == null || second == null)
+            {
+                throw new InvalidDataException("Unit collision validation requires two enemy units.");
+            }
+
+            if (Vector2.Distance(first.MissionPosition, second.MissionPosition) > 0.01f)
+            {
+                throw new InvalidDataException("Unit collision validation setup expected stacked enemy units.");
+            }
+
+            mission.Tick(0.1f);
+            if (Vector2.Distance(first.MissionPosition, second.MissionPosition) < 45f)
+            {
+                throw new InvalidDataException("Expected stacked enemy units to separate after BattleCore collision resolution.");
+            }
+        }
+
         private static UnitState FirstPlayerUnit(BattleMission mission)
         {
             foreach (UnitState unit in mission.Units)
@@ -2626,10 +2706,15 @@ namespace MC2Demo.EditorTools
             UnitState playerOne = mission.FindUnit("player-1");
             UnitState playerTwo = mission.FindUnit("player-2");
 
+            Vector2 squadMoveCenter = new(500f, 0f);
             CommanderCommandResult squadMove = port.IssueText("squad move 500 0");
-            if (!squadMove.Accepted || squadMove.AcceptedCount != 2 || playerOne.MoveTarget.x != 500f || playerTwo.MoveTarget.x != 500f)
+            if (!squadMove.Accepted
+                || squadMove.AcceptedCount != 2
+                || Vector2.Distance(playerOne.MoveTarget, squadMoveCenter) > 1f
+                || Vector2.Distance(playerTwo.MoveTarget, squadMoveCenter) < 100f
+                || Vector2.Distance(playerTwo.MoveTarget, squadMoveCenter) > 360f)
             {
-                throw new InvalidDataException("Expected command port to issue squad move commands.");
+                throw new InvalidDataException("Expected command port to issue squad move commands with formation spacing.");
             }
 
             CommanderCommandResult detachedMove = port.IssueText("unit player-1 move 100 100");
@@ -4200,7 +4285,23 @@ namespace MC2Demo.EditorTools
 
             if (defeat.Result != MissionResultState.Defeat)
             {
-                throw new InvalidDataException("Expected minimal combat mission to resolve defeat, got " + defeat.Result);
+                UnitState defeatPlayer = defeat.FindUnit("player-1");
+                UnitState defeatEnemy = defeat.FindUnit("enemy-1");
+                string debugState = defeatPlayer == null || defeatEnemy == null
+                    ? "missing player or enemy"
+                    : " playerDestroyed="
+                        + defeatPlayer.IsDestroyed
+                        + " playerStructure="
+                        + defeatPlayer.CurrentStructure
+                        + " enemyTarget="
+                        + defeatEnemy.AttackTargetId
+                        + " enemyCurrentTarget="
+                        + defeatEnemy.CurrentTargetId
+                        + " enemyRange="
+                        + defeatEnemy.CombatWeaponRange
+                        + " distance="
+                        + Vector2.Distance(defeatPlayer.MissionPosition, defeatEnemy.MissionPosition);
+                throw new InvalidDataException("Expected minimal combat mission to resolve defeat, got " + defeat.Result + debugState);
             }
 
             MissionResultSummary defeatSummary = defeat.ResultSummary;
@@ -4453,6 +4554,126 @@ namespace MC2Demo.EditorTools
                 navMarkers = new[]
                 {
                     new NavMarker { index = 0, x = 1000f, y = 1000f, radius = 240f }
+                }
+            };
+        }
+
+        private static MissionContract MakeEnemyAttackFormationContract()
+        {
+            return new MissionContract
+            {
+                mission = new MissionDefinition
+                {
+                    id = "validator-enemy-attack-formation",
+                    terrain = new TerrainDefinition { minX = -1000f, minY = 1000f, waterElevation = 350f }
+                },
+                units = new[]
+                {
+                    new UnitSpawn
+                    {
+                        spawnId = "formation-player",
+                        isPlayerUnit = true,
+                        teamId = 0,
+                        unitType = "Werewolf",
+                        position = new MissionPose { x = 0f, y = 0f, rotation = 0f }
+                    },
+                    new UnitSpawn
+                    {
+                        spawnId = "enemy-1",
+                        isPlayerUnit = false,
+                        teamId = 1,
+                        unitType = "Centipede",
+                        position = new MissionPose { x = 180f, y = 0f, rotation = 0f }
+                    },
+                    new UnitSpawn
+                    {
+                        spawnId = "enemy-2",
+                        isPlayerUnit = false,
+                        teamId = 1,
+                        unitType = "Centipede",
+                        position = new MissionPose { x = 220f, y = 0f, rotation = 0f }
+                    },
+                    new UnitSpawn
+                    {
+                        spawnId = "enemy-3",
+                        isPlayerUnit = false,
+                        teamId = 1,
+                        unitType = "Centipede",
+                        position = new MissionPose { x = 260f, y = 0f, rotation = 0f }
+                    }
+                },
+                objectives = new[]
+                {
+                    new ObjectiveDefinition
+                    {
+                        id = "hold-open",
+                        index = 0,
+                        hidden = false,
+                        conditions = new[]
+                        {
+                            new ObjectiveCondition
+                            {
+                                type = "MoveAnyUnitToArea",
+                                targetArea = new TargetArea { x = 5000f, y = 0f, radius = 40f }
+                            }
+                        }
+                    }
+                }
+            };
+        }
+
+        private static MissionContract MakeUnitCollisionContract()
+        {
+            return new MissionContract
+            {
+                mission = new MissionDefinition
+                {
+                    id = "validator-unit-collision",
+                    terrain = new TerrainDefinition { minX = -1000f, minY = 1000f, waterElevation = 350f }
+                },
+                units = new[]
+                {
+                    new UnitSpawn
+                    {
+                        spawnId = "collision-player",
+                        isPlayerUnit = true,
+                        teamId = 0,
+                        unitType = "Werewolf",
+                        position = new MissionPose { x = 500f, y = 0f, rotation = 0f }
+                    },
+                    new UnitSpawn
+                    {
+                        spawnId = "collision-enemy-1",
+                        isPlayerUnit = false,
+                        teamId = 1,
+                        unitType = "Centipede",
+                        position = new MissionPose { x = 0f, y = 0f, rotation = 0f }
+                    },
+                    new UnitSpawn
+                    {
+                        spawnId = "collision-enemy-2",
+                        isPlayerUnit = false,
+                        teamId = 1,
+                        unitType = "Centipede",
+                        position = new MissionPose { x = 0f, y = 0f, rotation = 0f }
+                    }
+                },
+                objectives = new[]
+                {
+                    new ObjectiveDefinition
+                    {
+                        id = "hold-open",
+                        index = 0,
+                        hidden = false,
+                        conditions = new[]
+                        {
+                            new ObjectiveCondition
+                            {
+                                type = "MoveAnyUnitToArea",
+                                targetArea = new TargetArea { x = 5000f, y = 0f, radius = 40f }
+                            }
+                        }
+                    }
                 }
             };
         }

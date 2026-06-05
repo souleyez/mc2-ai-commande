@@ -4855,6 +4855,8 @@ namespace MC2Demo.Presentation
             RunStartupHangarContactCapturePrelude();
             AdvanceStartupSimulation(18f);
             ForceStartupDamageDemoSections();
+            cameraZoomScale = Mathf.Min(cameraZoomScale, 0.82f);
+            ApplyCameraProjection();
         }
 
         private void ForceStartupDamageDemoSections()

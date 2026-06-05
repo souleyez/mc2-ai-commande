@@ -8,6 +8,17 @@ namespace MC2Demo.BattleCore
     public sealed class BattleMission
     {
         private const float CriticalSectionSummaryRatio = 0.35f;
+        private const float SquadMoveFormationSpacing = 240f;
+        private const float SquadAttackFormationSpacing = 260f;
+        private const float SquadAttackUnitStandOff = 120f;
+        private const float SquadAttackStructureStandOffPadding = 100f;
+        private const float EnemyAttackMinFormationRadius = 60f;
+        private const float EnemyAttackMaxFormationRadius = 130f;
+        private const float UnitCollisionInfantryRadius = 20f;
+        private const float UnitCollisionVehicleRadius = 40f;
+        private const float UnitCollisionMechRadius = 49f;
+        private const float UnitCollisionMaxPushPerPass = 30f;
+        private const int UnitCollisionPasses = 2;
 
         public MissionContract Contract { get; }
         public IReadOnlyList<UnitState> Units => units;
@@ -119,14 +130,14 @@ namespace MC2Demo.BattleCore
                 return 0;
             }
 
+            List<UnitState> squadUnits = CommandableSquadUnits();
+            Vector2 approach = SquadApproachDirection(squadUnits, missionPoint);
             int accepted = 0;
-            foreach (UnitState unit in PlayerUnits())
+            for (int index = 0; index < squadUnits.Count; index++)
             {
-                if (!unit.IsDetached)
-                {
-                    unit.SetMoveOrder(missionPoint, detached: false);
-                    accepted++;
-                }
+                UnitState unit = squadUnits[index];
+                unit.SetMoveOrder(missionPoint + SquadMoveFormationOffset(index, squadUnits.Count, approach), detached: false);
+                accepted++;
             }
 
             return accepted;
@@ -157,14 +168,15 @@ namespace MC2Demo.BattleCore
                 return 0;
             }
 
+            List<UnitState> squadUnits = CommandableSquadUnits();
+            Vector2 approach = SquadApproachDirection(squadUnits, target.MissionPosition);
             int accepted = 0;
-            foreach (UnitState unit in PlayerUnits())
+            for (int index = 0; index < squadUnits.Count; index++)
             {
-                if (!unit.IsDetached)
-                {
-                    unit.SetAttackOrder(target.Id, target.MissionPosition, detached: false);
-                    accepted++;
-                }
+                UnitState unit = squadUnits[index];
+                Vector2 offset = SquadAttackFormationOffset(index, squadUnits.Count, approach, SquadAttackUnitStandOff);
+                unit.SetAttackOrder(target.Id, target.MissionPosition, detached: false, offset);
+                accepted++;
             }
 
             return accepted;
@@ -191,14 +203,16 @@ namespace MC2Demo.BattleCore
                 return 0;
             }
 
+            List<UnitState> squadUnits = CommandableSquadUnits();
+            Vector2 approach = SquadApproachDirection(squadUnits, target.MissionPosition);
+            float standOff = Mathf.Max(SquadAttackUnitStandOff, target.Radius + SquadAttackStructureStandOffPadding);
             int accepted = 0;
-            foreach (UnitState unit in PlayerUnits())
+            for (int index = 0; index < squadUnits.Count; index++)
             {
-                if (!unit.IsDetached)
-                {
-                    unit.SetAttackOrder(target.Id, target.MissionPosition, detached: false);
-                    accepted++;
-                }
+                UnitState unit = squadUnits[index];
+                Vector2 offset = SquadAttackFormationOffset(index, squadUnits.Count, approach, standOff);
+                unit.SetAttackOrder(target.Id, target.MissionPosition, detached: false, offset);
+                accepted++;
             }
 
             return accepted;
@@ -276,6 +290,8 @@ namespace MC2Demo.BattleCore
                 unit.TickMovement(clampedDeltaTime);
                 unit.TickWeapon(clampedDeltaTime);
             }
+
+            ResolveUnitCollisions();
 
             foreach (UnitState unit in units)
             {
@@ -424,7 +440,7 @@ namespace MC2Demo.BattleCore
             UnitState playerTarget = FindNearestPlayerUnit(unit, EnemyAlertRange(unit));
             if (playerTarget != null)
             {
-                unit.SetAttackOrder(playerTarget.Id, playerTarget.MissionPosition, detached: false);
+                unit.SetAttackOrder(playerTarget.Id, playerTarget.MissionPosition, detached: false, EnemyAttackFormationOffset(unit));
                 return;
             }
 
@@ -561,6 +577,226 @@ namespace MC2Demo.BattleCore
                 default:
                     return anchor + new Vector2(0f, -radius);
             }
+        }
+
+        private List<UnitState> CommandableSquadUnits()
+        {
+            List<UnitState> squadUnits = new();
+            foreach (UnitState unit in PlayerUnits())
+            {
+                if (unit != null && !unit.IsDetached && unit.IsActive && !unit.IsDestroyed)
+                {
+                    squadUnits.Add(unit);
+                }
+            }
+
+            return squadUnits;
+        }
+
+        private void ResolveUnitCollisions()
+        {
+            for (int pass = 0; pass < UnitCollisionPasses; pass++)
+            {
+                for (int firstIndex = 0; firstIndex < units.Count; firstIndex++)
+                {
+                    UnitState first = units[firstIndex];
+                    if (!CanResolveUnitCollision(first))
+                    {
+                        continue;
+                    }
+
+                    for (int secondIndex = firstIndex + 1; secondIndex < units.Count; secondIndex++)
+                    {
+                        UnitState second = units[secondIndex];
+                        if (!CanResolveUnitCollision(second))
+                        {
+                            continue;
+                        }
+
+                        float minimumDistance = UnitCollisionRadius(first) + UnitCollisionRadius(second);
+                        Vector2 delta = second.MissionPosition - first.MissionPosition;
+                        float distanceSqr = delta.sqrMagnitude;
+                        if (distanceSqr >= minimumDistance * minimumDistance)
+                        {
+                            continue;
+                        }
+
+                        float distance = 0f;
+                        Vector2 direction;
+                        if (distanceSqr <= 0.0001f)
+                        {
+                            direction = PairSeparationDirection(first.Id, second.Id);
+                        }
+                        else
+                        {
+                            distance = Mathf.Sqrt(distanceSqr);
+                            direction = delta / Mathf.Max(0.001f, distance);
+                        }
+
+                        float push = Mathf.Min((minimumDistance - distance) * 0.5f, UnitCollisionMaxPushPerPass);
+                        if (push <= 0f)
+                        {
+                            continue;
+                        }
+
+                        first.ApplyCollisionDisplacement(-direction * push);
+                        second.ApplyCollisionDisplacement(direction * push);
+                    }
+                }
+            }
+        }
+
+        private static bool CanResolveUnitCollision(UnitState unit)
+        {
+            return unit != null && unit.IsActive && !unit.IsDestroyed && !unit.IsJumping;
+        }
+
+        private static float UnitCollisionRadius(UnitState unit)
+        {
+            if (unit == null)
+            {
+                return UnitCollisionVehicleRadius;
+            }
+
+            if (IsInfantryUnit(unit))
+            {
+                return UnitCollisionInfantryRadius;
+            }
+
+            return IsMechLikeUnit(unit) ? UnitCollisionMechRadius : UnitCollisionVehicleRadius;
+        }
+
+        private static bool IsInfantryUnit(UnitState unit)
+        {
+            return unit != null
+                && !string.IsNullOrWhiteSpace(unit.UnitType)
+                && unit.UnitType.IndexOf("Infantry", StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        private static bool IsMechLikeUnit(UnitState unit)
+        {
+            if (unit == null || unit.Sections == null)
+            {
+                return false;
+            }
+
+            bool hasCockpit = false;
+            bool hasLegs = false;
+            for (int index = 0; index < unit.Sections.Length; index++)
+            {
+                DamageSection section = unit.Sections[index];
+                if (section == null)
+                {
+                    continue;
+                }
+
+                hasCockpit |= string.Equals(section.Name, "Cockpit", StringComparison.OrdinalIgnoreCase);
+                hasLegs |= string.Equals(section.Name, "Legs", StringComparison.OrdinalIgnoreCase);
+            }
+
+            return hasCockpit && hasLegs;
+        }
+
+        private static Vector2 PairSeparationDirection(string firstId, string secondId)
+        {
+            int first = UnitIdNumber(firstId);
+            int second = UnitIdNumber(secondId);
+            int seed = Mathf.Abs((first * 73856093) ^ (second * 19349663));
+            float angle = (seed % 1024) * (Mathf.PI * 2f / 1024f);
+            return new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
+        }
+
+        private static Vector2 SquadMoveFormationOffset(int index, int count, Vector2 approach)
+        {
+            return SquadFormationOffset(index, count, approach, SquadMoveFormationSpacing, 0f);
+        }
+
+        private static Vector2 SquadAttackFormationOffset(int index, int count, Vector2 approach, float standOff)
+        {
+            return SquadFormationOffset(index, count, approach, SquadAttackFormationSpacing, Mathf.Max(0f, standOff));
+        }
+
+        private static Vector2 SquadFormationOffset(int index, int count, Vector2 approach, float spacing, float standOff)
+        {
+            Vector2 forward = NormalizedOrDefault(approach, Vector2.right);
+            Vector2 right = new(forward.y, -forward.x);
+            float back = Mathf.Max(0f, standOff);
+            float slotSpacing = Mathf.Max(80f, spacing);
+
+            switch (Mathf.Clamp(index, 0, 5))
+            {
+                case 0:
+                    return -forward * back;
+                case 1:
+                    return (-forward * (back + slotSpacing * 0.1f)) - (right * slotSpacing);
+                case 2:
+                    return (-forward * (back + slotSpacing * 0.1f)) + (right * slotSpacing);
+                case 3:
+                    return -forward * (back + slotSpacing * 0.95f);
+                case 4:
+                    return (-forward * (back + slotSpacing * 0.75f)) - (right * slotSpacing * 1.7f);
+                default:
+                    return (-forward * (back + slotSpacing * 0.75f)) + (right * slotSpacing * 1.7f);
+            }
+        }
+
+        private static Vector2 SquadApproachDirection(IReadOnlyList<UnitState> squadUnits, Vector2 target)
+        {
+            if (squadUnits == null || squadUnits.Count == 0)
+            {
+                return Vector2.right;
+            }
+
+            Vector2 centroid = Vector2.zero;
+            int count = 0;
+            for (int index = 0; index < squadUnits.Count; index++)
+            {
+                UnitState unit = squadUnits[index];
+                if (unit == null)
+                {
+                    continue;
+                }
+
+                centroid += unit.MissionPosition;
+                count++;
+            }
+
+            if (count <= 0)
+            {
+                return Vector2.right;
+            }
+
+            centroid /= count;
+            return NormalizedOrDefault(target - centroid, Vector2.right);
+        }
+
+        private static Vector2 EnemyAttackFormationOffset(UnitState unit)
+        {
+            if (unit == null)
+            {
+                return Vector2.zero;
+            }
+
+            int unitNumber = UnitIdNumber(unit.Id);
+            int slot = Mathf.Abs((unitNumber * 7) % 16);
+            int ring = Mathf.Abs((unitNumber / 16) % 2);
+            float angle = (slot * (Mathf.PI * 2f / 16f)) + (ring * Mathf.PI / 16f);
+            float radius = Mathf.Clamp(
+                unit.CombatWeaponRange * 0.65f,
+                EnemyAttackMinFormationRadius,
+                EnemyAttackMaxFormationRadius);
+
+            return new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * radius;
+        }
+
+        private static Vector2 NormalizedOrDefault(Vector2 value, Vector2 fallback)
+        {
+            if (value.sqrMagnitude > 0.0001f)
+            {
+                return value.normalized;
+            }
+
+            return fallback.sqrMagnitude > 0.0001f ? fallback.normalized : Vector2.right;
         }
 
         private static int UnitIdNumber(string unitId)

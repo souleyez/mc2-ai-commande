@@ -1053,6 +1053,7 @@ Tasks:
 - Pending and active solo orders now have a smoke-guarded battlefield cue contract: `SoloOrder=ring+beacon`.
 - Move, Jet, and attack order paths now have a smoke-guarded battlefield cue contract: `OrderPath=move+jet+attack+endcap`.
 - Move, Jet, and attack-ready arrivals now have a smoke-guarded battlefield cue contract: `OrderArrival=move+jet+attack-ready`.
+- Squad and enemy attack orders now use formation slots, and BattleCore now applies lightweight mech/vehicle/infantry collision occupancy after movement so dense fights cannot collapse into one coordinate.
 - Heat pressure cues now have a smoke-guarded battlefield cue contract: `Heat=vent+lock`.
 - Commander follow cues now have a smoke-guarded battlefield cue contract: `Commander=anchor+beacon`.
 - Solo-order completion now has a smoke-guarded battlefield cue contract: `SoloReturn=ring+beacon`.
