@@ -11,7 +11,9 @@ param(
     [string]$InputRoot = "",
     [string]$OutputRoot = "",
     [string]$ManifestPath = "",
-    [switch]$NoCopyTextures
+    [string]$MissionContractPath = "",
+    [switch]$NoCopyTextures,
+    [switch]$IncludeMissionProps
 )
 
 $ErrorActionPreference = "Stop"
@@ -31,6 +33,10 @@ if ([string]::IsNullOrWhiteSpace($ManifestPath)) {
     $ManifestPath = Join-Path $repoRoot "analysis-output\unity-reference-art\manifest.json"
 }
 
+if ([string]::IsNullOrWhiteSpace($MissionContractPath)) {
+    $MissionContractPath = Join-Path $repoRoot "unity-mc2-demo\Assets\StreamingAssets\Missions\mc2_01\mission-contract.json"
+}
+
 $exporter = Join-Path $scriptRoot "export_tgl_to_obj.py"
 if (!(Test-Path $exporter)) {
     throw "Missing exporter: $exporter"
@@ -38,6 +44,64 @@ if (!(Test-Path $exporter)) {
 
 if (!(Test-Path $InputRoot)) {
     throw "Missing unpacked TGL input root: $InputRoot"
+}
+
+function Get-ReferenceShapeName {
+    param([string]$Name)
+
+    if ([string]::IsNullOrWhiteSpace($Name)) {
+        return ""
+    }
+
+    $shapeName = [System.IO.Path]::GetFileNameWithoutExtension($Name.Trim())
+    if ($shapeName -ieq "SlayerP") {
+        return "slayerparked"
+    }
+
+    return $shapeName
+}
+
+function Test-FirstSliceTerrainObject {
+    param($TerrainObject)
+
+    if ($null -eq $TerrainObject) {
+        return $false
+    }
+
+    if ($TerrainObject.sourceIndex -le 260 -or $TerrainObject.objectClass -eq "BUILDING") {
+        return $true
+    }
+
+    if ($null -eq $TerrainObject.position) {
+        return $false
+    }
+
+    return $TerrainObject.position.x -ge 2200 -and
+        $TerrainObject.position.x -le 3950 -and
+        $TerrainObject.position.y -ge -1300 -and
+        $TerrainObject.position.y -le 350
+}
+
+if ($IncludeMissionProps) {
+    if (!(Test-Path -LiteralPath $MissionContractPath -PathType Leaf)) {
+        throw "Missing mission contract for prop visual export: $MissionContractPath"
+    }
+
+    $contract = Get-Content -LiteralPath $MissionContractPath -Raw | ConvertFrom-Json
+    $propNames = @()
+    $propNames += @($contract.staticObjects | ForEach-Object { Get-ReferenceShapeName -Name $_.assetId })
+    $propNames += @($contract.staticObjects | ForEach-Object { Get-ReferenceShapeName -Name $_.objectProfile })
+    $propNames += @($contract.terrainObjects | Where-Object { Test-FirstSliceTerrainObject -TerrainObject $_ } | ForEach-Object { Get-ReferenceShapeName -Name $_.assetId })
+    $propNames += @($contract.terrainObjects | Where-Object { Test-FirstSliceTerrainObject -TerrainObject $_ } | ForEach-Object { Get-ReferenceShapeName -Name $_.fileName })
+
+    $Names = @(
+        $Names + $propNames |
+            Where-Object {
+                -not [string]::IsNullOrWhiteSpace($_) -and
+                (Test-Path -LiteralPath (Join-Path $InputRoot ($_.Trim() + ".tgl")) -PathType Leaf)
+            } |
+            Sort-Object -Unique
+    )
 }
 
 $nameArg = ($Names | Where-Object { ![string]::IsNullOrWhiteSpace($_) }) -join ","

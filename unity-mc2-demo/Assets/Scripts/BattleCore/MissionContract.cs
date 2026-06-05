@@ -108,6 +108,7 @@ namespace MC2Demo.BattleCore
         public int objectiveIndex;
         public string objectType;
         public string objectProfile;
+        public string assetId;
         public int teamId;
         public bool targetable;
         public bool objectiveTarget;
@@ -123,6 +124,7 @@ namespace MC2Demo.BattleCore
         public int sourceIndex;
         public int fitId;
         public string fileName;
+        public string assetId;
         public string objectClass;
         public string specialType;
         public string textureName;

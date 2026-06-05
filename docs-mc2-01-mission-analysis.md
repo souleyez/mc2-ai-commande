@@ -43,14 +43,20 @@ Packet 1 decodes to 1000 original terrain object records, each matching the
 original 40-byte `ObjDataLoader` layout. The Unity demo contract exports those
 objects as lightweight props: mostly trees plus 44 building records. The
 objective hangar remains represented by the targetable `staticObjects` entry so
-combat logic can damage it cleanly.
+combat logic can damage it cleanly. For private local visual restoration, the
+contract now also carries `assetId` values derived from the source `fileName`,
+and the Unity runtime can replace the first-slice airfield props with matching
+reference OBJ/TGA visuals while keeping primitive fallbacks for unmapped or
+out-of-slice objects.
 
 One task-critical static object is now recovered without waiting on full packet
 decompression: objective `1` (`Destroy Hangar`) includes a
 `DestroySpecificStructure` condition at `3221.333,-277.333`. The Unity contract
 exports that as `structure-1-0`, a targetable `Hangar` owned by the enemy team.
-The BattleCore demo can now damage this structure and complete the corresponding
-objective once it is destroyed.
+The exporter matches that target to packet 1's `Hangar` terrain object to carry
+the source visual id and rotation into the targetable structure. The BattleCore
+demo can still damage this structure and complete the corresponding objective
+once it is destroyed.
 
 ## Runtime Facts
 

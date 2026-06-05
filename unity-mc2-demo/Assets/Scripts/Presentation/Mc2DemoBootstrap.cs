@@ -6874,13 +6874,22 @@ namespace MC2Demo.Presentation
                 GameObject structureObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 structureObject.name = structure.Id + " " + structure.ObjectType;
                 structureObject.transform.localScale = StructureScale(structure);
-                AssignMaterial(
-                    structureObject,
-                    structure.Id,
-                    structure.IsTargetable ? new Color(0.62f, 0.48f, 0.34f) : new Color(0.32f, 0.34f, 0.34f));
+                structureObject.transform.rotation = Quaternion.Euler(0f, -structure.RotationDegrees, 0f);
+                Color structureColor = structure.IsTargetable ? new Color(0.62f, 0.48f, 0.34f) : new Color(0.32f, 0.34f, 0.34f);
+                AssignMaterial(structureObject, structure.Id, structureColor);
+                Renderer rootRenderer = structureObject.GetComponent<Renderer>();
+                Renderer visualRenderer = null;
+                if (ReferencePropLibrary.TryAttachStructure(structure, structureObject.transform, structureColor, out Renderer referenceRenderer))
+                {
+                    visualRenderer = referenceRenderer;
+                    if (rootRenderer != null)
+                    {
+                        rootRenderer.enabled = false;
+                    }
+                }
 
                 DemoStructureView view = structureObject.AddComponent<DemoStructureView>();
-                view.Bind(structure);
+                view.Bind(structure, visualRenderer);
                 structureViews[structure.Id] = view;
             }
         }
@@ -6903,6 +6912,8 @@ namespace MC2Demo.Presentation
                 return;
             }
 
+            int referenceProps = 0;
+            int fallbackProps = 0;
             foreach (TerrainObjectSpawn terrainObject in mission.Contract.terrainObjects)
             {
                 if (terrainObject.position == null || IsCoveredByTargetStructure(terrainObject))
@@ -6927,8 +6938,24 @@ namespace MC2Demo.Presentation
                     collider.enabled = false;
                 }
 
-                AssignMaterial(prop, TerrainMaterialName(terrainObject), TerrainObjectColor(terrainObject));
+                Color propColor = TerrainObjectColor(terrainObject);
+                AssignMaterial(prop, TerrainMaterialName(terrainObject), propColor);
+                Renderer rootRenderer = prop.GetComponent<Renderer>();
+                if (ReferencePropLibrary.TryAttachTerrainObject(terrainObject, prop.transform, propColor, out _))
+                {
+                    referenceProps++;
+                    if (rootRenderer != null)
+                    {
+                        rootRenderer.enabled = false;
+                    }
+                }
+                else
+                {
+                    fallbackProps++;
+                }
             }
+
+            Debug.Log("MC2 reference prop visuals: " + ReferencePropLibrary.Summary(referenceProps, fallbackProps));
         }
 
         private bool IsCoveredByTargetStructure(TerrainObjectSpawn terrainObject)

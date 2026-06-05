@@ -264,10 +264,24 @@ Internal screenshot:
 **Files:**
 
 - Modify: `scripts/content-pack/export_unity_demo_contract.ps1`
+- Modify: `scripts/content-pack/export_reference_visual_pack.ps1`
 - Modify: `unity-mc2-demo/Assets/Scripts/BattleCore/MissionContract.cs`
+- Modify: `unity-mc2-demo/Assets/Scripts/BattleCore/StructureState.cs`
+- Modify: `unity-mc2-demo/Assets/Scripts/Presentation/DemoStructureView.cs`
+- Modify: `unity-mc2-demo/Assets/Scripts/Presentation/ReferenceObjMeshLibrary.cs`
 - Modify: `unity-mc2-demo/Assets/Scripts/Presentation/Mc2DemoBootstrap.cs`
 - Create: `unity-mc2-demo/Assets/Scripts/Presentation/ReferencePropLibrary.cs`
 - Modify: `docs-mc2-01-mission-analysis.md`
+
+**Status:** Completed 2026-06-05. Packet 1 terrain object `fileName` values are now carried as `assetId`s, targetable Hangar structures inherit the matched packet-1 source visual and rotation, and the Unity presentation attaches private reference OBJ/TGA props for the first-slice airfield/building set while keeping primitive fallbacks elsewhere.
+
+**Validation Evidence:**
+
+- Reference visual manifest: `analysis-output/unity-reference-art/manifest.json`
+- Build log: `analysis-output/unity-build-reference-props.log`
+- Smoke log: `analysis-output/unity-player-reference-props-smoke.log`
+- Screenshot: `analysis-output/unity-reference-props-capture.png`
+- Runtime prop load count: `ReferenceProps=loaded 336 fallback 663`
 
 **Steps:**
 

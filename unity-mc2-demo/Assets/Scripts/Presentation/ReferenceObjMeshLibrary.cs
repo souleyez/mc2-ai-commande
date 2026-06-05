@@ -34,19 +34,68 @@ namespace MC2Demo.Presentation
                 return false;
             }
 
+            return TryAttachReferenceAsset(assetName, parent, color, useTeamColor: true, isPlayerTeam: unit.IsPlayerUnit, out renderer);
+        }
+
+        public static bool TryAttachReferenceAsset(
+            string assetName,
+            Transform parent,
+            Color color,
+            bool useTeamColor,
+            bool isPlayerTeam,
+            out Renderer renderer)
+        {
+            return TryAttachReferenceAsset(
+                assetName,
+                parent,
+                color,
+                useTeamColor,
+                isPlayerTeam,
+                visualScaleMultiplier: 1f,
+                compensateParentScale: false,
+                groundOffsetY: float.NaN,
+                out renderer);
+        }
+
+        public static bool TryAttachReferenceAsset(
+            string assetName,
+            Transform parent,
+            Color color,
+            bool useTeamColor,
+            bool isPlayerTeam,
+            float visualScaleMultiplier,
+            bool compensateParentScale,
+            float groundOffsetY,
+            out Renderer renderer)
+        {
+            renderer = null;
+            if (string.IsNullOrWhiteSpace(assetName) || parent == null)
+            {
+                return false;
+            }
+
             if (!TryLoadMeshSet(assetName, out ReferenceVisualMeshSet meshSet))
             {
                 return false;
             }
 
             TryGetManifestEntry(assetName, out ReferenceVisualManifestEntry manifestEntry, out _, out _);
-            GameObject visual = new(unit.Id + " reference " + assetName);
+            GameObject visual = new(parent.name + " reference " + assetName);
             visual.transform.SetParent(parent, false);
-            visual.transform.localPosition = new Vector3(0f, GroundOffsetYFor(manifestEntry), 0f);
+            visual.transform.localPosition = new Vector3(
+                0f,
+                float.IsNaN(groundOffsetY) ? GroundOffsetYFor(manifestEntry) : groundOffsetY,
+                0f);
             visual.transform.localRotation = Quaternion.Euler(0f, UnityYawDegreesFor(manifestEntry), 0f);
-            visual.transform.localScale = Vector3.one * UnityScaleFor(manifestEntry);
+            float visualScale = UnityScaleFor(manifestEntry) * Mathf.Max(0.001f, visualScaleMultiplier);
+            visual.transform.localScale = compensateParentScale
+                ? new Vector3(
+                    visualScale / SafeScale(parent.localScale.x),
+                    visualScale / SafeScale(parent.localScale.y),
+                    visualScale / SafeScale(parent.localScale.z))
+                : Vector3.one * visualScale;
 
-            Material material = CreateMaterial(assetName, unit.IsPlayerUnit, color);
+            Material material = CreateMaterial(assetName, useTeamColor, isPlayerTeam, color);
             Renderer firstRenderer = null;
             HashSet<string> childNames = new(StringComparer.OrdinalIgnoreCase);
             foreach (ReferenceVisualNodeMesh nodeMesh in meshSet.Nodes)
@@ -65,6 +114,11 @@ namespace MC2Demo.Presentation
             CreateManifestNodeAnchors(visual.transform, manifestEntry, childNames);
             renderer = firstRenderer;
             return renderer != null;
+        }
+
+        private static float SafeScale(float value)
+        {
+            return Mathf.Abs(value) < 0.001f ? 1f : value;
         }
 
         public static bool IsTallReferenceUnit(string unitType)
@@ -374,7 +428,7 @@ namespace MC2Demo.Presentation
             return Path.GetFullPath(Path.Combine(parts));
         }
 
-        private static Material CreateMaterial(string assetName, bool isPlayerUnit, Color fallbackColor)
+        private static Material CreateMaterial(string assetName, bool useTeamColor, bool isPlayerUnit, Color fallbackColor)
         {
             Shader shader = Shader.Find("MC2Demo/Private Reference Team Color")
                 ?? Shader.Find("Legacy Shaders/Diffuse")
@@ -382,12 +436,16 @@ namespace MC2Demo.Presentation
                 ?? Shader.Find("Standard")
                 ?? Shader.Find("Hidden/Internal-Colored");
             LogReferenceShader(shader);
-            Color teamColor = isPlayerUnit
-                ? Color.Lerp(fallbackColor, new Color(0.25f, 0.78f, 1.0f), 0.56f)
-                : Color.Lerp(fallbackColor, new Color(0.95f, 0.28f, 0.18f), 0.62f);
+            Color teamColor = useTeamColor
+                ? isPlayerUnit
+                    ? Color.Lerp(fallbackColor, new Color(0.25f, 0.78f, 1.0f), 0.56f)
+                    : Color.Lerp(fallbackColor, new Color(0.95f, 0.28f, 0.18f), 0.62f)
+                : fallbackColor;
             Material material = new(shader)
             {
-                name = isPlayerUnit ? "PrivateReferencePlayer" : "PrivateReferenceHostile",
+                name = useTeamColor
+                    ? isPlayerUnit ? "PrivateReferencePlayer" : "PrivateReferenceHostile"
+                    : "PrivateReferenceProp",
                 color = teamColor
             };
             if (TryLoadTexture(assetName, out Texture2D texture))
@@ -401,7 +459,7 @@ namespace MC2Demo.Presentation
 
                 if (material.HasProperty("_TeamStrength"))
                 {
-                    material.SetFloat("_TeamStrength", 0.86f);
+                    material.SetFloat("_TeamStrength", useTeamColor ? 0.86f : 0f);
                 }
 
                 if (material.HasProperty("_BaseTint"))

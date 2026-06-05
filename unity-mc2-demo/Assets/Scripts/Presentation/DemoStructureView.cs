@@ -19,12 +19,12 @@ namespace MC2Demo.Presentation
         private bool criticalDamageCueApplied;
         private readonly List<Material> ownedMaterials = new();
 
-        public void Bind(StructureState structure)
+        public void Bind(StructureState structure, Renderer visualRenderer = null)
         {
             Structure = structure;
             name = structure.Id + " " + structure.ObjectType;
             liveScale = transform.localScale;
-            structureRenderer = GetComponent<Renderer>();
+            structureRenderer = visualRenderer != null ? visualRenderer : GetComponent<Renderer>();
             if (structureRenderer != null && structureRenderer.sharedMaterial != null)
             {
                 liveColor = structureRenderer.sharedMaterial.color;

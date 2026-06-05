@@ -250,6 +250,46 @@ function Read-SingleLE {
     return [BitConverter]::ToSingle($Bytes, $Offset)
 }
 
+function Get-ReferenceAssetId {
+    param([string]$Name)
+
+    if ([string]::IsNullOrWhiteSpace($Name)) {
+        return ""
+    }
+
+    return [System.IO.Path]::GetFileNameWithoutExtension($Name).Trim().ToLowerInvariant()
+}
+
+function Get-DistanceSquared {
+    param(
+        [double]$X1,
+        [double]$Y1,
+        [double]$X2,
+        [double]$Y2
+    )
+
+    $dx = $X1 - $X2
+    $dy = $Y1 - $Y2
+    return ($dx * $dx) + ($dy * $dy)
+}
+
+function Find-MatchingTerrainBuilding {
+    param(
+        [array]$TerrainObjects,
+        [double]$X,
+        [double]$Y
+    )
+
+    return $TerrainObjects |
+        Where-Object {
+            $_.position -ne $null -and
+            $_.objectClass -eq "BUILDING" -and
+            (Get-DistanceSquared -X1 $_.position.x -Y1 $_.position.y -X2 $X -Y2 $Y) -lt (55 * 55)
+        } |
+        Sort-Object { Get-DistanceSquared -X1 $_.position.x -Y1 $_.position.y -X2 $X -Y2 $Y } |
+        Select-Object -First 1
+}
+
 function Read-TerrainObjects {
     param(
         [Parameter(Mandatory = $true)]
@@ -286,6 +326,7 @@ function Read-TerrainObjects {
             sourceIndex = $index
             fitId = $fitId
             fileName = if ($info) { $info.fileName } else { "object-$fitId" }
+            assetId = if ($info) { Get-ReferenceAssetId -Name $info.fileName } else { Get-ReferenceAssetId -Name "object-$fitId" }
             objectClass = if ($info) { $info.objectClass } else { "UNKNOWN" }
             specialType = if ($info) { $info.specialType } else { "" }
             textureName = if ($info) { $info.textureName } else { "" }
@@ -458,19 +499,37 @@ foreach ($objective in $objectives) {
         }
 
         $objectType = if ($objective.title -match "(?i)hangar") { "Hangar" } else { "Structure" }
+        $matchedTerrainObject = Find-MatchingTerrainBuilding `
+            -TerrainObjects $terrainObjects `
+            -X $condition.targetStructure.position.x `
+            -Y $condition.targetStructure.position.y
+        $objectProfile = if ($null -ne $matchedTerrainObject -and -not [string]::IsNullOrWhiteSpace($matchedTerrainObject.fileName)) {
+            $matchedTerrainObject.fileName
+        }
+        else {
+            $objectType
+        }
+        $objectRotation = if ($null -ne $matchedTerrainObject -and $null -ne $matchedTerrainObject.position) {
+            [float]$matchedTerrainObject.position.rotation
+        }
+        else {
+            0
+        }
+
         $staticObjects += [ordered]@{
             objectId = "structure-$($objective.index)-$($condition.sourceIndex)"
             source = "objective-target"
             objectiveIndex = $objective.index
             objectType = $objectType
-            objectProfile = $objectType
+            objectProfile = $objectProfile
+            assetId = Get-ReferenceAssetId -Name $objectProfile
             teamId = $condition.targetStructure.commander
             targetable = $true
             objectiveTarget = $true
             position = [ordered]@{
                 x = $condition.targetStructure.position.x
                 y = $condition.targetStructure.position.y
-                rotation = 0
+                rotation = $objectRotation
             }
             radius = 180
             maxStructure = 320

@@ -6,6 +6,8 @@ namespace MC2Demo.BattleCore
     {
         public string Id { get; }
         public string ObjectType { get; }
+        public string ObjectProfile { get; }
+        public string VisualAssetId { get; }
         public int TeamId { get; }
         public bool IsTargetable { get; }
         public bool IsObjectiveTarget { get; }
@@ -14,12 +16,15 @@ namespace MC2Demo.BattleCore
         public float CurrentStructure { get; private set; }
         public float Radius { get; }
         public Vector2 MissionPosition { get; }
+        public float RotationDegrees { get; }
         public float Structure => MaxStructure <= 0f ? 0f : CurrentStructure / MaxStructure;
 
         public StructureState(StaticObjectSpawn spawn)
         {
             Id = string.IsNullOrWhiteSpace(spawn.objectId) ? "structure" : spawn.objectId;
             ObjectType = string.IsNullOrWhiteSpace(spawn.objectType) ? "Structure" : spawn.objectType;
+            ObjectProfile = string.IsNullOrWhiteSpace(spawn.objectProfile) ? ObjectType : spawn.objectProfile;
+            VisualAssetId = string.IsNullOrWhiteSpace(spawn.assetId) ? ObjectProfile : spawn.assetId;
             TeamId = spawn.teamId;
             IsTargetable = spawn.targetable;
             IsObjectiveTarget = spawn.objectiveTarget;
@@ -30,6 +35,7 @@ namespace MC2Demo.BattleCore
             if (spawn.position != null)
             {
                 MissionPosition = new Vector2(spawn.position.x, spawn.position.y);
+                RotationDegrees = spawn.position.rotation;
             }
         }
 
