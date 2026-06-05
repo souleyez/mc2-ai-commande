@@ -68,6 +68,7 @@ analysis-output/pak-unpack/
 analysis-output/mission-extract/
 analysis-output/mission-analysis/
 analysis-output/mission-packet-audit/
+analysis-output/terrain-texture-audit/
 analysis-output/unity-demo-contract/
 analysis-output/unity-combat-data/
 analysis-output/tgl-obj/

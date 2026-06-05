@@ -6565,7 +6565,7 @@ namespace MC2Demo.Presentation
             terrainView.Bind(mission.Contract.terrainMesh, mission.Contract.mission.terrain.waterElevation);
 
             meshFilter.sharedMesh = BuildTerrainMesh(mission.Contract.terrainMesh);
-            meshRenderer.sharedMaterial = MakeMaterial("GroundMesh", new Color(0.16f, 0.22f, 0.15f));
+            meshRenderer.sharedMaterial = MakeTerrainMaterial();
 
             CreateWaterPlane(mission.Contract.terrainMesh);
         }
@@ -6642,18 +6642,114 @@ namespace MC2Demo.Presentation
         private Color TerrainVertexColor(TerrainMeshSample sample)
         {
             float waterLevel = mission.Contract.mission.terrain.waterElevation;
+            float light = TerrainLightMultiplier(sample);
             if (sample.elevation <= waterLevel + 4f)
             {
-                return new Color(0.10f, 0.28f, 0.22f);
+                return ApplyTerrainLight(new Color(0.06f, 0.22f, 0.30f), light);
             }
 
+            if (sample.elevation <= waterLevel + 18f)
+            {
+                return ApplyTerrainLight(new Color(0.20f, 0.30f, 0.22f), light);
+            }
+
+            int textureId = SourceTextureId(sample);
             if (sample.terrainType == 13 || sample.terrainType == 14 || sample.terrainType == 15 || sample.terrainType == 16)
             {
-                return new Color(0.32f, 0.29f, 0.22f);
+                Color runway = sample.terrainType == 14
+                    ? new Color(0.38f, 0.38f, 0.34f)
+                    : new Color(0.31f, 0.32f, 0.30f);
+                return ApplyTerrainLight(TerrainTileVariation(runway, textureId, 0.10f), light);
+            }
+
+            if (sample.terrainType == 20)
+            {
+                return ApplyTerrainLight(TerrainTileVariation(new Color(0.37f, 0.30f, 0.20f), textureId, 0.12f), light);
+            }
+
+            if (textureId > 2)
+            {
+                return ApplyTerrainLight(TerrainTileVariation(new Color(0.29f, 0.31f, 0.22f), textureId, 0.16f), light);
             }
 
             float heightT = Mathf.InverseLerp(mission.Contract.terrainMesh.elevationMin, mission.Contract.terrainMesh.elevationMax, sample.elevation);
-            return Color.Lerp(new Color(0.13f, 0.24f, 0.12f), new Color(0.36f, 0.36f, 0.25f), heightT);
+            Color baseColor = Color.Lerp(new Color(0.12f, 0.24f, 0.12f), new Color(0.35f, 0.34f, 0.22f), heightT);
+            return ApplyTerrainLight(TerrainTileVariation(baseColor, textureId, 0.05f), light);
+        }
+
+        private static int SourceTextureId(TerrainMeshSample sample)
+        {
+            if (sample.textureId > 0)
+            {
+                return sample.textureId;
+            }
+
+            return (int)(sample.textureData & 0xffffL);
+        }
+
+        private static Color TerrainTileVariation(Color color, int textureId, float strength)
+        {
+            int hash = Mathf.Abs((textureId * 1103515245 + 12345) >> 8);
+            float variation = ((hash % 1000) / 999f - 0.5f) * strength;
+            float warm = (((hash / 1000) % 1000) / 999f - 0.5f) * strength * 0.5f;
+            return new Color(
+                Mathf.Clamp01(color.r + variation + warm),
+                Mathf.Clamp01(color.g + variation),
+                Mathf.Clamp01(color.b + variation - warm),
+                1f);
+        }
+
+        private static float TerrainLightMultiplier(TerrainMeshSample sample)
+        {
+            if (sample.light <= 0)
+            {
+                return 1f;
+            }
+
+            int lowByte = (int)(sample.light & 0xffL);
+            return Mathf.Lerp(0.78f, 1.16f, lowByte / 255f);
+        }
+
+        private static Color ApplyTerrainLight(Color color, float light)
+        {
+            return new Color(
+                Mathf.Clamp01(color.r * light),
+                Mathf.Clamp01(color.g * light),
+                Mathf.Clamp01(color.b * light),
+                color.a);
+        }
+
+        private Material MakeTerrainMaterial()
+        {
+            string cacheKey = "SourceTerrainVertexColor";
+            if (materialCache.TryGetValue(cacheKey, out Material cachedMaterial))
+            {
+                return cachedMaterial;
+            }
+
+            Shader shader = Shader.Find("MC2Demo/Source Terrain Vertex Color")
+                ?? Shader.Find("Legacy Shaders/Diffuse")
+                ?? Shader.Find("Standard")
+                ?? Shader.Find("Hidden/Internal-Colored");
+            if (shader == null)
+            {
+                Debug.LogWarning("No shader available for source terrain material.");
+                return null;
+            }
+
+            Material material = new(shader)
+            {
+                name = "SourceTerrainVertexColor",
+                color = Color.white
+            };
+            if (material.HasProperty("_Tint"))
+            {
+                material.SetColor("_Tint", Color.white);
+            }
+
+            ownedMaterials.Add(material);
+            materialCache[cacheKey] = material;
+            return material;
         }
 
         private void CreateLights()

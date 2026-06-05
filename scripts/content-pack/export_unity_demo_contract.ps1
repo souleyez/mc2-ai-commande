@@ -190,14 +190,14 @@ function Get-MissionUnitActivation {
 
     $brain = [string]$Unit.brain
     $x = [double]$Unit.position.x
-    if ($brain -like "mc2_01_Pat1*" -or $brain -eq "mc2_01_infantry_ambush" -or $brain -eq "mc2_01_infantry_ambush2") {
+    if ($brain -like "mc2_01_Pat1*") {
         $rule.activationFlagId = "0"
     }
     elseif ($brain -eq "mc2_01_LRMs" -and $x -gt 0) {
         $rule.activationFlagId = "0"
     }
     elseif ($brain -like "mc2_01_Pat2*" -or $brain -eq "mc2_01_Pat4") {
-        $rule.activationFlagId = "4"
+        $rule.activationFlagId = "0"
     }
     elseif ($brain -eq "mc2_01_Starslayer" -or $brain -eq "mc2_01_Urbies" -or ($brain -eq "mc2_01_LRMs" -and $x -lt 0)) {
         $rule.activationObjectiveIndex = 7
@@ -340,6 +340,8 @@ function Read-TerrainMesh {
         $offset = $index * $vertexSize
         $elevation = Read-SingleLE -Bytes $bytes -Offset ($offset + 12)
         $textureData = [BitConverter]::ToUInt32($bytes, $offset + 16)
+        $textureId = [int]($textureData -band 0xffff)
+        $textureSet = [int](($textureData -shr 16) -band 0xffff)
         $light = [BitConverter]::ToUInt32($bytes, $offset + 20)
         $terrainType = [BitConverter]::ToUInt32($bytes, $offset + 24)
         $water = [int]$bytes[$offset + 29]
@@ -368,6 +370,8 @@ function Read-TerrainMesh {
             terrainType = [int]$terrainType
             water = $water
             textureData = [int64]$textureData
+            textureId = $textureId
+            textureSet = $textureSet
             light = [int64]$light
         }
     }

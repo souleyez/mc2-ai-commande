@@ -195,10 +195,21 @@ Internal screenshot:
 
 **Files:**
 
+- Modify: `.gitignore`
 - Modify: `scripts/content-pack/export_unity_demo_contract.ps1`
 - Modify: `unity-mc2-demo/Assets/Scripts/BattleCore/MissionContract.cs`
-- Modify: `unity-mc2-demo/Assets/Scripts/Presentation/DemoTerrainView.cs`
+- Modify: `unity-mc2-demo/Assets/Scripts/Presentation/Mc2DemoBootstrap.cs`
+- Modify: `unity-mc2-demo/ProjectSettings/GraphicsSettings.asset`
 - Create: `scripts/content-pack/export_terrain_texture_audit.ps1`
+- Create: `unity-mc2-demo/Assets/Shaders/SourceTerrainVertexColor.shader`
+
+**Status:** Completed 2026-06-05. Terrain tile ids are exported into the mission contract, the audit script records terrain/water/texture/light distributions, and the Unity demo now uses a source-driven vertex-color terrain material. Full source terrain tile textures and lighting remain Task 5.
+
+**Validation Evidence:**
+
+- Build log: `analysis-output/unity-build-terrain-regions.log`
+- Smoke log: `analysis-output/unity-player-terrain-regions-smoke.log`
+- Screenshot: `analysis-output/unity-terrain-regions-capture.png`
 
 **Steps:**
 

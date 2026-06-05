@@ -153,6 +153,8 @@ namespace MC2Demo.BattleCore
         public int terrainType;
         public int water;
         public long textureData;
+        public int textureId;
+        public int textureSet;
         public long light;
     }
 
