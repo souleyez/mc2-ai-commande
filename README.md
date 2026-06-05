@@ -1,54 +1,55 @@
-# MC2 AI Commander Demo
+# AI RTS Commander Lab
 
-Private experimental fork for a Unity 6 command-demo, replaceable content-pack
-workflow, and future AI commander experiments. This branch contains
-AI-assisted prototype code and tooling. The upstream project history and
-license notices remain intact below.
+这是一个面向 AI 副官指挥的战术 RTS 原型。项目重点不是复述旧游戏，
+而是探索一种新的战斗体验：玩家负责队伍、装备、战场意图和关键决策，
+AI 副官负责把这些意图翻译成可执行的战术动作，让战场像一支真正受训的
+佣兵小队那样自己打起来。
 
-## Upstream project
+核心想法很简单：你不用指导一个老兵如何战斗。玩家不应该被迫反复微操
+每一台单位的每一次移动、转火和避险。AI 副官应该理解任务目标、队伍状态、
+火力压力、地形威胁和撤退时机，替玩家处理战术执行层，让玩家专注于更有趣
+的选择：带什么队伍、接什么任务、什么时候推进、什么时候交给 AI 托管、
+什么时候亲自下达关键命令。
 
-# [Mech Commander 2](https://alariq.github.io/mc2-website/) open source engine + Linux port.
-[website](https://alariq.github.io/mc2-website/)
+## 探索方向
 
-This port is an open source implementation of a closed MC2 engine code using available interface (.h) files.
-Currently game can be run on both Linux and Windows in 64bit mode.
-Fixed a lot of bugs (including ones present in original game).
-Sound system is not fully implemented (panning, doppler, etc. not supported yet)
+- 用 AI 副官驱动 RTS 战斗中的高层战术决策，而不是替代本地战斗规则。
+- 让本地 BattleCore 继续负责移动、射击、热量、伤害、部位损伤、任务触发
+  和结算，保证战斗可预测、可测试、可复盘。
+- 让 AI 负责开场计划、目标优先级、推进路线、风险判断、托管指挥和任务
+  复盘建议。
+- 用更少的玩家微操换取更大的战场、更复杂的任务、更真实的部队行为。
+- 逐步探索可扩展地图、玩家自建战场、战绩排行、奖励认证和更大的世界。
 
+## 当前原型
 
-## !NB: 
-as russia conducts war in Ukraine I have limited time to support this project until we will get rid of the orcs.
+当前仓库包含一个 Unity 6 Windows 可玩原型和一组本地工具。原型聚焦两件事：
 
-## Disclaimer:
-I consider this project finished for now, there is a lot more to do for someone who wants to improve the game, but all functionality (except networking) is implemented and I've passed the game on my Linux box. Also found original game bugs and crashes are fixed.
+1. 改装界面：机甲、武器、装甲、散热和载重限制形成主要养成乐趣。
+2. 地图战斗：固定战术视角、小队指挥、自动交战、部位损伤、战后结算和
+   AI/CLI 指挥接口。
 
-## Upstream AI policy:
-This project has 0% LLM code and AIs (such as Claude, ChatGPT and other LLMs) are not welcome here. I have limited time for it and even less time and desire to dig through AI-generated stuff. This is a personal hobby project which started because I love retro games and coding - not using LLMs. It is ok if you use LLMs to help you figure out an issue or help with the code, but you need to understand what you are doing, not just throwing promts at it until it "works".
+当前 AI 接入保持克制：模型只做高层计划和能力窗口，具体战斗仍交给本地
+规则执行。这样可以避免延迟和不稳定性直接破坏战斗手感，也方便后续把不同
+模型、服务器和玩家托管逻辑接进来。
 
-## TODO: 
-* fix remaining memory leaks (finish implementation of memory heaps)
-* ~~make nice data packs, so not only me can play the game :-)~~ (see [data repo](https://github.com/alariq/mc2srcdata) )
-* ~~actually finish all missions in the game~~
-* make sure no files are created outside of user directory
-* reduce draw calls number
-* reimplement/optimize priority queue
-* finish moving lighting to shaders (move whole lighting there, not only shader-based drawing of CPU-prelit vertices like I do now)
-* Update graphics to ~~2018~~ ~~2020~~ 2021
-* Movies support
-* Implement network support?
-* Editor?
-* I am sure there is more
+## 产品愿景
 
-### Licensing
-* Original game was released under Shared Source Limited Permission License (please refer to EULA.txt)
-* My code is licenced under GPL v.3 (see license.txt)
-* All third party libraries use their own licenses
+- 玩家拥有自己的机甲小队，收集武器、机体、驾驶员和资源。
+- 玩家可以亲自指挥战斗，也可以把队伍委托给 AI 副官执行任务。
+- 地图可以由官方、合作方或社区搭建，并通过主服务器认证奖励。
+- 战斗成绩、地图贡献、队伍表现和活动排行可以在 Web 侧展示。
+- 长期可以探索开放地图编辑、皮肤自定义、创作者分成和链上结算等机制。
 
-### Content packs
-Local development can treat the executable folder as an engine shell plus a
-replaceable content pack. See `docs-content-pack.md` for the pack boundary.
+## 内容包边界
 
-Validate the current local reference pack:
+本地开发把运行壳、战斗规则、Unity 表现和内容包分开处理。公共展示或商业
+版本应使用项目自有内容包，避免把任何第三方或本地参考素材混进发布物。
+内容包边界见 `docs-content-pack.md`。
+
+## 本地开发命令
+
+Validate the current local development pack:
 
 ```powershell
 & .\scripts\content-pack\validate_content_pack.ps1 -PackPath .\mc2-run64-dev
@@ -57,13 +58,13 @@ Validate the current local reference pack:
 Preview mounting a pack into the local runtime shell:
 
 ```powershell
-& .\scripts\content-pack\mount_content_pack.ps1 -PackPath .\content-packs\mc2-original.local.example.json -RunPath .\mc2-run64-dev -DryRun
+& .\scripts\content-pack\mount_content_pack.ps1 -PackPath .\content-packs\project-owned-starter.example.json -RunPath .\mc2-run64-dev -DryRun
 ```
 
 Preview creating a clean runtime shell and mounting a pack:
 
 ```powershell
-& .\scripts\content-pack\new_runtime_shell.ps1 -ShellSourcePath .\mc2-run64-dev -OutputPath .\runtime-shell-dev -PackPath .\content-packs\mc2-original.local.example.json -DryRun
+& .\scripts\content-pack\new_runtime_shell.ps1 -ShellSourcePath .\mc2-run64-dev -OutputPath .\runtime-shell-dev -PackPath .\content-packs\project-owned-starter.example.json -DryRun
 ```
 
 Preview the full start flow:
@@ -79,8 +80,8 @@ Start the local development runtime:
 ```
 
 When `content-packs\project-owned-linked-dev` exists, the start and shortcut
-scripts use it as the default development pack. Otherwise they fall back to the
-local original reference manifest.
+scripts use it as the default development pack. Otherwise they use the local
+development manifest configured for this machine.
 
 Check the current mounted content pack:
 
@@ -96,7 +97,7 @@ Generate a content index:
 
 Current index notes are in `docs-content-index-notes.md`.
 
-Extract the first reference mission for analysis:
+Extract the first local mission for analysis:
 
 ```powershell
 & .\scripts\content-pack\extract_mission_from_pack.ps1 -MissionId mc2_01
@@ -135,18 +136,22 @@ Preview a new replacement pack scaffold:
 & .\scripts\content-pack\new_content_pack.ps1 -PackId project-owned-dev -Title "Project Owned Dev" -DryRun
 ```
 
-The original asset pack is useful for local playability validation, but public or
-commercial builds should use a replacement pack with project-owned content.
+## 关键文档
 
+- `docs-mc2-ai-commander-demo-execution-plan.md`: 当前执行计划。
+- `docs-ai-commander-directive-contract.md`: AI 副官高层指令边界。
+- `docs-platform-ecosystem-plan.md`: 地图服务器、奖励认证、排行和创作者生态设想。
+- `docs-content-pack.md`: 可替换内容包边界。
+- `unity-mc2-demo/README.md`: Unity 原型行为、构建和 smoke 命令。
 
-Building on Windows
-===================
+## 许可与发布提醒
 
-Updated detailed build manual for Windows can be found in `BUILD-WIN.md`
+仓库保留历史代码和第三方依赖的许可文件。发布、融资演示或商业化版本需要
+逐项确认代码、素材、文字、音频、模型、商标和数据来源，优先使用项目自有
+内容包。
 
+## Windows / Linux
 
-Building on Linux
-=================
-
-You, probably already know how to do it. If not, please, see windows building section, the process is quite similar.
+Windows 构建细节见 `BUILD-WIN.md`。当前重点开发目标是 Unity 6 Windows
+可玩原型；Linux 侧保留为后续工程兼容方向。
 
