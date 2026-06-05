@@ -248,6 +248,7 @@ def write_obj(
     ]
 
     copied_textures: list[str] = []
+    copied_texture_paths: list[str] = []
     with mtl_path.open("w", encoding="utf-8", newline="\n") as mtl:
         for index, texture in enumerate(shape.textures):
             material_name = material_names[index]
@@ -263,6 +264,7 @@ def write_obj(
                         if not target.exists():
                             shutil.copy2(source, target)
                         copied_textures.append(source.name)
+                        copied_texture_paths.append(str(target.resolve()))
                         base_name = source.name
                 mtl.write(f"map_Kd {base_name}\n")
                 if texture.alpha:
@@ -320,11 +322,25 @@ def write_obj(
             total_vertices += len(node.vertices)
 
     summary = {
+        "assetId": shape_name,
+        "sourceName": shape.path.stem,
         "source": str(shape.path),
-        "obj": str(obj_path),
-        "mtl": str(mtl_path),
+        "sourcePath": str(shape.path.resolve()),
+        "outputDir": str(output_dir.resolve()),
+        "obj": str(obj_path.resolve()),
+        "mtl": str(mtl_path.resolve()),
         "nodes": len(shape.nodes),
+        "nodeCount": len(shape.nodes),
         "shapeNodes": len(shape_nodes),
+        "shapeNodeCount": len(shape_nodes),
+        "shapeNodeNames": [node.node_id for node in shape_nodes if node.node_id],
+        "helperNodeNames": sorted(
+            {
+                node.node_id
+                for node in shape.nodes
+                if node.node_id and (node.node_type == 0 or is_helper_geometry(node))
+            }
+        ),
         "skippedHelperShapeNodes": len(
             [
                 node
@@ -338,6 +354,7 @@ def write_obj(
         "triangles": total_triangles,
         "textures": [texture_basename(texture.name) for texture in shape.textures],
         "copiedTextures": sorted(set(copied_textures)),
+        "copiedTexturePaths": sorted(set(copied_texture_paths)),
         "scale": scale,
         "flipX": flip_x,
     }
@@ -401,6 +418,12 @@ def main() -> int:
         help="Directory for generated OBJ/MTL outputs.",
     )
     parser.add_argument(
+        "--manifest-path",
+        type=Path,
+        default=None,
+        help="Manifest output path. Defaults to <output-root>/manifest.json.",
+    )
+    parser.add_argument(
         "--name",
         action="append",
         default=[],
@@ -454,9 +477,20 @@ def main() -> int:
             f"{summary['triangles']} triangles -> {summary['obj']}"
         )
 
-    manifest_path = output_root / "manifest.json"
+    manifest_path = args.manifest_path or (output_root / "manifest.json")
     output_root.mkdir(parents=True, exist_ok=True)
-    manifest_path.write_text(json.dumps({"exports": summaries}, indent=2), encoding="utf-8")
+    manifest_path.parent.mkdir(parents=True, exist_ok=True)
+    manifest_path.write_text(
+        json.dumps(
+            {
+                "schema": "mc2-reference-visual-manifest-v1",
+                "generatedBy": "scripts/content-pack/export_tgl_to_obj.py",
+                "exports": summaries,
+            },
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
     print(f"manifest: {manifest_path}")
     return 0
 

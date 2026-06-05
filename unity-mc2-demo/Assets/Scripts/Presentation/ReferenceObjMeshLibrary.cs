@@ -14,6 +14,9 @@ namespace MC2Demo.Presentation
         private static readonly Dictionary<string, bool> MissingCache = new(StringComparer.OrdinalIgnoreCase);
         private static readonly Dictionary<string, Texture2D> TextureCache = new(StringComparer.OrdinalIgnoreCase);
         private static readonly Dictionary<string, bool> MissingTextureCache = new(StringComparer.OrdinalIgnoreCase);
+        private static readonly List<LoadedReferenceManifest> ManifestCache = new();
+        private static readonly HashSet<string> LoggedManifestMappings = new(StringComparer.OrdinalIgnoreCase);
+        private static bool manifestLoadAttempted;
 
         public static bool TryAttachReferenceVisual(UnitState unit, Transform parent, Color color, out Renderer renderer)
         {
@@ -199,6 +202,17 @@ namespace MC2Demo.Presentation
 
         private static string FindObjPath(string assetName)
         {
+            if (TryGetManifestEntry(assetName, out ReferenceVisualManifestEntry entry, out string objPath, out _))
+            {
+                LogManifestMapping(assetName, entry, objPath);
+                return objPath;
+            }
+
+            return FindLooseObjPath(assetName);
+        }
+
+        private static string FindLooseObjPath(string assetName)
+        {
             foreach (string root in CandidateRoots())
             {
                 string candidate = Path.Combine(root, assetName, assetName + ".obj");
@@ -211,6 +225,18 @@ namespace MC2Demo.Presentation
             return "";
         }
 
+        private static void LogManifestMapping(string assetName, ReferenceVisualManifestEntry entry, string objPath)
+        {
+            string key = assetName + "|" + objPath;
+            if (!LoggedManifestMappings.Add(key))
+            {
+                return;
+            }
+
+            string manifestAsset = string.IsNullOrWhiteSpace(entry.assetId) ? "<unnamed>" : entry.assetId;
+            Debug.Log("Mapped private reference visual manifest asset: " + assetName + " -> " + manifestAsset + " obj=" + objPath);
+        }
+
         private static IEnumerable<string> CandidateRoots()
         {
             string current = Directory.GetCurrentDirectory();
@@ -220,6 +246,22 @@ namespace MC2Demo.Presentation
             yield return FullPath(dataPath, "..", "..", "analysis-output", "tgl-obj");
             yield return FullPath(dataPath, "..", "..", "..", "analysis-output", "tgl-obj");
             yield return FullPath(dataPath, "..", "..", "..", "..", "analysis-output", "tgl-obj");
+        }
+
+        private static IEnumerable<string> CandidateManifestPaths()
+        {
+            string current = Directory.GetCurrentDirectory();
+            string dataPath = Application.dataPath;
+            yield return FullPath(current, "analysis-output", "unity-reference-art", "manifest.json");
+            yield return FullPath(current, "..", "analysis-output", "unity-reference-art", "manifest.json");
+            yield return FullPath(dataPath, "..", "..", "analysis-output", "unity-reference-art", "manifest.json");
+            yield return FullPath(dataPath, "..", "..", "..", "analysis-output", "unity-reference-art", "manifest.json");
+            yield return FullPath(dataPath, "..", "..", "..", "..", "analysis-output", "unity-reference-art", "manifest.json");
+            yield return FullPath(current, "analysis-output", "tgl-obj", "manifest.json");
+            yield return FullPath(current, "..", "analysis-output", "tgl-obj", "manifest.json");
+            yield return FullPath(dataPath, "..", "..", "analysis-output", "tgl-obj", "manifest.json");
+            yield return FullPath(dataPath, "..", "..", "..", "analysis-output", "tgl-obj", "manifest.json");
+            yield return FullPath(dataPath, "..", "..", "..", "..", "analysis-output", "tgl-obj", "manifest.json");
         }
 
         private static string FullPath(params string[] parts)
@@ -289,6 +331,28 @@ namespace MC2Demo.Presentation
 
         private static string FindTexturePath(string assetName)
         {
+            if (TryGetManifestEntry(assetName, out ReferenceVisualManifestEntry entry, out _, out LoadedReferenceManifest manifest))
+            {
+                foreach (string rawPath in entry.copiedTexturePaths ?? Array.Empty<string>())
+                {
+                    string candidate = ResolveManifestPath(rawPath, manifest.ManifestDirectory);
+                    if (File.Exists(candidate))
+                    {
+                        return candidate;
+                    }
+                }
+
+                string outputDir = ResolveManifestPath(entry.outputDir, manifest.ManifestDirectory);
+                foreach (string textureName in entry.copiedTextures ?? Array.Empty<string>())
+                {
+                    string candidate = Path.Combine(outputDir, textureName);
+                    if (File.Exists(candidate))
+                    {
+                        return candidate;
+                    }
+                }
+            }
+
             foreach (string root in CandidateRoots())
             {
                 string folder = Path.Combine(root, assetName);
@@ -306,6 +370,129 @@ namespace MC2Demo.Presentation
             }
 
             return "";
+        }
+
+        private static bool TryGetManifestEntry(string assetName, out ReferenceVisualManifestEntry entry, out string objPath, out LoadedReferenceManifest loadedManifest)
+        {
+            entry = null;
+            objPath = "";
+            loadedManifest = null;
+
+            foreach (LoadedReferenceManifest manifest in LoadedManifests())
+            {
+                if (manifest.Manifest?.exports == null)
+                {
+                    continue;
+                }
+
+                for (int index = 0; index < manifest.Manifest.exports.Length; index++)
+                {
+                    ReferenceVisualManifestEntry candidate = manifest.Manifest.exports[index];
+                    if (candidate == null || !ManifestEntryMatches(candidate, assetName))
+                    {
+                        continue;
+                    }
+
+                    string resolvedObj = ResolveManifestPath(candidate.obj, manifest.ManifestDirectory);
+                    if (!File.Exists(resolvedObj))
+                    {
+                        continue;
+                    }
+
+                    entry = candidate;
+                    objPath = resolvedObj;
+                    loadedManifest = manifest;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static IEnumerable<LoadedReferenceManifest> LoadedManifests()
+        {
+            if (manifestLoadAttempted)
+            {
+                return ManifestCache;
+            }
+
+            manifestLoadAttempted = true;
+            HashSet<string> seen = new(StringComparer.OrdinalIgnoreCase);
+            foreach (string manifestPath in CandidateManifestPaths())
+            {
+                if (!seen.Add(manifestPath) || !File.Exists(manifestPath))
+                {
+                    continue;
+                }
+
+                try
+                {
+                    ReferenceVisualManifest manifest = JsonUtility.FromJson<ReferenceVisualManifest>(File.ReadAllText(manifestPath));
+                    if (manifest?.exports == null || manifest.exports.Length == 0)
+                    {
+                        continue;
+                    }
+
+                    ManifestCache.Add(new LoadedReferenceManifest(manifestPath, manifest));
+                    Debug.Log("Loaded private reference visual manifest: " + manifestPath);
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogWarning("Failed to load private reference visual manifest " + manifestPath + ": " + ex.Message);
+                }
+            }
+
+            return ManifestCache;
+        }
+
+        private static bool ManifestEntryMatches(ReferenceVisualManifestEntry entry, string assetName)
+        {
+            if (string.Equals(entry.assetId, assetName, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(entry.sourceName, assetName, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            if (!string.IsNullOrWhiteSpace(entry.obj))
+            {
+                string stem = Path.GetFileNameWithoutExtension(entry.obj);
+                return string.Equals(stem, assetName, StringComparison.OrdinalIgnoreCase);
+            }
+
+            return false;
+        }
+
+        private static string ResolveManifestPath(string rawPath, string manifestDirectory)
+        {
+            if (string.IsNullOrWhiteSpace(rawPath))
+            {
+                return "";
+            }
+
+            if (Path.IsPathRooted(rawPath))
+            {
+                return Path.GetFullPath(rawPath);
+            }
+
+            string manifestRelative = Path.GetFullPath(Path.Combine(manifestDirectory, rawPath));
+            if (File.Exists(manifestRelative) || Directory.Exists(manifestRelative))
+            {
+                return manifestRelative;
+            }
+
+            string currentRelative = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), rawPath));
+            if (File.Exists(currentRelative) || Directory.Exists(currentRelative))
+            {
+                return currentRelative;
+            }
+
+            string repoRelative = Path.GetFullPath(Path.Combine(manifestDirectory, "..", "..", rawPath));
+            if (File.Exists(repoRelative) || Directory.Exists(repoRelative))
+            {
+                return repoRelative;
+            }
+
+            return currentRelative;
         }
 
         private static Texture2D LoadTgaTexture(string path, string assetName)
@@ -487,6 +674,46 @@ namespace MC2Demo.Presentation
                 default:
                     return "";
             }
+        }
+
+        [Serializable]
+        private sealed class ReferenceVisualManifest
+        {
+            public string schema;
+            public ReferenceVisualManifestEntry[] exports;
+        }
+
+        [Serializable]
+        private sealed class ReferenceVisualManifestEntry
+        {
+            public string assetId;
+            public string sourceName;
+            public string obj;
+            public string mtl;
+            public string outputDir;
+            public string[] textures;
+            public string[] copiedTextures;
+            public string[] copiedTexturePaths;
+            public string[] shapeNodeNames;
+            public string[] helperNodeNames;
+            public int nodeCount;
+            public int shapeNodeCount;
+            public int vertices;
+            public int triangles;
+        }
+
+        private sealed class LoadedReferenceManifest
+        {
+            public LoadedReferenceManifest(string manifestPath, ReferenceVisualManifest manifest)
+            {
+                ManifestPath = manifestPath;
+                ManifestDirectory = Path.GetDirectoryName(manifestPath) ?? "";
+                Manifest = manifest;
+            }
+
+            public string ManifestPath { get; }
+            public string ManifestDirectory { get; }
+            public ReferenceVisualManifest Manifest { get; }
         }
     }
 }
