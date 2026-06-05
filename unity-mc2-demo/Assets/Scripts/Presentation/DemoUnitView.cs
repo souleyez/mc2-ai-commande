@@ -30,6 +30,7 @@ namespace MC2Demo.Presentation
         private GameObject sectionDamageRingCue;
         private GameObject sectionDamageBeaconCue;
         private bool usesReferenceVisual;
+        private Transform referenceVisualRoot;
         private readonly Dictionary<string, GameObject> sectionParts = new(StringComparer.OrdinalIgnoreCase);
         private readonly HashSet<string> destroyedSections = new(StringComparer.OrdinalIgnoreCase);
         private readonly HashSet<string> criticalSections = new(StringComparer.OrdinalIgnoreCase);
@@ -62,6 +63,7 @@ namespace MC2Demo.Presentation
                 }
 
                 usesReferenceVisual = true;
+                referenceVisualRoot = referenceRenderer.transform.parent;
             }
 
             CreateSectionParts();
@@ -401,6 +403,7 @@ namespace MC2Demo.Presentation
         {
             if (!sectionParts.TryGetValue(partName, out GameObject part) || part == null)
             {
+                DetachReferencePart(partName, localImpulse, color);
                 return;
             }
 
@@ -424,6 +427,41 @@ namespace MC2Demo.Presentation
             {
                 SpawnDetachedArmCues(startPosition, endPosition, color);
             }
+        }
+
+        private bool DetachReferencePart(string partName, Vector3 localImpulse, Color color)
+        {
+            if (referenceVisualRoot == null
+                || !ReferenceObjMeshLibrary.TryCloneSectionPart(
+                    referenceVisualRoot,
+                    partName,
+                    hideSource: !IsCockpitPart(partName),
+                    out GameObject part)
+                || part == null)
+            {
+                return false;
+            }
+
+            if (IsCockpitPart(partName))
+            {
+                part.transform.localScale = Vector3.one * 0.36f;
+            }
+
+            Vector3 startScale = part.transform.lossyScale;
+            Vector3 startPosition = part.transform.position;
+            Vector3 endPosition = startPosition + transform.TransformDirection(localImpulse);
+            part.transform.SetParent(null, true);
+            part.transform.position = startPosition;
+            part.transform.rotation = Quaternion.Euler(18f, partName.GetHashCode() % 360, 72f);
+
+            DemoTransientEffect transient = part.AddComponent<DemoTransientEffect>();
+            transient.BeginMoving(color, 2.85f, startScale, startScale * 0.62f, endPosition);
+            if (IsDetachedArmPart(partName))
+            {
+                SpawnDetachedArmCues(startPosition, endPosition, color);
+            }
+
+            return true;
         }
 
         private void SpawnDetachedArmCues(Vector3 startPosition, Vector3 endPosition, Color color)
@@ -475,6 +513,12 @@ namespace MC2Demo.Presentation
         {
             return !string.IsNullOrWhiteSpace(partName)
                 && partName.IndexOf("Arm", StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        private static bool IsCockpitPart(string partName)
+        {
+            return string.Equals(partName, "Cockpit", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(partName, "Turret", StringComparison.OrdinalIgnoreCase);
         }
 
         private void SpawnLegFailureGroundCues()
@@ -738,9 +782,32 @@ namespace MC2Demo.Presentation
             CreateBeam("Ejection Smoke Trail", start + Vector3.down * 0.08f, end + Vector3.down * 0.35f, new Color(0.08f, 0.10f, 0.12f, 0.36f), 1.6f, 0.075f);
             SpawnEjectionArcCue(start, end);
             CreateTransient("Ejection Flash", PrimitiveType.Sphere, start, new Color(1f, 0.75f, 0.28f, 0.78f), 0.48f, Vector3.one * 0.18f, Vector3.one * 0.95f);
-            CreateMovingTransient("Pilot Ejection Pod", PrimitiveType.Sphere, start, end, new Color(0.88f, 0.95f, 1f, 0.92f), 1.75f, Vector3.one * 0.18f, Vector3.one * 0.38f);
+            if (!SpawnReferenceEjectionPod(start, end))
+            {
+                CreateMovingTransient("Pilot Ejection Pod", PrimitiveType.Sphere, start, end, new Color(0.88f, 0.95f, 1f, 0.92f), 1.75f, Vector3.one * 0.18f, Vector3.one * 0.38f);
+            }
+
             SpawnEjectionChuteCue(end);
             SpawnDamageBurst(start, 1.05f);
+        }
+
+        private bool SpawnReferenceEjectionPod(Vector3 start, Vector3 end)
+        {
+            if (referenceVisualRoot == null
+                || !ReferenceObjMeshLibrary.TryCloneSectionPart(referenceVisualRoot, "Cockpit", false, out GameObject pod)
+                || pod == null)
+            {
+                return false;
+            }
+
+            pod.name = Unit.Id + " Reference Pilot Ejection Pod";
+            pod.transform.position = start;
+            pod.transform.rotation = transform.rotation * Quaternion.Euler(-24f, 12f, 18f);
+            pod.transform.localScale = Vector3.one * 0.18f;
+            Vector3 startScale = pod.transform.lossyScale;
+            DemoTransientEffect transient = pod.AddComponent<DemoTransientEffect>();
+            transient.BeginMoving(new Color(0.88f, 0.95f, 1f, 0.92f), 1.75f, startScale, startScale * 1.22f, end);
+            return true;
         }
 
         private void SpawnEjectionArcCue(Vector3 start, Vector3 end)

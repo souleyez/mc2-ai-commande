@@ -130,6 +130,28 @@ namespace MC2Demo.Presentation
                 || string.Equals(assetName, "starslayer", StringComparison.OrdinalIgnoreCase);
         }
 
+        public static bool TryCloneSectionPart(
+            Transform visualRoot,
+            string sectionName,
+            bool hideSource,
+            out GameObject part)
+        {
+            part = null;
+            if (visualRoot == null || string.IsNullOrWhiteSpace(sectionName))
+            {
+                return false;
+            }
+
+            List<Transform> sources = FindSectionSourceNodes(visualRoot, sectionName);
+            if (sources.Count == 0)
+            {
+                return false;
+            }
+
+            part = CloneDrawableSources(sectionName, sources, hideSource);
+            return part != null;
+        }
+
         private static bool TryLoadMeshSet(string assetName, out ReferenceVisualMeshSet meshSet)
         {
             if (MeshSetCache.TryGetValue(assetName, out meshSet))
@@ -272,6 +294,571 @@ namespace MC2Demo.Presentation
             }
 
             return new ReferenceVisualMeshSet(nodeMeshes.ToArray());
+        }
+
+        private static List<Transform> FindSectionSourceNodes(Transform visualRoot, string sectionName)
+        {
+            List<Transform> drawableNodes = DrawableReferenceNodes(visualRoot);
+            List<Transform> sources = new();
+            HashSet<Transform> sourceSet = new();
+
+            foreach (string manifestNodeName in ManifestNodeNamesForSection(visualRoot, sectionName))
+            {
+                AddNamedDrawableNode(drawableNodes, manifestNodeName, sources, sourceSet);
+            }
+
+            if (sources.Count == 0)
+            {
+                for (int index = 0; index < drawableNodes.Count; index++)
+                {
+                    Transform drawableNode = drawableNodes[index];
+                    if (drawableNode != null && NodeNameMatchesSection(drawableNode.name, sectionName))
+                    {
+                        AddUniqueNode(drawableNode, sources, sourceSet);
+                    }
+                }
+            }
+
+            if (sources.Count == 0 && IsCockpitSection(sectionName))
+            {
+                AddUniqueNode(FindCockpitFallbackDrawableNode(visualRoot, drawableNodes), sources, sourceSet);
+            }
+
+            return sources;
+        }
+
+        private static List<Transform> DrawableReferenceNodes(Transform visualRoot)
+        {
+            List<Transform> nodes = new();
+            if (visualRoot == null)
+            {
+                return nodes;
+            }
+
+            Transform[] descendants = visualRoot.GetComponentsInChildren<Transform>(true);
+            for (int index = 0; index < descendants.Length; index++)
+            {
+                Transform descendant = descendants[index];
+                if (descendant == null || descendant == visualRoot)
+                {
+                    continue;
+                }
+
+                if (descendant.GetComponent<Renderer>() != null)
+                {
+                    nodes.Add(descendant);
+                }
+            }
+
+            return nodes;
+        }
+
+        private static string[] ManifestNodeNamesForSection(Transform visualRoot, string sectionName)
+        {
+            string assetName = AssetNameFromVisualRoot(visualRoot);
+            if (string.IsNullOrWhiteSpace(assetName)
+                || !TryGetManifestEntry(assetName, out ReferenceVisualManifestEntry entry, out _, out _))
+            {
+                return Array.Empty<string>();
+            }
+
+            if (IsCockpitSection(sectionName))
+            {
+                return entry.cockpitNodeNames ?? Array.Empty<string>();
+            }
+
+            if (IsLeftArmSection(sectionName))
+            {
+                return entry.leftArmNodeNames ?? Array.Empty<string>();
+            }
+
+            if (IsRightArmSection(sectionName))
+            {
+                return entry.rightArmNodeNames ?? Array.Empty<string>();
+            }
+
+            if (IsLeftLegSection(sectionName))
+            {
+                return entry.leftLegNodeNames ?? Array.Empty<string>();
+            }
+
+            if (IsRightLegSection(sectionName))
+            {
+                return entry.rightLegNodeNames ?? Array.Empty<string>();
+            }
+
+            if (IsTorsoSection(sectionName))
+            {
+                return entry.torsoNodeNames ?? Array.Empty<string>();
+            }
+
+            return Array.Empty<string>();
+        }
+
+        private static string AssetNameFromVisualRoot(Transform visualRoot)
+        {
+            if (visualRoot == null || string.IsNullOrWhiteSpace(visualRoot.name))
+            {
+                return "";
+            }
+
+            const string marker = " reference ";
+            int markerIndex = visualRoot.name.LastIndexOf(marker, StringComparison.OrdinalIgnoreCase);
+            if (markerIndex < 0)
+            {
+                return "";
+            }
+
+            return visualRoot.name.Substring(markerIndex + marker.Length).Trim();
+        }
+
+        private static void AddNamedDrawableNode(
+            List<Transform> drawableNodes,
+            string nodeName,
+            List<Transform> sources,
+            HashSet<Transform> sourceSet)
+        {
+            if (string.IsNullOrWhiteSpace(nodeName))
+            {
+                return;
+            }
+
+            string normalizedTarget = NormalizeNodeName(nodeName);
+            for (int index = 0; index < drawableNodes.Count; index++)
+            {
+                Transform candidate = drawableNodes[index];
+                if (candidate == null)
+                {
+                    continue;
+                }
+
+                if (string.Equals(candidate.name, nodeName, StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(NormalizeNodeName(candidate.name), normalizedTarget, StringComparison.Ordinal))
+                {
+                    AddUniqueNode(candidate, sources, sourceSet);
+                }
+            }
+        }
+
+        private static void AddUniqueNode(Transform node, List<Transform> sources, HashSet<Transform> sourceSet)
+        {
+            if (node == null || !sourceSet.Add(node))
+            {
+                return;
+            }
+
+            sources.Add(node);
+        }
+
+        private static bool NodeNameMatchesSection(string nodeName, string sectionName)
+        {
+            string normalizedName = NormalizeNodeName(nodeName);
+            if (IsCockpitSection(sectionName))
+            {
+                return ContainsAny(normalizedName, "cockpit", "canopy", "head", "pilot");
+            }
+
+            if (IsLeftArmSection(sectionName))
+            {
+                if (ContainsAny(
+                    normalizedName,
+                    "rightarm",
+                    "rarm",
+                    "ruarm",
+                    "rlarm",
+                    "rgun",
+                    "rhand",
+                    "rmlauncher",
+                    "weaponrightarm"))
+                {
+                    return false;
+                }
+
+                return ContainsAny(
+                    normalizedName,
+                    "leftarm",
+                    "larm",
+                    "luarm",
+                    "llarm",
+                    "lgun",
+                    "lhand",
+                    "lmlauncher",
+                    "weaponleftarm");
+            }
+
+            if (IsRightArmSection(sectionName))
+            {
+                if (ContainsAny(
+                    normalizedName,
+                    "leftarm",
+                    "larm",
+                    "luarm",
+                    "llarm",
+                    "lgun",
+                    "lhand",
+                    "lmlauncher",
+                    "weaponleftarm"))
+                {
+                    return false;
+                }
+
+                return ContainsAny(
+                    normalizedName,
+                    "rightarm",
+                    "rarm",
+                    "ruarm",
+                    "rlarm",
+                    "rgun",
+                    "rhand",
+                    "rmlauncher",
+                    "weaponrightarm");
+            }
+
+            if (IsLeftLegSection(sectionName))
+            {
+                if (ContainsAny(normalizedName, "rightleg", "rleg", "rlleg", "rmleg", "ruleg", "rfoot", "rtoe", "rankle"))
+                {
+                    return false;
+                }
+
+                return ContainsAny(
+                    normalizedName,
+                    "leftleg",
+                    "lleg",
+                    "llleg",
+                    "lmleg",
+                    "luleg",
+                    "lfoot",
+                    "ltoe",
+                    "lankle");
+            }
+
+            if (IsRightLegSection(sectionName))
+            {
+                if (ContainsAny(normalizedName, "leftleg", "lleg", "llleg", "lmleg", "luleg", "lfoot", "ltoe", "lankle"))
+                {
+                    return false;
+                }
+
+                return ContainsAny(
+                    normalizedName,
+                    "rightleg",
+                    "rleg",
+                    "rlleg",
+                    "rmleg",
+                    "ruleg",
+                    "rfoot",
+                    "rtoe",
+                    "rankle");
+            }
+
+            if (IsTorsoSection(sectionName))
+            {
+                return ContainsAny(normalizedName, "torso", "centertorso", "hip", "hips");
+            }
+
+            return false;
+        }
+
+        private static bool ContainsAny(string value, params string[] needles)
+        {
+            for (int index = 0; index < needles.Length; index++)
+            {
+                if (value.IndexOf(needles[index], StringComparison.Ordinal) >= 0)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static Transform FindDescendantByName(Transform root, string name)
+        {
+            if (root == null || string.IsNullOrWhiteSpace(name))
+            {
+                return null;
+            }
+
+            Transform[] descendants = root.GetComponentsInChildren<Transform>(true);
+            for (int index = 0; index < descendants.Length; index++)
+            {
+                Transform descendant = descendants[index];
+                if (descendant != null && string.Equals(descendant.name, name, StringComparison.OrdinalIgnoreCase))
+                {
+                    return descendant;
+                }
+            }
+
+            return null;
+        }
+
+        private static Transform FindNearestDrawableNode(Transform anchor, List<Transform> drawableNodes)
+        {
+            if (anchor == null || drawableNodes == null || drawableNodes.Count == 0)
+            {
+                return null;
+            }
+
+            Transform best = null;
+            float bestScore = float.MaxValue;
+            Vector3 anchorPosition = anchor.position;
+            for (int index = 0; index < drawableNodes.Count; index++)
+            {
+                Transform candidate = drawableNodes[index];
+                if (candidate == null || !TryGetRendererBounds(candidate, out Bounds bounds))
+                {
+                    continue;
+                }
+
+                float distance = (bounds.center - anchorPosition).sqrMagnitude;
+                float score = distance + RendererBoundsVolume(bounds) * 0.0005f;
+                if (score < bestScore)
+                {
+                    bestScore = score;
+                    best = candidate;
+                }
+            }
+
+            return best;
+        }
+
+        private static Transform FindCockpitFallbackDrawableNode(Transform visualRoot, List<Transform> drawableNodes)
+        {
+            if (visualRoot == null || drawableNodes == null || drawableNodes.Count == 0)
+            {
+                return null;
+            }
+
+            Transform best = null;
+            float bestScore = float.MinValue;
+            for (int index = 0; index < drawableNodes.Count; index++)
+            {
+                Transform candidate = drawableNodes[index];
+                if (candidate == null || !TryGetRendererBounds(candidate, out Bounds bounds))
+                {
+                    continue;
+                }
+
+                string normalizedName = NormalizeNodeName(candidate.name);
+                Vector3 localCenter = visualRoot.InverseTransformPoint(bounds.center);
+                float score = localCenter.y * 2.0f + localCenter.z * 0.35f;
+                if (ContainsAny(normalizedName, "torso", "centertorso"))
+                {
+                    score += 8.0f;
+                }
+
+                if (ContainsAny(normalizedName, "hip", "hips"))
+                {
+                    score += 1.5f;
+                }
+
+                if (ContainsAny(normalizedName, "foot", "toe", "leg", "arm", "gun", "hand"))
+                {
+                    score -= 6.0f;
+                }
+
+                score -= RendererBoundsVolume(bounds) * 0.0002f;
+                if (score > bestScore)
+                {
+                    bestScore = score;
+                    best = candidate;
+                }
+            }
+
+            return best;
+        }
+
+        private static GameObject CloneDrawableSources(string sectionName, List<Transform> sources, bool hideSource)
+        {
+            if (sources == null || sources.Count == 0 || !TryGetCombinedRendererBounds(sources, out Bounds bounds))
+            {
+                return null;
+            }
+
+            GameObject root = new("Reference Detached " + sectionName);
+            root.transform.position = bounds.center;
+            root.transform.rotation = Quaternion.identity;
+            root.transform.localScale = Vector3.one;
+
+            List<string> clonedNames = new();
+            for (int index = 0; index < sources.Count; index++)
+            {
+                Transform source = sources[index];
+                if (source == null)
+                {
+                    continue;
+                }
+
+                GameObject clone = UnityEngine.Object.Instantiate(source.gameObject, source.position, source.rotation);
+                clone.name = source.name + " detached";
+                clone.transform.localScale = source.lossyScale;
+                clone.transform.SetParent(root.transform, true);
+                SetRenderersEnabled(clone.transform, true);
+                RemoveCloneColliders(clone);
+                clonedNames.Add(source.name);
+
+                if (hideSource)
+                {
+                    SetRenderersEnabled(source, false);
+                }
+            }
+
+            if (clonedNames.Count == 0)
+            {
+                UnityEngine.Object.Destroy(root);
+                return null;
+            }
+
+            Debug.Log(
+                "Detached private reference visual nodes for "
+                + sectionName
+                + ": "
+                + string.Join(", ", clonedNames));
+            return root;
+        }
+
+        private static bool TryGetCombinedRendererBounds(List<Transform> sources, out Bounds bounds)
+        {
+            bounds = new Bounds(Vector3.zero, Vector3.zero);
+            bool hasBounds = false;
+            for (int sourceIndex = 0; sourceIndex < sources.Count; sourceIndex++)
+            {
+                Transform source = sources[sourceIndex];
+                if (source == null)
+                {
+                    continue;
+                }
+
+                Renderer[] renderers = source.GetComponentsInChildren<Renderer>(true);
+                for (int rendererIndex = 0; rendererIndex < renderers.Length; rendererIndex++)
+                {
+                    Renderer renderer = renderers[rendererIndex];
+                    if (renderer == null)
+                    {
+                        continue;
+                    }
+
+                    if (!hasBounds)
+                    {
+                        bounds = renderer.bounds;
+                        hasBounds = true;
+                    }
+                    else
+                    {
+                        bounds.Encapsulate(renderer.bounds);
+                    }
+                }
+            }
+
+            return hasBounds;
+        }
+
+        private static bool TryGetRendererBounds(Transform source, out Bounds bounds)
+        {
+            if (source == null)
+            {
+                bounds = new Bounds(Vector3.zero, Vector3.zero);
+                return false;
+            }
+
+            List<Transform> singleSource = new() { source };
+            return TryGetCombinedRendererBounds(singleSource, out bounds);
+        }
+
+        private static float RendererBoundsVolume(Bounds bounds)
+        {
+            Vector3 size = bounds.size;
+            return Mathf.Abs(size.x * size.y * size.z);
+        }
+
+        private static void RemoveCloneColliders(GameObject clone)
+        {
+            if (clone == null)
+            {
+                return;
+            }
+
+            Collider[] colliders = clone.GetComponentsInChildren<Collider>(true);
+            for (int index = 0; index < colliders.Length; index++)
+            {
+                if (colliders[index] != null)
+                {
+                    UnityEngine.Object.Destroy(colliders[index]);
+                }
+            }
+        }
+
+        private static void SetRenderersEnabled(Transform source, bool enabled)
+        {
+            if (source == null)
+            {
+                return;
+            }
+
+            Renderer[] renderers = source.GetComponentsInChildren<Renderer>(true);
+            for (int index = 0; index < renderers.Length; index++)
+            {
+                if (renderers[index] != null)
+                {
+                    renderers[index].enabled = enabled;
+                }
+            }
+        }
+
+        private static string NormalizeNodeName(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return "";
+            }
+
+            string lower = value.ToLowerInvariant();
+            char[] buffer = new char[lower.Length];
+            int count = 0;
+            for (int index = 0; index < lower.Length; index++)
+            {
+                char c = lower[index];
+                if (char.IsLetterOrDigit(c))
+                {
+                    buffer[count++] = c;
+                }
+            }
+
+            return new string(buffer, 0, count);
+        }
+
+        private static bool IsCockpitSection(string sectionName)
+        {
+            return string.Equals(sectionName, "Cockpit", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(sectionName, "Turret", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static bool IsLeftArmSection(string sectionName)
+        {
+            return string.Equals(sectionName, "Left Arm", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(sectionName, "Left", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static bool IsRightArmSection(string sectionName)
+        {
+            return string.Equals(sectionName, "Right Arm", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(sectionName, "Right", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static bool IsLeftLegSection(string sectionName)
+        {
+            return string.Equals(sectionName, "Left Leg", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static bool IsRightLegSection(string sectionName)
+        {
+            return string.Equals(sectionName, "Right Leg", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static bool IsTorsoSection(string sectionName)
+        {
+            return string.Equals(sectionName, "Torso", StringComparison.OrdinalIgnoreCase);
         }
 
         private static ObjGroupBuilder EnsureDefaultGroup(List<ObjGroupBuilder> groups)
@@ -874,6 +1461,12 @@ namespace MC2Demo.Presentation
             public string[] textures;
             public string[] copiedTextures;
             public string[] copiedTexturePaths;
+            public string[] cockpitNodeNames;
+            public string[] leftArmNodeNames;
+            public string[] rightArmNodeNames;
+            public string[] leftLegNodeNames;
+            public string[] rightLegNodeNames;
+            public string[] torsoNodeNames;
             public string[] shapeNodeNames;
             public string[] helperNodeNames;
             public int nodeCount;

@@ -353,6 +353,12 @@ def write_obj(
         "nodeCount": len(shape.nodes),
         "shapeNodes": len(shape_nodes),
         "shapeNodeCount": len(shape_nodes),
+        "cockpitNodeNames": section_node_names(shape_nodes, "cockpit"),
+        "leftArmNodeNames": section_node_names(shape_nodes, "left_arm"),
+        "rightArmNodeNames": section_node_names(shape_nodes, "right_arm"),
+        "leftLegNodeNames": section_node_names(shape_nodes, "left_leg"),
+        "rightLegNodeNames": section_node_names(shape_nodes, "right_leg"),
+        "torsoNodeNames": section_node_names(shape_nodes, "torso"),
         "shapeNodeNames": [node.node_id for node in shape_nodes if node.node_id],
         "helperNodeNames": sorted(
             {
@@ -402,6 +408,65 @@ def is_helper_geometry(node: Node) -> bool:
         "spotlight",
     )
     return node_id.startswith(helper_prefixes) or parent_id.startswith(helper_parents)
+
+
+def section_node_names(nodes: Iterable[Node], section: str) -> list[str]:
+    names: list[str] = []
+    for node in nodes:
+        if node.node_id and node_matches_section(node.node_id, section):
+            names.append(node.node_id)
+    return names
+
+
+def node_matches_section(node_id: str, section: str) -> bool:
+    normalized = normalize_node_id(node_id)
+    if section == "cockpit":
+        return contains_any(normalized, ("cockpit", "canopy", "head", "pilot"))
+
+    if section == "left_arm":
+        if contains_any(
+            normalized,
+            ("rightarm", "rarm", "ruarm", "rlarm", "rgun", "rhand", "rmlauncher", "weaponrightarm"),
+        ):
+            return False
+        return contains_any(
+            normalized,
+            ("leftarm", "larm", "luarm", "llarm", "lgun", "lhand", "lmlauncher", "weaponleftarm"),
+        )
+
+    if section == "right_arm":
+        if contains_any(
+            normalized,
+            ("leftarm", "larm", "luarm", "llarm", "lgun", "lhand", "lmlauncher", "weaponleftarm"),
+        ):
+            return False
+        return contains_any(
+            normalized,
+            ("rightarm", "rarm", "ruarm", "rlarm", "rgun", "rhand", "rmlauncher", "weaponrightarm"),
+        )
+
+    if section == "left_leg":
+        if contains_any(normalized, ("rightleg", "rleg", "rlleg", "rmleg", "ruleg", "rfoot", "rtoe", "rankle")):
+            return False
+        return contains_any(normalized, ("leftleg", "lleg", "llleg", "lmleg", "luleg", "lfoot", "ltoe", "lankle"))
+
+    if section == "right_leg":
+        if contains_any(normalized, ("leftleg", "lleg", "llleg", "lmleg", "luleg", "lfoot", "ltoe", "lankle")):
+            return False
+        return contains_any(normalized, ("rightleg", "rleg", "rlleg", "rmleg", "ruleg", "rfoot", "rtoe", "rankle"))
+
+    if section == "torso":
+        return contains_any(normalized, ("torso", "centertorso", "hip", "hips"))
+
+    return False
+
+
+def normalize_node_id(node_id: str) -> str:
+    return "".join(ch.lower() for ch in node_id if ch.isalnum())
+
+
+def contains_any(value: str, needles: Iterable[str]) -> bool:
+    return any(needle in value for needle in needles)
 
 
 def find_texture(texture_root: Path, base_name: str) -> Path | None:

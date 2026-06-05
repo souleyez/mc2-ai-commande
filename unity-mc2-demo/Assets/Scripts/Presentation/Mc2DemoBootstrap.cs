@@ -4854,6 +4854,77 @@ namespace MC2Demo.Presentation
         {
             RunStartupHangarContactCapturePrelude();
             AdvanceStartupSimulation(18f);
+            ForceStartupDamageDemoSections();
+        }
+
+        private void ForceStartupDamageDemoSections()
+        {
+            if (mission == null)
+            {
+                return;
+            }
+
+            UnitState first = null;
+            UnitState second = null;
+            UnitState third = null;
+            foreach (UnitState unit in mission.PlayerUnits())
+            {
+                if (unit == null || !unit.IsActive)
+                {
+                    continue;
+                }
+
+                first ??= unit;
+                if (first != unit)
+                {
+                    second ??= unit;
+                }
+
+                if (first != unit && second != unit)
+                {
+                    third ??= unit;
+                    break;
+                }
+            }
+
+            if (first == null)
+            {
+                Debug.LogWarning("MC2 damage demo capture blocked: no active player units.");
+                return;
+            }
+
+            second ??= first;
+            third ??= first;
+            float leftArmDamage = ApplyStartupDamageDemoSection(first, "Left Arm");
+            float legDamage = ApplyStartupDamageDemoSection(second, "Legs");
+            float cockpitDamage = ApplyStartupDamageDemoSection(third, "Cockpit");
+            AddCombatLogLine("Capture damage demo: " + first.Id + " left arm, " + second.Id + " legs, " + third.Id + " cockpit");
+            Debug.Log(
+                "MC2 damage demo forced sections: leftArm="
+                + leftArmDamage.ToString("0.##", CultureInfo.InvariantCulture)
+                + " legs="
+                + legDamage.ToString("0.##", CultureInfo.InvariantCulture)
+                + " cockpit="
+                + cockpitDamage.ToString("0.##", CultureInfo.InvariantCulture));
+        }
+
+        private static float ApplyStartupDamageDemoSection(UnitState unit, string sectionName)
+        {
+            if (unit?.Sections == null)
+            {
+                return 0f;
+            }
+
+            for (int index = 0; index < unit.Sections.Length; index++)
+            {
+                DamageSection section = unit.Sections[index];
+                if (section != null && string.Equals(section.Name, sectionName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return unit.ApplyDirectSectionDamage(section.Name, section.HitPoints);
+                }
+            }
+
+            return 0f;
         }
 
         private void AdvanceStartupSimulation(float seconds)
