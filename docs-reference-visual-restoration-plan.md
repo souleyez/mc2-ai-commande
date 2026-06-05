@@ -324,8 +324,18 @@ Internal screenshot:
 **Files:**
 
 - Modify: `unity-mc2-demo/Assets/Scripts/Presentation/Mc2DemoBootstrap.cs`
-- Modify: `unity-mc2-demo/Assets/Scripts/BattleCore/MissionContract.cs`
-- Modify: `unity-mc2-demo/Assets/StreamingAssets/Missions/mc2_01/mission-contract.json`
+- Use existing: `unity-mc2-demo/Assets/Scripts/BattleCore/MissionContract.cs`
+- Generated ignored: `unity-mc2-demo/Assets/StreamingAssets/Missions/mc2_01/mission-contract.json`
+
+**Status:** Completed 2026-06-05. The Unity demo now reads the mission camera block and derives the fixed tactical pitch, yaw, orthographic size, limited zoom range, and commander follow offset from the original `mc2_01` start camera while preserving the simplified mobile-friendly follow behavior.
+
+**Validation Evidence:**
+
+- Contract export: `scripts/content-pack/export_unity_demo_contract.ps1`
+- Build log: `analysis-output/unity-build-source-camera.log`
+- Smoke log: `analysis-output/unity-player-source-camera-smoke.log`
+- Screenshot: `analysis-output/unity-source-camera-capture.png`
+- Runtime camera line: `MC2 source camera configured: pitch=68.75 yaw=-59.625 ortho=29.109 height=80.05 zoom=0.72-1.25 followOffset=(-2.67, 0.00, -1.35)`
 
 **Steps:**
 

@@ -29,6 +29,8 @@ namespace MC2Demo.Presentation
         [SerializeField] private float cameraYaw = 45f;
         private const float JumpDistance = 520f;
         private const float MiniMaxCommanderAdvanceSeconds = 8f;
+        private const float DefaultCameraOrthographicSize = 24f;
+        private const float CameraZoomWheelStep = 0.08f;
         private const float LoadoutCardHeight = 456f;
         private const float LoadoutCardStride = 468f;
         private const float LoadoutGridSectionMinHeight = 204f;
@@ -234,6 +236,12 @@ namespace MC2Demo.Presentation
         private bool isPaused;
         private MissionResultState lastMissionResult = MissionResultState.InProgress;
         private Camera mainCamera;
+        private Vector3 cameraFollowWorldOffset;
+        private float cameraBaseHeight = 62f;
+        private float cameraBaseOrthographicSize = 24f;
+        private float cameraZoomScale = 1f;
+        private float cameraZoomMin = 0.76f;
+        private float cameraZoomMax = 1.2f;
         private Vector2 loadoutScroll;
         private Vector2 mechLabBayScroll;
         private int selectedMechLabBayPage;
@@ -300,6 +308,7 @@ namespace MC2Demo.Presentation
             UpdateUnitVisibility();
             UpdateObjectiveAreaVisibility();
             UpdateCommandOverlays();
+            HandleCameraZoom();
             FollowCommander();
         }
 
@@ -6808,10 +6817,11 @@ namespace MC2Demo.Presentation
 
         private void CreateCamera()
         {
+            ConfigureCameraFromMission();
             GameObject cameraObject = new("Demo Camera");
             mainCamera = cameraObject.AddComponent<Camera>();
             mainCamera.orthographic = true;
-            mainCamera.orthographicSize = 24f;
+            ApplyCameraProjection();
             mainCamera.clearFlags = CameraClearFlags.SolidColor;
             mainCamera.backgroundColor = new Color(0.06f, 0.07f, 0.075f);
             Camera.SetupCurrent(mainCamera);
@@ -9081,6 +9091,117 @@ namespace MC2Demo.Presentation
             pendingJumpOrder = false;
         }
 
+        private void ConfigureCameraFromMission()
+        {
+            cameraBaseHeight = Mathf.Max(8f, cameraHeight);
+            cameraBaseOrthographicSize = DefaultCameraOrthographicSize;
+            cameraZoomScale = 1f;
+            cameraZoomMin = 0.76f;
+            cameraZoomMax = 1.2f;
+            cameraFollowWorldOffset = Vector3.zero;
+
+            CameraDefinition sourceCamera = mission?.Contract?.mission?.camera;
+            if (sourceCamera == null)
+            {
+                return;
+            }
+
+            if (sourceCamera.projectionAngle > 0.001f)
+            {
+                cameraPitch = Mathf.Clamp(90f - sourceCamera.projectionAngle, 54f, 72f);
+            }
+
+            if (Mathf.Abs(sourceCamera.startRotation) > 0.001f)
+            {
+                cameraYaw = -sourceCamera.startRotation;
+            }
+
+            float normalizedScale = 0.5f;
+            if (sourceCamera.zoomMax > sourceCamera.zoomMin + 0.001f)
+            {
+                normalizedScale = Mathf.InverseLerp(sourceCamera.zoomMin, sourceCamera.zoomMax, sourceCamera.newScale);
+            }
+
+            cameraBaseOrthographicSize = Mathf.Clamp(Mathf.Lerp(36f, 18f, normalizedScale), 20f, 34f);
+            cameraBaseHeight = Mathf.Clamp(cameraBaseOrthographicSize * 2.75f, 48f, 96f);
+
+            if (sourceCamera.newScale > 0.001f)
+            {
+                cameraZoomMin = Mathf.Clamp(sourceCamera.zoomMin / sourceCamera.newScale, 0.72f, 1f);
+                cameraZoomMax = Mathf.Clamp(sourceCamera.zoomMax / sourceCamera.newScale, 1f, 1.25f);
+            }
+
+            UnitSpawn commanderSpawn = FirstPlayerUnitSpawn();
+            if (sourceCamera.startPosition != null && commanderSpawn?.position != null)
+            {
+                Vector3 sourceCameraWorld = DemoTerrainView.MissionToWorld(new Vector2(sourceCamera.startPosition.x, sourceCamera.startPosition.y));
+                Vector3 commanderStartWorld = DemoTerrainView.MissionToWorld(new Vector2(commanderSpawn.position.x, commanderSpawn.position.y));
+                cameraFollowWorldOffset = sourceCameraWorld - commanderStartWorld;
+                cameraFollowWorldOffset.y = 0f;
+            }
+
+            Debug.Log(
+                "MC2 source camera configured: pitch="
+                + cameraPitch.ToString("0.###", CultureInfo.InvariantCulture)
+                + " yaw="
+                + cameraYaw.ToString("0.###", CultureInfo.InvariantCulture)
+                + " ortho="
+                + cameraBaseOrthographicSize.ToString("0.###", CultureInfo.InvariantCulture)
+                + " height="
+                + cameraBaseHeight.ToString("0.###", CultureInfo.InvariantCulture)
+                + " zoom="
+                + cameraZoomMin.ToString("0.###", CultureInfo.InvariantCulture)
+                + "-"
+                + cameraZoomMax.ToString("0.###", CultureInfo.InvariantCulture)
+                + " followOffset="
+                + cameraFollowWorldOffset.ToString("F2"));
+        }
+
+        private UnitSpawn FirstPlayerUnitSpawn()
+        {
+            if (mission?.Contract?.units == null)
+            {
+                return null;
+            }
+
+            foreach (UnitSpawn spawn in mission.Contract.units)
+            {
+                if (spawn != null && spawn.isPlayerUnit)
+                {
+                    return spawn;
+                }
+            }
+
+            return null;
+        }
+
+        private void HandleCameraZoom()
+        {
+            if (mainCamera == null)
+            {
+                return;
+            }
+
+            float scroll = Input.mouseScrollDelta.y;
+            if (Mathf.Abs(scroll) < 0.01f)
+            {
+                return;
+            }
+
+            cameraZoomScale = Mathf.Clamp(cameraZoomScale + scroll * CameraZoomWheelStep, cameraZoomMin, cameraZoomMax);
+            ApplyCameraProjection();
+        }
+
+        private void ApplyCameraProjection()
+        {
+            if (mainCamera == null)
+            {
+                return;
+            }
+
+            mainCamera.orthographicSize = Mathf.Max(8f, cameraBaseOrthographicSize / Mathf.Max(0.1f, cameraZoomScale));
+        }
+
         private void FollowCommander()
         {
             UnitState commander = null;
@@ -9095,9 +9216,10 @@ namespace MC2Demo.Presentation
                 return;
             }
 
-            Vector3 commanderWorld = DemoUnitView.MissionToWorld(commander.MissionPosition);
+            Vector3 commanderWorld = DemoUnitView.MissionToWorld(commander.MissionPosition) + cameraFollowWorldOffset;
             Quaternion rotation = Quaternion.Euler(cameraPitch, cameraYaw, 0f);
-            Vector3 offset = rotation * new Vector3(0f, 0f, -cameraHeight);
+            float effectiveHeight = cameraBaseHeight / Mathf.Max(0.1f, cameraZoomScale);
+            Vector3 offset = rotation * new Vector3(0f, 0f, -effectiveHeight);
             mainCamera.transform.SetPositionAndRotation(commanderWorld + offset, rotation);
         }
 
