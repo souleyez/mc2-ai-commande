@@ -17,6 +17,7 @@ namespace MC2Demo.Presentation
         private static readonly List<LoadedReferenceManifest> ManifestCache = new();
         private static readonly HashSet<string> LoggedManifestMappings = new(StringComparer.OrdinalIgnoreCase);
         private static bool manifestLoadAttempted;
+        private static bool loggedReferenceShader;
 
         public static bool TryAttachReferenceVisual(UnitState unit, Transform parent, Color color, out Renderer renderer)
         {
@@ -271,19 +272,38 @@ namespace MC2Demo.Presentation
 
         private static Material CreateMaterial(string assetName, bool isPlayerUnit, Color fallbackColor)
         {
-            Shader shader = Shader.Find("Standard") ?? Shader.Find("Hidden/Internal-Colored");
-            Color color = isPlayerUnit
-                ? Color.Lerp(fallbackColor, new Color(0.72f, 0.90f, 0.96f), 0.34f)
-                : Color.Lerp(fallbackColor, new Color(0.86f, 0.72f, 0.62f), 0.30f);
+            Shader shader = Shader.Find("MC2Demo/Private Reference Team Color")
+                ?? Shader.Find("Legacy Shaders/Diffuse")
+                ?? Shader.Find("Unlit/Texture")
+                ?? Shader.Find("Standard")
+                ?? Shader.Find("Hidden/Internal-Colored");
+            LogReferenceShader(shader);
+            Color teamColor = isPlayerUnit
+                ? Color.Lerp(fallbackColor, new Color(0.25f, 0.78f, 1.0f), 0.56f)
+                : Color.Lerp(fallbackColor, new Color(0.95f, 0.28f, 0.18f), 0.62f);
             Material material = new(shader)
             {
                 name = isPlayerUnit ? "PrivateReferencePlayer" : "PrivateReferenceHostile",
-                color = color
+                color = teamColor
             };
             if (TryLoadTexture(assetName, out Texture2D texture))
             {
                 material.mainTexture = texture;
-                material.color = new Color(0.66f, 0.70f, 0.72f, 1f);
+                material.color = Color.white;
+                if (material.HasProperty("_TeamColor"))
+                {
+                    material.SetColor("_TeamColor", teamColor);
+                }
+
+                if (material.HasProperty("_TeamStrength"))
+                {
+                    material.SetFloat("_TeamStrength", 0.86f);
+                }
+
+                if (material.HasProperty("_BaseTint"))
+                {
+                    material.SetColor("_BaseTint", Color.white);
+                }
             }
 
             if (material.HasProperty("_Glossiness"))
@@ -292,6 +312,18 @@ namespace MC2Demo.Presentation
             }
 
             return material;
+        }
+
+        private static void LogReferenceShader(Shader shader)
+        {
+            if (loggedReferenceShader)
+            {
+                return;
+            }
+
+            loggedReferenceShader = true;
+            string shaderName = shader == null ? "<missing>" : shader.name;
+            Debug.Log("Private reference visual shader: " + shaderName);
         }
 
         private static bool TryLoadTexture(string assetName, out Texture2D texture)
@@ -631,21 +663,7 @@ namespace MC2Demo.Presentation
             byte green = data[cursor + 1];
             byte red = data[cursor + 2];
             byte alpha = bytesPerPixel == 4 ? data[cursor + 3] : (byte)255;
-            pixels[target] = NormalizeReferencePalette(new Color32(red, green, blue, alpha));
-        }
-
-        private static Color32 NormalizeReferencePalette(Color32 pixel)
-        {
-            bool likelyTeamBlue = pixel.b > 72
-                && pixel.b > pixel.r + 28
-                && pixel.b > pixel.g + 18;
-            if (!likelyTeamBlue)
-            {
-                return pixel;
-            }
-
-            byte shade = (byte)Mathf.Clamp(Mathf.RoundToInt(34f + pixel.b * 0.25f + Mathf.Max(pixel.r, pixel.g) * 0.07f), 36, 112);
-            return new Color32(shade, (byte)Mathf.Clamp(shade + 4, 0, 255), (byte)Mathf.Clamp(shade + 9, 0, 255), pixel.a);
+            pixels[target] = new Color32(red, green, blue, alpha);
         }
 
         private static string AssetNameForUnitType(string unitType)
