@@ -187,6 +187,7 @@ namespace MC2Demo.Presentation
         private readonly Dictionary<string, int> selectedLoadoutWeaponByUnit = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, Vector2Int> selectedLoadoutGridCellByUnit = new(StringComparer.OrdinalIgnoreCase);
         private readonly List<Material> ownedMaterials = new();
+        private readonly List<Texture2D> ownedTextures = new();
         private readonly List<string> combatLog = new();
         private GameObject squadFocusMarker;
         private GameObject squadFocusBeacon;
@@ -310,10 +311,21 @@ namespace MC2Demo.Presentation
                 Destroy(material);
             }
 
+            DestroyOwnedTextures();
             DestroyUiTexture(ref uiPanelTexture);
             DestroyUiTexture(ref uiButtonTexture);
             DestroyUiTexture(ref uiButtonHoverTexture);
             DestroyUiTexture(ref uiTextFieldTexture);
+        }
+
+        private void DestroyOwnedTextures()
+        {
+            foreach (Texture2D texture in ownedTextures)
+            {
+                Destroy(texture);
+            }
+
+            ownedTextures.Clear();
         }
 
         private void LoadMission()
@@ -586,6 +598,7 @@ namespace MC2Demo.Presentation
             lastContactLabel = "";
             lastContactCount = 0;
             mainCamera = null;
+            DestroyOwnedTextures();
 
             int clearedRoots = 0;
             GameObject[] roots = SceneManager.GetActiveScene().GetRootGameObjects();
@@ -6565,7 +6578,19 @@ namespace MC2Demo.Presentation
             terrainView.Bind(mission.Contract.terrainMesh, mission.Contract.mission.terrain.waterElevation);
 
             meshFilter.sharedMesh = BuildTerrainMesh(mission.Contract.terrainMesh);
-            meshRenderer.sharedMaterial = MakeTerrainMaterial();
+            Texture2D terrainTexture = null;
+            if (ReferenceTerrainTextureLibrary.TryBuildCompositeTexture(mission.Contract, out Texture2D compositeTexture, out string terrainTextureSummary))
+            {
+                terrainTexture = compositeTexture;
+                ownedTextures.Add(compositeTexture);
+                Debug.Log("Loaded private terrain texture composite: " + terrainTextureSummary);
+            }
+            else
+            {
+                Debug.Log("Using source terrain vertex colors without private terrain textures: " + terrainTextureSummary);
+            }
+
+            meshRenderer.sharedMaterial = MakeTerrainMaterial(terrainTexture);
 
             CreateWaterPlane(mission.Contract.terrainMesh);
         }
@@ -6719,11 +6744,12 @@ namespace MC2Demo.Presentation
                 color.a);
         }
 
-        private Material MakeTerrainMaterial()
+        private Material MakeTerrainMaterial(Texture2D terrainTexture)
         {
             string cacheKey = "SourceTerrainVertexColor";
             if (materialCache.TryGetValue(cacheKey, out Material cachedMaterial))
             {
+                ConfigureTerrainMaterial(cachedMaterial, terrainTexture);
                 return cachedMaterial;
             }
 
@@ -6747,9 +6773,28 @@ namespace MC2Demo.Presentation
                 material.SetColor("_Tint", Color.white);
             }
 
+            ConfigureTerrainMaterial(material, terrainTexture);
             ownedMaterials.Add(material);
             materialCache[cacheKey] = material;
             return material;
+        }
+
+        private static void ConfigureTerrainMaterial(Material material, Texture2D terrainTexture)
+        {
+            if (material == null)
+            {
+                return;
+            }
+
+            if (material.HasProperty("_MainTex"))
+            {
+                material.SetTexture("_MainTex", terrainTexture == null ? Texture2D.whiteTexture : terrainTexture);
+            }
+
+            if (material.HasProperty("_TextureStrength"))
+            {
+                material.SetFloat("_TextureStrength", terrainTexture == null ? 0f : 0.72f);
+            }
         }
 
         private void CreateLights()

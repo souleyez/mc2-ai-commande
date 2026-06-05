@@ -230,9 +230,20 @@ Internal screenshot:
 
 **Files:**
 
+- Modify: `.gitignore`
 - Modify: `scripts/content-pack/export_terrain_texture_audit.ps1`
-- Modify: `unity-mc2-demo/Assets/Scripts/Presentation/DemoTerrainView.cs`
+- Modify: `unity-mc2-demo/Assets/Scripts/Presentation/Mc2DemoBootstrap.cs`
+- Modify: `unity-mc2-demo/Assets/Shaders/SourceTerrainVertexColor.shader`
 - Create: `unity-mc2-demo/Assets/Scripts/Presentation/ReferenceTerrainTextureLibrary.cs`
+
+**Status:** Completed 2026-06-05. The audit/export tool now writes an ignored referenced-terrain-texture manifest for `mc2_01`, copies only used TGA/TXM/list-frame assets into `analysis-output/terrain-reference-textures/`, and Unity builds an optional runtime terrain texture composite from that local manifest. Missing private assets still fall back to source-driven terrain colors.
+
+**Validation Evidence:**
+
+- Export manifest: `analysis-output/terrain-reference-textures/mc2_01/manifest.json`
+- Build log: `analysis-output/unity-build-terrain-textures.log`
+- Smoke log: `analysis-output/unity-player-terrain-textures-smoke.log`
+- Screenshot: `analysis-output/unity-terrain-textures-capture.png`
 
 **Steps:**
 
@@ -240,7 +251,7 @@ Internal screenshot:
 2. Export or copy only the referenced local TGA/TXM-derived textures into ignored reference-art output.
 3. Build a lightweight texture atlas or material array for the terrain mesh.
 4. Apply packet light values as vertex color or material multiplier.
-5. Keep a debug toggle that can show terrain id colors when texture mapping is wrong.
+5. Keep source-driven vertex colors as the fallback/debug path when texture mapping is unavailable.
 
 **Acceptance:**
 
