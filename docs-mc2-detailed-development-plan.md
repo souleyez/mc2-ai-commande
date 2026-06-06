@@ -16,7 +16,9 @@
 
 当前更细的执行型计划书：
 
-- `docs-playable-demo-current-detailed-plan-2026-06-07.md`：当前主执行入口。它按实际实现状态重排，把下一步收束到完整可见流程审计、最小战斗 HUD、战场占位证据、机库格子手感、AI 副官能力窗口和演示交付。
+- `docs-playable-demo-detailed-roadmap-2026-06-07.md`：当前最细施工蓝图。它按下一批小提交拆到战场构图、武器效果、部位损伤、装甲硬度、机库格子、战报再战、AI 副官能力窗口和演示交付，每项都列出文件、步骤、验证和验收。
+- `docs-playable-demo-completion-plan-2026-06-07.md`：当前主执行计划，保留阶段清单、验证矩阵和最近提交队列。
+- `docs-playable-demo-current-detailed-plan-2026-06-07.md`：旧主执行入口。它按实际实现状态重排，把下一步收束到完整可见流程审计、最小战斗 HUD、战场占位证据、机库格子手感、AI 副官能力窗口和演示交付。
 - `docs-playable-demo-detailed-execution-plan-2026-06-07.md`：旧的阶段执行计划。保留 Phase C 等历史任务背景、已完成验证证据和早期拆解，但后续继续开发优先看当前计划。
 - `docs-playable-demo-master-plan-2026-06-07.md`：保留完整阶段背景、历史任务和主计划脉络。本文件保留总体产品判断和阶段记录。
 

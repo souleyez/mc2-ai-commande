@@ -16,6 +16,7 @@
 
 配套文档：
 
+- `docs-playable-demo-detailed-roadmap-2026-06-07.md`: 当前最细施工蓝图，按提交顺序列出文件、步骤、验证和验收。
 - `docs-reference-visual-audit-2026-06-07.md`: 截图、sidecar 和 smoke 证据。
 - `docs-playable-demo-current-detailed-plan-2026-06-07.md`: 旧主计划和历史上下文。
 - `docs-content-replacement-plan.md`: 私有参考包、公开替换包和版权边界。
