@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using MC2Demo.BattleCore;
 using MC2Demo.Presentation;
@@ -76,6 +77,8 @@ namespace MC2Demo.EditorTools
                 throw new InvalidDataException("Expected 1000 terrain objects, got " + terrainObjectCount);
             }
 
+            ValidateReferenceVisualScaleCategories(mission.Contract);
+
             if (mission.Contract.terrainMesh == null || mission.Contract.terrainMesh.samples == null)
             {
                 throw new InvalidDataException("Expected source terrain mesh in mission contract.");
@@ -136,6 +139,47 @@ namespace MC2Demo.EditorTools
             ValidateStructureObjective(new BattleMission(MakeStructureObjectiveContract(), CombatProfileCatalog.Empty));
 
             Debug.Log("MC2 demo contract validation OK: 29 units, 3 player units, 9 objectives, 1 structure, 10000 terrain samples, 1000 terrain objects, combat simulation passed.");
+        }
+
+        private static void ValidateReferenceVisualScaleCategories(MissionContract contract)
+        {
+            if (contract?.units == null || contract.terrainObjects == null)
+            {
+                throw new InvalidDataException("Expected mission contract units and terrain objects for reference scale audit.");
+            }
+
+            HashSet<string> unitCategories = new(StringComparer.OrdinalIgnoreCase);
+            foreach (UnitSpawn unit in contract.units)
+            {
+                unitCategories.Add(ReferenceObjMeshLibrary.UnitVisualCategoryFor(unit.unitType));
+            }
+
+            RequireCategory(unitCategories, "mech", "reference unit scale audit");
+            RequireCategory(unitCategories, "vehicle", "reference unit scale audit");
+            RequireCategory(unitCategories, "infantry", "reference unit scale audit");
+
+            HashSet<string> propCategories = new(StringComparer.OrdinalIgnoreCase);
+            foreach (TerrainObjectSpawn terrainObject in contract.terrainObjects)
+            {
+                if (ReferencePropLibrary.ShouldUseReferenceTerrainObject(terrainObject))
+                {
+                    propCategories.Add(ReferencePropLibrary.TerrainVisualCategoryFor(terrainObject));
+                }
+            }
+
+            RequireCategory(propCategories, "building", "reference prop scale audit");
+            RequireCategory(propCategories, "aircraft", "reference prop scale audit");
+            RequireCategory(propCategories, "barricade", "reference prop scale audit");
+            RequireCategory(propCategories, "tree", "reference prop scale audit");
+            RequireCategory(propCategories, "smallProp", "reference prop scale audit");
+        }
+
+        private static void RequireCategory(HashSet<string> categories, string category, string context)
+        {
+            if (categories == null || !categories.Contains(category))
+            {
+                throw new InvalidDataException("Missing " + category + " category in " + context + ".");
+            }
         }
 
         private static void ValidateSourceDrivenProfiles(CombatProfileCatalog combatProfiles)

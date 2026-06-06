@@ -7,19 +7,50 @@ using UnityEngine;
 
 namespace MC2Demo.Presentation
 {
-    internal static class ReferenceObjMeshLibrary
+    public static class ReferenceObjMeshLibrary
     {
         private const float DefaultReferenceVisualScale = 3.0f;
-        private const float UnitReferenceVisualScaleMultiplier = 0.84f;
+        private const float MechReferenceVisualScaleMultiplier = 0.92f;
+        private const float VehicleReferenceVisualScaleMultiplier = 0.68f;
+        private const float InfantryReferenceVisualScaleMultiplier = 0.38f;
+        private const float OtherUnitReferenceVisualScaleMultiplier = 0.72f;
         private const float DefaultGroundOffsetY = -0.5f;
+        private const string UnitCategoryMech = "mech";
+        private const string UnitCategoryVehicle = "vehicle";
+        private const string UnitCategoryInfantry = "infantry";
+        private const string UnitCategoryOther = "other";
         private static readonly Dictionary<string, ReferenceVisualMeshSet> MeshSetCache = new(StringComparer.OrdinalIgnoreCase);
         private static readonly Dictionary<string, bool> MissingCache = new(StringComparer.OrdinalIgnoreCase);
         private static readonly Dictionary<string, Texture2D> TextureCache = new(StringComparer.OrdinalIgnoreCase);
         private static readonly Dictionary<string, bool> MissingTextureCache = new(StringComparer.OrdinalIgnoreCase);
         private static readonly List<LoadedReferenceManifest> ManifestCache = new();
         private static readonly HashSet<string> LoggedManifestMappings = new(StringComparer.OrdinalIgnoreCase);
+        private static readonly Dictionary<string, ReferenceUnitVisualAuditCounter> UnitVisualAudit = new(StringComparer.OrdinalIgnoreCase);
         private static bool manifestLoadAttempted;
         private static bool loggedReferenceShader;
+
+        public static void ResetScaleAudit()
+        {
+            UnitVisualAudit.Clear();
+        }
+
+        public static string ScaleAuditSummary()
+        {
+            return "ReferenceUnits="
+                + UnitAuditSegment(UnitCategoryMech)
+                + " "
+                + UnitAuditSegment(UnitCategoryVehicle)
+                + " "
+                + UnitAuditSegment(UnitCategoryInfantry)
+                + " "
+                + UnitAuditSegment(UnitCategoryOther)
+                + " scale mech="
+                + MechReferenceVisualScaleMultiplier.ToString(CultureInfo.InvariantCulture)
+                + " vehicle="
+                + VehicleReferenceVisualScaleMultiplier.ToString(CultureInfo.InvariantCulture)
+                + " infantry="
+                + InfantryReferenceVisualScaleMultiplier.ToString(CultureInfo.InvariantCulture);
+        }
 
         public static bool TryAttachReferenceVisual(UnitState unit, Transform parent, Color color, out Renderer renderer)
         {
@@ -29,22 +60,26 @@ namespace MC2Demo.Presentation
                 return false;
             }
 
+            string category = UnitVisualCategoryFor(unit.UnitType);
             string assetName = AssetNameForUnitType(unit.UnitType);
             if (string.IsNullOrWhiteSpace(assetName))
             {
+                RecordUnitVisualAudit(category, loaded: false);
                 return false;
             }
 
-            return TryAttachReferenceAsset(
+            bool loaded = TryAttachReferenceAsset(
                 assetName,
                 parent,
                 color,
                 useTeamColor: true,
                 isPlayerTeam: unit.IsPlayerUnit,
-                visualScaleMultiplier: UnitReferenceVisualScaleMultiplier,
+                visualScaleMultiplier: UnitReferenceVisualScaleMultiplierFor(category),
                 compensateParentScale: true,
                 groundOffsetY: float.NaN,
                 out renderer);
+            RecordUnitVisualAudit(category, loaded);
+            return loaded;
         }
 
         public static bool TryAttachReferenceAsset(
@@ -138,6 +173,88 @@ namespace MC2Demo.Presentation
                 || string.Equals(assetName, "bushwacker", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(assetName, "urbanmech", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(assetName, "starslayer", StringComparison.OrdinalIgnoreCase);
+        }
+
+        public static bool IsInfantryUnit(string unitType)
+        {
+            return string.Equals(UnitVisualCategoryFor(unitType), UnitCategoryInfantry, StringComparison.OrdinalIgnoreCase);
+        }
+
+        public static string UnitVisualCategoryFor(string unitType)
+        {
+            if (string.IsNullOrWhiteSpace(unitType))
+            {
+                return UnitCategoryOther;
+            }
+
+            switch (unitType.Trim().ToLowerInvariant())
+            {
+                case "werewolf":
+                case "bushwacker":
+                case "urbanmech":
+                case "starslayer":
+                    return UnitCategoryMech;
+                case "centipede":
+                case "harasser":
+                case "lrmc":
+                    return UnitCategoryVehicle;
+                case "infantry":
+                case "poweredarmor":
+                    return UnitCategoryInfantry;
+                default:
+                    return UnitCategoryOther;
+            }
+        }
+
+        private static float UnitReferenceVisualScaleMultiplierFor(string category)
+        {
+            if (string.Equals(category, UnitCategoryMech, StringComparison.OrdinalIgnoreCase))
+            {
+                return MechReferenceVisualScaleMultiplier;
+            }
+
+            if (string.Equals(category, UnitCategoryVehicle, StringComparison.OrdinalIgnoreCase))
+            {
+                return VehicleReferenceVisualScaleMultiplier;
+            }
+
+            if (string.Equals(category, UnitCategoryInfantry, StringComparison.OrdinalIgnoreCase))
+            {
+                return InfantryReferenceVisualScaleMultiplier;
+            }
+
+            return OtherUnitReferenceVisualScaleMultiplier;
+        }
+
+        private static void RecordUnitVisualAudit(string category, bool loaded)
+        {
+            string normalizedCategory = string.IsNullOrWhiteSpace(category) ? UnitCategoryOther : category;
+            if (!UnitVisualAudit.TryGetValue(normalizedCategory, out ReferenceUnitVisualAuditCounter counter))
+            {
+                counter = new ReferenceUnitVisualAuditCounter();
+                UnitVisualAudit[normalizedCategory] = counter;
+            }
+
+            if (loaded)
+            {
+                counter.Loaded++;
+            }
+            else
+            {
+                counter.Fallback++;
+            }
+        }
+
+        private static string UnitAuditSegment(string category)
+        {
+            UnitVisualAudit.TryGetValue(category, out ReferenceUnitVisualAuditCounter counter);
+            int loaded = counter?.Loaded ?? 0;
+            int fallback = counter?.Fallback ?? 0;
+            return category
+                + " "
+                + loaded.ToString(CultureInfo.InvariantCulture)
+                + "/"
+                + fallback.ToString(CultureInfo.InvariantCulture);
         }
 
         public static bool TryCloneSectionPart(
@@ -1500,6 +1617,12 @@ namespace MC2Demo.Presentation
             public string ManifestPath { get; }
             public string ManifestDirectory { get; }
             public ReferenceVisualManifest Manifest { get; }
+        }
+
+        private sealed class ReferenceUnitVisualAuditCounter
+        {
+            public int Loaded;
+            public int Fallback;
         }
 
         private sealed class ReferenceVisualMeshSet

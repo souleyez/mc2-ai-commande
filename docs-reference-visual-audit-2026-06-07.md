@@ -250,3 +250,55 @@ Next priority:
 1. First-slice mech/vehicle/turret/prop scale audit.
 2. Commander camera composition if scale tuning does not open the fight center enough.
 3. Later art polish for water edges, roads, and map-edge triangles.
+
+## Pass 6 Result
+
+Implemented on 2026-06-07:
+
+- Added first-slice reference visual scale audit summaries to runtime logs and capture sidecars.
+- Split unit reference visual scale by category: mechs now use a larger actor baseline, vehicles use a smaller vehicle baseline, and infantry fallback is deliberately much smaller than vehicles.
+- Split terrain-object reference prop scale by category: structure, building, aircraft, vehicle, barricade, tree, smallProp, and other.
+- Kept BattleCore movement, collision, hit, weapon range, mission trigger, objective and enemy count rules unchanged. This pass is visual scale and evidence only.
+- Added validator coverage that the `mc2_01` contract actually exercises mech, vehicle, infantry, building, aircraft, barricade, tree, and smallProp scale categories.
+
+Validation evidence:
+
+```text
+analysis-output/unity-validate-scale-audit.log
+analysis-output/unity-build-scale-audit.log
+analysis-output/reference-visual-captures/spawn.png
+analysis-output/reference-visual-captures/spawn.json
+analysis-output/reference-visual-captures/airfield.png
+analysis-output/reference-visual-captures/airfield.json
+analysis-output/reference-visual-captures/hangar-contact.png
+analysis-output/reference-visual-captures/hangar-contact.json
+analysis-output/reference-visual-captures/damage-demo.png
+analysis-output/reference-visual-captures/damage-demo.json
+```
+
+Observed scale evidence:
+
+```text
+ReferenceUnits=mech 6/0 vehicle 15/0 infantry 0/8 other 0/0 scale mech=0.92 vehicle=0.68 infantry=0.38
+ReferencePropScale=structure 1/0 building 29/3 aircraft 4/0 vehicle 9/3 barricade 90/18 tree 139/594 smallProp 65/38 other 0/7
+```
+
+Observed effect:
+
+- `spawn`, `airfield`, `hangar-contact`, and `damage-demo` sidecars now include `referenceAssets.scale`, so future screenshots can prove whether the scene is using the expected category mix.
+- Mechs read more clearly as the main actors relative to vehicles and infantry.
+- Infantry no longer uses the same fallback footprint as vehicles when no private reference mesh is available.
+- Buildings, aircraft and barricades keep enough presence to sell the airfield scene without taking over the whole battle view.
+- Encounter pressure was preserved: `airfield` remains 12 active / 8 visible hostiles, `hangar-contact` remains 20 active / 16 visible hostiles, and `damage-demo` remains 20 active / 19 visible hostiles.
+
+Remaining issues:
+
+1. The hangar fight is still dense because many enemies remain active around the same objective window.
+2. Visual scale now has evidence, but BattleCore occupancy evidence still needs to be exposed next so visible hard objects can be checked against legal movement.
+3. Camera composition still needs a fixed-view pass after occupancy evidence, especially around the hangar/forest flank.
+
+Next priority:
+
+1. BattleCore occupancy evidence pass.
+2. Commander camera composition pass.
+3. Then Phase C command-state smoke coverage.

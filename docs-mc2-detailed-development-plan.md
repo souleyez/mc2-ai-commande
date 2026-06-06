@@ -23,7 +23,8 @@
 - Phase A 地形/水面/道路可读性已经完成并提交，提交 `89a686f Improve terrain and water readability`。当前截图已经能读出绿色地面、蓝色水域、岸线、跑道/道路和建筑基底。
 - Phase B / Task B1：敌方密度和停靠点展开已经完成。目标不是减少敌人，而是在保留原版触发节奏和战斗压力的前提下，让 `hangar-contact`、`damage-demo` 不再像所有模型挤在一个点。
 - 2026-06-07 已刷新执行计划：`docs-playable-demo-master-plan-2026-06-07.md` 现在把当前阶段拆成更细的 B2 比例审计、B3 碰撞占位证据、B4 固定镜头构图，以及后续 C 阶段交互 smoke、D 阶段损伤手感、E 阶段装配格子、F 阶段去保存系统表层和战后再战。
-- 真实下一步是 Phase B / Task B2：机甲、载具、炮塔、建筑、树木和道具的比例审计，让画面从“能展开”继续推进到“尺寸层级可信”。B2 后紧接 B3，必须证明看得见的硬物在 BattleCore 里也有物理占位。
+- Phase B / Task B2：机甲、载具、炮塔、建筑、树木和道具的比例审计已经完成。sidecar 现在能报告 `ReferenceUnits` 和 `ReferencePropScale` 分类，步兵 fallback 已缩小，机甲/载具/建筑/树木比例有证据可查。
+- 真实下一步是 Phase B / Task B3：BattleCore occupancy evidence。必须证明看得见的硬物在 BattleCore 里也有物理占位，并把单位、结构、硬 terrain object、水域非法落点和 fallback destination search 写进 validator 或 capture sidecar。
 - BattleCore 仍是权威物理占位层。Unity 可以显示碰撞占位和辅助反馈，但合法落点、单位排布、结构/terrain object 占用必须由 BattleCore 可验证地决定。
 
 当前项目不是从零开始，已经进入“可见 Demo 打磨”阶段。核心问题已经从“能不能跑”转为“看起来是否像一款可信的战术机甲游戏”。
@@ -1015,9 +1016,8 @@ Commit 15：本地演示包整理。
 
 ## 11. 下一步
 
-下一次继续开发时，按 `docs-playable-demo-master-plan-2026-06-07.md` 执行，进入 **Phase B / Task B2：Mech, vehicle, turret and prop scale audit**。敌方密度和停车点已经收过一轮，下一步重点是连续过三道“看得懂战场”的关：
+下一次继续开发时，按 `docs-playable-demo-master-plan-2026-06-07.md` 执行，进入 **Phase B / Task B3：BattleCore occupancy evidence pass**。敌方密度、停车点和视觉比例已经收过一轮，下一步重点是证明“看得见的硬物”和“规则里的不可穿越/不可降落区域”一致：
 
-1. B2 比例审计：列出 `mc2_01` 实际出现的 mech、vehicle、infantry、turret、building、tree、barricade、aircraft 等 asset id，检查 `ReferenceObjMeshLibrary.cs`、`ReferencePropLibrary.cs`、`DemoUnitView.cs`、`Mc2DemoBootstrap.cs` 的缩放路径，确认 parent scale 和 imported mesh scale 没有叠加，并重新捕获 `spawn`、`airfield`、`hangar-contact`、`damage-demo`。
-2. B3 碰撞占位证据：把 live units、targetable structures、hard terrain objects、水域非法落点和 fallback destination search 写进 validator 或 capture sidecar，确认看得见的硬物在 BattleCore 里也有物理占位。
-3. B4 固定镜头构图：保持指挥官跟随、固定 yaw/pitch 和有限缩放，让指挥官小队、活动目标和主要接敌方向在 `hangar-contact`、`damage-demo` 同时可读。
-4. 以上三步完成后再进入 Phase C，不提前做服务器、经济、保存系统、PVP、移动端或链上功能。
+1. B3 碰撞占位证据：把 live units、targetable structures、hard terrain objects、水域非法落点和 fallback destination search 写进 validator 或 capture sidecar，确认看得见的硬物在 BattleCore 里也有物理占位。
+2. B4 固定镜头构图：保持指挥官跟随、固定 yaw/pitch 和有限缩放，让指挥官小队、活动目标和主要接敌方向在 `hangar-contact`、`damage-demo` 同时可读。
+3. 以上两步完成后再进入 Phase C，不提前做服务器、经济、保存系统、PVP、移动端或链上功能。

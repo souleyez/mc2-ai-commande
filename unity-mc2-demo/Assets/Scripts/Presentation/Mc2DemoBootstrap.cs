@@ -198,6 +198,7 @@ namespace MC2Demo.Presentation
             public string terrain;
             public string structures;
             public string props;
+            public string scale;
             public string occlusion;
         }
 
@@ -337,6 +338,7 @@ namespace MC2Demo.Presentation
         private string lastTerrainTextureSummary = "terrain texture not attempted";
         private string lastReferencePropSummary = "ReferenceProps=not attempted";
         private string lastReferenceStructureSummary = "ReferenceStructures=not attempted";
+        private string lastReferenceScaleSummary = "ReferenceScale=not attempted";
         private string lastOcclusionFadeSummary = "OcclusionFade=not attempted";
         private Vector2 loadoutScroll;
         private Vector2 mechLabBayScroll;
@@ -483,12 +485,18 @@ namespace MC2Demo.Presentation
                 return;
             }
 
+            ReferenceObjMeshLibrary.ResetScaleAudit();
+            ReferencePropLibrary.ResetScaleAudit();
+            lastReferenceScaleSummary = "ReferenceScale=collecting";
             CreateGround();
             CreateLights();
             CreateCamera();
             CreateTerrainObjects();
             CreateUnits();
             CreateStaticObjects();
+            lastReferenceScaleSummary = ReferenceObjMeshLibrary.ScaleAuditSummary()
+                + "; "
+                + ReferencePropLibrary.ScaleAuditSummary();
             CreateMarkers();
             CreateForests();
             CreateObjectiveAreas();
@@ -505,7 +513,9 @@ namespace MC2Demo.Presentation
                 + ", terrainObjects="
                 + (mission.Contract.terrainObjects == null ? 0 : mission.Contract.terrainObjects.Length)
                 + ", forests="
-                + (mission.Contract.forests == null ? 0 : mission.Contract.forests.Length));
+                + (mission.Contract.forests == null ? 0 : mission.Contract.forests.Length)
+                + ", "
+                + lastReferenceScaleSummary);
         }
 
         private bool TryApplyMissionRestartRuntimeSwap(bool keepMechBayOpen = false)
@@ -705,6 +715,7 @@ namespace MC2Demo.Presentation
             lastContactEventTimeSeconds = -999f;
             lastContactLabel = "";
             lastContactCount = 0;
+            lastReferenceScaleSummary = "ReferenceScale=not attempted";
             lastOcclusionFadeSummary = "OcclusionFade=not attempted";
             mainCamera = null;
             DestroyOwnedTextures();
@@ -5064,6 +5075,7 @@ namespace MC2Demo.Presentation
                     terrain = lastTerrainTextureSummary,
                     structures = lastReferenceStructureSummary,
                     props = lastReferencePropSummary,
+                    scale = lastReferenceScaleSummary,
                     occlusion = lastOcclusionFadeSummary
                 }
             };
@@ -7458,12 +7470,11 @@ namespace MC2Demo.Presentation
             foreach (UnitState unit in mission.Units)
             {
                 int presentationIndex = unit.IsPlayerUnit ? playerPresentationIndex++ : -1;
-                PrimitiveType primitive = unit.IsPlayerUnit ? PrimitiveType.Capsule : PrimitiveType.Cube;
+                PrimitiveType primitive = unit.IsPlayerUnit || ReferenceObjMeshLibrary.IsInfantryUnit(unit.UnitType)
+                    ? PrimitiveType.Capsule
+                    : PrimitiveType.Cube;
                 GameObject unitObject = GameObject.CreatePrimitive(primitive);
-                bool tallUnit = unit.IsPlayerUnit || ReferenceObjMeshLibrary.IsTallReferenceUnit(unit.UnitType);
-                unitObject.transform.localScale = tallUnit
-                    ? new Vector3(1.3f, 1.5f, 1.3f)
-                    : new Vector3(1.2f, 0.7f, 1.2f);
+                unitObject.transform.localScale = UnitPrimitiveScale(unit);
                 AssignMaterial(
                     unitObject,
                     unit.Id,
@@ -7479,6 +7490,26 @@ namespace MC2Demo.Presentation
                 unitObject.SetActive(unit.IsActive || unit.IsPlayerUnit || unit.IsDestroyed);
                 unitViews[unit.Id] = view;
             }
+        }
+
+        private static Vector3 UnitPrimitiveScale(UnitState unit)
+        {
+            if (unit == null)
+            {
+                return new Vector3(1.0f, 0.7f, 1.0f);
+            }
+
+            if (unit.IsPlayerUnit || ReferenceObjMeshLibrary.IsTallReferenceUnit(unit.UnitType))
+            {
+                return new Vector3(1.3f, 1.5f, 1.3f);
+            }
+
+            if (ReferenceObjMeshLibrary.IsInfantryUnit(unit.UnitType))
+            {
+                return new Vector3(0.42f, 0.55f, 0.42f);
+            }
+
+            return new Vector3(1.0f, 0.58f, 1.0f);
         }
 
         private static Vector3 PlayerPresentationOffset(int index)
