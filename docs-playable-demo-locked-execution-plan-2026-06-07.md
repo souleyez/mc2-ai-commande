@@ -35,9 +35,11 @@
 4. `Regress weapon family cues` 已完成并提交为 `4ea5666`。
 5. `Lock section damage and ejection cues` 已完成并提交为 `db1efa7`。
 6. `Lock armor hardness damage rule` 已完成并提交为 `e7c4a07`。
-7. 当前处在 Stage 4 MechLab，`Audit mounted weapon semantics` 已完成并提交为 `8010a56`。
-8. `Make MechLab grid blocks explicit` 已完成验证，下一步优先做 `Prove loadout battle effects`。
-9. 工作树提交前必须保持干净；Unity scene fileID churn 不得误提交，生成截图/日志/JSON 默认不进 Git。
+7. Stage 4 MechLab 的 `Audit mounted weapon semantics` 已完成并提交为 `8010a56`。
+8. `Make MechLab grid blocks explicit` 已完成验证。
+9. `Prove loadout battle effects` 已完成验证：装配预览现在通过 BattleCore helper 进入 UnitState，武器、散热器、装甲硬度和重量都有 validator 证据。
+10. 当前处在 Stage 5 / Debrief And Relaunch Loop，下一步优先做 C1：收简洁战报和正常玩家下一步，不暴露保存槽/账号管理概念。
+11. 工作树提交前必须保持干净；Unity scene fileID churn 不得误提交，生成截图/日志/JSON 默认不进 Git。
 
 当前已知真实文件校准：
 
@@ -517,6 +519,10 @@ git diff --check
 
 **Goal:** MechLab changes enter BattleCore and alter combat behavior.
 
+**Status:** Completed 2026-06-07.
+
+**Result:** `UnitLoadoutCombatOverrideBuilder` now owns the preview-to-combat override path in BattleCore. Unity presentation delegates to it, and validator coverage proves full mounted loadouts preserve combat stats, reduced mounted weapons reduce battle-ready heat/weight, armor fillers apply hardness, and heat-sink fillers apply cooling.
+
 **Files:**
 
 - Modify: `unity-mc2-demo/Assets/Scripts/BattleCore/UnitState.cs`
@@ -539,7 +545,9 @@ git diff --check
 
 ```powershell
 git diff --check
-& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoValidator.ValidateMissionContract -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-validate-loadout-battle-effect.log"
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoValidator.ValidateMissionContract -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-validate-loadout-battle-effects.log"
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoBuilder.BuildWindows64 -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-build-loadout-battle-effects.log"
+& "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo\Builds\Windows\MC2UnityDemo.exe" -batchmode -nographics -mc2SmokeTest -mc2CommandFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo\Assets\StreamingAssets\CommanderScripts\mc2_01-visible-flow-audit.txt" -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-player-visible-flow-after-loadout-battle-effects.log"
 ```
 
 **Acceptance:**
@@ -918,12 +926,13 @@ Recently completed:
 | 8 | `Lock armor hardness damage rule` | Armor is one deterministic hardness value before section damage | validator |
 | 9 | `Audit mounted weapon semantics` | Mounted weapon means active weapon; no player-facing weapon toggle remains | `rg` audit, validator |
 | 10 | `Make MechLab grid blocks explicit` | MechLab grid shows block frames, cell dividers and single-cell filler language | validator, build, loadout smoke |
+| 11 | `Prove loadout battle effects` | Fitted weapons, armor fillers and heat-sink fillers now feed BattleCore UnitState combat stats | validator, build, visible-flow smoke |
 
 Current state:
 
-- Current stage: Stage 4 / MechLab Feel Lock.
-- Current next commit: `Prove loadout battle effects`.
-- Current demo risk: MechLab preview now has stronger grid block language, but B3 still needs to prove fitted weapons, armor and heat sinks affect BattleCore combat behavior.
+- Current stage: Stage 5 / Debrief And Relaunch Loop.
+- Current next commit: `Simplify debrief player flow`.
+- Current demo risk: combat and MechLab rules are now guarded, but the debrief still exposes too much system/save-management wording for a clean first-player flow.
 - Current build risk: Unity batch build can dirty `Assets/Scenes/Mc2Demo.unity` with fileID churn; inspect and restore before commit.
 - Current content risk: private reference content can be used locally for validation but must stay out of Git and public packages.
 
@@ -932,8 +941,8 @@ Next commits:
 | Order | Status | Commit | Gate |
 | --- | --- | --- | --- |
 | B2 | Done | `Make MechLab grid blocks explicit` | G3 MechLab feel |
-| B3 | Next | `Prove loadout battle effects` | G3 MechLab feel |
-| C1 | Pending | `Simplify debrief player flow` | G4 Battle loop |
+| B3 | Done | `Prove loadout battle effects` | G3 MechLab feel |
+| C1 | Next | `Simplify debrief player flow` | G4 Battle loop |
 | C2 | Pending | `Guard repair and relaunch loop` | G4 Battle loop |
 | D1 | Pending | `Freeze AI observation contract` | G5 AI capability |
 | D2 | Pending | `Guard AI directive adapter` | G5 AI capability |
@@ -1001,6 +1010,10 @@ git diff --check
 
 **Goal:** Prove that what the player fits in MechLab changes BattleCore combat behavior, not only UI preview text.
 
+**Status:** Completed 2026-06-07.
+
+**Result:** BattleCore now has a shared `UnitLoadoutCombatOverrideBuilder` that converts `CombatLoadoutPreview` into battle-ready UnitState overrides. Presentation calls that helper instead of rebuilding loadout stats locally. Validator evidence covers full fitted weapons, reduced mounted weapons, armor filler hardness and heat-sink cooling.
+
 **Files:**
 
 - Read: `unity-mc2-demo/Assets/Scripts/BattleCore/CombatLoadoutPreview.cs`
@@ -1025,6 +1038,8 @@ git diff --check
 ```powershell
 git diff --check
 & "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoValidator.ValidateMissionContract -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-validate-loadout-battle-effects.log"
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoBuilder.BuildWindows64 -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-build-loadout-battle-effects.log"
+& "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo\Builds\Windows\MC2UnityDemo.exe" -batchmode -nographics -mc2SmokeTest -mc2CommandFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo\Assets\StreamingAssets\CommanderScripts\mc2_01-visible-flow-audit.txt" -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-player-visible-flow-after-loadout-battle-effects.log"
 ```
 
 **Acceptance:**

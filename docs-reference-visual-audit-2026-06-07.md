@@ -1163,9 +1163,74 @@ Observed effect:
 
 Remaining issues:
 
-1. B3 still needs to prove fitted weapons, armor and heat sinks affect BattleCore combat behavior rather than only the MechLab preview.
-2. A future visual/manual pass can capture an actual MechLab screenshot or a filler-applied preview after B3 if the default fit is adjusted.
+1. Resolved by Stage 4.3: fitted weapons, armor and heat sinks now have BattleCore validator evidence.
+2. A future visual/manual pass can capture an actual MechLab screenshot or a filler-applied preview if the default fit is adjusted.
 
 Next priority:
 
-1. Stage 4 / Task 4.3 prove loadout battle effects.
+1. Stage 4.3 loadout battle effect proof, then Stage 5 / C1 debrief cleanup.
+
+## Stage 4.3 Loadout Battle Effect Result
+
+Implemented on 2026-06-07:
+
+- Moved the MechLab preview-to-combat conversion into BattleCore with `UnitLoadoutCombatOverrideBuilder`.
+- Kept Unity presentation as a caller of that shared helper, so the UI no longer owns a separate interpretation of fitted combat stats.
+- Added validator evidence that the full default Bushwacker preview applies mounted weapon range, damage, cooldown, heat, weight, armor hardness and heat dissipation to `UnitState`.
+- Added validator evidence that a reduced mounted weapon preview lowers battle-ready heat and total fitted weight.
+- Added validator evidence that an armor filler increases armor hardness and lowers incoming damage multiplier.
+- Added validator evidence that a heat-sink filler increases combat heat dissipation.
+- Preserved the existing full-loadout profile numbers for current demo behavior; subset previews only change stats when fitted weapons are actually removed.
+- Restored Unity scene fileID churn after the Windows build; no scene content change is part of this task.
+
+Modified files:
+
+```text
+unity-mc2-demo/Assets/Scripts/BattleCore/UnitState.cs
+unity-mc2-demo/Assets/Scripts/Presentation/Mc2DemoBootstrap.cs
+unity-mc2-demo/Assets/Editor/Mc2DemoValidator.cs
+docs-reference-visual-audit-2026-06-07.md
+docs-playable-demo-locked-execution-plan-2026-06-07.md
+docs-mc2-detailed-development-plan.md
+```
+
+Validation commands:
+
+```powershell
+git diff --check
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoValidator.ValidateMissionContract -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-validate-loadout-battle-effects.log"
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoBuilder.BuildWindows64 -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-build-loadout-battle-effects.log"
+& "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo\Builds\Windows\MC2UnityDemo.exe" -batchmode -nographics -mc2SmokeTest -mc2CommandFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo\Assets\StreamingAssets\CommanderScripts\mc2_01-visible-flow-audit.txt" -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-player-visible-flow-after-loadout-battle-effects.log"
+```
+
+Validation evidence:
+
+```text
+analysis-output/unity-validate-loadout-battle-effects.log
+analysis-output/unity-build-loadout-battle-effects.log
+analysis-output/unity-player-visible-flow-after-loadout-battle-effects.log
+```
+
+Validation results:
+
+```text
+git diff --check: clean, with Windows line-ending warnings only.
+Validator: MC2 demo contract validation OK.
+Build: Build Finished, Result: Success; MC2 Unity demo Windows build OK.
+Visible-flow smoke: MC2 demo smoke test exiting with code 0.
+```
+
+Observed effect:
+
+- MechLab fitting now has a guarded gameplay path: fitted weapons, armor plates and heat sinks change the same UnitState fields BattleCore uses during combat.
+- The code path is deterministic and catalog-driven; this task does not rebalance weapon numbers or add new economy/save behavior.
+- The visible-flow smoke still passes after moving the loadout combat conversion out of presentation code.
+
+Remaining issues:
+
+1. The debrief screen still needs a normal-player pass so it shows result, damage, payout, repair and relaunch without save-slot or account-management wording.
+2. A future visual/manual pass can capture a filler-applied MechLab screenshot once the default fit exposes a clean spare-cell example.
+
+Next priority:
+
+1. Stage 5 / C1 simplify debrief player flow.

@@ -678,4 +678,194 @@ namespace MC2Demo.BattleCore
         public string primaryWeaponType;
         public int primarySpecialEffect;
     }
+
+    public static class UnitLoadoutCombatOverrideBuilder
+    {
+        public static UnitLoadoutCombatOverride Build(CombatProfile profile, CombatLoadoutPreview preview)
+        {
+            if (profile == null)
+            {
+                return null;
+            }
+
+            CombatWeaponDefinition[] sourceWeapons = profile.Weapons ?? Array.Empty<CombatWeaponDefinition>();
+            CombatWeaponDefinition[] mountedWeapons = MountedWeaponsForPreview(sourceWeapons, preview);
+            float heatSinkBonus = preview?.Validation.TotalHeatDissipationBonus ?? 0f;
+            float armorHardnessBonus = preview?.Validation.TotalArmorHardnessBonus ?? 0f;
+            float mountedWeight = CalculateMountedWeight(mountedWeapons);
+            bool hasFullSourceWeaponSet = mountedWeapons.Length == sourceWeapons.Length;
+            if (mountedWeapons.Length <= 0)
+            {
+                return new UnitLoadoutCombatOverride
+                {
+                    weaponRange = 0f,
+                    weaponDamage = 0f,
+                    weaponCooldown = profile.WeaponCooldown,
+                    heatPerShot = 0f,
+                    heatDissipationPerSecond = profile.HeatDissipationPerSecond + heatSinkBonus,
+                    armorHardnessBonus = armorHardnessBonus,
+                    totalWeaponWeight = preview?.Validation.TotalWeight ?? 0f,
+                    primaryWeaponName = "No Weapons",
+                    primaryWeaponType = "Generic",
+                    primarySpecialEffect = 0
+                };
+            }
+
+            CombatWeaponDefinition primaryWeapon = SelectPrimaryWeapon(mountedWeapons);
+            return new UnitLoadoutCombatOverride
+            {
+                weaponRange = hasFullSourceWeaponSet ? profile.WeaponRange : CalculateWeaponRange(mountedWeapons),
+                weaponDamage = hasFullSourceWeaponSet ? profile.WeaponDamage : CalculateWeaponDamage(mountedWeapons),
+                weaponCooldown = hasFullSourceWeaponSet ? profile.WeaponCooldown : CalculateWeaponCooldown(primaryWeapon, profile),
+                heatPerShot = hasFullSourceWeaponSet ? profile.HeatPerShot : CalculateHeatPerShot(mountedWeapons),
+                heatDissipationPerSecond = profile.HeatDissipationPerSecond + heatSinkBonus,
+                armorHardnessBonus = armorHardnessBonus,
+                totalWeaponWeight = preview?.Validation.TotalWeight ?? mountedWeight,
+                primaryWeaponName = hasFullSourceWeaponSet && !string.IsNullOrEmpty(profile.PrimaryWeaponName)
+                    ? profile.PrimaryWeaponName
+                    : string.IsNullOrEmpty(primaryWeapon?.name) ? "Mounted Weapons" : primaryWeapon.name,
+                primaryWeaponType = hasFullSourceWeaponSet && !string.IsNullOrEmpty(profile.PrimaryWeaponType)
+                    ? profile.PrimaryWeaponType
+                    : string.IsNullOrEmpty(primaryWeapon?.type) ? "Generic" : primaryWeapon.type,
+                primarySpecialEffect = hasFullSourceWeaponSet && profile.PrimarySpecialEffect != 0
+                    ? profile.PrimarySpecialEffect
+                    : primaryWeapon?.specialEffect ?? 0
+            };
+        }
+
+        private static CombatWeaponDefinition[] MountedWeaponsForPreview(CombatWeaponDefinition[] sourceWeapons, CombatLoadoutPreview preview)
+        {
+            sourceWeapons ??= Array.Empty<CombatWeaponDefinition>();
+            CombatLoadoutPreviewItem[] items = preview?.Items ?? Array.Empty<CombatLoadoutPreviewItem>();
+            if (items.Length == 0)
+            {
+                return sourceWeapons;
+            }
+
+            bool[] mounted = new bool[sourceWeapons.Length];
+            int mountedCount = 0;
+            for (int index = 0; index < items.Length; index++)
+            {
+                int sourceWeaponIndex = items[index]?.SourceWeaponIndex ?? -1;
+                if (sourceWeaponIndex < 0 || sourceWeaponIndex >= sourceWeapons.Length || mounted[sourceWeaponIndex])
+                {
+                    continue;
+                }
+
+                mounted[sourceWeaponIndex] = true;
+                mountedCount++;
+            }
+
+            if (mountedCount <= 0)
+            {
+                return Array.Empty<CombatWeaponDefinition>();
+            }
+
+            if (mountedCount == sourceWeapons.Length)
+            {
+                return sourceWeapons;
+            }
+
+            CombatWeaponDefinition[] result = new CombatWeaponDefinition[mountedCount];
+            int resultIndex = 0;
+            for (int index = 0; index < sourceWeapons.Length; index++)
+            {
+                if (mounted[index])
+                {
+                    result[resultIndex++] = sourceWeapons[index];
+                }
+            }
+
+            return result;
+        }
+
+        private static CombatWeaponDefinition SelectPrimaryWeapon(CombatWeaponDefinition[] weapons)
+        {
+            CombatWeaponDefinition primary = null;
+            float bestScore = float.MinValue;
+            for (int index = 0; index < weapons.Length; index++)
+            {
+                CombatWeaponDefinition weapon = weapons[index];
+                if (weapon == null)
+                {
+                    continue;
+                }
+
+                float score = weapon.damagePerTenSeconds > 0f
+                    ? weapon.damagePerTenSeconds
+                    : weapon.damage;
+                score += Mathf.Max(0f, weapon.rangeMax) * 0.001f;
+                if (score > bestScore)
+                {
+                    bestScore = score;
+                    primary = weapon;
+                }
+            }
+
+            return primary;
+        }
+
+        private static float CalculateMountedWeight(CombatWeaponDefinition[] weapons)
+        {
+            float total = 0f;
+            for (int index = 0; index < weapons.Length; index++)
+            {
+                CombatWeaponDefinition weapon = weapons[index];
+                if (weapon != null)
+                {
+                    total += Mathf.Max(0f, weapon.weight);
+                }
+            }
+
+            return total;
+        }
+
+        private static float CalculateWeaponRange(CombatWeaponDefinition[] weapons)
+        {
+            float range = 0f;
+            for (int index = 0; index < weapons.Length; index++)
+            {
+                range = Mathf.Max(range, weapons[index]?.rangeMax ?? 0f);
+            }
+
+            return range;
+        }
+
+        private static float CalculateWeaponDamage(CombatWeaponDefinition[] weapons)
+        {
+            float damage = 0f;
+            for (int index = 0; index < weapons.Length; index++)
+            {
+                CombatWeaponDefinition weapon = weapons[index];
+                if (weapon != null)
+                {
+                    damage += Mathf.Max(0f, weapon.damage);
+                }
+            }
+
+            return damage;
+        }
+
+        private static float CalculateWeaponCooldown(CombatWeaponDefinition primaryWeapon, CombatProfile profile)
+        {
+            return primaryWeapon != null && primaryWeapon.recycleTime > 0f
+                ? primaryWeapon.recycleTime
+                : profile.WeaponCooldown;
+        }
+
+        private static float CalculateHeatPerShot(CombatWeaponDefinition[] weapons)
+        {
+            float heat = 0f;
+            for (int index = 0; index < weapons.Length; index++)
+            {
+                CombatWeaponDefinition weapon = weapons[index];
+                if (weapon != null)
+                {
+                    heat += Mathf.Max(0f, weapon.heat);
+                }
+            }
+
+            return heat;
+        }
+    }
 }

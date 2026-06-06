@@ -1050,6 +1050,8 @@ namespace MC2Demo.EditorTools
                 throw new InvalidDataException("Runtime loadout combat override did not clear back to source stats.");
             }
 
+            ValidatePreviewDrivenLoadoutCombatOverride(combatProfiles);
+
             UnitState unarmored = new(new UnitSpawn
             {
                 spawnId = "unarmored-damage-test",
@@ -1150,6 +1152,152 @@ namespace MC2Demo.EditorTools
             {
                 throw new InvalidDataException("Runtime armor hardness did not surface mitigation in combat events.");
             }
+        }
+
+        private static void ValidatePreviewDrivenLoadoutCombatOverride(CombatProfileCatalog combatProfiles)
+        {
+            const string unitType = "Bushwacker";
+            CombatProfile profile = combatProfiles.ForUnitType(unitType, true);
+            CombatLoadoutPreview fullPreview = CombatLoadoutPreviewBuilder.Build(unitType, profile);
+            UnitState fullUnit = MakeLoadoutValidationUnit("preview-full-loadout", unitType, combatProfiles);
+            UnitLoadoutCombatOverride fullOverride = UnitLoadoutCombatOverrideBuilder.Build(profile, fullPreview);
+            fullUnit.ApplyDemoLoadout(fullOverride);
+            if (!fullUnit.HasAppliedDemoLoadout
+                || Math.Abs(fullUnit.CombatTotalWeaponWeight - fullPreview.Validation.TotalWeight) > 0.001f
+                || Math.Abs(fullUnit.CombatHeatDissipationPerSecond - (profile.HeatDissipationPerSecond + fullPreview.Validation.TotalHeatDissipationBonus)) > 0.001f
+                || Math.Abs(fullUnit.CombatArmorHardnessBonus - fullPreview.Validation.TotalArmorHardnessBonus) > 0.001f
+                || Math.Abs(fullUnit.CombatHeatPerShot - profile.HeatPerShot) > 0.001f
+                || Math.Abs(fullUnit.CombatWeaponRange - profile.WeaponRange) > 0.001f
+                || Math.Abs(fullUnit.CombatWeaponDamage - profile.WeaponDamage) > 0.001f)
+            {
+                throw new InvalidDataException("Preview-driven loadout did not apply full mounted weapon, heat, armor and weight stats to UnitState.");
+            }
+
+            int removedWeaponIndex = FirstWeightedWeaponIndex(profile);
+            bool[] mountedWeapons = new bool[profile.Weapons.Length];
+            for (int index = 0; index < mountedWeapons.Length; index++)
+            {
+                mountedWeapons[index] = true;
+            }
+
+            mountedWeapons[removedWeaponIndex] = false;
+            CombatLoadoutPreview reducedPreview = CombatLoadoutPreviewBuilder.Build(unitType, profile, mountedWeapons);
+            UnitState reducedUnit = MakeLoadoutValidationUnit("preview-reduced-loadout", unitType, combatProfiles);
+            reducedUnit.ApplyDemoLoadout(UnitLoadoutCombatOverrideBuilder.Build(profile, reducedPreview));
+            if (reducedUnit.CombatTotalWeaponWeight >= fullUnit.CombatTotalWeaponWeight
+                || reducedUnit.CombatHeatPerShot >= fullUnit.CombatHeatPerShot
+                || reducedPreview.Validation.TotalWeight >= fullPreview.Validation.TotalWeight
+                || reducedPreview.Validation.TotalHeat >= fullPreview.Validation.TotalHeat)
+            {
+                throw new InvalidDataException("Preview-driven unmounted weapon did not reduce battle-ready heat and weight.");
+            }
+
+            if (!TryFindOpenLoadoutCell(fullPreview, out int fillerX, out int fillerY))
+            {
+                throw new InvalidDataException("Expected an open projected loadout cell for filler combat-effect validation.");
+            }
+
+            CombatLoadoutPreview armorPreview = CombatLoadoutPreviewBuilder.Build(
+                unitType,
+                profile,
+                null,
+                null,
+                new[]
+                {
+                    new CombatLoadoutFillerOverride
+                    {
+                        gridX = fillerX,
+                        gridY = fillerY,
+                        category = LoadoutItemCategory.ArmorPlate
+                    }
+                });
+            UnitState armorUnit = MakeLoadoutValidationUnit("preview-armor-loadout", unitType, combatProfiles);
+            armorUnit.ApplyDemoLoadout(UnitLoadoutCombatOverrideBuilder.Build(profile, armorPreview));
+            if (armorPreview.Validation.TotalArmorHardnessBonus <= fullPreview.Validation.TotalArmorHardnessBonus
+                || Math.Abs(armorUnit.CombatArmorHardnessBonus - armorPreview.Validation.TotalArmorHardnessBonus) > 0.001f
+                || armorUnit.CombatIncomingDamageMultiplier >= 1f)
+            {
+                throw new InvalidDataException("Preview-driven armor filler did not apply armor hardness to UnitState combat stats.");
+            }
+
+            CombatLoadoutPreview heatSinkPreview = CombatLoadoutPreviewBuilder.Build(
+                unitType,
+                profile,
+                null,
+                null,
+                new[]
+                {
+                    new CombatLoadoutFillerOverride
+                    {
+                        gridX = fillerX,
+                        gridY = fillerY,
+                        category = LoadoutItemCategory.HeatSink
+                    }
+                });
+            UnitState heatSinkUnit = MakeLoadoutValidationUnit("preview-heat-sink-loadout", unitType, combatProfiles);
+            heatSinkUnit.ApplyDemoLoadout(UnitLoadoutCombatOverrideBuilder.Build(profile, heatSinkPreview));
+            if (heatSinkPreview.Validation.TotalHeatDissipationBonus <= fullPreview.Validation.TotalHeatDissipationBonus
+                || Math.Abs(heatSinkUnit.CombatHeatDissipationPerSecond - (profile.HeatDissipationPerSecond + heatSinkPreview.Validation.TotalHeatDissipationBonus)) > 0.001f)
+            {
+                throw new InvalidDataException("Preview-driven heat-sink filler did not apply cooling to UnitState combat stats.");
+            }
+        }
+
+        private static UnitState MakeLoadoutValidationUnit(string spawnId, string unitType, CombatProfileCatalog combatProfiles)
+        {
+            return new UnitState(new UnitSpawn
+            {
+                spawnId = spawnId,
+                teamId = 0,
+                isPlayerUnit = true,
+                unitType = unitType,
+                position = new MissionPose()
+            }, combatProfiles);
+        }
+
+        private static int FirstWeightedWeaponIndex(CombatProfile profile)
+        {
+            CombatWeaponDefinition[] weapons = profile?.Weapons ?? Array.Empty<CombatWeaponDefinition>();
+            for (int index = 0; index < weapons.Length; index++)
+            {
+                CombatWeaponDefinition weapon = weapons[index];
+                if (weapon != null && weapon.weight > 0f && weapon.heat > 0f)
+                {
+                    return index;
+                }
+            }
+
+            throw new InvalidDataException("Expected at least one weighted heated weapon for preview-driven loadout validation.");
+        }
+
+        private static bool TryFindOpenLoadoutCell(CombatLoadoutPreview preview, out int x, out int y)
+        {
+            for (int row = 0; row < preview.GridHeight; row++)
+            {
+                for (int column = 0; column < preview.GridWidth; column++)
+                {
+                    bool occupied = false;
+                    foreach (CombatLoadoutPreviewGridCell cell in preview.OccupiedCells)
+                    {
+                        if (cell != null && cell.X == column && cell.Y == row)
+                        {
+                            occupied = true;
+                            break;
+                        }
+                    }
+
+                    if (!occupied)
+                    {
+                        x = column;
+                        y = row;
+                        return true;
+                    }
+                }
+            }
+
+            x = -1;
+            y = -1;
+            return false;
         }
 
         private static DamageSection FindDamageSection(UnitState unit, string sectionName)

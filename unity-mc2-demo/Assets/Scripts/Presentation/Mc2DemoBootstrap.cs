@@ -17501,76 +17501,7 @@ namespace MC2Demo.Presentation
 
         private UnitLoadoutCombatOverride BuildAppliedLoadoutCombatOverride(UnitState unit, CombatLoadoutPreview preview)
         {
-            CombatProfile profile = unit?.Profile;
-            if (profile == null)
-            {
-                return null;
-            }
-
-            CombatWeaponDefinition[] weapons = profile.Weapons ?? Array.Empty<CombatWeaponDefinition>();
-            int mountedCount = 0;
-            float mountedWeight = 0f;
-            CombatWeaponDefinition primaryWeapon = null;
-            float primaryScore = float.MinValue;
-            for (int index = 0; index < weapons.Length; index++)
-            {
-                CombatWeaponDefinition weapon = weapons[index];
-                if (weapon == null)
-                {
-                    continue;
-                }
-
-                mountedCount++;
-                mountedWeight += Mathf.Max(0f, weapon.weight);
-                float score = weapon.damagePerTenSeconds > 0f
-                    ? weapon.damagePerTenSeconds
-                    : weapon.damage;
-                score += Mathf.Max(0f, weapon.rangeMax) * 0.001f;
-                if (score > primaryScore)
-                {
-                    primaryScore = score;
-                    primaryWeapon = weapon;
-                }
-            }
-
-            float heatSinkBonus = preview?.Validation.TotalHeatDissipationBonus ?? 0f;
-            float armorHardnessBonus = preview?.Validation.TotalArmorHardnessBonus ?? 0f;
-            if (mountedCount <= 0)
-            {
-                return new UnitLoadoutCombatOverride
-                {
-                    weaponRange = 0f,
-                    weaponDamage = 0f,
-                    weaponCooldown = profile.WeaponCooldown,
-                    heatPerShot = 0f,
-                    heatDissipationPerSecond = profile.HeatDissipationPerSecond + heatSinkBonus,
-                    armorHardnessBonus = armorHardnessBonus,
-                    totalWeaponWeight = preview?.Validation.TotalWeight ?? 0f,
-                    primaryWeaponName = "No Weapons",
-                    primaryWeaponType = "Generic",
-                    primarySpecialEffect = 0
-                };
-            }
-
-            return new UnitLoadoutCombatOverride
-            {
-                weaponRange = profile.WeaponRange,
-                weaponDamage = profile.WeaponDamage,
-                weaponCooldown = profile.WeaponCooldown,
-                heatPerShot = profile.HeatPerShot,
-                heatDissipationPerSecond = profile.HeatDissipationPerSecond + heatSinkBonus,
-                armorHardnessBonus = armorHardnessBonus,
-                totalWeaponWeight = preview?.Validation.TotalWeight ?? mountedWeight,
-                primaryWeaponName = string.IsNullOrEmpty(profile.PrimaryWeaponName)
-                    ? string.IsNullOrEmpty(primaryWeapon?.name) ? "Mounted Weapons" : primaryWeapon.name
-                    : profile.PrimaryWeaponName,
-                primaryWeaponType = string.IsNullOrEmpty(profile.PrimaryWeaponType)
-                    ? string.IsNullOrEmpty(primaryWeapon?.type) ? "Generic" : primaryWeapon.type
-                    : profile.PrimaryWeaponType,
-                primarySpecialEffect = profile.PrimarySpecialEffect != 0
-                    ? profile.PrimarySpecialEffect
-                    : primaryWeapon?.specialEffect ?? 0
-            };
+            return UnitLoadoutCombatOverrideBuilder.Build(unit?.Profile, preview);
         }
 
         private bool HasAppliedLoadoutState(string key)
