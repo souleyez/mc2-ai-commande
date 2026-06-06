@@ -14,9 +14,10 @@
 
 日期：2026-06-07。
 
-这份文档是当前最细的施工蓝图。历史和背景继续保留在：
+这份文档是旧细化施工蓝图。当前锁定执行入口已经更新为 `docs-playable-demo-locked-execution-plan-2026-06-07.md`；本文件继续保留历史上下文和阶段记录。
 
-- `docs-playable-demo-completion-plan-2026-06-07.md`: 当前主执行计划和阶段清单。
+- `docs-playable-demo-locked-execution-plan-2026-06-07.md`: 当前锁定执行版计划，按真实文件、步骤、验证和验收推进。
+- `docs-playable-demo-completion-plan-2026-06-07.md`: 阶段摘要计划和历史清单。
 - `docs-reference-visual-audit-2026-06-07.md`: 截图、sidecar、validator 和 smoke 证据。
 - `docs-mc2-detailed-development-plan.md`: 产品和架构总览。
 - `docs-content-replacement-plan.md`: 私有参考内容包到公开替换包的边界。

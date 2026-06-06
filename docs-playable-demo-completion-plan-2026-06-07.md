@@ -12,11 +12,12 @@
 
 ## 0. How To Use This Plan
 
-这是 2026-06-07 起的主执行计划。以后继续开发时，优先打开这份文件，再按任务顺序推进。
+这是 2026-06-07 起的阶段摘要计划。后续日常执行优先打开 `docs-playable-demo-locked-execution-plan-2026-06-07.md`，这份文件保留阶段背景、历史状态和任务索引。
 
 配套文档：
 
-- `docs-playable-demo-detailed-roadmap-2026-06-07.md`: 当前最细施工蓝图，按提交顺序列出文件、步骤、验证和验收。
+- `docs-playable-demo-locked-execution-plan-2026-06-07.md`: 当前锁定执行版计划，按真实文件、步骤、验证和验收推进。
+- `docs-playable-demo-detailed-roadmap-2026-06-07.md`: 旧细化路线图，继续保留为历史上下文。
 - `docs-reference-visual-audit-2026-06-07.md`: 截图、sidecar 和 smoke 证据。
 - `docs-playable-demo-current-detailed-plan-2026-06-07.md`: 旧主计划和历史上下文。
 - `docs-content-replacement-plan.md`: 私有参考包、公开替换包和版权边界。
