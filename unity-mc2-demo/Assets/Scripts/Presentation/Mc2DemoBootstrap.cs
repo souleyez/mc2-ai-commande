@@ -158,6 +158,9 @@ namespace MC2Demo.Presentation
         private static readonly Color LoadoutMediumWeaponColor = new(0.10f, 0.36f, 0.82f, 1f);
         private static readonly Color LoadoutLongWeaponColor = new(0.78f, 0.14f, 0.14f, 1f);
         private static readonly Color LoadoutComponentColor = new(0.90f, 0.72f, 0.16f, 1f);
+        private static readonly Color LoadoutWeaponBlockFrameColor = new(0.015f, 0.02f, 0.025f, 0.98f);
+        private static readonly Color LoadoutComponentBlockFrameColor = new(0.42f, 0.30f, 0.05f, 0.96f);
+        private static readonly Color LoadoutBlockDividerColor = new(0.015f, 0.025f, 0.028f, 0.50f);
 
         [Serializable]
         private sealed class VisualCaptureSidecar
@@ -3934,6 +3937,7 @@ namespace MC2Demo.Presentation
             LoadoutCompactCheck nudgeCheck = BuildLoadoutNudgeCompactCheck();
             LoadoutCompactCheck placementHeaderCheck = BuildLoadoutPlacementHeaderCompactCheck(unit, preview);
             LoadoutCompactCheck blockLabelCheck = BuildLoadoutBlockLabelCompactCheck(unit, preview);
+            LoadoutCompactCheck gridBlockCueCheck = BuildLoadoutGridBlockCueCompactCheck(preview);
             LoadoutCompactCheck selectedSummaryCheck = BuildLoadoutSelectedSummaryCompactCheck(unit, preview, weapons[0]);
             LoadoutCompactCheck weaponDetailCheck = BuildLoadoutWeaponDetailCompactCheck(unit, preview);
             LoadoutCompactCheck componentDetailCheck = BuildLoadoutComponentDetailCompactCheck();
@@ -3968,6 +3972,8 @@ namespace MC2Demo.Presentation
                 + " "
                 + blockLabelCheck.Summary
                 + " "
+                + gridBlockCueCheck.Summary
+                + " "
                 + selectedSummaryCheck.Summary
                 + " "
                 + weaponDetailCheck.Summary
@@ -4000,6 +4006,7 @@ namespace MC2Demo.Presentation
                     && nudgeCheck.Accepted
                     && placementHeaderCheck.Accepted
                     && blockLabelCheck.Accepted
+                    && gridBlockCueCheck.Accepted
                     && selectedSummaryCheck.Accepted
                     && weaponDetailCheck.Accepted
                     && componentDetailCheck.Accepted
@@ -4701,6 +4708,87 @@ namespace MC2Demo.Presentation
                 + armorLabel
                 + "/"
                 + sinkLabel);
+        }
+
+        private static LoadoutCompactCheck BuildLoadoutGridBlockCueCompactCheck(CombatLoadoutPreview preview)
+        {
+            string cueSummary = LoadoutGridBlockCueSummary();
+            bool hasContiguousWeapon = false;
+            bool hasPlacedSingleCellFiller = false;
+            bool hasShapeLabel = false;
+            CombatLoadoutPreviewGridCell[] occupiedCells = preview?.OccupiedCells ?? Array.Empty<CombatLoadoutPreviewGridCell>();
+            for (int index = 0; index < occupiedCells.Length; index++)
+            {
+                CombatLoadoutPreviewGridCell cell = occupiedCells[index];
+                int blockCells = CountLoadoutBlockCells(preview, cell);
+                if (cell != null && cell.SourceWeaponIndex >= 0 && blockCells > 1)
+                {
+                    hasContiguousWeapon = true;
+                    hasShapeLabel |= LoadoutBlockShapeText(preview, cell).IndexOf("x", StringComparison.Ordinal) > 0;
+                }
+
+                if (cell != null
+                    && cell.SourceWeaponIndex < 0
+                    && (cell.Category == LoadoutItemCategory.ArmorPlate || cell.Category == LoadoutItemCategory.HeatSink)
+                    && blockCells == 1)
+                {
+                    hasPlacedSingleCellFiller = true;
+                }
+            }
+
+            bool hasSingleCellFillerLanguage = HasLoadoutSingleCellFillerLanguage();
+            bool hasSingleCellFiller = hasPlacedSingleCellFiller || hasSingleCellFillerLanguage;
+            bool accepted = hasContiguousWeapon
+                && hasSingleCellFiller
+                && hasShapeLabel
+                && cueSummary.IndexOf("outer-frame", StringComparison.Ordinal) >= 0
+                && cueSummary.IndexOf("cell-dividers", StringComparison.Ordinal) >= 0
+                && cueSummary.IndexOf("single-cell-filler", StringComparison.Ordinal) >= 0
+                && cueSummary.IndexOf("shape-label", StringComparison.Ordinal) >= 0;
+            return new LoadoutCompactCheck(
+                accepted,
+                cueSummary
+                + " preview=weaponBlock:"
+                + (hasContiguousWeapon ? "yes" : "no")
+                + "/filler:"
+                + (hasPlacedSingleCellFiller ? "yes" : hasSingleCellFillerLanguage ? "target" : "no")
+                + "/shape:"
+                + (hasShapeLabel ? "yes" : "no"));
+        }
+
+        private static string LoadoutGridBlockCueSummary()
+        {
+            return "GridBlock=outer-frame+contiguous-weapon+cell-dividers+single-cell-filler+shape-label";
+        }
+
+        private static bool HasLoadoutSingleCellFillerLanguage()
+        {
+            string armorLabel = LoadoutBlockLabel(
+                null,
+                new CombatLoadoutPreviewGridCell(
+                    0,
+                    0,
+                    -1,
+                    "synthetic-armor",
+                    "Armor Plate",
+                    LoadoutItemCategory.ArmorPlate,
+                    ""));
+            string sinkLabel = LoadoutBlockLabel(
+                null,
+                new CombatLoadoutPreviewGridCell(
+                    0,
+                    0,
+                    -1,
+                    "synthetic-sink",
+                    "Heat Sink",
+                    LoadoutItemCategory.HeatSink,
+                    ""));
+            string armorDetail = SyntheticComponentDetail(LoadoutItemCategory.ArmorPlate, "Armor Plate");
+            string sinkDetail = SyntheticComponentDetail(LoadoutItemCategory.HeatSink, "Heat Sink");
+            return string.Equals(armorLabel, "A+", StringComparison.Ordinal)
+                && string.Equals(sinkLabel, "C+", StringComparison.Ordinal)
+                && armorDetail.IndexOf("C1 1x1", StringComparison.Ordinal) >= 0
+                && sinkDetail.IndexOf("C1 1x1", StringComparison.Ordinal) >= 0;
         }
 
         private LoadoutCompactCheck BuildLoadoutSelectedSummaryCompactCheck(
@@ -15591,12 +15679,15 @@ namespace MC2Demo.Presentation
 
                 Rect block = LoadoutBlockRect(occupiedCells, occupiedCell, x + 1f, y + 1f, cellSize, gap);
                 DrawColorRect(new Rect(block.x + 1f, block.y + 1f, block.width - 2f, block.height - 2f), LoadoutBlockColor(unit, occupiedCell));
-                DrawRectBorder(block, new Color(0.015f, 0.02f, 0.025f, 0.95f), 1f);
-                if (occupiedCell.SourceWeaponIndex >= 0 && occupiedCell.SourceWeaponIndex == selectedWeaponIndex)
-                {
-                    DrawRectBorder(block, new Color(1f, 0.95f, 0.22f, 1f), 2f);
-                }
-
+                DrawLoadoutBlockFrame(
+                    occupiedCells,
+                    occupiedCell,
+                    block,
+                    x + 1f,
+                    y + 1f,
+                    cellSize,
+                    gap,
+                    occupiedCell.SourceWeaponIndex >= 0 && occupiedCell.SourceWeaponIndex == selectedWeaponIndex);
                 DrawLoadoutBlockLabel(block, LoadoutBlockLabel(unit, occupiedCell));
             }
 
@@ -15868,6 +15959,73 @@ namespace MC2Demo.Presentation
             return new Rect(x, y, width, height);
         }
 
+        private void DrawLoadoutBlockFrame(
+            CombatLoadoutPreviewGridCell[] occupiedCells,
+            CombatLoadoutPreviewGridCell blockCell,
+            Rect block,
+            float gridOriginX,
+            float gridOriginY,
+            float cellSize,
+            float gap,
+            bool isSelected)
+        {
+            if (blockCell == null)
+            {
+                return;
+            }
+
+            bool isWeapon = blockCell.SourceWeaponIndex >= 0;
+            bool isFiller = !isWeapon
+                && (blockCell.Category == LoadoutItemCategory.ArmorPlate || blockCell.Category == LoadoutItemCategory.HeatSink);
+            if (isWeapon)
+            {
+                DrawLoadoutBlockCellDividers(occupiedCells, blockCell, gridOriginX, gridOriginY, cellSize, gap);
+            }
+            else if (isFiller)
+            {
+                Rect inset = new(block.x + 4f, block.y + 4f, Mathf.Max(1f, block.width - 8f), Mathf.Max(1f, block.height - 8f));
+                DrawRectBorder(inset, new Color(1f, 0.92f, 0.34f, 0.68f), 1f);
+            }
+
+            DrawRectBorder(block, isWeapon ? LoadoutWeaponBlockFrameColor : LoadoutComponentBlockFrameColor, isWeapon ? 2f : 1.5f);
+            Color accent = isWeapon ? UiCyanColor : UiAmberColor;
+            DrawColorRect(new Rect(block.x + 2f, block.y + 2f, Mathf.Max(1f, block.width - 4f), 2f), new Color(accent.r, accent.g, accent.b, isWeapon ? 0.70f : 0.52f));
+            if (isSelected)
+            {
+                DrawRectBorder(new Rect(block.x - 1f, block.y - 1f, block.width + 2f, block.height + 2f), new Color(1f, 0.95f, 0.22f, 1f), 2f);
+            }
+        }
+
+        private void DrawLoadoutBlockCellDividers(
+            CombatLoadoutPreviewGridCell[] occupiedCells,
+            CombatLoadoutPreviewGridCell blockCell,
+            float gridOriginX,
+            float gridOriginY,
+            float cellSize,
+            float gap)
+        {
+            if (occupiedCells == null || CountLoadoutBlockCells(occupiedCells, blockCell) <= 1)
+            {
+                return;
+            }
+
+            for (int index = 0; index < occupiedCells.Length; index++)
+            {
+                CombatLoadoutPreviewGridCell cell = occupiedCells[index];
+                if (!SameLoadoutBlock(cell, blockCell))
+                {
+                    continue;
+                }
+
+                Rect cellRect = new(
+                    gridOriginX + cell.X * (cellSize + gap),
+                    gridOriginY + cell.Y * (cellSize + gap),
+                    cellSize,
+                    cellSize);
+                DrawRectBorder(new Rect(cellRect.x + 2f, cellRect.y + 2f, cellRect.width - 4f, cellRect.height - 4f), LoadoutBlockDividerColor, 1f);
+            }
+        }
+
         private void DrawLoadoutBlockLabel(Rect block, string text)
         {
             if (string.IsNullOrWhiteSpace(text))
@@ -16108,8 +16266,13 @@ namespace MC2Demo.Presentation
 
         private static int CountLoadoutBlockCells(CombatLoadoutPreview preview, CombatLoadoutPreviewGridCell blockCell)
         {
+            return CountLoadoutBlockCells(preview?.OccupiedCells ?? Array.Empty<CombatLoadoutPreviewGridCell>(), blockCell);
+        }
+
+        private static int CountLoadoutBlockCells(CombatLoadoutPreviewGridCell[] cells, CombatLoadoutPreviewGridCell blockCell)
+        {
             int count = 0;
-            CombatLoadoutPreviewGridCell[] cells = preview?.OccupiedCells ?? Array.Empty<CombatLoadoutPreviewGridCell>();
+            cells ??= Array.Empty<CombatLoadoutPreviewGridCell>();
             for (int index = 0; index < cells.Length; index++)
             {
                 if (SameLoadoutBlock(cells[index], blockCell))

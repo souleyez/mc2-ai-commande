@@ -36,7 +36,7 @@
 5. `Lock section damage and ejection cues` 已完成并提交为 `db1efa7`。
 6. `Lock armor hardness damage rule` 已完成并提交为 `e7c4a07`。
 7. 当前处在 Stage 4 MechLab，`Audit mounted weapon semantics` 已完成并提交为 `8010a56`。
-8. 下一步优先做 `Make MechLab grid blocks explicit`，先把装配格子做成一眼能懂的整块武器和单格填充物。
+8. `Make MechLab grid blocks explicit` 已完成验证，下一步优先做 `Prove loadout battle effects`。
 9. 工作树提交前必须保持干净；Unity scene fileID churn 不得误提交，生成截图/日志/JSON 默认不进 Git。
 
 当前已知真实文件校准：
@@ -228,7 +228,7 @@ Do not stage generated PNG/JSON/log evidence unless explicitly requested.
 | Weapon effects | Completed for current pass | Needs only regression unless `damage-demo` becomes unreadable | Guard with combat situation smoke and damage capture |
 | Section damage/ejection | Completed for current pass | Future polish can add closer motion/capture readability | Regression only unless `damage-demo` regresses |
 | Armor hardness | Completed for current pass | Future tuning can adjust numbers, not the rule shape | Regression only |
-| MechLab | Active | Weapon toggle semantics are cleaned; grid blocks still need original-like fitting polish | Start Stage 4.2 |
+| MechLab | Active | Mounted weapon semantics and grid block cues are cleaned; loadout values still need battle-effect proof | Start Stage 4.3 |
 | Debrief/repair | Basic | Needs clean first-demo loop, no save UI in normal flow | Stage 5 |
 | AI deputy | Experimental | Needs compact optional capability window and offline fallback | Stage 6 |
 | Public safety | Partially documented | Needs build/content guard and README cleanup where needed | Stage 7 |
@@ -471,6 +471,10 @@ git diff --check
 **Commit:** `Audit mounted weapon semantics`
 
 ### Task 4.2: Make MechLab Grid Blocks Explicit
+
+**Status:** Completed 2026-06-07.
+
+**Result:** `Mc2DemoBootstrap` now draws stronger MechLab block frames for contiguous mounted weapon shapes, adds internal cell dividers, adds selected-block framing, and gives armor/heat-sink filler cells their own single-cell frame language. The loadout compact smoke now guards `GridBlock=outer-frame+contiguous-weapon+cell-dividers+single-cell-filler+shape-label` and reports `preview=weaponBlock:yes/filler:target/shape:yes` for the default Bushwacker fitting surface.
 
 **Goal:** Weapons are contiguous multi-cell blocks; armor plates and heat sinks are single-cell fillers.
 
@@ -913,12 +917,13 @@ Recently completed:
 | 7 | `Lock section damage and ejection cues` | Arm loss, leg disable and cockpit ejection have guarded world cues | validator, build, `damage-demo`, smoke |
 | 8 | `Lock armor hardness damage rule` | Armor is one deterministic hardness value before section damage | validator |
 | 9 | `Audit mounted weapon semantics` | Mounted weapon means active weapon; no player-facing weapon toggle remains | `rg` audit, validator |
+| 10 | `Make MechLab grid blocks explicit` | MechLab grid shows block frames, cell dividers and single-cell filler language | validator, build, loadout smoke |
 
 Current state:
 
 - Current stage: Stage 4 / MechLab Feel Lock.
-- Current next commit: `Make MechLab grid blocks explicit`.
-- Current demo risk: MechLab fitting still does not yet sell the original-like "whole weapon block in a grid" fantasy strongly enough.
+- Current next commit: `Prove loadout battle effects`.
+- Current demo risk: MechLab preview now has stronger grid block language, but B3 still needs to prove fitted weapons, armor and heat sinks affect BattleCore combat behavior.
 - Current build risk: Unity batch build can dirty `Assets/Scenes/Mc2Demo.unity` with fileID churn; inspect and restore before commit.
 - Current content risk: private reference content can be used locally for validation but must stay out of Git and public packages.
 
@@ -926,8 +931,8 @@ Next commits:
 
 | Order | Status | Commit | Gate |
 | --- | --- | --- | --- |
-| B2 | Next | `Make MechLab grid blocks explicit` | G3 MechLab feel |
-| B3 | Pending | `Prove loadout battle effects` | G3 MechLab feel |
+| B2 | Done | `Make MechLab grid blocks explicit` | G3 MechLab feel |
+| B3 | Next | `Prove loadout battle effects` | G3 MechLab feel |
 | C1 | Pending | `Simplify debrief player flow` | G4 Battle loop |
 | C2 | Pending | `Guard repair and relaunch loop` | G4 Battle loop |
 | D1 | Pending | `Freeze AI observation contract` | G5 AI capability |

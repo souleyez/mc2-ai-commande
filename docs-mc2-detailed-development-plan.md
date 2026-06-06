@@ -29,8 +29,9 @@
 - 默认全队命令、状态栏单机独立命令、独立完成后自动归队、喷射合法落点和可见闭环都已有 smoke 或 validator 覆盖。
 - Combat Feel 当前锁定到可继续回归的程度：武器类型方向 cue、断臂/腿瘫/驾驶舱弹射 cue、装甲硬度规则已经完成。
 - MechLab 已完成 mounted weapon 语义审计：装上的武器就是启用的武器，不再做玩家可见武器开关。
-- 当前下一步是 Stage 4 / B2：把 MechLab 格子显示做得更像“整块武器放进槽位，装甲板和散热器填剩余单格”。
-- 后续短线顺序是：B2 格子块视觉，B3 装配影响战斗，C1 战报简化，C2 一键维修再战，D1-D3 AI 副官能力窗口，E1-E5 公开边界和演示交付。
+- Stage 4 / B2 已完成：MechLab 格子显示已经有整块武器外框、块内分格线和单格 filler 语言的 smoke 证据。
+- 当前下一步是 Stage 4 / B3：证明当前装配会真正影响 BattleCore 中的武器、热量、装甲和战斗表现。
+- 后续短线顺序是：B3 装配影响战斗，C1 战报简化，C2 一键维修再战，D1-D3 AI 副官能力窗口，E1-E5 公开边界和演示交付。
 - BattleCore 仍是权威规则层。任何影响移动、伤害、胜负、维修、奖励或 AI 决策的内容，必须先有 BattleCore/contract 证据，再做 Unity 表现。
 
 当前项目不是从零开始，已经进入“可见 Demo 打磨”阶段。核心问题已经从“能不能跑”转为“看起来是否像一款可信的战术机甲游戏”。
@@ -1022,12 +1023,11 @@ Commit 15：本地演示包整理。
 
 ## 11. 下一步
 
-下一次继续开发时，按 `docs-playable-demo-locked-execution-plan-2026-06-07.md` 执行，从 **B2: Make MechLab Grid Blocks Explicit** 开始。战场可读性、物理占位、固定镜头、武器 cue、部位损伤/弹射 cue、装甲硬度和 mounted weapon 语义都已经收好，下一步重点是把机甲装配变成第二个能讲清楚、能截图演示的核心卖点：
+下一次继续开发时，按 `docs-playable-demo-locked-execution-plan-2026-06-07.md` 执行，从 **B3: Prove Loadout Battle Effects** 开始。战场可读性、物理占位、固定镜头、武器 cue、部位损伤/弹射 cue、装甲硬度、mounted weapon 语义和 MechLab grid block cue 都已经收好，下一步重点是证明装配不是假界面，而是会进入 BattleCore：
 
-1. B2 MechLab grid blocks：武器以连续整块显示，装甲板/散热器以单格填充显示，并用 smoke 守住格子 cue。
-2. B3 loadout battle effects：证明当前装配会影响 BattleCore 中的武器、热量、装甲和战斗表现。
-3. C1-C2 battle loop：收简洁战报、一键维修和重新出战，不暴露复杂保存系统。
-4. D1-D3 AI deputy：只做高层 observation/directive 和一个可选建议窗口，模型慢或无 key 不影响本地 Demo。
-5. E1-E5 handoff：补公开内容边界、public build 安全检查、三分钟演示脚本、可重复 Windows 构建和证据包。
+1. B3 loadout battle effects：证明当前装配会影响 BattleCore 中的武器、热量、装甲和战斗表现。
+2. C1-C2 battle loop：收简洁战报、一键维修和重新出战，不暴露复杂保存系统。
+3. D1-D3 AI deputy：只做高层 observation/directive 和一个可选建议窗口，模型慢或无 key 不影响本地 Demo。
+4. E1-E5 handoff：补公开内容边界、public build 安全检查、三分钟演示脚本、可重复 Windows 构建和证据包。
 
 短期不要插入服务器、经济、PVP、移动端或链上功能。那些方向已经有长期边界，现在第一优先级仍是 Windows 本地可玩 Demo 的“装配 -> 出战 -> 指挥 -> 损伤 -> 战报 -> 维修再战”闭环。

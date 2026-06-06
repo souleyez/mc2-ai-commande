@@ -1107,3 +1107,65 @@ Next priority:
 
 1. Stage 4 / Task 4.2 make MechLab grid blocks explicit.
 2. Then Stage 4 / Task 4.3 prove loadout battle effects.
+
+## Stage 4.2 MechLab Grid Block Result
+
+Implemented on 2026-06-07:
+
+- Strengthened the MechLab projected grid rendering so mounted weapons read as contiguous blocks instead of independent colored cells.
+- Added block-level outer frames, selected weapon frames and subtle internal cell dividers for multi-cell weapon shapes.
+- Added a single-cell filler frame language for armor plates and heat sinks.
+- Added a compact smoke assertion summary that guards the grid cue language: `GridBlock=outer-frame+contiguous-weapon+cell-dividers+single-cell-filler+shape-label`.
+- Kept the existing click/select/nudge placement model and did not add any weapon enable/disable UI.
+- Confirmed the default Bushwacker loadout preview has a multi-cell weapon block and shape label; it currently exposes filler placement language as `filler:target` because the default fit is overweight and does not auto-place armor/sink fillers.
+- Restored Unity scene fileID churn after the Windows build; no scene content change is part of this task.
+
+Modified files:
+
+```text
+unity-mc2-demo/Assets/Scripts/Presentation/Mc2DemoBootstrap.cs
+docs-reference-visual-audit-2026-06-07.md
+docs-playable-demo-locked-execution-plan-2026-06-07.md
+```
+
+Validation commands:
+
+```powershell
+git diff --check
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoValidator.ValidateMissionContract -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-validate-mechlab-grid-blocks.log"
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoBuilder.BuildWindows64 -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-build-mechlab-grid-blocks.log"
+& "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo\Builds\Windows\MC2UnityDemo.exe" -batchmode -nographics -mc2SmokeTest -mc2CommandFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo\Assets\StreamingAssets\CommanderScripts\mc2_01-loadout-compact.txt" -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-player-mechlab-grid-blocks.log"
+```
+
+Validation evidence:
+
+```text
+analysis-output/unity-validate-mechlab-grid-blocks.log
+analysis-output/unity-build-mechlab-grid-blocks.log
+analysis-output/unity-player-mechlab-grid-blocks.log
+```
+
+Validation results:
+
+```text
+git diff --check: clean, with Windows line-ending warnings only.
+Validator: MC2 demo contract validation OK.
+Build: Build Finished, Result: Success; MC2 Unity demo Windows build OK.
+Loadout compact smoke: MC2 demo smoke test exiting with code 0.
+Smoke assertion: GridBlock=outer-frame+contiguous-weapon+cell-dividers+single-cell-filler+shape-label preview=weaponBlock:yes/filler:target/shape:yes.
+```
+
+Observed effect:
+
+- The fitting grid now has a stronger visual hierarchy: mounted weapons are framed as blocks, selected weapons get an additional frame, and multi-cell weapons show internal cell division without returning to per-cell weapon toggles.
+- The compact smoke summary proves that the selected MechLab preview has a contiguous weapon block and shape label.
+- The one-cell armor/sink filler language is guarded through labels, component detail and target placement actions, while the default overweight fit correctly does not auto-place new filler pieces.
+
+Remaining issues:
+
+1. B3 still needs to prove fitted weapons, armor and heat sinks affect BattleCore combat behavior rather than only the MechLab preview.
+2. A future visual/manual pass can capture an actual MechLab screenshot or a filler-applied preview after B3 if the default fit is adjusted.
+
+Next priority:
+
+1. Stage 4 / Task 4.3 prove loadout battle effects.
