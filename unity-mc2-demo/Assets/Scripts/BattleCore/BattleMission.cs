@@ -12,8 +12,15 @@ namespace MC2Demo.BattleCore
         private const float SquadAttackFormationSpacing = 260f;
         private const float SquadAttackUnitStandOff = 120f;
         private const float SquadAttackStructureStandOffPadding = 100f;
-        private const float EnemyAttackMinFormationRadius = 60f;
-        private const float EnemyAttackMaxFormationRadius = 160f;
+        private const int EnemyAttackFormationSlots = 32;
+        private const int EnemyAttackFormationStride = 3;
+        private const float EnemyAttackRangeCushion = 5f;
+        private const float EnemyAttackInfantryMinFormationRadius = 160f;
+        private const float EnemyAttackInfantryMaxFormationRadius = 260f;
+        private const float EnemyAttackVehicleMinFormationRadius = 200f;
+        private const float EnemyAttackVehicleMaxFormationRadius = 370f;
+        private const float EnemyAttackMechMinFormationRadius = 220f;
+        private const float EnemyAttackMechMaxFormationRadius = 400f;
         private const float UnitCollisionInfantryRadius = 20f;
         private const float UnitCollisionVehicleRadius = 42f;
         private const float UnitCollisionMechRadius = 50f;
@@ -530,9 +537,12 @@ namespace MC2Demo.BattleCore
 
             if (BrainEquals(unit, "mc2_01_infantry_ambush") || BrainEquals(unit, "mc2_01_infantry_ambush2"))
             {
-                patrolPoint = BrainEquals(unit, "mc2_01_infantry_ambush2")
+                bool secondAmbush = BrainEquals(unit, "mc2_01_infantry_ambush2");
+                Vector2 anchor = secondAmbush
                     ? new Vector2(3520f, -448f)
                     : new Vector2(3392f, -448f);
+                int step = UnitIdNumber(unit.Id) + (secondAmbush ? 2 : 0);
+                patrolPoint = PatrolRingPoint(anchor, 220f, step, 8);
                 return true;
             }
 
@@ -613,6 +623,13 @@ namespace MC2Demo.BattleCore
                 default:
                     return anchor + new Vector2(0f, -radius);
             }
+        }
+
+        private static Vector2 PatrolRingPoint(Vector2 anchor, float radius, int step, int slots)
+        {
+            int safeSlots = Mathf.Max(1, slots);
+            float angle = Mathf.Abs(step % safeSlots) * (Mathf.PI * 2f / safeSlots);
+            return anchor + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * radius;
         }
 
         private List<UnitState> CommandableSquadUnits()
@@ -810,6 +827,13 @@ namespace MC2Demo.BattleCore
                 && unit.UnitType.IndexOf("Infantry", StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
+        private static bool IsLightVehicleUnit(UnitState unit)
+        {
+            return ContainsIgnoreCase(unit?.UnitType, "Centipede")
+                || ContainsIgnoreCase(unit?.UnitType, "Harasser")
+                || ContainsIgnoreCase(unit?.UnitType, "LRMC");
+        }
+
         private static bool IsMechLikeUnit(UnitState unit)
         {
             if (unit == null || unit.Sections == null)
@@ -915,16 +939,48 @@ namespace MC2Demo.BattleCore
             }
 
             int unitNumber = UnitIdNumber(unit.Id);
-            int slot = Mathf.Abs((unitNumber * 7) % 24);
-            int ring = Mathf.Abs((unitNumber / 24) % 2);
-            float angle = (slot * (Mathf.PI * 2f / 24f)) + (ring * Mathf.PI / 24f);
-            float desiredRadius = Mathf.Clamp(
-                unit.CombatWeaponRange * 0.60f,
-                EnemyAttackMinFormationRadius,
-                EnemyAttackMaxFormationRadius);
-            float radius = Mathf.Min(desiredRadius, Mathf.Max(40f, unit.CombatWeaponRange - 5f));
+            int slot = Mathf.Abs(((unitNumber * EnemyAttackFormationStride) + EnemyFormationSlotOffset(unit))
+                % EnemyAttackFormationSlots);
+            int ring = Mathf.Abs(((unitNumber * 5) + EnemyFormationSlotOffset(unit)) % 3);
+            float angle = slot * (Mathf.PI * 2f / EnemyAttackFormationSlots);
+            float desiredRadius = EnemyAttackDesiredRadius(unit, ring);
+            float radius = Mathf.Min(desiredRadius, Mathf.Max(40f, unit.CombatWeaponRange - EnemyAttackRangeCushion));
 
             return new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * radius;
+        }
+
+        private static float EnemyAttackDesiredRadius(UnitState unit, int ring)
+        {
+            if (IsInfantryUnit(unit))
+            {
+                return Mathf.Clamp(
+                    (unit.CombatWeaponRange * 0.46f) + (ring * 45f),
+                    EnemyAttackInfantryMinFormationRadius,
+                    EnemyAttackInfantryMaxFormationRadius);
+            }
+
+            if (IsLightVehicleUnit(unit))
+            {
+                return Mathf.Clamp(
+                    (unit.CombatWeaponRange * 0.42f) + (ring * 62f),
+                    EnemyAttackVehicleMinFormationRadius,
+                    EnemyAttackVehicleMaxFormationRadius);
+            }
+
+            return Mathf.Clamp(
+                (unit.CombatWeaponRange * 0.40f) + (ring * 70f),
+                EnemyAttackMechMinFormationRadius,
+                EnemyAttackMechMaxFormationRadius);
+        }
+
+        private static int EnemyFormationSlotOffset(UnitState unit)
+        {
+            if (IsInfantryUnit(unit))
+            {
+                return 15;
+            }
+
+            return 0;
         }
 
         private Vector2 ResolveMoveDestination(UnitState unit, Vector2 desiredPoint, Vector2 approach)

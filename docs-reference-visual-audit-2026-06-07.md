@@ -209,3 +209,44 @@ Next priority:
 1. Enemy density and parking spread around the hangar.
 2. First-slice mech/vehicle/turret/prop scale audit.
 3. Commander camera composition if the fight center still feels crowded after spacing.
+
+## Pass 5 Result
+
+Implemented on 2026-06-07:
+
+- Reworked enemy attack slots from the older small attack ring into a deterministic 32-slot spread keyed by unit id, with a step of 3 and a separate infantry offset.
+- Kept attack slots inside real combat-data weapon range. This matters because the real first-slice data uses much shorter ranges than fallback profiles: infantry and Harasser are 100, Centipede and UrbanMech are 150, LRMC is 225.
+- Added an infantry ambush parking ring around the two source ambush anchors instead of sending all ambush infantry to one fixed coordinate.
+- Added validator coverage for both high-pressure enemy attack spacing and infantry ambush parking spread, using the loaded `combat-data.json` profiles rather than only fallback ranges.
+- Preserved the original activation pressure: no enemies were removed and mission triggers remain intact.
+
+Validation evidence:
+
+```text
+analysis-output/unity-validate-enemy-spacing-r4.log
+analysis-output/unity-build-enemy-spacing-r2.log
+analysis-output/unity-player-enemy-spacing-smoke-r2.log
+analysis-output/reference-visual-captures/hangar-contact.png
+analysis-output/reference-visual-captures/hangar-contact.json
+analysis-output/reference-visual-captures/damage-demo.png
+analysis-output/reference-visual-captures/damage-demo.json
+```
+
+Observed effect:
+
+- `hangar-contact` still reports 20 active / 16 visible hostiles, and `damage-demo` still reports 20 active / 19 visible hostiles. Encounter pressure was preserved.
+- The smoke log now shows ambush infantry receiving distinct parking targets such as `unit-15 -> 3547.56/-603.56`, `unit-16 -> 3612/-448`, `unit-17 -> 3547.56/-292.44`, and later units on the second ambush anchor.
+- `hangar-contact` reads more like a tight fight around the hangar instead of every infantry contact sharing the same center point.
+- `damage-demo` remains dense, but the enemy pressure now fans around the hangar/forest side while damaged player-unit state stays visible.
+
+Remaining issues:
+
+1. The first map is still visually dense because 20 enemies can be active around one objective window.
+2. Unit/model scale and silhouette hierarchy now need a pass: mechs, vehicles, infantry, props, and trees still compete visually.
+3. Camera composition may still need a small pass after scale tuning, especially for the hangar/forest flank.
+
+Next priority:
+
+1. First-slice mech/vehicle/turret/prop scale audit.
+2. Commander camera composition if scale tuning does not open the fight center enough.
+3. Later art polish for water edges, roads, and map-edge triangles.

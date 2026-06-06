@@ -38,7 +38,7 @@
 | 阶段 | 状态 | 本阶段产物 | 下一动作 |
 | --- | --- | --- | --- |
 | Phase A: 地形/水面/道路可读性 | Done | 地面、水域、岸线、跑道/道路、建筑基底在截图里可读；提交 `89a686f Improve terrain and water readability` | 只做回归检查，不再主动展开 |
-| Phase B: 第一张地图战场可读性 | Active | 敌我单位不堆点，建筑/树木/炮塔/道具比例可信，固定镜头能看懂战术关系 | 先做 B1 敌方密度和停靠点展开 |
+| Phase B: 第一张地图战场可读性 | Active | 敌我单位不堆点，建筑/树木/炮塔/道具比例可信，固定镜头能看懂战术关系 | 继续 B2 机甲/载具/炮塔/道具比例审计 |
 | Phase C: 指挥战斗闭环 | Next | 默认全队、状态栏单选、独立命令、自动归队、喷射和最小战斗 UI 可稳定演示 | B 阶段截图可读后进入 |
 | Phase D: 损伤、武器和战斗手感 | Next | 激光/导弹/炮弹层次、部位损伤、断臂/瘫痪/驾驶舱弹射能在截图或观战中看见 | C 阶段命令稳定后进入 |
 | Phase E: 原版式装配垂直切片 | Next | 整块武器占格、装甲板/散热器、热量/重量/槽位合法性、配置进战斗 | D 阶段战斗反馈可读后进入 |
@@ -1004,23 +1004,22 @@ Add playable demo walkthrough
 
 ## 13. Commit Order From Here
 
-Recommended next commits from the current active point. Phase A terrain readability is already complete in `89a686f`.
+Recommended next commits from the current active point. Phase A terrain readability is already complete in `89a686f`, and B1 enemy parking spread is complete.
 
-1. `Spread first mission enemy parking`
-2. `Tune first slice visual scale`
-3. `Tune commander camera composition`
-4. `Assert commander command states`
-5. `Finalize squad jet landing rules`
-6. `Freeze minimal battle UI`
-7. `Differentiate weapon visual effects`
-8. `Strengthen mech section damage cues`
-9. `Make mech lab grid item fitting explicit`
-10. `Apply mech lab loadouts in battle`
-11. `Tighten debrief and repair loop`
-12. `Freeze AI commander observation contract`
-13. `Add AI commander directive adapter`
-14. `Document replaceable visual content packs`
-15. `Prepare repeatable Windows demo build`
+1. `Tune first slice visual scale`
+2. `Tune commander camera composition`
+3. `Assert commander command states`
+4. `Finalize squad jet landing rules`
+5. `Freeze minimal battle UI`
+6. `Differentiate weapon visual effects`
+7. `Strengthen mech section damage cues`
+8. `Make mech lab grid item fitting explicit`
+9. `Apply mech lab loadouts in battle`
+10. `Tighten debrief and repair loop`
+11. `Freeze AI commander observation contract`
+12. `Add AI commander directive adapter`
+13. `Document replaceable visual content packs`
+14. `Prepare repeatable Windows demo build`
 
 Every commit should include:
 

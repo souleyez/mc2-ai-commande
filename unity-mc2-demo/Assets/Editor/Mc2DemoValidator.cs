@@ -126,7 +126,8 @@ namespace MC2Demo.EditorTools
             ValidateAirfieldToHangarObjectiveFlow(BattleMission.FromJson(contractJson, combatProfiles));
             ValidateScriptBridgeSignals(BattleMission.FromJson(contractJson, combatProfiles));
             ValidateNavMarkerPatrolOrders();
-            ValidateEnemyAttackFormationSpacing();
+            ValidateInfantryAmbushParkingSpread(combatProfiles);
+            ValidateEnemyAttackFormationSpacing(combatProfiles);
             ValidateUnitCollisionSeparation();
             ValidateStructureCollisionOccupancy();
             ValidateTerrainObjectCollisionOccupancy();
@@ -2258,20 +2259,37 @@ namespace MC2Demo.EditorTools
             }
         }
 
-        private static void ValidateEnemyAttackFormationSpacing()
+        private static void ValidateEnemyAttackFormationSpacing(CombatProfileCatalog combatProfiles)
         {
-            BattleMission mission = new(MakeEnemyAttackFormationContract(), CombatProfileCatalog.Empty);
+            BattleMission mission = new(MakeEnemyAttackFormationContract(), combatProfiles);
             UnitState player = mission.FindUnit("formation-player");
-            UnitState firstEnemy = mission.FindUnit("enemy-1");
-            UnitState secondEnemy = mission.FindUnit("enemy-2");
-            UnitState thirdEnemy = mission.FindUnit("enemy-3");
-            if (player == null || firstEnemy == null || secondEnemy == null || thirdEnemy == null)
+            string[] enemyIds =
             {
-                throw new InvalidDataException("Enemy attack formation validation requires one player and three enemies.");
+                "unit-4", "unit-5", "unit-6", "unit-7", "unit-8",
+                "unit-10", "unit-11", "unit-12", "unit-13",
+                "unit-15", "unit-16", "unit-17", "unit-18", "unit-19",
+                "unit-20", "unit-21", "unit-22",
+                "unit-27", "unit-28", "unit-29"
+            };
+
+            if (player == null)
+            {
+                throw new InvalidDataException("Enemy attack formation validation requires one player.");
             }
 
             mission.Tick(0.1f);
-            UnitState[] enemies = { firstEnemy, secondEnemy, thirdEnemy };
+            UnitState[] enemies = new UnitState[enemyIds.Length];
+            for (int index = 0; index < enemyIds.Length; index++)
+            {
+                UnitState enemy = mission.FindUnit(enemyIds[index]);
+                if (enemy == null)
+                {
+                    throw new InvalidDataException("Enemy attack formation validation missing enemy " + enemyIds[index] + ".");
+                }
+
+                enemies[index] = enemy;
+            }
+
             for (int index = 0; index < enemies.Length; index++)
             {
                 UnitState enemy = enemies[index];
@@ -2296,9 +2314,25 @@ namespace MC2Demo.EditorTools
                         + mission.ResultReason);
                 }
 
-                if (Vector2.Distance(enemy.MoveTarget, player.MissionPosition) < 30f)
+                float slotRadius = Vector2.Distance(enemy.MoveTarget, player.MissionPosition);
+                if (slotRadius < 80f)
                 {
-                    throw new InvalidDataException("Expected enemy attack order to avoid stacking on the player target.");
+                    throw new InvalidDataException(
+                        "Expected enemy attack order to avoid stacking on the player target. enemy="
+                        + enemy.Id
+                        + " radius="
+                        + slotRadius);
+                }
+
+                if (slotRadius > Mathf.Max(40f, enemy.CombatWeaponRange - 1f))
+                {
+                    throw new InvalidDataException(
+                        "Expected enemy attack formation slot to stay inside useful weapon range. enemy="
+                        + enemy.Id
+                        + " radius="
+                        + slotRadius
+                        + " range="
+                        + enemy.CombatWeaponRange);
                 }
             }
 
@@ -2306,9 +2340,62 @@ namespace MC2Demo.EditorTools
             {
                 for (int inner = outer + 1; inner < enemies.Length; inner++)
                 {
-                    if (Vector2.Distance(enemies[outer].MoveTarget, enemies[inner].MoveTarget) < 20f)
+                    float slotDistance = Vector2.Distance(enemies[outer].MoveTarget, enemies[inner].MoveTarget);
+                    if (slotDistance < 50f)
                     {
-                        throw new InvalidDataException("Expected enemy attack formation slots to be separated.");
+                        throw new InvalidDataException(
+                            "Expected enemy attack formation slots to be separated. first="
+                            + enemies[outer].Id
+                            + " second="
+                            + enemies[inner].Id
+                            + " distance="
+                            + slotDistance);
+                    }
+                }
+            }
+        }
+
+        private static void ValidateInfantryAmbushParkingSpread(CombatProfileCatalog combatProfiles)
+        {
+            BattleMission mission = new(MakeInfantryAmbushParkingContract(), combatProfiles);
+            string[] infantryIds =
+            {
+                "unit-15", "unit-16", "unit-17", "unit-18",
+                "unit-19", "unit-20", "unit-21", "unit-22"
+            };
+
+            mission.Tick(0.1f);
+            UnitState[] infantry = new UnitState[infantryIds.Length];
+            for (int index = 0; index < infantryIds.Length; index++)
+            {
+                UnitState unit = mission.FindUnit(infantryIds[index]);
+                if (unit == null)
+                {
+                    throw new InvalidDataException("Infantry ambush parking validation missing " + infantryIds[index] + ".");
+                }
+
+                if (!unit.HasMoveOrder)
+                {
+                    throw new InvalidDataException("Expected infantry ambush unit to receive a parking move order: " + unit.Id);
+                }
+
+                infantry[index] = unit;
+            }
+
+            for (int outer = 0; outer < infantry.Length; outer++)
+            {
+                for (int inner = outer + 1; inner < infantry.Length; inner++)
+                {
+                    float distance = Vector2.Distance(infantry[outer].MoveTarget, infantry[inner].MoveTarget);
+                    if (distance < 65f)
+                    {
+                        throw new InvalidDataException(
+                            "Expected infantry ambush parking points to be separated. first="
+                            + infantry[outer].Id
+                            + " second="
+                            + infantry[inner].Id
+                            + " distance="
+                            + distance);
                     }
                 }
             }
@@ -4654,30 +4741,26 @@ namespace MC2Demo.EditorTools
                         unitType = "Werewolf",
                         position = new MissionPose { x = 0f, y = 0f, rotation = 0f }
                     },
-                    new UnitSpawn
-                    {
-                        spawnId = "enemy-1",
-                        isPlayerUnit = false,
-                        teamId = 1,
-                        unitType = "Centipede",
-                        position = new MissionPose { x = 180f, y = 0f, rotation = 0f }
-                    },
-                    new UnitSpawn
-                    {
-                        spawnId = "enemy-2",
-                        isPlayerUnit = false,
-                        teamId = 1,
-                        unitType = "Centipede",
-                        position = new MissionPose { x = 220f, y = 0f, rotation = 0f }
-                    },
-                    new UnitSpawn
-                    {
-                        spawnId = "enemy-3",
-                        isPlayerUnit = false,
-                        teamId = 1,
-                        unitType = "Centipede",
-                        position = new MissionPose { x = 260f, y = 0f, rotation = 0f }
-                    }
+                    MakeFormationEnemy("unit-4", "Centipede", 180f, 0f),
+                    MakeFormationEnemy("unit-5", "Centipede", 220f, 36f),
+                    MakeFormationEnemy("unit-6", "UrbanMech", 260f, -42f),
+                    MakeFormationEnemy("unit-7", "Harasser", 300f, 72f),
+                    MakeFormationEnemy("unit-8", "Harasser", 340f, -78f),
+                    MakeFormationEnemy("unit-10", "LRMC", 380f, 108f),
+                    MakeFormationEnemy("unit-11", "LRMC", 420f, -114f),
+                    MakeFormationEnemy("unit-12", "Centipede", 460f, 144f),
+                    MakeFormationEnemy("unit-13", "UrbanMech", 500f, -150f),
+                    MakeFormationEnemy("unit-15", "Infantry", 210f, 180f),
+                    MakeFormationEnemy("unit-16", "Infantry", 250f, -186f),
+                    MakeFormationEnemy("unit-17", "Infantry", 290f, 216f),
+                    MakeFormationEnemy("unit-18", "Infantry", 330f, -222f),
+                    MakeFormationEnemy("unit-19", "Infantry", 370f, 252f),
+                    MakeFormationEnemy("unit-20", "Infantry", 410f, -258f),
+                    MakeFormationEnemy("unit-21", "Infantry", 450f, 288f),
+                    MakeFormationEnemy("unit-22", "Infantry", 490f, -294f),
+                    MakeFormationEnemy("unit-27", "LRMC", 540f, 180f),
+                    MakeFormationEnemy("unit-28", "Centipede", 580f, -180f),
+                    MakeFormationEnemy("unit-29", "LRMC", 620f, 216f)
                 },
                 objectives = new[]
                 {
@@ -4696,6 +4779,102 @@ namespace MC2Demo.EditorTools
                         }
                     }
                 }
+            };
+        }
+
+        private static UnitSpawn MakeFormationEnemy(string spawnId, string unitType, float x, float y)
+        {
+            return new UnitSpawn
+            {
+                spawnId = spawnId,
+                isPlayerUnit = false,
+                teamId = 1,
+                unitType = unitType,
+                position = new MissionPose { x = x, y = y, rotation = 0f }
+            };
+        }
+
+        private static MissionContract MakeInfantryAmbushParkingContract()
+        {
+            return new MissionContract
+            {
+                mission = new MissionDefinition
+                {
+                    id = "mc2_01",
+                    terrain = new TerrainDefinition { minX = -1000f, minY = 1000f, waterElevation = 350f }
+                },
+                units = new[]
+                {
+                    new UnitSpawn
+                    {
+                        spawnId = "parking-player",
+                        isPlayerUnit = true,
+                        teamId = 0,
+                        unitType = "Werewolf",
+                        position = new MissionPose { x = 5000f, y = 5000f, rotation = 0f }
+                    },
+                    MakeAmbushInfantry("unit-15", "mc2_01_infantry_ambush", 3392f, -448f),
+                    MakeAmbushInfantry("unit-16", "mc2_01_infantry_ambush", 3392f, -448f),
+                    MakeAmbushInfantry("unit-17", "mc2_01_infantry_ambush", 3392f, -448f),
+                    MakeAmbushInfantry("unit-18", "mc2_01_infantry_ambush", 3392f, -448f),
+                    MakeAmbushInfantry("unit-19", "mc2_01_infantry_ambush", 3392f, -448f),
+                    MakeAmbushInfantry("unit-20", "mc2_01_infantry_ambush2", 3520f, -448f),
+                    MakeAmbushInfantry("unit-21", "mc2_01_infantry_ambush2", 3520f, -448f),
+                    MakeAmbushInfantry("unit-22", "mc2_01_infantry_ambush2", 3520f, -448f)
+                },
+                objectives = new[]
+                {
+                    new ObjectiveDefinition
+                    {
+                        id = "hold-open",
+                        index = 0,
+                        hidden = false,
+                        conditions = new[]
+                        {
+                            new ObjectiveCondition
+                            {
+                                type = "MoveAnyUnitToArea",
+                                targetArea = new TargetArea { x = 5000f, y = 5000f, radius = 40f }
+                            }
+                        },
+                        actions = new[]
+                        {
+                            new ObjectiveAction
+                            {
+                                type = "SetBooleanFlag",
+                                flag = new FlagAction { id = "ambush-test", value = true }
+                            }
+                        }
+                    },
+                    new ObjectiveDefinition
+                    {
+                        id = "hold-open",
+                        index = 1,
+                        hidden = false,
+                        conditions = new[]
+                        {
+                            new ObjectiveCondition
+                            {
+                                type = "MoveAnyUnitToArea",
+                                targetArea = new TargetArea { x = 9000f, y = 9000f, radius = 40f }
+                            }
+                        }
+                    }
+                }
+            };
+        }
+
+        private static UnitSpawn MakeAmbushInfantry(string spawnId, string brain, float x, float y)
+        {
+            return new UnitSpawn
+            {
+                spawnId = spawnId,
+                isPlayerUnit = false,
+                teamId = 1,
+                unitType = "Infantry",
+                brain = brain,
+                activationFlagId = "ambush-test",
+                position = new MissionPose { x = x, y = y, rotation = 0f }
             };
         }
 
