@@ -828,13 +828,16 @@ git status --short
 
 Commit 1：大型障碍占位和 compact 战斗 UI。
 
-- 状态：已实现，待提交。
+- 状态：已提交，提交 `af34a6a Add terrain object occupancy and detailed execution plan`。
 - 修改文件：`BattleMission.cs`、`Mc2DemoBootstrap.cs`、`Mc2DemoValidator.cs`、本计划、视觉审计文档。
 - 验证：validator、Windows build、smoke、`hangar-contact`/`damage-demo` capture。
 - 验收：右侧任务面板不再盖住主战区，单位不会移动到大型建筑/硬物中心。
 
 Commit 2：固定镜头遮挡处理。
 
+- 状态：已提交，提交标题 `Add fixed-camera occlusion fading`。
+- 当前实现：在表现层为 terrain objects、森林 footprint、树干、树冠增加基于固定相机和屏幕空间焦点的遮挡淡化；sidecar 记录 `OcclusionFade=active X/Y focus Z`。
+- 验证：`analysis-output/unity-build-occlusion-fade-r4.log`、`analysis-output/unity-player-occlusion-fade-smoke-r5.log`、`analysis-output/reference-visual-captures/hangar-contact.json`、`analysis-output/reference-visual-captures/damage-demo.json`。
 - 修改文件：`unity-mc2-demo/Assets/Scripts/Presentation/Mc2DemoBootstrap.cs`、`DemoStructureView.cs`、`ReferencePropLibrary.cs`。
 - 步骤 1：在 capture sidecar 中确认 `hangar-contact` 指挥官、目标建筑、接敌方向的屏幕位置。
 - 步骤 2：找出遮挡我方/目标最严重的建筑和树木类型。
@@ -996,14 +999,12 @@ Commit 15：本地演示包整理。
 
 ## 11. 下一步
 
-下一次继续开发时，优先完成并提交 **Sprint 1 / Commit 1**。这个提交已经完成实现和验证，只需要复查 diff、排除 Unity 场景无意义改动、提交到 Git。
+下一次继续开发时，进入 **Sprint 1 / Commit 3：地形对比和水域/道路可读性**：
 
-之后进入 **Sprint 1 / Commit 2：固定镜头遮挡处理**：
+1. 捕获 `airfield`、`hangar-contact`、`damage-demo`。
+2. 对比道路、跑道、水域、岸线、建筑基底在截图里的可读性。
+3. 调整 `DemoTerrainView.cs`、`ReferenceTerrainTextureLibrary.cs` 或 `SourceTerrainVertexColor.shader` 的亮度/对比度。
+4. 确认点击、移动、水域非法落点不受表现层影响。
+5. 构建、smoke、截图验证，并更新视觉审计文档。
 
-1. 重新捕获 `spawn`、`airfield`、`hangar-contact`、`damage-demo`、`north-patrol`。
-2. 对比 `hangar-contact` 中遮挡我方的建筑/树木。
-3. 在表现层加入遮挡淡化，不改变 BattleCore。
-4. 构建、smoke、截图验证。
-5. 更新 `docs-reference-visual-audit-2026-06-07.md`。
-
-这条线完成后，再继续地形对比、敌方密度和机甲装配。
+这条线完成后，再继续敌方密度和机甲装配。

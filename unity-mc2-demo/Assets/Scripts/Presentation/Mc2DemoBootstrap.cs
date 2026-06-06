@@ -36,6 +36,8 @@ namespace MC2Demo.Presentation
         private const string CapturePresetHangarContact = "hangar-contact";
         private const string CapturePresetNorthPatrol = "north-patrol";
         private const string CapturePresetDamageDemo = "damage-demo";
+        private const float OcclusionFadeUpdateSpeed = 8f;
+        private const float OcclusionBoundsRadiusPixelCap = 320f;
         private const float LoadoutCardHeight = 456f;
         private const float LoadoutCardStride = 468f;
         private const float LoadoutGridSectionMinHeight = 204f;
@@ -196,6 +198,7 @@ namespace MC2Demo.Presentation
             public string terrain;
             public string structures;
             public string props;
+            public string occlusion;
         }
 
         [Serializable]
@@ -214,6 +217,25 @@ namespace MC2Demo.Presentation
                     z = value.z
                 };
             }
+        }
+
+        private enum OcclusionFadeKind
+        {
+            Tree,
+            Forest,
+            Building,
+            Prop
+        }
+
+        private sealed class OcclusionFadeTarget
+        {
+            public Renderer renderer;
+            public Material[] materials;
+            public Color[] baseColors;
+            public float radiusPixels;
+            public float fadedAlphaFactor;
+            public float currentAlphaFactor = 1f;
+            public string label;
         }
 
         private readonly Dictionary<string, DemoUnitView> unitViews = new();
@@ -249,6 +271,8 @@ namespace MC2Demo.Presentation
         private readonly HashSet<string> movingUnitIdsLastFrame = new(StringComparer.OrdinalIgnoreCase);
         private readonly HashSet<string> jumpingUnitIdsLastFrame = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, Material> materialCache = new(StringComparer.Ordinal);
+        private readonly List<OcclusionFadeTarget> occlusionFadeTargets = new();
+        private readonly List<Vector3> occlusionFocusWorldPoints = new();
         private readonly Dictionary<string, CombatLoadoutPlacementOverride[]> loadoutPlacementOverridesByUnit = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, List<CombatLoadoutFillerOverride>> loadoutFillerOverridesByUnit = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, CombatLoadoutPlacementOverride[]> appliedLoadoutPlacementOverridesByUnit = new(StringComparer.OrdinalIgnoreCase);
@@ -313,6 +337,7 @@ namespace MC2Demo.Presentation
         private string lastTerrainTextureSummary = "terrain texture not attempted";
         private string lastReferencePropSummary = "ReferenceProps=not attempted";
         private string lastReferenceStructureSummary = "ReferenceStructures=not attempted";
+        private string lastOcclusionFadeSummary = "OcclusionFade=not attempted";
         private Vector2 loadoutScroll;
         private Vector2 mechLabBayScroll;
         private int selectedMechLabBayPage;
@@ -381,6 +406,7 @@ namespace MC2Demo.Presentation
             UpdateCommandOverlays();
             HandleCameraZoom();
             FollowCommander();
+            UpdateOcclusionFades();
         }
 
         private void OnDestroy()
@@ -656,6 +682,8 @@ namespace MC2Demo.Presentation
             detachedUnitIdsLastFrame.Clear();
             movingUnitIdsLastFrame.Clear();
             jumpingUnitIdsLastFrame.Clear();
+            occlusionFadeTargets.Clear();
+            occlusionFocusWorldPoints.Clear();
             loadoutPlacementOverridesByUnit.Clear();
             loadoutFillerOverridesByUnit.Clear();
             appliedLoadoutPlacementOverridesByUnit.Clear();
@@ -677,6 +705,7 @@ namespace MC2Demo.Presentation
             lastContactEventTimeSeconds = -999f;
             lastContactLabel = "";
             lastContactCount = 0;
+            lastOcclusionFadeSummary = "OcclusionFade=not attempted";
             mainCamera = null;
             DestroyOwnedTextures();
 
@@ -5034,7 +5063,8 @@ namespace MC2Demo.Presentation
                 {
                     terrain = lastTerrainTextureSummary,
                     structures = lastReferenceStructureSummary,
-                    props = lastReferencePropSummary
+                    props = lastReferencePropSummary,
+                    occlusion = lastOcclusionFadeSummary
                 }
             };
         }
@@ -7428,6 +7458,8 @@ namespace MC2Demo.Presentation
                 {
                     fallbackProps++;
                 }
+
+                RegisterOcclusionFade(prop, "terrain-object " + prop.name, OcclusionKindForTerrainObject(terrainObject));
             }
 
             lastReferencePropSummary = ReferencePropLibrary.Summary(referenceProps, fallbackProps);
@@ -7541,6 +7573,117 @@ namespace MC2Demo.Presentation
                 && value.IndexOf(fragment, StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
+        private static OcclusionFadeKind OcclusionKindForTerrainObject(TerrainObjectSpawn terrainObject)
+        {
+            if (string.Equals(terrainObject.objectClass, "TREE", StringComparison.OrdinalIgnoreCase))
+            {
+                return OcclusionFadeKind.Tree;
+            }
+
+            if (string.Equals(terrainObject.objectClass, "BUILDING", StringComparison.OrdinalIgnoreCase))
+            {
+                return OcclusionFadeKind.Building;
+            }
+
+            return OcclusionFadeKind.Prop;
+        }
+
+        private void RegisterOcclusionFade(GameObject root, string label, OcclusionFadeKind kind)
+        {
+            if (root == null)
+            {
+                return;
+            }
+
+            Renderer[] renderers = root.GetComponentsInChildren<Renderer>(true);
+            for (int index = 0; index < renderers.Length; index++)
+            {
+                RegisterOcclusionFade(renderers[index], label, kind);
+            }
+        }
+
+        private void RegisterOcclusionFade(Renderer renderer, string label, OcclusionFadeKind kind)
+        {
+            if (renderer == null)
+            {
+                return;
+            }
+
+            Material[] sharedMaterials = renderer.sharedMaterials;
+            if (sharedMaterials == null || sharedMaterials.Length == 0)
+            {
+                return;
+            }
+
+            Material[] clonedMaterials = new Material[sharedMaterials.Length];
+            Color[] baseColors = new Color[sharedMaterials.Length];
+            bool hasMaterial = false;
+            for (int materialIndex = 0; materialIndex < sharedMaterials.Length; materialIndex++)
+            {
+                Material source = sharedMaterials[materialIndex];
+                if (source == null)
+                {
+                    continue;
+                }
+
+                Material clone = new(source)
+                {
+                    name = source.name + " occlusion"
+                };
+                Color baseColor = clone.HasProperty("_Color") ? clone.color : Color.white;
+                clonedMaterials[materialIndex] = clone;
+                baseColors[materialIndex] = baseColor;
+                ownedMaterials.Add(clone);
+                hasMaterial = true;
+            }
+
+            if (!hasMaterial)
+            {
+                return;
+            }
+
+            renderer.sharedMaterials = clonedMaterials;
+            occlusionFadeTargets.Add(new OcclusionFadeTarget
+            {
+                renderer = renderer,
+                materials = clonedMaterials,
+                baseColors = baseColors,
+                radiusPixels = OcclusionActivationRadiusPixels(kind),
+                fadedAlphaFactor = OcclusionFadedAlphaFactor(kind),
+                label = label
+            });
+        }
+
+        private static float OcclusionActivationRadiusPixels(OcclusionFadeKind kind)
+        {
+            switch (kind)
+            {
+                case OcclusionFadeKind.Forest:
+                    return 210f;
+                case OcclusionFadeKind.Tree:
+                    return 150f;
+                case OcclusionFadeKind.Building:
+                    return 90f;
+                default:
+                    return 70f;
+            }
+        }
+
+        private static float OcclusionFadedAlphaFactor(OcclusionFadeKind kind)
+        {
+            switch (kind)
+            {
+                case OcclusionFadeKind.Forest:
+                    return 0.10f;
+                case OcclusionFadeKind.Tree:
+                    return 0.10f;
+                case OcclusionFadeKind.Building:
+                    return 0.32f;
+                default:
+                    return 0.36f;
+            }
+        }
+
         private void CreateMarkers()
         {
             if (mission.Contract.navMarkers == null)
@@ -7585,6 +7728,7 @@ namespace MC2Demo.Presentation
                 groundPatch.transform.localPosition = new Vector3(0f, 0.025f, 0f);
                 groundPatch.transform.localScale = new Vector3(worldRadius, 0.02f, worldRadius);
                 AssignMaterial(groundPatch, "ForestFootprint" + forest.index, new Color(0.09f, 0.24f, 0.12f, 0.45f));
+                RegisterOcclusionFade(groundPatch, "forest-footprint " + forest.index.ToString(CultureInfo.InvariantCulture), OcclusionFadeKind.Forest);
 
                 int treeCount = Mathf.Clamp(Mathf.RoundToInt(worldRadius * 1.4f), 8, 18);
                 for (int index = 0; index < treeCount; index++)
@@ -7608,6 +7752,7 @@ namespace MC2Demo.Presentation
             trunk.transform.localPosition = localPosition + new Vector3(0f, 0.22f, 0f);
             trunk.transform.localScale = new Vector3(0.08f, 0.22f, 0.08f);
             AssignMaterial(trunk, "TreeTrunk" + forestIndex + "-" + treeIndex, new Color(0.32f, 0.22f, 0.12f));
+            RegisterOcclusionFade(trunk, "tree-trunk " + forestIndex.ToString(CultureInfo.InvariantCulture), OcclusionFadeKind.Tree);
 
             GameObject canopy = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             canopy.name = "Tree Canopy";
@@ -7616,6 +7761,7 @@ namespace MC2Demo.Presentation
             float canopyScale = 0.34f + ((treeIndex + forestIndex) % 4) * 0.04f;
             canopy.transform.localScale = new Vector3(canopyScale, canopyScale * 0.82f, canopyScale);
             AssignMaterial(canopy, "TreeCanopy" + forestIndex + "-" + treeIndex, new Color(0.12f, 0.36f, 0.17f));
+            RegisterOcclusionFade(canopy, "tree-canopy " + forestIndex.ToString(CultureInfo.InvariantCulture), OcclusionFadeKind.Tree);
         }
 
         private void CreateObjectiveAreas()
@@ -9387,19 +9533,46 @@ namespace MC2Demo.Presentation
             };
             if (color.a < 0.99f)
             {
-                material.SetFloat("_Mode", 3f);
-                material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
-                material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-                material.SetInt("_ZWrite", 0);
-                material.DisableKeyword("_ALPHATEST_ON");
-                material.EnableKeyword("_ALPHABLEND_ON");
-                material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
-                material.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
+                ApplyTransparentMaterialMode(material);
             }
 
             ownedMaterials.Add(material);
             materialCache[cacheKey] = material;
             return material;
+        }
+
+        private static void ApplyTransparentMaterialMode(Material material)
+        {
+            if (material == null)
+            {
+                return;
+            }
+
+            material.SetFloat("_Mode", 3f);
+            material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+            material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+            material.SetInt("_ZWrite", 0);
+            material.DisableKeyword("_ALPHATEST_ON");
+            material.EnableKeyword("_ALPHABLEND_ON");
+            material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+            material.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
+        }
+
+        private static void ApplyOpaqueMaterialMode(Material material)
+        {
+            if (material == null)
+            {
+                return;
+            }
+
+            material.SetFloat("_Mode", 0f);
+            material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.One);
+            material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.Zero);
+            material.SetInt("_ZWrite", 1);
+            material.DisableKeyword("_ALPHATEST_ON");
+            material.DisableKeyword("_ALPHABLEND_ON");
+            material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+            material.renderQueue = -1;
         }
 
         private void HandleWorldClick()
@@ -9687,6 +9860,212 @@ namespace MC2Demo.Presentation
             float effectiveHeight = cameraBaseHeight / Mathf.Max(0.1f, cameraZoomScale);
             Vector3 offset = rotation * new Vector3(0f, 0f, -effectiveHeight);
             mainCamera.transform.SetPositionAndRotation(commanderWorld + offset, rotation);
+        }
+
+        private void UpdateOcclusionFades()
+        {
+            if (mainCamera == null || occlusionFadeTargets.Count == 0)
+            {
+                return;
+            }
+
+            CollectOcclusionFocusPoints();
+            int validTargets = 0;
+            int fadedTargets = 0;
+            for (int index = 0; index < occlusionFadeTargets.Count; index++)
+            {
+                OcclusionFadeTarget target = occlusionFadeTargets[index];
+                if (target?.renderer == null || target.materials == null || target.baseColors == null)
+                {
+                    continue;
+                }
+
+                validTargets++;
+                float desiredAlphaFactor = DesiredOcclusionAlphaFactor(target);
+                if (desiredAlphaFactor < 0.985f)
+                {
+                    fadedTargets++;
+                }
+
+                float alphaFactor = Mathf.MoveTowards(
+                    target.currentAlphaFactor,
+                    desiredAlphaFactor,
+                    Time.deltaTime * OcclusionFadeUpdateSpeed);
+                if (Mathf.Abs(alphaFactor - target.currentAlphaFactor) > 0.001f)
+                {
+                    target.currentAlphaFactor = alphaFactor;
+                    ApplyOcclusionAlphaFactor(target, alphaFactor);
+                }
+            }
+
+            lastOcclusionFadeSummary = "OcclusionFade=active "
+                + fadedTargets.ToString(CultureInfo.InvariantCulture)
+                + "/"
+                + validTargets.ToString(CultureInfo.InvariantCulture)
+                + " focus "
+                + occlusionFocusWorldPoints.Count.ToString(CultureInfo.InvariantCulture);
+        }
+
+        private void CollectOcclusionFocusPoints()
+        {
+            occlusionFocusWorldPoints.Clear();
+            if (mission == null)
+            {
+                return;
+            }
+
+            foreach (UnitState unit in mission.PlayerUnits())
+            {
+                if (unit == null || !unit.IsActive || unit.IsDestroyed)
+                {
+                    continue;
+                }
+
+                if (unitViews.TryGetValue(unit.Id, out DemoUnitView view) && view != null)
+                {
+                    occlusionFocusWorldPoints.Add(view.transform.position + Vector3.up * 0.9f);
+                }
+                else
+                {
+                    Vector3 fallback = DemoUnitView.MissionToWorld(unit.MissionPosition);
+                    fallback.y = DemoTerrainView.HeightAt(unit.MissionPosition) + 0.9f;
+                    occlusionFocusWorldPoints.Add(fallback);
+                }
+            }
+
+            if (TryGetActiveObjectiveOcclusionPoint(out Vector3 objectivePoint))
+            {
+                occlusionFocusWorldPoints.Add(objectivePoint);
+            }
+        }
+
+        private bool TryGetActiveObjectiveOcclusionPoint(out Vector3 worldPoint)
+        {
+            if (mission != null)
+            {
+                foreach (ObjectiveState objective in mission.Objectives)
+                {
+                    if (!ShouldShowCurrentObjectiveHint(objective)
+                        || !TryGetObjectiveCuePoint(objective.Definition, out Vector2 missionPoint, out _))
+                    {
+                        continue;
+                    }
+
+                    worldPoint = GroundMarkerPosition(missionPoint, 0.9f);
+                    return true;
+                }
+            }
+
+            worldPoint = default;
+            return false;
+        }
+
+        private float DesiredOcclusionAlphaFactor(OcclusionFadeTarget target)
+        {
+            if (occlusionFocusWorldPoints.Count == 0 || target.renderer == null || !target.renderer.enabled)
+            {
+                return 1f;
+            }
+
+            Bounds bounds = target.renderer.bounds;
+            if (bounds.size.sqrMagnitude <= 0.0001f)
+            {
+                return 1f;
+            }
+
+            Vector3 centerViewport = mainCamera.WorldToViewportPoint(bounds.center);
+            if (centerViewport.z <= 0f)
+            {
+                return 1f;
+            }
+
+            Vector2 centerPixels = ViewportToPixels(centerViewport);
+            float boundsRadiusPixels = EstimateBoundsScreenRadiusPixels(bounds, centerPixels);
+            float desired = 1f;
+            for (int focusIndex = 0; focusIndex < occlusionFocusWorldPoints.Count; focusIndex++)
+            {
+                Vector3 focusViewport = mainCamera.WorldToViewportPoint(occlusionFocusWorldPoints[focusIndex]);
+                if (focusViewport.z <= 0f)
+                {
+                    continue;
+                }
+
+                Vector2 focusPixels = ViewportToPixels(focusViewport);
+                float edgeDistance = Mathf.Max(0f, Vector2.Distance(centerPixels, focusPixels) - boundsRadiusPixels);
+                if (edgeDistance >= target.radiusPixels)
+                {
+                    continue;
+                }
+
+                float blend = Mathf.Clamp01(edgeDistance / Mathf.Max(1f, target.radiusPixels));
+                float alphaFactor = Mathf.Lerp(target.fadedAlphaFactor, 1f, blend);
+                desired = Mathf.Min(desired, alphaFactor);
+            }
+
+            return desired;
+        }
+
+        private float EstimateBoundsScreenRadiusPixels(Bounds bounds, Vector2 centerPixels)
+        {
+            Vector3 center = bounds.center;
+            Vector3 extents = bounds.extents;
+            float radius = 0f;
+            for (int x = -1; x <= 1; x += 2)
+            {
+                for (int y = -1; y <= 1; y += 2)
+                {
+                    for (int z = -1; z <= 1; z += 2)
+                    {
+                        Vector3 corner = center + Vector3.Scale(extents, new Vector3(x, y, z));
+                        Vector3 viewport = mainCamera.WorldToViewportPoint(corner);
+                        if (viewport.z <= 0f)
+                        {
+                            continue;
+                        }
+
+                        radius = Mathf.Max(radius, Vector2.Distance(centerPixels, ViewportToPixels(viewport)));
+                    }
+                }
+            }
+
+            return Mathf.Min(radius, OcclusionBoundsRadiusPixelCap);
+        }
+
+        private static Vector2 ViewportToPixels(Vector3 viewport)
+        {
+            return new Vector2(
+                viewport.x * Mathf.Max(1, Screen.width),
+                viewport.y * Mathf.Max(1, Screen.height));
+        }
+
+        private static void ApplyOcclusionAlphaFactor(OcclusionFadeTarget target, float alphaFactor)
+        {
+            float clampedFactor = Mathf.Clamp01(alphaFactor);
+            int count = Mathf.Min(target.materials.Length, target.baseColors.Length);
+            for (int index = 0; index < count; index++)
+            {
+                Material material = target.materials[index];
+                if (material == null || !material.HasProperty("_Color"))
+                {
+                    continue;
+                }
+
+                Color color = target.baseColors[index];
+                float brightnessFactor = Mathf.Lerp(0.16f, 1f, clampedFactor);
+                color.r *= brightnessFactor;
+                color.g *= brightnessFactor;
+                color.b *= brightnessFactor;
+                color.a = target.baseColors[index].a * clampedFactor;
+                material.color = color;
+                if (color.a < 0.995f || target.baseColors[index].a < 0.995f)
+                {
+                    ApplyTransparentMaterialMode(material);
+                }
+                else
+                {
+                    ApplyOpaqueMaterialMode(material);
+                }
+            }
         }
 
         private void OnGUI()

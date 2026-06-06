@@ -133,3 +133,36 @@ Remaining issues:
 1. The fight itself is still visually dense around the hangar.
 2. Forest/tree masses still need an occlusion/fade pass rather than hard region collision.
 3. Terrain contrast remains low, especially dark ground away from textured prop clusters.
+
+## Pass 3 Result
+
+Implemented on 2026-06-07:
+
+- Added presentation-only occlusion fade targets for terrain-object props, terrain-object trees, forest footprint discs, forest trunks, and forest canopies.
+- Fade calculation uses the fixed tactical camera and screen-space bounds near current player units and the active objective point.
+- The fade pass changes renderer material alpha and brightness only; BattleCore movement, collision, targeting, and mission rules remain unchanged.
+- Capture sidecars now report an `OcclusionFade=active X/Y focus Z` summary so screenshots can prove the pass is actually running.
+
+Validation evidence:
+
+```text
+analysis-output/unity-build-occlusion-fade-r4.log
+analysis-output/unity-player-occlusion-fade-smoke-r5.log
+analysis-output/reference-visual-captures/hangar-contact.png
+analysis-output/reference-visual-captures/hangar-contact.json
+analysis-output/reference-visual-captures/damage-demo.png
+analysis-output/reference-visual-captures/damage-demo.json
+```
+
+Observed effect:
+
+- `hangar-contact` reports `OcclusionFade=active 305/1493 focus 4`.
+- `damage-demo` reports `OcclusionFade=active 345/1493 focus 3`.
+- The full mission list remains compact during active fire, so the right side no longer masks the hangar fight.
+- `damage-demo` remains readable with 20 active hostiles and 19 visible hostiles, so the occlusion pass does not hide combat information.
+
+Remaining issues:
+
+1. The hangar fight is still dense because many hostiles are active around the same objective window.
+2. Forest/tree masses are now controlled by fade, but the terrain color contrast is still too low for a strong screenshot.
+3. The next visual pass should focus on terrain contrast, roads/water/building-base readability, and then enemy density/parking spread.
