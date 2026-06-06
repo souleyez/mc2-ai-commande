@@ -348,3 +348,49 @@ Next priority:
 
 1. Commander camera composition pass.
 2. Then Phase C command-state smoke coverage.
+
+## Pass 8 Result
+
+Implemented on 2026-06-07:
+
+- Kept the source tactical yaw/pitch, orthographic camera, commander follow and limited zoom.
+- Added a small objective composition offset when the active objective is far enough from the commander, so early mission framing keeps the squad and active objective in the same view sooner.
+- Added `camera.compositionOffset` to capture sidecars so camera framing adjustments are auditable.
+- Left `hangar-contact` and `damage-demo` at zero composition offset because the commander is already close to the active hangar objective in those presets.
+
+Validation evidence:
+
+```text
+analysis-output/unity-build-camera-composition.log
+analysis-output/reference-visual-captures/spawn.png
+analysis-output/reference-visual-captures/spawn.json
+analysis-output/reference-visual-captures/hangar-contact.png
+analysis-output/reference-visual-captures/hangar-contact.json
+analysis-output/reference-visual-captures/damage-demo.png
+analysis-output/reference-visual-captures/damage-demo.json
+```
+
+Observed camera evidence:
+
+```text
+spawn: compositionOffset=(0.98, 0, 1.76), ortho=29.11
+hangar-contact: compositionOffset=(0, 0, 0), ortho=29.11
+damage-demo: compositionOffset=(0, 0, 0), ortho=35.5
+```
+
+Observed effect:
+
+- `spawn` now frames the initial squad and airfield direction together more clearly without adding camera rotation or manual dragging.
+- `hangar-contact` still keeps the commander squad, hangar objective and enemy pressure in the main center view.
+- `damage-demo` keeps the broader tactical zoom and does not lose the damaged squad/status relationship.
+- Encounter pressure was preserved: `hangar-contact` remains 20 active / 16 visible hostiles, and `damage-demo` remains 20 active / 19 visible hostiles.
+
+Remaining issues:
+
+1. Phase B has enough visual, scale, occupancy and camera evidence to move into command-state validation.
+2. Combat still needs later effect/damage polish, but that should come after Phase C proves the player command loop.
+
+Next priority:
+
+1. Phase C / Task C1 command state validator.
+2. Status-row solo command flow.

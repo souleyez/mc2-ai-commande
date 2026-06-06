@@ -25,7 +25,8 @@
 - 2026-06-07 已刷新执行计划：`docs-playable-demo-master-plan-2026-06-07.md` 现在把当前阶段拆成更细的 B2 比例审计、B3 碰撞占位证据、B4 固定镜头构图，以及后续 C 阶段交互 smoke、D 阶段损伤手感、E 阶段装配格子、F 阶段去保存系统表层和战后再战。
 - Phase B / Task B2：机甲、载具、炮塔、建筑、树木和道具的比例审计已经完成。sidecar 现在能报告 `ReferenceUnits` 和 `ReferencePropScale` 分类，步兵 fallback 已缩小，机甲/载具/建筑/树木比例有证据可查。
 - Phase B / Task B3：BattleCore occupancy evidence 已完成。sidecar 现在能报告 `BattleOccupancy` 和 `Landing=DemoTerrainView`，包括单位半径、结构、硬 terrain object、水域/地图边界 landing predicate 和 destination fallback 来源。
-- 真实下一步是 Phase B / Task B4：Commander camera composition pass。保持固定视角和指挥官跟随，让指挥官小队、活动目标和主要接敌方向在 `hangar-contact`、`damage-demo` 同屏可读。
+- Phase B / Task B4：Commander camera composition pass 已完成。保持固定视角和指挥官跟随，sidecar 现在报告 `camera.compositionOffset`，`spawn` 能更早把小队和活动目标放进同一屏，`hangar-contact`、`damage-demo` 没有退化。
+- 真实下一步是 Phase C / Task C1：command state validator。把默认全队、单机独立命令、完成后自动归队和最新全队命令接收写进 smoke 断言。
 - BattleCore 仍是权威物理占位层。Unity 可以显示碰撞占位和辅助反馈，但合法落点、单位排布、结构/terrain object 占用必须由 BattleCore 可验证地决定。
 
 当前项目不是从零开始，已经进入“可见 Demo 打磨”阶段。核心问题已经从“能不能跑”转为“看起来是否像一款可信的战术机甲游戏”。
@@ -1017,8 +1018,9 @@ Commit 15：本地演示包整理。
 
 ## 11. 下一步
 
-下一次继续开发时，按 `docs-playable-demo-master-plan-2026-06-07.md` 执行，进入 **Phase B / Task B4：Commander camera composition pass**。敌方密度、停车点、视觉比例和物理占位证据已经收过一轮，下一步重点是固定视角下的战术构图：
+下一次继续开发时，按 `docs-playable-demo-master-plan-2026-06-07.md` 执行，进入 **Phase C / Task C1：Command state validator**。敌方密度、停车点、视觉比例、物理占位证据和固定镜头构图已经收过一轮，下一步重点是证明玩家指挥闭环：
 
-1. B4 固定镜头构图：保持指挥官跟随、固定 yaw/pitch 和有限缩放，让指挥官小队、活动目标和主要接敌方向在 `hangar-contact`、`damage-demo` 同时可读。
-2. B4 完成后进入 Phase C：先做全队命令、单机独立命令、自动归队和喷射规则的 smoke 覆盖。
-3. 不提前做服务器、经济、保存系统、PVP、移动端或链上功能。
+1. C1 command state validator：补全 command-file assertions，覆盖全队移动、单机独立命令、独立命令完成自动归队，以及归队后继续接受最新全队命令。
+2. C2 status-row selection and click contract：把状态栏点选单机、下达独立命令、可见选择恢复全队做成 smoke 路径。
+3. C3/C4：喷射规则和最小战斗 UI 冻结。
+4. 不提前做服务器、经济、保存系统、PVP、移动端或链上功能。

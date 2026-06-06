@@ -31,6 +31,9 @@ namespace MC2Demo.Presentation
         private const float MiniMaxCommanderAdvanceSeconds = 8f;
         private const float DefaultCameraOrthographicSize = 24f;
         private const float CameraZoomWheelStep = 0.08f;
+        private const float CameraObjectiveCompositionStartDistance = 6.0f;
+        private const float CameraObjectiveCompositionMaxOffset = 7.5f;
+        private const float CameraObjectiveCompositionStrength = 0.28f;
         private const string CapturePresetSpawn = "spawn";
         private const string CapturePresetAirfield = "airfield";
         private const string CapturePresetHangarContact = "hangar-contact";
@@ -191,6 +194,7 @@ namespace MC2Demo.Presentation
             public CaptureVector3 position;
             public CaptureVector3 rotationEuler;
             public CaptureVector3 followOffset;
+            public CaptureVector3 compositionOffset;
         }
 
         [Serializable]
@@ -330,6 +334,7 @@ namespace MC2Demo.Presentation
         private MissionResultState lastMissionResult = MissionResultState.InProgress;
         private Camera mainCamera;
         private Vector3 cameraFollowWorldOffset;
+        private Vector3 cameraCompositionWorldOffset;
         private float cameraBaseHeight = 62f;
         private float cameraBaseOrthographicSize = 24f;
         private float cameraZoomScale = 1f;
@@ -5099,6 +5104,7 @@ namespace MC2Demo.Presentation
                 pitch = cameraPitch,
                 yaw = cameraYaw,
                 followOffset = CaptureVector3.From(cameraFollowWorldOffset),
+                compositionOffset = CaptureVector3.From(cameraCompositionWorldOffset),
                 position = cameraTransform == null ? new CaptureVector3() : CaptureVector3.From(cameraTransform.position),
                 rotationEuler = cameraTransform == null ? new CaptureVector3() : CaptureVector3.From(cameraTransform.rotation.eulerAngles)
             };
@@ -9919,6 +9925,7 @@ namespace MC2Demo.Presentation
             cameraZoomMin = 0.76f;
             cameraZoomMax = 1.2f;
             cameraFollowWorldOffset = Vector3.zero;
+            cameraCompositionWorldOffset = Vector3.zero;
 
             CameraDefinition sourceCamera = mission?.Contract?.mission?.camera;
             if (sourceCamera == null)
@@ -10036,11 +10043,49 @@ namespace MC2Demo.Presentation
                 return;
             }
 
-            Vector3 commanderWorld = DemoUnitView.MissionToWorld(commander.MissionPosition) + cameraFollowWorldOffset;
+            cameraCompositionWorldOffset = CameraObjectiveCompositionOffset(commander);
+            Vector3 commanderWorld = DemoUnitView.MissionToWorld(commander.MissionPosition)
+                + cameraFollowWorldOffset
+                + cameraCompositionWorldOffset;
             Quaternion rotation = Quaternion.Euler(cameraPitch, cameraYaw, 0f);
             float effectiveHeight = cameraBaseHeight / Mathf.Max(0.1f, cameraZoomScale);
             Vector3 offset = rotation * new Vector3(0f, 0f, -effectiveHeight);
             mainCamera.transform.SetPositionAndRotation(commanderWorld + offset, rotation);
+        }
+
+        private Vector3 CameraObjectiveCompositionOffset(UnitState commander)
+        {
+            if (commander == null || mission == null)
+            {
+                return Vector3.zero;
+            }
+
+            foreach (ObjectiveState objective in mission.Objectives)
+            {
+                if (!ShouldShowCurrentObjectiveHint(objective)
+                    || !TryGetObjectiveCuePoint(objective.Definition, out Vector2 missionPoint, out _))
+                {
+                    continue;
+                }
+
+                Vector3 commanderWorld = DemoUnitView.MissionToWorld(commander.MissionPosition);
+                Vector3 objectiveWorld = DemoUnitView.MissionToWorld(missionPoint);
+                Vector3 delta = objectiveWorld - commanderWorld;
+                delta.y = 0f;
+                float distance = delta.magnitude;
+                if (distance <= CameraObjectiveCompositionStartDistance)
+                {
+                    return Vector3.zero;
+                }
+
+                float offsetDistance = Mathf.Clamp(
+                    (distance - CameraObjectiveCompositionStartDistance) * CameraObjectiveCompositionStrength,
+                    0f,
+                    CameraObjectiveCompositionMaxOffset);
+                return delta.normalized * offsetDistance;
+            }
+
+            return Vector3.zero;
         }
 
         private void UpdateOcclusionFades()

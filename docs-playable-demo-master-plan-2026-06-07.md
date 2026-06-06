@@ -26,7 +26,7 @@
 当前最紧急的问题：
 
 - Phase A 地形/水面/道路可读性已经完成并提交，当前不再是黑块问题，而是“单位、敌人、建筑和道具挤在一起，战术关系还不够清楚”的问题。
-- Phase B / B2 比例审计和 B3 碰撞占位证据已经完成，sidecar 现在能报告单位/prop 分类比例、BattleCore 占位和地形 landing predicate；当前下一步是 B4 固定镜头构图。
+- Phase B / B2 比例审计、B3 碰撞占位证据和 B4 固定镜头构图已经完成，sidecar 现在能报告单位/prop 分类比例、BattleCore 占位、地形 landing predicate 和 camera composition offset；当前下一步进入 Phase C 指挥战斗闭环。
 - 装配界面已经有格子方向，但还需要更像原版的整块武器占格和即时合法性反馈。
 - AI 指挥官只保留高层决策接口，不进入逐帧控制。
 - 保存游戏、地图服务器、经济、PVP、移动端、链上分账都暂缓。
@@ -38,8 +38,8 @@
 | 阶段 | 状态 | 本阶段产物 | 下一动作 |
 | --- | --- | --- | --- |
 | Phase A: 地形/水面/道路可读性 | Done | 地面、水域、岸线、跑道/道路、建筑基底在截图里可读；提交 `89a686f Improve terrain and water readability` | 只做回归检查，不再主动展开 |
-| Phase B: 第一张地图战场可读性 | Active / B3 Done | 敌我单位不堆点，建筑/树木/炮塔/道具比例可信，固定镜头能看懂战术关系 | 继续 B4 固定镜头构图 |
-| Phase C: 指挥战斗闭环 | Next | 默认全队、状态栏单选、独立命令、自动归队、喷射和最小战斗 UI 可稳定演示 | B 阶段截图可读后进入 |
+| Phase B: 第一张地图战场可读性 | Done | 敌我单位不堆点，建筑/树木/炮塔/道具比例可信，固定镜头能看懂战术关系 | 后续只做回归 |
+| Phase C: 指挥战斗闭环 | Active | 默认全队、状态栏单选、独立命令、自动归队、喷射和最小战斗 UI 可稳定演示 | 继续 C1 command state validator |
 | Phase D: 损伤、武器和战斗手感 | Next | 激光/导弹/炮弹层次、部位损伤、断臂/瘫痪/驾驶舱弹射能在截图或观战中看见 | C 阶段命令稳定后进入 |
 | Phase E: 原版式装配垂直切片 | Next | 整块武器占格、装甲板/散热器、热量/重量/槽位合法性、配置进战斗 | D 阶段战斗反馈可读后进入 |
 | Phase F: 战后和再战闭环 | Next | 简洁 Debrief、一键维修、回装配、再进同图 | E 阶段装配能影响战斗后进入 |
@@ -54,10 +54,10 @@
 | 模块 | 当前程度 | 已经有的东西 | 当前缺口 | 最近动作 |
 | --- | --- | --- | --- | --- |
 | 本地启动/构建 | 基本可用 | Unity 6 Windows build、batch validator、smoke player、截图脚本 | Unity 偶发序列化 churn 需要提交前检查；公开构建安全边界还要再收 | 每个代码提交跑 build/smoke/capture 之一 |
-| 第一张地图加载 | 可用但仍需视觉打磨 | `mc2_01` 地形、目标、触发、单位、结构、terrain objects 已加载 | 模型比例、地图道具层级、密集战斗构图还没完全可信 | 继续 Phase B |
+| 第一张地图加载 | Phase B 可读性已收口 | `mc2_01` 地形、目标、触发、单位、结构、terrain objects、比例审计、占位证据、固定镜头构图已加载并验证 | 后续发现截图退化时再回归 | Phase C |
 | 3D 地形/环境 | 过了黑块阶段 | 地面、水面、岸线、跑道/道路、建筑基底已可读 | 水边、道路边缘、地图边缘三角面仍是后续美术 polish | 只做回归，不扩大战线 |
 | 机甲/载具/炮塔显示 | 比例审计已建立 | 参考 OBJ 加载、父级缩放补偿、分类缩放、sidecar scale summary、损伤节点部分可用 | 仍需要跟 B3 的硬物占位证据对照 | B3 |
-| 物理碰撞占位 | 证据已建立 | 单位间、targetable structure、大型 terrain object、水域非法喷射落点已有 BattleCore 逻辑，sidecar 已输出 occupancy summary | 后续只在发现具体穿模/落点错误时补规则 | B4 回归 |
+| 物理碰撞占位 | 证据已建立 | 单位间、targetable structure、大型 terrain object、水域非法喷射落点已有 BattleCore 逻辑，sidecar 已输出 occupancy summary | 后续只在发现具体穿模/落点错误时补规则 | Phase C 回归 |
 | 指挥操作 | 有基础逻辑 | 默认全队、状态栏单选、独立命令、自动归队、喷射已有基础 | 需要完整 smoke 覆盖和更少 UI 噪音 | Phase C |
 | 战斗反馈 | 有雏形 | 武器命中、爆炸、损伤、残骸、驾驶舱逃生提示已有部分事件 | 武器类型层次、断臂/断腿/驾驶舱弹射可见度还不够强 | Phase D |
 | 装配界面 | 能跑但不是最终乐趣点 | 热量/重量/槽位/装备预览已有基础；武器装上即启用 | 要更像原作整块占格，装甲板/散热器填格，合法性即时反馈 | Phase E |
@@ -69,15 +69,14 @@
 
 接下来每个小提交都按“先截图可读，再操作闭环，再战斗反馈，再装配乐趣”的顺序走。
 
-当前下一批 7 个可执行提交：
+当前下一批 6 个可执行提交：
 
-1. `Tune commander camera composition`：固定视角下让指挥官、目标和接敌方向同屏可读。
-2. `Assert commander command states`：把全队命令、单机独立命令、自动归队写成 smoke 断言。
-3. `Tighten status row solo command flow`：状态栏点选单机、下达独立命令、可见状态回到全队、完成后自动归队。
-4. `Finalize squad jet landing rules`：喷射按单机合法性结算，非法落点单位不动，其他单位照常跳。
-5. `Freeze minimal battle UI`：战斗中只保留状态栏、喷射、任务地图、暂停/系统，不堆信息。
-6. `Differentiate weapon visual effects`：激光、导弹、弹道、爆炸至少有可分辨的命中方向和效果层次。
-7. `Strengthen mech section damage cues`：断臂、瘫痪、驾驶舱逃生在世界和状态栏都看得见。
+1. `Assert commander command states`：把全队命令、单机独立命令、自动归队写成 smoke 断言。
+2. `Tighten status row solo command flow`：状态栏点选单机、下达独立命令、可见状态回到全队、完成后自动归队。
+3. `Finalize squad jet landing rules`：喷射按单机合法性结算，非法落点单位不动，其他单位照常跳。
+4. `Freeze minimal battle UI`：战斗中只保留状态栏、喷射、任务地图、暂停/系统，不堆信息。
+5. `Differentiate weapon visual effects`：激光、导弹、弹道、爆炸至少有可分辨的命中方向和效果层次。
+6. `Strengthen mech section damage cues`：断臂、瘫痪、驾驶舱逃生在世界和状态栏都看得见。
 
 每个提交结束时至少记录：
 
@@ -1184,21 +1183,20 @@ Add playable demo walkthrough
 
 Recommended next commits from the current active point. Phase A terrain readability is already complete in `89a686f`, and B1 enemy parking spread is complete.
 
-1. `Tune commander camera composition`
-2. `Assert commander command states`
-3. `Tighten status row solo command flow`
-4. `Finalize squad jet landing rules`
-5. `Freeze minimal battle UI`
-6. `Differentiate weapon visual effects`
-7. `Strengthen mech section damage cues`
-8. `Make mech lab grid item fitting explicit`
-9. `Apply mech lab loadouts in battle`
-10. `Hide save system from first demo flow`
-11. `Tighten debrief and repair loop`
-12. `Freeze AI commander observation contract`
-13. `Add AI commander directive adapter`
-14. `Document replaceable visual content packs`
-15. `Prepare repeatable Windows demo build`
+1. `Assert commander command states`
+2. `Tighten status row solo command flow`
+3. `Finalize squad jet landing rules`
+4. `Freeze minimal battle UI`
+5. `Differentiate weapon visual effects`
+6. `Strengthen mech section damage cues`
+7. `Make mech lab grid item fitting explicit`
+8. `Apply mech lab loadouts in battle`
+9. `Hide save system from first demo flow`
+10. `Tighten debrief and repair loop`
+11. `Freeze AI commander observation contract`
+12. `Add AI commander directive adapter`
+13. `Document replaceable visual content packs`
+14. `Prepare repeatable Windows demo build`
 
 Every commit should include:
 
