@@ -622,24 +622,41 @@ namespace MC2Demo.Presentation
                 return;
             }
 
+            bool isPlayerCue = Unit?.IsPlayerUnit == true;
             float pulseSpeed = string.Equals(cue, "pilot", StringComparison.Ordinal) ? 5.8f : string.Equals(cue, "lost", StringComparison.Ordinal) ? 4.8f : 3.7f;
             float pulseRange = string.Equals(cue, "critical", StringComparison.Ordinal) ? 0.055f : 0.085f;
             float pulse = 0.96f + Mathf.Sin(Time.time * pulseSpeed) * pulseRange;
-            float baseScale = string.Equals(cue, "pilot", StringComparison.Ordinal) ? 1.16f : string.Equals(cue, "lost", StringComparison.Ordinal) ? 1.04f : 0.92f;
+            float baseScale = string.Equals(cue, "pilot", StringComparison.Ordinal) ? 1.34f : string.Equals(cue, "lost", StringComparison.Ordinal) ? 1.20f : 1.02f;
+            float playerScaleBoost = isPlayerCue ? 1.58f : 1f;
             Color cueColor = SectionDamageGroundCueColor(cue);
             if (sectionDamageRingCue != null)
             {
                 sectionDamageRingCue.transform.localPosition = new Vector3(0f, -0.58f, 0f);
                 sectionDamageRingCue.transform.localRotation = Quaternion.Inverse(transform.rotation);
-                sectionDamageRingCue.transform.localScale = new Vector3(baseScale * pulse, 0.014f, baseScale * pulse);
-                SetCueColor(sectionDamageRingCue, new Color(cueColor.r, cueColor.g, cueColor.b, string.Equals(cue, "critical", StringComparison.Ordinal) ? 0.30f : 0.42f));
+                float ringScale = baseScale * playerScaleBoost * pulse;
+                float ringAlpha = string.Equals(cue, "critical", StringComparison.Ordinal) ? 0.34f : 0.48f;
+                if (isPlayerCue)
+                {
+                    ringAlpha += 0.14f;
+                }
+
+                sectionDamageRingCue.transform.localScale = new Vector3(ringScale, 0.018f, ringScale);
+                SetCueColor(sectionDamageRingCue, new Color(cueColor.r, cueColor.g, cueColor.b, Mathf.Clamp01(ringAlpha)));
             }
 
             if (sectionDamageBeaconCue != null)
             {
-                sectionDamageBeaconCue.transform.localPosition = new Vector3(0f, 0.64f, 0.10f);
-                sectionDamageBeaconCue.transform.localScale = new Vector3(0.052f * pulse, 0.34f + pulse * 0.05f, 0.052f * pulse);
-                SetCueColor(sectionDamageBeaconCue, new Color(cueColor.r, cueColor.g, cueColor.b, string.Equals(cue, "critical", StringComparison.Ordinal) ? 0.54f : 0.72f));
+                float beaconRadius = isPlayerCue ? 0.104f : 0.052f;
+                float beaconHeight = (isPlayerCue ? 0.82f : 0.34f) + pulse * (isPlayerCue ? 0.14f : 0.05f);
+                float beaconAlpha = string.Equals(cue, "critical", StringComparison.Ordinal) ? 0.58f : 0.76f;
+                if (isPlayerCue)
+                {
+                    beaconAlpha += 0.12f;
+                }
+
+                sectionDamageBeaconCue.transform.localPosition = new Vector3(0f, isPlayerCue ? 1.02f : 0.64f, 0.10f);
+                sectionDamageBeaconCue.transform.localScale = new Vector3(beaconRadius * pulse, beaconHeight, beaconRadius * pulse);
+                SetCueColor(sectionDamageBeaconCue, new Color(cueColor.r, cueColor.g, cueColor.b, Mathf.Clamp01(beaconAlpha)));
             }
         }
 
@@ -716,7 +733,7 @@ namespace MC2Demo.Presentation
 
         public static string SectionDamageCueSummary()
         {
-            return "Arms=missing-socket+flag+flight+landing-debris+firepower-marker Legs=collapse+red-cross+skid+dust+danger-ring+mobility-beacon Cockpit=breach+ejection-pod+chute+landing+arc+distress+escape-column+route Critical=smoke+sparks Ground=critical+lost+pilot Wreck=blast+smoke+marker+debris+salvage";
+            return "Arms=missing-socket+flag+flight+landing-debris+firepower-marker Legs=collapse+red-cross+skid+dust+danger-ring+mobility-beacon Cockpit=breach+ejection-pod+chute+landing+arc+distress+escape-column+route Critical=smoke+sparks Ground=critical+lost+pilot+spotlight Wreck=blast+smoke+marker+debris+salvage";
         }
 
         public static string JetCueSummary()

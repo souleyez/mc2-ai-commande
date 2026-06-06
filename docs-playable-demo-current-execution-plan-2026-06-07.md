@@ -32,7 +32,7 @@
 - AI directive adapter 已提交：`9bf26bd Guard AI directive adapter`.
 - AI advice window 已提交：`b40372d Show optional AI advice window`.
 - Battle occupancy readability re-audit 已提交：`87006c3 Re-audit battle occupancy readability`.
-- 下一步是 `V2 Improve reference visual readability`.
+- 下一步是 `V3 Lock occupancy placeholder review layer`.
 
 ## 1. First Demo Product Scope
 
@@ -88,10 +88,9 @@
 
 | Gap | Why It Matters | Next Task |
 | --- | --- | --- |
-| `hangar-contact`/`damage-demo` 仍可能显得挤 | 投资演示截图容易被认为模型堆在一起 | V2 |
 | 碰撞占位需要继续可审计 | 用户明确要求有物理碰撞占位 | V3 |
 | MechLab 手感还要继续靠近整块占格 | 装配是核心乐趣之一 | M1/M2 |
-| 损伤卖点需要更强截图故事 | 断臂、腿瘫、弹射是差异化卖点 | C1 |
+| 损伤卖点还可以更强 | 断臂、腿瘫、弹射是差异化卖点；V2 已增强当前截图 spotlight，后续还可补动画故事 | C1 |
 | Demo 还缺三分钟演示话术和证据页 | 后续融资/协作需要可展示包 | H1-H3 |
 | 公开内容安全还需要脚本 guard | 本地参考包和公开包要分清 | P1/P2 |
 
@@ -246,8 +245,8 @@ Do not stage generated PNG/JSON/log evidence unless explicitly requested.
 | 1 | Done | `Guard AI directive adapter` | G5 AI capability |
 | 2 | Done | `Show optional AI advice window` | G5 AI capability |
 | 3 | Done | `Re-audit battle occupancy readability` | G2/G7 readability and occupancy |
-| 4 | Next | `Improve reference visual readability` | G2 battle readability |
-| 5 | Pending | `Lock occupancy placeholder review layer` | G7 collision evidence |
+| 4 | Done | `Improve reference visual readability` | G2 battle readability |
+| 5 | Next | `Lock occupancy placeholder review layer` | G7 collision evidence |
 | 6 | Pending | `Polish MechLab block fitting` | G3 MechLab feel |
 | 7 | Pending | `Capture MechLab fitting evidence` | G3 MechLab evidence |
 | 8 | Pending | `Strengthen damage demo readability` | G1 combat feel |
@@ -412,7 +411,9 @@ git diff --check
 
 ### V2: Improve Reference Visual Readability
 
-**Status:** Next.
+**Status:** Completed 2026-06-07.
+
+**Result:** Strengthened the player damage spotlight in `DemoUnitView` and `Mc2DemoBootstrap`: damaged player mechs now get larger ground rings, taller beacons, and a compact world-space flag for screenshot readability. The pass did not change mission pressure, enemy counts, camera, BattleCore occupancy, movement, landing legality, or combat values. Evidence: `analysis-output/unity-validate-visual-readability.log`, `analysis-output/unity-build-visual-readability.log`, and refreshed `analysis-output/reference-visual-captures/*.png` sidecars.
 
 **Goal:** 让第一张图更像 3D 战场，不像色块和模型团；优先改材质、比例、构图和表现密度，不随意改任务难度。
 

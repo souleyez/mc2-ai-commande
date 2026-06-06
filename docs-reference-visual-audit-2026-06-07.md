@@ -1593,3 +1593,72 @@ analysis-output/reference-visual-captures/damage-demo.png
 Next priority:
 
 1. V2 improve reference visual readability.
+
+## V2 Reference Visual Readability Result
+
+Implemented on 2026-06-07:
+
+- Strengthened player-unit damage ground cues in `DemoUnitView`: damaged player mechs now get larger ground rings and taller beacons for critical, lost-section, and pilot-risk states.
+- Strengthened the presentation-level player damage warning markers in `Mc2DemoBootstrap`: critical player damage now gets a larger ground spotlight, taller beacon, and a compact world-space flag.
+- Added auditable summary tokens: `PlayerDamage=warning+critical+beacon+spotlight+flag` and `Ground=critical+lost+pilot+spotlight`.
+- Kept BattleCore mission rules, enemy count, trigger timing, movement, landing legality, collision occupancy, camera, and loadout rules unchanged.
+- Restored Unity scene fileID churn after build; no scene content change is part of this pass.
+
+Modified files:
+
+```text
+unity-mc2-demo/Assets/Scripts/Presentation/DemoUnitView.cs
+unity-mc2-demo/Assets/Scripts/Presentation/Mc2DemoBootstrap.cs
+docs-reference-visual-audit-2026-06-07.md
+docs-playable-demo-current-execution-plan-2026-06-07.md
+docs-playable-demo-overall-detailed-plan-2026-06-07.md
+```
+
+Validation commands:
+
+```powershell
+git diff --check
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoValidator.ValidateMissionContract -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-validate-visual-readability.log"
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoBuilder.BuildWindows64 -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-build-visual-readability.log"
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_reference_visuals.ps1 -Presets spawn,airfield,hangar-contact,damage-demo,north-patrol
+```
+
+Validation evidence:
+
+```text
+analysis-output/unity-validate-visual-readability.log
+analysis-output/unity-build-visual-readability.log
+analysis-output/reference-visual-captures/spawn.png
+analysis-output/reference-visual-captures/airfield.png
+analysis-output/reference-visual-captures/hangar-contact.png
+analysis-output/reference-visual-captures/damage-demo.png
+analysis-output/reference-visual-captures/north-patrol.png
+analysis-output/reference-visual-captures/hangar-contact.json
+analysis-output/reference-visual-captures/damage-demo.json
+```
+
+Validation results:
+
+```text
+git diff --check: clean, with Windows line-ending warnings only.
+Validator: MC2 demo contract validation OK.
+Build: Build Finished, Result: Success; MC2 Unity demo Windows build OK.
+Reference captures: command exited successfully for spawn, airfield, hangar-contact, damage-demo, north-patrol.
+```
+
+Observed effect:
+
+- `damage-demo` still carries the same encounter pressure: 20 active / 20 visible hostiles, `orthographicSize=35.50`, `hardProps=80`, `placeholders=81`.
+- `hangar-contact` still carries the same encounter pressure: 20 active / 16 visible hostiles, `orthographicSize=29.11`, `hardProps=80`, `placeholders=81`.
+- The world now gives damaged player mechs a clearer red/orange spotlight and flag instead of relying only on the left status rows.
+- The fix does not hide or remove hostiles; it improves the player damage story inside the existing dense fight.
+
+Remaining issues:
+
+1. The hangar fight is still dense by design because 20 hostiles are active around one objective window.
+2. The next collision-related work should focus on a debug/review occupancy layer, not on more invisible rule changes.
+3. A later combat-feel pass can still add more expressive limb/cockpit event animation, but this pass makes the current damage state more screenshot-readable.
+
+Next priority:
+
+1. V3 lock occupancy placeholder review layer.

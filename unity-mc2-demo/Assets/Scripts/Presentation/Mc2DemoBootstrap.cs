@@ -262,6 +262,7 @@ namespace MC2Demo.Presentation
         private readonly Dictionary<string, GameObject> unitFocusMarkers = new();
         private readonly Dictionary<string, GameObject> unitDamageWarningMarkers = new();
         private readonly Dictionary<string, GameObject> unitDamageWarningBeacons = new();
+        private readonly Dictionary<string, GameObject> unitDamageWarningFlags = new();
         private readonly Dictionary<string, GameObject> unitRangeMarkers = new();
         private readonly Dictionary<string, GameObject> unitWeaponReadinessMarkers = new();
         private readonly Dictionary<string, GameObject> unitWeaponReadinessBeacons = new();
@@ -686,6 +687,7 @@ namespace MC2Demo.Presentation
             unitFocusMarkers.Clear();
             unitDamageWarningMarkers.Clear();
             unitDamageWarningBeacons.Clear();
+            unitDamageWarningFlags.Clear();
             unitRangeMarkers.Clear();
             unitWeaponReadinessMarkers.Clear();
             unitWeaponReadinessBeacons.Clear();
@@ -2967,7 +2969,7 @@ namespace MC2Demo.Presentation
             string threatFocusFx = ThreatFocusCueSummary();
             bool threatFocusFxOk = threatFocusFx.IndexOf("ThreatFocus=ring+warning+beacon", StringComparison.Ordinal) >= 0;
             string playerDamageFx = PlayerDamageCueSummary();
-            bool playerDamageFxOk = playerDamageFx.IndexOf("PlayerDamage=warning+critical+beacon", StringComparison.Ordinal) >= 0;
+            bool playerDamageFxOk = playerDamageFx.IndexOf("PlayerDamage=warning+critical+beacon+spotlight+flag", StringComparison.Ordinal) >= 0;
             string combatPressureFx = CombatPressureCueSummary();
             bool combatPressureFxOk = combatPressureFx.IndexOf("CombatPressure=tracking+contact+fire+beacon", StringComparison.Ordinal) >= 0;
             string hostilePressureFx = HostilePressureCueSummary();
@@ -2977,7 +2979,7 @@ namespace MC2Demo.Presentation
                 && sectionFx.IndexOf("Legs=collapse+red-cross+skid+dust+danger-ring+mobility-beacon", StringComparison.Ordinal) >= 0
                 && sectionFx.IndexOf("Cockpit=breach+ejection-pod+chute+landing+arc+distress+escape-column+route", StringComparison.Ordinal) >= 0
                 && sectionFx.IndexOf("Critical=smoke+sparks", StringComparison.Ordinal) >= 0
-                && sectionFx.IndexOf("Ground=critical+lost+pilot", StringComparison.Ordinal) >= 0
+                && sectionFx.IndexOf("Ground=critical+lost+pilot+spotlight", StringComparison.Ordinal) >= 0
                 && sectionFx.IndexOf("Wreck=blast+smoke+marker+debris+salvage", StringComparison.Ordinal) >= 0;
             string heatFx = DemoUnitView.HeatCueSummary();
             bool heatFxOk = heatFx.IndexOf("Heat=vent+lock", StringComparison.Ordinal) >= 0;
@@ -3250,7 +3252,7 @@ namespace MC2Demo.Presentation
 
         private static string PlayerDamageCueSummary()
         {
-            return "PlayerDamage=warning+critical+beacon";
+            return "PlayerDamage=warning+critical+beacon+spotlight+flag";
         }
 
         private static string CombatPressureCueSummary()
@@ -8890,6 +8892,11 @@ namespace MC2Demo.Presentation
                     "PlayerDamageBeacon",
                     new Color(1f, 0.34f, 0.08f, 0.50f),
                     new Vector3(0.078f, 0.36f, 0.078f));
+                unitDamageWarningFlags[unit.Id] = CreateMarkerBlock(
+                    unit.Id + " Damage Spotlight Flag",
+                    "PlayerDamageSpotlightFlag",
+                    new Color(1f, 0.16f, 0.08f, 0.78f),
+                    new Vector3(0.72f, 0.045f, 0.13f));
                 unitRangeMarkers[unit.Id] = CreateMarkerDisc(
                     unit.Id + " Weapon Range",
                     "CommandWeaponRange",
@@ -8974,6 +8981,22 @@ namespace MC2Demo.Presentation
         private GameObject CreateMarkerDisc(string objectName, string materialName, Color color, Vector3 scale)
         {
             GameObject marker = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            marker.name = objectName;
+            marker.transform.localScale = scale;
+            Collider markerCollider = marker.GetComponent<Collider>();
+            if (markerCollider != null)
+            {
+                markerCollider.enabled = false;
+            }
+
+            AssignMaterial(marker, materialName, color);
+            marker.SetActive(false);
+            return marker;
+        }
+
+        private GameObject CreateMarkerBlock(string objectName, string materialName, Color color, Vector3 scale)
+        {
+            GameObject marker = GameObject.CreatePrimitive(PrimitiveType.Cube);
             marker.name = objectName;
             marker.transform.localScale = scale;
             Collider markerCollider = marker.GetComponent<Collider>();
@@ -9381,7 +9404,8 @@ namespace MC2Demo.Presentation
         {
             bool hasMarker = unitDamageWarningMarkers.TryGetValue(unit.Id, out GameObject marker);
             bool hasBeacon = unitDamageWarningBeacons.TryGetValue(unit.Id, out GameObject beacon);
-            if (!hasMarker && !hasBeacon)
+            bool hasFlag = unitDamageWarningFlags.TryGetValue(unit.Id, out GameObject flag);
+            if (!hasMarker && !hasBeacon && !hasFlag)
             {
                 return;
             }
@@ -9400,6 +9424,11 @@ namespace MC2Demo.Presentation
                 beacon.SetActive(isVisible);
             }
 
+            if (hasFlag)
+            {
+                flag.SetActive(isVisible);
+            }
+
             if (!isVisible)
             {
                 return;
@@ -9412,26 +9441,40 @@ namespace MC2Demo.Presentation
             float pulse = 0.96f + Mathf.Sin(Time.time * pulseSpeed) * (isCritical ? 0.10f : 0.06f);
             if (hasMarker)
             {
-                float scale = (isCritical ? 1.34f : 1.14f) * pulse;
+                float scale = (isCritical ? 2.32f : 1.56f) * pulse;
                 marker.transform.position = GroundMarkerPosition(unit.MissionPosition, 0.115f);
-                marker.transform.localScale = new Vector3(scale, 0.018f, scale);
+                marker.transform.localScale = new Vector3(scale, 0.024f, scale);
                 AssignMaterial(
                     marker,
                     isCritical ? "PlayerDamageCritical" : "PlayerDamageWarning",
-                    isCritical ? new Color(1f, 0.12f, 0.08f, 0.48f) : new Color(1f, 0.46f, 0.10f, 0.34f));
+                    isCritical ? new Color(1f, 0.10f, 0.06f, 0.62f) : new Color(1f, 0.46f, 0.10f, 0.42f));
             }
 
             if (hasBeacon)
             {
-                beacon.transform.position = GroundMarkerPosition(unit.MissionPosition, isCritical ? 0.58f : 0.48f);
+                beacon.transform.position = GroundMarkerPosition(unit.MissionPosition, isCritical ? 1.08f : 0.68f);
                 beacon.transform.localScale = new Vector3(
-                    0.078f * pulse,
-                    (isCritical ? 0.48f : 0.32f) + pulse * 0.08f,
-                    0.078f * pulse);
+                    (isCritical ? 0.170f : 0.104f) * pulse,
+                    (isCritical ? 1.06f : 0.52f) + pulse * (isCritical ? 0.18f : 0.10f),
+                    (isCritical ? 0.170f : 0.104f) * pulse);
                 AssignMaterial(
                     beacon,
                     isCritical ? "PlayerDamageBeaconCritical" : "PlayerDamageBeaconWarning",
-                    isCritical ? new Color(1f, 0.08f, 0.06f, 0.54f) : new Color(1f, 0.42f, 0.10f, 0.42f));
+                    isCritical ? new Color(1f, 0.08f, 0.06f, 0.72f) : new Color(1f, 0.42f, 0.10f, 0.50f));
+            }
+
+            if (hasFlag)
+            {
+                flag.transform.position = GroundMarkerPosition(unit.MissionPosition, isCritical ? 1.62f : 1.00f);
+                flag.transform.rotation = Quaternion.Euler(0f, cameraYaw, 0f);
+                flag.transform.localScale = new Vector3(
+                    (isCritical ? 2.20f : 1.36f) * pulse,
+                    isCritical ? 0.095f : 0.060f,
+                    isCritical ? 0.44f : 0.26f);
+                AssignMaterial(
+                    flag,
+                    isCritical ? "PlayerDamageSpotlightFlagCritical" : "PlayerDamageSpotlightFlag",
+                    isCritical ? new Color(1f, 0.12f, 0.06f, 0.88f) : new Color(1f, 0.36f, 0.08f, 0.68f));
             }
         }
 
