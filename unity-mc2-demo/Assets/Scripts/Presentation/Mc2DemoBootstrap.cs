@@ -176,6 +176,7 @@ namespace MC2Demo.Presentation
             public string[] activeHostiles;
             public string[] visibleHostiles;
             public string[] currentObjectives;
+            public string occupancy;
             public VisualCaptureCameraState camera;
             public VisualCaptureReferenceState referenceAssets;
         }
@@ -5069,6 +5070,7 @@ namespace MC2Demo.Presentation
                 activeHostiles = UnitLabels(observation?.activeHostiles),
                 visibleHostiles = VisibleHostileLabels(),
                 currentObjectives = ObjectiveLabels(observation?.currentObjectives),
+                occupancy = BuildCaptureOccupancySummary(),
                 camera = BuildCaptureCameraState(),
                 referenceAssets = new VisualCaptureReferenceState
                 {
@@ -5079,6 +5081,12 @@ namespace MC2Demo.Presentation
                     occlusion = lastOcclusionFadeSummary
                 }
             };
+        }
+
+        private string BuildCaptureOccupancySummary()
+        {
+            string battleSummary = mission == null ? "BattleOccupancy=mission unavailable" : mission.OccupancySummary();
+            return battleSummary + "; " + DemoTerrainView.CurrentLandingAuditSummary();
         }
 
         private VisualCaptureCameraState BuildCaptureCameraState()

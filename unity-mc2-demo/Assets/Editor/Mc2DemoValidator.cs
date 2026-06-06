@@ -134,6 +134,7 @@ namespace MC2Demo.EditorTools
             ValidateUnitCollisionSeparation();
             ValidateStructureCollisionOccupancy();
             ValidateTerrainObjectCollisionOccupancy();
+            ValidateOccupancySummaryEvidence(mission);
             ValidateJumpCommand(BattleMission.FromJson(contractJson, combatProfiles));
             ValidateCombatSimulation(mission);
             ValidateStructureObjective(new BattleMission(MakeStructureObjectiveContract(), CombatProfileCatalog.Empty));
@@ -2539,6 +2540,29 @@ namespace MC2Demo.EditorTools
             if (player.HasMoveOrder)
             {
                 throw new InvalidDataException("Expected terrain object fallback destination to be reachable.");
+            }
+        }
+
+        private static void ValidateOccupancySummaryEvidence(BattleMission mission)
+        {
+            string summary = mission?.OccupancySummary() ?? "";
+            RequireSummaryFragment(summary, "BattleOccupancy=units", "occupancy summary");
+            RequireSummaryFragment(summary, "unitRadii infantry=20 vehicle=42 mech=50", "occupancy summary");
+            RequireSummaryFragment(summary, "structures 1", "occupancy summary");
+            RequireSummaryFragment(summary, "hardProps ", "occupancy summary");
+            RequireSummaryFragment(summary, "destinationFallback=structure+hardProp", "occupancy summary");
+            if (summary.IndexOf("hardProps 0", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                throw new InvalidDataException("Expected first mission occupancy summary to expose hard terrain object blockers.");
+            }
+        }
+
+        private static void RequireSummaryFragment(string summary, string fragment, string context)
+        {
+            if (string.IsNullOrWhiteSpace(summary)
+                || summary.IndexOf(fragment, StringComparison.OrdinalIgnoreCase) < 0)
+            {
+                throw new InvalidDataException("Missing '" + fragment + "' in " + context + ": " + summary);
             }
         }
 

@@ -1,3 +1,4 @@
+using System.Globalization;
 using MC2Demo.BattleCore;
 using UnityEngine;
 
@@ -90,6 +91,55 @@ namespace MC2Demo.Presentation
             return ElevationToWorldHeight(waterElevation);
         }
 
+        public string LandingAuditSummary()
+        {
+            if (terrainMesh == null || terrainMesh.samples == null || terrainMesh.samples.Length == 0)
+            {
+                return "Landing=terrain unavailable";
+            }
+
+            int flaggedWater = 0;
+            int elevationBlocked = 0;
+            for (int index = 0; index < terrainMesh.samples.Length; index++)
+            {
+                TerrainMeshSample sample = terrainMesh.samples[index];
+                if (sample == null)
+                {
+                    continue;
+                }
+
+                if (sample.water != 0)
+                {
+                    flaggedWater++;
+                }
+
+                if (sample.elevation <= waterElevation + 4f)
+                {
+                    elevationBlocked++;
+                }
+            }
+
+            int blocked = 0;
+            for (int index = 0; index < terrainMesh.samples.Length; index++)
+            {
+                TerrainMeshSample sample = terrainMesh.samples[index];
+                if (sample != null && (sample.water != 0 || sample.elevation <= waterElevation + 4f))
+                {
+                    blocked++;
+                }
+            }
+
+            return "Landing=DemoTerrainView totalSamples="
+                + terrainMesh.samples.Length.ToString(CultureInfo.InvariantCulture)
+                + " blockedSamples="
+                + blocked.ToString(CultureInfo.InvariantCulture)
+                + " flaggedWater="
+                + flaggedWater.ToString(CultureInfo.InvariantCulture)
+                + " lowElevation="
+                + elevationBlocked.ToString(CultureInfo.InvariantCulture)
+                + " externalPredicate=water+mapBounds";
+        }
+
         public static Vector3 MissionToWorld(Vector2 missionPoint)
         {
             return new Vector3(missionPoint.x / MissionScale, 0f, missionPoint.y / MissionScale);
@@ -113,6 +163,11 @@ namespace MC2Demo.Presentation
         public static bool IsUsableLandingPosition(Vector2 missionPoint)
         {
             return Current == null || Current.CanLandAt(missionPoint);
+        }
+
+        public static string CurrentLandingAuditSummary()
+        {
+            return Current == null ? "Landing=DemoTerrainView unavailable" : Current.LandingAuditSummary();
         }
 
         public static float ElevationToWorldHeight(float elevation, float waterLevel = 350f)

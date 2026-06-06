@@ -302,3 +302,49 @@ Next priority:
 1. BattleCore occupancy evidence pass.
 2. Commander camera composition pass.
 3. Then Phase C command-state smoke coverage.
+
+## Pass 7 Result
+
+Implemented on 2026-06-07:
+
+- Added `BattleMission.OccupancySummary()` so the rules layer reports active collision units, unit radii, blocking structures, hard terrain-object blockers, max blocker radii, and destination fallback source.
+- Added `DemoTerrainView.CurrentLandingAuditSummary()` so screenshots report terrain landing predicate evidence: total terrain samples, water/low-elevation blocked samples, and the external predicate source used by jet landing.
+- Added top-level `occupancy` to capture sidecars.
+- Added validator coverage that the first mission occupancy summary exposes unit radii, one structure blocker, hard terrain object blockers, and structure/hardProp destination fallback.
+- Re-ran the partial squad jet smoke to confirm landing evidence did not change the rule: illegal landing blocks only the affected mech, while valid jumps still execute.
+
+Validation evidence:
+
+```text
+analysis-output/unity-validate-occupancy-evidence.log
+analysis-output/unity-build-occupancy-evidence.log
+analysis-output/unity-player-occupancy-jet-smoke.log
+analysis-output/reference-visual-captures/hangar-contact.png
+analysis-output/reference-visual-captures/hangar-contact.json
+analysis-output/reference-visual-captures/damage-demo.png
+analysis-output/reference-visual-captures/damage-demo.json
+```
+
+Observed occupancy evidence:
+
+```text
+hangar-contact: BattleOccupancy=units 23/29 unitRadii infantry=20 vehicle=42 mech=50 structures 1 maxStructureRadius=215 hardProps 80 building=21 aircraft=4 barricade=37 other=18 maxPropRadius=78 destinationFallback=structure+hardProp; Landing=DemoTerrainView totalSamples=10000 blockedSamples=9392 flaggedWater=9233 lowElevation=7722 externalPredicate=water+mapBounds
+damage-demo: BattleOccupancy=units 22/29 unitRadii infantry=20 vehicle=42 mech=50 structures 1 maxStructureRadius=215 hardProps 80 building=21 aircraft=4 barricade=37 other=18 maxPropRadius=78 destinationFallback=structure+hardProp; Landing=DemoTerrainView totalSamples=10000 blockedSamples=9392 flaggedWater=9233 lowElevation=7722 externalPredicate=water+mapBounds
+```
+
+Observed effect:
+
+- The capture sidecars now prove there are physical occupancy sources for units, the hangar structure, aircraft/building/barricade terrain objects, and water/map-bound landing rejection.
+- `hangar-contact` remains 20 active / 16 visible hostiles and `damage-demo` remains 20 active / 19 visible hostiles, so encounter pressure was preserved.
+- This pass did not change visual scale, camera, enemy activation, damage, weapon, movement or objective rules.
+
+Remaining issues:
+
+1. The battlefield is now evidence-backed but still compositionally crowded around the hangar/forest flank.
+2. `blockedSamples` is high because the first capture slice contains large water regions around the island; this is correct for landing rejection, but the sidecar should be interpreted as a terrain-grid fact rather than a pathfinding navmesh.
+3. The next pass should tune fixed-camera composition, not expand collision rules.
+
+Next priority:
+
+1. Commander camera composition pass.
+2. Then Phase C command-state smoke coverage.

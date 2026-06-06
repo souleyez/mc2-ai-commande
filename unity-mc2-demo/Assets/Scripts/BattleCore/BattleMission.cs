@@ -98,6 +98,93 @@ namespace MC2Demo.BattleCore
             EvaluateMissionResult();
         }
 
+        public string OccupancySummary()
+        {
+            int activeCollisionUnits = 0;
+            foreach (UnitState unit in units)
+            {
+                if (CanResolveUnitCollision(unit))
+                {
+                    activeCollisionUnits++;
+                }
+            }
+
+            int blockingStructures = 0;
+            float maxStructureRadius = 0f;
+            foreach (StructureState structure in structures)
+            {
+                if (!IsBlockingStructure(structure))
+                {
+                    continue;
+                }
+
+                blockingStructures++;
+                maxStructureRadius = Mathf.Max(maxStructureRadius, StructureCollisionRadius(structure));
+            }
+
+            int buildingObstacles = 0;
+            int aircraftObstacles = 0;
+            int barricadeObstacles = 0;
+            int otherHardProps = 0;
+            float maxTerrainObjectRadius = 0f;
+            foreach (TerrainObjectObstacle obstacle in terrainObjectObstacles)
+            {
+                maxTerrainObjectRadius = Mathf.Max(maxTerrainObjectRadius, obstacle.Radius);
+                string label = obstacle.Label ?? "";
+                if (ContainsIgnoreCase(label, "PrivateJet")
+                    || ContainsIgnoreCase(label, "Shilone")
+                    || ContainsIgnoreCase(label, "Slayer"))
+                {
+                    aircraftObstacles++;
+                }
+                else if (IsHardTerrainTreeObstacle(label))
+                {
+                    barricadeObstacles++;
+                }
+                else if (ContainsIgnoreCase(label, "Hangar")
+                    || ContainsIgnoreCase(label, "Quonset")
+                    || ContainsIgnoreCase(label, "Portable")
+                    || ContainsIgnoreCase(label, "Tower")
+                    || ContainsIgnoreCase(label, "Dome")
+                    || ContainsIgnoreCase(label, "GenericMilitary"))
+                {
+                    buildingObstacles++;
+                }
+                else
+                {
+                    otherHardProps++;
+                }
+            }
+
+            return "BattleOccupancy=units "
+                + activeCollisionUnits.ToString(CultureInfo.InvariantCulture)
+                + "/"
+                + units.Count.ToString(CultureInfo.InvariantCulture)
+                + " unitRadii infantry="
+                + UnitCollisionInfantryRadius.ToString(CultureInfo.InvariantCulture)
+                + " vehicle="
+                + UnitCollisionVehicleRadius.ToString(CultureInfo.InvariantCulture)
+                + " mech="
+                + UnitCollisionMechRadius.ToString(CultureInfo.InvariantCulture)
+                + " structures "
+                + blockingStructures.ToString(CultureInfo.InvariantCulture)
+                + " maxStructureRadius="
+                + maxStructureRadius.ToString("0.#", CultureInfo.InvariantCulture)
+                + " hardProps "
+                + terrainObjectObstacles.Count.ToString(CultureInfo.InvariantCulture)
+                + " building="
+                + buildingObstacles.ToString(CultureInfo.InvariantCulture)
+                + " aircraft="
+                + aircraftObstacles.ToString(CultureInfo.InvariantCulture)
+                + " barricade="
+                + barricadeObstacles.ToString(CultureInfo.InvariantCulture)
+                + " other="
+                + otherHardProps.ToString(CultureInfo.InvariantCulture)
+                + " maxPropRadius="
+                + maxTerrainObjectRadius.ToString("0.#", CultureInfo.InvariantCulture)
+                + " destinationFallback=structure+hardProp";
+        }
+
         public static BattleMission FromJson(string json, CombatProfileCatalog combatProfiles = null)
         {
             MissionContract contract = JsonUtility.FromJson<MissionContract>(json);
