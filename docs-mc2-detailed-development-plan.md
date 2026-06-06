@@ -852,6 +852,8 @@ Commit 2：固定镜头遮挡处理。
 
 Commit 3：地形对比和水域/道路可读性。
 
+- 状态：已完成，提交待收。根因确认是地形 mesh 顶面被 shader backface culling 剔除；修复后 `airfield`、`hangar-contact`、`damage-demo` 已能显示可读地面、水域、岸线、跑道/道路和建筑基底。
+- 验证：`analysis-output/unity-build-terrain-readability-r7.log`、`analysis-output/unity-player-terrain-readability-smoke-r3.log`、`analysis-output/reference-visual-captures/airfield.png`、`analysis-output/reference-visual-captures/hangar-contact.png`、`analysis-output/reference-visual-captures/damage-demo.png`。
 - 修改文件：`DemoTerrainView.cs`、`ReferenceTerrainTextureLibrary.cs`、`SourceTerrainVertexColor.shader`。
 - 步骤 1：对比 `airfield`、`hangar-contact` 的地面区域，记录哪些地形读成一片糊色。
 - 步骤 2：提高道路、跑道、水域、岸线、建筑基底的对比度。
@@ -1003,12 +1005,12 @@ Commit 15：本地演示包整理。
 
 ## 11. 下一步
 
-下一次继续开发时，按 `docs-playable-demo-master-plan-2026-06-07.md` 执行，先进入 **Phase A：收完当前地形可读性改动**。当前工作区已有地形/水面可读性实验改动，必须先把截图里的暗块问题修到可接受，再单独提交：
+下一次继续开发时，按 `docs-playable-demo-master-plan-2026-06-07.md` 执行，进入 **Phase B / Task B1：Enemy density and parking spread**。地形可读性已经从黑块修到可读状态，下一步重点是让 `hangar-contact` 和 `damage-demo` 的敌我密度不再挤在目标建筑周围：
 
-1. 捕获 `airfield`、`hangar-contact`、`damage-demo`。
-2. 对比道路、跑道、水域、岸线、建筑基底在截图里的可读性。
-3. 调整 `DemoTerrainView.cs`、`ReferenceTerrainTextureLibrary.cs` 或 `SourceTerrainVertexColor.shader` 的亮度/对比度。
-4. 确认点击、移动、水域非法落点不受表现层影响。
-5. 构建、smoke、截图验证，并更新视觉审计文档。
+1. 读取 `airfield`、`hangar-contact`、`damage-demo` sidecar，记录 active/visible hostiles。
+2. 给激活敌人增加最小可读间距或停靠点展开断言。
+3. 调整敌方 attack slot / parking ring，使敌人在武器射程内展开，不改原任务触发顺序。
+4. 跑 validator、smoke，并重新捕获 `hangar-contact`、`damage-demo`。
+5. 更新视觉审计文档并提交。
 
-这条线完成后，再继续敌方密度和机甲装配。
+这条线完成后，再继续第一张图的机甲/载具/炮塔/道具比例审计。

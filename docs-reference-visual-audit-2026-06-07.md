@@ -166,3 +166,46 @@ Remaining issues:
 1. The hangar fight is still dense because many hostiles are active around the same objective window.
 2. Forest/tree masses are now controlled by fade, but the terrain color contrast is still too low for a strong screenshot.
 3. The next visual pass should focus on terrain contrast, roads/water/building-base readability, and then enemy density/parking spread.
+
+## Pass 4 Result
+
+Implemented on 2026-06-07:
+
+- Replaced the old full-map water plane with a source-cell water surface so water no longer paints the whole battlefield.
+- Added semantic terrain grading for water, shore, runway/road, dirt, grass, and building-adjacent ground.
+- Added terrain composite luma reporting; the current first-slice composite reports `luma=81/98.8/187`.
+- Changed the source terrain shader to render double-sided. This was the real visibility fix: the terrain mesh was present and the composite texture was readable, but the top face was being backface-culled in the player.
+- Kept BattleCore terrain, click, movement, occupancy, and water/jet legality rules unchanged.
+- Added optional environment-gated terrain diagnostics for development captures: `MC2_WRITE_TERRAIN_DEBUG=1` writes `analysis-output/reference-visual-captures/terrain-composite-debug.png`; `MC2_DISABLE_WATER_SURFACE=1` can isolate terrain rendering from water presentation.
+
+Validation evidence:
+
+```text
+analysis-output/unity-build-terrain-readability-r7.log
+analysis-output/unity-player-terrain-readability-smoke-r3.log
+analysis-output/reference-visual-captures/airfield.png
+analysis-output/reference-visual-captures/airfield.json
+analysis-output/reference-visual-captures/hangar-contact.png
+analysis-output/reference-visual-captures/hangar-contact.json
+analysis-output/reference-visual-captures/damage-demo.png
+analysis-output/reference-visual-captures/damage-demo.json
+```
+
+Observed effect:
+
+- `airfield` now shows readable green ground, blue water, softer shorelines, runway/road light strips, and building bases instead of the previous black terrain mass.
+- `hangar-contact` and `damage-demo` no longer collapse into black ground blocks; units and structures stand on a visible tactical map.
+- The sidecars still report the same mission scale and occlusion pass: `airfield` has 12 active / 8 visible hostiles, `hangar-contact` has 20 active / 16 visible hostiles, and `damage-demo` has 20 active / 19 visible hostiles.
+- Smoke still exits with code `0`, so the presentation fix did not break mission flow.
+
+Remaining issues:
+
+1. The hangar fight remains dense; many hostiles are still active around one objective window.
+2. Terrain is now readable, but still prototype-like: water boundaries, map-edge triangles, and road/runway softness need later art polish.
+3. Unit and prop scale should be checked again now that the ground is visible.
+
+Next priority:
+
+1. Enemy density and parking spread around the hangar.
+2. First-slice mech/vehicle/turret/prop scale audit.
+3. Commander camera composition if the fight center still feels crowded after spacing.

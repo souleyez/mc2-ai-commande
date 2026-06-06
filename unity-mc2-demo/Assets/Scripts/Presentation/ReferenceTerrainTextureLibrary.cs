@@ -41,6 +41,7 @@ namespace MC2Demo.Presentation
             Color32[] pixels = new Color32[textureSide * textureSide];
             int loadedSamples = 0;
             int missingSamples = 0;
+            float waterElevation = contract.mission?.terrain == null ? 350f : contract.mission.terrain.waterElevation;
 
             for (int row = 0; row < side; row++)
             {
@@ -59,7 +60,7 @@ namespace MC2Demo.Presentation
                         loadedSamples++;
                     }
 
-                    PaintCompositeTile(pixels, textureSide, tileSize, row, col, source, sample);
+                    PaintCompositeTile(pixels, textureSide, tileSize, row, col, source, sample, waterElevation);
                 }
             }
 
@@ -77,6 +78,7 @@ namespace MC2Demo.Presentation
             };
             texture.SetPixels32(pixels);
             texture.Apply(true, false);
+            TryWriteDebugCompositeTexture(texture);
             summary = "terrain texture composite "
                 + textureSide.ToString(CultureInfo.InvariantCulture)
                 + "px loadedSamples="
@@ -84,8 +86,31 @@ namespace MC2Demo.Presentation
                 + " missingSamples="
                 + missingSamples.ToString(CultureInfo.InvariantCulture)
                 + " manifestTextures="
-                + (manifest.textures?.Length ?? 0).ToString(CultureInfo.InvariantCulture);
+                + (manifest.textures?.Length ?? 0).ToString(CultureInfo.InvariantCulture)
+                + " "
+                + PixelLumaSummary(pixels);
             return true;
+        }
+
+        private static void TryWriteDebugCompositeTexture(Texture2D texture)
+        {
+            if (texture == null || !string.Equals(Environment.GetEnvironmentVariable("MC2_WRITE_TERRAIN_DEBUG"), "1", StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            try
+            {
+                string outputDirectory = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "analysis-output", "reference-visual-captures"));
+                Directory.CreateDirectory(outputDirectory);
+                string outputPath = Path.Combine(outputDirectory, "terrain-composite-debug.png");
+                File.WriteAllBytes(outputPath, texture.EncodeToPNG());
+                Debug.Log("MC2 terrain composite debug written: " + outputPath);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning("Failed to write terrain composite debug texture: " + ex.Message);
+            }
         }
 
         private static void PaintCompositeTile(
@@ -95,7 +120,8 @@ namespace MC2Demo.Presentation
             int row,
             int col,
             LoadedTerrainTexture source,
-            TerrainMeshSample sample)
+            TerrainMeshSample sample,
+            float waterElevation)
         {
             int startX = col * tileSize;
             int startY = row * tileSize;
@@ -107,7 +133,7 @@ namespace MC2Demo.Presentation
                     Color32 color = source == null
                         ? FallbackDetailColor(sample, x, y)
                         : source.Sample((col * tileSize) + x, (row * tileSize) + y);
-                    pixels[(startY + y) * textureSide + startX + x] = ApplyLight(color, light);
+                    pixels[(startY + y) * textureSide + startX + x] = ApplyLight(ColorGradeTerrainTexture(color, sample, waterElevation), light);
                 }
             }
         }
@@ -117,6 +143,128 @@ namespace MC2Demo.Presentation
             int seed = SourceTextureId(sample) * 37 + sample.terrainType * 11 + x * 3 + y * 5;
             byte value = (byte)(116 + Mathf.Abs(seed % 48));
             return new Color32(value, value, value, 255);
+        }
+
+        private static string PixelLumaSummary(Color32[] pixels)
+        {
+            if (pixels == null || pixels.Length == 0)
+            {
+                return "luma=empty";
+            }
+
+            double total = 0.0;
+            int minimum = 255;
+            int maximum = 0;
+            for (int index = 0; index < pixels.Length; index++)
+            {
+                Color32 color = pixels[index];
+                int luma = Mathf.Clamp(Mathf.RoundToInt(color.r * 0.2126f + color.g * 0.7152f + color.b * 0.0722f), 0, 255);
+                minimum = Mathf.Min(minimum, luma);
+                maximum = Mathf.Max(maximum, luma);
+                total += luma;
+            }
+
+            double average = total / pixels.Length;
+            return "luma="
+                + minimum.ToString(CultureInfo.InvariantCulture)
+                + "/"
+                + Math.Round(average, 1).ToString(CultureInfo.InvariantCulture)
+                + "/"
+                + maximum.ToString(CultureInfo.InvariantCulture);
+        }
+
+        private static Color32 ColorGradeTerrainTexture(Color32 color, TerrainMeshSample sample, float waterElevation)
+        {
+            Color graded = new(color.r / 255f, color.g / 255f, color.b / 255f, 1f);
+            graded.r = Mathf.Pow(Mathf.Clamp01(graded.r), 0.82f);
+            graded.g = Mathf.Pow(Mathf.Clamp01(graded.g), 0.82f);
+            graded.b = Mathf.Pow(Mathf.Clamp01(graded.b), 0.82f);
+            graded = AdjustContrast(graded, IsRunwayOrRoad(sample) ? 1.16f : 1.08f);
+            Color semantic = SemanticTerrainColor(sample, waterElevation);
+
+            if (sample.elevation <= waterElevation + 4f)
+            {
+                graded = Color.Lerp(graded, new Color(0.12f, 0.42f, 0.54f), 0.30f);
+            }
+            else if (sample.elevation <= waterElevation + 24f)
+            {
+                graded = Color.Lerp(graded, new Color(0.44f, 0.53f, 0.34f), 0.24f);
+            }
+
+            float textureBlend = IsRunwayOrRoad(sample) ? 0.34f : 0.20f;
+            if (sample.elevation <= waterElevation + 24f)
+            {
+                textureBlend = 0.16f;
+            }
+
+            graded = Color.Lerp(semantic, graded, textureBlend);
+            graded = ClampTerrainMinimum(graded, semantic);
+
+            return new Color32(
+                (byte)Mathf.Clamp(Mathf.RoundToInt(graded.r * 255f), 0, 255),
+                (byte)Mathf.Clamp(Mathf.RoundToInt(graded.g * 255f), 0, 255),
+                (byte)Mathf.Clamp(Mathf.RoundToInt(graded.b * 255f), 0, 255),
+                255);
+        }
+
+        private static Color SemanticTerrainColor(TerrainMeshSample sample, float waterElevation)
+        {
+            if (sample.elevation <= waterElevation + 4f)
+            {
+                return new Color(0.10f, 0.39f, 0.50f);
+            }
+
+            if (sample.elevation <= waterElevation + 24f)
+            {
+                return new Color(0.40f, 0.50f, 0.32f);
+            }
+
+            if (IsRunwayOrRoad(sample))
+            {
+                return sample.terrainType == 14
+                    ? new Color(0.61f, 0.60f, 0.52f)
+                    : new Color(0.53f, 0.54f, 0.47f);
+            }
+
+            if (sample.terrainType == 20)
+            {
+                return new Color(0.55f, 0.42f, 0.27f);
+            }
+
+            int textureId = SourceTextureId(sample);
+            if (textureId > 2)
+            {
+                return new Color(0.44f, 0.48f, 0.31f);
+            }
+
+            return new Color(0.34f, 0.47f, 0.24f);
+        }
+
+        private static bool IsRunwayOrRoad(TerrainMeshSample sample)
+        {
+            return sample.terrainType == 13
+                || sample.terrainType == 14
+                || sample.terrainType == 15
+                || sample.terrainType == 16;
+        }
+
+        private static Color ClampTerrainMinimum(Color graded, Color semantic)
+        {
+            float minimum = Mathf.Clamp01(Mathf.Max(0.16f, Mathf.Min(semantic.r, Mathf.Min(semantic.g, semantic.b)) * 0.72f));
+            return new Color(
+                Mathf.Max(graded.r, minimum),
+                Mathf.Max(graded.g, minimum),
+                Mathf.Max(graded.b, minimum),
+                graded.a);
+        }
+
+        private static Color AdjustContrast(Color color, float contrast)
+        {
+            return new Color(
+                Mathf.Clamp01((color.r - 0.5f) * contrast + 0.5f),
+                Mathf.Clamp01((color.g - 0.5f) * contrast + 0.5f),
+                Mathf.Clamp01((color.b - 0.5f) * contrast + 0.5f),
+                color.a);
         }
 
         private static Color32 ApplyLight(Color32 color, float light)
@@ -136,7 +284,7 @@ namespace MC2Demo.Presentation
             }
 
             int lowByte = (int)(sample.light & 0xffL);
-            return Mathf.Lerp(0.78f, 1.16f, lowByte / 255f);
+            return Mathf.Lerp(0.88f, 1.22f, lowByte / 255f);
         }
 
         private static int SourceTextureId(TerrainMeshSample sample)

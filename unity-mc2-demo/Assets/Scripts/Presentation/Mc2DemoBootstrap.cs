@@ -7084,7 +7084,10 @@ namespace MC2Demo.Presentation
 
             meshRenderer.sharedMaterial = MakeTerrainMaterial(terrainTexture);
 
-            CreateWaterPlane(mission.Contract.terrainMesh);
+            if (!string.Equals(Environment.GetEnvironmentVariable("MC2_DISABLE_WATER_SURFACE"), "1", StringComparison.Ordinal))
+            {
+                CreateWaterSurface(mission.Contract.terrainMesh);
+            }
         }
 
         private Mesh BuildTerrainMesh(TerrainMeshDefinition terrain)
@@ -7144,16 +7147,113 @@ namespace MC2Demo.Presentation
             return mesh;
         }
 
-        private void CreateWaterPlane(TerrainMeshDefinition terrain)
+        private void CreateWaterSurface(TerrainMeshDefinition terrain)
         {
-            GameObject water = GameObject.CreatePrimitive(PrimitiveType.Plane);
-            water.name = "Mission Water";
-            float sourceSize = (terrain.sampleSide - 1) * terrain.worldUnitsPerVertex / 1000f;
-            water.transform.localScale = new Vector3(sourceSize, 1f, sourceSize);
-            Vector3 center = DemoTerrainView.MissionToWorld(new Vector2(0f, 0f));
-            center.y = DemoTerrainView.WaterHeight() + 0.015f;
-            water.transform.position = center;
-            AssignMaterial(water, "Water", new Color(0.08f, 0.24f, 0.34f, 0.52f));
+            Mesh waterMesh = BuildWaterSurfaceMesh(terrain);
+            if (waterMesh == null)
+            {
+                return;
+            }
+
+            GameObject water = new("Mission Water");
+            MeshFilter meshFilter = water.AddComponent<MeshFilter>();
+            MeshRenderer meshRenderer = water.AddComponent<MeshRenderer>();
+            meshFilter.sharedMesh = waterMesh;
+            meshRenderer.sharedMaterial = MakeWaterMaterial();
+        }
+
+        private Mesh BuildWaterSurfaceMesh(TerrainMeshDefinition terrain)
+        {
+            if (terrain == null || terrain.samples == null || terrain.sampleSide <= 1)
+            {
+                return null;
+            }
+
+            int side = terrain.sampleSide;
+            float spacing = Mathf.Max(1f, terrain.worldUnitsPerVertex * Mathf.Max(1, terrain.sampleStep));
+            float waterY = DemoTerrainView.WaterHeight() + 0.018f;
+            List<Vector3> vertices = new();
+            List<int> triangles = new();
+            List<Vector2> uvs = new();
+            for (int row = 0; row < side - 1; row++)
+            {
+                for (int col = 0; col < side - 1; col++)
+                {
+                    TerrainMeshSample topLeft = terrain.samples[row * side + col];
+                    TerrainMeshSample topRight = terrain.samples[row * side + col + 1];
+                    TerrainMeshSample bottomLeft = terrain.samples[(row + 1) * side + col];
+                    TerrainMeshSample bottomRight = terrain.samples[(row + 1) * side + col + 1];
+                    if (!ShouldRenderWaterSurfaceCell(topLeft, topRight, bottomLeft, bottomRight))
+                    {
+                        continue;
+                    }
+
+                    float missionLeft = terrain.minX + col * spacing;
+                    float missionRight = terrain.minX + (col + 1) * spacing;
+                    float missionTop = terrain.minY - row * spacing;
+                    float missionBottom = terrain.minY - (row + 1) * spacing;
+                    int vertexStart = vertices.Count;
+                    vertices.Add(WaterSurfaceVertex(missionLeft, missionTop, waterY));
+                    vertices.Add(WaterSurfaceVertex(missionLeft, missionBottom, waterY));
+                    vertices.Add(WaterSurfaceVertex(missionRight, missionTop, waterY));
+                    vertices.Add(WaterSurfaceVertex(missionRight, missionBottom, waterY));
+                    uvs.Add(new Vector2(col / (float)(side - 1), row / (float)(side - 1)));
+                    uvs.Add(new Vector2(col / (float)(side - 1), (row + 1) / (float)(side - 1)));
+                    uvs.Add(new Vector2((col + 1) / (float)(side - 1), row / (float)(side - 1)));
+                    uvs.Add(new Vector2((col + 1) / (float)(side - 1), (row + 1) / (float)(side - 1)));
+                    triangles.Add(vertexStart);
+                    triangles.Add(vertexStart + 1);
+                    triangles.Add(vertexStart + 2);
+                    triangles.Add(vertexStart + 2);
+                    triangles.Add(vertexStart + 1);
+                    triangles.Add(vertexStart + 3);
+                }
+            }
+
+            if (vertices.Count == 0)
+            {
+                return null;
+            }
+
+            Mesh mesh = new()
+            {
+                name = "MC2 Water Surface",
+                vertices = vertices.ToArray(),
+                triangles = triangles.ToArray(),
+                uv = uvs.ToArray()
+            };
+            mesh.RecalculateNormals();
+            mesh.RecalculateBounds();
+            return mesh;
+        }
+
+        private bool ShouldRenderWaterSurfaceCell(params TerrainMeshSample[] samples)
+        {
+            float waterLevel = mission.Contract.mission.terrain.waterElevation;
+            int lowCorners = 0;
+            int flaggedCorners = 0;
+            for (int index = 0; index < samples.Length; index++)
+            {
+                TerrainMeshSample sample = samples[index];
+                if (sample.elevation <= waterLevel + 4f)
+                {
+                    lowCorners++;
+                }
+
+                if (sample.water != 0)
+                {
+                    flaggedCorners++;
+                }
+            }
+
+            return lowCorners >= 3 || (lowCorners >= 2 && flaggedCorners >= 2);
+        }
+
+        private static Vector3 WaterSurfaceVertex(float missionX, float missionY, float waterY)
+        {
+            Vector3 vertex = DemoTerrainView.MissionToWorld(new Vector2(missionX, missionY));
+            vertex.y = waterY;
+            return vertex;
         }
 
         private Color TerrainVertexColor(TerrainMeshSample sample)
@@ -7162,36 +7262,36 @@ namespace MC2Demo.Presentation
             float light = TerrainLightMultiplier(sample);
             if (sample.elevation <= waterLevel + 4f)
             {
-                return ApplyTerrainLight(new Color(0.06f, 0.22f, 0.30f), light);
+                return ApplyTerrainLight(new Color(0.10f, 0.36f, 0.46f), light);
             }
 
-            if (sample.elevation <= waterLevel + 18f)
+            if (sample.elevation <= waterLevel + 24f)
             {
-                return ApplyTerrainLight(new Color(0.20f, 0.30f, 0.22f), light);
+                return ApplyTerrainLight(new Color(0.39f, 0.49f, 0.31f), light);
             }
 
             int textureId = SourceTextureId(sample);
             if (sample.terrainType == 13 || sample.terrainType == 14 || sample.terrainType == 15 || sample.terrainType == 16)
             {
                 Color runway = sample.terrainType == 14
-                    ? new Color(0.38f, 0.38f, 0.34f)
-                    : new Color(0.31f, 0.32f, 0.30f);
-                return ApplyTerrainLight(TerrainTileVariation(runway, textureId, 0.10f), light);
+                    ? new Color(0.60f, 0.59f, 0.51f)
+                    : new Color(0.52f, 0.53f, 0.46f);
+                return ApplyTerrainLight(TerrainTileVariation(runway, textureId, 0.12f), light);
             }
 
             if (sample.terrainType == 20)
             {
-                return ApplyTerrainLight(TerrainTileVariation(new Color(0.37f, 0.30f, 0.20f), textureId, 0.12f), light);
+                return ApplyTerrainLight(TerrainTileVariation(new Color(0.54f, 0.42f, 0.27f), textureId, 0.12f), light);
             }
 
             if (textureId > 2)
             {
-                return ApplyTerrainLight(TerrainTileVariation(new Color(0.29f, 0.31f, 0.22f), textureId, 0.16f), light);
+                return ApplyTerrainLight(TerrainTileVariation(new Color(0.43f, 0.47f, 0.30f), textureId, 0.18f), light);
             }
 
             float heightT = Mathf.InverseLerp(mission.Contract.terrainMesh.elevationMin, mission.Contract.terrainMesh.elevationMax, sample.elevation);
-            Color baseColor = Color.Lerp(new Color(0.12f, 0.24f, 0.12f), new Color(0.35f, 0.34f, 0.22f), heightT);
-            return ApplyTerrainLight(TerrainTileVariation(baseColor, textureId, 0.05f), light);
+            Color baseColor = Color.Lerp(new Color(0.27f, 0.42f, 0.21f), new Color(0.55f, 0.50f, 0.32f), heightT);
+            return ApplyTerrainLight(TerrainTileVariation(baseColor, textureId, 0.07f), light);
         }
 
         private static int SourceTextureId(TerrainMeshSample sample)
@@ -7224,7 +7324,7 @@ namespace MC2Demo.Presentation
             }
 
             int lowByte = (int)(sample.light & 0xffL);
-            return Mathf.Lerp(0.78f, 1.16f, lowByte / 255f);
+            return Mathf.Lerp(0.88f, 1.24f, lowByte / 255f);
         }
 
         private static Color ApplyTerrainLight(Color color, float light)
@@ -7238,7 +7338,7 @@ namespace MC2Demo.Presentation
 
         private Material MakeTerrainMaterial(Texture2D terrainTexture)
         {
-            string cacheKey = "SourceTerrainVertexColor";
+            string cacheKey = terrainTexture == null ? "SourceTerrainVertexColor" : "ReadableTerrainComposite";
             if (materialCache.TryGetValue(cacheKey, out Material cachedMaterial))
             {
                 ConfigureTerrainMaterial(cachedMaterial, terrainTexture);
@@ -7246,6 +7346,7 @@ namespace MC2Demo.Presentation
             }
 
             Shader shader = Shader.Find("MC2Demo/Source Terrain Vertex Color")
+                ?? (terrainTexture == null ? null : Shader.Find("Unlit/Texture"))
                 ?? Shader.Find("Legacy Shaders/Diffuse")
                 ?? Shader.Find("Standard")
                 ?? Shader.Find("Hidden/Internal-Colored");
@@ -7257,7 +7358,7 @@ namespace MC2Demo.Presentation
 
             Material material = new(shader)
             {
-                name = "SourceTerrainVertexColor",
+                name = cacheKey,
                 color = Color.white
             };
             if (material.HasProperty("_Tint"))
@@ -7265,9 +7366,15 @@ namespace MC2Demo.Presentation
                 material.SetColor("_Tint", Color.white);
             }
 
+            if (material.HasProperty("_Color"))
+            {
+                material.SetColor("_Color", Color.white);
+            }
+
             ConfigureTerrainMaterial(material, terrainTexture);
             ownedMaterials.Add(material);
             materialCache[cacheKey] = material;
+            Debug.Log("MC2 terrain material: shader=" + shader.name + " texture=" + (terrainTexture == null ? "none" : terrainTexture.name));
             return material;
         }
 
@@ -7285,8 +7392,43 @@ namespace MC2Demo.Presentation
 
             if (material.HasProperty("_TextureStrength"))
             {
-                material.SetFloat("_TextureStrength", terrainTexture == null ? 0f : 0.72f);
+                material.SetFloat("_TextureStrength", terrainTexture == null ? 0f : 0.34f);
             }
+        }
+
+        private Material MakeWaterMaterial()
+        {
+            const string cacheKey = "ReadableWaterSurface";
+            if (materialCache.TryGetValue(cacheKey, out Material cachedMaterial))
+            {
+                return cachedMaterial;
+            }
+
+            Shader shader = Shader.Find("Unlit/Color")
+                ?? Shader.Find("Sprites/Default")
+                ?? Shader.Find("Legacy Shaders/Transparent/Diffuse")
+                ?? Shader.Find("Standard")
+                ?? Shader.Find("Hidden/Internal-Colored");
+            if (shader == null)
+            {
+                Debug.LogWarning("No shader available for readable water material.");
+                return null;
+            }
+
+            Material material = new(shader)
+            {
+                name = "ReadableWaterSurface",
+                color = new Color(0.10f, 0.42f, 0.56f, 0.58f)
+            };
+            if (material.HasProperty("_Color"))
+            {
+                material.SetColor("_Color", material.color);
+            }
+
+            ApplyTransparentMaterialMode(material);
+            ownedMaterials.Add(material);
+            materialCache[cacheKey] = material;
+            return material;
         }
 
         private void CreateLights()
