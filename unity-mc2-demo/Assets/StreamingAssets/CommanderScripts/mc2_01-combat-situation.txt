@@ -1,9 +1,21 @@
-# Proves the lean combat HUD reports squad, hostiles, targets, focus pressure, compact tempo, hidden contact pressure, weapon FX, and section-damage cues.
-assert-combat-situation quiet
+# Proves the lean combat HUD reports squad, hostiles, targets, focus pressure, compact tempo, hidden contact pressure, weapon FX, section-damage cues, and command-state handoff.
+assert-combat-situation quiet solo=0
+command squad move 2860 -980
+assert-command-result accepted=3
+command unit unit-1 move 2520 -1941
+assert-command-result accepted=1
+assert-combat-situation quiet solo=1
 command squad move 3136 -789
+assert-command-result accepted=2
+assert-combat-situation quiet solo=1
+advance 1
+assert-combat-situation solo=0
+command squad move 3136 -789
+assert-command-result accepted=3
 advance 12
 assert-combat-situation contact
 command squad attack structure structure-1-0
+assert-command-result accepted=3
 advance 8
 assert-combat-situation fire
 report

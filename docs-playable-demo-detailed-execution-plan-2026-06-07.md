@@ -46,10 +46,11 @@
 - 小队默认全选、单机独立命令、喷射、自动归队、状态栏和战后流程已有基础。
 - 装配界面已有热量、重量、槽位和装备预览方向，武器装上即启用。
 - AI 副官方向已明确为高层决策，不做逐帧控制。
+- Phase C / Task C1 command-state smoke 已完成：主战斗脚本和独立命令脚本现在都覆盖全队命令、单机独立命令、独立时全队接受数减少、完成后自动归队、归队后再次接受全队命令。
 
 当前最重要缺口：
 
-- 指挥流程还没有用 smoke 断言完整钉住。
+- 状态栏点选单机、下达独立命令、视觉选择回到全队的 UI contract 还需要收紧。
 - 战斗中 UI 还需要进一步变干净，状态栏承担主要反馈。
 - 武器效果、部位损伤、断臂/瘫痪/驾驶舱弹射需要更强可见事件。
 - 装配界面还需要更像原版整块格子放置，装甲板和散热器应作为清楚的填格组件。
@@ -160,6 +161,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_refere
 
 ### Task C1: Assert Commander Command States
 
+**Status:** Completed 2026-06-07. `mc2_01-combat-situation.txt` and `mc2_01-solo-order-state.txt` now assert full-squad accepted counts, solo accepted counts, detached-unit exclusion from squad commands, auto-rejoin, and full-squad acceptance after rejoin.
+
 **Files:**
 
 - Modify: `unity-mc2-demo/Assets/StreamingAssets/CommanderScripts/mc2_01-combat-situation.txt`
@@ -186,6 +189,11 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_refere
 
 - 日志出现 `MC2 demo smoke test exiting with code 0`。
 - command file 证明全队命令、独立命令、自动归队和归队后再接全队命令。
+
+**Validation Evidence:**
+
+- `analysis-output/unity-player-command-state-smoke.log`: main combat situation smoke exits with code `0`.
+- `analysis-output/unity-player-solo-order-state.log`: solo-order smoke exits with code `0`.
 
 **Commit:** `Assert commander command states`
 
@@ -729,24 +737,23 @@ git diff --check
 
 推荐后续提交顺序：
 
-1. `Assert commander command states`
-2. `Tighten status row solo command flow`
-3. `Finalize squad jet landing rules`
-4. `Freeze minimal battle UI`
-5. `Document command loop visual baseline`
-6. `Differentiate weapon visual effects`
-7. `Strengthen mech section damage cues`
-8. `Simplify armor hardness damage math`
-9. `Remove weapon toggle leftovers`
-10. `Make mech lab grid item fitting explicit`
-11. `Apply mech lab loadouts in battle`
-12. `Hide save system from first demo flow`
-13. `Tighten debrief and repair loop`
-14. `Freeze AI commander observation contract`
-15. `Add AI commander directive adapter`
-16. `Document replaceable visual content packs`
-17. `Prepare repeatable Windows demo build`
-18. `Add playable demo walkthrough`
+1. `Tighten status row solo command flow`
+2. `Finalize squad jet landing rules`
+3. `Freeze minimal battle UI`
+4. `Document command loop visual baseline`
+5. `Differentiate weapon visual effects`
+6. `Strengthen mech section damage cues`
+7. `Simplify armor hardness damage math`
+8. `Remove weapon toggle leftovers`
+9. `Make mech lab grid item fitting explicit`
+10. `Apply mech lab loadouts in battle`
+11. `Hide save system from first demo flow`
+12. `Tighten debrief and repair loop`
+13. `Freeze AI commander observation contract`
+14. `Add AI commander directive adapter`
+15. `Document replaceable visual content packs`
+16. `Prepare repeatable Windows demo build`
+17. `Add playable demo walkthrough`
 
 每个提交都记录：
 
