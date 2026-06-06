@@ -394,3 +394,76 @@ Next priority:
 
 1. Phase C / Task C1 command state validator.
 2. Status-row solo command flow.
+
+## Stage 0 Baseline Audit Result
+
+Implemented on 2026-06-07:
+
+- Ran the new current-plan baseline pass after `Finalize squad jet landing rules`.
+- Verified the rules layer, Windows build, visible-flow smoke and refreshed reference screenshots.
+- Confirmed the Demo can already move through battle, debrief, Mech Lab, loadout compact assertions, squad swap/relaunch and commander observation export.
+- Inspected `spawn`, `airfield`, `hangar-contact`, `damage-demo` and `north-patrol` screenshots directly, not just through logs.
+
+Validation evidence:
+
+```text
+analysis-output/unity-validate-baseline-audit.log
+analysis-output/unity-build-baseline-audit.log
+analysis-output/unity-player-visible-flow-audit.log
+analysis-output/reference-visual-captures/spawn.png
+analysis-output/reference-visual-captures/spawn.json
+analysis-output/reference-visual-captures/airfield.png
+analysis-output/reference-visual-captures/airfield.json
+analysis-output/reference-visual-captures/hangar-contact.png
+analysis-output/reference-visual-captures/hangar-contact.json
+analysis-output/reference-visual-captures/damage-demo.png
+analysis-output/reference-visual-captures/damage-demo.json
+analysis-output/reference-visual-captures/north-patrol.png
+analysis-output/reference-visual-captures/north-patrol.json
+```
+
+Validation results:
+
+```text
+Validator: MC2 demo contract validation OK.
+Build: Build Finished, Result: Success; MC2 Unity demo Windows build OK.
+Visible-flow smoke: MC2 demo smoke test exiting with code 0.
+```
+
+Current capture matrix:
+
+| Preset | Mission Time | Camera Ortho | Active Hostiles | Visible Hostiles | Current Readability |
+| --- | ---: | ---: | ---: | ---: | --- |
+| `spawn` | 1.08s | 29.11 | 0 | 0 | Squad, water, shoreline, hangar direction and terrain are readable. The right mission panel is still too large for the first screen and covers a meaningful part of the battlefield. |
+| `airfield` | 12.79s | 29.11 | 12 | 8 | Enemy direction, runway/road area, hangar cluster and squad positions are readable. The right combat/objective panels still occupy too much of the tactical view. |
+| `hangar-contact` | 20.76s | 29.11 | 20 | 16 | No longer looks like one same-coordinate pile. The hangar fight remains the densest local case, and the right combat panel is still bigger than the intended minimal battle HUD. |
+| `damage-demo` | 38.73s | 35.50 | 20 | 19 | Status-row damage is clear, including destroyed/critical sections. The world-space fight center remains busy, and HUD panels still compete with the battle view. |
+| `north-patrol` | 54.72s | 29.11 | 23 | 9 | Best current combat composition. Open terrain makes enemy direction and squad pressure readable, proving the worst readability issue is local hangar density plus HUD occupancy rather than total art failure. |
+
+Observed sidecar evidence:
+
+```text
+hangar-contact occupancy: BattleOccupancy=units 23/29 unitRadii infantry=20 vehicle=42 mech=50 structures 1 maxStructureRadius=215 hardProps 80 building=21 aircraft=4 barricade=37 other=18 maxPropRadius=78 destinationFallback=structure+hardProp; Landing=DemoTerrainView totalSamples=10000 blockedSamples=9392 flaggedWater=9233 lowElevation=7722 externalPredicate=water+mapBounds
+reference assets: terrain texture composite 800px loadedSamples=10000 missingSamples=0 manifestTextures=103 luma=81/98.8/187; ReferenceStructures=loaded 1 fallback 0; ReferenceProps=loaded 336 fallback 663; ReferenceUnits=mech 6/0 vehicle 15/0 infantry 0/8 other 0/0 scale mech=0.92 vehicle=0.68 infantry=0.38; ReferencePropScale=structure 1/0 building 29/3 aircraft 4/0 vehicle 9/3 barricade 90/18 tree 139/594 smallProp 65/38 other 0/7; OcclusionFade=active 305/1493 focus 4
+```
+
+Current judgment:
+
+- The baseline is playable enough to continue into visible-flow lock.
+- The weakest current screenshot is `damage-demo` because it combines dense combat, destroyed unit state and the largest visible HUD competition.
+- `hangar-contact` remains the main composition stress case for local enemy density and hard-object occupancy.
+- `north-patrol` is the best investor-style combat screenshot candidate in this batch because it shows pressure, terrain and unit direction without the hangar crowding.
+- The next engineering task should be Stage 1 / Task 1.1: freeze the minimal battle HUD before adding more combat features.
+
+Remaining issues:
+
+1. The right combat/objective panels are still larger than the desired first-version minimal HUD.
+2. The left status panel is useful and readable, but it occupies a large first-screen footprint; future polish should keep information density while reducing visual weight.
+3. `hangar-contact` and `damage-demo` still need local composition work after the HUD pass.
+4. Unity batch runs can dirty `unity-mc2-demo/Assets/Scenes/Mc2Demo.unity` through serialization churn; this must be checked before every commit.
+
+Next priority:
+
+1. Stage 0 / Task 0.2 worktree and private-output hygiene check.
+2. Stage 1 / Task 1.1 minimal battle HUD.
+3. Stage 2 occupancy placeholder/debug visibility only after HUD is no longer obscuring the scene.
