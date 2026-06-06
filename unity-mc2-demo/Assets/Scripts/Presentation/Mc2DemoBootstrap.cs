@@ -39,6 +39,7 @@ namespace MC2Demo.Presentation
         private const string CapturePresetHangarContact = "hangar-contact";
         private const string CapturePresetNorthPatrol = "north-patrol";
         private const string CapturePresetDamageDemo = "damage-demo";
+        private const int OccupancyLandingReviewMarkerCount = 16;
         private const float OcclusionFadeUpdateSpeed = 8f;
         private const float OcclusionBoundsRadiusPixelCap = 320f;
         private const float LoadoutCardHeight = 456f;
@@ -273,6 +274,7 @@ namespace MC2Demo.Presentation
         private readonly Dictionary<string, string> lastTargetLockByUnit = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, int> visibleFocusTargetCounts = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, int> hostileFocusTargetCounts = new(StringComparer.OrdinalIgnoreCase);
+        private readonly List<GameObject> occupancyPlaceholderMarkers = new();
         private readonly Dictionary<string, GameObject> unitHealthBarBacks = new();
         private readonly Dictionary<string, GameObject> unitHealthBarFills = new();
         private readonly Dictionary<int, List<GameObject>> objectiveAreaMarkers = new();
@@ -698,6 +700,7 @@ namespace MC2Demo.Presentation
             lastTargetLockByUnit.Clear();
             visibleFocusTargetCounts.Clear();
             hostileFocusTargetCounts.Clear();
+            ClearOccupancyPlaceholderMarkers();
             unitHealthBarBacks.Clear();
             unitHealthBarFills.Clear();
             objectiveAreaMarkers.Clear();
@@ -815,6 +818,7 @@ namespace MC2Demo.Presentation
                     Directory.CreateDirectory(folder);
                 }
 
+                RefreshOccupancyPlaceholdersForCapture();
                 ScreenCapture.CaptureScreenshot(fullPath);
                 Debug.Log("MC2 screenshot capture requested: " + fullPath);
                 WriteCaptureSidecar(SidecarPathFor(fullPath, sidecarPath), fullPath);
@@ -8159,6 +8163,7 @@ namespace MC2Demo.Presentation
 
         private void CreateOccupancyPlaceholders()
         {
+            ClearOccupancyPlaceholderMarkers();
             lastOccupancyPlaceholderSummary = "OccupancyPlaceholders=disabled";
             if (mission == null || !ShouldShowOccupancyPlaceholders())
             {
@@ -8167,6 +8172,9 @@ namespace MC2Demo.Presentation
 
             int structures = 0;
             int hardProps = 0;
+            int units = 0;
+            int playerUnits = 0;
+            int hostileUnits = 0;
             int total = 0;
             foreach (BattleOccupancyRegion region in mission.OccupancyPlaceholderRegions())
             {
@@ -8185,22 +8193,56 @@ namespace MC2Demo.Presentation
                 {
                     hardProps++;
                 }
+                else if (IsOccupancyUnitKind(region.Kind))
+                {
+                    units++;
+                    if (region.Kind.StartsWith("player", StringComparison.OrdinalIgnoreCase))
+                    {
+                        playerUnits++;
+                    }
+                    else
+                    {
+                        hostileUnits++;
+                    }
+                }
             }
+
+            int landingBlockedMarkers = CreateLandingBlockedReviewPlaceholders();
+            total += landingBlockedMarkers;
 
             lastOccupancyPlaceholderSummary = "OccupancyPlaceholders=enabled total "
                 + total.ToString(CultureInfo.InvariantCulture)
+                + " units "
+                + units.ToString(CultureInfo.InvariantCulture)
+                + " playerUnits "
+                + playerUnits.ToString(CultureInfo.InvariantCulture)
+                + " hostileUnits "
+                + hostileUnits.ToString(CultureInfo.InvariantCulture)
                 + " structures "
                 + structures.ToString(CultureInfo.InvariantCulture)
                 + " hardProps "
                 + hardProps.ToString(CultureInfo.InvariantCulture)
-                + " source=BattleMission.OccupancyPlaceholderRegions";
+                + " landingBlockedMarkers "
+                + landingBlockedMarkers.ToString(CultureInfo.InvariantCulture)
+                + " source=BattleMission.OccupancyPlaceholderRegions+DemoTerrainView.LandingReviewBlockedMarkers";
             Debug.Log("MC2 occupancy placeholders: " + lastOccupancyPlaceholderSummary);
         }
 
         private static bool ShouldShowOccupancyPlaceholders()
         {
             return string.Equals(Environment.GetEnvironmentVariable("MC2_SHOW_OCCUPANCY_PLACEHOLDERS"), "1", StringComparison.Ordinal)
-                || HasCommandLineArg(Environment.GetCommandLineArgs(), "-mc2ShowOccupancyPlaceholders");
+                || HasCommandLineArg(Environment.GetCommandLineArgs(), "-mc2ShowOccupancyPlaceholders")
+                || HasCommandLineArg(Environment.GetCommandLineArgs(), "-mc2ShowOccupancyReviewLayer");
+        }
+
+        private void RefreshOccupancyPlaceholdersForCapture()
+        {
+            if (!ShouldShowOccupancyPlaceholders())
+            {
+                return;
+            }
+
+            CreateOccupancyPlaceholders();
         }
 
         private void CreateOccupancyPlaceholder(BattleOccupancyRegion region)
@@ -8219,11 +8261,106 @@ namespace MC2Demo.Presentation
                 collider.enabled = false;
             }
 
-            bool isStructure = string.Equals(region.Kind, "structure", StringComparison.OrdinalIgnoreCase);
-            Color color = isStructure
-                ? new Color(1f, 0.42f, 0.10f, 0.24f)
-                : new Color(0.20f, 0.86f, 1f, 0.18f);
-            AssignMaterial(marker, isStructure ? "OccupancyStructure" : "OccupancyHardProp", color);
+            AssignMaterial(marker, OccupancyPlaceholderMaterialName(region.Kind), OccupancyPlaceholderColor(region.Kind));
+            occupancyPlaceholderMarkers.Add(marker);
+        }
+
+        private int CreateLandingBlockedReviewPlaceholders()
+        {
+            List<Vector2> blockedMarkers = DemoTerrainView.CurrentLandingReviewBlockedMarkers(OccupancyLandingReviewMarkerCount);
+            for (int index = 0; index < blockedMarkers.Count; index++)
+            {
+                Vector2 missionPoint = blockedMarkers[index];
+                GameObject marker = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                marker.name = "Occupancy landingBlocked " + index.ToString(CultureInfo.InvariantCulture);
+                Vector3 position = DemoUnitView.MissionToWorld(missionPoint);
+                position.y = DemoTerrainView.HeightAt(missionPoint) + 0.105f;
+                marker.transform.position = position;
+                marker.transform.localScale = new Vector3(0.34f, 0.030f, 0.34f);
+                marker.transform.rotation = Quaternion.Euler(0f, 45f, 0f);
+
+                Collider collider = marker.GetComponent<Collider>();
+                if (collider != null)
+                {
+                    collider.enabled = false;
+                }
+
+                AssignMaterial(marker, "OccupancyLandingBlocked", new Color(1f, 0.92f, 0.22f, 0.42f));
+                occupancyPlaceholderMarkers.Add(marker);
+            }
+
+            return blockedMarkers.Count;
+        }
+
+        private void ClearOccupancyPlaceholderMarkers()
+        {
+            for (int index = 0; index < occupancyPlaceholderMarkers.Count; index++)
+            {
+                GameObject marker = occupancyPlaceholderMarkers[index];
+                if (marker != null)
+                {
+                    marker.SetActive(false);
+                    Destroy(marker);
+                }
+            }
+
+            occupancyPlaceholderMarkers.Clear();
+        }
+
+        private static bool IsOccupancyUnitKind(string kind)
+        {
+            return !string.IsNullOrWhiteSpace(kind)
+                && kind.IndexOf("Unit", StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        private static string OccupancyPlaceholderMaterialName(string kind)
+        {
+            if (string.Equals(kind, "structure", StringComparison.OrdinalIgnoreCase))
+            {
+                return "OccupancyStructure";
+            }
+
+            if (string.Equals(kind, "hardProp", StringComparison.OrdinalIgnoreCase))
+            {
+                return "OccupancyHardProp";
+            }
+
+            if (!string.IsNullOrWhiteSpace(kind) && kind.StartsWith("player", StringComparison.OrdinalIgnoreCase))
+            {
+                return "OccupancyPlayerUnit";
+            }
+
+            if (IsOccupancyUnitKind(kind))
+            {
+                return "OccupancyHostileUnit";
+            }
+
+            return "OccupancyUnknown";
+        }
+
+        private static Color OccupancyPlaceholderColor(string kind)
+        {
+            if (string.Equals(kind, "structure", StringComparison.OrdinalIgnoreCase))
+            {
+                return new Color(1f, 0.42f, 0.10f, 0.28f);
+            }
+
+            if (string.Equals(kind, "hardProp", StringComparison.OrdinalIgnoreCase))
+            {
+                return new Color(0.20f, 0.86f, 1f, 0.20f);
+            }
+
+            if (!string.IsNullOrWhiteSpace(kind) && kind.StartsWith("player", StringComparison.OrdinalIgnoreCase))
+            {
+                return new Color(0.18f, 1f, 0.62f, 0.32f);
+            }
+
+            if (IsOccupancyUnitKind(kind))
+            {
+                return new Color(1f, 0.18f, 0.38f, 0.24f);
+            }
+
+            return new Color(1f, 1f, 1f, 0.18f);
         }
 
         private Vector3 StructureScale(StructureState structure)

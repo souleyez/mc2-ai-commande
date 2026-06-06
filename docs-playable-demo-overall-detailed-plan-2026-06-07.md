@@ -99,7 +99,7 @@ AI 副官的定位：
 
 - Branch: `master...ai-origin/master [ahead 52]`.
 - 当前日常执行入口：`docs-playable-demo-current-execution-plan-2026-06-07.md`.
-- 当前下一步：`V3 Lock occupancy placeholder review layer`.
+- 当前下一步：`M1 Polish MechLab block fitting`.
 
 已收口的事实：
 
@@ -125,9 +125,9 @@ AI 副官的定位：
 
 | Gap | Why It Matters | Current Plan |
 | --- | --- | --- |
-| 碰撞占位需要更清楚的审计层 | 用户明确要求有物理碰撞占位，后续也要方便开发判断阻挡范围 | V3 placeholder review layer |
+| MechLab 手感还要继续靠近整块占格 | 装配是长期核心乐趣，不应像普通表格编辑器 | M1/M2 MechLab polish |
 | 损伤卖点还可继续强化 | V2 已增强当前截图 spotlight；后续可补断臂、腿瘫、弹射的事件动画故事 | C1 combat feel |
-| 碰撞占位需要可审计开关 | 用户明确要求有物理碰撞占位，开发也需要证明不是假表现 | V3 placeholder review layer |
+| 碰撞占位后续只需回归 | V3 已提供单位、结构、hardProp 和 landing blocked 审计层；后续发现具体碰撞 bug 再加 close-up preset | V3 regression |
 | MechLab 手感还需更像整块占格 | 装配是长期核心乐趣，不应像普通表格编辑器 | M1/M2 MechLab polish |
 | Demo 还缺完整演示话术和证据页 | 后续融资或协作需要三分钟可讲清楚 | H1-H3 handoff |
 | 公开内容安全还要脚本 guard | 本地参考包可以开发验证，公开包不能混入旧素材 | P1/P2 content boundary |
@@ -298,7 +298,7 @@ Do not stage generated PNG/JSON/log evidence unless explicitly requested.
 
 ### Milestone 1: Reference Visual Readability
 
-**Status:** V2 completed 2026-06-07. Keep this milestone in regression while the next active task moves to V3.
+**Status:** V2 completed 2026-06-07. Keep this milestone in regression while the next active task moves to M1.
 
 **Goal:** 让第一张图看起来像 3D 战场，不像色块或模型团。优先解决远景可读性、损伤 spotlight、局部拥挤、材质对比和构图。
 
@@ -348,7 +348,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_refere
 
 ### Milestone 2: Occupancy And Physical Placeholder Evidence
 
-**Status:** Active. Current next task is V3.
+**Status:** Completed 2026-06-07. Keep this milestone in regression unless collision doubt returns.
 
 **Goal:** 用户和开发者都能看见“这里确实有物理占位”。BattleCore 负责真实规则；Unity 显示一个可开关的审计层。
 
@@ -461,7 +461,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_refere
 
 ### Milestone 5: MechLab Block-Fitting Slice
 
-**Status:** Built as base, needs polish.
+**Status:** Active. Current next task is M1.
 
 **Goal:** 装配界面尽量参照原作“整块武器放格子”的直观乐趣，同时保持第一版轻量。
 
@@ -681,8 +681,8 @@ Current recommended order:
 | Order | Status | Commit | Purpose |
 | --- | --- | --- | --- |
 | 1 | Done | `Improve reference visual readability` | Make `hangar-contact` and `damage-demo` read as battlefield, not model knot |
-| 2 | Next | `Lock occupancy placeholder review layer` | Make physical blockers auditable without cluttering player HUD |
-| 3 | Pending | `Polish MechLab block fitting` | Make loadout grid closer to original-style block fitting |
+| 2 | Done | `Lock occupancy placeholder review layer` | Make physical blockers auditable without cluttering player HUD |
+| 3 | Next | `Polish MechLab block fitting` | Make loadout grid closer to original-style block fitting |
 | 4 | Pending | `Capture MechLab fitting evidence` | Prove loadout UI and smoke flow |
 | 5 | Pending | `Strengthen damage demo readability` | Push limb/cockpit/ejection story into screenshot-grade clarity |
 | 6 | Pending | `Keep battle UI sparse` | Final pass against too much battle information |

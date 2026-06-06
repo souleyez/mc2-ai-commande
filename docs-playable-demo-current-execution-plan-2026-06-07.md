@@ -32,7 +32,7 @@
 - AI directive adapter 已提交：`9bf26bd Guard AI directive adapter`.
 - AI advice window 已提交：`b40372d Show optional AI advice window`.
 - Battle occupancy readability re-audit 已提交：`87006c3 Re-audit battle occupancy readability`.
-- 下一步是 `V3 Lock occupancy placeholder review layer`.
+- 下一步是 `M1 Polish MechLab block fitting`.
 
 ## 1. First Demo Product Scope
 
@@ -88,7 +88,6 @@
 
 | Gap | Why It Matters | Next Task |
 | --- | --- | --- |
-| 碰撞占位需要继续可审计 | 用户明确要求有物理碰撞占位 | V3 |
 | MechLab 手感还要继续靠近整块占格 | 装配是核心乐趣之一 | M1/M2 |
 | 损伤卖点还可以更强 | 断臂、腿瘫、弹射是差异化卖点；V2 已增强当前截图 spotlight，后续还可补动画故事 | C1 |
 | Demo 还缺三分钟演示话术和证据页 | 后续融资/协作需要可展示包 | H1-H3 |
@@ -246,8 +245,8 @@ Do not stage generated PNG/JSON/log evidence unless explicitly requested.
 | 2 | Done | `Show optional AI advice window` | G5 AI capability |
 | 3 | Done | `Re-audit battle occupancy readability` | G2/G7 readability and occupancy |
 | 4 | Done | `Improve reference visual readability` | G2 battle readability |
-| 5 | Next | `Lock occupancy placeholder review layer` | G7 collision evidence |
-| 6 | Pending | `Polish MechLab block fitting` | G3 MechLab feel |
+| 5 | Done | `Lock occupancy placeholder review layer` | G7 collision evidence |
+| 6 | Next | `Polish MechLab block fitting` | G3 MechLab feel |
 | 7 | Pending | `Capture MechLab fitting evidence` | G3 MechLab evidence |
 | 8 | Pending | `Strengthen damage demo readability` | G1 combat feel |
 | 9 | Pending | `Keep battle UI sparse` | G1/G2 UI readability |
@@ -452,7 +451,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_refere
 
 ### V3: Lock Occupancy Placeholder Review Layer
 
-**Status:** Pending after V1/V2 or when collision doubt returns.
+**Status:** Completed 2026-06-07.
+
+**Result:** The occupancy review layer now exposes active unit radii, blocking structures, hard terrain objects, and sampled blocked landing markers. Sidecars report `units`, `playerUnits`, `hostileUnits`, `structures`, `hardProps`, and `landingBlockedMarkers`, while `-NoOccupancyPlaceholders` proves the normal capture path can remain clean. Evidence: `analysis-output/unity-validate-occupancy-placeholder.log`, `analysis-output/unity-build-occupancy-placeholder.log`, `analysis-output/reference-visual-captures/hangar-contact.json`, `analysis-output/reference-visual-captures/damage-demo.json`, and `analysis-output/reference-visual-captures-no-placeholders/hangar-contact.json`.
 
 **Goal:** 给开发审核一个可开关的物理占位层，能看见单位半径、建筑 blockers、hard props 和喷射非法区，但正常玩家 HUD 不显示调试层。
 

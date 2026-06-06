@@ -146,7 +146,8 @@ function Wait-CaptureFile {
 function Test-CaptureSidecar {
     param(
         [string]$Path,
-        [string]$ExpectedPreset
+        [string]$ExpectedPreset,
+        [bool]$ExpectOccupancyPlaceholders = $true
     )
 
     if (-not (Test-Path $Path)) {
@@ -166,16 +167,42 @@ function Test-CaptureSidecar {
         throw "Sidecar has invalid camera state: $Path"
     }
 
+    $placeholderSummary = [string]$sidecar.occupancyPlaceholders
+    if ($ExpectOccupancyPlaceholders) {
+        foreach ($fragment in @(
+            "OccupancyPlaceholders=enabled",
+            " units ",
+            " structures ",
+            " hardProps ",
+            " landingBlockedMarkers ",
+            "source=BattleMission.OccupancyPlaceholderRegions+DemoTerrainView.LandingReviewBlockedMarkers"
+        )) {
+            if ($placeholderSummary -notlike "*$fragment*") {
+                throw "Sidecar occupancy placeholder summary missing '$fragment': $Path -> $placeholderSummary"
+            }
+        }
+    }
+    elseif ($placeholderSummary -notlike "OccupancyPlaceholders=disabled*") {
+        throw "Sidecar occupancy placeholders should be disabled: $Path -> $placeholderSummary"
+    }
+
     return $sidecar
 }
 
 $results = New-Object System.Collections.Generic.List[object]
+$expectOccupancyPlaceholders = -not $NoOccupancyPlaceholders.IsPresent
 foreach ($normalizedPreset in (Expand-CapturePresets $Presets)) {
     $pngPath = Join-Path $OutputDir "$normalizedPreset.png"
     $jsonPath = Join-Path $OutputDir "$normalizedPreset.json"
     $logPath = Join-Path $OutputDir "$normalizedPreset.log"
 
     if (-not $SkipRun) {
+        foreach ($stalePath in @($pngPath, $jsonPath, $logPath)) {
+            if (Test-Path $stalePath) {
+                Remove-Item -LiteralPath $stalePath -Force
+            }
+        }
+
         $args = @(
             "-screen-width", $Width.ToString([Globalization.CultureInfo]::InvariantCulture),
             "-screen-height", $Height.ToString([Globalization.CultureInfo]::InvariantCulture),
@@ -186,6 +213,9 @@ foreach ($normalizedPreset in (Expand-CapturePresets $Presets)) {
             "-mc2CaptureQuit",
             "-logFile", $logPath
         )
+        if ($expectOccupancyPlaceholders) {
+            $args += "-mc2ShowOccupancyReviewLayer"
+        }
 
         $previousOccupancyPlaceholderEnv = $env:MC2_SHOW_OCCUPANCY_PLACEHOLDERS
         try {
@@ -217,7 +247,7 @@ foreach ($normalizedPreset in (Expand-CapturePresets $Presets)) {
     }
 
     $imageCheck = Test-CaptureImage -Path $pngPath -ExpectedWidth $Width -ExpectedHeight $Height
-    $sidecar = Test-CaptureSidecar -Path $jsonPath -ExpectedPreset $normalizedPreset
+    $sidecar = Test-CaptureSidecar -Path $jsonPath -ExpectedPreset $normalizedPreset -ExpectOccupancyPlaceholders $expectOccupancyPlaceholders
     $results.Add([pscustomobject]@{
         Preset = $normalizedPreset
         Png = $pngPath

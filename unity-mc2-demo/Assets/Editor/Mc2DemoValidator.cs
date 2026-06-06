@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using MC2Demo.BattleCore;
 using MC2Demo.Presentation;
@@ -3025,6 +3026,41 @@ namespace MC2Demo.EditorTools
             if (summary.IndexOf("hardProps 0", StringComparison.OrdinalIgnoreCase) >= 0)
             {
                 throw new InvalidDataException("Expected first mission occupancy summary to expose hard terrain object blockers.");
+            }
+
+            int unitRegions = 0;
+            int structureRegions = 0;
+            int hardPropRegions = 0;
+            foreach (BattleOccupancyRegion region in mission.OccupancyPlaceholderRegions())
+            {
+                if (region == null)
+                {
+                    continue;
+                }
+
+                if (region.Kind.IndexOf("Unit", StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    unitRegions++;
+                }
+                else if (string.Equals(region.Kind, "structure", StringComparison.OrdinalIgnoreCase))
+                {
+                    structureRegions++;
+                }
+                else if (string.Equals(region.Kind, "hardProp", StringComparison.OrdinalIgnoreCase))
+                {
+                    hardPropRegions++;
+                }
+            }
+
+            if (unitRegions <= 0 || structureRegions <= 0 || hardPropRegions <= 0)
+            {
+                throw new InvalidDataException(
+                    "Expected occupancy placeholder regions to expose units, structures and hard props: units="
+                    + unitRegions.ToString(CultureInfo.InvariantCulture)
+                    + " structures="
+                    + structureRegions.ToString(CultureInfo.InvariantCulture)
+                    + " hardProps="
+                    + hardPropRegions.ToString(CultureInfo.InvariantCulture));
             }
         }
 

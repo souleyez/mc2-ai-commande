@@ -71,6 +71,7 @@ analysis-output/mission-packet-audit/
 analysis-output/terrain-reference-textures/
 analysis-output/terrain-texture-audit/
 analysis-output/reference-visual-captures/
+analysis-output/reference-visual-captures-no-placeholders/
 analysis-output/unity-demo-contract/
 analysis-output/unity-combat-data/
 analysis-output/tgl-obj/

@@ -1662,3 +1662,77 @@ Remaining issues:
 Next priority:
 
 1. V3 lock occupancy placeholder review layer.
+
+## V3 Occupancy Placeholder Review Layer Result
+
+Implemented on 2026-06-07:
+
+- Extended `BattleMission.OccupancyPlaceholderRegions()` so the review layer now exposes active unit collision regions in addition to blocking structures and hard terrain objects.
+- Added `DemoTerrainView.LandingReviewBlockedMarkers()` so the review layer can show a small set of jet/landing illegal samples from the same external landing predicate used by BattleCore jump commands.
+- Updated the Unity review layer to render separate categories for player units, hostile units, structures, hard props, and blocked landing samples.
+- The layer is still gated by `MC2_SHOW_OCCUPANCY_PLACEHOLDERS=1`, `-mc2ShowOccupancyPlaceholders`, or the new `-mc2ShowOccupancyReviewLayer` command-line flag; normal player runs do not show it.
+- Capture sidecars now require and report `units`, `playerUnits`, `hostileUnits`, `structures`, `hardProps`, and `landingBlockedMarkers`.
+- The capture script now removes stale generated capture files before each run so it cannot validate an old sidecar while a new player process is still writing.
+
+Modified files:
+
+```text
+scripts/unity/capture_reference_visuals.ps1
+.gitignore
+unity-mc2-demo/Assets/Editor/Mc2DemoValidator.cs
+unity-mc2-demo/Assets/Scripts/BattleCore/BattleMission.cs
+unity-mc2-demo/Assets/Scripts/Presentation/DemoTerrainView.cs
+unity-mc2-demo/Assets/Scripts/Presentation/Mc2DemoBootstrap.cs
+docs-reference-visual-audit-2026-06-07.md
+docs-playable-demo-current-execution-plan-2026-06-07.md
+docs-playable-demo-overall-detailed-plan-2026-06-07.md
+```
+
+Validation commands:
+
+```powershell
+git diff --check
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoValidator.ValidateMissionContract -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-validate-occupancy-placeholder.log"
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoBuilder.BuildWindows64 -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-build-occupancy-placeholder.log"
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_reference_visuals.ps1 -Presets hangar-contact,damage-demo
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_reference_visuals.ps1 -OutputDir analysis-output\reference-visual-captures-no-placeholders -Presets hangar-contact -NoOccupancyPlaceholders
+```
+
+Validation evidence:
+
+```text
+analysis-output/unity-validate-occupancy-placeholder.log
+analysis-output/unity-build-occupancy-placeholder.log
+analysis-output/reference-visual-captures/hangar-contact.png
+analysis-output/reference-visual-captures/hangar-contact.json
+analysis-output/reference-visual-captures/damage-demo.png
+analysis-output/reference-visual-captures/damage-demo.json
+analysis-output/reference-visual-captures-no-placeholders/hangar-contact.json
+```
+
+Validation results:
+
+```text
+git diff --check: clean, with Windows line-ending warnings only.
+Validator: MC2 demo contract validation OK.
+Build: Build Finished, Result: Success; MC2 Unity demo Windows build OK.
+Review capture: hangar-contact and damage-demo passed sidecar validation with occupancy review enabled.
+Disabled capture: hangar-contact sidecar reported OccupancyPlaceholders=disabled.
+```
+
+Observed effect:
+
+- `hangar-contact` now reports `OccupancyPlaceholders=enabled total 120 units 23 playerUnits 3 hostileUnits 20 structures 1 hardProps 80 landingBlockedMarkers 16`.
+- `damage-demo` now reports `OccupancyPlaceholders=enabled total 119 units 22 playerUnits 2 hostileUnits 20 structures 1 hardProps 80 landingBlockedMarkers 16`.
+- The review screenshot shows player-unit radii and blocked landing samples clearly; hostile unit and hard-prop counts are carried in the sidecar for dense areas where visual rings overlap.
+- Normal capture without the review layer remains clean and reports `OccupancyPlaceholders=disabled`.
+
+Remaining issues:
+
+1. The review layer is an audit/debug surface, not a polished player overlay.
+2. Hard-prop and hostile-unit rings are intentionally low-alpha to avoid hiding the battle; if a later collision bug needs stronger visual proof, use a dedicated close-up preset rather than making normal captures noisy.
+3. The next product task should return to the MechLab fitting surface.
+
+Next priority:
+
+1. M1 polish MechLab block fitting.

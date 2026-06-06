@@ -187,6 +187,21 @@ namespace MC2Demo.BattleCore
 
         public IEnumerable<BattleOccupancyRegion> OccupancyPlaceholderRegions()
         {
+            foreach (UnitState unit in units)
+            {
+                if (!CanResolveUnitCollision(unit))
+                {
+                    continue;
+                }
+
+                yield return new BattleOccupancyRegion(
+                    UnitOccupancyPlaceholderKind(unit),
+                    unit.Id,
+                    unit.UnitType,
+                    unit.MissionPosition,
+                    UnitCollisionRadius(unit));
+            }
+
             foreach (StructureState structure in structures)
             {
                 if (!IsBlockingStructure(structure))
@@ -211,6 +226,13 @@ namespace MC2Demo.BattleCore
                     obstacle.Position,
                     obstacle.Radius);
             }
+        }
+
+        private static string UnitOccupancyPlaceholderKind(UnitState unit)
+        {
+            string team = unit?.IsPlayerUnit == true ? "player" : "hostile";
+            string className = IsInfantryUnit(unit) ? "Infantry" : IsMechLikeUnit(unit) ? "Mech" : "Vehicle";
+            return team + "Unit" + className;
         }
 
         public static BattleMission FromJson(string json, CombatProfileCatalog combatProfiles = null)
