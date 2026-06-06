@@ -138,8 +138,9 @@ Preview a new replacement pack scaffold:
 
 ## 关键文档
 
-- `docs-playable-demo-detailed-roadmap-2026-06-07.md`: 当前最细施工蓝图，按提交顺序拆到战场可读性、战斗手感、机库、战报、AI 能力窗口和演示交付。
-- `docs-playable-demo-completion-plan-2026-06-07.md`: 当前主执行计划，保留阶段清单、验证矩阵和最近提交队列。
+- `docs-playable-demo-locked-execution-plan-2026-06-07.md`: 当前唯一主执行计划，按真实阶段、提交顺序、文件、验证命令、阶段门和 Sprint Board 推进。
+- `docs-playable-demo-completion-plan-2026-06-07.md`: 阶段摘要计划，保留阶段清单、验证矩阵和最近提交队列。
+- `docs-playable-demo-detailed-roadmap-2026-06-07.md`: 旧的细化路线图，保留历史上下文。
 - `docs-playable-demo-current-detailed-plan-2026-06-07.md`: 旧的当前计划，保留历史上下文和已完成任务证据。
 - `docs-playable-demo-detailed-execution-plan-2026-06-07.md`: 旧的阶段执行计划，保留历史上下文和早期任务拆解。
 - `docs-mc2-ai-commander-demo-execution-plan.md`: 早期 AI 指挥 Demo 执行计划。
