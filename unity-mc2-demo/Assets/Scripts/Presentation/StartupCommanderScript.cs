@@ -73,6 +73,48 @@ namespace MC2Demo.Presentation
                 return true;
             }
 
+            if (string.Equals(verb, "status-row", StringComparison.OrdinalIgnoreCase))
+            {
+                if (string.IsNullOrWhiteSpace(payload))
+                {
+                    error = "Status row action needs squad, all, or a unit id.";
+                    return false;
+                }
+
+                action = StartupCommanderScriptAction.StatusRowSelect(lineNumber, rawLine, payload);
+                return true;
+            }
+
+            if (string.Equals(verb, "battle-click", StringComparison.OrdinalIgnoreCase))
+            {
+                string[] tokens = payload.Split(TokenSeparators, StringSplitOptions.RemoveEmptyEntries);
+                if (tokens.Length != 2
+                    || !float.TryParse(tokens[0], NumberStyles.Float, CultureInfo.InvariantCulture, out float missionX)
+                    || !float.TryParse(tokens[1], NumberStyles.Float, CultureInfo.InvariantCulture, out float missionY))
+                {
+                    error = "Battle click action needs mission X and Y coordinates.";
+                    return false;
+                }
+
+                action = StartupCommanderScriptAction.BattleClick(lineNumber, rawLine, missionX, missionY);
+                return true;
+            }
+
+            if (string.Equals(verb, "battle-target", StringComparison.OrdinalIgnoreCase))
+            {
+                string[] tokens = payload.Split(TokenSeparators, StringSplitOptions.RemoveEmptyEntries);
+                if (tokens.Length != 2
+                    || (!string.Equals(tokens[0], "unit", StringComparison.OrdinalIgnoreCase)
+                        && !string.Equals(tokens[0], "structure", StringComparison.OrdinalIgnoreCase)))
+                {
+                    error = "Battle target action needs unit ID or structure ID.";
+                    return false;
+                }
+
+                action = StartupCommanderScriptAction.BattleTarget(lineNumber, rawLine, tokens[0], tokens[1]);
+                return true;
+            }
+
             if (string.Equals(verb, "advance", StringComparison.OrdinalIgnoreCase))
             {
                 if (!float.TryParse(payload, NumberStyles.Float, CultureInfo.InvariantCulture, out float seconds) || seconds < 0f)
@@ -405,6 +447,9 @@ namespace MC2Demo.Presentation
                 int expectedSoloCount = -1;
                 int expectedJumpingCount = -1;
                 int expectedSalvageCount = -1;
+                string expectedSelection = "";
+                string expectedRowUnitId = "";
+                string expectedRowState = "";
                 if (!string.IsNullOrWhiteSpace(payload))
                 {
                     string[] tokens = payload.Split(TokenSeparators, StringSplitOptions.RemoveEmptyEntries);
@@ -459,12 +504,48 @@ namespace MC2Demo.Presentation
                             continue;
                         }
 
-                        error = "Assert combat situation action only accepts optional quiet, contact, tracking, fire, solo=N, jumping=N, or salvage=N.";
+                        if (token.StartsWith("selection=", StringComparison.Ordinal))
+                        {
+                            expectedSelection = token.Substring("selection=".Length);
+                            if (string.IsNullOrWhiteSpace(expectedSelection))
+                            {
+                                error = "Assert combat situation selection argument must be selection=squad or selection=unit-id.";
+                                return false;
+                            }
+
+                            continue;
+                        }
+
+                        if (token.StartsWith("row=", StringComparison.Ordinal))
+                        {
+                            string value = token.Substring("row=".Length);
+                            int splitIndex = value.IndexOf(':');
+                            if (splitIndex <= 0 || splitIndex >= value.Length - 1)
+                            {
+                                error = "Assert combat situation row argument must be row=unit-id:state.";
+                                return false;
+                            }
+
+                            expectedRowUnitId = value.Substring(0, splitIndex);
+                            expectedRowState = value.Substring(splitIndex + 1);
+                            continue;
+                        }
+
+                        error = "Assert combat situation action only accepts optional quiet, contact, tracking, fire, solo=N, jumping=N, salvage=N, selection=VALUE, or row=UNIT:STATE.";
                         return false;
                     }
                 }
 
-                action = StartupCommanderScriptAction.AssertCombatSituation(lineNumber, rawLine, expectedTempo, expectedSoloCount, expectedJumpingCount, expectedSalvageCount);
+                action = StartupCommanderScriptAction.AssertCombatSituation(
+                    lineNumber,
+                    rawLine,
+                    expectedTempo,
+                    expectedSoloCount,
+                    expectedJumpingCount,
+                    expectedSalvageCount,
+                    expectedSelection,
+                    expectedRowUnitId,
+                    expectedRowState);
                 return true;
             }
 
@@ -504,7 +585,7 @@ namespace MC2Demo.Presentation
                 return true;
             }
 
-            error = "Command file action must be command, advance, report, restart, mech-bay-launch, hide-squad-preview, complete-visible-objectives, open-debrief, saved-account-report, saved-account-save-load-preview, saved-account-export, saved-account-import-preview, saved-account-import-apply-preview, saved-account-import-apply, saved-account-load-default-preview, saved-account-save-current-default, saved-account-load-default-apply, prepare-depot-candidate, prepare-local-candidate, squad-swap, assert-restart-identity, assert-debrief-summary, assert-debrief-visible, assert-command-result, assert-combat-situation, assert-encounter-pacing, assert-objective-graph, or assert-loadout-compact.";
+            error = "Command file action must be command, status-row, battle-click, battle-target, advance, report, restart, mech-bay-launch, hide-squad-preview, complete-visible-objectives, open-debrief, saved-account-report, saved-account-save-load-preview, saved-account-export, saved-account-import-preview, saved-account-import-apply-preview, saved-account-import-apply, saved-account-load-default-preview, saved-account-save-current-default, saved-account-load-default-apply, prepare-depot-candidate, prepare-local-candidate, squad-swap, assert-restart-identity, assert-debrief-summary, assert-debrief-visible, assert-command-result, assert-combat-situation, assert-encounter-pacing, assert-objective-graph, or assert-loadout-compact.";
             return false;
         }
     }
@@ -515,13 +596,21 @@ namespace MC2Demo.Presentation
         public int LineNumber { get; private set; }
         public string SourceLine { get; private set; }
         public string CommandText { get; private set; }
+        public string StatusRowUnitId { get; private set; }
+        public string BattleTargetKind { get; private set; }
+        public string BattleTargetId { get; private set; }
         public string FilePath { get; private set; }
         public float AdvanceSeconds { get; private set; }
+        public float MissionX { get; private set; }
+        public float MissionY { get; private set; }
         public bool RequireDepotIdentity { get; private set; }
         public string ExpectedCombatTempo { get; private set; }
         public int ExpectedSoloCount { get; private set; } = -1;
         public int ExpectedJumpingCount { get; private set; } = -1;
         public int ExpectedSalvageCount { get; private set; } = -1;
+        public string ExpectedSelection { get; private set; }
+        public string ExpectedRowUnitId { get; private set; }
+        public string ExpectedRowState { get; private set; }
         public bool ExpectedCommandBlocked { get; private set; }
         public int ExpectedCommandAcceptedCount { get; private set; } = -1;
 
@@ -547,6 +636,41 @@ namespace MC2Demo.Presentation
                 LineNumber = lineNumber,
                 SourceLine = sourceLine ?? string.Empty,
                 CommandText = commandText
+            };
+        }
+
+        public static StartupCommanderScriptAction StatusRowSelect(int lineNumber, string sourceLine, string unitId)
+        {
+            return new StartupCommanderScriptAction
+            {
+                Kind = StartupCommanderScriptActionKind.StatusRowSelect,
+                LineNumber = lineNumber,
+                SourceLine = sourceLine ?? string.Empty,
+                StatusRowUnitId = unitId ?? string.Empty
+            };
+        }
+
+        public static StartupCommanderScriptAction BattleClick(int lineNumber, string sourceLine, float missionX, float missionY)
+        {
+            return new StartupCommanderScriptAction
+            {
+                Kind = StartupCommanderScriptActionKind.BattleClick,
+                LineNumber = lineNumber,
+                SourceLine = sourceLine ?? string.Empty,
+                MissionX = missionX,
+                MissionY = missionY
+            };
+        }
+
+        public static StartupCommanderScriptAction BattleTarget(int lineNumber, string sourceLine, string targetKind, string targetId)
+        {
+            return new StartupCommanderScriptAction
+            {
+                Kind = StartupCommanderScriptActionKind.BattleTarget,
+                LineNumber = lineNumber,
+                SourceLine = sourceLine ?? string.Empty,
+                BattleTargetKind = targetKind ?? string.Empty,
+                BattleTargetId = targetId ?? string.Empty
             };
         }
 
@@ -801,7 +925,10 @@ namespace MC2Demo.Presentation
             string expectedTempo,
             int expectedSoloCount,
             int expectedJumpingCount,
-            int expectedSalvageCount)
+            int expectedSalvageCount,
+            string expectedSelection,
+            string expectedRowUnitId,
+            string expectedRowState)
         {
             return new StartupCommanderScriptAction
             {
@@ -811,7 +938,10 @@ namespace MC2Demo.Presentation
                 ExpectedCombatTempo = expectedTempo ?? string.Empty,
                 ExpectedSoloCount = expectedSoloCount,
                 ExpectedJumpingCount = expectedJumpingCount,
-                ExpectedSalvageCount = expectedSalvageCount
+                ExpectedSalvageCount = expectedSalvageCount,
+                ExpectedSelection = expectedSelection ?? string.Empty,
+                ExpectedRowUnitId = expectedRowUnitId ?? string.Empty,
+                ExpectedRowState = expectedRowState ?? string.Empty
             };
         }
 
@@ -850,6 +980,9 @@ namespace MC2Demo.Presentation
     {
         None,
         Command,
+        StatusRowSelect,
+        BattleClick,
+        BattleTarget,
         Advance,
         Report,
         Restart,

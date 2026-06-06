@@ -199,11 +199,14 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_refere
 
 ### Task C2: Tighten Status Row Solo Command Flow
 
+**Status:** Completed 2026-06-07. `mc2_01-solo-order-state.txt` now drives the player-like status-row flow: select `unit-1` from the left status bar, click terrain, restore visible selection to the full squad, keep the detached row marked as solo, then clear it after arrival. `mc2_01-solo-attack-isolation.txt` covers the same status-row flow for clicking a target structure.
+
 **Files:**
 
 - Modify: `unity-mc2-demo/Assets/Scripts/Presentation/Mc2DemoBootstrap.cs`
 - Modify: `unity-mc2-demo/Assets/Scripts/Presentation/StartupCommanderScript.cs`
 - Modify: `unity-mc2-demo/Assets/StreamingAssets/CommanderScripts/mc2_01-solo-order-state.txt`
+- Modify: `unity-mc2-demo/Assets/StreamingAssets/CommanderScripts/mc2_01-solo-attack-isolation.txt`
 
 **Steps:**
 
@@ -217,6 +220,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_refere
 
 ```powershell
 & "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo\Builds\Windows\MC2UnityDemo.exe" -batchmode -nographics -mc2SmokeTest -mc2CommandFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo\Assets\StreamingAssets\CommanderScripts\mc2_01-solo-order-state.txt" -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-player-solo-order-state.log"
+& "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo\Builds\Windows\MC2UnityDemo.exe" -batchmode -nographics -mc2SmokeTest -mc2CommandFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo\Assets\StreamingAssets\CommanderScripts\mc2_01-solo-attack-isolation.txt" -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-player-solo-attack-isolation.log"
 ```
 
 **Acceptance:**
@@ -224,6 +228,13 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_refere
 - 视觉上玩家仍像在指挥全队。
 - 状态栏能看出哪台机甲正在执行独立命令。
 - 完成后自动归队。
+
+**Validation Evidence:**
+
+- `analysis-output/unity-build-status-row-solo.log`: Windows build exits with `Build Finished, Result: Success` and `MC2 Unity demo Windows build OK`.
+- `analysis-output/unity-player-solo-order-state.log`: status-row solo smoke exits with code `0`.
+- `analysis-output/unity-player-solo-attack-isolation.log`: status-row target-click smoke exits with code `0`.
+- `analysis-output/unity-player-command-state-smoke.log`: main command-state smoke exits with code `0`.
 
 **Commit:** `Tighten status row solo command flow`
 
@@ -737,23 +748,22 @@ git diff --check
 
 推荐后续提交顺序：
 
-1. `Tighten status row solo command flow`
-2. `Finalize squad jet landing rules`
-3. `Freeze minimal battle UI`
-4. `Document command loop visual baseline`
-5. `Differentiate weapon visual effects`
-6. `Strengthen mech section damage cues`
-7. `Simplify armor hardness damage math`
-8. `Remove weapon toggle leftovers`
-9. `Make mech lab grid item fitting explicit`
-10. `Apply mech lab loadouts in battle`
-11. `Hide save system from first demo flow`
-12. `Tighten debrief and repair loop`
-13. `Freeze AI commander observation contract`
-14. `Add AI commander directive adapter`
-15. `Document replaceable visual content packs`
-16. `Prepare repeatable Windows demo build`
-17. `Add playable demo walkthrough`
+1. `Finalize squad jet landing rules`
+2. `Freeze minimal battle UI`
+3. `Document command loop visual baseline`
+4. `Differentiate weapon visual effects`
+5. `Strengthen mech section damage cues`
+6. `Simplify armor hardness damage math`
+7. `Remove weapon toggle leftovers`
+8. `Make mech lab grid item fitting explicit`
+9. `Apply mech lab loadouts in battle`
+10. `Hide save system from first demo flow`
+11. `Tighten debrief and repair loop`
+12. `Freeze AI commander observation contract`
+13. `Add AI commander directive adapter`
+14. `Document replaceable visual content packs`
+15. `Prepare repeatable Windows demo build`
+16. `Add playable demo walkthrough`
 
 每个提交都记录：
 

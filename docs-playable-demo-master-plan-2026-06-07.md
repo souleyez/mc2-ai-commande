@@ -28,7 +28,7 @@
 当前最紧急的问题：
 
 - Phase A 地形/水面/道路可读性已经完成并提交，当前不再是黑块问题，而是“单位、敌人、建筑和道具挤在一起，战术关系还不够清楚”的问题。
-- Phase B / B2 比例审计、B3 碰撞占位证据和 B4 固定镜头构图已经完成，sidecar 现在能报告单位/prop 分类比例、BattleCore 占位、地形 landing predicate 和 camera composition offset；当前下一步进入 Phase C 指挥战斗闭环。
+- Phase B / B2 比例审计、B3 碰撞占位证据和 B4 固定镜头构图已经完成，sidecar 现在能报告单位/prop 分类比例、BattleCore 占位、地形 landing predicate 和 camera composition offset；Phase C / C1 command state 和 C2 status-row solo flow 已经完成，当前下一步进入 C3 喷射落点规则。
 - 装配界面已经有格子方向，但还需要更像原版的整块武器占格和即时合法性反馈。
 - AI 指挥官只保留高层决策接口，不进入逐帧控制。
 - 保存游戏、地图服务器、经济、PVP、移动端、链上分账都暂缓。
@@ -41,7 +41,7 @@
 | --- | --- | --- | --- |
 | Phase A: 地形/水面/道路可读性 | Done | 地面、水域、岸线、跑道/道路、建筑基底在截图里可读；提交 `89a686f Improve terrain and water readability` | 只做回归检查，不再主动展开 |
 | Phase B: 第一张地图战场可读性 | Done | 敌我单位不堆点，建筑/树木/炮塔/道具比例可信，固定镜头能看懂战术关系 | 后续只做回归 |
-| Phase C: 指挥战斗闭环 | Active | 默认全队、状态栏单选、独立命令、自动归队、喷射和最小战斗 UI 可稳定演示 | 继续 C2 status-row solo command flow |
+| Phase C: 指挥战斗闭环 | Active | 默认全队、状态栏单选、独立命令、自动归队、喷射和最小战斗 UI 可稳定演示 | 继续 C3 squad jet landing rules |
 | Phase D: 损伤、武器和战斗手感 | Next | 激光/导弹/炮弹层次、部位损伤、断臂/瘫痪/驾驶舱弹射能在截图或观战中看见 | C 阶段命令稳定后进入 |
 | Phase E: 原版式装配垂直切片 | Next | 整块武器占格、装甲板/散热器、热量/重量/槽位合法性、配置进战斗 | D 阶段战斗反馈可读后进入 |
 | Phase F: 战后和再战闭环 | Next | 简洁 Debrief、一键维修、回装配、再进同图 | E 阶段装配能影响战斗后进入 |
@@ -73,11 +73,11 @@
 
 当前下一批 6 个可执行提交：
 
-1. `Tighten status row solo command flow`：状态栏点选单机、下达独立命令、可见状态回到全队、完成后自动归队。
-2. `Finalize squad jet landing rules`：喷射按单机合法性结算，非法落点单位不动，其他单位照常跳。
-3. `Freeze minimal battle UI`：战斗中只保留状态栏、喷射、任务地图、暂停/系统，不堆信息。
-4. `Differentiate weapon visual effects`：激光、导弹、弹道、爆炸至少有可分辨的命中方向和效果层次。
-5. `Strengthen mech section damage cues`：断臂、瘫痪、驾驶舱逃生在世界和状态栏都看得见。
+1. `Finalize squad jet landing rules`：喷射按单机合法性结算，非法落点单位不动，其他单位照常跳。
+2. `Freeze minimal battle UI`：战斗中只保留状态栏、喷射、任务地图、暂停/系统，不堆信息。
+3. `Differentiate weapon visual effects`：激光、导弹、弹道、爆炸至少有可分辨的命中方向和效果层次。
+4. `Strengthen mech section damage cues`：断臂、瘫痪、驾驶舱逃生在世界和状态栏都看得见。
+5. `Make mech lab grid item fitting explicit`：武器/装甲/散热器按整块格子占位，合法性即时反馈。
 
 每个提交结束时至少记录：
 
@@ -482,6 +482,8 @@ Assert commander command states
 ```
 
 ### Task C2: Status-bar selection and click contract
+
+**Status:** Completed 2026-06-07. The solo-order smoke now simulates status-row selection plus terrain click, then asserts visible selection returns to squad, the selected row shows solo state, and the row returns to ready after arrival. The solo-attack smoke uses the same status-row flow for target-structure clicks.
 
 **Files:**
 
@@ -1184,19 +1186,18 @@ Add playable demo walkthrough
 
 Recommended next commits from the current active point. Phase A terrain readability is already complete in `89a686f`, and B1 enemy parking spread is complete.
 
-1. `Tighten status row solo command flow`
-2. `Finalize squad jet landing rules`
-3. `Freeze minimal battle UI`
-4. `Differentiate weapon visual effects`
-5. `Strengthen mech section damage cues`
-6. `Make mech lab grid item fitting explicit`
-7. `Apply mech lab loadouts in battle`
-8. `Hide save system from first demo flow`
-9. `Tighten debrief and repair loop`
-10. `Freeze AI commander observation contract`
-11. `Add AI commander directive adapter`
-12. `Document replaceable visual content packs`
-13. `Prepare repeatable Windows demo build`
+1. `Finalize squad jet landing rules`
+2. `Freeze minimal battle UI`
+3. `Differentiate weapon visual effects`
+4. `Strengthen mech section damage cues`
+5. `Make mech lab grid item fitting explicit`
+6. `Apply mech lab loadouts in battle`
+7. `Hide save system from first demo flow`
+8. `Tighten debrief and repair loop`
+9. `Freeze AI commander observation contract`
+10. `Add AI commander directive adapter`
+11. `Document replaceable visual content packs`
+12. `Prepare repeatable Windows demo build`
 
 Every commit should include:
 

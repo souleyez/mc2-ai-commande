@@ -28,7 +28,8 @@
 - Phase B / Task B3：BattleCore occupancy evidence 已完成。sidecar 现在能报告 `BattleOccupancy` 和 `Landing=DemoTerrainView`，包括单位半径、结构、硬 terrain object、水域/地图边界 landing predicate 和 destination fallback 来源。
 - Phase B / Task B4：Commander camera composition pass 已完成。保持固定视角和指挥官跟随，sidecar 现在报告 `camera.compositionOffset`，`spawn` 能更早把小队和活动目标放进同一屏，`hangar-contact`、`damage-demo` 没有退化。
 - Phase C / Task C1：command state validator 已完成。`mc2_01-combat-situation.txt` 和 `mc2_01-solo-order-state.txt` 现在都覆盖默认全队、单机独立命令、独立时全队接受数减少、完成后自动归队和归队后继续接受全队命令。
-- 真实下一步是 Phase C / Task C2：status-row selection and click contract。把状态栏点选单机、下达独立命令、可见选择恢复全队做成更稳定的 UI/smoke 路径。
+- Phase C / Task C2：status-row selection and click contract 已完成。smoke 现在覆盖状态栏点选单机、地图点击下达独立命令、目标点击下达单机攻击、可见选择恢复全队、状态栏 solo 标记和完成后自动归队。
+- 真实下一步是 Phase C / Task C3：Finalize Squad Jet Landing Rules。喷射要按每台机甲当前位置向目标方向结算固定距离，非法落点单位不动，其他单位正常位移。
 - BattleCore 仍是权威物理占位层。Unity 可以显示碰撞占位和辅助反馈，但合法落点、单位排布、结构/terrain object 占用必须由 BattleCore 可验证地决定。
 
 当前项目不是从零开始，已经进入“可见 Demo 打磨”阶段。核心问题已经从“能不能跑”转为“看起来是否像一款可信的战术机甲游戏”。
@@ -1020,8 +1021,8 @@ Commit 15：本地演示包整理。
 
 ## 11. 下一步
 
-下一次继续开发时，按 `docs-playable-demo-detailed-execution-plan-2026-06-07.md` 执行，进入 **Phase C / Task C2：Status row solo command flow**。敌方密度、停车点、视觉比例、物理占位证据和固定镜头构图已经收过一轮，C1 command-state smoke 也已经收好，下一步重点是让玩家实际 UI 操作中的状态栏单机命令更清楚：
+下一次继续开发时，按 `docs-playable-demo-detailed-execution-plan-2026-06-07.md` 执行，进入 **Phase C / Task C3：Finalize Squad Jet Landing Rules**。敌方密度、停车点、视觉比例、物理占位证据、固定镜头构图、C1 command-state smoke 和 C2 status-row solo smoke 都已经收好，下一步重点是把喷射规则做成更接近需求的逐机判定：
 
-1. C2 status-row selection and click contract：把状态栏点选单机、下达独立命令、可见选择恢复全队做成 smoke 路径。
-2. C3/C4：喷射规则和最小战斗 UI 冻结。
+1. C3 squad jet landing rules：每台机甲按自身当前位置向目标方向推进固定距离；非法落点单位保持原地；其他机甲正常喷射。
+2. C4：最小战斗 UI 冻结。
 3. 不提前做服务器、经济、保存系统、PVP、移动端或链上功能。

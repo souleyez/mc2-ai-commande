@@ -1,13 +1,14 @@
-# Proves the simplified single-unit order flow keeps a detached mech on its solo order through squad commands, then returns it after arrival.
-assert-combat-situation quiet solo=0
-command unit unit-1 move 2520 -1941
-assert-command-result accepted=1
-assert-combat-situation quiet solo=1
+# Proves the status-row solo order flow returns visible control to the squad while the detached mech finishes its order.
+assert-combat-situation quiet solo=0 selection=squad row=unit-1:ready
+status-row unit-1
+assert-combat-situation quiet solo=0 selection=unit-1 row=unit-1:ready
+battle-click 2520 -1941
+assert-combat-situation quiet solo=1 selection=squad row=unit-1:solo
 command squad move 3136 -789
 assert-command-result accepted=2
-assert-combat-situation solo=1
+assert-combat-situation solo=1 selection=squad row=unit-1:solo
 advance 1
-assert-combat-situation solo=0
+assert-combat-situation solo=0 selection=squad row=unit-1:ready
 command squad move 3136 -789
 assert-command-result accepted=3
 report

@@ -1105,6 +1105,15 @@ namespace MC2Demo.Presentation
                     case StartupCommanderScriptActionKind.Command:
                         RunStartupCommanderCommand(action.CommandText);
                         break;
+                    case StartupCommanderScriptActionKind.StatusRowSelect:
+                        RunStartupStatusRowSelect(action.StatusRowUnitId);
+                        break;
+                    case StartupCommanderScriptActionKind.BattleClick:
+                        RunStartupBattleClick(action.MissionX, action.MissionY);
+                        break;
+                    case StartupCommanderScriptActionKind.BattleTarget:
+                        RunStartupBattleTarget(action.BattleTargetKind, action.BattleTargetId);
+                        break;
                     case StartupCommanderScriptActionKind.Advance:
                         AdvanceStartupSimulation(action.AdvanceSeconds);
                         break;
@@ -1175,7 +1184,14 @@ namespace MC2Demo.Presentation
                         RunStartupCommandResultAssertion(action.ExpectedCommandBlocked, action.ExpectedCommandAcceptedCount);
                         break;
                     case StartupCommanderScriptActionKind.AssertCombatSituation:
-                        RunStartupCombatSituationAssertion(action.ExpectedCombatTempo, action.ExpectedSoloCount, action.ExpectedJumpingCount, action.ExpectedSalvageCount);
+                        RunStartupCombatSituationAssertion(
+                            action.ExpectedCombatTempo,
+                            action.ExpectedSoloCount,
+                            action.ExpectedJumpingCount,
+                            action.ExpectedSalvageCount,
+                            action.ExpectedSelection,
+                            action.ExpectedRowUnitId,
+                            action.ExpectedRowState);
                         break;
                     case StartupCommanderScriptActionKind.AssertEncounterPacing:
                         RunStartupEncounterPacingAssertion();
@@ -1243,6 +1259,96 @@ namespace MC2Demo.Presentation
             AddCombatLogLine(line);
             statusText = result.Message;
             Debug.Log("MC2 commander command: " + line + " message=" + result.Message);
+        }
+
+        private void RunStartupStatusRowSelect(string unitId)
+        {
+            string normalized = (unitId ?? string.Empty).Trim();
+            if (IsSquadSelectionToken(normalized))
+            {
+                pendingDetachedUnitId = null;
+                pendingJumpOrder = false;
+                statusText = "Squad selected";
+                AddCombatLogLine("CLI status row: squad selected");
+                Debug.Log("MC2 commander status row: squad selected");
+                return;
+            }
+
+            UnitState unit = FindPlayerUnitById(normalized);
+            if (unit == null)
+            {
+                startupSmokeFailed = true;
+                statusText = "Status row unit missing";
+                string summary = "unit=" + (string.IsNullOrWhiteSpace(normalized) ? "<empty>" : normalized);
+                AddCombatLogLine("CLI status row failed: " + summary);
+                Debug.LogError("MC2 commander status row failed: " + summary);
+                return;
+            }
+
+            pendingDetachedUnitId = unit.Id;
+            statusText = pendingJumpOrder
+                ? "Select jet destination for " + unit.UnitType
+                : "Select destination for " + unit.UnitType;
+            AddCombatLogLine("CLI status row: " + unit.Id + " selected");
+            Debug.Log("MC2 commander status row: unit=" + unit.Id + " selection=" + CurrentBattleSelectionId());
+        }
+
+        private void RunStartupBattleClick(float missionX, float missionY)
+        {
+            Vector2 target = new(missionX, missionY);
+            IssueMoveOrder(target, null);
+            string summary = "target="
+                + missionX.ToString("0.###", CultureInfo.InvariantCulture)
+                + ","
+                + missionY.ToString("0.###", CultureInfo.InvariantCulture)
+                + " selection="
+                + CurrentBattleSelectionId();
+            AddCombatLogLine("CLI battle click: " + summary);
+            Debug.Log("MC2 commander battle click: " + summary);
+        }
+
+        private void RunStartupBattleTarget(string targetKind, string targetId)
+        {
+            string normalizedKind = (targetKind ?? string.Empty).Trim();
+            string normalizedId = (targetId ?? string.Empty).Trim();
+            if (mission == null)
+            {
+                startupSmokeFailed = true;
+                statusText = "Battle target missing mission";
+                Debug.LogError("MC2 commander battle target failed: no mission");
+                return;
+            }
+
+            if (string.Equals(normalizedKind, "unit", StringComparison.OrdinalIgnoreCase))
+            {
+                UnitState target = mission.FindUnit(normalizedId);
+                if (target != null)
+                {
+                    IssueUnitAttackOrder(target);
+                    AddCombatLogLine("CLI battle target: unit " + normalizedId + " selection=" + CurrentBattleSelectionId());
+                    Debug.Log("MC2 commander battle target: unit=" + normalizedId + " selection=" + CurrentBattleSelectionId());
+                    return;
+                }
+            }
+            else if (string.Equals(normalizedKind, "structure", StringComparison.OrdinalIgnoreCase))
+            {
+                StructureState target = mission.FindStructure(normalizedId);
+                if (target != null)
+                {
+                    IssueStructureAttackOrder(target);
+                    AddCombatLogLine("CLI battle target: structure " + normalizedId + " selection=" + CurrentBattleSelectionId());
+                    Debug.Log("MC2 commander battle target: structure=" + normalizedId + " selection=" + CurrentBattleSelectionId());
+                    return;
+                }
+            }
+
+            startupSmokeFailed = true;
+            statusText = "Battle target missing";
+            string summary = "kind=" + (string.IsNullOrWhiteSpace(normalizedKind) ? "<empty>" : normalizedKind)
+                + " id="
+                + (string.IsNullOrWhiteSpace(normalizedId) ? "<empty>" : normalizedId);
+            AddCombatLogLine("CLI battle target failed: " + summary);
+            Debug.LogError("MC2 commander battle target failed: " + summary);
         }
 
         private void RunStartupMissionRestart()
@@ -2515,9 +2621,163 @@ namespace MC2Demo.Presentation
             };
         }
 
-        private void RunStartupCombatSituationAssertion(string expectedTempoMode, int expectedSoloCount, int expectedJumpingCount, int expectedSalvageCount)
+        private string CurrentBattleSelectionId()
         {
-            CombatSituationAssertionResult result = BuildCombatSituationAssertion(expectedTempoMode, expectedSoloCount, expectedJumpingCount, expectedSalvageCount);
+            return string.IsNullOrWhiteSpace(pendingDetachedUnitId) ? "squad" : pendingDetachedUnitId;
+        }
+
+        private static bool IsSquadSelectionToken(string selection)
+        {
+            return string.Equals(selection, "squad", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(selection, "all", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static string NormalizeBattleSelectionId(string selection)
+        {
+            string normalized = (selection ?? string.Empty).Trim();
+            return IsSquadSelectionToken(normalized) ? "squad" : normalized.ToLowerInvariant();
+        }
+
+        private bool BattleSelectionMatches(string expectedSelection)
+        {
+            if (string.IsNullOrWhiteSpace(expectedSelection))
+            {
+                return true;
+            }
+
+            return string.Equals(
+                NormalizeBattleSelectionId(CurrentBattleSelectionId()),
+                NormalizeBattleSelectionId(expectedSelection),
+                StringComparison.Ordinal);
+        }
+
+        private UnitState FindPlayerUnitById(string unitId)
+        {
+            if (mission == null || string.IsNullOrWhiteSpace(unitId))
+            {
+                return null;
+            }
+
+            foreach (UnitState unit in mission.PlayerUnits())
+            {
+                if (string.Equals(unit.Id, unitId, StringComparison.OrdinalIgnoreCase))
+                {
+                    return unit;
+                }
+            }
+
+            return null;
+        }
+
+        private bool StatusRowStateMatches(string expectedRowUnitId, string expectedRowState, out string rowSummary)
+        {
+            rowSummary = string.Empty;
+            if (string.IsNullOrWhiteSpace(expectedRowUnitId) && string.IsNullOrWhiteSpace(expectedRowState))
+            {
+                return true;
+            }
+
+            UnitState unit = FindPlayerUnitById(expectedRowUnitId);
+            if (unit == null)
+            {
+                rowSummary = (string.IsNullOrWhiteSpace(expectedRowUnitId) ? "<empty>" : expectedRowUnitId) + ":missing";
+                return false;
+            }
+
+            string current = UnitMissionStateAssertionToken(unit);
+            string expected = NormalizeUnitMissionStateAssertionToken(expectedRowState);
+            rowSummary = unit.Id + ":" + current;
+            return string.Equals(current, expected, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static string UnitMissionStateAssertionToken(UnitState unit)
+        {
+            if (unit == null)
+            {
+                return "unknown";
+            }
+
+            if (unit.IsDestroyed)
+            {
+                return "destroyed";
+            }
+
+            if (!unit.IsActive)
+            {
+                return "held";
+            }
+
+            if (unit.IsJumping)
+            {
+                return "jetting";
+            }
+
+            if (unit.IsDetached)
+            {
+                return "solo";
+            }
+
+            if (unit.HasAttackOrder)
+            {
+                return "attacking";
+            }
+
+            if (unit.HasMoveOrder)
+            {
+                return "moving";
+            }
+
+            return "ready";
+        }
+
+        private static string NormalizeUnitMissionStateAssertionToken(string state)
+        {
+            string token = (state ?? string.Empty).Trim().ToLowerInvariant();
+            if (token == "detached" || token == "solo-order")
+            {
+                return "solo";
+            }
+
+            if (token == "jumping" || token == "jet")
+            {
+                return "jetting";
+            }
+
+            if (token == "attack" || token == "target")
+            {
+                return "attacking";
+            }
+
+            if (token == "move")
+            {
+                return "moving";
+            }
+
+            if (token == "inactive" || token == "held-by-trigger")
+            {
+                return "held";
+            }
+
+            return token;
+        }
+
+        private void RunStartupCombatSituationAssertion(
+            string expectedTempoMode,
+            int expectedSoloCount,
+            int expectedJumpingCount,
+            int expectedSalvageCount,
+            string expectedSelection,
+            string expectedRowUnitId,
+            string expectedRowState)
+        {
+            CombatSituationAssertionResult result = BuildCombatSituationAssertion(
+                expectedTempoMode,
+                expectedSoloCount,
+                expectedJumpingCount,
+                expectedSalvageCount,
+                expectedSelection,
+                expectedRowUnitId,
+                expectedRowState);
             if (result.Accepted)
             {
                 AddCombatLogLine("CLI combat situation assert OK: " + result.Summary);
@@ -2563,7 +2823,14 @@ namespace MC2Demo.Presentation
             Debug.LogError("MC2 objective graph assertion failed: " + result.Summary);
         }
 
-        private CombatSituationAssertionResult BuildCombatSituationAssertion(string expectedTempoMode, int expectedSoloCount, int expectedJumpingCount, int expectedSalvageCount)
+        private CombatSituationAssertionResult BuildCombatSituationAssertion(
+            string expectedTempoMode,
+            int expectedSoloCount,
+            int expectedJumpingCount,
+            int expectedSalvageCount,
+            string expectedSelection,
+            string expectedRowUnitId,
+            string expectedRowState)
         {
             if (mission == null)
             {
@@ -2692,6 +2959,9 @@ namespace MC2Demo.Presentation
             bool expectedSoloOk = expectedSoloCount < 0 || detached == expectedSoloCount;
             bool expectedJumpingOk = expectedJumpingCount < 0 || jumping == expectedJumpingCount;
             bool expectedSalvageOk = expectedSalvageCount < 0 || salvage == expectedSalvageCount;
+            string selection = CurrentBattleSelectionId();
+            bool expectedSelectionOk = BattleSelectionMatches(expectedSelection);
+            bool expectedRowOk = StatusRowStateMatches(expectedRowUnitId, expectedRowState, out string rowSummary);
             string pressureText = CombatContactPressureText();
             bool pressureOk = CombatContactPressureTextMatchesState(pressureText);
             string focusText = CombatFocusText();
@@ -2716,6 +2986,11 @@ namespace MC2Demo.Presentation
                 + " salvage="
                 + salvage.ToString(CultureInfo.InvariantCulture)
                 + (expectedSalvageCount < 0 ? "" : " expectedSalvage=" + expectedSalvageCount.ToString(CultureInfo.InvariantCulture))
+                + " selection="
+                + selection
+                + (string.IsNullOrWhiteSpace(expectedSelection) ? "" : " expectedSelection=" + expectedSelection)
+                + (string.IsNullOrWhiteSpace(rowSummary) ? "" : " row=" + rowSummary)
+                + (string.IsNullOrWhiteSpace(expectedRowUnitId) ? "" : " expectedRow=" + expectedRowUnitId + ":" + expectedRowState)
                 + " top="
                 + topMode
                 + " funds="
@@ -2855,6 +3130,8 @@ namespace MC2Demo.Presentation
                     && expectedSoloOk
                     && expectedJumpingOk
                     && expectedSalvageOk
+                    && expectedSelectionOk
+                    && expectedRowOk
                     && pressureOk
                     && focusOk
                     && pulseOk
