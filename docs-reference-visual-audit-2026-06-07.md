@@ -857,3 +857,69 @@ Next priority:
 
 1. Stage 3 / Task 3.1 regress weapon family cues.
 2. Stage 3 / Task 3.2 lock section damage and ejection cues.
+
+## Stage 3.1 Weapon Family Cue Result
+
+Implemented on 2026-06-07:
+
+- Added a weapon-direction cue pass in `Mc2DemoBootstrap` after the existing weapon trace and before the impact/aftermath cues.
+- Energy weapons now add a longer direction core with short forward ticks, so laser-like fire has a readable source-to-target line.
+- Missile weapons now add persistent approach pips and smoke streaks along their existing arc lanes.
+- Ballistic weapons now add a short snap-line and arrowhead at the hit end, making the fast shot direction easier to read.
+- Generic/explosive fallback shots now add a shock direction pulse and short afterglow vector.
+- Hit direction cues now include an approach wedge at the target, in addition to the existing inbound slash.
+- The combat situation assertion summary now guards `direction-core`, `approach-pips`, `snap-line`, `Explosive=shock-pulse+smoke+afterglow` and `HitDirection=inbound+slash+approach-wedge`.
+
+Modified files:
+
+```text
+unity-mc2-demo/Assets/Scripts/Presentation/Mc2DemoBootstrap.cs
+```
+
+Validation commands:
+
+```powershell
+git diff --check
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoValidator.ValidateMissionContract -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-validate-weapon-family-cues.log"
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoBuilder.BuildWindows64 -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-build-weapon-family-cues.log"
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_reference_visuals.ps1 -Presets damage-demo
+& "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo\Builds\Windows\MC2UnityDemo.exe" -batchmode -nographics -mc2SmokeTest -mc2CommandFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo\Assets\StreamingAssets\CommanderScripts\mc2_01-visible-flow-audit.txt" -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-player-visible-flow-after-weapon-cues.log"
+```
+
+Validation evidence:
+
+```text
+analysis-output/unity-validate-weapon-family-cues.log
+analysis-output/unity-build-weapon-family-cues.log
+analysis-output/reference-visual-captures/damage-demo.png
+analysis-output/reference-visual-captures/damage-demo.json
+analysis-output/reference-visual-captures/damage-demo.log
+analysis-output/unity-player-visible-flow-after-weapon-cues.log
+```
+
+Validation results:
+
+```text
+Validator: MC2 demo contract validation OK.
+Build: Build Finished, Result: Success; MC2 Unity demo Windows build OK.
+damage-demo: activeHostileCount 20, visibleHostileCount 20, OccupancyPlaceholders=enabled total 81 structures 1 hardProps 80.
+Visible-flow smoke: MC2 demo smoke test exiting with code 0.
+Smoke assertion: fx=Energy=beam+pillar+muzzle+flash+scorch+direction-core Missile=arc+blast+salvo-spread+crater+approach-pips Ballistic=tracer+sparks+muzzle+punch+debris+snap-line Explosive=shock-pulse+smoke+afterglow; hitDirectionFx=HitDirection=inbound+slash+approach-wedge.
+```
+
+Observed effect:
+
+- `damage-demo` keeps the same 20 active / 20 visible hostile pressure while showing stronger blue/orange directional weapon cues near the hangar fight.
+- The new cue layer stays in the battlefield and does not cover the left mech status rows.
+- The improvement helps source-to-target readability, but the screenshot is still a far, dense combat view.
+
+Remaining issues:
+
+1. `damage-demo` still needs larger world-space section damage and ejection events to sell the mech damage fantasy without relying on status text.
+2. The left status/control surface remains visually heavy, though this task did not add new UI.
+3. Explosive-specific fallback is guarded as a cue language, but current source weapon data still mainly uses energy, missile and ballistic types.
+
+Next priority:
+
+1. Stage 3 / Task 3.2 lock section damage and ejection cues.
+2. Stage 3 / Task 3.3 lock armor hardness damage rule.

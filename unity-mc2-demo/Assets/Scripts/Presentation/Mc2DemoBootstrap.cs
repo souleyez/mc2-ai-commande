@@ -2875,9 +2875,10 @@ namespace MC2Demo.Presentation
             bool fundsOk = string.Equals(funds, "Funds 1,234", StringComparison.Ordinal)
                 && funds.IndexOf("TOKEN", StringComparison.OrdinalIgnoreCase) < 0;
             string weaponFx = WeaponFxCueSummary();
-            bool weaponFxOk = weaponFx.IndexOf("Energy=beam+pillar+muzzle+flash+scorch", StringComparison.Ordinal) >= 0
-                && weaponFx.IndexOf("Missile=arc+blast+salvo-spread+crater", StringComparison.Ordinal) >= 0
-                && weaponFx.IndexOf("Ballistic=tracer+sparks+muzzle+punch+debris", StringComparison.Ordinal) >= 0;
+            bool weaponFxOk = weaponFx.IndexOf("Energy=beam+pillar+muzzle+flash+scorch+direction-core", StringComparison.Ordinal) >= 0
+                && weaponFx.IndexOf("Missile=arc+blast+salvo-spread+crater+approach-pips", StringComparison.Ordinal) >= 0
+                && weaponFx.IndexOf("Ballistic=tracer+sparks+muzzle+punch+debris+snap-line", StringComparison.Ordinal) >= 0
+                && weaponFx.IndexOf("Explosive=shock-pulse+smoke+afterglow", StringComparison.Ordinal) >= 0;
             string weaponStatusFx = WeaponStatusCueSummary();
             bool weaponStatusFxOk = weaponStatusFx.IndexOf("WeaponStatus=ENG-burn+MSL-blast+BAL-punch+D+B+KILL", StringComparison.Ordinal) >= 0
                 && weaponStatusFx.IndexOf("ENG burn Alpha > Target Torso D24 B4", StringComparison.Ordinal) >= 0
@@ -2886,7 +2887,7 @@ namespace MC2Demo.Presentation
             string hitSeverityFx = HitSeverityCueSummary();
             bool hitSeverityFxOk = hitSeverityFx.IndexOf("HitSeverity=damage+kill+shock", StringComparison.Ordinal) >= 0;
             string hitDirectionFx = HitDirectionCueSummary();
-            bool hitDirectionFxOk = hitDirectionFx.IndexOf("HitDirection=inbound+slash", StringComparison.Ordinal) >= 0;
+            bool hitDirectionFxOk = hitDirectionFx.IndexOf("HitDirection=inbound+slash+approach-wedge", StringComparison.Ordinal) >= 0;
             string muzzleFx = WeaponMuzzlePointCueSummary();
             bool muzzleFxOk = muzzleFx.IndexOf("WeaponMuzzlePoint=energy+missile+ballistic", StringComparison.Ordinal) >= 0;
             string armorFx = ArmorMitigationCueSummary();
@@ -5627,6 +5628,7 @@ namespace MC2Demo.Presentation
                 : WeaponColor(combatEvent.WeaponType);
             float severityScale = HitSeverityScale(combatEvent);
             CreateWeaponTrace(attackerPoint, targetPoint, combatEvent, weaponColor);
+            CreateWeaponDirectionCue(attackerPoint, targetPoint, combatEvent, weaponColor, severityScale);
             CreateImpact(targetPoint, weaponColor, combatEvent.DestroyedTarget, ImpactScale(combatEvent.WeaponType) * severityScale);
             CreateWeaponImpactCue(attackerPoint, targetPoint, combatEvent, weaponColor, severityScale);
             CreateWeaponImpactAftermath(attackerPoint, targetPoint, combatEvent, weaponColor, severityScale);
@@ -5838,7 +5840,7 @@ namespace MC2Demo.Presentation
 
         private static string WeaponFxCueSummary()
         {
-            return "Energy=beam+pillar+muzzle+flash+scorch Missile=arc+blast+salvo-spread+crater Ballistic=tracer+sparks+muzzle+punch+debris";
+            return "Energy=beam+pillar+muzzle+flash+scorch+direction-core Missile=arc+blast+salvo-spread+crater+approach-pips Ballistic=tracer+sparks+muzzle+punch+debris+snap-line Explosive=shock-pulse+smoke+afterglow";
         }
 
         private static string WeaponStatusCueSummary()
@@ -5861,7 +5863,7 @@ namespace MC2Demo.Presentation
 
         private static string HitDirectionCueSummary()
         {
-            return "HitDirection=inbound+slash";
+            return "HitDirection=inbound+slash+approach-wedge";
         }
 
         private static string WeaponMuzzlePointCueSummary()
@@ -6140,6 +6142,12 @@ namespace MC2Demo.Presentation
             Vector3 strikeEnd = to + direction * (0.10f * scale) - side * (0.02f * scale) + lift * 0.65f;
             CreateBeam(strikeStart, strikeEnd, new Color(1f, 0.95f, 0.58f, 0.56f), 0.090f, 0.010f * scale);
             CreateBeam(to - direction * (0.34f * scale) - side * (0.10f * scale) + lift * 0.60f, to - direction * (0.02f * scale) + side * (0.12f * scale) + lift * 0.92f, new Color(1f, 0.52f, 0.16f, 0.42f), 0.075f, 0.007f * scale);
+            Vector3 wedgeTip = to - direction * (0.04f * scale) + lift * 0.48f;
+            Vector3 wedgeLeft = to - direction * (0.46f * scale) + side * (0.25f * scale) + lift * 0.34f;
+            Vector3 wedgeRight = to - direction * (0.46f * scale) - side * (0.25f * scale) + lift * 0.34f;
+            Color wedge = new(1f, 0.78f, 0.28f, 0.44f);
+            CreateBeam(wedgeLeft, wedgeTip, wedge, 0.18f, 0.009f * scale);
+            CreateBeam(wedgeRight, wedgeTip, wedge, 0.18f, 0.009f * scale);
         }
 
         private void CreateKillShockCue(Vector3 targetPoint, bool destroyedTarget, float severityScale)
@@ -6269,6 +6277,121 @@ namespace MC2Demo.Presentation
             }
 
             CreateBeam(from, to, color, 0.16f, 0.045f);
+        }
+
+        private void CreateWeaponDirectionCue(Vector3 from, Vector3 to, CombatEvent combatEvent, Color color, float severityScale)
+        {
+            if (ContainsWeaponType(combatEvent.WeaponType, "Missile"))
+            {
+                CreateMissileApproachPips(from, to, color, severityScale);
+                return;
+            }
+
+            if (ContainsWeaponType(combatEvent.WeaponType, "Ballistic"))
+            {
+                CreateBallisticSnapDirectionCue(from, to, severityScale);
+                return;
+            }
+
+            if (ContainsWeaponType(combatEvent.WeaponType, "Energy"))
+            {
+                CreateEnergyDirectionCore(from, to, color, severityScale);
+                return;
+            }
+
+            CreateExplosiveDirectionCue(from, to, color, severityScale);
+        }
+
+        private void CreateEnergyDirectionCore(Vector3 from, Vector3 to, Color color, float severityScale)
+        {
+            Vector3 direction = to - from;
+            if (direction.sqrMagnitude <= 0.0001f)
+            {
+                return;
+            }
+
+            Vector3 forward = direction.normalized;
+            Vector3 side = LateralVector(direction);
+            float scale = Mathf.Clamp(severityScale, 0.82f, 1.45f);
+            Color core = new(0.86f, 1f, 1f, 0.50f);
+            Color tick = new(color.r, color.g, color.b, 0.46f);
+            Vector3 lift = Vector3.up * (0.075f * scale);
+            CreateBeam(Vector3.Lerp(from, to, 0.14f) + lift, Vector3.Lerp(from, to, 0.92f) + lift, core, 0.36f, 0.030f * scale);
+
+            for (int index = 0; index < 2; index++)
+            {
+                float t = 0.62f + index * 0.18f;
+                Vector3 center = Vector3.Lerp(from, to, t) + lift;
+                CreateBeam(center - forward * (0.13f * scale) - side * (0.16f * scale), center + forward * (0.18f * scale) + side * (0.04f * scale), tick, 0.32f, 0.014f * scale);
+                CreateBeam(center - forward * (0.13f * scale) + side * (0.16f * scale), center + forward * (0.18f * scale) - side * (0.04f * scale), tick, 0.32f, 0.014f * scale);
+            }
+        }
+
+        private void CreateMissileApproachPips(Vector3 from, Vector3 to, Color color, float severityScale)
+        {
+            Vector3 direction = to - from;
+            float distance = direction.magnitude;
+            if (distance <= 0.01f)
+            {
+                return;
+            }
+
+            Vector3 forward = direction.normalized;
+            Vector3 side = LateralVector(direction);
+            float scale = Mathf.Clamp(severityScale, 0.86f, 1.55f);
+            float arcHeight = Mathf.Clamp(distance * 0.16f, 0.45f, 2.2f);
+            Color pip = new(color.r, color.g, color.b, 0.42f);
+            Color smoke = new(0.12f, 0.11f, 0.10f, 0.30f);
+            for (int index = 0; index < 3; index++)
+            {
+                float t = 0.38f + index * 0.18f;
+                Vector3 laneOffset = side * ((index - 1f) * 0.16f);
+                Vector3 point = ArcPoint(from + laneOffset, to + laneOffset * 0.34f, t, arcHeight * (0.86f + index * 0.08f));
+                CreateImpactDisc("Missile Approach Pip", point + Vector3.up * 0.02f, pip, 0.56f, 0.08f * scale, 0.26f * scale, 0.014f);
+                CreateBeam(point - forward * (0.24f * scale), point + forward * (0.10f * scale) + Vector3.up * (0.06f * scale), smoke, 0.58f, 0.022f * scale);
+            }
+        }
+
+        private void CreateBallisticSnapDirectionCue(Vector3 from, Vector3 to, float severityScale)
+        {
+            Vector3 direction = to - from;
+            if (direction.sqrMagnitude <= 0.0001f)
+            {
+                return;
+            }
+
+            Vector3 forward = direction.normalized;
+            Vector3 side = LateralVector(direction);
+            float scale = Mathf.Clamp(severityScale, 0.78f, 1.45f);
+            Color snap = new(1f, 0.90f, 0.46f, 0.48f);
+            Vector3 lift = Vector3.up * (0.045f * scale);
+            CreateBeam(Vector3.Lerp(from, to, 0.20f) + lift, Vector3.Lerp(from, to, 0.98f) + lift, snap, 0.24f, 0.014f * scale);
+
+            Vector3 head = to - forward * (0.16f * scale) + lift;
+            CreateBeam(head - forward * (0.14f * scale), head - forward * (0.42f * scale) + side * (0.22f * scale), snap, 0.22f, 0.011f * scale);
+            CreateBeam(head - forward * (0.14f * scale), head - forward * (0.42f * scale) - side * (0.22f * scale), snap, 0.22f, 0.011f * scale);
+        }
+
+        private void CreateExplosiveDirectionCue(Vector3 from, Vector3 to, Color color, float severityScale)
+        {
+            Vector3 direction = to - from;
+            if (direction.sqrMagnitude <= 0.0001f)
+            {
+                return;
+            }
+
+            Vector3 forward = direction.normalized;
+            float scale = Mathf.Clamp(severityScale, 0.88f, 1.65f);
+            Vector3 center = to - forward * (0.10f * scale) + Vector3.up * 0.06f;
+            CreateImpactDisc(
+                "Explosive Shock Direction Pulse",
+                center,
+                new Color(color.r, color.g, color.b, 0.30f),
+                0.46f,
+                0.18f * scale,
+                0.82f * scale,
+                0.020f);
+            CreateBeam(center - forward * (0.54f * scale), center + forward * (0.10f * scale) + Vector3.up * (0.16f * scale), new Color(1f, 0.62f, 0.16f, 0.40f), 0.46f, 0.024f * scale);
         }
 
         private void CreateMissileTrace(Vector3 from, Vector3 to, Color color)

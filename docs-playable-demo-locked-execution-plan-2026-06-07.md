@@ -30,7 +30,7 @@
 1. Stage 1 可见流程已经锁住。
 2. Stage 2 战场空间、碰撞占位和 hangar encounter 构图已经收口到可继续推进。
 3. 当前进入 Stage 3: Combat Feel Lock。
-4. 下一提交优先做 `Regress weapon family cues`。
+4. `Regress weapon family cues` 已完成，下一提交优先做 `Lock section damage and ejection cues`。
 5. 工作树提交前必须保持干净，Unity scene fileID churn 不得误提交。
 
 当前已知真实文件校准：
@@ -233,6 +233,10 @@ Do not stage generated PNG/JSON/log evidence unless explicitly requested.
 Goal: combat should read as mech tactics, not colored models exchanging hidden numbers.
 
 ### Task 3.1: Regress Weapon Family Cues
+
+**Status:** Completed 2026-06-07.
+
+**Result:** `Mc2DemoBootstrap` now adds family-specific direction cues on top of existing weapon traces: energy direction cores, missile approach pips, ballistic snap-lines and generic explosive shock pulses. The combat situation smoke summary now guards `direction-core`, `approach-pips`, `snap-line` and `approach-wedge` so the cue language stays covered.
 
 **Goal:** Energy, missile, ballistic and explosive cues are visually distinct, and incoming direction is readable at tactical zoom.
 
@@ -831,25 +835,25 @@ Recently completed:
 3. `Audit battle occupancy evidence`
 4. `Show collision occupancy placeholders`
 5. `Tune hangar encounter composition`
+6. `Regress weapon family cues`
 
 Next commits:
 
-1. `Regress weapon family cues`
-2. `Lock section damage and ejection cues`
-3. `Lock armor hardness damage rule`
-4. `Audit mounted weapon semantics`
-5. `Make MechLab grid blocks explicit`
-6. `Prove loadout battle effects`
-7. `Simplify debrief player flow`
-8. `Guard repair and relaunch loop`
-9. `Freeze AI observation contract`
-10. `Guard AI directive adapter`
-11. `Show optional AI advice window`
-12. `Document private reference content boundary`
-13. `Add public build content safety check`
-14. `Add playable demo walkthrough`
-15. `Prepare repeatable Windows demo build`
-16. `Package playable demo evidence`
+1. `Lock section damage and ejection cues`
+2. `Lock armor hardness damage rule`
+3. `Audit mounted weapon semantics`
+4. `Make MechLab grid blocks explicit`
+5. `Prove loadout battle effects`
+6. `Simplify debrief player flow`
+7. `Guard repair and relaunch loop`
+8. `Freeze AI observation contract`
+9. `Guard AI directive adapter`
+10. `Show optional AI advice window`
+11. `Document private reference content boundary`
+12. `Add public build content safety check`
+13. `Add playable demo walkthrough`
+14. `Prepare repeatable Windows demo build`
+15. `Package playable demo evidence`
 
 Every commit must record:
 
