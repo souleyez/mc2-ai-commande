@@ -19,6 +19,7 @@ This is the first unified execution plan for the project. Earlier planning is sp
 - `docs-content-replacement-plan.md`: defines content replacement milestones for copyright-safe public builds.
 - `docs-content-pack.md`: defines the replaceable content-pack contract and runtime shell flow.
 - `docs-platform-ecosystem-plan.md`: defines the long-term map-server, certified reward, web ranking, creator, and optional blockchain architecture.
+- `docs-mc2-detailed-development-plan.md`: current detailed Chinese execution plan for the visible Windows demo, reference visual restoration, physical occupancy, mech lab, AI commander contract, and later ecosystem lanes.
 - `unity-mc2-demo/README.md`: records current Unity demo behavior and validation commands.
 
 Use this file as the living execution plan. When scope changes, update this file in the same commit as the feature or in a small planning-only commit.
@@ -508,7 +509,7 @@ Tasks:
 
 ## Current Recommended Next Task
 
-Execute the **Reference Visual Restoration** lane in `docs-reference-visual-restoration-plan.md`, starting by freezing the current private reference-art bridge and then restoring first-slice model materials, source terrain textures, and airfield props.
+Use `docs-mc2-detailed-development-plan.md` as the current day-to-day execution plan. The immediate lane is **Milestone A: Battle Readability Lock**, starting with the visual audit matrix, unit/prop scale calibration, static obstacle occupancy, and fixed-camera occlusion pass.
 
 Reason:
 
