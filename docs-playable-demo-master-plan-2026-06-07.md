@@ -25,11 +25,27 @@
 
 当前最紧急的问题：
 
-- 画面可读性仍不够，尤其地形、水域、道路、建筑基底、机甲和敌方密度。
-- 当前工作区已有未提交的地形/水面可读性实验，第一版截图出现过大面积暗块；继续开发前要先修到截图可接受，再单独提交。
+- Phase A 地形/水面/道路可读性已经完成并提交，当前不再是黑块问题，而是“单位、敌人、建筑和道具挤在一起，战术关系还不够清楚”的问题。
+- Phase B 当前任务是敌方密度、停靠点、攻击环、碰撞占位和比例审计，让 `hangar-contact`、`damage-demo` 能读出双方位置、目标和火力方向。
 - 装配界面已经有格子方向，但还需要更像原版的整块武器占格和即时合法性反馈。
 - AI 指挥官只保留高层决策接口，不进入逐帧控制。
 - 保存游戏、地图服务器、经济、PVP、移动端、链上分账都暂缓。
+
+## 0.1 当前路线图快照
+
+这份计划现在按“先可见、再可玩、再可展示、再可扩展”的顺序执行。任何时候如果画面或指挥闭环退化，先回到当前阶段修正，不跨阶段堆功能。
+
+| 阶段 | 状态 | 本阶段产物 | 下一动作 |
+| --- | --- | --- | --- |
+| Phase A: 地形/水面/道路可读性 | Done | 地面、水域、岸线、跑道/道路、建筑基底在截图里可读；提交 `89a686f Improve terrain and water readability` | 只做回归检查，不再主动展开 |
+| Phase B: 第一张地图战场可读性 | Active | 敌我单位不堆点，建筑/树木/炮塔/道具比例可信，固定镜头能看懂战术关系 | 先做 B1 敌方密度和停靠点展开 |
+| Phase C: 指挥战斗闭环 | Next | 默认全队、状态栏单选、独立命令、自动归队、喷射和最小战斗 UI 可稳定演示 | B 阶段截图可读后进入 |
+| Phase D: 损伤、武器和战斗手感 | Next | 激光/导弹/炮弹层次、部位损伤、断臂/瘫痪/驾驶舱弹射能在截图或观战中看见 | C 阶段命令稳定后进入 |
+| Phase E: 原版式装配垂直切片 | Next | 整块武器占格、装甲板/散热器、热量/重量/槽位合法性、配置进战斗 | D 阶段战斗反馈可读后进入 |
+| Phase F: 战后和再战闭环 | Next | 简洁 Debrief、一键维修、回装配、再进同图 | E 阶段装配能影响战斗后进入 |
+| Phase G: AI 副官能力窗口 | Later | compact observation、高层 directive、本地 adapter、AI 建议窗口 | 本地完整 Demo 成形后补 |
+| Phase H/I: 内容包边界和演示构建 | Later | 私有参考包不进公开包，一键 Windows 演示构建，演示脚本 | Demo 可看可玩后收尾 |
+| Platform Work | Deferred | 地图服务器、Web 排名、奖励认证、链上分账研究 | 第一版本地 Demo 稳定后再设计 |
 
 ## 1. 第一版定义
 
@@ -95,9 +111,25 @@ git diff --check
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_reference_visuals.ps1 -Presets spawn,airfield,hangar-contact,damage-demo,north-patrol
 ```
 
-## 3. Phase A: 收完当前地形可读性改动
+## 2.1 阶段门验收
 
-目标：把正在进行的地形/水域/道路可读性实验修到可提交状态，不能把暗块截图提交成阶段成果。
+阶段门用于决定能不能进入下一阶段。没有过门时，不要用新功能掩盖旧问题。
+
+| 阶段门 | 必须看见的结果 | 必须跑的验证 | 失败时回退 |
+| --- | --- | --- | --- |
+| A -> B | 地形、水域、道路、岸线、建筑基底可读，没有粉色/黑块主画面 | build + smoke + `airfield,hangar-contact,damage-demo` capture | 回到 terrain shader/material/texture grading |
+| B -> C | 我方、敌方、建筑、炮塔/道具在 `hangar-contact`、`damage-demo` 里不再堆点；碰撞占位不把单位推入硬物 | validator + smoke + `hangar-contact,damage-demo` capture | 回到 BattleCore spacing/collision/visual scale |
+| C -> D | 默认全队、状态栏单选、独立命令、自动归队、喷射都能不用说明书操作 | command smoke + 1280x720 capture | 回到 input/state/UI feedback |
+| D -> E | 武器类型、命中方向、部位损伤、断臂/瘫痪/驾驶舱逃生有可见事件 | damage capture + validator for damage state | 回到 combat effect/damage model |
+| E -> F | 装配界面能清楚表达整块武器占格、热量、载重、装甲/散热器，并影响战斗 | loadout validator + battle smoke | 回到 MechLab rules/UI |
+| F -> G | 改装、出战、战后、维修、再战能一口气演示 | walkthrough smoke or manual capture set | 回到 debrief/repair/session state |
+| G -> H/I | AI 只做高层建议，断网/超时不影响本地 Demo | observation/directive validator | 回到 AI contract/adapter |
+
+本阶段优先级顺序固定：截图可读性高于内容数量，BattleCore 可验证高于 Unity 表现花活，第一张图闭环高于长期平台想象。
+
+## 3. Phase A: 地形可读性回归段
+
+状态：已完成。目标曾是把地形/水域/道路可读性实验修到可提交状态，不能把暗块截图提交成阶段成果。后续只在相关表现改动后跑回归，不主动扩展。
 
 ### Task A1: 固定当前视觉基线
 
@@ -205,21 +237,31 @@ git diff -- unity-mc2-demo/Assets/Scenes/Mc2Demo.unity
 
 - Modify: `unity-mc2-demo/Assets/Scripts/BattleCore/BattleMission.cs`
 - Modify: `unity-mc2-demo/Assets/Scripts/Presentation/StartupCommanderScript.cs`
-- Modify: `unity-mc2-demo/Assets/Scripts/Editor/Mc2DemoValidator.cs`
+- Modify: `unity-mc2-demo/Assets/Editor/Mc2DemoValidator.cs`
 - Modify: `docs-reference-visual-audit-2026-06-07.md`
 
 **Steps:**
 
 1. Read capture sidecars for active/visible hostiles at `airfield`, `hangar-contact`, `damage-demo`.
-2. Add a validator assertion that activated hostiles keep a minimum practical separation around objectives.
-3. Spread enemy attack slots around target rings without moving them outside weapon range.
-4. Keep original trigger order and objective graph intact.
-5. Capture before/after.
+2. Record the current pressure baseline: active hostiles, visible hostiles, player squad count, target objective, and whether the screen reads as “one knot”.
+3. Strengthen `ValidateEnemyAttackFormationSpacing` so a synthetic enemy group must produce non-overlapping `MoveTarget` points around one player target.
+4. Increase deterministic enemy attack/parking slot spread in `BattleMission.EnemyAttackFormationOffset`, but keep each slot inside practical weapon range.
+5. Preserve source mission triggers, patrol anchors, objective graph and active enemy count; do not make the fight easier by silently deleting enemies.
+6. Keep BattleCore as the collision authority: unit-to-unit, structure and terrain-object occupancy must remain deterministic and validator-covered.
+7. Capture `hangar-contact` and `damage-demo` before/after, then update the visual audit with the result.
+
+**Implementation notes:**
+
+- Use ring/slot changes before mission rewrites. The original mission cadence is the reference; only the readable parking geometry should move first.
+- Minimum spacing should be expressed against mission coordinates or desired attack slots, not Unity renderer bounds.
+- If a specific enemy cannot find a legal attack slot because of water, structure, or hard terrain object occupancy, prefer a nearby fallback slot over clipping into the obstacle.
+- Do not add Unity physics as authoritative gameplay logic. Unity colliders may help presentation, but BattleCore must still decide legal positions.
 
 **Validation:**
 
 ```powershell
 & "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoValidator.ValidateMissionContract -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-validate-enemy-spacing.log"
+& "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo\Builds\Windows\MC2UnityDemo.exe" -batchmode -nographics -mc2SmokeTest -mc2CommandFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo\Assets\StreamingAssets\CommanderScripts\mc2_01-combat-situation.txt" -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-player-enemy-spacing-smoke.log"
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_reference_visuals.ps1 -Presets hangar-contact,damage-demo
 ```
 
@@ -227,6 +269,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_refere
 
 - The hangar fight remains busy but units are not visually on one point.
 - Objective logic and smoke path still pass.
+- Enemy `MoveTarget` slots have a validator-backed minimum spread and remain inside useful attack range.
+- Screenshots still show original-like pressure: this is readability tuning, not encounter nerfing.
 
 **Commit:**
 
@@ -343,7 +387,7 @@ Assert commander command states
 
 - Modify: `unity-mc2-demo/Assets/Scripts/BattleCore/BattleMission.cs`
 - Modify: `unity-mc2-demo/Assets/Scripts/Presentation/Mc2DemoBootstrap.cs`
-- Modify: `unity-mc2-demo/Assets/Scripts/Editor/Mc2DemoValidator.cs`
+- Modify: `unity-mc2-demo/Assets/Editor/Mc2DemoValidator.cs`
 
 **Steps:**
 
@@ -960,24 +1004,23 @@ Add playable demo walkthrough
 
 ## 13. Commit Order From Here
 
-Recommended next commits:
+Recommended next commits from the current active point. Phase A terrain readability is already complete in `89a686f`.
 
-1. `Improve terrain and water readability`
-2. `Spread first mission enemy parking`
-3. `Tune first slice visual scale`
-4. `Tune commander camera composition`
-5. `Assert commander command states`
-6. `Finalize squad jet landing rules`
-7. `Freeze minimal battle UI`
-8. `Differentiate weapon visual effects`
-9. `Strengthen mech section damage cues`
-10. `Make mech lab grid item fitting explicit`
-11. `Apply mech lab loadouts in battle`
-12. `Tighten debrief and repair loop`
-13. `Freeze AI commander observation contract`
-14. `Add AI commander directive adapter`
-15. `Document replaceable visual content packs`
-16. `Prepare repeatable Windows demo build`
+1. `Spread first mission enemy parking`
+2. `Tune first slice visual scale`
+3. `Tune commander camera composition`
+4. `Assert commander command states`
+5. `Finalize squad jet landing rules`
+6. `Freeze minimal battle UI`
+7. `Differentiate weapon visual effects`
+8. `Strengthen mech section damage cues`
+9. `Make mech lab grid item fitting explicit`
+10. `Apply mech lab loadouts in battle`
+11. `Tighten debrief and repair loop`
+12. `Freeze AI commander observation contract`
+13. `Add AI commander directive adapter`
+14. `Document replaceable visual content packs`
+15. `Prepare repeatable Windows demo build`
 
 Every commit should include:
 

@@ -18,6 +18,12 @@
 
 - `docs-playable-demo-master-plan-2026-06-07.md`：从当前地形可读性收口开始，细化到战场可读性、指挥闭环、损伤表现、装配垂直切片、战后再战、AI 副官接口、内容包边界和演示构建。后续执行以这份计划为主，本文件保留总体产品判断和阶段记录。
 
+当前执行状态：
+
+- Phase A 地形/水面/道路可读性已经完成并提交，提交 `89a686f Improve terrain and water readability`。当前截图已经能读出绿色地面、蓝色水域、岸线、跑道/道路和建筑基底。
+- 真实下一步是 Phase B / Task B1：敌方密度和停靠点展开。目标不是减少敌人，而是在保留原版触发节奏和战斗压力的前提下，让 `hangar-contact`、`damage-demo` 不再像所有模型挤在一个点。
+- BattleCore 仍是权威物理占位层。Unity 可以显示碰撞占位和辅助反馈，但合法落点、单位排布、结构/terrain object 占用必须由 BattleCore 可验证地决定。
+
 当前项目不是从零开始，已经进入“可见 Demo 打磨”阶段。核心问题已经从“能不能跑”转为“看起来是否像一款可信的战术机甲游戏”。
 
 已经完成的基础：
@@ -38,7 +44,7 @@
 
 - 战场画面仍然不够清楚，尤其是机甲、载具、建筑、地形比例和镜头距离还需要继续校准。
 - 原版 3D 地形、树木、建筑、炮塔、机甲模型的还原还没有完全达到“截图可融资”的程度。
-- 碰撞占位已经有了第一版，但还需要覆盖建筑、树木、地形阻挡、水域落点和更稳定的阵型停靠。
+- 碰撞占位已经有了第一版，但还需要把敌方攻击环、目标周围停靠点、建筑/树木/硬物、水域非法落点和阵型 fallback 继续做稳。
 - UI 可运行，但需要围绕“少操作、少文字、手机友好、战斗中少显示信息”继续收紧。
 - 机甲装配界面还需要更像原版：整格摆放、清楚显示槽位形状、热量、载重、武器射程/冷却/伤害。
 - AI 指挥官现在只应保留能力窗口和高层命令接口，不进入逐帧战斗决策。
@@ -852,7 +858,7 @@ Commit 2：固定镜头遮挡处理。
 
 Commit 3：地形对比和水域/道路可读性。
 
-- 状态：已完成，提交待收。根因确认是地形 mesh 顶面被 shader backface culling 剔除；修复后 `airfield`、`hangar-contact`、`damage-demo` 已能显示可读地面、水域、岸线、跑道/道路和建筑基底。
+- 状态：已提交，提交 `89a686f Improve terrain and water readability`。根因确认是地形 mesh 顶面被 shader backface culling 剔除；修复后 `airfield`、`hangar-contact`、`damage-demo` 已能显示可读地面、水域、岸线、跑道/道路和建筑基底。
 - 验证：`analysis-output/unity-build-terrain-readability-r7.log`、`analysis-output/unity-player-terrain-readability-smoke-r3.log`、`analysis-output/reference-visual-captures/airfield.png`、`analysis-output/reference-visual-captures/hangar-contact.png`、`analysis-output/reference-visual-captures/damage-demo.png`。
 - 修改文件：`DemoTerrainView.cs`、`ReferenceTerrainTextureLibrary.cs`、`SourceTerrainVertexColor.shader`。
 - 步骤 1：对比 `airfield`、`hangar-contact` 的地面区域，记录哪些地形读成一片糊色。
@@ -864,13 +870,15 @@ Commit 3：地形对比和水域/道路可读性。
 
 Commit 4：敌方密度和停靠点微调。
 
-- 修改文件：`BattleMission.cs`、`Mc2DemoValidator.cs`、可能涉及 mission contract 导出脚本。
+- 状态：当前下一步。
+- 修改文件：`unity-mc2-demo/Assets/Scripts/BattleCore/BattleMission.cs`、`unity-mc2-demo/Assets/Editor/Mc2DemoValidator.cs`、`docs-reference-visual-audit-2026-06-07.md`，必要时再碰 `unity-mc2-demo/Assets/Scripts/Presentation/StartupCommanderScript.cs`。
 - 步骤 1：用 sidecar 记录每个 preset 激活敌人和可见敌人的数量。
-- 步骤 2：只调阵型展开、停靠半径、激活后的目标环，不改大任务逻辑。
-- 步骤 3：确保敌人仍在武器射程和触发区域内。
-- 步骤 4：补一个 validator 断言敌方停靠点不重叠。
+- 步骤 2：补强 validator，断言敌方攻击/停靠点有最小实用间距，且仍在武器有效范围内。
+- 步骤 3：只调阵型展开、停靠半径、激活后的目标环，不改大任务逻辑，不删除敌方压力。
+- 步骤 4：让 BattleCore 的单位、结构、terrain object 占位继续作为权威，Unity 只负责显示。
+- 步骤 5：重新捕获 `hangar-contact`、`damage-demo`，视觉审计记录前后差异。
 - 验证：validator + smoke + capture。
-- 验收：密集战斗仍热闹，但不再像所有模型挤在一个点。
+- 验收：密集战斗仍热闹，但不再像所有模型挤在一个点；碰撞占位不会把单位推入建筑、水域或大型硬物中心。
 
 ### Sprint 2: 原作感视觉要素补齐
 
@@ -1008,9 +1016,10 @@ Commit 15：本地演示包整理。
 下一次继续开发时，按 `docs-playable-demo-master-plan-2026-06-07.md` 执行，进入 **Phase B / Task B1：Enemy density and parking spread**。地形可读性已经从黑块修到可读状态，下一步重点是让 `hangar-contact` 和 `damage-demo` 的敌我密度不再挤在目标建筑周围：
 
 1. 读取 `airfield`、`hangar-contact`、`damage-demo` sidecar，记录 active/visible hostiles。
-2. 给激活敌人增加最小可读间距或停靠点展开断言。
-3. 调整敌方 attack slot / parking ring，使敌人在武器射程内展开，不改原任务触发顺序。
-4. 跑 validator、smoke，并重新捕获 `hangar-contact`、`damage-demo`。
-5. 更新视觉审计文档并提交。
+2. 补强 `ValidateEnemyAttackFormationSpacing`，覆盖多敌方单位围绕同一玩家目标时的最小停靠间距。
+3. 调整 `BattleMission.EnemyAttackFormationOffset` 的 slot/ring，使敌人在武器射程内展开，不改原任务触发顺序。
+4. 确认 BattleCore 单位、结构、terrain object 占位仍然决定合法位置，Unity 不新增权威物理。
+5. 跑 validator、smoke，并重新捕获 `hangar-contact`、`damage-demo`。
+6. 更新视觉审计文档并提交。
 
 这条线完成后，再继续第一张图的机甲/载具/炮塔/道具比例审计。
