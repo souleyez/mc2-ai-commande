@@ -12,11 +12,11 @@
 
 ## 1. Plan Role
 
-这份文档是 2026-06-07 的主执行计划和历史上下文。更新后的日常执行入口是 `docs-playable-demo-completion-plan-2026-06-07.md`，这份旧计划继续保留，因为里面还有阶段背景、历史审计和验证命令。
+这份文档是 2026-06-07 的历史上下文。更新后的日常执行入口是 `docs-playable-demo-current-execution-plan-2026-06-07.md`，本文件继续保留阶段背景、历史审计和验证命令。
 
 优先参考顺序：
 
-1. `docs-playable-demo-completion-plan-2026-06-07.md`: 当前更细的主执行计划。
+1. `docs-playable-demo-current-execution-plan-2026-06-07.md`: 当前唯一执行计划。
 2. `docs-playable-demo-current-detailed-plan-2026-06-07.md`: 历史上下文和阶段背景。
 3. `docs-reference-visual-audit-2026-06-07.md`: 截图证据和可读性回归。
 4. `docs-content-replacement-plan.md`: 私有参考包和公开替换包边界。

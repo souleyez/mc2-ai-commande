@@ -8,7 +8,7 @@
 
 **Tech Stack:** Unity 6, C#, Windows Standalone, deterministic BattleCore, PowerShell validation/capture scripts, `mc2-unity-demo-contract-v1`, private local reference content pack, Git/GitHub.
 
-**Revision:** 2026-06-07 v2. This file is the current execution entry. Older `docs-playable-demo-*.md` files are history, evidence, or task archives.
+**Revision:** 2026-06-07 v2. Superseded for current execution by `docs-playable-demo-current-execution-plan-2026-06-07.md`. This file remains a fine-grained task archive.
 
 ---
 
@@ -16,22 +16,22 @@
 
 日期：2026-06-07。
 
-当下一句是“按计划继续”时，先看本节和 `## 6. Immediate Queue`，从第一个 `Next` 或 `In Progress` 任务开始。旧计划里已经完成的阶段不要重复做，除非新的截图或 validator 证明退化。
+当下一句是“按计划继续”时，先看 `docs-playable-demo-current-execution-plan-2026-06-07.md` 的 `## 5. Current Commit Queue`，从第一个 `Next` 或 `In Progress` 任务开始。本文件只做历史和细节补查。
 
 当前优先级：
 
-1. 先收当前未提交的 AI compact observation 变更，避免脏工作树继续漂着。
-2. 完成 AI 副官 UI 能力窗口，但不让 AI 进入逐帧战斗。
-3. 回到游戏本身：战场碰撞占位证据、模型/地形可读性、装配手感、损伤卖点、投资演示包。
-4. 保持第一版只做 Windows 本地可玩 Demo，不扩保存系统、不做实时 PVP、不做移动端、不做链上系统。
+1. 完成 AI 副官 UI 能力窗口，但不让 AI 进入逐帧战斗。
+2. 回到游戏本身：战场碰撞占位证据、模型/地形可读性、装配手感、损伤卖点、投资演示包。
+3. 保持第一版只做 Windows 本地可玩 Demo，不扩保存系统、不做实时 PVP、不做移动端、不做链上系统。
 
 当前真实工作树提醒：
 
-- Branch: `master...ai-origin/master [ahead 47]`。
+- Branch: `master...ai-origin/master [ahead 49]` at the time the v3 plan was written.
 - 当前 Stage 6 / D1 compact AI observation 和 D2 directive adapter 已完成验证，下一步从 D3 optional AI advice window 开始。
 
 主要配套文档：
 
+- `docs-playable-demo-current-execution-plan-2026-06-07.md`: 当前唯一执行入口。
 - `docs-reference-visual-audit-2026-06-07.md`: 截图、sidecar、validator、smoke 证据。
 - `docs-ai-commander-directive-contract.md`: AI 副官 high-level directive 合同。
 - `docs-content-replacement-plan.md`: 私有参考包和公开替换包边界。
