@@ -1,6 +1,6 @@
 # MC2 Current Detailed Development Plan
 
-> **For Codex:** This document is the product and architecture overview. Execute the detailed task list in `docs-playable-demo-locked-execution-plan-2026-06-07.md`.
+> **For Codex:** This document is retained as product and architecture background. Use `docs-playable-demo-overall-detailed-plan-2026-06-07.md` for the current overall roadmap, and execute the day-to-day queue in `docs-playable-demo-current-execution-plan-2026-06-07.md`.
 
 **Goal:** 做出一版 Windows 可玩的战术机甲指挥 Demo：玩家能进入任务、指挥 1-6 台机甲完成一张参考关卡、看到可读的 3D 地形/建筑/机甲/爆炸损伤效果，并能回到机甲装配界面调整小队。AI 指挥官、地图服务器、公开换皮内容包都保留接口，但不阻塞第一版可见体验。
 
@@ -16,7 +16,8 @@
 
 当前更细的执行型计划书：
 
-- `docs-playable-demo-locked-execution-plan-2026-06-07.md`：当前唯一执行入口。已经刷新为细颗粒任务卡；MechLab grid block 和 loadout battle effects 已收口，后续按战报/维修闭环、AI 副官能力窗口、公开内容边界和演示交付推进。
+- `docs-playable-demo-overall-detailed-plan-2026-06-07.md`：当前整体计划入口，梳理产品范围、阶段门、架构边界、验收总线、长期平台延后项。
+- `docs-playable-demo-current-execution-plan-2026-06-07.md`：当前唯一日常执行入口。后续按 `Current Commit Queue` 从第一个 `Next` 或 `In Progress` 任务继续。
 - `docs-reference-visual-audit-2026-06-07.md`：截图、sidecar、validator、smoke 证据记录。视觉或战斗表现任务完成后更新这里。
 - `docs-content-replacement-plan.md` 与 `docs-content-pack.md`：私有参考内容包和公开替换包边界。
 - `docs-ai-commander-directive-contract.md`：AI 副官 observation/directive 合同。

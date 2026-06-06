@@ -8,7 +8,7 @@
 
 **Tech Stack:** Unity 6, C#, Windows Standalone, deterministic BattleCore, PowerShell validation/capture scripts, `mc2-unity-demo-contract-v1`, private local reference content pack, Git/GitHub.
 
-**Revision:** 2026-06-07 current execution plan v3. This is the current canonical plan. Older `docs-playable-demo-*.md` files are history, evidence, or task archives.
+**Revision:** 2026-06-07 current execution plan v4. This is the current canonical day-to-day execution queue. The broader product and phase roadmap is now `docs-playable-demo-overall-detailed-plan-2026-06-07.md`. Older `docs-playable-demo-*.md` files are history, evidence, or task archives.
 
 ---
 
@@ -27,9 +27,11 @@
 
 当前真实起点：
 
-- Branch: `master...ai-origin/master [ahead 49]`.
+- Branch: `master...ai-origin/master [ahead 52]`.
 - AI compact observation 已提交：`af7dbe9 Freeze AI observation contract`.
 - AI directive adapter 已提交：`9bf26bd Guard AI directive adapter`.
+- AI advice window 已提交：`b40372d Show optional AI advice window`.
+- Battle occupancy readability re-audit 已提交：`87006c3 Re-audit battle occupancy readability`.
 - 下一步是 `V2 Improve reference visual readability`.
 
 ## 1. First Demo Product Scope
@@ -79,14 +81,14 @@
 | Debrief loop | 战报、维修、回机库、再出战基础完成，不暴露保存槽概念 | repair/relaunch validator + smoke |
 | AI observation | Compact schema and prompt budget locked | `analysis-output/unity-validate-ai-observation.log` |
 | AI directive | High-level directive adapter guarded, missing key falls back locally | `analysis-output/unity-validate-ai-directive.log` |
+| AI deputy window | System panel 已显示 compact AI Deputy / AI副官状态、模式、意图和短建议 | `analysis-output/unity-player-ai-advice-window.log` |
 | Content boundary | 有内容包文档和替换包脚本方向 | README + content-pack docs |
 
 当前主要缺口：
 
 | Gap | Why It Matters | Next Task |
 | --- | --- | --- |
-| AI 副官还没有自然 UI 窗口 | 用户要 AI 做大决策，但不能拖慢战斗 | D3 |
-| `hangar-contact`/`damage-demo` 仍可能显得挤 | 投资演示截图容易被认为模型堆在一起 | V1/V2 |
+| `hangar-contact`/`damage-demo` 仍可能显得挤 | 投资演示截图容易被认为模型堆在一起 | V2 |
 | 碰撞占位需要继续可审计 | 用户明确要求有物理碰撞占位 | V3 |
 | MechLab 手感还要继续靠近整块占格 | 装配是核心乐趣之一 | M1/M2 |
 | 损伤卖点需要更强截图故事 | 断臂、腿瘫、弹射是差异化卖点 | C1 |
