@@ -47,13 +47,14 @@
 - 默认全队、状态栏单选、独立命令、完成后自动归队、部分合法喷射已有 smoke 覆盖。
 - 战斗 HUD 已压成更小的右侧状态块，战斗中不再展示完整任务列表。
 - visible-flow smoke 已覆盖状态栏独立命令、喷射、全队移动、接敌、集火、战报、回机库、装配 compact、再启动 identity。
+- Walkthrough 截图集已刷新并审计：`north-patrol` 是当前最佳演示候选，`damage-demo` 是必须继续修的损伤卖点图。
 - 武器类型、命中方向、部位损伤、断臂/腿部/驾驶舱弹射已有表现基础，但还要视觉强化。
 - 机库/装配已有格子、整块武器、装甲板、散热器、热量、重量、维修和小队整备基础。
 - AI observation、rule commander、MiniMax 接入探索已有基础；第一版只保留能力窗口。
 
 当前最重要缺口：
 
-- 缺一组完整 walkthrough 截图证据，证明启动、机库、战斗、损伤、战报、回机库能被人看懂。
+- 缺一份对外演示 walkthrough 文案，把机库、战斗、损伤、战报、回机库串成 3 分钟说明。
 - `hangar-contact` 和 `damage-demo` 仍是最拥挤的视觉压力点。
 - 物理碰撞占位需要继续以 sidecar 和 validator 维护，避免“看着有碰撞，规则层其实没有”。
 - 装配界面还要更接近整块占格、即时合法性、简单直观的手感。
@@ -180,7 +181,7 @@ rg -n "assertion failed|failed:|Debug.LogError|MC2 demo smoke test exiting with 
 
 ### Task 1.2: Capture Walkthrough Image Set
 
-**Status:** Next.
+**Status:** Completed 2026-06-07. Refreshed `spawn`, `airfield`, `hangar-contact`, `damage-demo` and `north-patrol` captures. `north-patrol` is the current investor screenshot candidate, while `damage-demo` is the must-fix screenshot because it should sell section damage but the world event is still too compressed and the left status surface dominates the read.
 
 **Files:**
 
@@ -833,28 +834,31 @@ git diff --check
 
 ## 13. Immediate Commit Queue
 
-从当前点继续，建议提交顺序：
+Recently completed:
 
 1. `Guard visible playable flow`
 2. `Document visible flow capture baseline`
-3. `Audit battle occupancy evidence`
-4. `Show collision occupancy placeholders`
-5. `Tune hangar encounter composition`
-6. `Regress weapon family cues`
-7. `Lock section damage and ejection cues`
-8. `Lock armor hardness damage rule`
-9. `Remove weapon toggle semantics`
-10. `Make MechLab grid blocks explicit`
-11. `Prove loadout battle effects`
-12. `Simplify debrief player flow`
-13. `Guard repair and relaunch loop`
-14. `Freeze AI observation contract`
-15. `Guard AI directive adapter`
-16. `Show optional AI advice window`
-17. `Document private reference content boundary`
-18. `Add public build content safety check`
-19. `Prepare repeatable Windows demo build`
-20. `Package playable demo evidence`
+
+From the current point, recommended next commits:
+
+1. `Audit battle occupancy evidence`
+2. `Show collision occupancy placeholders`
+3. `Tune hangar encounter composition`
+4. `Regress weapon family cues`
+5. `Lock section damage and ejection cues`
+6. `Lock armor hardness damage rule`
+7. `Remove weapon toggle semantics`
+8. `Make MechLab grid blocks explicit`
+9. `Prove loadout battle effects`
+10. `Simplify debrief player flow`
+11. `Guard repair and relaunch loop`
+12. `Freeze AI observation contract`
+13. `Guard AI directive adapter`
+14. `Show optional AI advice window`
+15. `Document private reference content boundary`
+16. `Add public build content safety check`
+17. `Prepare repeatable Windows demo build`
+18. `Package playable demo evidence`
 
 每个提交结束必须记录：
 

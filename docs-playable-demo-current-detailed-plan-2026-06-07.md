@@ -329,6 +329,8 @@ git diff --check
 
 ### Task 1.3: Capture Walkthrough Image Set
 
+**Status:** Completed 2026-06-07. Evidence is recorded in `docs-reference-visual-audit-2026-06-07.md` under `Stage 1.3 Capture Walkthrough Image Set Result`. The current best screenshot candidate is `north-patrol`; the must-fix screenshot is `damage-demo`.
+
 **Files:**
 
 - Modify: `docs-reference-visual-audit-2026-06-07.md`

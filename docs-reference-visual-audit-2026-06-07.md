@@ -578,3 +578,81 @@ Next priority:
 1. Stage 1 / Task 1.3 capture walkthrough image set.
 2. Stage 2 / Task 2.1 occupancy evidence against screenshots.
 3. Stage 2 / Task 2.2 presentation collision placeholders.
+
+## Stage 1.3 Capture Walkthrough Image Set Result
+
+Implemented on 2026-06-07:
+
+- Refreshed the full visible-flow screenshot set after the minimal HUD and complete visible-flow smoke passes.
+- Directly inspected `spawn`, `airfield`, `hangar-contact`, `damage-demo` and `north-patrol`.
+- Compared screenshot readability against sidecar evidence for active/visible hostiles, BattleCore occupancy, terrain landing predicates, reference asset scale, occlusion fade and camera composition offset.
+
+Validation command:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_reference_visuals.ps1 -Presets spawn,airfield,hangar-contact,damage-demo,north-patrol
+```
+
+Validation evidence:
+
+```text
+analysis-output/reference-visual-captures/spawn.png
+analysis-output/reference-visual-captures/spawn.json
+analysis-output/reference-visual-captures/airfield.png
+analysis-output/reference-visual-captures/airfield.json
+analysis-output/reference-visual-captures/hangar-contact.png
+analysis-output/reference-visual-captures/hangar-contact.json
+analysis-output/reference-visual-captures/damage-demo.png
+analysis-output/reference-visual-captures/damage-demo.json
+analysis-output/reference-visual-captures/north-patrol.png
+analysis-output/reference-visual-captures/north-patrol.json
+```
+
+Current capture matrix:
+
+| Preset | Mission Time | Camera Ortho | Active Hostiles | Visible Hostiles | Camera Offset | Walkthrough Result |
+| --- | ---: | ---: | ---: | ---: | --- | --- |
+| `spawn` | 1.04s | 29.11 | 0 | 0 | `0.98/0/1.76` | Terrain, water, squad formation, hangar direction and target marker are readable. The left status/control surface remains visually heavy for an opening shot. |
+| `airfield` | 12.77s | 29.11 | 12 | 8 | `0/0/0` | Enemy direction, command line, objective building and squad approach are readable. The fight is understandable, though the left status block still competes with the map. |
+| `hangar-contact` | 20.76s | 29.11 | 20 | 16 | `0/0/0` | Pressure is clear and the objective fight no longer looks like one exact-coordinate pile. It is still the densest local encounter, with player/enemy/building silhouettes packed around the hangar mouth. |
+| `damage-demo` | 38.66s | 35.50 | 20 | 19 | `0/0/0` | Status-row damage is readable, including cockpit/leg/critical/destroyed states, but the world-space damage event is too small and compressed for the screenshot that should sell the damage fantasy. |
+| `north-patrol` | 54.74s | 29.11 | 23 | 9 | `7.09/0/-2.44` | Best current investor screenshot candidate. Open terrain, bridge/water separation, enemy direction and squad pressure are readable without the hangar crowding. |
+
+Observed sidecar constants:
+
+```text
+ReferenceUnits=mech 6/0 vehicle 15/0 infantry 0/8 other 0/0 scale mech=0.92 vehicle=0.68 infantry=0.38
+ReferencePropScale=structure 1/0 building 29/3 aircraft 4/0 vehicle 9/3 barricade 90/18 tree 139/594 smallProp 65/38 other 0/7
+Landing=DemoTerrainView totalSamples=10000 blockedSamples=9392 flaggedWater=9233 lowElevation=7722 externalPredicate=water+mapBounds
+```
+
+Observed occupancy evidence:
+
+```text
+spawn: BattleOccupancy=units 3/29 unitRadii infantry=20 vehicle=42 mech=50 structures 1 maxStructureRadius=215 hardProps 80 building=21 aircraft=4 barricade=37 other=18 maxPropRadius=78 destinationFallback=structure+hardProp
+airfield: BattleOccupancy=units 15/29 unitRadii infantry=20 vehicle=42 mech=50 structures 1 maxStructureRadius=215 hardProps 80 building=21 aircraft=4 barricade=37 other=18 maxPropRadius=78 destinationFallback=structure+hardProp
+hangar-contact: BattleOccupancy=units 23/29 unitRadii infantry=20 vehicle=42 mech=50 structures 1 maxStructureRadius=215 hardProps 80 building=21 aircraft=4 barricade=37 other=18 maxPropRadius=78 destinationFallback=structure+hardProp
+damage-demo: BattleOccupancy=units 22/29 unitRadii infantry=20 vehicle=42 mech=50 structures 1 maxStructureRadius=215 hardProps 80 building=21 aircraft=4 barricade=37 other=18 maxPropRadius=78 destinationFallback=structure+hardProp
+north-patrol: BattleOccupancy=units 26/29 unitRadii infantry=20 vehicle=42 mech=50 structures 1 maxStructureRadius=215 hardProps 80 building=21 aircraft=4 barricade=37 other=18 maxPropRadius=78 destinationFallback=structure+hardProp
+```
+
+Investor screenshot candidate:
+
+- `north-patrol`: it shows tactical direction, spacing, water/land separation and enemy pressure with the least explanation.
+
+Must-fix screenshot:
+
+- `damage-demo`: it should demonstrate the most distinctive combat selling point, but currently relies too much on the left status panel. The next damage pass should make arm loss, leg collapse, cockpit ejection and wreck/debris more readable in the world view.
+
+Current judgment:
+
+- The Demo is now screenshot-auditable and no longer stuck at "all color blocks".
+- The first visible-flow proof is good enough to move from general flow locking into occupancy/composition and damage-readability work.
+- The left status/control surface is useful, but it is now the main UI weight problem across all battle captures.
+- The hangar pile-up is not obviously missing all collision evidence: sidecars already report units, structure blockers, hard terrain props and water/map-bound landing predicates. The next task should decide which remaining visual density is rule spacing, camera compression, UI weight or model/effect scale.
+
+Next priority:
+
+1. Stage 2 / Task 2.1 occupancy evidence against `hangar-contact` and `damage-demo` screenshots.
+2. Stage 2 / Task 2.2 presentation collision placeholders to make hard occupancy visible during review.
+3. Then tune hangar composition or damage-world cues based on that evidence, instead of guessing.
