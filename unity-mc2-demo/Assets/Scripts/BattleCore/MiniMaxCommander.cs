@@ -103,7 +103,7 @@ namespace MC2Demo.BattleCore
             {
                 model = config.Model,
                 temperature = 0.2f,
-                max_completion_tokens = 512,
+                max_completion_tokens = 32,
                 stream = false,
                 messages = new[]
                 {
@@ -136,25 +136,121 @@ namespace MC2Demo.BattleCore
 
         private static string BuildStrategicSummary(CommanderObservation observation)
         {
+            return observation?.compact == null
+                ? BuildLegacyStrategicSummary(observation)
+                : BuildCompactStrategicSummary(observation.compact);
+        }
+
+        public static string BuildStrategicSummaryForValidation(CommanderObservation observation)
+        {
+            return BuildStrategicSummary(observation);
+        }
+
+        private static string BuildCompactStrategicSummary(CommanderCompactObservation compact)
+        {
+            StringBuilder builder = new();
+            builder.Append("Compact AI observation ")
+                .Append(compact.schema)
+                .Append(". mission=")
+                .Append(Safe(compact.missionId))
+                .Append(" phase=")
+                .Append(Safe(compact.missionPhase))
+                .Append(" result=")
+                .Append(Safe(compact.result))
+                .Append(" ended=")
+                .Append(compact.missionEnded)
+                .Append(" time=")
+                .Append(compact.missionTimeSeconds)
+                .AppendLine();
+
+            builder.Append("Commander identity: unit=")
+                .Append(Safe(compact.commanderUnitId))
+                .Append(" ownedMech=")
+                .Append(Safe(compact.commanderOwnedMechId))
+                .Append(" type=")
+                .Append(Safe(compact.commanderType))
+                .AppendLine();
+
+            CommanderCompactObjectiveObservation objective = compact.objective;
+            builder.Append("Objective summary: active=")
+                .Append(compact.currentObjectiveCount)
+                .Append(" title=")
+                .Append(Safe(objective?.title))
+                .Append(" kind=")
+                .Append(Safe(objective?.targetKind))
+                .Append(" targets=")
+                .Append(objective?.targetCount ?? 0)
+                .Append(" range=")
+                .Append(Safe(objective?.rangeHint))
+                .AppendLine();
+
+            builder.Append("Squad summary: active=")
+                .Append(compact.activePlayerUnitCount)
+                .Append("/")
+                .Append(compact.playerUnitCount)
+                .Append(" damaged=")
+                .Append(compact.damagedPlayerUnitCount)
+                .Append(" detached=")
+                .Append(compact.detachedPlayerUnitCount)
+                .Append(" destroyed=")
+                .Append(compact.destroyedPlayerUnitCount)
+                .Append(" heatLocked=")
+                .Append(compact.heatLockedPlayerUnitCount)
+                .Append(" avgStructure=")
+                .Append(compact.averagePlayerStructurePercent)
+                .Append("% hot=")
+                .Append(compact.hottestPlayerHeatPercent)
+                .Append("%")
+                .AppendLine();
+
+            builder.Append("Squad states: ");
+            AppendCompactPlayers(builder, compact.playerStates);
+            builder.AppendLine();
+
+            builder.Append("Threat summary: level=")
+                .Append(Safe(compact.threatLevel))
+                .Append(" active=")
+                .Append(compact.hostileCount)
+                .Append(" nearby=")
+                .Append(compact.nearbyThreatCount)
+                .Append(" inWeaponRange=")
+                .Append(compact.inRangeThreatCount)
+                .Append(" structures=")
+                .Append(compact.targetableStructureCount)
+                .AppendLine();
+
+            builder.Append("Nearby threats: ");
+            AppendCompactThreats(builder, compact.nearbyThreats);
+            builder.AppendLine();
+
+            builder.Append("Available intents: ")
+                .Append(string.Join(", ", compact.availableIntents ?? Array.Empty<string>()))
+                .AppendLine();
+            builder.Append("Choose one directive token for the next 10-30 seconds.");
+            return builder.ToString();
+        }
+
+        private static string BuildLegacyStrategicSummary(CommanderObservation observation)
+        {
             StringBuilder builder = new();
             builder.Append("Battle strategic summary. missionEnded=")
-                .Append(observation.missionEnded)
+                .Append(observation?.missionEnded)
                 .Append(" result=")
-                .Append(observation.result)
+                .Append(observation?.result)
                 .Append(" time=")
-                .Append(Mathf.RoundToInt(observation.missionTimeSeconds))
+                .Append(Mathf.RoundToInt(observation?.missionTimeSeconds ?? 0f))
                 .AppendLine();
 
             builder.Append("Player units: ");
-            AppendUnits(builder, observation.playerUnits, includeDetached: true);
+            AppendUnits(builder, observation?.playerUnits, includeDetached: true);
             builder.AppendLine();
 
             builder.Append("Active hostiles: ");
-            AppendUnits(builder, observation.activeHostiles, includeDetached: false);
+            AppendUnits(builder, observation?.activeHostiles, includeDetached: false);
             builder.AppendLine();
 
             builder.Append("Current objectives: ");
-            CommanderObjectiveObservation[] objectives = observation.currentObjectives ?? Array.Empty<CommanderObjectiveObservation>();
+            CommanderObjectiveObservation[] objectives = observation?.currentObjectives ?? Array.Empty<CommanderObjectiveObservation>();
             if (objectives.Length == 0)
             {
                 builder.Append("none");
@@ -184,6 +280,90 @@ namespace MC2Demo.BattleCore
             builder.AppendLine();
             builder.Append("Choose one directive token for the next 10-30 seconds.");
             return builder.ToString();
+        }
+
+        private static void AppendCompactPlayers(StringBuilder builder, CommanderCompactUnitObservation[] units)
+        {
+            units ??= Array.Empty<CommanderCompactUnitObservation>();
+            if (units.Length == 0)
+            {
+                builder.Append("none");
+                return;
+            }
+
+            for (int index = 0; index < units.Length; index++)
+            {
+                CommanderCompactUnitObservation unit = units[index];
+                if (unit == null)
+                {
+                    continue;
+                }
+
+                if (index > 0)
+                {
+                    builder.Append(" | ");
+                }
+
+                builder.Append(Safe(unit.role))
+                    .Append("/")
+                    .Append(Safe(unit.type))
+                    .Append(" active=")
+                    .Append(unit.active)
+                    .Append(" destroyed=")
+                    .Append(unit.destroyed)
+                    .Append(" detached=")
+                    .Append(unit.detached)
+                    .Append(" moving=")
+                    .Append(unit.moving)
+                    .Append(" jumping=")
+                    .Append(unit.jumping)
+                    .Append(" hp=")
+                    .Append(unit.structurePercent)
+                    .Append("% heat=")
+                    .Append(unit.heatPercent)
+                    .Append("% ready=")
+                    .Append(unit.weaponReadyPercent)
+                    .Append("% damage=")
+                    .Append(Safe(unit.sectionDamage));
+            }
+        }
+
+        private static void AppendCompactThreats(StringBuilder builder, CommanderCompactThreatObservation[] threats)
+        {
+            threats ??= Array.Empty<CommanderCompactThreatObservation>();
+            if (threats.Length == 0)
+            {
+                builder.Append("none");
+                return;
+            }
+
+            for (int index = 0; index < threats.Length; index++)
+            {
+                CommanderCompactThreatObservation threat = threats[index];
+                if (threat == null)
+                {
+                    continue;
+                }
+
+                if (index > 0)
+                {
+                    builder.Append(" | ");
+                }
+
+                builder.Append(Safe(threat.type))
+                    .Append(" band=")
+                    .Append(Safe(threat.distanceBand))
+                    .Append(" inRange=")
+                    .Append(threat.inWeaponRange)
+                    .Append(" hp=")
+                    .Append(threat.structurePercent)
+                    .Append("%");
+            }
+        }
+
+        private static string Safe(string text)
+        {
+            return string.IsNullOrWhiteSpace(text) ? "none" : text.Trim();
         }
 
         private static void AppendUnits(StringBuilder builder, CommanderUnitObservation[] units, bool includeDetached)

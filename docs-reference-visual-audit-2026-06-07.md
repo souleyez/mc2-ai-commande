@@ -1296,7 +1296,64 @@ Remaining issues:
 
 Next priority:
 
-1. Stage 6 / D1 freeze compact AI observation.
+1. Stage 6 / D2 guard AI directive adapter.
+
+## Stage 6.1 Compact AI Observation Result
+
+Implemented on 2026-06-07:
+
+- Added compact observation schema `mc2-ai-observation-compact-v1` beside the existing full `CommanderObservation`.
+- The compact observation includes mission phase, commander identity, objective summary, bounded player states, section damage tags, detached command count, hostile pressure, nearby threat summaries and available directive intents.
+- Full observation remains available to local deterministic systems such as `RuleCommander`, validator diagnostics and explicit debug reports.
+- `MiniMaxCommander` now prefers the compact summary for model prompts and caps completion output to a one-token directive-sized budget.
+- Validator coverage now proves compact schema, compact player damage state, hostile pressure, available intents, compact JSON size, MiniMax prompt size and forbidden detail exclusions.
+
+Modified files:
+
+```text
+unity-mc2-demo/Assets/Scripts/BattleCore/CommanderObservationPort.cs
+unity-mc2-demo/Assets/Scripts/BattleCore/MiniMaxCommander.cs
+unity-mc2-demo/Assets/Editor/Mc2DemoValidator.cs
+docs-ai-commander-directive-contract.md
+docs-playable-demo-fine-grained-current-plan-2026-06-07.md
+docs-playable-demo-locked-execution-plan-2026-06-07.md
+docs-reference-visual-audit-2026-06-07.md
+```
+
+Validation commands:
+
+```powershell
+git diff --check
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoValidator.ValidateMissionContract -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-validate-ai-observation.log"
+```
+
+Validation evidence:
+
+```text
+analysis-output/unity-validate-ai-observation.log
+```
+
+Validation results:
+
+```text
+git diff --check: clean, with Windows line-ending warnings only.
+Validator: MC2 demo contract validation OK.
+```
+
+Observed effect:
+
+- AI model input is now a compact phase summary instead of full unit/hostile/objective arrays.
+- The prompt excludes exact unit positions, move targets, attack target ids, projectile history, path graphs and per-frame traces.
+- Local battle continues to run without AI, and local command selection still has access to the full observation.
+
+Remaining issues:
+
+1. D2 still needs to guard model directive output as ordinary BattleCore command intent with strict fallback.
+2. D3 still needs the small optional AI advice window in the first-demo UI.
+
+Next priority:
+
+1. Stage 6 / D2 guard AI directive adapter.
 
 ## Stage 5.2 Repair Relaunch Result
 

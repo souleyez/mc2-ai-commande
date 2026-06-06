@@ -3780,6 +3780,18 @@ namespace MC2Demo.EditorTools
             CommanderCommandPort commandPort = new(mission, 520f, _ => true);
             commandPort.IssueText("unit player-1 move 100 100");
             commandPort.IssueText("squad attack unit enemy-1");
+            UnitState damagedPlayer = mission.FindUnit("player-1");
+            if (damagedPlayer == null || damagedPlayer.Sections == null || damagedPlayer.Sections.Length == 0)
+            {
+                throw new InvalidDataException("Expected command-port validation player to expose section state.");
+            }
+
+            DamageSection damagedSection = damagedPlayer.Sections.Length > 1 ? damagedPlayer.Sections[1] : damagedPlayer.Sections[0];
+            float damageApplied = damagedPlayer.ApplyDirectSectionDamage(damagedSection.Name, Math.Max(0.1f, damagedSection.MaxHitPoints * 0.25f));
+            if (damageApplied <= 0f || damagedPlayer.IsDestroyed)
+            {
+                throw new InvalidDataException("Expected command-port validation to create nonlethal section damage.");
+            }
 
             CommanderObservationPort observationPort = new(mission);
             CommanderObservation observation = observationPort.Observe();
@@ -3815,6 +3827,8 @@ namespace MC2Demo.EditorTools
                 throw new InvalidDataException("Expected observation to expose attack targets, weapon range, and section state.");
             }
 
+            ValidateCompactCommanderObservation(observation);
+
             mission.Tick(1.25f);
             CommanderObservation timedObservation = observationPort.Observe();
             if (timedObservation.reportIndex != 2 || Math.Abs(timedObservation.missionTimeSeconds - 1.25f) > 0.001f)
@@ -3831,6 +3845,151 @@ namespace MC2Demo.EditorTools
             {
                 throw new InvalidDataException("Expected commander observation JSON to include mission and unit fields.");
             }
+
+            string compactJson = observationPort.ToCompactJson();
+            if (string.IsNullOrEmpty(compactJson)
+                || !compactJson.Contains(CommanderObservationPort.CompactObservationSchema)
+                || !compactJson.Contains("playerStates")
+                || compactJson.Contains("activeHostiles"))
+            {
+                throw new InvalidDataException("Expected compact commander observation JSON to include compact fields only.");
+            }
+        }
+
+        private static void ValidateCompactCommanderObservation(CommanderObservation observation)
+        {
+            CommanderCompactObservation compact = observation.compact;
+            if (compact == null
+                || compact.schema != CommanderObservationPort.CompactObservationSchema
+                || compact.missionId != observation.missionId
+                || compact.reportIndex != observation.reportIndex
+                || compact.missionTimeSeconds != 0
+                || compact.result != observation.result
+                || string.IsNullOrWhiteSpace(compact.missionPhase))
+            {
+                throw new InvalidDataException("Expected compact commander observation to expose stable mission identity, phase, result, time, and schema.");
+            }
+
+            if (compact.missionEnded
+                || compact.commanderUnitId != "player-1"
+                || string.IsNullOrWhiteSpace(compact.commanderType)
+                || compact.playerUnitCount != 2
+                || compact.activePlayerUnitCount != 2
+                || compact.detachedPlayerUnitCount != 1
+                || compact.damagedPlayerUnitCount < 1
+                || compact.hostileCount != 1
+                || compact.nearbyThreatCount < 1
+                || string.IsNullOrWhiteSpace(compact.threatLevel))
+            {
+                throw new InvalidDataException("Expected compact commander observation to summarize commander, squad, detached state, damage, and hostile pressure.");
+            }
+
+            if (compact.objective == null
+                || compact.objective.index != -1
+                || compact.objective.title != "none"
+                || compact.objective.targetCount != 0)
+            {
+                throw new InvalidDataException("Expected compact commander observation to summarize the absence of current objectives.");
+            }
+
+            CommanderCompactUnitObservation playerOne = FindCompactPlayerState(compact.playerStates, "player-1");
+            CommanderCompactUnitObservation playerTwo = FindCompactPlayerState(compact.playerStates, "player-2");
+            if (compact.playerStates == null
+                || compact.playerStates.Length != 2
+                || playerOne == null
+                || playerTwo == null
+                || playerOne.role != "commander"
+                || !playerOne.detached
+                || string.IsNullOrWhiteSpace(playerOne.sectionDamage)
+                || playerOne.sectionDamage == "OK"
+                || playerTwo.role != "lancemate")
+            {
+                throw new InvalidDataException("Expected compact commander observation to include bounded player health, section damage, and detached command state.");
+            }
+
+            if (compact.nearbyThreats == null
+                || compact.nearbyThreats.Length == 0
+                || compact.nearbyThreats.Length > 3
+                || string.IsNullOrWhiteSpace(compact.nearbyThreats[0].type)
+                || string.IsNullOrWhiteSpace(compact.nearbyThreats[0].distanceBand))
+            {
+                throw new InvalidDataException("Expected compact commander observation to include bounded nearby threat summaries.");
+            }
+
+            if (!ContainsIntent(compact.availableIntents, RuleCommander.DirectiveAssaultObjective)
+                || !ContainsIntent(compact.availableIntents, RuleCommander.DirectiveEngageHostiles)
+                || !ContainsIntent(compact.availableIntents, RuleCommander.DirectiveRegroup)
+                || !ContainsIntent(compact.availableIntents, RuleCommander.DirectiveHold))
+            {
+                throw new InvalidDataException("Expected compact commander observation to expose the available high-level intents.");
+            }
+
+            string compactJson = JsonUtility.ToJson(compact);
+            if (compactJson.Length > 2400
+                || ContainsIgnoreCase(compactJson, "playerUnits")
+                || ContainsIgnoreCase(compactJson, "activeHostiles")
+                || ContainsIgnoreCase(compactJson, "targetableStructures")
+                || ContainsIgnoreCase(compactJson, "currentTargetId")
+                || ContainsIgnoreCase(compactJson, "moveTarget")
+                || ContainsIgnoreCase(compactJson, "sections")
+                || ContainsIgnoreCase(compactJson, "projectile")
+                || ContainsIgnoreCase(compactJson, "pathGraph"))
+            {
+                throw new InvalidDataException("Expected compact commander observation JSON to stay small and exclude full simulation detail.");
+            }
+
+            string prompt = MiniMaxCommander.BuildStrategicSummaryForValidation(observation);
+            if (prompt.Length > 1600
+                || !ContainsIgnoreCase(prompt, "Compact AI observation")
+                || !ContainsIgnoreCase(prompt, "phase=")
+                || !ContainsIgnoreCase(prompt, "Objective summary")
+                || !ContainsIgnoreCase(prompt, "Available intents")
+                || ContainsIgnoreCase(prompt, "Player units:")
+                || ContainsIgnoreCase(prompt, "Active hostiles:")
+                || ContainsIgnoreCase(prompt, "playerUnits")
+                || ContainsIgnoreCase(prompt, "activeHostiles")
+                || ContainsIgnoreCase(prompt, "marker=(")
+                || ContainsIgnoreCase(prompt, "pos=(")
+                || ContainsIgnoreCase(prompt, "moveTarget")
+                || ContainsIgnoreCase(prompt, "attackTargetId")
+                || ContainsIgnoreCase(prompt, "currentTargetId")
+                || ContainsIgnoreCase(prompt, "projectile")
+                || ContainsIgnoreCase(prompt, "path graph")
+                || ContainsIgnoreCase(prompt, "per-frame"))
+            {
+                throw new InvalidDataException("Expected MiniMax commander prompt to use compact observation without full state detail.");
+            }
+        }
+
+        private static CommanderCompactUnitObservation FindCompactPlayerState(CommanderCompactUnitObservation[] units, string unitId)
+        {
+            foreach (CommanderCompactUnitObservation unit in units ?? Array.Empty<CommanderCompactUnitObservation>())
+            {
+                if (unit.id == unitId)
+                {
+                    return unit;
+                }
+            }
+
+            return null;
+        }
+
+        private static bool ContainsIntent(string[] intents, string intent)
+        {
+            foreach (string candidate in intents ?? Array.Empty<string>())
+            {
+                if (candidate == intent)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool ContainsIgnoreCase(string text, string value)
+        {
+            return (text ?? "").IndexOf(value, StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
         private static void ValidateRuleCommander(BattleMission initialMission)

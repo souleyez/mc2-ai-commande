@@ -6,6 +6,11 @@ namespace MC2Demo.BattleCore
 {
     public sealed class CommanderObservationPort
     {
+        public const string CompactObservationSchema = "mc2-ai-observation-compact-v1";
+        private const int MaxCompactPlayerUnits = 6;
+        private const int MaxCompactThreats = 3;
+        private const float NearbyThreatRange = 900f;
+
         private readonly BattleMission mission;
         private int reportIndex;
 
@@ -17,6 +22,10 @@ namespace MC2Demo.BattleCore
         public CommanderObservation Observe()
         {
             reportIndex++;
+            CommanderUnitObservation[] playerUnits = PlayerUnitObservations();
+            CommanderUnitObservation[] activeHostiles = ActiveHostileObservations();
+            CommanderStructureObservation[] targetableStructures = StructureObservations();
+            CommanderObjectiveObservation[] currentObjectives = CurrentObjectiveObservations();
             return new CommanderObservation
             {
                 missionId = mission.Contract?.mission?.id ?? "",
@@ -26,16 +35,22 @@ namespace MC2Demo.BattleCore
                 resultReason = mission.ResultReason,
                 missionEnded = mission.Result != MissionResultState.InProgress,
                 resultSummary = mission.ResultSummary,
-                playerUnits = PlayerUnitObservations(),
-                activeHostiles = ActiveHostileObservations(),
-                targetableStructures = StructureObservations(),
-                currentObjectives = CurrentObjectiveObservations()
+                playerUnits = playerUnits,
+                activeHostiles = activeHostiles,
+                targetableStructures = targetableStructures,
+                currentObjectives = currentObjectives,
+                compact = BuildCompactObservation(playerUnits, activeHostiles, targetableStructures, currentObjectives)
             };
         }
 
         public string ToJson()
         {
             return JsonUtility.ToJson(Observe());
+        }
+
+        public string ToCompactJson()
+        {
+            return JsonUtility.ToJson(Observe().compact);
         }
 
         private CommanderUnitObservation[] PlayerUnitObservations()
@@ -321,6 +336,474 @@ namespace MC2Demo.BattleCore
 
             return sections;
         }
+
+        private CommanderCompactObservation BuildCompactObservation(
+            CommanderUnitObservation[] playerUnits,
+            CommanderUnitObservation[] activeHostiles,
+            CommanderStructureObservation[] targetableStructures,
+            CommanderObjectiveObservation[] currentObjectives)
+        {
+            CommanderUnitObservation commander = FirstActivePlayer(playerUnits) ?? FirstPlayer(playerUnits);
+            int activePlayers = 0;
+            int damagedPlayers = 0;
+            int detachedPlayers = 0;
+            int destroyedPlayers = 0;
+            int heatLockedPlayers = 0;
+            float totalStructure = 0f;
+            float maxHeat = 0f;
+            CommanderCompactUnitObservation[] compactPlayers = CompactPlayerUnits(playerUnits);
+            for (int index = 0; index < (playerUnits?.Length ?? 0); index++)
+            {
+                CommanderUnitObservation unit = playerUnits[index];
+                if (unit == null)
+                {
+                    continue;
+                }
+
+                if (unit.active && !unit.destroyed)
+                {
+                    activePlayers++;
+                }
+
+                if (unit.destroyed)
+                {
+                    destroyedPlayers++;
+                }
+
+                if (unit.detached)
+                {
+                    detachedPlayers++;
+                }
+
+                if (unit.heatLocked)
+                {
+                    heatLockedPlayers++;
+                }
+
+                if (unit.structureRatio < 0.995f || HasDamagedSection(unit))
+                {
+                    damagedPlayers++;
+                }
+
+                totalStructure += Mathf.Clamp01(unit.structureRatio);
+                maxHeat = Mathf.Max(maxHeat, Mathf.Clamp01(unit.heatRatio));
+            }
+
+            CommanderCompactObjectiveObservation objective = CompactObjective(currentObjectives, playerUnits);
+            CommanderCompactThreatObservation[] threats = CompactThreats(playerUnits, activeHostiles);
+            int hostileCount = activeHostiles?.Length ?? 0;
+            int nearbyThreatCount = CountNearbyThreats(playerUnits, activeHostiles);
+            int inRangeThreatCount = CountThreatsInRange(playerUnits, activeHostiles);
+            return new CommanderCompactObservation
+            {
+                schema = CompactObservationSchema,
+                missionId = mission.Contract?.mission?.id ?? "",
+                reportIndex = reportIndex,
+                missionPhase = MissionPhase(hostileCount, nearbyThreatCount, inRangeThreatCount),
+                missionTimeSeconds = Mathf.RoundToInt(mission.MissionTimeSeconds),
+                missionEnded = mission.Result != MissionResultState.InProgress,
+                result = mission.Result.ToString(),
+                commanderUnitId = commander?.id ?? "",
+                commanderOwnedMechId = commander?.ownedMechId ?? "",
+                commanderType = commander?.type ?? "",
+                playerUnitCount = playerUnits?.Length ?? 0,
+                activePlayerUnitCount = activePlayers,
+                damagedPlayerUnitCount = damagedPlayers,
+                detachedPlayerUnitCount = detachedPlayers,
+                destroyedPlayerUnitCount = destroyedPlayers,
+                heatLockedPlayerUnitCount = heatLockedPlayers,
+                averagePlayerStructurePercent = playerUnits == null || playerUnits.Length == 0
+                    ? 0
+                    : Mathf.RoundToInt((totalStructure / playerUnits.Length) * 100f),
+                hottestPlayerHeatPercent = Mathf.RoundToInt(maxHeat * 100f),
+                hostileCount = hostileCount,
+                nearbyThreatCount = nearbyThreatCount,
+                inRangeThreatCount = inRangeThreatCount,
+                threatLevel = ThreatLevel(hostileCount, nearbyThreatCount, inRangeThreatCount),
+                targetableStructureCount = targetableStructures?.Length ?? 0,
+                currentObjectiveCount = currentObjectives?.Length ?? 0,
+                objective = objective,
+                playerStates = compactPlayers,
+                nearbyThreats = threats,
+                availableIntents = new[]
+                {
+                    RuleCommander.DirectiveAssaultObjective,
+                    RuleCommander.DirectiveEngageHostiles,
+                    RuleCommander.DirectiveRegroup,
+                    RuleCommander.DirectiveHold
+                },
+                detailBudget = "phase-summary-only"
+            };
+        }
+
+        private static CommanderCompactUnitObservation[] CompactPlayerUnits(CommanderUnitObservation[] playerUnits)
+        {
+            playerUnits ??= Array.Empty<CommanderUnitObservation>();
+            int count = Math.Min(MaxCompactPlayerUnits, playerUnits.Length);
+            CommanderCompactUnitObservation[] result = new CommanderCompactUnitObservation[count];
+            for (int index = 0; index < count; index++)
+            {
+                CommanderUnitObservation unit = playerUnits[index];
+                result[index] = new CommanderCompactUnitObservation
+                {
+                    id = unit?.id ?? "",
+                    type = unit?.type ?? "",
+                    role = index == 0 ? "commander" : "lancemate",
+                    active = unit?.active == true,
+                    destroyed = unit?.destroyed == true,
+                    detached = unit?.detached == true,
+                    moving = unit?.moving == true,
+                    jumping = unit?.jumping == true,
+                    heatLocked = unit?.heatLocked == true,
+                    structurePercent = Mathf.RoundToInt(Mathf.Clamp01(unit?.structureRatio ?? 0f) * 100f),
+                    heatPercent = Mathf.RoundToInt(Mathf.Clamp01(unit?.heatRatio ?? 0f) * 100f),
+                    weaponReadyPercent = Mathf.RoundToInt(Mathf.Clamp01(unit?.weaponReadyRatio ?? 0f) * 100f),
+                    sectionDamage = SectionDamageSummary(unit)
+                };
+            }
+
+            return result;
+        }
+
+        private static CommanderCompactObjectiveObservation CompactObjective(
+            CommanderObjectiveObservation[] objectives,
+            CommanderUnitObservation[] playerUnits)
+        {
+            CommanderObjectiveObservation objective = null;
+            for (int index = 0; index < (objectives?.Length ?? 0); index++)
+            {
+                if (objectives[index] != null)
+                {
+                    objective = objectives[index];
+                    break;
+                }
+            }
+
+            if (objective == null)
+            {
+                return new CommanderCompactObjectiveObservation
+                {
+                    index = -1,
+                    title = "none",
+                    targetKind = "none",
+                    targetCount = 0
+                };
+            }
+
+            CommanderTargetPointObservation point = FirstTargetPoint(objective);
+            return new CommanderCompactObjectiveObservation
+            {
+                index = objective.index,
+                title = objective.title ?? "",
+                targetKind = point?.kind ?? "marker",
+                targetCount = (objective.targetUnitIds?.Length ?? 0)
+                    + (objective.targetStructureIds?.Length ?? 0)
+                    + (objective.targetPoints?.Length ?? 0),
+                rangeHint = TargetRangeHint(playerUnits, point?.x ?? objective.markerX, point?.y ?? objective.markerY, point?.radius ?? 0f)
+            };
+        }
+
+        private static CommanderCompactThreatObservation[] CompactThreats(
+            CommanderUnitObservation[] playerUnits,
+            CommanderUnitObservation[] activeHostiles)
+        {
+            activeHostiles ??= Array.Empty<CommanderUnitObservation>();
+            List<CommanderCompactThreatObservation> threats = new();
+            bool[] used = new bool[activeHostiles.Length];
+            for (int emitted = 0; emitted < MaxCompactThreats; emitted++)
+            {
+                int bestIndex = -1;
+                float bestDistance = float.MaxValue;
+                bool bestInRange = false;
+                for (int index = 0; index < activeHostiles.Length; index++)
+                {
+                    if (used[index])
+                    {
+                        continue;
+                    }
+
+                    CommanderUnitObservation hostile = activeHostiles[index];
+                    if (hostile == null || hostile.destroyed || !hostile.active)
+                    {
+                        continue;
+                    }
+
+                    float distance = DistanceToClosestPlayer(playerUnits, hostile.x, hostile.y);
+                    if (distance < bestDistance)
+                    {
+                        bestIndex = index;
+                        bestDistance = distance;
+                        bestInRange = IsThreatInRange(playerUnits, hostile);
+                    }
+                }
+
+                if (bestIndex < 0)
+                {
+                    break;
+                }
+
+                used[bestIndex] = true;
+                CommanderUnitObservation best = activeHostiles[bestIndex];
+                threats.Add(new CommanderCompactThreatObservation
+                {
+                    type = best.type ?? "",
+                    distanceBand = DistanceBand(bestDistance),
+                    inWeaponRange = bestInRange,
+                    structurePercent = Mathf.RoundToInt(Mathf.Clamp01(best.structureRatio) * 100f)
+                });
+            }
+
+            return threats.ToArray();
+        }
+
+        private string MissionPhase(int hostileCount, int nearbyThreatCount, int inRangeThreatCount)
+        {
+            if (mission.Result != MissionResultState.InProgress)
+            {
+                return "ended";
+            }
+
+            if (inRangeThreatCount > 0)
+            {
+                return "engaged";
+            }
+
+            if (nearbyThreatCount > 0 || hostileCount > 0)
+            {
+                return "contact";
+            }
+
+            return "maneuver";
+        }
+
+        private static string ThreatLevel(int hostileCount, int nearbyThreatCount, int inRangeThreatCount)
+        {
+            if (hostileCount <= 0)
+            {
+                return "none";
+            }
+
+            if (inRangeThreatCount >= 2 || nearbyThreatCount >= 4)
+            {
+                return "high";
+            }
+
+            if (inRangeThreatCount > 0 || nearbyThreatCount > 0)
+            {
+                return "medium";
+            }
+
+            return "low";
+        }
+
+        private static CommanderUnitObservation FirstPlayer(CommanderUnitObservation[] playerUnits)
+        {
+            return playerUnits != null && playerUnits.Length > 0 ? playerUnits[0] : null;
+        }
+
+        private static CommanderUnitObservation FirstActivePlayer(CommanderUnitObservation[] playerUnits)
+        {
+            for (int index = 0; index < (playerUnits?.Length ?? 0); index++)
+            {
+                CommanderUnitObservation unit = playerUnits[index];
+                if (unit != null && unit.active && !unit.destroyed)
+                {
+                    return unit;
+                }
+            }
+
+            return null;
+        }
+
+        private static CommanderTargetPointObservation FirstTargetPoint(CommanderObjectiveObservation objective)
+        {
+            CommanderTargetPointObservation[] points = objective?.targetPoints ?? Array.Empty<CommanderTargetPointObservation>();
+            for (int index = 0; index < points.Length; index++)
+            {
+                if (points[index] != null)
+                {
+                    return points[index];
+                }
+            }
+
+            return null;
+        }
+
+        private static bool HasDamagedSection(CommanderUnitObservation unit)
+        {
+            CommanderSectionObservation[] sections = unit?.sections ?? Array.Empty<CommanderSectionObservation>();
+            for (int index = 0; index < sections.Length; index++)
+            {
+                if (sections[index] != null && sections[index].ratio < 0.995f)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static string SectionDamageSummary(CommanderUnitObservation unit)
+        {
+            CommanderSectionObservation[] sections = unit?.sections ?? Array.Empty<CommanderSectionObservation>();
+            string text = "";
+            for (int index = 0; index < sections.Length; index++)
+            {
+                CommanderSectionObservation section = sections[index];
+                if (section == null || section.ratio >= 0.995f)
+                {
+                    continue;
+                }
+
+                if (text.Length > 0)
+                {
+                    text += ",";
+                }
+
+                text += ShortSectionName(section.name)
+                    + (section.destroyed ? ":destroyed" : ":" + Mathf.RoundToInt(Mathf.Clamp01(section.ratio) * 100f).ToString());
+            }
+
+            return string.IsNullOrWhiteSpace(text) ? "OK" : text;
+        }
+
+        private static string ShortSectionName(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                return "?";
+            }
+
+            string normalized = name.Trim().ToLowerInvariant();
+            if (normalized.Contains("cockpit"))
+            {
+                return "CP";
+            }
+
+            if (normalized.Contains("left"))
+            {
+                return "LA";
+            }
+
+            if (normalized.Contains("right"))
+            {
+                return "RA";
+            }
+
+            if (normalized.Contains("leg"))
+            {
+                return "LG";
+            }
+
+            if (normalized.Contains("torso"))
+            {
+                return "T";
+            }
+
+            return name.Length <= 3 ? name : name.Substring(0, 3);
+        }
+
+        private static int CountNearbyThreats(CommanderUnitObservation[] playerUnits, CommanderUnitObservation[] activeHostiles)
+        {
+            int count = 0;
+            for (int index = 0; index < (activeHostiles?.Length ?? 0); index++)
+            {
+                CommanderUnitObservation hostile = activeHostiles[index];
+                if (hostile != null && DistanceToClosestPlayer(playerUnits, hostile.x, hostile.y) <= NearbyThreatRange)
+                {
+                    count++;
+                }
+            }
+
+            return count;
+        }
+
+        private static int CountThreatsInRange(CommanderUnitObservation[] playerUnits, CommanderUnitObservation[] activeHostiles)
+        {
+            int count = 0;
+            for (int index = 0; index < (activeHostiles?.Length ?? 0); index++)
+            {
+                CommanderUnitObservation hostile = activeHostiles[index];
+                if (hostile != null && IsThreatInRange(playerUnits, hostile))
+                {
+                    count++;
+                }
+            }
+
+            return count;
+        }
+
+        private static bool IsThreatInRange(CommanderUnitObservation[] playerUnits, CommanderUnitObservation hostile)
+        {
+            for (int index = 0; index < (playerUnits?.Length ?? 0); index++)
+            {
+                CommanderUnitObservation player = playerUnits[index];
+                if (player == null || !player.active || player.destroyed)
+                {
+                    continue;
+                }
+
+                float range = Mathf.Max(0f, player.weaponRange);
+                if (range <= 0f)
+                {
+                    continue;
+                }
+
+                float dx = player.x - hostile.x;
+                float dy = player.y - hostile.y;
+                if ((dx * dx) + (dy * dy) <= range * range)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static float DistanceToClosestPlayer(CommanderUnitObservation[] playerUnits, float x, float y)
+        {
+            float best = float.MaxValue;
+            for (int index = 0; index < (playerUnits?.Length ?? 0); index++)
+            {
+                CommanderUnitObservation player = playerUnits[index];
+                if (player == null || !player.active || player.destroyed)
+                {
+                    continue;
+                }
+
+                float dx = player.x - x;
+                float dy = player.y - y;
+                best = Mathf.Min(best, Mathf.Sqrt((dx * dx) + (dy * dy)));
+            }
+
+            return best == float.MaxValue ? 99999f : best;
+        }
+
+        private static string DistanceBand(float distance)
+        {
+            if (distance <= 350f)
+            {
+                return "close";
+            }
+
+            if (distance <= NearbyThreatRange)
+            {
+                return "near";
+            }
+
+            return "far";
+        }
+
+        private static string TargetRangeHint(CommanderUnitObservation[] playerUnits, float x, float y, float radius)
+        {
+            float distance = DistanceToClosestPlayer(playerUnits, x, y);
+            if (distance >= 99999f)
+            {
+                return radius > 0f ? "area" : "objective";
+            }
+
+            return DistanceBand(Mathf.Max(0f, distance - radius));
+        }
     }
 
     [Serializable]
@@ -337,6 +820,78 @@ namespace MC2Demo.BattleCore
         public CommanderUnitObservation[] activeHostiles;
         public CommanderStructureObservation[] targetableStructures;
         public CommanderObjectiveObservation[] currentObjectives;
+        public CommanderCompactObservation compact;
+    }
+
+    [Serializable]
+    public sealed class CommanderCompactObservation
+    {
+        public string schema;
+        public string missionId;
+        public int reportIndex;
+        public string missionPhase;
+        public int missionTimeSeconds;
+        public bool missionEnded;
+        public string result;
+        public string commanderUnitId;
+        public string commanderOwnedMechId;
+        public string commanderType;
+        public int playerUnitCount;
+        public int activePlayerUnitCount;
+        public int damagedPlayerUnitCount;
+        public int detachedPlayerUnitCount;
+        public int destroyedPlayerUnitCount;
+        public int heatLockedPlayerUnitCount;
+        public int averagePlayerStructurePercent;
+        public int hottestPlayerHeatPercent;
+        public int hostileCount;
+        public int nearbyThreatCount;
+        public int inRangeThreatCount;
+        public string threatLevel;
+        public int targetableStructureCount;
+        public int currentObjectiveCount;
+        public CommanderCompactObjectiveObservation objective;
+        public CommanderCompactUnitObservation[] playerStates;
+        public CommanderCompactThreatObservation[] nearbyThreats;
+        public string[] availableIntents;
+        public string detailBudget;
+    }
+
+    [Serializable]
+    public sealed class CommanderCompactObjectiveObservation
+    {
+        public int index;
+        public string title;
+        public string targetKind;
+        public int targetCount;
+        public string rangeHint;
+    }
+
+    [Serializable]
+    public sealed class CommanderCompactUnitObservation
+    {
+        public string id;
+        public string type;
+        public string role;
+        public bool active;
+        public bool destroyed;
+        public bool detached;
+        public bool moving;
+        public bool jumping;
+        public bool heatLocked;
+        public int structurePercent;
+        public int heatPercent;
+        public int weaponReadyPercent;
+        public string sectionDamage;
+    }
+
+    [Serializable]
+    public sealed class CommanderCompactThreatObservation
+    {
+        public string type;
+        public string distanceBand;
+        public bool inWeaponRange;
+        public int structurePercent;
     }
 
     [Serializable]

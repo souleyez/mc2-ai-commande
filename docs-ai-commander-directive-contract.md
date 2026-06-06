@@ -19,6 +19,34 @@ The AI commander is a strategic draft assistant, not a direct unit controller. I
 - Local responsibility: pathing, exact target selection, movement legality, jump landing checks, heat/cooldown timing, weapon fire, damage, and objective completion.
 - Failure behavior: if the model is slow, unavailable, or returns invalid text, use `assault-objective`.
 
+## Compact Observation V1
+
+Schema id: `mc2-ai-observation-compact-v1`.
+
+Allowed model input:
+
+- mission id, report index, mission phase, mission time, mission ended flag, and result state;
+- commander identity: commander unit id, owned mech id, and chassis/type;
+- current objective summary: active objective count, title, target kind, target count, and range band;
+- player squad summary: unit counts, active/damaged/detached/destroyed/heat-locked counts, average structure percent, hottest heat percent;
+- bounded player states for up to six units: role, chassis/type, active/destroyed/detached/moving/jumping/heat-locked state, structure percent, heat percent, weapon-ready percent, and compact section-damage tags;
+- hostile pressure summary: active hostile count, nearby hostile count, hostiles in weapon range, threat level, targetable structure count, and up to three nearby threat bands;
+- available high-level directive tokens.
+
+Forbidden model input:
+
+- full `playerUnits`, `activeHostiles`, `targetableStructures`, or `currentObjectives` arrays;
+- exact hostile ids, exact objective coordinates, exact unit positions, exact move targets, or exact attack target ids;
+- projectile history, path graphs, per-frame traces, weapon cooldown timelines, or hit-by-hit logs;
+- inventory, account, save-slot, token, purchase, or repair-management data.
+
+Size budget:
+
+- Compact observation JSON should stay below 2400 characters for the first demo.
+- MiniMax strategic prompt should stay below 1600 characters and should be readable as a phase summary.
+
+The full `CommanderObservation` can remain available to local deterministic systems such as `RuleCommander`, validator diagnostics, and explicit debug reports. The model-facing path must use the compact summary when present.
+
 ## Directive Tokens
 
 ```text

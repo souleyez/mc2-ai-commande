@@ -8,7 +8,7 @@
 
 **Tech Stack:** Unity 6, C#, Windows Standalone, deterministic BattleCore, PowerShell validation/capture scripts, `mc2-unity-demo-contract-v1`, private local reference content pack, Git/GitHub.
 
-**Revision:** 2026-06-07 fine-grained reset. This file is the single active execution plan. Older plan files are background and evidence only.
+**Revision:** 2026-06-07 fine-grained reset. Superseded for current execution by `docs-playable-demo-fine-grained-current-plan-2026-06-07.md`. This file remains a lock history and detailed task archive.
 
 ---
 
@@ -16,7 +16,7 @@
 
 日期：2026-06-07。
 
-这是当前后续开发的锁定执行版计划。继续开发时优先读这份，再查证据文档。其他旧计划保留为背景，不再作为新的任务入口。
+这是旧的锁定执行版计划。2026-06-07 v2 之后，继续开发优先读 `docs-playable-demo-fine-grained-current-plan-2026-06-07.md`，再查本文件和证据文档。本文件保留为阶段历史、已完成任务和旧 Sprint Board 归档。
 
 配套文档：
 
@@ -645,6 +645,8 @@ Goal: AI feels like an optional deputy, not the engine of the battle.
 
 **Goal:** Observation is small, stable and useful for high-level decisions.
 
+**Status:** Completed 2026-06-07. Compact schema `mc2-ai-observation-compact-v1` is now emitted beside the full local observation, MiniMax model prompts prefer the compact summary, and validator coverage guards size, required fields and forbidden full-state leakage. Evidence: `analysis-output/unity-validate-ai-observation.log`.
+
 **Files:**
 
 - Modify: `unity-mc2-demo/Assets/Scripts/BattleCore/CommanderObservationPort.cs`
@@ -942,8 +944,8 @@ Recently completed:
 Current state:
 
 - Current stage: Stage 6 / AI Commander Capability Window.
-- Current next commit: `Freeze AI observation contract`.
-- Current demo risk: battle loop is now guarded; AI deputy still needs a compact observation contract and optional advice window that do not block local play.
+- Current next commit: `Guard AI directive adapter`.
+- Current demo risk: battle loop is now guarded; AI deputy has a compact observation contract, but its directive adapter and optional advice window still need to prove they do not block local play.
 - Current build risk: Unity batch build can dirty `Assets/Scenes/Mc2Demo.unity` with fileID churn; inspect and restore before commit.
 - Current content risk: private reference content can be used locally for validation but must stay out of Git and public packages.
 
@@ -955,8 +957,8 @@ Next commits:
 | B3 | Done | `Prove loadout battle effects` | G3 MechLab feel |
 | C1 | Done | `Simplify debrief player flow` | G4 Battle loop |
 | C2 | Done | `Guard repair and relaunch loop` | G4 Battle loop |
-| D1 | Next | `Freeze AI observation contract` | G5 AI capability |
-| D2 | Pending | `Guard AI directive adapter` | G5 AI capability |
+| D1 | Done | `Freeze AI observation contract` | G5 AI capability |
+| D2 | Next | `Guard AI directive adapter` | G5 AI capability |
 | D3 | Pending | `Show optional AI advice window` | G5 AI capability |
 | E1 | Pending | `Document private reference content boundary` | G6 Public boundary |
 | E2 | Pending | `Add public build content safety check` | G6 Public boundary |
@@ -1145,6 +1147,10 @@ git diff --check
 ### D1: Freeze Compact AI Observation
 
 **Goal:** Keep model input small enough for high-latency AI calls and useful enough for high-level tactical advice.
+
+**Status:** Completed 2026-06-07.
+
+**Result:** `CommanderObservationPort` now builds `compact` observation data with mission phase, commander identity, objective summary, bounded player states, section damage, detached state, hostile pressure, nearby threat summaries and directive intents. `MiniMaxCommander` uses compact prompts when available. `Mc2DemoValidator` guards the compact schema, prompt budget and forbidden full-state leakage.
 
 **Files:**
 
