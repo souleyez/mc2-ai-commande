@@ -129,6 +129,7 @@ namespace MC2Demo.EditorTools
             ValidateEnemyAttackFormationSpacing();
             ValidateUnitCollisionSeparation();
             ValidateStructureCollisionOccupancy();
+            ValidateTerrainObjectCollisionOccupancy();
             ValidateJumpCommand(BattleMission.FromJson(contractJson, combatProfiles));
             ValidateCombatSimulation(mission);
             ValidateStructureObjective(new BattleMission(MakeStructureObjectiveContract(), CombatProfileCatalog.Empty));
@@ -2370,6 +2371,43 @@ namespace MC2Demo.EditorTools
             if (player.HasMoveOrder)
             {
                 throw new InvalidDataException("Expected structure occupancy fallback destination to be reachable.");
+            }
+        }
+
+        private static void ValidateTerrainObjectCollisionOccupancy()
+        {
+            BattleMission mission = new(MakeTerrainObjectCollisionContract(), CombatProfileCatalog.Empty);
+            UnitState player = mission.FindUnit("terrain-object-collision-player");
+            if (player == null)
+            {
+                throw new InvalidDataException("Terrain object collision validation requires one player unit.");
+            }
+
+            Vector2 obstacleCenter = Vector2.zero;
+            int accepted = mission.IssueDetachedMove(player.Id, obstacleCenter);
+            if (accepted != 1)
+            {
+                throw new InvalidDataException("Expected detached move toward terrain object to be accepted.");
+            }
+
+            if (Vector2.Distance(player.MoveTarget, obstacleCenter) < 115f)
+            {
+                throw new InvalidDataException("Expected terrain-object-centered move target to be pushed outside the blocker.");
+            }
+
+            for (int tick = 0; tick < 120 && player.HasMoveOrder; tick++)
+            {
+                mission.Tick(0.1f);
+            }
+
+            if (Vector2.Distance(player.MissionPosition, obstacleCenter) < 115f)
+            {
+                throw new InvalidDataException("Expected unit to park outside hard terrain-object occupancy.");
+            }
+
+            if (player.HasMoveOrder)
+            {
+                throw new InvalidDataException("Expected terrain object fallback destination to be reachable.");
             }
         }
 
@@ -4749,6 +4787,58 @@ namespace MC2Demo.EditorTools
                         position = new MissionPose { x = 0f, y = 0f, rotation = 0f },
                         radius = 100f,
                         maxStructure = 45f
+                    }
+                },
+                objectives = new[]
+                {
+                    new ObjectiveDefinition
+                    {
+                        id = "hold-open",
+                        index = 0,
+                        hidden = false,
+                        conditions = new[]
+                        {
+                            new ObjectiveCondition
+                            {
+                                type = "MoveAnyUnitToArea",
+                                targetArea = new TargetArea { x = 5000f, y = 0f, radius = 40f }
+                            }
+                        }
+                    }
+                }
+            };
+        }
+
+        private static MissionContract MakeTerrainObjectCollisionContract()
+        {
+            return new MissionContract
+            {
+                mission = new MissionDefinition
+                {
+                    id = "validator-terrain-object-collision",
+                    terrain = new TerrainDefinition { minX = -1000f, minY = 1000f, waterElevation = 350f }
+                },
+                units = new[]
+                {
+                    new UnitSpawn
+                    {
+                        spawnId = "terrain-object-collision-player",
+                        isPlayerUnit = true,
+                        teamId = 0,
+                        unitType = "Werewolf",
+                        position = new MissionPose { x = -420f, y = 0f, rotation = 0f }
+                    }
+                },
+                terrainObjects = new[]
+                {
+                    new TerrainObjectSpawn
+                    {
+                        objectId = "terrain-object-collision-quonset",
+                        sourceIndex = 1,
+                        fileName = "Quonset",
+                        assetId = "quonset",
+                        objectClass = "BUILDING",
+                        position = new TerrainObjectPose { x = 0f, y = 0f, z = 0f, rotation = 0f }
                     }
                 },
                 objectives = new[]

@@ -12,7 +12,7 @@
 
 ## 1. 当前阶段
 
-日期：2026-06-06。
+日期：2026-06-07。
 
 当前项目不是从零开始，已经进入“可见 Demo 打磨”阶段。核心问题已经从“能不能跑”转为“看起来是否像一款可信的战术机甲游戏”。
 
@@ -27,6 +27,8 @@
 - 武器装配规则已经向原版靠拢：武器装上就启用，不做启用/关闭开关。
 - 本地私有参考素材桥已经能读到部分 OBJ/TGA/地形/道具，并生成可视化效果。
 - 最近一轮已经加入战斗阵型偏移和 BattleCore 级单位物理占位，避免多个单位堆成一坨。
+- 已加入 targetable structure 和大型 terrain object 的 BattleCore 占位，建筑、停机坪物件、quonset、portable building、barricade、sandbag 等硬物不再只是视觉装饰。
+- 开火阶段右侧任务面板已收成 compact objective card，减少 `hangar-contact`、`damage-demo` 主战区被 UI 覆盖的问题。
 
 当前主要不足：
 
@@ -807,16 +809,201 @@ git status --short
 - 本地开发可用原版素材做私有参考。
 - 公开发布必须整包替换为自有素材和自有文案。
 
-## 9. 下一步
+## 9. 当前进度和细化执行计划
 
 2026-06-07 更新：**Task 1** 已形成 `docs-reference-visual-audit-2026-06-07.md`，并完成第一轮 Task 2/Task 3 进展：BattleCore 已加入 targetable structure 占位、移动目标和喷射落点会避开结构核心，敌方攻击环改为 24 槽但保持在武器射程内。验证日志见 `analysis-output/unity-validate-structure-occupancy-r3.log`、`analysis-output/unity-build-structure-occupancy-r1.log`、`analysis-output/unity-player-structure-occupancy-smoke-r1.log`。
 
-下一步如果继续解决“模型堆在一起、画面糊”的问题，应进入 **Task 4: 固定镜头和遮挡处理**，同时补 Task 3 的大型 terrain object 占位：
+2026-06-07 追加：Task 4 已开始。开火阶段右侧任务面板改为 compact objective card，减少 `hangar-contact` 主战区遮挡；Task 3 继续补了大型 terrain object 占位，覆盖 airfield buildings、parked craft、quonsets、portable buildings、barricades、sandbags 等硬物。验证日志见 `analysis-output/unity-validate-ui-terrain-occupancy-r1.log`、`analysis-output/unity-build-ui-terrain-occupancy-r1.log`、`analysis-output/unity-player-ui-terrain-occupancy-smoke-r1.log`，截图见 `analysis-output/reference-visual-captures/hangar-contact.png` 和 `analysis-output/reference-visual-captures/damage-demo.png`。
 
-1. 重新捕获关键截图。
-2. 避免右侧任务/战况面板覆盖 hangar-contact 主战区。
-3. 给大型 airfield building、barricade、tree mass 增加简化占位。
-4. 复查 hangar-contact 和 damage-demo 的中心构图。
-5. 构建、smoke、截图验证。
+当前阶段判断：
 
-这条线完成后，再回到机甲装配界面。
+- 项目已经过了“能跑起来”的阶段，正在补“看得懂、能演示、能继续融资”的第一张地图战斗切片。
+- 最紧急问题仍是可读性：模型比例、地形纹理、遮挡、敌我密度、UI 遮挡和特效层次。
+- 不应马上扩平台、经济、地图服务器或 AI 大模型深度接入；这些路线已经在文档中保留，但第一版胜负手是战斗和装配。
+- 近期开发以 1-2 天一个小提交为宜，每个提交只解决一个可截图验证的问题。
+
+### Sprint 1: 战场可读性收口
+
+目标：让 `hangar-contact` 和 `damage-demo` 截图从“堆在一起”提升到“能看懂这是一场机甲小队战斗”。
+
+Commit 1：大型障碍占位和 compact 战斗 UI。
+
+- 状态：已实现，待提交。
+- 修改文件：`BattleMission.cs`、`Mc2DemoBootstrap.cs`、`Mc2DemoValidator.cs`、本计划、视觉审计文档。
+- 验证：validator、Windows build、smoke、`hangar-contact`/`damage-demo` capture。
+- 验收：右侧任务面板不再盖住主战区，单位不会移动到大型建筑/硬物中心。
+
+Commit 2：固定镜头遮挡处理。
+
+- 修改文件：`unity-mc2-demo/Assets/Scripts/Presentation/Mc2DemoBootstrap.cs`、`DemoStructureView.cs`、`ReferencePropLibrary.cs`。
+- 步骤 1：在 capture sidecar 中确认 `hangar-contact` 指挥官、目标建筑、接敌方向的屏幕位置。
+- 步骤 2：找出遮挡我方/目标最严重的建筑和树木类型。
+- 步骤 3：加入 camera-to-commander 遮挡检测，优先对遮挡物做半透明或淡化，不改变 BattleCore。
+- 步骤 4：重新捕获 `hangar-contact`、`damage-demo`。
+- 验证：Unity build + capture。
+- 验收：我方 3-4 台机甲在主战斗截图里可见，目标建筑和敌方方向不被树木/建筑完全盖住。
+
+Commit 3：地形对比和水域/道路可读性。
+
+- 修改文件：`DemoTerrainView.cs`、`ReferenceTerrainTextureLibrary.cs`、`SourceTerrainVertexColor.shader`。
+- 步骤 1：对比 `airfield`、`hangar-contact` 的地面区域，记录哪些地形读成一片糊色。
+- 步骤 2：提高道路、跑道、水域、岸线、建筑基底的对比度。
+- 步骤 3：保留原始纹理方向，但允许开发期做亮度/饱和度校正。
+- 步骤 4：确认点击、移动和水域非法落点不受表现层影响。
+- 验证：Unity build + smoke + capture。
+- 验收：截图里能分清路、水、草地/泥地、建筑底座。
+
+Commit 4：敌方密度和停靠点微调。
+
+- 修改文件：`BattleMission.cs`、`Mc2DemoValidator.cs`、可能涉及 mission contract 导出脚本。
+- 步骤 1：用 sidecar 记录每个 preset 激活敌人和可见敌人的数量。
+- 步骤 2：只调阵型展开、停靠半径、激活后的目标环，不改大任务逻辑。
+- 步骤 3：确保敌人仍在武器射程和触发区域内。
+- 步骤 4：补一个 validator 断言敌方停靠点不重叠。
+- 验证：validator + smoke + capture。
+- 验收：密集战斗仍热闹，但不再像所有模型挤在一个点。
+
+### Sprint 2: 原作感视觉要素补齐
+
+目标：把第一张地图从“可读”推进到“有原型味道”：机甲轮廓、道具、炮塔、建筑、损伤事件都能被看出来。
+
+Commit 5：机甲/载具/炮塔比例复查。
+
+- 修改文件：`ReferenceObjMeshLibrary.cs`、`DemoUnitView.cs`、`ReferencePropLibrary.cs`。
+- 步骤 1：列出当前任务实际出现的 mech、vehicle、turret、building asset id。
+- 步骤 2：给不同类别设独立视觉比例表，不用一个全局 scale 硬撑。
+- 步骤 3：确认 collider radius 与视觉尺寸不会严重打架。
+- 验证：Unity build + capture。
+- 验收：机甲、载具、炮塔、建筑有清楚尺寸层级。
+
+Commit 6：武器开火和命中特效层次。
+
+- 修改文件：`DemoEffectsView.cs`、`DemoUnitView.cs`、`WeaponCatalog.cs`。
+- 步骤 1：按武器类型整理当前已有粒子/线束/爆炸表现。
+- 步骤 2：优先补激光、导弹、炮弹三类基础区别。
+- 步骤 3：让命中、未命中、结构受击、机甲部位受击有不同反馈。
+- 验证：damage-demo capture + smoke。
+- 验收：截图或短时观战中能分辨“谁在打谁、用什么打”。
+
+Commit 7：断臂/瘸腿/驾驶舱弹射演示增强。
+
+- 修改文件：`CombatDamageModel.cs`、`DemoUnitView.cs`、`DemoEffectsView.cs`、`ReferenceObjMeshLibrary.cs`。
+- 步骤 1：固定一个 damage-demo 脚本触发左臂脱落、腿部瘫痪、驾驶舱逃生。
+- 步骤 2：优先使用 reference node clone，没有节点时回退到清楚的自有占位。
+- 步骤 3：状态栏部位损伤与场景事件对应起来。
+- 验证：validator + damage-demo capture。
+- 验收：不用读日志也能看出一台机甲发生严重部位损伤。
+
+### Sprint 3: 指挥游戏闭环
+
+目标：玩家能用极少操作打完第一张图。
+
+Commit 8：战斗 UI 最小化冻结。
+
+- 修改文件：`Mc2DemoBootstrap.cs`。
+- 步骤 1：保留左侧机甲状态栏、喷射、任务地图、暂停/系统。
+- 步骤 2：战斗中隐藏或压缩多余文字，只在状态栏给损伤/独立命令/可行动反馈。
+- 步骤 3：给小屏和 1280x720 各检查一次布局。
+- 验证：smoke + capture。
+- 验收：主战场不被 UI 抢戏，状态栏足够表达当前队伍状态。
+
+Commit 9：命令反馈打磨。
+
+- 修改文件：`Mc2DemoBootstrap.cs`、`BattleMission.cs`。
+- 步骤 1：全队移动显示阵型目标点。
+- 步骤 2：单机甲独立命令在状态栏明确标记。
+- 步骤 3：命令完成后自动归队，并接受最新全队命令。
+- 验证：validator + smoke。
+- 验收：不用框选也能稳定指挥 1-6 台机甲。
+
+Commit 10：任务胜负和战后简报收口。
+
+- 修改文件：`BattleMission.cs`、`DebriefView.cs`、`Mc2DemoBootstrap.cs`。
+- 步骤 1：明确第一张图胜利/失败触发。
+- 步骤 2：战后只显示损伤、奖励、缴获、维修入口。
+- 步骤 3：一键修复，不做等待，不做复杂保存。
+- 验证：smoke 覆盖胜利或失败路径。
+- 验收：完成任务后可以自然回到下一轮改装/再战。
+
+### Sprint 4: 机甲装配垂直切片
+
+目标：装配界面能成为 Demo 的第二个卖点。
+
+Commit 11：原版式格子装配显示。
+
+- 修改文件：`MechLabView.cs`、`MechLoadoutRules.cs`、`MechChassisCatalog.cs`、`WeaponCatalog.cs`。
+- 步骤 1：每台机甲显示槽位形状。
+- 步骤 2：武器用整块格子形状显示，装上即启用。
+- 步骤 3：装甲板、散热器作为单格组件显示。
+- 步骤 4：冲突、过热、超重即时提示。
+- 验证：编辑器 validator 或 UI smoke。
+- 验收：玩家一眼能看懂“格子为什么放不下”。
+
+Commit 12：装配结果进入 BattleCore。
+
+- 修改文件：`MechLoadoutRules.cs`、`BattleMission.cs`、`CombatDamageModel.cs`。
+- 步骤 1：武器射程、冷却、伤害来自当前 loadout。
+- 步骤 2：热量和散热器先做简单战斗压力，不做复杂 UI。
+- 步骤 3：装甲板提升整体硬度，再进入部位伤害计算。
+- 验证：validator 增加 loadout 影响断言。
+- 验收：换武器/装甲后战斗表现能观察到差异。
+
+Commit 13：装配到任务的演示闭环。
+
+- 修改文件：`Mc2DemoBootstrap.cs`、`MechLabView.cs`、`DebriefView.cs`。
+- 步骤 1：从战后回到装配。
+- 步骤 2：修改当前队伍配置。
+- 步骤 3：重新进同一张任务。
+- 步骤 4：不引入复杂保存，只保留当前运行内配置。
+- 验证：smoke 或手动 capture。
+- 验收：可以演示“改装 -> 出战 -> 受损/胜利 -> 再改装”。
+
+### Sprint 5: AI 副官接口和演示包
+
+目标：保留 AI 大方向，但不让模型延迟和不确定性拖累当前战斗。
+
+Commit 14：AI observation/directive 合同冻结。
+
+- 修改文件：`docs-ai-commander-directive-contract.md`、`AiCommanderObservation.cs`、`AiCommanderDirective.cs`。
+- 步骤 1：observation 只包含任务阶段、我方状态、敌方摘要、目标状态、可用意图。
+- 步骤 2：directive 只包含进攻、防守、重组、撤离、集火、保护等高层命令。
+- 步骤 3：本地规则把 directive 转成普通命令。
+- 验证：单元/validator 导出一份 observation 并回放一份 directive。
+- 验收：AI 可以提供建议，但断网/超时不影响本地战斗。
+
+Commit 15：本地演示包整理。
+
+- 修改文件：`README.md`、`unity-mc2-demo/README.md`、`BUILD-WIN.md`、`scripts/unity/*`。
+- 步骤 1：README 继续强调 AI 副官指挥 RTS 战斗探索，不公开宣传原版素材。
+- 步骤 2：列出私有参考包、本地构建、截图验证步骤。
+- 步骤 3：确认 GitHub release 不包含私有参考资产。
+- 验证：clean-ish checkout + build/smoke。
+- 验收：能交给别人本地复现，但公开仓库不碰版权雷区。
+
+## 10. 暂缓事项
+
+这些不是砍掉，而是等第一张图和装配闭环稳定后再做：
+
+- 实时 PVP。
+- 地图服务器和第三方地图奖励认证。
+- Web 排名站。
+- 链上分账或 NFT/皮肤资产。
+- 完整经济、好友驾驶员、支援任务、活动碎片循环。
+- AI 导演和复杂自然语言战术控制。
+- 移动端适配和跨端包。
+
+当前只给它们保留结构边界：BattleCore 确定性、内容包可替换、AI 接口高层化、奖励由主服务器认证。
+
+## 11. 下一步
+
+下一次继续开发时，优先完成并提交 **Sprint 1 / Commit 1**。这个提交已经完成实现和验证，只需要复查 diff、排除 Unity 场景无意义改动、提交到 Git。
+
+之后进入 **Sprint 1 / Commit 2：固定镜头遮挡处理**：
+
+1. 重新捕获 `spawn`、`airfield`、`hangar-contact`、`damage-demo`、`north-patrol`。
+2. 对比 `hangar-contact` 中遮挡我方的建筑/树木。
+3. 在表现层加入遮挡淡化，不改变 BattleCore。
+4. 构建、smoke、截图验证。
+5. 更新 `docs-reference-visual-audit-2026-06-07.md`。
+
+这条线完成后，再继续地形对比、敌方密度和机甲装配。

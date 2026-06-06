@@ -101,3 +101,35 @@ Next priority:
 1. Fixed-camera/UI composition pass for `hangar-contact`.
 2. Terrain-object occupancy for large airfield buildings and barricades.
 3. Terrain contrast pass after physical readability is stable.
+
+## Pass 2 Result
+
+Implemented on 2026-06-07:
+
+- Added BattleCore occupancy for hard terrain objects: airfield buildings, parked craft, quonsets, portable buildings, towers, domes, barricades, sandbags, and wall-like props.
+- Kept forest regions out of hard collision for now because their broad circular regions would over-block the first map; forest readability should be handled through occlusion/fade first.
+- Added validator coverage for terrain-object-centered move fallback.
+- Added a compact mission objective card during active fire so the right mission panel no longer covers the hangar fight during the densest engagement windows.
+
+Validation evidence:
+
+```text
+analysis-output/unity-validate-ui-terrain-occupancy-r1.log
+analysis-output/unity-build-ui-terrain-occupancy-r1.log
+analysis-output/unity-player-ui-terrain-occupancy-smoke-r1.log
+analysis-output/reference-visual-captures/hangar-contact.png
+analysis-output/reference-visual-captures/damage-demo.png
+```
+
+Observed effect:
+
+- `assert-combat-situation fire` now reports `missionBrief=compact full=6/6 active=[active] 2 Hangar h=86`.
+- `hangar-contact` no longer has the full mission list covering the hangar/forest flank; the right side shows a compact objective card.
+- `damage-demo` keeps the damage state visible while freeing the mid-right battlefield area.
+- `damage-demo` visible hostile count dropped from 20 to 18 in the refreshed sidecar, consistent with hard terrain-object occupancy and camera composition changing which enemies are exposed in-frame.
+
+Remaining issues:
+
+1. The fight itself is still visually dense around the hangar.
+2. Forest/tree masses still need an occlusion/fade pass rather than hard region collision.
+3. Terrain contrast remains low, especially dark ground away from textured prop clusters.

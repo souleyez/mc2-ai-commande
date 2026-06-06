@@ -21,6 +21,7 @@ namespace MC2Demo.BattleCore
         private const int UnitCollisionPasses = 3;
         private const float StructureCollisionPadding = 35f;
         private const float StructureCollisionMaxPushPerPass = 70f;
+        private const float TerrainObjectCollisionMaxPushPerPass = 45f;
 
         public MissionContract Contract { get; }
         public IReadOnlyList<UnitState> Units => units;
@@ -36,6 +37,7 @@ namespace MC2Demo.BattleCore
 
         private readonly List<UnitState> units = new();
         private readonly List<StructureState> structures = new();
+        private readonly List<TerrainObjectObstacle> terrainObjectObstacles = new();
         private readonly List<ObjectiveState> objectives = new();
         private readonly List<CombatEvent> recentCombatEvents = new();
         private readonly List<UnitActivationEvent> recentUnitActivationEvents = new();
@@ -61,6 +63,18 @@ namespace MC2Demo.BattleCore
                 foreach (StaticObjectSpawn spawn in contract.staticObjects)
                 {
                     structures.Add(new StructureState(spawn));
+                }
+            }
+
+            if (contract.terrainObjects != null)
+            {
+                foreach (TerrainObjectSpawn spawn in contract.terrainObjects)
+                {
+                    if (TryCreateTerrainObjectObstacle(spawn, out TerrainObjectObstacle obstacle)
+                        && !IsCoveredByStructureCenter(obstacle.Position))
+                    {
+                        terrainObjectObstacles.Add(obstacle);
+                    }
                 }
             }
 
@@ -312,6 +326,7 @@ namespace MC2Demo.BattleCore
 
             ResolveUnitCollisions();
             ResolveStructureCollisions();
+            ResolveTerrainObjectCollisions();
             ResolveUnitCollisions();
 
             foreach (UnitState unit in units)
@@ -720,6 +735,54 @@ namespace MC2Demo.BattleCore
             }
         }
 
+        private void ResolveTerrainObjectCollisions()
+        {
+            if (terrainObjectObstacles.Count == 0)
+            {
+                return;
+            }
+
+            foreach (UnitState unit in units)
+            {
+                if (!CanResolveUnitCollision(unit))
+                {
+                    continue;
+                }
+
+                foreach (TerrainObjectObstacle obstacle in terrainObjectObstacles)
+                {
+                    float minimumDistance = obstacle.Radius + UnitCollisionRadius(unit);
+                    Vector2 delta = unit.MissionPosition - obstacle.Position;
+                    float distanceSqr = delta.sqrMagnitude;
+                    if (distanceSqr >= minimumDistance * minimumDistance)
+                    {
+                        continue;
+                    }
+
+                    float distance = 0f;
+                    Vector2 direction;
+                    if (distanceSqr <= 0.0001f)
+                    {
+                        direction = PairSeparationDirection(obstacle.Id, unit.Id);
+                    }
+                    else
+                    {
+                        distance = Mathf.Sqrt(distanceSqr);
+                        direction = delta / Mathf.Max(0.001f, distance);
+                    }
+
+                    float push = Mathf.Min(minimumDistance - distance, TerrainObjectCollisionMaxPushPerPass);
+                    if (push <= 0f)
+                    {
+                        continue;
+                    }
+
+                    bool shiftMoveTarget = IsPointInsideTerrainObjectObstacle(unit.MoveTarget, unit, obstacle);
+                    unit.ApplyCollisionDisplacement(direction * push, shiftMoveTarget);
+                }
+            }
+        }
+
         private static bool CanResolveUnitCollision(UnitState unit)
         {
             return unit != null && unit.IsActive && !unit.IsDestroyed && !unit.IsJumping;
@@ -866,7 +929,7 @@ namespace MC2Demo.BattleCore
 
         private Vector2 ResolveMoveDestination(UnitState unit, Vector2 desiredPoint, Vector2 approach)
         {
-            if (unit == null || structures.Count == 0)
+            if (unit == null || (structures.Count == 0 && terrainObjectObstacles.Count == 0))
             {
                 return desiredPoint;
             }
@@ -877,6 +940,16 @@ namespace MC2Demo.BattleCore
                 foreach (StructureState structure in structures)
                 {
                     if (!TryGetStructureEscape(unit, structure, resolvedPoint, approach, out Vector2 escape))
+                    {
+                        continue;
+                    }
+
+                    resolvedPoint += escape;
+                }
+
+                foreach (TerrainObjectObstacle obstacle in terrainObjectObstacles)
+                {
+                    if (!TryGetTerrainObjectEscape(unit, obstacle, resolvedPoint, approach, out Vector2 escape))
                     {
                         continue;
                     }
@@ -903,6 +976,14 @@ namespace MC2Demo.BattleCore
             foreach (StructureState structure in structures)
             {
                 if (IsPointInsideStructureObstacle(point, unit, structure))
+                {
+                    return true;
+                }
+            }
+
+            foreach (TerrainObjectObstacle obstacle in terrainObjectObstacles)
+            {
+                if (IsPointInsideTerrainObjectObstacle(point, unit, obstacle))
                 {
                     return true;
                 }
@@ -959,6 +1040,54 @@ namespace MC2Demo.BattleCore
             return (point - structure.MissionPosition).sqrMagnitude < minimumDistance * minimumDistance;
         }
 
+        private bool TryGetTerrainObjectEscape(
+            UnitState unit,
+            TerrainObjectObstacle obstacle,
+            Vector2 point,
+            Vector2 approach,
+            out Vector2 escape)
+        {
+            escape = Vector2.zero;
+            if (unit == null || obstacle == null)
+            {
+                return false;
+            }
+
+            float minimumDistance = obstacle.Radius + UnitCollisionRadius(unit);
+            Vector2 delta = point - obstacle.Position;
+            float distanceSqr = delta.sqrMagnitude;
+            if (distanceSqr >= minimumDistance * minimumDistance)
+            {
+                return false;
+            }
+
+            float distance = 0f;
+            Vector2 direction;
+            if (distanceSqr <= 0.0001f)
+            {
+                direction = NormalizedOrDefault(-approach, PairSeparationDirection(obstacle.Id, unit.Id));
+            }
+            else
+            {
+                distance = Mathf.Sqrt(distanceSqr);
+                direction = delta / Mathf.Max(0.001f, distance);
+            }
+
+            escape = direction * (minimumDistance - distance);
+            return escape.sqrMagnitude > 0.0001f;
+        }
+
+        private bool IsPointInsideTerrainObjectObstacle(Vector2 point, UnitState unit, TerrainObjectObstacle obstacle)
+        {
+            if (unit == null || obstacle == null)
+            {
+                return false;
+            }
+
+            float minimumDistance = obstacle.Radius + UnitCollisionRadius(unit);
+            return (point - obstacle.Position).sqrMagnitude < minimumDistance * minimumDistance;
+        }
+
         private static bool IsBlockingStructure(StructureState structure)
         {
             return structure != null && !structure.IsDestroyed && structure.Radius > 0f;
@@ -967,6 +1096,153 @@ namespace MC2Demo.BattleCore
         private static float StructureCollisionRadius(StructureState structure)
         {
             return Mathf.Max(60f, structure.Radius + StructureCollisionPadding);
+        }
+
+        private bool IsCoveredByStructureCenter(Vector2 position)
+        {
+            foreach (StructureState structure in structures)
+            {
+                if (structure != null && Vector2.Distance(position, structure.MissionPosition) < 40f)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool TryCreateTerrainObjectObstacle(TerrainObjectSpawn spawn, out TerrainObjectObstacle obstacle)
+        {
+            obstacle = null;
+            if (spawn?.position == null)
+            {
+                return false;
+            }
+
+            string objectClass = spawn.objectClass ?? "";
+            string name = TerrainObjectName(spawn);
+            float radius = 0f;
+            if (string.Equals(objectClass, "BUILDING", StringComparison.OrdinalIgnoreCase))
+            {
+                radius = TerrainBuildingObstacleRadius(name);
+            }
+            else if (string.Equals(objectClass, "TREE", StringComparison.OrdinalIgnoreCase)
+                && IsHardTerrainTreeObstacle(name))
+            {
+                radius = TerrainHardTreeObstacleRadius(name);
+            }
+
+            if (radius <= 0f)
+            {
+                return false;
+            }
+
+            obstacle = new TerrainObjectObstacle(
+                string.IsNullOrWhiteSpace(spawn.objectId)
+                    ? "terrain-object-" + spawn.sourceIndex.ToString(CultureInfo.InvariantCulture)
+                    : spawn.objectId,
+                new Vector2(spawn.position.x, spawn.position.y),
+                radius,
+                name);
+            return true;
+        }
+
+        private static string TerrainObjectName(TerrainObjectSpawn spawn)
+        {
+            if (spawn == null)
+            {
+                return "";
+            }
+
+            if (!string.IsNullOrWhiteSpace(spawn.assetId))
+            {
+                return spawn.assetId;
+            }
+
+            return spawn.fileName ?? "";
+        }
+
+        private static float TerrainBuildingObstacleRadius(string name)
+        {
+            if (ContainsIgnoreCase(name, "Hangar"))
+            {
+                return 145f;
+            }
+
+            if (ContainsIgnoreCase(name, "Quonset"))
+            {
+                return 72f;
+            }
+
+            if (ContainsIgnoreCase(name, "GenericMilitary")
+                || ContainsIgnoreCase(name, "GeodesicDome"))
+            {
+                return 78f;
+            }
+
+            if (ContainsIgnoreCase(name, "PrivateJet")
+                || ContainsIgnoreCase(name, "Shilone")
+                || ContainsIgnoreCase(name, "Slayer"))
+            {
+                return 68f;
+            }
+
+            if (ContainsIgnoreCase(name, "Portable"))
+            {
+                return 54f;
+            }
+
+            if (ContainsIgnoreCase(name, "Tower"))
+            {
+                return 44f;
+            }
+
+            return 58f;
+        }
+
+        private static bool IsHardTerrainTreeObstacle(string name)
+        {
+            return ContainsIgnoreCase(name, "Barricade")
+                || ContainsIgnoreCase(name, "SandBag")
+                || ContainsIgnoreCase(name, "Wall")
+                || ContainsIgnoreCase(name, "Barrier");
+        }
+
+        private static float TerrainHardTreeObstacleRadius(string name)
+        {
+            if (ContainsIgnoreCase(name, "Barricade"))
+            {
+                return 38f;
+            }
+
+            if (ContainsIgnoreCase(name, "SandBag"))
+            {
+                return 32f;
+            }
+
+            return 34f;
+        }
+
+        private static bool ContainsIgnoreCase(string value, string fragment)
+        {
+            return !string.IsNullOrWhiteSpace(value)
+                && value.IndexOf(fragment, StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        private sealed class TerrainObjectObstacle
+        {
+            public TerrainObjectObstacle(string id, Vector2 position, float radius, string label)
+            {
+                Id = string.IsNullOrWhiteSpace(id) ? "terrain-object" : id;
+                Position = position;
+                Radius = Mathf.Max(1f, radius);
+                Label = label ?? "";
+            }
+
+            public string Id { get; }
+            public Vector2 Position { get; }
+            public float Radius { get; }
+            public string Label { get; }
         }
 
         private static Vector2 NormalizedOrDefault(Vector2 value, Vector2 fallback)

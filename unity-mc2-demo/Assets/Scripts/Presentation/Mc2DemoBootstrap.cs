@@ -3056,6 +3056,28 @@ namespace MC2Demo.Presentation
             }
 
             Rect panel = MissionBriefPanelRect();
+            if (ShouldUseCompactMissionBriefPanel())
+            {
+                ObjectiveState active = FirstActiveVisibleObjective();
+                string activeLine = active == null ? "" : MissionBriefObjectiveLine(active);
+                bool compactPanelOk = visible == 6
+                    && compact == visible
+                    && stateOk
+                    && noEllipsis
+                    && !string.IsNullOrWhiteSpace(activeLine)
+                    && panel.height >= 70f
+                    && panel.yMax <= CombatPanelRect().yMax + 96f;
+                string compactSummary = "missionBrief=compact full="
+                    + compact.ToString(CultureInfo.InvariantCulture)
+                    + "/"
+                    + visible.ToString(CultureInfo.InvariantCulture)
+                    + " active="
+                    + activeLine
+                    + " h="
+                    + panel.height.ToString("0.#", CultureInfo.InvariantCulture);
+                return new LoadoutCompactCheck(compactPanelOk, compactSummary);
+            }
+
             float objectiveStartY = MissionBriefObjectiveStartY(panel);
             float lineHeight = MissionBriefObjectiveLineHeight(panel, objectiveStartY, visible);
             int drawableRows = MissionBriefDrawableObjectiveRows(panel, objectiveStartY, lineHeight);
@@ -10337,6 +10359,12 @@ namespace MC2Demo.Presentation
             }
 
             Rect panel = MissionBriefPanelRect();
+            if (ShouldUseCompactMissionBriefPanel())
+            {
+                DrawCompactMissionBriefPanel(panel);
+                return;
+            }
+
             DrawDesignPanelFrame(panel, "Mission / 任务", UiAmberColor);
             float x = panel.x + 12f;
             float y = panel.y + 32f;
@@ -10399,6 +10427,52 @@ namespace MC2Demo.Presentation
         private bool ShouldDrawMissionBriefPanel()
         {
             return !showMissionMap && mission.Result == MissionResultState.InProgress;
+        }
+
+        private bool ShouldUseCompactMissionBriefPanel()
+        {
+            return mission != null
+                && mission.Result == MissionResultState.InProgress
+                && string.Equals(CombatTempoMode(), "fire", StringComparison.Ordinal);
+        }
+
+        private void DrawCompactMissionBriefPanel(Rect panel)
+        {
+            DrawDesignPanelFrame(panel, "Objective / 目标", UiAmberColor);
+            float x = panel.x + 12f;
+            float y = panel.y + 32f;
+            float width = panel.width - 24f;
+            ObjectiveState active = FirstActiveVisibleObjective();
+            string objectiveLine = active == null ? "Objective tracking" : MissionBriefObjectiveLine(active);
+            GUI.Label(new Rect(x, y, width, 18f), TruncateText(objectiveLine, 36));
+            y += 20f;
+
+            MissionResultSummary summary = mission.ResultSummary;
+            string targetText = "Targets "
+                + CountLiveStructures().ToString(CultureInfo.InvariantCulture)
+                + "/"
+                + mission.Structures.Count.ToString(CultureInfo.InvariantCulture)
+                + "  Bounty "
+                + FormatTokens(summary.completedRewardResourcePoints)
+                + "/"
+                + FormatTokens(summary.visibleRewardResourcePoints);
+            GUI.Label(new Rect(x, y, width, 18f), targetText);
+        }
+
+        private ObjectiveState FirstActiveVisibleObjective()
+        {
+            foreach (ObjectiveState objective in mission.Objectives)
+            {
+                if (objective?.Definition != null
+                    && !objective.Definition.hidden
+                    && objective.IsActive
+                    && !objective.IsComplete)
+                {
+                    return objective;
+                }
+            }
+
+            return null;
         }
 
         private static float MissionBriefObjectiveStartY(Rect panel)
@@ -17177,13 +17251,19 @@ namespace MC2Demo.Presentation
 
         private Rect CombatPanelRect()
         {
-            return new Rect(Screen.width - 360f, 12f, 344f, 154f);
+            float width = ShouldUseCompactMissionBriefPanel() ? 320f : 344f;
+            return new Rect(Screen.width - width - 16f, 12f, width, 154f);
         }
 
         private Rect MissionBriefPanelRect()
         {
             Rect combatPanel = CombatPanelRect();
             float y = combatPanel.yMax + 8f;
+            if (ShouldUseCompactMissionBriefPanel())
+            {
+                return new Rect(combatPanel.x, y, combatPanel.width, 86f);
+            }
+
             float height = Mathf.Min(Mathf.Clamp(Screen.height * 0.28f, 150f, 230f), Mathf.Max(120f, Screen.height - y - 16f));
             return new Rect(combatPanel.x, y, combatPanel.width, height);
         }
