@@ -2,6 +2,8 @@
 
 > **For Codex:** Execute this plan task-by-task. Each task should end with validation evidence and a small commit.
 
+**Current detailed execution entry:** `docs-playable-demo-detailed-execution-plan-2026-06-07.md` is now the preferred day-to-day plan. This master plan keeps the broader phase background and historical context.
+
 **Goal:** 把当前 Unity 6 Windows 原型推进到一版可演示、可截图、可继续融资的轻量机甲战术指挥 Demo：玩家能改装 1-6 台机甲，进入一张参考小地图，用极少 UI 完成移动、集火、喷射、独立命令、损伤结算和再次出战。
 
 **Architecture:** `BattleCore` 是权威战斗核心，负责任务、命令、单位状态、命中、伤害、碰撞占位、结算和 AI 可观察状态；Unity Presentation 只负责输入、镜头、UI、材质、模型、特效和截图验证。开发期允许加载本地私有参考资源验证地形/模型/节奏，但所有公开构建必须能切到可替换内容包，不能携带原版资产、文案、商标和专有名称。

@@ -16,7 +16,8 @@
 
 当前更细的执行型计划书：
 
-- `docs-playable-demo-master-plan-2026-06-07.md`：从当前地形可读性收口开始，细化到战场可读性、指挥闭环、损伤表现、装配垂直切片、战后再战、AI 副官接口、内容包边界和演示构建。后续执行以这份计划为主，本文件保留总体产品判断和阶段记录。
+- `docs-playable-demo-detailed-execution-plan-2026-06-07.md`：当前主执行入口。它从 Phase C 指挥战斗闭环开始，细化到每个后续小提交、触碰文件、验证命令、验收标准和 stop conditions。后续继续开发时优先按这份计划执行。
+- `docs-playable-demo-master-plan-2026-06-07.md`：保留完整阶段背景、历史任务和主计划脉络。本文件保留总体产品判断和阶段记录。
 
 当前执行状态：
 
@@ -1018,7 +1019,7 @@ Commit 15：本地演示包整理。
 
 ## 11. 下一步
 
-下一次继续开发时，按 `docs-playable-demo-master-plan-2026-06-07.md` 执行，进入 **Phase C / Task C1：Command state validator**。敌方密度、停车点、视觉比例、物理占位证据和固定镜头构图已经收过一轮，下一步重点是证明玩家指挥闭环：
+下一次继续开发时，按 `docs-playable-demo-detailed-execution-plan-2026-06-07.md` 执行，进入 **Phase C / Task C1：Command state validator**。敌方密度、停车点、视觉比例、物理占位证据和固定镜头构图已经收过一轮，下一步重点是证明玩家指挥闭环：
 
 1. C1 command state validator：补全 command-file assertions，覆盖全队移动、单机独立命令、独立命令完成自动归队，以及归队后继续接受最新全队命令。
 2. C2 status-row selection and click contract：把状态栏点选单机、下达独立命令、可见选择恢复全队做成 smoke 路径。
