@@ -126,24 +126,24 @@ namespace MC2Demo.BattleCore
             return Build(chassisId, profile, null, null, null);
         }
 
-        public static CombatLoadoutPreview Build(string chassisId, CombatProfile profile, bool[] enabledWeapons)
+        public static CombatLoadoutPreview Build(string chassisId, CombatProfile profile, bool[] mountedWeapons)
         {
-            return Build(chassisId, profile, enabledWeapons, null, null);
+            return Build(chassisId, profile, mountedWeapons, null, null);
         }
 
         public static CombatLoadoutPreview Build(
             string chassisId,
             CombatProfile profile,
-            bool[] enabledWeapons,
+            bool[] mountedWeapons,
             CombatLoadoutPlacementOverride[] placementOverrides)
         {
-            return Build(chassisId, profile, enabledWeapons, placementOverrides, null);
+            return Build(chassisId, profile, mountedWeapons, placementOverrides, null);
         }
 
         public static CombatLoadoutPreview Build(
             string chassisId,
             CombatProfile profile,
-            bool[] enabledWeapons,
+            bool[] mountedWeapons,
             CombatLoadoutPlacementOverride[] placementOverrides,
             CombatLoadoutFillerOverride[] fillerOverrides)
         {
@@ -169,7 +169,7 @@ namespace MC2Demo.BattleCore
             float projectedWeight = 0f;
             for (int index = 0; index < weapons.Length; index++)
             {
-                if (!IsWeaponEnabled(enabledWeapons, index))
+                if (!IsWeaponMounted(mountedWeapons, index))
                 {
                     continue;
                 }
@@ -423,9 +423,9 @@ namespace MC2Demo.BattleCore
             return !string.IsNullOrEmpty(category);
         }
 
-        private static bool IsWeaponEnabled(bool[] enabledWeapons, int index)
+        private static bool IsWeaponMounted(bool[] mountedWeapons, int index)
         {
-            return enabledWeapons == null || index >= enabledWeapons.Length || enabledWeapons[index];
+            return mountedWeapons == null || index >= mountedWeapons.Length || mountedWeapons[index];
         }
 
         private static bool IsInsideGrid(int x, int y, int width, int height)

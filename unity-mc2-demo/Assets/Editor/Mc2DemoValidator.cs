@@ -796,22 +796,22 @@ namespace MC2Demo.EditorTools
                     throw new InvalidDataException("Projected loadout limits do not match source limits for " + unitType);
                 }
 
-                bool[] enabledWeapons = new bool[profile.Weapons.Length];
-                for (int index = 0; index < enabledWeapons.Length; index++)
+                bool[] mountedWeapons = new bool[profile.Weapons.Length];
+                for (int index = 0; index < mountedWeapons.Length; index++)
                 {
-                    enabledWeapons[index] = true;
+                    mountedWeapons[index] = true;
                 }
 
-                enabledWeapons[0] = false;
-                CombatLoadoutPreview disabledPreview = CombatLoadoutPreviewBuilder.Build(unitType, profile, enabledWeapons);
-                if (HasPreviewCellForWeapon(disabledPreview, 0))
+                mountedWeapons[0] = false;
+                CombatLoadoutPreview unmountedPreview = CombatLoadoutPreviewBuilder.Build(unitType, profile, mountedWeapons);
+                if (HasPreviewCellForWeapon(unmountedPreview, 0))
                 {
-                    throw new InvalidDataException("Projected disabled loadout still exposes disabled weapon cell for " + unitType);
+                    throw new InvalidDataException("Projected unmounted loadout still exposes unmounted weapon cell for " + unitType);
                 }
 
-                if (disabledPreview.Validation.TotalHeat >= preview.Validation.TotalHeat)
+                if (unmountedPreview.Validation.TotalHeat >= preview.Validation.TotalHeat)
                 {
-                    throw new InvalidDataException("Projected disabled loadout did not reduce heat for " + unitType);
+                    throw new InvalidDataException("Projected unmounted loadout did not reduce heat for " + unitType);
                 }
 
                 if (preview.Validation.TotalArmorHardnessBonus <= 0f

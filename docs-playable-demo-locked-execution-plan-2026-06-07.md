@@ -34,9 +34,10 @@
 3. Stage 3 Combat Feel Lock 已完成当前锁定项：武器类型 cue、部位损伤/弹射 cue、装甲硬度规则。
 4. `Regress weapon family cues` 已完成并提交为 `4ea5666`。
 5. `Lock section damage and ejection cues` 已完成并提交为 `db1efa7`。
-6. `Lock armor hardness damage rule` 已完成验证并进入提交队列。
-7. 当前下一步进入 Stage 4 MechLab，优先做 `Audit mounted weapon semantics`。
-8. 工作树提交前必须保持干净；Unity scene fileID churn 不得误提交，生成截图/日志/JSON 默认不进 Git。
+6. `Lock armor hardness damage rule` 已完成并提交为 `e7c4a07`。
+7. 当前处在 Stage 4 MechLab，`Audit mounted weapon semantics` 已完成验证并进入提交队列。
+8. 下一步优先做 `Make MechLab grid blocks explicit`。
+9. 工作树提交前必须保持干净；Unity scene fileID churn 不得误提交，生成截图/日志/JSON 默认不进 Git。
 
 当前已知真实文件校准：
 
@@ -227,7 +228,7 @@ Do not stage generated PNG/JSON/log evidence unless explicitly requested.
 | Weapon effects | Completed for current pass | Needs only regression unless `damage-demo` becomes unreadable | Guard with combat situation smoke and damage capture |
 | Section damage/ejection | Completed for current pass | Future polish can add closer motion/capture readability | Regression only unless `damage-demo` regresses |
 | Armor hardness | Completed for current pass | Future tuning can adjust numbers, not the rule shape | Regression only |
-| MechLab | Functional | Needs original-like block fitting polish and no weapon-toggle semantics | Start Stage 4.1 |
+| MechLab | Active | Weapon toggle semantics are cleaned; grid blocks still need original-like fitting polish | Start Stage 4.2 |
 | Debrief/repair | Basic | Needs clean first-demo loop, no save UI in normal flow | Stage 5 |
 | AI deputy | Experimental | Needs compact optional capability window and offline fallback | Stage 6 |
 | Public safety | Partially documented | Needs build/content guard and README cleanup where needed | Stage 7 |
@@ -432,6 +433,10 @@ git diff --check
 Goal: MechLab should feel like fitting parts into a chassis, not editing a spreadsheet.
 
 ### Task 4.1: Audit Mounted Weapon Semantics
+
+**Status:** Completed 2026-06-07.
+
+**Result:** The only weapon-specific enable/disable naming was the internal loadout preview mask and its validator coverage. It now uses mounted/unmounted terminology, and the rg audit no longer finds weapon toggle language. Mounted weapon still means active weapon.
 
 **Goal:** Remove or quarantine any player-facing weapon enable/disable concept.
 
@@ -903,22 +908,22 @@ Recently completed:
 6. `Regress weapon family cues`
 7. `Lock section damage and ejection cues`
 8. `Lock armor hardness damage rule`
+9. `Audit mounted weapon semantics`
 
 Next commits:
 
-1. `Audit mounted weapon semantics`
-2. `Make MechLab grid blocks explicit`
-3. `Prove loadout battle effects`
-4. `Simplify debrief player flow`
-5. `Guard repair and relaunch loop`
-6. `Freeze AI observation contract`
-7. `Guard AI directive adapter`
-8. `Show optional AI advice window`
-9. `Document private reference content boundary`
-10. `Add public build content safety check`
-11. `Add playable demo walkthrough`
-12. `Prepare repeatable Windows demo build`
-13. `Package playable demo evidence`
+1. `Make MechLab grid blocks explicit`
+2. `Prove loadout battle effects`
+3. `Simplify debrief player flow`
+4. `Guard repair and relaunch loop`
+5. `Freeze AI observation contract`
+6. `Guard AI directive adapter`
+7. `Show optional AI advice window`
+8. `Document private reference content boundary`
+9. `Add public build content safety check`
+10. `Add playable demo walkthrough`
+11. `Prepare repeatable Windows demo build`
+12. `Package playable demo evidence`
 
 Every commit must record:
 
@@ -948,8 +953,8 @@ Sprint A detail:
 
 | Order | Status | Commit | Purpose | Main Files | Required Evidence |
 | --- | --- | --- | --- | --- | --- |
-| B1 | Next | `Audit mounted weapon semantics` | Ensure installed weapons are always active and no player-facing weapon toggle remains | `CombatLoadoutPreview.cs`, `Mc2DemoBootstrap.cs`, `Mc2DemoValidator.cs` | `rg` audit, validator |
-| B2 | Pending | `Make MechLab grid blocks explicit` | Render weapons as contiguous shape blocks; armor/sinks as single-cell fillers | `LoadoutContract.cs`, `LoadoutValidator.cs`, `CombatLoadoutPreview.cs`, `Mc2DemoBootstrap.cs` | validator, `mc2_01-loadout-compact.txt` smoke |
+| B1 | Done | `Audit mounted weapon semantics` | Ensure installed weapons are always active and no player-facing weapon toggle remains | `CombatLoadoutPreview.cs`, `Mc2DemoBootstrap.cs`, `Mc2DemoValidator.cs` | `rg` audit, validator |
+| B2 | Next | `Make MechLab grid blocks explicit` | Render weapons as contiguous shape blocks; armor/sinks as single-cell fillers | `LoadoutContract.cs`, `LoadoutValidator.cs`, `CombatLoadoutPreview.cs`, `Mc2DemoBootstrap.cs` | validator, `mc2_01-loadout-compact.txt` smoke |
 | B3 | Pending | `Prove loadout battle effects` | Confirm fitted weapons/armor/heat sinks affect BattleCore combat behavior | `UnitState.cs`, `CombatLoadoutPreview.cs`, `MechBayInventoryContract.cs`, validator | validator, optional combat smoke |
 
 Sprint B detail:

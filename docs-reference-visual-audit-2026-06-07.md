@@ -1050,3 +1050,60 @@ Next priority:
 
 1. Stage 4 / Task 4.1 audit mounted weapon semantics.
 2. Then Stage 4 / Task 4.2 make MechLab grid blocks explicit.
+
+## Stage 4.1 Mounted Weapon Semantics Audit Result
+
+Implemented on 2026-06-07:
+
+- Audited weapon toggle wording across BattleCore, editor validator, presentation code and public README files.
+- Renamed the internal loadout preview weapon mask from `enabledWeapons` / `IsWeaponEnabled` to `mountedWeapons` / `IsWeaponMounted`.
+- Renamed the validator's disabled weapon preview language to unmounted weapon preview language.
+- Kept the internal preview ability to model an unmounted weapon for fitting validation, while preserving the player rule that a mounted weapon is active.
+- Confirmed remaining generic `Enable` / `Disable` hits are unrelated GUI, material, collider, renderer, purchase, hire, launch or save-slot state controls, not weapon toggles.
+
+Modified files:
+
+```text
+unity-mc2-demo/Assets/Scripts/BattleCore/CombatLoadoutPreview.cs
+unity-mc2-demo/Assets/Editor/Mc2DemoValidator.cs
+docs-reference-visual-audit-2026-06-07.md
+docs-playable-demo-locked-execution-plan-2026-06-07.md
+```
+
+Validation commands:
+
+```powershell
+rg -n "enabledWeapons|IsWeaponEnabled|disabledPreview|disabled loadout|disabled weapon|weapon.*toggle|toggle.*weapon" unity-mc2-demo/Assets/Scripts unity-mc2-demo/Assets/Editor unity-mc2-demo/README.md README.md
+git diff --check
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoValidator.ValidateMissionContract -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-validate-mounted-weapon-semantics.log"
+```
+
+Validation evidence:
+
+```text
+analysis-output/unity-validate-mounted-weapon-semantics.log
+```
+
+Validation results:
+
+```text
+Weapon-toggle rg audit: no matches for enabledWeapons, IsWeaponEnabled, disabledPreview, disabled loadout, disabled weapon, weapon toggle or toggle weapon.
+git diff --check: clean, with Windows line-ending warnings only.
+Validator: MC2 demo contract validation OK.
+```
+
+Observed effect:
+
+- The codebase no longer names mounted weapon filtering as enable/disable.
+- Installed/mounted weapons remain the active combat concept.
+- Stage 4 can now polish grid block fitting without reintroducing weapon on/off UI.
+
+Remaining issues:
+
+1. MechLab still needs clearer contiguous weapon blocks and more direct armor/sink filler readability.
+2. The next commit should focus on grid block visuals and validation, not broader MechLab redesign.
+
+Next priority:
+
+1. Stage 4 / Task 4.2 make MechLab grid blocks explicit.
+2. Then Stage 4 / Task 4.3 prove loadout battle effects.
