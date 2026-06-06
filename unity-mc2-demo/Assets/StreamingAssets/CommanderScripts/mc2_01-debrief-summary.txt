@@ -1,4 +1,4 @@
-# Proves the visible debrief panel, Outcome row, result cue contract, summary rows, salvage/bounty/payout copy, End Run label, flow status copy, and compact combat overflow helper stay valid.
+# Proves the visible debrief panel, Outcome row, result cue contract, summary rows, salvage/bounty/payout copy, clean repair/contract/retry actions, and compact combat overflow helper stay valid.
 complete-visible-objectives
 open-debrief
 assert-debrief-visible

@@ -565,6 +565,10 @@ Goal: Do not build a heavy save system; do finish the natural play loop.
 
 **Goal:** Debrief shows result, damage, reward, repair and next action without save-slot concepts.
 
+**Status:** Completed 2026-06-07.
+
+**Result:** Normal debrief actions now read as `Repair & Mech Lab`, `Next Contract`, `Retry Battle` and `Close`. The debrief smoke assertion guards result/objective/damage/reward lines and confirms the normal flow no longer exposes save-slot, account, continue, End Run or Restart Mission copy. Internal automatic receipt persistence logs as a neutral company snapshot update.
+
 **Files:**
 
 - Modify: `unity-mc2-demo/Assets/Scripts/Presentation/Mc2DemoBootstrap.cs`
@@ -586,6 +590,7 @@ Goal: Do not build a heavy save system; do finish the natural play loop.
 
 ```powershell
 git diff --check
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoBuilder.BuildWindows64 -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-build-debrief-player-flow.log"
 & "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo\Builds\Windows\MC2UnityDemo.exe" -batchmode -nographics -mc2SmokeTest -mc2CommandFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo\Assets\StreamingAssets\CommanderScripts\mc2_01-debrief-summary.txt" -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-player-debrief-summary.log"
 ```
 
@@ -927,12 +932,13 @@ Recently completed:
 | 9 | `Audit mounted weapon semantics` | Mounted weapon means active weapon; no player-facing weapon toggle remains | `rg` audit, validator |
 | 10 | `Make MechLab grid blocks explicit` | MechLab grid shows block frames, cell dividers and single-cell filler language | validator, build, loadout smoke |
 | 11 | `Prove loadout battle effects` | Fitted weapons, armor fillers and heat-sink fillers now feed BattleCore UnitState combat stats | validator, build, visible-flow smoke |
+| 12 | `Simplify debrief player flow` | Debrief now presents repair, next contract, retry and close actions without save/account wording in normal smoke | build, debrief smoke, copy audit |
 
 Current state:
 
 - Current stage: Stage 5 / Debrief And Relaunch Loop.
-- Current next commit: `Simplify debrief player flow`.
-- Current demo risk: combat and MechLab rules are now guarded, but the debrief still exposes too much system/save-management wording for a clean first-player flow.
+- Current next commit: `Guard repair and relaunch loop`.
+- Current demo risk: debrief copy is now clean, but C2 still needs to prove immediate repair restores launch eligibility and does not require save management.
 - Current build risk: Unity batch build can dirty `Assets/Scenes/Mc2Demo.unity` with fileID churn; inspect and restore before commit.
 - Current content risk: private reference content can be used locally for validation but must stay out of Git and public packages.
 
@@ -942,8 +948,8 @@ Next commits:
 | --- | --- | --- | --- |
 | B2 | Done | `Make MechLab grid blocks explicit` | G3 MechLab feel |
 | B3 | Done | `Prove loadout battle effects` | G3 MechLab feel |
-| C1 | Next | `Simplify debrief player flow` | G4 Battle loop |
-| C2 | Pending | `Guard repair and relaunch loop` | G4 Battle loop |
+| C1 | Done | `Simplify debrief player flow` | G4 Battle loop |
+| C2 | Next | `Guard repair and relaunch loop` | G4 Battle loop |
 | D1 | Pending | `Freeze AI observation contract` | G5 AI capability |
 | D2 | Pending | `Guard AI directive adapter` | G5 AI capability |
 | D3 | Pending | `Show optional AI advice window` | G5 AI capability |
@@ -1054,6 +1060,10 @@ git diff --check
 
 **Goal:** After a mission, show only what the player needs: result, objective state, damage, salvage/payout, repair and relaunch path.
 
+**Status:** Completed 2026-06-07.
+
+**Result:** The debrief panel now presents direct player actions: repair in Mech Lab, next contract, retry battle and close. Smoke output guards those action labels and no longer carries save-slot, account, continue-company, End Run or Restart Mission wording in the normal debrief command file/log. Explicit saved-account diagnostic scripts remain separate.
+
 **Files:**
 
 - Modify: `unity-mc2-demo/Assets/Scripts/Presentation/Mc2DemoBootstrap.cs`
@@ -1075,6 +1085,7 @@ git diff --check
 
 ```powershell
 git diff --check
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoBuilder.BuildWindows64 -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-build-debrief-player-flow.log"
 & "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo\Builds\Windows\MC2UnityDemo.exe" -batchmode -nographics -mc2SmokeTest -mc2CommandFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo\Assets\StreamingAssets\CommanderScripts\mc2_01-debrief-summary.txt" -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-player-debrief-summary.log"
 ```
 

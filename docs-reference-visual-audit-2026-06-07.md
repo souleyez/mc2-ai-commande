@@ -1168,7 +1168,7 @@ Remaining issues:
 
 Next priority:
 
-1. Stage 4.3 loadout battle effect proof, then Stage 5 / C1 debrief cleanup.
+1. Stage 4.3 loadout battle effect proof and Stage 5 / C1 debrief cleanup are complete; next priority is Stage 5 / C2 repair and relaunch.
 
 ## Stage 4.3 Loadout Battle Effect Result
 
@@ -1228,9 +1228,72 @@ Observed effect:
 
 Remaining issues:
 
-1. The debrief screen still needs a normal-player pass so it shows result, damage, payout, repair and relaunch without save-slot or account-management wording.
+1. Resolved by Stage 5.1: the debrief screen now exposes clean repair/contract/retry/close actions and normal smoke no longer carries save/account wording.
 2. A future visual/manual pass can capture a filler-applied MechLab screenshot once the default fit exposes a clean spare-cell example.
 
 Next priority:
 
-1. Stage 5 / C1 simplify debrief player flow.
+1. Stage 5 / C2 guard repair and relaunch loop.
+
+## Stage 5.1 Debrief Player Flow Result
+
+Implemented on 2026-06-07:
+
+- Replaced normal debrief panel actions with `Repair & Mech Lab`, `Next Contract`, `Retry Battle` and `Close`.
+- Updated post-mission status copy to `Repair path: Mech Lab` and `Next contract list`.
+- Removed `End Run` and `Restart Mission` from the normal debrief surface and debrief smoke assertion.
+- Tightened the debrief summary assertion so it rejects save-slot, account, continue, `End Run` and `Restart Mission` copy in normal debrief actions.
+- Kept saved-account diagnostic scripts separate from the normal debrief smoke.
+- Renamed the hidden automatic mission receipt persistence log to `MC2 company snapshot updated` and stopped printing the saved-account file path in that normal-flow log.
+- Restored Unity scene fileID churn after each Windows build; no scene content change is part of this task.
+
+Modified files:
+
+```text
+unity-mc2-demo/Assets/Scripts/Presentation/Mc2DemoBootstrap.cs
+unity-mc2-demo/Assets/StreamingAssets/CommanderScripts/mc2_01-debrief-summary.txt
+docs-reference-visual-audit-2026-06-07.md
+docs-playable-demo-locked-execution-plan-2026-06-07.md
+docs-mc2-detailed-development-plan.md
+```
+
+Validation commands:
+
+```powershell
+git diff --check
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoBuilder.BuildWindows64 -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-build-debrief-player-flow.log"
+& "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo\Builds\Windows\MC2UnityDemo.exe" -batchmode -nographics -mc2SmokeTest -mc2CommandFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo\Assets\StreamingAssets\CommanderScripts\mc2_01-debrief-summary.txt" -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-player-debrief-summary.log"
+rg -n "End Run|Restart Mission|Save slot|save slot|saved account|saved-account|account|continue|Start Fresh|Load Check|Save Result|Slot " analysis-output/unity-player-debrief-summary.log unity-mc2-demo/Assets/StreamingAssets/CommanderScripts/mc2_01-debrief-summary.txt
+```
+
+Validation evidence:
+
+```text
+analysis-output/unity-build-debrief-player-flow.log
+analysis-output/unity-player-debrief-summary.log
+```
+
+Validation results:
+
+```text
+git diff --check: clean, with Windows line-ending warnings only.
+Build: Build Finished, Result: Success; MC2 Unity demo Windows build OK.
+Debrief smoke: MC2 demo smoke test exiting with code 0.
+Debrief assertion: actions=Repair & Mech Lab/Next Contract/Retry Battle/Close.
+Copy audit: no matches for End Run, Restart Mission, save-slot, saved-account, account, continue, Start Fresh, Load Check, Save Result or Slot in the debrief smoke log and debrief command script.
+```
+
+Observed effect:
+
+- A player finishing a mission sees the immediate next choices instead of system lifecycle language.
+- Result, objective count, damage, salvage, bounty, payout and repair cost remain visible.
+- Normal debrief evidence is now clean; explicit saved-account scripts remain available for separate diagnostics.
+
+Remaining issues:
+
+1. C2 still needs to prove immediate repair and relaunch eligibility through validator or smoke evidence.
+2. The Mech Lab can still contain hidden saved-account diagnostic affordances; those should stay out of normal flow unless explicitly requested.
+
+Next priority:
+
+1. Stage 5 / C2 guard repair and relaunch loop.

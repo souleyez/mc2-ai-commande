@@ -100,7 +100,12 @@ namespace MC2Demo.Presentation
         private const string SaveSlotNoSavedCopyText = "No saved game to copy";
         private const string SaveSlotContinueCheckFailedText = "Save check failed";
         private const string EndRunButtonLabel = "End Run";
-        private const string DebriefNextStepText = "Next: repair, inspect Mech Lab, choose next contract.";
+        private const string DebriefNextStepText = "Next: repair in Mech Lab, retry, or pick another contract.";
+        private const string DebriefRepairMechLabButtonLabel = "Repair & Mech Lab";
+        private const string DebriefNextContractButtonLabel = "Next Contract";
+        private const string DebriefRetryButtonLabel = "Retry Battle";
+        private const string DebriefCloseButtonLabel = "Close";
+        private const string DebriefClosedStatusText = "Debrief closed";
         private const string DebriefPayoutLabel = "Payout";
         private const string DebriefSalvageLabel = "Salvage";
         private const string DebriefBountyLabel = "Bounty";
@@ -123,8 +128,8 @@ namespace MC2Demo.Presentation
         private const string SquadSelectionBackButtonLabel = "Back";
         private const string SquadSelectionUnavailableStatusText = "Squad plan unavailable";
         private const string ReserveFitBackButtonLabel = "Back";
-        private const string AfterActionMechLabStatusText = "After Action: Mech Lab";
-        private const string AfterActionContractsStatusText = "After Action: Contracts";
+        private const string AfterActionMechLabStatusText = "Repair path: Mech Lab";
+        private const string AfterActionContractsStatusText = "Next contract list";
         private const string MechLabRosterEmptyText = "No mechs in bay";
         private const string MechLabRosterStateLabel = "Squad State ";
         private const string LoadoutStockShortPrefix = "Stock short: ";
@@ -1952,11 +1957,9 @@ namespace MC2Demo.Presentation
             MechBaySavedAccountContract account = CurrentSavedAccountSnapshot();
             MechBaySavedAccountFileResult export =
                 MechBaySavedAccountService.ExportJsonFile(account, resolvedPath);
-            string safeReason = string.IsNullOrWhiteSpace(reason) ? "account change" : reason.Trim();
+            string safeReason = string.IsNullOrWhiteSpace(reason) ? "company change" : reason.Trim();
             string line = "reason="
                 + safeReason
-                + " path="
-                + resolvedPath
                 + " jsonChars="
                 + export.JsonCharCount.ToString(CultureInfo.InvariantCulture)
                 + " message="
@@ -1964,16 +1967,16 @@ namespace MC2Demo.Presentation
 
             if (export.Accepted)
             {
-                RecordSavedAccountFileResult("Auto Save OK", true, SavedAccountFileName(resolvedPath) + "  " + safeReason);
-                Debug.Log("MC2 saved account auto-save: " + line);
+                RecordSavedAccountFileResult("Company updated", true, safeReason);
+                Debug.Log("MC2 company snapshot updated: " + line);
                 return true;
             }
 
-            statusText = "Auto-save failed";
-            string failure = export.Message ?? "auto-save failed";
-            RecordSavedAccountFileResult("Auto Save failed", false, failure);
-            AddCombatLogLine("Auto-save failed: " + failure);
-            Debug.LogError("MC2 saved account auto-save failed: " + failure + " " + line);
+            statusText = "Company update failed";
+            string failure = export.Message ?? "company update failed";
+            RecordSavedAccountFileResult("Company update failed", false, failure);
+            AddCombatLogLine("Company update failed: " + failure);
+            Debug.LogError("MC2 company snapshot update failed: " + failure + " " + line);
             return false;
         }
 
@@ -4968,18 +4971,31 @@ namespace MC2Demo.Presentation
                 SummaryItemsText(new[] { "A", "B", "C" }, 2),
                 "A, B +1",
                 StringComparison.Ordinal);
-            bool endRunLabelOk = string.Equals(EndRunButtonLabel, "End Run", StringComparison.Ordinal)
-                && EndRunButtonLabel.IndexOf("Demo", StringComparison.OrdinalIgnoreCase) < 0
-                && EndRunButtonLabel.Length <= 8;
+            string debriefActions = DebriefRepairMechLabButtonLabel
+                + "/"
+                + DebriefNextContractButtonLabel
+                + "/"
+                + DebriefRetryButtonLabel
+                + "/"
+                + DebriefCloseButtonLabel;
+            bool debriefActionCopyOk = string.Equals(DebriefRepairMechLabButtonLabel, "Repair & Mech Lab", StringComparison.Ordinal)
+                && string.Equals(DebriefNextContractButtonLabel, "Next Contract", StringComparison.Ordinal)
+                && string.Equals(DebriefRetryButtonLabel, "Retry Battle", StringComparison.Ordinal)
+                && string.Equals(DebriefCloseButtonLabel, "Close", StringComparison.Ordinal)
+                && NormalDebriefCopyClean(debriefActions)
+                && DebriefRepairMechLabButtonLabel.Length <= 18
+                && DebriefNextContractButtonLabel.Length <= 16
+                && DebriefRetryButtonLabel.Length <= 14;
             bool debriefCopyOk = string.Equals(DebriefPayoutLabel, "Payout", StringComparison.Ordinal)
                 && DebriefPayoutLabel.IndexOf("Receipt", StringComparison.OrdinalIgnoreCase) < 0
                 && string.Equals(DebriefSalvageLabel, "Salvage", StringComparison.Ordinal)
                 && DebriefSalvageLabel.IndexOf("claims", StringComparison.OrdinalIgnoreCase) < 0
                 && string.Equals(DebriefBountyLabel, "Bounty", StringComparison.Ordinal)
                 && DebriefBountyLabel.IndexOf("Total", StringComparison.OrdinalIgnoreCase) < 0
-                && DebriefNextStepText.IndexOf("choose next contract", StringComparison.OrdinalIgnoreCase) >= 0
-                && DebriefNextStepText.IndexOf("save", StringComparison.OrdinalIgnoreCase) < 0
-                && DebriefNextStepText.IndexOf("launch again", StringComparison.OrdinalIgnoreCase) < 0;
+                && DebriefNextStepText.IndexOf("repair", StringComparison.OrdinalIgnoreCase) >= 0
+                && DebriefNextStepText.IndexOf("contract", StringComparison.OrdinalIgnoreCase) >= 0
+                && DebriefNextStepText.IndexOf("retry", StringComparison.OrdinalIgnoreCase) >= 0
+                && NormalDebriefCopyClean(DebriefNextStepText);
             string resultFx = MissionResultCueSummary();
             bool resultFxOk = resultFx.IndexOf("ResultCue=complete+failed", StringComparison.Ordinal) >= 0;
             string debriefDamageFx = DebriefDamageCueSummary();
@@ -5011,10 +5027,7 @@ namespace MC2Demo.Presentation
                 repairCostResourcePoints = 400,
                 netResourcePoints = 2600
             });
-            bool flowStatusCopyOk = SaveSlotNeedsReviewText.IndexOf("slot", StringComparison.OrdinalIgnoreCase) >= 0
-                && SaveSlotNeedsReviewText.IndexOf("review", StringComparison.OrdinalIgnoreCase) >= 0
-                && NoSaveSlotText.IndexOf("default", StringComparison.OrdinalIgnoreCase) < 0
-                && string.Equals(ContractsOpenStatusText, "Contracts open", StringComparison.Ordinal)
+            bool flowStatusCopyOk = string.Equals(ContractsOpenStatusText, "Contracts open", StringComparison.Ordinal)
                 && string.Equals(ContractsHeaderText, "Available Contracts", StringComparison.Ordinal)
                 && string.Equals(ContractsCardTitleText, "Airfield Contract", StringComparison.Ordinal)
                 && string.Equals(ContractsMapReadyText, "Mission map ready", StringComparison.Ordinal)
@@ -5022,11 +5035,11 @@ namespace MC2Demo.Presentation
                 && string.Equals(ContractsReturnBattleButtonLabel, "Back to Battle", StringComparison.Ordinal)
                 && string.Equals(ContractsReturnDebriefButtonLabel, "Back to Debrief", StringComparison.Ordinal)
                 && ContractsLaunchButtonLabel.IndexOf("Contract", StringComparison.OrdinalIgnoreCase) < 0
-                && string.Equals(SystemRestartButtonLabel, "Restart Mission", StringComparison.Ordinal)
-                && SystemRestartButtonLabel.IndexOf("Contract", StringComparison.OrdinalIgnoreCase) < 0
                 && string.Equals(SystemBackButtonLabel, "Back", StringComparison.Ordinal)
-                && AfterActionMechLabStatusText.StartsWith("After Action", StringComparison.Ordinal)
-                && AfterActionContractsStatusText.StartsWith("After Action", StringComparison.Ordinal)
+                && string.Equals(AfterActionMechLabStatusText, "Repair path: Mech Lab", StringComparison.Ordinal)
+                && string.Equals(AfterActionContractsStatusText, "Next contract list", StringComparison.Ordinal)
+                && NormalDebriefCopyClean(AfterActionMechLabStatusText)
+                && NormalDebriefCopyClean(AfterActionContractsStatusText)
                 && string.Equals(debriefTopMode, "MODE Debrief", StringComparison.Ordinal)
                 && debriefTopMode.IndexOf("FLOW", StringComparison.OrdinalIgnoreCase) < 0
                 && string.Equals(debriefFunds, "Funds --", StringComparison.Ordinal)
@@ -5048,8 +5061,8 @@ namespace MC2Demo.Presentation
                 + summary.destroyedStructures.ToString(CultureInfo.InvariantCulture)
                 + " net="
                 + summary.netResourcePoints.ToString(CultureInfo.InvariantCulture)
-                + " end="
-                + EndRunButtonLabel
+                + " actions="
+                + debriefActions
                 + " payout="
                 + DebriefPayoutLabel
                 + " salvage="
@@ -5067,9 +5080,9 @@ namespace MC2Demo.Presentation
                 + "/"
                 + ContractsLaunchButtonLabel
                 + "/"
-                + SystemRestartButtonLabel
-                + "/"
                 + AfterActionMechLabStatusText
+                + "/"
+                + AfterActionContractsStatusText
                 + " top="
                 + debriefTopMode
                 + " funds="
@@ -5091,7 +5104,7 @@ namespace MC2Demo.Presentation
                     && outcomeLineOk
                     && combatLineOk
                     && overflowOk
-                    && endRunLabelOk
+                    && debriefActionCopyOk
                     && debriefCopyOk
                     && resultFxOk
                     && debriefDamageFxOk
@@ -5099,6 +5112,21 @@ namespace MC2Demo.Presentation
                     && flowStatusCopyOk,
                 Summary = result
             };
+        }
+
+        private static bool NormalDebriefCopyClean(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                return false;
+            }
+
+            return text.IndexOf("save", StringComparison.OrdinalIgnoreCase) < 0
+                && text.IndexOf("slot", StringComparison.OrdinalIgnoreCase) < 0
+                && text.IndexOf("account", StringComparison.OrdinalIgnoreCase) < 0
+                && text.IndexOf("continue", StringComparison.OrdinalIgnoreCase) < 0
+                && text.IndexOf("End Run", StringComparison.OrdinalIgnoreCase) < 0
+                && text.IndexOf("Restart Mission", StringComparison.OrdinalIgnoreCase) < 0;
         }
 
         private DebriefVisibleAssertionResult BuildDebriefVisibleAssertion()
@@ -17930,6 +17958,14 @@ namespace MC2Demo.Presentation
             statusText = AfterActionContractsStatusText;
         }
 
+        private void CloseMissionResultPanel()
+        {
+            showMissionResultPanel = false;
+            AddCombatLogLine("Debrief closed");
+            SetDemoFlowScreen(DemoFlowScreen.Debrief);
+            statusText = DebriefClosedStatusText;
+        }
+
         private void DrawMissionResultPanel()
         {
             if (mission.Result == MissionResultState.InProgress || !showMissionResultPanel)
@@ -17947,24 +17983,24 @@ namespace MC2Demo.Presentation
 
             GUI.Label(new Rect(panel.x + 18f, panel.y + 270f, panel.width - 36f, 20f), DebriefNextStepText);
             float actionWidth = (panel.width - 44f) * 0.5f;
-            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 296f, actionWidth, 30f), "Mech Lab"))
+            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 296f, actionWidth, 30f), DebriefRepairMechLabButtonLabel))
             {
                 OpenPostMissionMechBay();
             }
 
-            if (GUI.Button(new Rect(panel.x + 26f + actionWidth, panel.y + 296f, actionWidth, 30f), "Contracts"))
+            if (GUI.Button(new Rect(panel.x + 26f + actionWidth, panel.y + 296f, actionWidth, 30f), DebriefNextContractButtonLabel))
             {
                 OpenPostMissionListPanel();
             }
 
-            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 334f, actionWidth, 30f), SystemRestartButtonLabel))
+            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 334f, actionWidth, 30f), DebriefRetryButtonLabel))
             {
                 TryApplyMissionRestartRuntimeSwap();
             }
 
-            if (GUI.Button(new Rect(panel.x + 26f + actionWidth, panel.y + 334f, actionWidth, 30f), EndRunButtonLabel))
+            if (GUI.Button(new Rect(panel.x + 26f + actionWidth, panel.y + 334f, actionWidth, 30f), DebriefCloseButtonLabel))
             {
-                Application.Quit(0);
+                CloseMissionResultPanel();
             }
         }
 
