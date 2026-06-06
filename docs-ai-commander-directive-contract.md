@@ -84,6 +84,17 @@ The current startup path uses `-mc2MinimaxCommanderSteps <n>` for smoke testing.
 
 The next production pass should make the model call asynchronous and let the current directive remain active until a new directive arrives.
 
+## Optional Advice Window
+
+The first demo exposes AI as a compact System-panel deputy window, not as an active battle chat surface. The window shows:
+
+- state: `Offline` when no model key is configured, or `Ready` when a model configuration is available;
+- mode: `Local fallback` or `Model ready`;
+- intent: one legal directive token;
+- advice: one short tactical sentence derived from the directive.
+
+Drawing this window must not call the model. It builds a temporary local observation, derives a safe fallback directive through `RuleCommander`, and leaves player commands as the only live control path. The command-file smoke action `assert-ai-deputy-window` verifies the offline path without spending tokens.
+
 ## Near-Term Stop Line
 
 Do not expand AI integration beyond:

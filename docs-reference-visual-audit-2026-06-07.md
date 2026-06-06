@@ -1477,3 +1477,69 @@ Remaining issues:
 Next priority:
 
 1. Stage 6 / D1 freeze compact AI observation.
+
+## Stage 6.3 Optional AI Advice Window Result
+
+Implemented on 2026-06-07:
+
+- Added a compact AI Deputy / AI副官 subsection to the System panel.
+- The panel shows `State`, `Mode`, `Intent`, and one short `Advice` line.
+- The UI state builder reads `MiniMaxCommander.ConfigFromEnvironment()` and a temporary local `CommanderObservationPort` observation only; drawing the panel does not make a model call.
+- The local fallback directive is derived from `RuleCommander`, keeping AI as a high-level deputy window instead of a live combat controller.
+- Added `assert-ai-deputy-window` to startup command files and visible-flow smoke.
+- Added parser validator coverage for the new assertion and malformed payload rejection.
+- Restored Unity scene fileID churn after the Windows build; no scene content change is part of this task.
+
+Modified files:
+
+```text
+unity-mc2-demo/Assets/Editor/Mc2DemoValidator.cs
+unity-mc2-demo/Assets/Scripts/Presentation/Mc2DemoBootstrap.cs
+unity-mc2-demo/Assets/Scripts/Presentation/StartupCommanderScript.cs
+unity-mc2-demo/Assets/StreamingAssets/CommanderScripts/mc2_01-visible-flow-audit.txt
+docs-ai-commander-directive-contract.md
+docs-playable-demo-current-execution-plan-2026-06-07.md
+docs-reference-visual-audit-2026-06-07.md
+```
+
+Validation commands:
+
+```powershell
+git diff --check
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoValidator.ValidateMissionContract -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-validate-ai-advice-window.log"
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoBuilder.BuildWindows64 -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-build-ai-advice-window.log"
+$env:MINIMAX_API_KEY=''; & "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo\Builds\Windows\MC2UnityDemo.exe" -batchmode -nographics -mc2SmokeTest -mc2CommandFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo\Assets\StreamingAssets\CommanderScripts\mc2_01-visible-flow-audit.txt" -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-player-ai-advice-window.log"
+```
+
+Validation evidence:
+
+```text
+analysis-output/unity-validate-ai-advice-window.log
+analysis-output/unity-build-ai-advice-window.log
+analysis-output/unity-player-ai-advice-window.log
+```
+
+Validation results:
+
+```text
+git diff --check: clean, with Windows line-ending warnings only.
+Validator: MC2 demo contract validation OK.
+Build: Build Finished, Result: Success; MC2 Unity demo Windows build OK.
+Visible-flow smoke: MC2 demo smoke test exiting with code 0.
+AI deputy assertion: state=Offline mode=Local fallback intent=assault-objective advice=Advance objective.
+```
+
+Observed effect:
+
+- AI now appears as an optional deputy capability in a pause/system surface, not as required gameplay.
+- Missing model configuration no longer blocks or hides the capability story; the first-demo local path remains complete.
+- Normal battle HUD stays sparse because the AI window is not drawn in the active combat surface.
+
+Remaining issues:
+
+1. AI calls should stay asynchronous or pre-mission/paused in later work.
+2. The next product priority returns to game visibility: re-audit `hangar-contact` and `damage-demo` occupancy/readability with current screenshots and sidecars.
+
+Next priority:
+
+1. V1 re-audit battle occupancy readability.

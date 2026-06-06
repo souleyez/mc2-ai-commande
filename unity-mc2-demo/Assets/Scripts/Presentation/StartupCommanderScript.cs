@@ -585,7 +585,19 @@ namespace MC2Demo.Presentation
                 return true;
             }
 
-            error = "Command file action must be command, status-row, battle-click, battle-target, advance, report, restart, mech-bay-launch, hide-squad-preview, complete-visible-objectives, open-debrief, saved-account-report, saved-account-save-load-preview, saved-account-export, saved-account-import-preview, saved-account-import-apply-preview, saved-account-import-apply, saved-account-load-default-preview, saved-account-save-current-default, saved-account-load-default-apply, prepare-depot-candidate, prepare-local-candidate, squad-swap, assert-restart-identity, assert-debrief-summary, assert-debrief-visible, assert-command-result, assert-combat-situation, assert-encounter-pacing, assert-objective-graph, or assert-loadout-compact.";
+            if (string.Equals(verb, "assert-ai-deputy-window", StringComparison.OrdinalIgnoreCase))
+            {
+                if (!string.IsNullOrWhiteSpace(payload))
+                {
+                    error = "Assert AI deputy window action does not accept arguments.";
+                    return false;
+                }
+
+                action = StartupCommanderScriptAction.AssertAiDeputyWindow(lineNumber, rawLine);
+                return true;
+            }
+
+            error = "Command file action must be command, status-row, battle-click, battle-target, advance, report, restart, mech-bay-launch, hide-squad-preview, complete-visible-objectives, open-debrief, saved-account-report, saved-account-save-load-preview, saved-account-export, saved-account-import-preview, saved-account-import-apply-preview, saved-account-import-apply, saved-account-load-default-preview, saved-account-save-current-default, saved-account-load-default-apply, prepare-depot-candidate, prepare-local-candidate, squad-swap, assert-restart-identity, assert-debrief-summary, assert-debrief-visible, assert-command-result, assert-combat-situation, assert-encounter-pacing, assert-objective-graph, assert-loadout-compact, or assert-ai-deputy-window.";
             return false;
         }
     }
@@ -974,6 +986,16 @@ namespace MC2Demo.Presentation
                 SourceLine = sourceLine ?? string.Empty
             };
         }
+
+        public static StartupCommanderScriptAction AssertAiDeputyWindow(int lineNumber, string sourceLine)
+        {
+            return new StartupCommanderScriptAction
+            {
+                Kind = StartupCommanderScriptActionKind.AssertAiDeputyWindow,
+                LineNumber = lineNumber,
+                SourceLine = sourceLine ?? string.Empty
+            };
+        }
     }
 
     public enum StartupCommanderScriptActionKind
@@ -1009,6 +1031,7 @@ namespace MC2Demo.Presentation
         AssertCombatSituation,
         AssertEncounterPacing,
         AssertObjectiveGraph,
-        AssertLoadoutCompact
+        AssertLoadoutCompact,
+        AssertAiDeputyWindow
     }
 }

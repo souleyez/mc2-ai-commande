@@ -30,7 +30,7 @@
 - Branch: `master...ai-origin/master [ahead 49]`.
 - AI compact observation 已提交：`af7dbe9 Freeze AI observation contract`.
 - AI directive adapter 已提交：`9bf26bd Guard AI directive adapter`.
-- 下一步是 `D3 Show optional AI advice window`.
+- 下一步是 `V1 Re-audit battle occupancy readability`.
 
 ## 1. First Demo Product Scope
 
@@ -242,8 +242,8 @@ Do not stage generated PNG/JSON/log evidence unless explicitly requested.
 | --- | --- | --- | --- |
 | 0 | Done | `Freeze AI observation contract` | G5 AI capability |
 | 1 | Done | `Guard AI directive adapter` | G5 AI capability |
-| 2 | Next | `Show optional AI advice window` | G5 AI capability |
-| 3 | Pending | `Re-audit battle occupancy readability` | G2/G7 readability and occupancy |
+| 2 | Done | `Show optional AI advice window` | G5 AI capability |
+| 3 | Next | `Re-audit battle occupancy readability` | G2/G7 readability and occupancy |
 | 4 | Pending | `Improve reference visual readability` | G2 battle readability |
 | 5 | Pending | `Lock occupancy placeholder review layer` | G7 collision evidence |
 | 6 | Pending | `Polish MechLab block fitting` | G3 MechLab feel |
@@ -260,7 +260,9 @@ Do not stage generated PNG/JSON/log evidence unless explicitly requested.
 
 ### D3: Show Optional AI Advice Window
 
-**Status:** Next.
+**Status:** Completed 2026-06-07.
+
+**Result:** System panel now includes a compact AI Deputy / AI副官 window that reports state, mode, intent and one short advice sentence. The state builder reads model configuration and local BattleCore observation only; drawing the window does not call the model. `assert-ai-deputy-window` is now part of the command-file smoke path and proves the missing-key offline fallback without spending tokens. Evidence: `analysis-output/unity-validate-ai-advice-window.log`, `analysis-output/unity-build-ai-advice-window.log`, `analysis-output/unity-player-ai-advice-window.log`.
 
 **Goal:** 在第一版 UI 中显示一个小型 AI 副官能力窗口，只给高层建议；没有 API key、模型超时或离线时，本地 Demo 完整可玩。
 
@@ -363,7 +365,7 @@ git diff --check
 
 ### V1: Re-Audit Battle Occupancy Readability
 
-**Status:** Pending.
+**Status:** Next.
 
 **Goal:** 先用截图和 sidecar 判断当前“堆在一起”到底是碰撞缺失、镜头压缩、模型比例、敌人密度、遮挡还是特效噪音。
 

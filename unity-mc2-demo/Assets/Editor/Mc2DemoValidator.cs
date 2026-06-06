@@ -3633,6 +3633,16 @@ namespace MC2Demo.EditorTools
                 throw new InvalidDataException("Expected command file parser to read saved-account-import-apply actions.");
             }
 
+            if (!StartupCommanderScript.TryParseLine(
+                    "assert-ai-deputy-window",
+                    1,
+                    out StartupCommanderScriptAction aiDeputyWindowAction,
+                    out _)
+                || aiDeputyWindowAction.Kind != StartupCommanderScriptActionKind.AssertAiDeputyWindow)
+            {
+                throw new InvalidDataException("Expected command file parser to read assert-ai-deputy-window actions.");
+            }
+
             BattleMission mission = new(MakeCommandPortContract(), CombatProfileCatalog.Empty);
             CommanderCommandPort port = new(mission, 520f, _ => true);
             int restartCount = 0;
@@ -3768,7 +3778,8 @@ namespace MC2Demo.EditorTools
                 || StartupCommanderScript.TryParseLine("saved-account-export", 1, out _, out _)
                 || StartupCommanderScript.TryParseLine("saved-account-import-preview", 1, out _, out _)
                 || StartupCommanderScript.TryParseLine("saved-account-import-apply-preview", 1, out _, out _)
-                || StartupCommanderScript.TryParseLine("saved-account-import-apply", 1, out _, out _))
+                || StartupCommanderScript.TryParseLine("saved-account-import-apply", 1, out _, out _)
+                || StartupCommanderScript.TryParseLine("assert-ai-deputy-window now", 1, out _, out _))
             {
                 throw new InvalidDataException("Expected malformed command file lines to be rejected.");
             }

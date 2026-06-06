@@ -1214,6 +1214,9 @@ namespace MC2Demo.Presentation
                     case StartupCommanderScriptActionKind.AssertLoadoutCompact:
                         RunStartupLoadoutCompactAssertion();
                         break;
+                    case StartupCommanderScriptActionKind.AssertAiDeputyWindow:
+                        RunStartupAiDeputyWindowAssertion();
+                        break;
                 }
             }
         }
@@ -2831,6 +2834,50 @@ namespace MC2Demo.Presentation
             statusText = "Objective graph assertion failed";
             AddCombatLogLine("CLI objective graph assert failed: " + result.Summary);
             Debug.LogError("MC2 objective graph assertion failed: " + result.Summary);
+        }
+
+        private void RunStartupAiDeputyWindowAssertion()
+        {
+            AiDeputyWindowAssertionResult result = BuildAiDeputyWindowAssertion();
+            if (result.Accepted)
+            {
+                AddCombatLogLine("CLI AI deputy assert OK: " + result.Summary);
+                Debug.Log("MC2 AI deputy window assertion OK: " + result.Summary);
+                return;
+            }
+
+            startupSmokeFailed = true;
+            statusText = "AI deputy assertion failed";
+            AddCombatLogLine("CLI AI deputy assert failed: " + result.Summary);
+            Debug.LogError("MC2 AI deputy window assertion failed: " + result.Summary);
+        }
+
+        private AiDeputyWindowAssertionResult BuildAiDeputyWindowAssertion()
+        {
+            AiDeputyWindowState state = BuildAiDeputyWindowState();
+            MiniMaxCommanderConfig config = MiniMaxCommander.ConfigFromEnvironment();
+            bool stateOk = string.Equals(state.State, "Offline", StringComparison.Ordinal)
+                || string.Equals(state.State, "Ready", StringComparison.Ordinal);
+            bool directiveOk = IsLegalAiDeputyDirective(state.Directive);
+            bool modeOk = !string.IsNullOrWhiteSpace(state.Mode)
+                && (config.IsConfigured
+                    ? state.Mode.IndexOf("Model", StringComparison.OrdinalIgnoreCase) >= 0
+                    : state.Mode.IndexOf("Local fallback", StringComparison.OrdinalIgnoreCase) >= 0);
+            bool adviceOk = !string.IsNullOrWhiteSpace(state.Advice);
+            string summary = "state="
+                + state.State
+                + " mode="
+                + state.Mode
+                + " intent="
+                + state.Directive
+                + " advice="
+                + state.Advice;
+
+            return new AiDeputyWindowAssertionResult
+            {
+                Accepted = stateOk && directiveOk && modeOk && adviceOk,
+                Summary = summary
+            };
         }
 
         private CombatSituationAssertionResult BuildCombatSituationAssertion(
@@ -13592,6 +13639,29 @@ namespace MC2Demo.Presentation
             }
         }
 
+        private sealed class AiDeputyWindowState
+        {
+            public string State { get; set; } = "Offline";
+            public string Mode { get; set; } = "Local fallback";
+            public string Directive { get; set; } = RuleCommander.DirectiveAssaultObjective;
+            public string Advice { get; set; } = "Advance objective";
+        }
+
+        private struct AiDeputyWindowAssertionResult
+        {
+            public bool Accepted { get; set; }
+            public string Summary { get; set; }
+
+            public static AiDeputyWindowAssertionResult Blocked(string summary)
+            {
+                return new AiDeputyWindowAssertionResult
+                {
+                    Accepted = false,
+                    Summary = summary ?? "blocked"
+                };
+            }
+        }
+
         private struct CommandResultAssertionResult
         {
             public bool Accepted { get; set; }
@@ -17823,6 +17893,76 @@ namespace MC2Demo.Presentation
             return "+Armor";
         }
 
+        private AiDeputyWindowState BuildAiDeputyWindowState()
+        {
+            MiniMaxCommanderConfig config = MiniMaxCommander.ConfigFromEnvironment();
+            CommanderObservation observation = mission == null ? null : new CommanderObservationPort(mission).Observe();
+            string directive = ChooseAiDeputyDirective(observation);
+            return new AiDeputyWindowState
+            {
+                State = config.IsConfigured ? "Ready" : "Offline",
+                Mode = config.IsConfigured ? "Model ready" : "Local fallback",
+                Directive = directive,
+                Advice = AiDeputyAdviceText(directive)
+            };
+        }
+
+        private static string ChooseAiDeputyDirective(CommanderObservation observation)
+        {
+            if (observation == null || observation.missionEnded)
+            {
+                return RuleCommander.DirectiveHold;
+            }
+
+            CommanderCompactObservation compact = observation.compact;
+            if (compact != null
+                && compact.activePlayerUnitCount > 0
+                && compact.damagedPlayerUnitCount > 0
+                && compact.averagePlayerStructurePercent > 0
+                && compact.averagePlayerStructurePercent < 45
+                && compact.hostileCount > 0)
+            {
+                return RuleCommander.DirectiveRegroup;
+            }
+
+            string command = new RuleCommander().ChooseCommand(observation);
+            if (string.IsNullOrWhiteSpace(command))
+            {
+                return RuleCommander.DirectiveHold;
+            }
+
+            if (command.StartsWith("squad attack unit ", StringComparison.OrdinalIgnoreCase))
+            {
+                return RuleCommander.DirectiveEngageHostiles;
+            }
+
+            return RuleCommander.DirectiveAssaultObjective;
+        }
+
+        private static bool IsLegalAiDeputyDirective(string directive)
+        {
+            return string.Equals(directive, RuleCommander.DirectiveAssaultObjective, StringComparison.Ordinal)
+                || string.Equals(directive, RuleCommander.DirectiveEngageHostiles, StringComparison.Ordinal)
+                || string.Equals(directive, RuleCommander.DirectiveRegroup, StringComparison.Ordinal)
+                || string.Equals(directive, RuleCommander.DirectiveHold, StringComparison.Ordinal);
+        }
+
+        private static string AiDeputyAdviceText(string directive)
+        {
+            switch (directive)
+            {
+                case RuleCommander.DirectiveEngageHostiles:
+                    return "Engage nearby hostiles";
+                case RuleCommander.DirectiveRegroup:
+                    return "Regroup damaged units";
+                case RuleCommander.DirectiveHold:
+                    return "Hold current position";
+                case RuleCommander.DirectiveAssaultObjective:
+                default:
+                    return "Advance objective";
+            }
+        }
+
         private void DrawSystemPanel()
         {
             if (!showSystemPanel)
@@ -17834,7 +17974,15 @@ namespace MC2Demo.Presentation
             DrawDesignPanelFrame(panel, "System / 系统", UiAmberColor);
             GUI.Label(new Rect(panel.x + 18f, panel.y + 36f, panel.width - 36f, 24f), isPaused ? "Paused" : "Running");
 
-            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 70f, panel.width - 36f, 30f), isPaused ? "Resume" : "Pause"))
+            AiDeputyWindowState aiDeputy = BuildAiDeputyWindowState();
+            Rect aiRect = new(panel.x + 18f, panel.y + 66f, panel.width - 36f, 100f);
+            DrawDesignInsetFrame(aiRect, UiCyanColor);
+            GUI.Label(new Rect(aiRect.x + 10f, aiRect.y + 8f, aiRect.width - 20f, 18f), "AI Deputy / AI副官");
+            GUI.Label(new Rect(aiRect.x + 10f, aiRect.y + 32f, aiRect.width - 20f, 18f), "State " + aiDeputy.State + "  Mode " + aiDeputy.Mode);
+            GUI.Label(new Rect(aiRect.x + 10f, aiRect.y + 54f, aiRect.width - 20f, 18f), "Intent " + aiDeputy.Directive);
+            GUI.Label(new Rect(aiRect.x + 10f, aiRect.y + 76f, aiRect.width - 20f, 18f), "Advice " + aiDeputy.Advice);
+
+            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 182f, panel.width - 36f, 30f), isPaused ? "Resume" : "Pause"))
             {
                 if (mission.Result == MissionResultState.InProgress)
                 {
@@ -17847,22 +17995,22 @@ namespace MC2Demo.Presentation
                 }
             }
 
-            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 108f, panel.width - 36f, 30f), SystemRestartButtonLabel))
+            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 220f, panel.width - 36f, 30f), SystemRestartButtonLabel))
             {
                 TryApplyMissionRestartRuntimeSwap();
             }
 
-            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 146f, panel.width - 36f, 30f), "Contracts"))
+            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 258f, panel.width - 36f, 30f), "Contracts"))
             {
                 OpenMissionListPanelFromSystem();
             }
 
-            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 184f, panel.width - 36f, 30f), EndRunButtonLabel))
+            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 296f, panel.width - 36f, 30f), EndRunButtonLabel))
             {
                 Application.Quit(0);
             }
 
-            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 222f, panel.width - 36f, 30f), SystemBackButtonLabel))
+            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 334f, panel.width - 36f, 30f), SystemBackButtonLabel))
             {
                 showSystemPanel = false;
                 if (mission.Result == MissionResultState.InProgress)
@@ -18418,7 +18566,7 @@ namespace MC2Demo.Presentation
         private Rect SystemPanelRect()
         {
             float width = 330f;
-            float height = 334f;
+            float height = 406f;
             return new Rect((Screen.width - width) * 0.5f, (Screen.height - height) * 0.5f, width, height);
         }
 

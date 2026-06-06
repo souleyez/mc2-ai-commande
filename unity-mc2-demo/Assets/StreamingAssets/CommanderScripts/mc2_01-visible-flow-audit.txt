@@ -1,5 +1,6 @@
 # Proves the complete visible playable loop across status-row solo commands, squad commands, partial Jet, combat, debrief, Mech Lab, squad swap, launch, and runtime identity.
 assert-combat-situation quiet solo=0 selection=squad row=unit-1:ready
+assert-ai-deputy-window
 status-row unit-1
 assert-combat-situation quiet solo=0 selection=unit-1 row=unit-1:ready
 battle-click 2520 -1941
