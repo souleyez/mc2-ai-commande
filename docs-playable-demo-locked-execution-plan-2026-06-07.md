@@ -605,6 +605,10 @@ git diff --check
 
 **Goal:** Destroyed or damaged player mechs are repaired with token cost, no waiting timer, no permanent loss.
 
+**Status:** Completed 2026-06-07.
+
+**Result:** Validator coverage now proves the repair/relaunch loop end to end: destroyed player mechs block relaunch, immediate repair consumes the expected token cost, all repaired mechs return to 100% deployable roster state, equipped weapon stock is not consumed, and restart runtime swap builds a new mission preserving repaired mech loadout identity.
+
 **Files:**
 
 - Modify: `unity-mc2-demo/Assets/Scripts/BattleCore/MechBayInventoryContract.cs`
@@ -933,12 +937,13 @@ Recently completed:
 | 10 | `Make MechLab grid blocks explicit` | MechLab grid shows block frames, cell dividers and single-cell filler language | validator, build, loadout smoke |
 | 11 | `Prove loadout battle effects` | Fitted weapons, armor fillers and heat-sink fillers now feed BattleCore UnitState combat stats | validator, build, visible-flow smoke |
 | 12 | `Simplify debrief player flow` | Debrief now presents repair, next contract, retry and close actions without save/account wording in normal smoke | build, debrief smoke, copy audit |
+| 13 | `Guard repair and relaunch loop` | Destroyed player mechs block relaunch until immediate token repair restores deployable roster and runtime swap readiness | validator, visible-flow smoke |
 
 Current state:
 
-- Current stage: Stage 5 / Debrief And Relaunch Loop.
-- Current next commit: `Guard repair and relaunch loop`.
-- Current demo risk: debrief copy is now clean, but C2 still needs to prove immediate repair restores launch eligibility and does not require save management.
+- Current stage: Stage 6 / AI Commander Capability Window.
+- Current next commit: `Freeze AI observation contract`.
+- Current demo risk: battle loop is now guarded; AI deputy still needs a compact observation contract and optional advice window that do not block local play.
 - Current build risk: Unity batch build can dirty `Assets/Scenes/Mc2Demo.unity` with fileID churn; inspect and restore before commit.
 - Current content risk: private reference content can be used locally for validation but must stay out of Git and public packages.
 
@@ -949,8 +954,8 @@ Next commits:
 | B2 | Done | `Make MechLab grid blocks explicit` | G3 MechLab feel |
 | B3 | Done | `Prove loadout battle effects` | G3 MechLab feel |
 | C1 | Done | `Simplify debrief player flow` | G4 Battle loop |
-| C2 | Next | `Guard repair and relaunch loop` | G4 Battle loop |
-| D1 | Pending | `Freeze AI observation contract` | G5 AI capability |
+| C2 | Done | `Guard repair and relaunch loop` | G4 Battle loop |
+| D1 | Next | `Freeze AI observation contract` | G5 AI capability |
 | D2 | Pending | `Guard AI directive adapter` | G5 AI capability |
 | D3 | Pending | `Show optional AI advice window` | G5 AI capability |
 | E1 | Pending | `Document private reference content boundary` | G6 Public boundary |
@@ -1099,6 +1104,10 @@ git diff --check
 ### C2: Guard Repair And Relaunch Loop
 
 **Goal:** Damaged mechs can be repaired immediately with token cost and relaunched without waiting or save management.
+
+**Status:** Completed 2026-06-07.
+
+**Result:** `Mc2DemoValidator` now creates an isolated repair/relaunch mission, destroys all player mechs, proves launch is blocked, repairs them immediately with exact token spending, verifies weapon stock/loadout identity is preserved, and confirms `TryBuildRestartRuntimeSwap` can construct a fresh mission with the repaired roster.
 
 **Files:**
 

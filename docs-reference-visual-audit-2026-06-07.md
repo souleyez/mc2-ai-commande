@@ -1168,7 +1168,7 @@ Remaining issues:
 
 Next priority:
 
-1. Stage 4.3 loadout battle effect proof and Stage 5 / C1 debrief cleanup are complete; next priority is Stage 5 / C2 repair and relaunch.
+1. Stage 4.3 loadout battle effect proof, Stage 5 / C1 debrief cleanup and Stage 5 / C2 repair/relaunch are complete; next priority is Stage 6 / D1 AI observation.
 
 ## Stage 4.3 Loadout Battle Effect Result
 
@@ -1233,7 +1233,7 @@ Remaining issues:
 
 Next priority:
 
-1. Stage 5 / C2 guard repair and relaunch loop.
+1. Stage 5 / C2 guard repair and relaunch loop is complete; next priority is Stage 6 / D1 AI observation.
 
 ## Stage 5.1 Debrief Player Flow Result
 
@@ -1291,9 +1291,68 @@ Observed effect:
 
 Remaining issues:
 
-1. C2 still needs to prove immediate repair and relaunch eligibility through validator or smoke evidence.
+1. Resolved by Stage 5.2: validator now proves immediate repair restores relaunch eligibility.
 2. The Mech Lab can still contain hidden saved-account diagnostic affordances; those should stay out of normal flow unless explicitly requested.
 
 Next priority:
 
-1. Stage 5 / C2 guard repair and relaunch loop.
+1. Stage 6 / D1 freeze compact AI observation.
+
+## Stage 5.2 Repair Relaunch Result
+
+Implemented on 2026-06-07:
+
+- Added validator coverage for the first-version repair/relaunch loop.
+- The validator now creates an isolated mission, destroys every player mech through its critical section, and confirms relaunch/runtime swap is blocked while all player mechs are destroyed.
+- The validator then repairs those mechs immediately with sufficient one-token currency, verifies the exact token delta, and confirms all repaired roster entries return to 100% condition and deployable mission state.
+- The validator confirms equipped weapon stock is not consumed by repair, matching the first-demo rule that ordinary weapon loss is a cost/rebuy concern rather than a blocked flow.
+- The validator confirms `TryBuildRestartRuntimeSwap` can construct a new BattleMission after repair and that repaired mech `activeLoadoutId` values are preserved through relaunch.
+- Visible-flow smoke still passes through debrief, Mech Lab launch, restart identity and loadout compact checks.
+
+Modified files:
+
+```text
+unity-mc2-demo/Assets/Editor/Mc2DemoValidator.cs
+docs-reference-visual-audit-2026-06-07.md
+docs-playable-demo-locked-execution-plan-2026-06-07.md
+docs-mc2-detailed-development-plan.md
+```
+
+Validation commands:
+
+```powershell
+git diff --check
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoValidator.ValidateMissionContract -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-validate-repair-relaunch.log"
+& "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo\Builds\Windows\MC2UnityDemo.exe" -batchmode -nographics -mc2SmokeTest -mc2CommandFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo\Assets\StreamingAssets\CommanderScripts\mc2_01-visible-flow-audit.txt" -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-player-repair-relaunch.log"
+```
+
+Validation evidence:
+
+```text
+analysis-output/unity-validate-repair-relaunch.log
+analysis-output/unity-player-repair-relaunch.log
+```
+
+Validation results:
+
+```text
+git diff --check: clean, with Windows line-ending warnings only.
+Validator: MC2 demo contract validation OK.
+Visible-flow smoke: MC2 demo smoke test exiting with code 0.
+Smoke checkpoints: debrief summary OK, mech bay launch accepted, restart identity OK, loadout compact OK.
+```
+
+Observed effect:
+
+- The battle loop now has proof for the intended first-demo rule: damaged or destroyed owned mechs can be repaired immediately with currency and used again.
+- Repair does not introduce a wait timer, permanent first-demo loss, save-slot management or weapon-stock mutation.
+- Relaunch continues to use the repaired roster and loadout identity.
+
+Remaining issues:
+
+1. AI deputy work is still only partially framed; D1 should freeze the compact observation contract before adding any advice window.
+2. Mech Lab still has hidden saved-account diagnostics for explicit scripts; keep them hidden from normal player flow.
+
+Next priority:
+
+1. Stage 6 / D1 freeze compact AI observation.

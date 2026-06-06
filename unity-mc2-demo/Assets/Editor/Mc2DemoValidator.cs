@@ -54,7 +54,7 @@ namespace MC2Demo.EditorTools
 
             string contractJson = File.ReadAllText(contractPath);
             BattleMission mission = BattleMission.FromJson(contractJson, combatProfiles);
-            ValidateMechBayInventoryContract(mission);
+            ValidateMechBayInventoryContract(mission, combatProfiles);
             ValidateMechBaySavedAccountBoundary(mission);
             if (mission.Units.Count != 29)
             {
@@ -331,7 +331,7 @@ namespace MC2Demo.EditorTools
             ValidateSyntheticLoadoutValidator(contract, loadout);
         }
 
-        private static void ValidateMechBayInventoryContract(BattleMission mission)
+        private static void ValidateMechBayInventoryContract(BattleMission mission, CombatProfileCatalog combatProfiles)
         {
             MechBayInventoryContract inventory = MechBayInventoryBuilder.BuildDemoInventory(mission.PlayerUnits());
             MechBayInventoryValidationResult result = MechBayInventoryValidator.Validate(inventory);
@@ -521,6 +521,193 @@ namespace MC2Demo.EditorTools
             {
                 throw new InvalidDataException("Starter repair affordance did not restore player mech condition.");
             }
+
+            ValidateRepairRelaunchLoop(mission, combatProfiles);
+        }
+
+        private static void ValidateRepairRelaunchLoop(BattleMission sourceMission, CombatProfileCatalog combatProfiles)
+        {
+            BattleMission repairMission = new(sourceMission.Contract, combatProfiles);
+            List<UnitState> players = new();
+            foreach (UnitState unit in repairMission.PlayerUnits())
+            {
+                if (unit != null)
+                {
+                    players.Add(unit);
+                }
+            }
+
+            if (players.Count <= 0)
+            {
+                throw new InvalidDataException("Repair relaunch validation needs player units.");
+            }
+
+            for (int index = 0; index < players.Count; index++)
+            {
+                UnitState unit = players[index];
+                DamageSection criticalSection = FirstCriticalSection(unit);
+                float appliedDamage = unit.ApplyDirectSectionDamage(criticalSection.Name, criticalSection.MaxHitPoints + 1f);
+                if (appliedDamage <= 0f || !unit.IsDestroyed || MechBayRepairService.EstimateRepairCostResourcePoints(unit) <= 0)
+                {
+                    throw new InvalidDataException("Repair relaunch validation did not create a repairable destroyed player mech.");
+                }
+            }
+
+            MechBayInventoryContract damagedInventory = MechBayInventoryBuilder.BuildDemoInventory(repairMission.PlayerUnits());
+            MechBayMissionHandoffPreview damagedPreview = MechBayMissionHandoffPreviewService.BuildPreview(damagedInventory);
+            MechBayMissionRestartRuntimeSwapResult damagedSwap =
+                MechBayMissionHandoffPreviewService.TryBuildRestartRuntimeSwap(
+                    damagedInventory,
+                    sourceMission.Contract,
+                    combatProfiles);
+            if (damagedPreview.ReadyForFutureLaunch
+                || damagedPreview.MissionSlotCount != 0
+                || damagedSwap.Accepted
+                || damagedSwap.Mission != null)
+            {
+                throw new InvalidDataException("Destroyed player mechs should block relaunch until repaired.");
+            }
+
+            int availableRepairCost = 0;
+            for (int index = 0; index < players.Count; index++)
+            {
+                availableRepairCost += MechBayRepairService.EstimateRepairCostResourcePoints(players[index]);
+            }
+
+            damagedInventory.tokenBalance = Math.Max(damagedInventory.tokenBalance, availableRepairCost + 500);
+            int tokenBeforeRepair = damagedInventory.tokenBalance;
+            int totalRepairCost = 0;
+            int totalWeaponStockBefore = CountTotalItemQuantity(damagedInventory, LoadoutItemCategory.Weapon);
+            for (int index = 0; index < players.Count; index++)
+            {
+                UnitState unit = players[index];
+                int repairCost = MechBayRepairService.EstimateRepairCostResourcePoints(unit);
+                totalRepairCost += repairCost;
+                MechBayRepairResult repair = MechBayRepairService.TryRepair(damagedInventory, unit);
+                if (!repair.Accepted || !unit.IsActive || unit.IsDestroyed || MechBayRepairService.EstimateRepairCostResourcePoints(unit) != 0)
+                {
+                    throw new InvalidDataException("Immediate repair did not restore destroyed player mech for relaunch: " + repair.Message);
+                }
+            }
+
+            if (damagedInventory.tokenBalance != tokenBeforeRepair - totalRepairCost)
+            {
+                throw new InvalidDataException("Immediate repair did not consume only the expected token cost.");
+            }
+
+            MechBayInventoryContract repairedInventory = MechBayInventoryBuilder.BuildDemoInventory(repairMission.PlayerUnits());
+            repairedInventory.tokenBalance = damagedInventory.tokenBalance;
+            if (!MechBayInventoryValidator.Validate(repairedInventory).IsValid)
+            {
+                throw new InvalidDataException("Repaired relaunch inventory did not validate.");
+            }
+
+            if (CountTotalItemQuantity(repairedInventory, LoadoutItemCategory.Weapon) != totalWeaponStockBefore)
+            {
+                throw new InvalidDataException("Repair relaunch loop unexpectedly consumed equipped weapon stock.");
+            }
+
+            MechBayOwnedRosterEntry[] repairedRoster = MechBayOwnedRosterService.BuildRosterPreview(repairedInventory);
+            for (int index = 0; index < repairedRoster.Length; index++)
+            {
+                MechBayOwnedRosterEntry entry = repairedRoster[index];
+                if (entry == null
+                    || !entry.availableForMission
+                    || !entry.deployableForMission
+                    || entry.conditionPercent != 100
+                    || entry.deploymentRequirements != "Current mission squad")
+                {
+                    throw new InvalidDataException("Repaired player mech did not become immediately deployable.");
+                }
+            }
+
+            MechBayMissionRestartRuntimeSwapResult repairedSwap =
+                MechBayMissionHandoffPreviewService.TryBuildRestartRuntimeSwap(
+                    repairedInventory,
+                    sourceMission.Contract,
+                    combatProfiles);
+            if (repairedSwap == null
+                || !repairedSwap.Accepted
+                || repairedSwap.Mission == null
+                || repairedSwap.SpawnIntentCount != players.Count
+                || repairedSwap.ConstructedPlayerUnitCount != players.Count)
+            {
+                throw new InvalidDataException("Repaired player mechs did not restore relaunch runtime swap readiness.");
+            }
+
+            int checkedLoadouts = 0;
+            foreach (UnitState relaunchedUnit in repairedSwap.Mission.PlayerUnits())
+            {
+                if (relaunchedUnit == null || relaunchedUnit.IsDestroyed || !relaunchedUnit.IsActive)
+                {
+                    throw new InvalidDataException("Relaunched mission contains an inactive repaired player mech.");
+                }
+
+                if (MechBayRepairService.EstimateRepairCostResourcePoints(relaunchedUnit) != 0)
+                {
+                    throw new InvalidDataException("Relaunched mission did not start repaired player mech at full condition.");
+                }
+
+                MechBayMissionRestartSpawnIntent intent = RestartIntentForOwnedMech(repairedSwap.SpawnIntents, relaunchedUnit.OwnedMechId);
+                if (intent == null
+                    || string.IsNullOrWhiteSpace(intent.activeLoadoutId)
+                    || !string.Equals(relaunchedUnit.ActiveLoadoutId, intent.activeLoadoutId, StringComparison.Ordinal))
+                {
+                    throw new InvalidDataException("Relaunch did not preserve the repaired mech loadout identity.");
+                }
+
+                checkedLoadouts++;
+            }
+
+            if (checkedLoadouts != players.Count)
+            {
+                throw new InvalidDataException("Relaunch did not preserve all repaired player mechs.");
+            }
+        }
+
+        private static DamageSection FirstCriticalSection(UnitState unit)
+        {
+            foreach (DamageSection section in unit.Sections)
+            {
+                if (section != null && section.IsCritical)
+                {
+                    return section;
+                }
+            }
+
+            throw new InvalidDataException("Expected a critical damage section for repair relaunch validation.");
+        }
+
+        private static int CountTotalItemQuantity(MechBayInventoryContract inventory, string category)
+        {
+            int total = 0;
+            MechBayItemStackDefinition[] stacks = inventory?.itemStacks ?? Array.Empty<MechBayItemStackDefinition>();
+            for (int index = 0; index < stacks.Length; index++)
+            {
+                MechBayItemStackDefinition stack = stacks[index];
+                if (stack != null && string.Equals(stack.category, category, StringComparison.Ordinal))
+                {
+                    total += Math.Max(0, stack.quantity) + Math.Max(0, stack.equippedQuantity);
+                }
+            }
+
+            return total;
+        }
+
+        private static MechBayMissionRestartSpawnIntent RestartIntentForOwnedMech(
+            MechBayMissionRestartSpawnIntent[] intents,
+            string ownedMechId)
+        {
+            for (int index = 0; index < (intents?.Length ?? 0); index++)
+            {
+                MechBayMissionRestartSpawnIntent intent = intents[index];
+                if (intent != null && string.Equals(intent.ownedMechId, ownedMechId, StringComparison.Ordinal))
+                {
+                    return intent;
+                }
+            }
+
+            return null;
         }
 
         private static void ValidateMechBaySavedAccountBoundary(BattleMission mission)

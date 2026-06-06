@@ -32,8 +32,9 @@
 - Stage 4 / B2 已完成：MechLab 格子显示已经有整块武器外框、块内分格线和单格 filler 语言的 smoke 证据。
 - Stage 4 / B3 已完成：装配预览通过 BattleCore 的 `UnitLoadoutCombatOverrideBuilder` 进入 UnitState，validator 已证明武器、散热器、装甲硬度和重量影响 battle-ready stats。
 - Stage 5 / C1 已完成：战报普通玩家动作收成 Repair & Mech Lab、Next Contract、Retry Battle、Close，debrief smoke 不再暴露保存槽、账号、继续、End Run 或 Restart Mission 文案。
-- 当前下一步是 Stage 5 / C2：证明一键维修和再战闭环，不等待、不永久损失、不需要保存管理。
-- 后续短线顺序是：C2 一键维修再战，D1-D3 AI 副官能力窗口，E1-E5 公开边界和演示交付。
+- Stage 5 / C2 已完成：validator 已证明 destroyed 机甲阻断 relaunch，立即维修精确扣代币，恢复 100% 可部署 roster，并保留 loadout identity 构建新任务。
+- 当前下一步是 Stage 6 / D1：冻结 AI 副官 observation 合同，确保模型只做高层建议，不进入逐帧战斗细节。
+- 后续短线顺序是：D1-D3 AI 副官能力窗口，E1-E5 公开边界和演示交付。
 - BattleCore 仍是权威规则层。任何影响移动、伤害、胜负、维修、奖励或 AI 决策的内容，必须先有 BattleCore/contract 证据，再做 Unity 表现。
 
 当前项目不是从零开始，已经进入“可见 Demo 打磨”阶段。核心问题已经从“能不能跑”转为“看起来是否像一款可信的战术机甲游戏”。
@@ -1025,10 +1026,9 @@ Commit 15：本地演示包整理。
 
 ## 11. 下一步
 
-下一次继续开发时，按 `docs-playable-demo-locked-execution-plan-2026-06-07.md` 执行，从 **C2: Guard Repair And Relaunch Loop** 开始。战场可读性、物理占位、固定镜头、武器 cue、部位损伤/弹射 cue、装甲硬度、mounted weapon 语义、MechLab grid block cue、loadout battle effects 和简洁战报都已经收好，下一步重点是证明维修和再战闭环：
+下一次继续开发时，按 `docs-playable-demo-locked-execution-plan-2026-06-07.md` 执行，从 **D1: Freeze AI Observation Contract** 开始。战场可读性、物理占位、固定镜头、武器 cue、部位损伤/弹射 cue、装甲硬度、mounted weapon 语义、MechLab grid block cue、loadout battle effects、简洁战报和维修再战闭环都已经收好，下一步重点是把 AI 副官能力边界固定住：
 
-1. C2 repair and relaunch loop：一键扣代币修复损伤机甲，直接回机库或再出战，不需要等待和保存管理。
-2. D1-D3 AI deputy：只做高层 observation/directive 和一个可选建议窗口，模型慢或无 key 不影响本地 Demo。
-3. E1-E5 handoff：补公开内容边界、public build 安全检查、三分钟演示脚本、可重复 Windows 构建和证据包。
+1. D1-D3 AI deputy：只做高层 observation/directive 和一个可选建议窗口，模型慢或无 key 不影响本地 Demo。
+2. E1-E5 handoff：补公开内容边界、public build 安全检查、三分钟演示脚本、可重复 Windows 构建和证据包。
 
 短期不要插入服务器、经济、PVP、移动端或链上功能。那些方向已经有长期边界，现在第一优先级仍是 Windows 本地可玩 Demo 的“装配 -> 出战 -> 指挥 -> 损伤 -> 战报 -> 维修再战”闭环。
