@@ -1543,3 +1543,53 @@ Remaining issues:
 Next priority:
 
 1. V1 re-audit battle occupancy readability.
+
+## V1 Battle Occupancy Readability Re-Audit Result
+
+Implemented on 2026-06-07:
+
+- Refreshed `spawn`, `airfield`, `hangar-contact`, `damage-demo`, and `north-patrol` reference captures at 1280x720.
+- Re-read sidecars for active/visible hostile counts, BattleCore occupancy, occupancy placeholders, scale summaries, terrain summaries, and occlusion fade.
+- Inspected the key pressure screenshots directly.
+- This task did not change gameplay, mission triggers, enemy count, collision, camera, UI, or art code.
+
+Validation command:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_reference_visuals.ps1 -Presets spawn,airfield,hangar-contact,damage-demo,north-patrol
+git diff --check
+```
+
+Refreshed evidence:
+
+| Preset | Mission Time | Camera Ortho | Active Hostiles | Visible Hostiles | Occupancy Evidence | Readability Judgment |
+| --- | ---: | ---: | ---: | ---: | --- | --- |
+| `spawn` | 1.06s | 29.11 | 0 | 0 | `hardProps=80`, `placeholders=81` | Squad, shore, terrain, water and prop scale are readable. No combat pressure yet. |
+| `airfield` | 12.79s | 29.11 | 12 | 8 | `hardProps=80`, `placeholders=81` | Contact is readable. Enemy group is visible but still near the hangar objective, with manageable density. |
+| `hangar-contact` | 20.77s | 29.11 | 20 | 16 | `BattleOccupancy=units 23/29`, `hardProps=80`, `placeholders=81` | Units no longer appear to share one coordinate, but the fight compresses around the hangar, trees, structure mesh and damage effects. |
+| `damage-demo` | 38.64s | 35.50 | 20 | 20 | `BattleOccupancy=units 22/29`, `hardProps=80`, `placeholders=81` | Weakest screenshot. Status rows prove damage, but the world-space damage story is buried in a fully visible 20-hostile knot around the same objective. |
+| `north-patrol` | 54.69s | 29.11 | 24 | 10 | `hardProps=80`, `placeholders=81` | Best combat readability. Same assets read better in open terrain, proving the main issue is local encounter composition rather than missing models alone. |
+
+Failure classification:
+
+- Physical overlap: not the primary current failure. BattleCore reports unit, structure, hard prop, water and map-bound occupancy, and placeholders expose `81` blocker regions from `BattleMission.OccupancyPlaceholderRegions`.
+- Camera compression: major contributor in `hangar-contact` and `damage-demo`. `damage-demo` is already zoomed out to `35.50`, yet all 20 hostiles are visible around one target window.
+- UI occlusion: secondary. Left status rows are visually heavy but not the main reason the hangar fight compresses; right combat/objective panels stay out of the central fight.
+- Model scale: not the primary failure. Sidecars still report stable reference category scale, and `north-patrol` proves the same mechs/vehicles/props can read in open terrain.
+- Dark or flat material: not the primary failure. Terrain remains readable with `luma=81/98.8/187`.
+- Too much FX: secondary. Damage and attack cues help status readability, but they add clutter where the encounter is already dense.
+- Enemy density and local encounter composition: primary failure. `hangar-contact` has 20 active / 16 visible hostiles, while `damage-demo` has 20 active / 20 visible hostiles centered on the same hangar objective.
+
+Current conclusion:
+
+The next fix should not start by inventing new Unity-only collision. The blocker evidence is present and auditable. V2 should improve battlefield readability by reducing hangar-window compression: camera composition, local enemy/attack-slot spread, selective FX scale/visibility, and possibly a stronger world-space damage spotlight for `damage-demo`. Enemy count and mission trigger semantics should stay intact unless a later task explicitly decides to retune encounter pacing.
+
+Single weakest screenshot:
+
+```text
+analysis-output/reference-visual-captures/damage-demo.png
+```
+
+Next priority:
+
+1. V2 improve reference visual readability.

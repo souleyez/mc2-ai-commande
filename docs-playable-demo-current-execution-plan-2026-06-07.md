@@ -30,7 +30,7 @@
 - Branch: `master...ai-origin/master [ahead 49]`.
 - AI compact observation 已提交：`af7dbe9 Freeze AI observation contract`.
 - AI directive adapter 已提交：`9bf26bd Guard AI directive adapter`.
-- 下一步是 `V1 Re-audit battle occupancy readability`.
+- 下一步是 `V2 Improve reference visual readability`.
 
 ## 1. First Demo Product Scope
 
@@ -243,8 +243,8 @@ Do not stage generated PNG/JSON/log evidence unless explicitly requested.
 | 0 | Done | `Freeze AI observation contract` | G5 AI capability |
 | 1 | Done | `Guard AI directive adapter` | G5 AI capability |
 | 2 | Done | `Show optional AI advice window` | G5 AI capability |
-| 3 | Next | `Re-audit battle occupancy readability` | G2/G7 readability and occupancy |
-| 4 | Pending | `Improve reference visual readability` | G2 battle readability |
+| 3 | Done | `Re-audit battle occupancy readability` | G2/G7 readability and occupancy |
+| 4 | Next | `Improve reference visual readability` | G2 battle readability |
 | 5 | Pending | `Lock occupancy placeholder review layer` | G7 collision evidence |
 | 6 | Pending | `Polish MechLab block fitting` | G3 MechLab feel |
 | 7 | Pending | `Capture MechLab fitting evidence` | G3 MechLab evidence |
@@ -365,7 +365,9 @@ git diff --check
 
 ### V1: Re-Audit Battle Occupancy Readability
 
-**Status:** Next.
+**Status:** Completed 2026-06-07.
+
+**Result:** Refreshed all five reference captures and classified the current readability failure. BattleCore occupancy and placeholder evidence are present (`hardProps=80`, `placeholders=81`), so the top problem is not missing collision. The single weakest screenshot is `damage-demo`, where 20 active / 20 visible hostiles and damage FX compress around the hangar objective. Evidence is recorded in `docs-reference-visual-audit-2026-06-07.md` under `V1 Battle Occupancy Readability Re-Audit Result`.
 
 **Goal:** 先用截图和 sidecar 判断当前“堆在一起”到底是碰撞缺失、镜头压缩、模型比例、敌人密度、遮挡还是特效噪音。
 
@@ -408,7 +410,7 @@ git diff --check
 
 ### V2: Improve Reference Visual Readability
 
-**Status:** Pending after V1.
+**Status:** Next.
 
 **Goal:** 让第一张图更像 3D 战场，不像色块和模型团；优先改材质、比例、构图和表现密度，不随意改任务难度。
 
