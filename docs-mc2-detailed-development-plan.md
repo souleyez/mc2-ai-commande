@@ -1,6 +1,6 @@
 # MC2 Current Detailed Development Plan
 
-> **For Codex:** This document is the product and architecture overview. Execute the detailed task list in `docs-playable-demo-master-plan-2026-06-07.md`.
+> **For Codex:** This document is the product and architecture overview. Execute the detailed task list in `docs-playable-demo-locked-execution-plan-2026-06-07.md`.
 
 **Goal:** 做出一版 Windows 可玩的战术机甲指挥 Demo：玩家能进入任务、指挥 1-6 台机甲完成一张参考关卡、看到可读的 3D 地形/建筑/机甲/爆炸损伤效果，并能回到机甲装配界面调整小队。AI 指挥官、地图服务器、公开换皮内容包都保留接口，但不阻塞第一版可见体验。
 
@@ -16,25 +16,22 @@
 
 当前更细的执行型计划书：
 
-- `docs-playable-demo-detailed-roadmap-2026-06-07.md`：当前最细施工蓝图。它按下一批小提交拆到战场构图、武器效果、部位损伤、装甲硬度、机库格子、战报再战、AI 副官能力窗口和演示交付，每项都列出文件、步骤、验证和验收。
-- `docs-playable-demo-completion-plan-2026-06-07.md`：当前主执行计划，保留阶段清单、验证矩阵和最近提交队列。
-- `docs-playable-demo-current-detailed-plan-2026-06-07.md`：旧主执行入口。它按实际实现状态重排，把下一步收束到完整可见流程审计、最小战斗 HUD、战场占位证据、机库格子手感、AI 副官能力窗口和演示交付。
-- `docs-playable-demo-detailed-execution-plan-2026-06-07.md`：旧的阶段执行计划。保留 Phase C 等历史任务背景、已完成验证证据和早期拆解，但后续继续开发优先看当前计划。
-- `docs-playable-demo-master-plan-2026-06-07.md`：保留完整阶段背景、历史任务和主计划脉络。本文件保留总体产品判断和阶段记录。
+- `docs-playable-demo-locked-execution-plan-2026-06-07.md`：当前唯一执行入口。已经刷新为细颗粒任务卡，按 `Make MechLab grid blocks explicit`、`Prove loadout battle effects`、战报/维修闭环、AI 副官能力窗口、公开内容边界和演示交付推进。
+- `docs-reference-visual-audit-2026-06-07.md`：截图、sidecar、validator、smoke 证据记录。视觉或战斗表现任务完成后更新这里。
+- `docs-content-replacement-plan.md` 与 `docs-content-pack.md`：私有参考内容包和公开替换包边界。
+- `docs-ai-commander-directive-contract.md`：AI 副官 observation/directive 合同。
+- 其他 `docs-playable-demo-*` 旧文档保留历史上下文，不再作为下一步执行入口。
 
 当前执行状态：
 
-- Phase A 地形/水面/道路可读性已经完成并提交，提交 `89a686f Improve terrain and water readability`。当前截图已经能读出绿色地面、蓝色水域、岸线、跑道/道路和建筑基底。
-- Phase B / Task B1：敌方密度和停靠点展开已经完成。目标不是减少敌人，而是在保留原版触发节奏和战斗压力的前提下，让 `hangar-contact`、`damage-demo` 不再像所有模型挤在一个点。
-- 2026-06-07 已刷新执行计划：`docs-playable-demo-master-plan-2026-06-07.md` 现在把当前阶段拆成更细的 B2 比例审计、B3 碰撞占位证据、B4 固定镜头构图，以及后续 C 阶段交互 smoke、D 阶段损伤手感、E 阶段装配格子、F 阶段去保存系统表层和战后再战。
-- Phase B / Task B2：机甲、载具、炮塔、建筑、树木和道具的比例审计已经完成。sidecar 现在能报告 `ReferenceUnits` 和 `ReferencePropScale` 分类，步兵 fallback 已缩小，机甲/载具/建筑/树木比例有证据可查。
-- Phase B / Task B3：BattleCore occupancy evidence 已完成。sidecar 现在能报告 `BattleOccupancy` 和 `Landing=DemoTerrainView`，包括单位半径、结构、硬 terrain object、水域/地图边界 landing predicate 和 destination fallback 来源。
-- Phase B / Task B4：Commander camera composition pass 已完成。保持固定视角和指挥官跟随，sidecar 现在报告 `camera.compositionOffset`，`spawn` 能更早把小队和活动目标放进同一屏，`hangar-contact`、`damage-demo` 没有退化。
-- Phase C / Task C1：command state validator 已完成。`mc2_01-combat-situation.txt` 和 `mc2_01-solo-order-state.txt` 现在都覆盖默认全队、单机独立命令、独立时全队接受数减少、完成后自动归队和归队后继续接受全队命令。
-- Phase C / Task C2：status-row selection and click contract 已完成。smoke 现在覆盖状态栏点选单机、地图点击下达独立命令、目标点击下达单机攻击、可见选择恢复全队、状态栏 solo 标记和完成后自动归队。
-- Phase C / Task C3：Finalize Squad Jet Landing Rules 已完成。validator 覆盖硬 terrain object 喷射落点拒绝，squad-jet smoke 证明单台合法机甲喷射时其他非法落点机甲保持 ready。
-- 真实下一步是当前计划 Stage 0/1：先跑完整 baseline audit，再冻结最小战斗 HUD，并用 `mc2_01-visible-flow-audit.txt` 守住从机库到战报再回机库的可见闭环。
-- BattleCore 仍是权威物理占位层。Unity 可以显示碰撞占位和辅助反馈，但合法落点、单位排布、结构/terrain object 占用必须由 BattleCore 可验证地决定。
+- 第一张 `mc2_01` 地图已经能本地构建、启动、smoke、截图，地形、水域、道路、建筑基底、模型比例和固定镜头构图都有证据。
+- BattleCore occupancy 已覆盖单位、目标建筑、硬 terrain object、水域/地图边界 landing predicate 和 destination fallback；Unity 可显示碰撞占位，但规则仍由 BattleCore 决定。
+- 默认全队命令、状态栏单机独立命令、独立完成后自动归队、喷射合法落点和可见闭环都已有 smoke 或 validator 覆盖。
+- Combat Feel 当前锁定到可继续回归的程度：武器类型方向 cue、断臂/腿瘫/驾驶舱弹射 cue、装甲硬度规则已经完成。
+- MechLab 已完成 mounted weapon 语义审计：装上的武器就是启用的武器，不再做玩家可见武器开关。
+- 当前下一步是 Stage 4 / B2：把 MechLab 格子显示做得更像“整块武器放进槽位，装甲板和散热器填剩余单格”。
+- 后续短线顺序是：B2 格子块视觉，B3 装配影响战斗，C1 战报简化，C2 一键维修再战，D1-D3 AI 副官能力窗口，E1-E5 公开边界和演示交付。
+- BattleCore 仍是权威规则层。任何影响移动、伤害、胜负、维修、奖励或 AI 决策的内容，必须先有 BattleCore/contract 证据，再做 Unity 表现。
 
 当前项目不是从零开始，已经进入“可见 Demo 打磨”阶段。核心问题已经从“能不能跑”转为“看起来是否像一款可信的战术机甲游戏”。
 
@@ -1025,8 +1022,12 @@ Commit 15：本地演示包整理。
 
 ## 11. 下一步
 
-下一次继续开发时，按 `docs-playable-demo-detailed-execution-plan-2026-06-07.md` 执行，进入 **Phase C / Task C4：Freeze Minimal Battle UI**。敌方密度、停车点、视觉比例、物理占位证据、固定镜头构图、C1 command-state smoke、C2 status-row solo smoke 和 C3 squad-jet smoke 都已经收好，下一步重点是把战斗界面收成干净可演示的版本：
+下一次继续开发时，按 `docs-playable-demo-locked-execution-plan-2026-06-07.md` 执行，从 **B2: Make MechLab Grid Blocks Explicit** 开始。战场可读性、物理占位、固定镜头、武器 cue、部位损伤/弹射 cue、装甲硬度和 mounted weapon 语义都已经收好，下一步重点是把机甲装配变成第二个能讲清楚、能截图演示的核心卖点：
 
-1. C4 minimal battle UI：保留状态栏、喷射、任务地图、暂停/系统和必要目标提示。
-2. 隐藏或压缩普通战斗里的 verbose debug 信息。
-3. 不提前做服务器、经济、保存系统、PVP、移动端或链上功能。
+1. B2 MechLab grid blocks：武器以连续整块显示，装甲板/散热器以单格填充显示，并用 smoke 守住格子 cue。
+2. B3 loadout battle effects：证明当前装配会影响 BattleCore 中的武器、热量、装甲和战斗表现。
+3. C1-C2 battle loop：收简洁战报、一键维修和重新出战，不暴露复杂保存系统。
+4. D1-D3 AI deputy：只做高层 observation/directive 和一个可选建议窗口，模型慢或无 key 不影响本地 Demo。
+5. E1-E5 handoff：补公开内容边界、public build 安全检查、三分钟演示脚本、可重复 Windows 构建和证据包。
+
+短期不要插入服务器、经济、PVP、移动端或链上功能。那些方向已经有长期边界，现在第一优先级仍是 Windows 本地可玩 Demo 的“装配 -> 出战 -> 指挥 -> 损伤 -> 战报 -> 维修再战”闭环。

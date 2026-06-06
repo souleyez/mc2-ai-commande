@@ -8,7 +8,7 @@
 
 **Tech Stack:** Unity 6, C#, Windows Standalone, deterministic BattleCore, PowerShell validation/capture scripts, `mc2-unity-demo-contract-v1`, private local reference content pack, Git/GitHub.
 
-**Revision:** 2026-06-07 detailed reset. This file is the single active execution plan. Older plan files are background and evidence only.
+**Revision:** 2026-06-07 fine-grained reset. This file is the single active execution plan. Older plan files are background and evidence only.
 
 ---
 
@@ -35,8 +35,8 @@
 4. `Regress weapon family cues` 已完成并提交为 `4ea5666`。
 5. `Lock section damage and ejection cues` 已完成并提交为 `db1efa7`。
 6. `Lock armor hardness damage rule` 已完成并提交为 `e7c4a07`。
-7. 当前处在 Stage 4 MechLab，`Audit mounted weapon semantics` 已完成验证并进入提交队列。
-8. 下一步优先做 `Make MechLab grid blocks explicit`。
+7. 当前处在 Stage 4 MechLab，`Audit mounted weapon semantics` 已完成并提交为 `8010a56`。
+8. 下一步优先做 `Make MechLab grid blocks explicit`，先把装配格子做成一眼能懂的整块武器和单格填充物。
 9. 工作树提交前必须保持干净；Unity scene fileID churn 不得误提交，生成截图/日志/JSON 默认不进 Git。
 
 当前已知真实文件校准：
@@ -896,120 +896,482 @@ Long-term rules:
 - Web ranking reads certified results.
 - Chain integration is optional later accounting/proof, not first-demo gameplay.
 
-## 13. Immediate Commit Queue
+## 13. Current Plan Snapshot
+
+Use this section when the next user message is "按计划继续". Start at the first `Next` item unless the user changes priority.
 
 Recently completed:
 
-1. `Guard visible playable flow`
-2. `Document visible flow capture baseline`
-3. `Audit battle occupancy evidence`
-4. `Show collision occupancy placeholders`
-5. `Tune hangar encounter composition`
-6. `Regress weapon family cues`
-7. `Lock section damage and ejection cues`
-8. `Lock armor hardness damage rule`
-9. `Audit mounted weapon semantics`
+| Order | Commit | Result | Evidence |
+| --- | --- | --- | --- |
+| 1 | `Guard visible playable flow` | MechLab to battle to debrief to relaunch flow is smoke-covered | visible-flow smoke |
+| 2 | `Document visible flow capture baseline` | Baseline screenshots and sidecars are recorded | visual audit |
+| 3 | `Audit battle occupancy evidence` | BattleCore reports units, structures, hard props and landing predicate evidence | validator, sidecar |
+| 4 | `Show collision occupancy placeholders` | Optional hard-object footprint review layer exists | capture sidecars |
+| 5 | `Tune hangar encounter composition` | Enemy pressure spreads across player squad without reducing encounter pressure | validator, build, capture |
+| 6 | `Regress weapon family cues` | Energy, missile, ballistic and explosive cue language is guarded | validator, build, `damage-demo`, smoke |
+| 7 | `Lock section damage and ejection cues` | Arm loss, leg disable and cockpit ejection have guarded world cues | validator, build, `damage-demo`, smoke |
+| 8 | `Lock armor hardness damage rule` | Armor is one deterministic hardness value before section damage | validator |
+| 9 | `Audit mounted weapon semantics` | Mounted weapon means active weapon; no player-facing weapon toggle remains | `rg` audit, validator |
+
+Current state:
+
+- Current stage: Stage 4 / MechLab Feel Lock.
+- Current next commit: `Make MechLab grid blocks explicit`.
+- Current demo risk: MechLab fitting still does not yet sell the original-like "whole weapon block in a grid" fantasy strongly enough.
+- Current build risk: Unity batch build can dirty `Assets/Scenes/Mc2Demo.unity` with fileID churn; inspect and restore before commit.
+- Current content risk: private reference content can be used locally for validation but must stay out of Git and public packages.
 
 Next commits:
 
-1. `Make MechLab grid blocks explicit`
-2. `Prove loadout battle effects`
-3. `Simplify debrief player flow`
-4. `Guard repair and relaunch loop`
-5. `Freeze AI observation contract`
-6. `Guard AI directive adapter`
-7. `Show optional AI advice window`
-8. `Document private reference content boundary`
-9. `Add public build content safety check`
-10. `Add playable demo walkthrough`
-11. `Prepare repeatable Windows demo build`
-12. `Package playable demo evidence`
+| Order | Status | Commit | Gate |
+| --- | --- | --- | --- |
+| B2 | Next | `Make MechLab grid blocks explicit` | G3 MechLab feel |
+| B3 | Pending | `Prove loadout battle effects` | G3 MechLab feel |
+| C1 | Pending | `Simplify debrief player flow` | G4 Battle loop |
+| C2 | Pending | `Guard repair and relaunch loop` | G4 Battle loop |
+| D1 | Pending | `Freeze AI observation contract` | G5 AI capability |
+| D2 | Pending | `Guard AI directive adapter` | G5 AI capability |
+| D3 | Pending | `Show optional AI advice window` | G5 AI capability |
+| E1 | Pending | `Document private reference content boundary` | G6 Public boundary |
+| E2 | Pending | `Add public build content safety check` | G6 Public boundary |
+| E3 | Pending | `Add playable demo walkthrough` | Demo handoff |
+| E4 | Pending | `Prepare repeatable Windows demo build` | Demo handoff |
+| E5 | Pending | `Package playable demo evidence` | Demo handoff |
 
 Every commit must record:
 
 - files changed;
 - validation commands run;
 - log or screenshot paths;
+- whether Unity scene churn appeared and how it was handled;
 - remaining problem to tackle next.
 
-## 14. Detailed Sprint Board
+## 14. Fine-Grained Execution Queue
 
-Use this board when continuing with "按计划继续". Start at the first incomplete row and do not skip ahead unless the user explicitly changes priority.
+These cards are intentionally small. Each card should be one commit unless the task uncovers a real blocking bug.
 
-### Sprint A: Finish Combat Feel
+### B2: Make MechLab Grid Blocks Explicit
 
-| Order | Status | Commit | Purpose | Main Files | Required Evidence |
-| --- | --- | --- | --- | --- | --- |
-| A1 | Done | `Lock section damage and ejection cues` | Make arm loss, leg disable and cockpit ejection readable in the world and guarded by smoke | `DemoUnitView.cs`, `Mc2DemoBootstrap.cs`, `Mc2DemoValidator.cs`, visual audit | validator, build, `damage-demo` capture, visible-flow smoke |
-| A2 | Done | `Lock armor hardness damage rule` | Keep armor simple: one hardness value before section damage | `UnitState.cs`, `CombatLoadoutPreview.cs`, `LoadoutValidator.cs`, validator, design docs | validator |
+**Goal:** Make MechLab read like fitting physical parts: mounted weapons are contiguous shape blocks, armor plates and heat sinks are single-cell fillers, and selected/invalid states are obvious without weapon enable toggles.
 
-Sprint A detail:
+**Files:**
 
-1. Sprint A is complete for this pass.
-2. Keep weapon cue, section damage and armor hardness as regression targets while Stage 4 changes MechLab.
-3. Next work starts at Sprint B / B1.
+- Read: `unity-mc2-demo/Assets/Scripts/BattleCore/CombatLoadoutPreview.cs`
+- Modify: `unity-mc2-demo/Assets/Scripts/Presentation/Mc2DemoBootstrap.cs`
+- Modify if rule evidence is missing: `unity-mc2-demo/Assets/Editor/Mc2DemoValidator.cs`
+- Modify: `docs-reference-visual-audit-2026-06-07.md`
+- Modify: `docs-playable-demo-locked-execution-plan-2026-06-07.md`
 
-### Sprint B: Make MechLab Feel Like Fitting Parts
+**Steps:**
 
-| Order | Status | Commit | Purpose | Main Files | Required Evidence |
-| --- | --- | --- | --- | --- | --- |
-| B1 | Done | `Audit mounted weapon semantics` | Ensure installed weapons are always active and no player-facing weapon toggle remains | `CombatLoadoutPreview.cs`, `Mc2DemoBootstrap.cs`, `Mc2DemoValidator.cs` | `rg` audit, validator |
-| B2 | Next | `Make MechLab grid blocks explicit` | Render weapons as contiguous shape blocks; armor/sinks as single-cell fillers | `LoadoutContract.cs`, `LoadoutValidator.cs`, `CombatLoadoutPreview.cs`, `Mc2DemoBootstrap.cs` | validator, `mc2_01-loadout-compact.txt` smoke |
-| B3 | Pending | `Prove loadout battle effects` | Confirm fitted weapons/armor/heat sinks affect BattleCore combat behavior | `UnitState.cs`, `CombatLoadoutPreview.cs`, `MechBayInventoryContract.cs`, validator | validator, optional combat smoke |
+1. Inspect `DrawProjectedLoadoutGrid`, `LoadoutBlockRect`, `DrawLoadoutBlockLabel`, `LoadoutBlockLabel`, `LoadoutBlockDetailText` and `BuildLoadoutCompactAssertion`.
+2. Preserve existing cell projection rules; do not add drag-only interaction.
+3. Add stronger block framing for contiguous weapon cells: outer frame, selected frame and subtle internal cell dividers.
+4. Keep armor plate and heat sink fillers as single-cell blocks with different filler language.
+5. Add or tighten a compact assertion summary such as `GridBlock=outer-frame+contiguous-weapon+cell-dividers+single-cell-filler+shape-label`.
+6. Run validator and loadout compact smoke.
+7. Update the visual audit and this plan with result, evidence and next gap.
+8. Commit only code/docs for this task; do not stage generated logs or screenshots.
 
-Sprint B detail:
+**Validation:**
 
-1. Search for toggle language first; remove wording before reshaping UI.
-2. Keep mobile-friendly interaction: select item, click target cell, no drag-only dependency.
-3. Keep labels short; the grid should explain fit/conflict visually.
-4. Add rule evidence before UI polish if a value is only displayed and not used.
-5. Do not redesign the whole MechLab shell unless text overflow or nested-card layout blocks the fitting experience.
+```powershell
+git diff --check
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoValidator.ValidateMissionContract -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-validate-mechlab-grid-blocks.log"
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoBuilder.BuildWindows64 -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-build-mechlab-grid-blocks.log"
+& "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo\Builds\Windows\MC2UnityDemo.exe" -batchmode -nographics -mc2SmokeTest -mc2CommandFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo\Assets\StreamingAssets\CommanderScripts\mc2_01-loadout-compact.txt" -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-player-mechlab-grid-blocks.log"
+```
 
-### Sprint C: Close The Play Loop
+**Acceptance:**
 
-| Order | Commit | Purpose | Main Files | Required Evidence |
-| --- | --- | --- | --- | --- |
-| C1 | `Simplify debrief player flow` | Show result, objectives, damage, salvage, payout and next action without save management | `Mc2DemoBootstrap.cs`, `BattleMission.cs`, `mc2_01-debrief-summary.txt` | debrief smoke |
-| C2 | `Guard repair and relaunch loop` | Make repair immediate and prove repaired units can relaunch | `MechBayInventoryContract.cs`, `Mc2DemoBootstrap.cs`, validator | validator |
-| C3 | `Add playable demo walkthrough` | Write the three-minute demo path for a collaborator or investor | `docs-demo-walkthrough-2026-06-07.md`, `README.md`, `unity-mc2-demo/README.md` | `git diff --check` |
+- Mounted weapons look like placed blocks rather than independent colored cells.
+- Armor and heat sink cells look like fillers, not weapons.
+- Smoke output proves the grid cue summary.
+- No player-facing weapon enable/disable control is introduced.
 
-Sprint C detail:
+**Commit:** `Make MechLab grid blocks explicit`
 
-1. Normal player flow should never ask the user to choose save slots.
-2. Save/account tools can remain hidden diagnostics, but README must label them that way.
-3. The walkthrough should use project-owned language: AI-assisted tactical RTS, deterministic BattleCore, optional AI deputy.
-4. The walkthrough should cite capture preset names, not generated files committed to Git.
+### B3: Prove Loadout Battle Effects
 
-### Sprint D: Add The AI Deputy Window
+**Goal:** Prove that what the player fits in MechLab changes BattleCore combat behavior, not only UI preview text.
 
-| Order | Commit | Purpose | Main Files | Required Evidence |
-| --- | --- | --- | --- | --- |
-| D1 | `Freeze AI observation contract` | Keep observation compact enough for high-latency model calls | `CommanderObservationPort.cs`, `docs-ai-commander-directive-contract.md`, validator | validator or export evidence |
-| D2 | `Guard AI directive adapter` | Convert high-level directives into normal BattleCore commands with fallback | `AiCommanderDirective.cs`, `CommanderCommandPort.cs`, `RuleCommander.cs`, docs | validator |
-| D3 | `Show optional AI advice window` | Show one compact advice line without making AI required | `MiniMaxCommander.cs`, `Mc2DemoBootstrap.cs`, `unity-mc2-demo/README.md` | validator, offline state check |
+**Files:**
 
-Sprint D detail:
+- Read: `unity-mc2-demo/Assets/Scripts/BattleCore/CombatLoadoutPreview.cs`
+- Read: `unity-mc2-demo/Assets/Scripts/BattleCore/UnitState.cs`
+- Modify: `unity-mc2-demo/Assets/Editor/Mc2DemoValidator.cs`
+- Modify if needed: `unity-mc2-demo/Assets/Scripts/BattleCore/MechBayInventoryContract.cs`
+- Modify: `docs-reference-visual-audit-2026-06-07.md`
+- Modify: `docs-playable-demo-locked-execution-plan-2026-06-07.md`
 
-1. AI decides broad intent only: attack, focusTarget, defend, regroup, hold, retreat, protectUnit.
-2. No per-frame projectile or path graph data should enter model prompts.
-3. No API key, slow API or bad response must fall back to local rule commander.
-4. Normal smoke tests must not spend tokens by default.
+**Steps:**
 
-### Sprint E: Public Boundary And Demo Handoff
+1. Locate existing validator coverage for preview heat, weight, slot count and armor hardness.
+2. Add an assertion that a mounted weapon contributes range, damage, cooldown or heat to the combat-ready unit.
+3. Add an assertion that removing or changing a mounted weapon changes the combat-ready weapon list.
+4. Add an assertion that heat sinks and armor plates affect combat stats through the same loadout path.
+5. Keep numbers tied to existing catalogs; do not rebalance weapons in this task.
+6. Run validator and, if presentation was touched, visible-flow smoke.
+7. Record evidence.
 
-| Order | Commit | Purpose | Main Files | Required Evidence |
-| --- | --- | --- | --- | --- |
-| E1 | `Document private reference content boundary` | Make private reference assets clearly development-only | `docs-content-replacement-plan.md`, `docs-content-pack.md`, `README.md`, `unity-mc2-demo/README.md` | README/content audit |
-| E2 | `Add public build content safety check` | Prevent private reference content from entering public packages | `scripts/unity/*`, `.gitignore`, README docs | ignored-path audit, `git diff --check` |
-| E3 | `Prepare repeatable Windows demo build` | One command each for build, validator, smoke and capture | `scripts/unity/*`, README docs | Windows build |
-| E4 | `Package playable demo evidence` | Gather captions and evidence paths for the demo story | walkthrough, visual audit, README | `git diff --check` |
+**Validation:**
 
-Sprint E detail:
+```powershell
+git diff --check
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoValidator.ValidateMissionContract -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-validate-loadout-battle-effects.log"
+```
 
-1. Public pitch is not "a clone"; it is AI-assisted tactical RTS command with replaceable content packs.
-2. Private reference content remains useful locally for scale, terrain and feel validation.
-3. Public build path should fail closed if private paths leak into package inputs.
-4. Demo package should include a clean story: MechLab, launch, command, damage, debrief, repair, relaunch.
+**Acceptance:**
+
+- Validator proves weapon fitting affects battle-ready weapon data.
+- Validator proves armor and heat sink fitting remain on the BattleCore path.
+- No economy, save system or broad MechLab redesign is introduced.
+
+**Commit:** `Prove loadout battle effects`
+
+### C1: Simplify Debrief Player Flow
+
+**Goal:** After a mission, show only what the player needs: result, objective state, damage, salvage/payout, repair and relaunch path.
+
+**Files:**
+
+- Modify: `unity-mc2-demo/Assets/Scripts/Presentation/Mc2DemoBootstrap.cs`
+- Modify if needed: `unity-mc2-demo/Assets/Scripts/BattleCore/BattleMission.cs`
+- Read/Modify: `unity-mc2-demo/Assets/StreamingAssets/CommanderScripts/mc2_01-debrief-summary.txt`
+- Modify: `docs-playable-demo-locked-execution-plan-2026-06-07.md`
+
+**Steps:**
+
+1. Inspect current debrief screen and smoke summary.
+2. Remove or hide normal-flow save-slot/account-management wording from the debrief surface.
+3. Keep result, objectives, damaged units, destroyed sections, salvage/payout and next action.
+4. Add a clear repair/relaunch action if it is not already visible.
+5. Keep diagnostics available only through explicit scripts or hidden developer paths.
+6. Run debrief smoke.
+7. Record evidence.
+
+**Validation:**
+
+```powershell
+git diff --check
+& "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo\Builds\Windows\MC2UnityDemo.exe" -batchmode -nographics -mc2SmokeTest -mc2CommandFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo\Assets\StreamingAssets\CommanderScripts\mc2_01-debrief-summary.txt" -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-player-debrief-summary.log"
+```
+
+**Acceptance:**
+
+- Player understands mission result and next click.
+- Normal flow does not ask the player to manage save slots.
+
+**Commit:** `Simplify debrief player flow`
+
+### C2: Guard Repair And Relaunch Loop
+
+**Goal:** Damaged mechs can be repaired immediately with token cost and relaunched without waiting or save management.
+
+**Files:**
+
+- Modify: `unity-mc2-demo/Assets/Scripts/BattleCore/MechBayInventoryContract.cs`
+- Modify: `unity-mc2-demo/Assets/Scripts/Presentation/Mc2DemoBootstrap.cs`
+- Modify: `unity-mc2-demo/Assets/Editor/Mc2DemoValidator.cs`
+- Modify if needed: `unity-mc2-demo/Assets/StreamingAssets/CommanderScripts/mc2_01-visible-flow-audit.txt`
+- Modify: `docs-playable-demo-locked-execution-plan-2026-06-07.md`
+
+**Steps:**
+
+1. Confirm repair cost calculation covers unit health and damaged sections.
+2. Confirm ordinary weapon loss is modeled as repair/rebuy cost, not permanent first-demo loss.
+3. Confirm repair is immediate and consumes only the one token/currency concept.
+4. Add validator or smoke assertion that repair restores launch eligibility.
+5. Confirm relaunch uses the repaired loadout.
+6. Run validator and visible-flow smoke.
+
+**Validation:**
+
+```powershell
+git diff --check
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoValidator.ValidateMissionContract -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-validate-repair-relaunch.log"
+& "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo\Builds\Windows\MC2UnityDemo.exe" -batchmode -nographics -mc2SmokeTest -mc2CommandFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo\Assets\StreamingAssets\CommanderScripts\mc2_01-visible-flow-audit.txt" -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-player-repair-relaunch.log"
+```
+
+**Acceptance:**
+
+- Repair all is immediate.
+- Repaired units can relaunch the same mission.
+- No waiting timer or complex save UI appears.
+
+**Commit:** `Guard repair and relaunch loop`
+
+### D1: Freeze Compact AI Observation
+
+**Goal:** Keep model input small enough for high-latency AI calls and useful enough for high-level tactical advice.
+
+**Files:**
+
+- Modify: `unity-mc2-demo/Assets/Scripts/BattleCore/CommanderObservationPort.cs`
+- Modify: `docs-ai-commander-directive-contract.md`
+- Modify if needed: `unity-mc2-demo/Assets/Scripts/Presentation/StartupCommanderScript.cs`
+- Modify: `unity-mc2-demo/Assets/Editor/Mc2DemoValidator.cs`
+- Modify: `docs-playable-demo-locked-execution-plan-2026-06-07.md`
+
+**Steps:**
+
+1. Include mission phase, objective summary and commander identity.
+2. Include player unit health, section damage and detached command state.
+3. Include hostile pressure summary and nearby threat summary.
+4. Include available high-level intents.
+5. Exclude full projectile history, full path graphs and per-frame data.
+6. Add validator/export evidence that observation remains compact and stable.
+
+**Validation:**
+
+```powershell
+git diff --check
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoValidator.ValidateMissionContract -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-validate-ai-observation.log"
+```
+
+**Acceptance:**
+
+- Observation is compact enough to send to a slow model.
+- Local battle runs without AI.
+
+**Commit:** `Freeze AI observation contract`
+
+### D2: Guard AI Directive Adapter
+
+**Goal:** Convert model output into ordinary BattleCore commands with strict fallback and no direct mission mutation.
+
+**Files:**
+
+- Create or Modify: `unity-mc2-demo/Assets/Scripts/BattleCore/AiCommanderDirective.cs`
+- Modify: `unity-mc2-demo/Assets/Scripts/BattleCore/CommanderCommandPort.cs`
+- Modify: `unity-mc2-demo/Assets/Scripts/BattleCore/RuleCommander.cs`
+- Modify: `docs-ai-commander-directive-contract.md`
+- Modify: `unity-mc2-demo/Assets/Editor/Mc2DemoValidator.cs`
+- Modify: `docs-playable-demo-locked-execution-plan-2026-06-07.md`
+
+**Steps:**
+
+1. Define directive types: attack, focusTarget, defend, regroup, hold, retreat, protectUnit.
+2. Parse invalid model output into no-op or local rule fallback.
+3. Convert valid directive into existing commander command objects.
+4. Add timeout and invalid-response expectations to docs.
+5. Validate one directive conversion end to end.
+
+**Validation:**
+
+```powershell
+git diff --check
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoValidator.ValidateMissionContract -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-validate-ai-directive-adapter.log"
+```
+
+**Acceptance:**
+
+- AI directive is high-level only.
+- Invalid or slow model output cannot block battle.
+
+**Commit:** `Guard AI directive adapter`
+
+### D3: Show Optional AI Advice Window
+
+**Goal:** Show one compact AI deputy suggestion when available, while keeping the demo complete offline.
+
+**Files:**
+
+- Modify: `unity-mc2-demo/Assets/Scripts/BattleCore/MiniMaxCommander.cs`
+- Modify: `unity-mc2-demo/Assets/Scripts/Presentation/Mc2DemoBootstrap.cs`
+- Modify: `unity-mc2-demo/README.md`
+- Modify: `docs-playable-demo-locked-execution-plan-2026-06-07.md`
+
+**Steps:**
+
+1. Add a small advice row or compact panel, not a chat console.
+2. Show one short suggestion based on the frozen observation/directive shape.
+3. Keep player command priority above AI advice.
+4. Show offline/disabled state if key is unavailable.
+5. Ensure default smoke tests do not spend tokens.
+6. Run validator and an offline-state check.
+
+**Validation:**
+
+```powershell
+git diff --check
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoValidator.ValidateMissionContract -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-validate-ai-advice-window.log"
+```
+
+**Acceptance:**
+
+- AI reads as deputy capability, not required gameplay.
+- No API key still gives a complete local demo.
+
+**Commit:** `Show optional AI advice window`
+
+### E1: Document Private Reference Content Boundary
+
+**Goal:** Make the repo and README story safe: private reference content is development-only, public value is AI-assisted tactical RTS command with replaceable content packs.
+
+**Files:**
+
+- Modify: `docs-content-replacement-plan.md`
+- Modify: `docs-content-pack.md`
+- Modify: `README.md`
+- Modify: `unity-mc2-demo/README.md`
+- Modify: `docs-playable-demo-locked-execution-plan-2026-06-07.md`
+
+**Steps:**
+
+1. State private reference assets are local validation only.
+2. State public release must use project-owned or properly licensed content.
+3. Document replaceable layers: data, names, UI text, models, textures, effects, audio, icons and provenance.
+4. Keep outward pitch centered on AI-assisted tactical RTS, deterministic BattleCore and optional AI deputy.
+5. Search for public-facing wording that markets the project as a clone.
+
+**Validation:**
+
+```powershell
+rg -n "MechCommander|MechWarrior|原版|复刻|clone|reference|private|public" README.md unity-mc2-demo/README.md docs-content-replacement-plan.md docs-content-pack.md
+git diff --check
+```
+
+**Acceptance:**
+
+- Public-facing docs do not sell private reference content as product content.
+- Private reference use remains clearly local and replaceable.
+
+**Commit:** `Document private reference content boundary`
+
+### E2: Add Public Build Content Safety Check
+
+**Goal:** Make it harder to accidentally package private reference content into a public build.
+
+**Files:**
+
+- Modify: `scripts/unity/*`
+- Modify: `.gitignore`
+- Modify: `unity-mc2-demo/README.md`
+- Modify: `docs-content-replacement-plan.md`
+- Modify: `docs-playable-demo-locked-execution-plan-2026-06-07.md`
+
+**Steps:**
+
+1. Identify ignored private reference and capture output paths.
+2. Add or document a public build mode that rejects private reference pack inputs.
+3. Confirm generated screenshots, sidecars and logs stay ignored.
+4. Confirm local private validation build path still works.
+5. Keep the check simple and explicit; no server or account work in this task.
+
+**Validation:**
+
+```powershell
+git status --short --ignored
+git check-ignore -v analysis-output/reference-visual-captures/spawn.png
+git diff --check
+```
+
+**Acceptance:**
+
+- Public build path fails closed if private reference paths leak into package inputs.
+- Local private validation path remains available.
+
+**Commit:** `Add public build content safety check`
+
+### E3: Add Playable Demo Walkthrough
+
+**Goal:** Give collaborators or investors a three-minute script that shows MechLab, battle command, damage, debrief and relaunch without needing project context.
+
+**Files:**
+
+- Create: `docs-demo-walkthrough-2026-06-07.md`
+- Modify: `README.md`
+- Modify: `unity-mc2-demo/README.md`
+- Modify: `docs-playable-demo-locked-execution-plan-2026-06-07.md`
+
+**Steps:**
+
+1. Script the flow: start, MechLab, inspect fit, launch, move, focus target, solo command, jet, damage, debrief, repair, relaunch.
+2. Link capture presets for the beats: `spawn`, `airfield`, `hangar-contact`, `damage-demo`, `north-patrol`.
+3. Use project-owned language: AI-assisted tactical RTS, mech squad command, deterministic BattleCore, optional AI deputy.
+4. Keep private reference content as local validation language only.
+
+**Validation:**
+
+```powershell
+git diff --check
+```
+
+**Acceptance:**
+
+- Another person can demo the build from the document.
+- Value is clear without public original-IP references.
+
+**Commit:** `Add playable demo walkthrough`
+
+### E4: Prepare Repeatable Windows Demo Build
+
+**Goal:** Make build, validate, smoke and capture commands explicit enough to repeat on this machine.
+
+**Files:**
+
+- Modify: `scripts/unity/*`
+- Modify: `README.md`
+- Modify: `unity-mc2-demo/README.md`
+- Modify if needed: `BUILD-WIN.md`
+- Modify if needed: `docs-demo-walkthrough-2026-06-07.md`
+- Modify: `docs-playable-demo-locked-execution-plan-2026-06-07.md`
+
+**Steps:**
+
+1. Provide one command to build Windows player.
+2. Provide one command to run validator.
+3. Provide one command to run visible-flow smoke.
+4. Provide one command to capture reference screenshots.
+5. Document optional private reference pack requirement.
+6. Run Windows build.
+
+**Validation:**
+
+```powershell
+git diff --check
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoBuilder.BuildWindows64 -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-build-demo-handoff.log"
+```
+
+**Acceptance:**
+
+- README can guide another developer.
+- Build, validator, smoke and capture commands are explicit.
+
+**Commit:** `Prepare repeatable Windows demo build`
+
+### E5: Package Playable Demo Evidence
+
+**Goal:** Turn local evidence into a clean demo story: fitting, launch, command, damage, debrief, repair and relaunch.
+
+**Files:**
+
+- Modify: `docs-demo-walkthrough-2026-06-07.md`
+- Modify: `docs-reference-visual-audit-2026-06-07.md`
+- Modify: `README.md`
+- Modify: `docs-playable-demo-locked-execution-plan-2026-06-07.md`
+
+**Steps:**
+
+1. Pick 3-5 local evidence beats: MechLab, spawn/airfield, hangar contact, damage/ejection and debrief.
+2. Write concise captions focused on simple squad command, AI-assisted decisions, mech fitting, BattleCore simulation and replaceable content packs.
+3. Record exact build/capture commands that produced the evidence.
+4. Do not commit generated PNG/JSON/log files unless explicitly requested.
+
+**Validation:**
+
+```powershell
+git diff --check
+```
+
+**Acceptance:**
+
+- Demo has a clean story for investors or collaborators.
+- Evidence is reproducible and does not package private reference content.
+
+**Commit:** `Package playable demo evidence`
 
 ## 15. Stop Conditions
 
