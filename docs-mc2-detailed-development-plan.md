@@ -1,6 +1,6 @@
 # MC2 Current Detailed Development Plan
 
-> **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
+> **For Codex:** This document is the product and architecture overview. Execute the detailed task list in `docs-playable-demo-master-plan-2026-06-07.md`.
 
 **Goal:** 做出一版 Windows 可玩的战术机甲指挥 Demo：玩家能进入任务、指挥 1-6 台机甲完成一张参考关卡、看到可读的 3D 地形/建筑/机甲/爆炸损伤效果，并能回到机甲装配界面调整小队。AI 指挥官、地图服务器、公开换皮内容包都保留接口，但不阻塞第一版可见体验。
 
@@ -22,7 +22,8 @@
 
 - Phase A 地形/水面/道路可读性已经完成并提交，提交 `89a686f Improve terrain and water readability`。当前截图已经能读出绿色地面、蓝色水域、岸线、跑道/道路和建筑基底。
 - Phase B / Task B1：敌方密度和停靠点展开已经完成。目标不是减少敌人，而是在保留原版触发节奏和战斗压力的前提下，让 `hangar-contact`、`damage-demo` 不再像所有模型挤在一个点。
-- 真实下一步是 Phase B / Task B2：机甲、载具、炮塔、建筑、树木和道具的比例审计，让画面从“能展开”继续推进到“尺寸层级可信”。
+- 2026-06-07 已刷新执行计划：`docs-playable-demo-master-plan-2026-06-07.md` 现在把当前阶段拆成更细的 B2 比例审计、B3 碰撞占位证据、B4 固定镜头构图，以及后续 C 阶段交互 smoke、D 阶段损伤手感、E 阶段装配格子、F 阶段去保存系统表层和战后再战。
+- 真实下一步是 Phase B / Task B2：机甲、载具、炮塔、建筑、树木和道具的比例审计，让画面从“能展开”继续推进到“尺寸层级可信”。B2 后紧接 B3，必须证明看得见的硬物在 BattleCore 里也有物理占位。
 - BattleCore 仍是权威物理占位层。Unity 可以显示碰撞占位和辅助反馈，但合法落点、单位排布、结构/terrain object 占用必须由 BattleCore 可验证地决定。
 
 当前项目不是从零开始，已经进入“可见 Demo 打磨”阶段。核心问题已经从“能不能跑”转为“看起来是否像一款可信的战术机甲游戏”。
@@ -1014,10 +1015,9 @@ Commit 15：本地演示包整理。
 
 ## 11. 下一步
 
-下一次继续开发时，按 `docs-playable-demo-master-plan-2026-06-07.md` 执行，进入 **Phase B / Task B2：Mech, vehicle, turret and prop scale audit**。敌方密度和停车点已经收过一轮，下一步重点是让第一张图的尺寸层级更可信：
+下一次继续开发时，按 `docs-playable-demo-master-plan-2026-06-07.md` 执行，进入 **Phase B / Task B2：Mech, vehicle, turret and prop scale audit**。敌方密度和停车点已经收过一轮，下一步重点是连续过三道“看得懂战场”的关：
 
-1. 列出 `mc2_01` 实际出现的 mech、vehicle、turret、building、tree、barricade、aircraft 等 asset id。
-2. 检查 `ReferenceObjMeshLibrary.cs`、`ReferencePropLibrary.cs`、`DemoUnitView.cs` 里的缩放因子，确认没有 parent scale 和 imported mesh scale 叠加。
-3. 给 mech、vehicle、turret、building、tree 分出明确视觉尺寸范围。
-4. 重新捕获 `spawn`、`airfield`、`damage-demo`，确认机甲是主要演员，载具/炮塔/步兵不会糊成同一大小色块。
-5. 更新视觉审计文档并提交。
+1. B2 比例审计：列出 `mc2_01` 实际出现的 mech、vehicle、infantry、turret、building、tree、barricade、aircraft 等 asset id，检查 `ReferenceObjMeshLibrary.cs`、`ReferencePropLibrary.cs`、`DemoUnitView.cs`、`Mc2DemoBootstrap.cs` 的缩放路径，确认 parent scale 和 imported mesh scale 没有叠加，并重新捕获 `spawn`、`airfield`、`hangar-contact`、`damage-demo`。
+2. B3 碰撞占位证据：把 live units、targetable structures、hard terrain objects、水域非法落点和 fallback destination search 写进 validator 或 capture sidecar，确认看得见的硬物在 BattleCore 里也有物理占位。
+3. B4 固定镜头构图：保持指挥官跟随、固定 yaw/pitch 和有限缩放，让指挥官小队、活动目标和主要接敌方向在 `hangar-contact`、`damage-demo` 同时可读。
+4. 以上三步完成后再进入 Phase C，不提前做服务器、经济、保存系统、PVP、移动端或链上功能。

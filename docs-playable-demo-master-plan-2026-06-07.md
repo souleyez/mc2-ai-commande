@@ -1,6 +1,6 @@
 # Playable Demo Master Plan Implementation Plan
 
-> **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
+> **For Codex:** Execute this plan task-by-task. Each task should end with validation evidence and a small commit.
 
 **Goal:** 把当前 Unity 6 Windows 原型推进到一版可演示、可截图、可继续融资的轻量机甲战术指挥 Demo：玩家能改装 1-6 台机甲，进入一张参考小地图，用极少 UI 完成移动、集火、喷射、独立命令、损伤结算和再次出战。
 
@@ -38,7 +38,7 @@
 | 阶段 | 状态 | 本阶段产物 | 下一动作 |
 | --- | --- | --- | --- |
 | Phase A: 地形/水面/道路可读性 | Done | 地面、水域、岸线、跑道/道路、建筑基底在截图里可读；提交 `89a686f Improve terrain and water readability` | 只做回归检查，不再主动展开 |
-| Phase B: 第一张地图战场可读性 | Active | 敌我单位不堆点，建筑/树木/炮塔/道具比例可信，固定镜头能看懂战术关系 | 继续 B2 机甲/载具/炮塔/道具比例审计 |
+| Phase B: 第一张地图战场可读性 | Active / B1 Done | 敌我单位不堆点，建筑/树木/炮塔/道具比例可信，固定镜头能看懂战术关系 | 继续 B2 比例审计，然后 B3 碰撞占位可视审计 |
 | Phase C: 指挥战斗闭环 | Next | 默认全队、状态栏单选、独立命令、自动归队、喷射和最小战斗 UI 可稳定演示 | B 阶段截图可读后进入 |
 | Phase D: 损伤、武器和战斗手感 | Next | 激光/导弹/炮弹层次、部位损伤、断臂/瘫痪/驾驶舱弹射能在截图或观战中看见 | C 阶段命令稳定后进入 |
 | Phase E: 原版式装配垂直切片 | Next | 整块武器占格、装甲板/散热器、热量/重量/槽位合法性、配置进战斗 | D 阶段战斗反馈可读后进入 |
@@ -46,6 +46,47 @@
 | Phase G: AI 副官能力窗口 | Later | compact observation、高层 directive、本地 adapter、AI 建议窗口 | 本地完整 Demo 成形后补 |
 | Phase H/I: 内容包边界和演示构建 | Later | 私有参考包不进公开包，一键 Windows 演示构建，演示脚本 | Demo 可看可玩后收尾 |
 | Platform Work | Deferred | 地图服务器、Web 排名、奖励认证、链上分账研究 | 第一版本地 Demo 稳定后再设计 |
+
+## 0.2 当前完成度和缺口盘点
+
+这不是百分比承诺，只是开发优先级判断，用来防止“还没看清战场就去做服务器”这种跑偏。
+
+| 模块 | 当前程度 | 已经有的东西 | 当前缺口 | 最近动作 |
+| --- | --- | --- | --- | --- |
+| 本地启动/构建 | 基本可用 | Unity 6 Windows build、batch validator、smoke player、截图脚本 | Unity 偶发序列化 churn 需要提交前检查；公开构建安全边界还要再收 | 每个代码提交跑 build/smoke/capture 之一 |
+| 第一张地图加载 | 可用但仍需视觉打磨 | `mc2_01` 地形、目标、触发、单位、结构、terrain objects 已加载 | 模型比例、地图道具层级、密集战斗构图还没完全可信 | 继续 Phase B |
+| 3D 地形/环境 | 过了黑块阶段 | 地面、水面、岸线、跑道/道路、建筑基底已可读 | 水边、道路边缘、地图边缘三角面仍是后续美术 polish | 只做回归，不扩大战线 |
+| 机甲/载具/炮塔显示 | 可见但比例未锁 | 参考 OBJ 加载、父级缩放补偿、损伤节点部分可用 | 机甲/载具/步兵/炮塔/建筑/树木的相对尺寸还要审计 | B2 |
+| 物理碰撞占位 | 有核心版 | 单位间、targetable structure、大型 terrain object、水域非法喷射落点已有 BattleCore 逻辑 | 需要可视/sidecar 审计，确认占位和画面一致，没有“看得见但穿过去” | B3 |
+| 指挥操作 | 有基础逻辑 | 默认全队、状态栏单选、独立命令、自动归队、喷射已有基础 | 需要完整 smoke 覆盖和更少 UI 噪音 | Phase C |
+| 战斗反馈 | 有雏形 | 武器命中、爆炸、损伤、残骸、驾驶舱逃生提示已有部分事件 | 武器类型层次、断臂/断腿/驾驶舱弹射可见度还不够强 | Phase D |
+| 装配界面 | 能跑但不是最终乐趣点 | 热量/重量/槽位/装备预览已有基础；武器装上即启用 | 要更像原作整块占格，装甲板/散热器填格，合法性即时反馈 | Phase E |
+| 战后再战 | 有基础，不做复杂保存 | Debrief、奖励/维修方向已有 | 一键维修、回装配、再进同图要收成可演示闭环 | Phase F |
+| AI 副官 | 保留接口 | observation/directive 方向已明确，Minimax 接入已有探索 | 第一版只做高层建议窗口，不做逐帧控制 | Phase G |
+| 平台/经济/地图服务器 | 暂缓 | 有产品设想和平台计划文档 | 不进入第一版本地 Demo 主线 | Demo 稳后重开 |
+
+## 0.3 当前执行颗粒度
+
+接下来每个小提交都按“先截图可读，再操作闭环，再战斗反馈，再装配乐趣”的顺序走。
+
+当前最近 9 个可执行提交：
+
+1. `Tune first slice visual scale`：校准机甲、载具、炮塔、建筑、树木、道具比例。
+2. `Expose battle occupancy evidence`：把单位/结构/硬物/水域占位写进 validator 或 capture sidecar，让物理占位可检查。
+3. `Tune commander camera composition`：固定视角下让指挥官、目标和接敌方向同屏可读。
+4. `Assert commander command states`：把全队命令、单机独立命令、自动归队写成 smoke 断言。
+5. `Tighten status row solo command flow`：状态栏点选单机、下达独立命令、可见状态回到全队、完成后自动归队。
+6. `Finalize squad jet landing rules`：喷射按单机合法性结算，非法落点单位不动，其他单位照常跳。
+7. `Freeze minimal battle UI`：战斗中只保留状态栏、喷射、任务地图、暂停/系统，不堆信息。
+8. `Differentiate weapon visual effects`：激光、导弹、弹道、爆炸至少有可分辨的命中方向和效果层次。
+9. `Strengthen mech section damage cues`：断臂、瘫痪、驾驶舱逃生在世界和状态栏都看得见。
+
+每个提交结束时至少记录：
+
+- 修改文件。
+- 跑过的验证命令。
+- 对应日志或截图路径。
+- 下一步仍然存在的问题。
 
 ## 1. 第一版定义
 
@@ -285,21 +326,34 @@ Spread first mission enemy parking
 - Modify: `unity-mc2-demo/Assets/Scripts/Presentation/ReferenceObjMeshLibrary.cs`
 - Modify: `unity-mc2-demo/Assets/Scripts/Presentation/ReferencePropLibrary.cs`
 - Modify: `unity-mc2-demo/Assets/Scripts/Presentation/DemoUnitView.cs`
+- Modify: `unity-mc2-demo/Assets/Scripts/Presentation/Mc2DemoBootstrap.cs`
 - Modify: `docs-reference-visual-audit-2026-06-07.md`
 
 **Steps:**
 
-1. List unit and prop asset IDs used by `mc2_01`.
-2. Group them into mech, vehicle, turret, aircraft, building, barricade, tree.
-3. Define per-category visual scale ranges.
-4. Confirm placeholder parent scale does not double-scale imported reference meshes.
-5. Capture `spawn`, `airfield`, `damage-demo`.
+1. Read the latest `spawn.json`, `airfield.json`, `hangar-contact.json` and `damage-demo.json` sidecars.
+2. List the `mc2_01` unit types and terrain-object classes actually appearing in the first-slice captures.
+3. Group visible assets into `mech`, `vehicle`, `infantry`, `turret`, `aircraft`, `building`, `barricade`, `tree`, `other`.
+4. Add a category summary to the runtime log or capture sidecar, for example `ReferenceScale=mech 4 vehicle 9 building 12 tree 80 fallback 6`.
+5. Confirm imported reference meshes compensate their placeholder parent scale; no unit should be scaled once by the primitive parent and again by the reference child.
+6. Define conservative per-category multipliers. Start with mechs as the actor baseline, vehicles lower, infantry much lower, buildings/aircraft/large props large but not screen-blocking.
+7. Keep actual BattleCore radius and hit rules unchanged in this task. This task is visual scale only.
+8. Capture `spawn`, `airfield`, `hangar-contact`, `damage-demo`.
+9. Update the visual audit with before/after findings and exact remaining readability failure.
+
+**Implementation notes:**
+
+- If a model has bad source units, fix through one mapping table instead of hard-coding scattered scale exceptions.
+- Prefer category-based scale first. Only add asset-specific overrides for obvious outliers such as aircraft, hangars, towers, or tiny infantry.
+- Mechs must read as the main actors; buildings should sell the map scale but not bury the squad.
+- Do not use Unity physics colliders as hidden gameplay truth. If a visual scale implies a bigger obstacle, the next task must decide whether BattleCore occupancy should also change.
 
 **Validation:**
 
 ```powershell
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoValidator.ValidateMissionContract -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-validate-scale-audit.log"
 & "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoBuilder.BuildWindows64 -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-build-scale-audit.log"
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_reference_visuals.ps1 -Presets spawn,airfield,damage-demo
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_reference_visuals.ps1 -Presets spawn,airfield,hangar-contact,damage-demo
 ```
 
 **Acceptance:**
@@ -307,6 +361,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_refere
 - Mechs are readable as the main actors.
 - Vehicles and turrets are smaller but recognizable.
 - Buildings and large props feel large without hiding the whole battle.
+- The audit states whether any visual scale now disagrees with BattleCore occupancy.
+- No public-safe content boundary changes are made in this task.
 
 **Commit:**
 
@@ -314,7 +370,52 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_refere
 Tune first slice visual scale
 ```
 
-### Task B3: Commander camera composition pass
+### Task B3: BattleCore occupancy evidence pass
+
+**Files:**
+
+- Modify: `unity-mc2-demo/Assets/Scripts/BattleCore/BattleMission.cs`
+- Modify: `unity-mc2-demo/Assets/Scripts/Presentation/Mc2DemoBootstrap.cs`
+- Modify: `unity-mc2-demo/Assets/Editor/Mc2DemoValidator.cs`
+- Modify: `docs-reference-visual-audit-2026-06-07.md`
+
+**Steps:**
+
+1. Inventory the occupancy sources currently used by BattleCore: live units, targetable structures, hard terrain objects, water/illegal landing cells and fallback destination search.
+2. Add validator assertions that a destination inside each hard obstacle class is rejected or pushed to a legal nearby point.
+3. Add capture-sidecar evidence for occupancy counts, for example `Occupancy=units 23 structures 4 hardProps 120 waterCells 340`.
+4. Add an optional development overlay or log-only debug mode for collision footprints. Keep it off in normal play and normal screenshots.
+5. Compare B2 visual-scale findings against actual occupancy radius/classes. If a huge visible object has no occupancy, either add it to the hard-prop class or document why it remains soft.
+6. Re-run `mc2_01-jet-landing-block.txt` and `mc2_01-squad-jet-partial.txt` if changed code touches landing legality.
+7. Capture `hangar-contact` and `damage-demo` and record whether units still appear to stand inside hard objects.
+
+**Implementation notes:**
+
+- BattleCore remains the authority. Unity colliders may exist for presentation, but they must not be the only thing preventing illegal movement.
+- Trees and forest masses should usually be soft occlusion/fade unless a specific trunk/large object is clearly a hard obstacle.
+- Water and hard structures are strict. If a unit starts near water and jet target falls into water, that single unit stays still while other legal jumps proceed.
+
+**Validation:**
+
+```powershell
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoValidator.ValidateMissionContract -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-validate-occupancy-evidence.log"
+& "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo\Builds\Windows\MC2UnityDemo.exe" -batchmode -nographics -mc2SmokeTest -mc2CommandFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo\Assets\StreamingAssets\CommanderScripts\mc2_01-squad-jet-partial.txt" -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-player-occupancy-jet-smoke.log"
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_reference_visuals.ps1 -Presets hangar-contact,damage-demo
+```
+
+**Acceptance:**
+
+- The sidecar/log proves physical occupancy exists for the visible hard objects that matter in the first slice.
+- Units do not visibly park inside target structures, hard terrain objects or water.
+- Soft trees/forest props fade or visually yield instead of blocking the whole map.
+
+**Commit:**
+
+```text
+Expose battle occupancy evidence
+```
+
+### Task B4: Commander camera composition pass
 
 **Files:**
 
@@ -324,15 +425,16 @@ Tune first slice visual scale
 **Steps:**
 
 1. Keep fixed tactical yaw/pitch and limited zoom.
-2. Keep default follow on commander unit.
+2. Keep default follow on commander unit, which is the first sorted player mech.
 3. Add small composition offset only when the active objective and commander would be hidden by UI or large props.
-4. Do not add free rotation.
-5. Capture `hangar-contact` at 1280x720.
+4. Let active objective, commander squad and primary enemy direction share the frame in `hangar-contact`.
+5. Do not add free rotation or manual camera dragging.
+6. Capture `spawn`, `hangar-contact` and `damage-demo` at 1280x720.
 
 **Validation:**
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_reference_visuals.ps1 -Presets hangar-contact,damage-demo
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_reference_visuals.ps1 -Presets spawn,hangar-contact,damage-demo
 ```
 
 **Acceptance:**
@@ -381,7 +483,51 @@ Tune commander camera composition
 Assert commander command states
 ```
 
-### Task C2: Jet movement final rules
+### Task C2: Status-bar selection and click contract
+
+**Files:**
+
+- Modify: `unity-mc2-demo/Assets/Scripts/Presentation/Mc2DemoBootstrap.cs`
+- Modify: `unity-mc2-demo/Assets/Scripts/Presentation/StartupCommanderScript.cs`
+- Modify: `unity-mc2-demo/Assets/StreamingAssets/CommanderScripts/mc2_01-solo-order-state.txt`
+- Modify: `unity-mc2-demo/Assets/StreamingAssets/CommanderScripts/mc2_01-solo-attack-isolation.txt`
+
+**Steps:**
+
+1. Treat the battle state as full-squad selected by default.
+2. When the player clicks a mech row in the left status bar, mark only that mech as the next-command target.
+3. The next terrain click becomes a solo move; the next hostile/objective click becomes a solo attack/focus command.
+4. After issuing the solo command, return the visible selection to full-squad mode while that mech remains in independent-command state internally.
+5. Show the independent-command state in that mech status row, not through a new map selection box.
+6. When the solo command completes, clear the independent state and let that mech obey the latest full-squad command.
+7. Add script assertions for row select, solo command isolation, full-squad visible selection restore and auto-rejoin.
+
+**Implementation notes:**
+
+- Do not add drag selection, box selection or per-mech map tapping requirements.
+- Avoid extra battle buttons. The player should mainly use status rows, map clicks, jet and pause/system.
+- The UI should show enough state to prevent confusion, but battle should not become a debug dashboard.
+
+**Validation:**
+
+```powershell
+& "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo\Builds\Windows\MC2UnityDemo.exe" -batchmode -nographics -mc2SmokeTest -mc2CommandFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo\Assets\StreamingAssets\CommanderScripts\mc2_01-solo-order-state.txt" -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-player-status-row-solo-smoke.log"
+& "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo\Builds\Windows\MC2UnityDemo.exe" -batchmode -nographics -mc2SmokeTest -mc2CommandFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo\Assets\StreamingAssets\CommanderScripts\mc2_01-solo-attack-isolation.txt" -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-player-solo-attack-isolation.log"
+```
+
+**Acceptance:**
+
+- The visible default returns to full-squad after a solo command is issued.
+- The solo mech keeps its independent command until completion.
+- No box-select or map-select interaction is required.
+
+**Commit:**
+
+```text
+Tighten status row solo command flow
+```
+
+### Task C3: Jet movement final rules
 
 **Files:**
 
@@ -414,7 +560,7 @@ Assert commander command states
 Finalize squad jet landing rules
 ```
 
-### Task C3: Battle UI freeze
+### Task C4: Battle UI freeze
 
 **Files:**
 
@@ -652,7 +798,41 @@ Apply mech lab loadouts in battle
 
 目标：完成“打一局 -> 看结果 -> 修复 -> 再出战”。
 
-### Task F1: Debrief compact loop
+### Task F1: Hide save-system surface from first demo
+
+**Files:**
+
+- Modify: `unity-mc2-demo/Assets/Scripts/Presentation/Mc2DemoBootstrap.cs`
+- Modify: `unity-mc2-demo/README.md`
+- Modify: `docs-mc2-detailed-development-plan.md`
+
+**Steps:**
+
+1. Audit visible UI entries for Save Slot, Continue, New Company, export/import and saved-account developer panels.
+2. Keep any useful internal account snapshot code only as hidden developer tooling.
+3. Remove or hide save-related entries from the first-version player-facing battle, debrief and startup flow.
+4. Update README wording so saved-account commands are clearly marked as developer diagnostics, not first-demo gameplay.
+5. Keep first-demo flow as current run state: refit, launch, debrief, repair, relaunch.
+
+**Validation:**
+
+```powershell
+rg -n "Save Slot|saved-account|Continue|New Company|save/load" unity-mc2-demo/README.md unity-mc2-demo/Assets/Scripts/Presentation/Mc2DemoBootstrap.cs
+git diff --check
+```
+
+**Acceptance:**
+
+- First-demo UI does not ask the player to manage save files.
+- Hidden developer save diagnostics, if kept, do not appear in the normal demo walkthrough.
+
+**Commit:**
+
+```text
+Hide save system from first demo flow
+```
+
+### Task F2: Debrief compact loop
 
 **Files:**
 
@@ -685,7 +865,7 @@ Apply mech lab loadouts in battle
 Tighten debrief and repair loop
 ```
 
-### Task F2: Instant repair and ordinary weapon replacement
+### Task F3: Instant repair and ordinary weapon replacement
 
 **Files:**
 
@@ -1007,19 +1187,22 @@ Add playable demo walkthrough
 Recommended next commits from the current active point. Phase A terrain readability is already complete in `89a686f`, and B1 enemy parking spread is complete.
 
 1. `Tune first slice visual scale`
-2. `Tune commander camera composition`
-3. `Assert commander command states`
-4. `Finalize squad jet landing rules`
-5. `Freeze minimal battle UI`
-6. `Differentiate weapon visual effects`
-7. `Strengthen mech section damage cues`
-8. `Make mech lab grid item fitting explicit`
-9. `Apply mech lab loadouts in battle`
-10. `Tighten debrief and repair loop`
-11. `Freeze AI commander observation contract`
-12. `Add AI commander directive adapter`
-13. `Document replaceable visual content packs`
-14. `Prepare repeatable Windows demo build`
+2. `Expose battle occupancy evidence`
+3. `Tune commander camera composition`
+4. `Assert commander command states`
+5. `Tighten status row solo command flow`
+6. `Finalize squad jet landing rules`
+7. `Freeze minimal battle UI`
+8. `Differentiate weapon visual effects`
+9. `Strengthen mech section damage cues`
+10. `Make mech lab grid item fitting explicit`
+11. `Apply mech lab loadouts in battle`
+12. `Hide save system from first demo flow`
+13. `Tighten debrief and repair loop`
+14. `Freeze AI commander observation contract`
+15. `Add AI commander directive adapter`
+16. `Document replaceable visual content packs`
+17. `Prepare repeatable Windows demo build`
 
 Every commit should include:
 
