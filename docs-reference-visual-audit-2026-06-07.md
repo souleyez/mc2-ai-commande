@@ -1793,3 +1793,65 @@ Remaining issues:
 Next priority:
 
 1. M2 capture MechLab fitting evidence.
+
+## M2 MechLab Fitting Evidence Result
+
+Implemented on 2026-06-07:
+
+- Added a `mechlab` capture preset that opens the MechLab, selects the default mech, resets scroll, and frames the loadout editor for screenshot review.
+- The capture prelude makes the review draft visibly include one armor filler and one heat-sink filler when the default fit has empty cells.
+- Capture sidecars now include a `mechLab` summary with flow, selected unit, weapon block label, filler summary, fit state, H/W/G pressure and always-mounted evidence.
+- `scripts/unity/capture_reference_visuals.ps1` now validates the `mechlab` preset with sidecar checks instead of accepting any nonblank image.
+
+Modified files:
+
+```text
+scripts/unity/capture_reference_visuals.ps1
+unity-mc2-demo/Assets/Scripts/Presentation/Mc2DemoBootstrap.cs
+docs-reference-visual-audit-2026-06-07.md
+docs-playable-demo-current-execution-plan-2026-06-07.md
+docs-playable-demo-overall-detailed-plan-2026-06-07.md
+```
+
+Validation commands:
+
+```powershell
+git diff --check
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoValidator.ValidateMissionContract -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-validate-mechlab-capture.log"
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoBuilder.BuildWindows64 -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-build-mechlab-capture.log"
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_reference_visuals.ps1 -Presets mechlab
+```
+
+Validation evidence:
+
+```text
+analysis-output/unity-validate-mechlab-capture.log
+analysis-output/unity-build-mechlab-capture.log
+analysis-output/reference-visual-captures/mechlab.png
+analysis-output/reference-visual-captures/mechlab.json
+analysis-output/reference-visual-captures/mechlab.log
+```
+
+Validation results:
+
+```text
+git diff --check: clean, with Windows line-ending warnings only.
+Validator: MC2 demo contract validation OK.
+Build: Build Finished, Result: Success; MC2 Unity demo Windows build OK.
+Capture: MC2 reference visual captures passed: 1 preset(s).
+```
+
+Observed effect:
+
+- The screenshot shows the MechLab panel, selected mech tabs, weapon grid, `A+` and `C+` filler cells, H/W/G pressure bars, selected weapon summary and fit state.
+- Sidecar summary: `MechLabCapture=open flow=Mech Lab unit=Werewolf weaponBlock=1 Streak ... 1x2 fillers=A+/C+ fit=Fit OK pressure=H 12/22  W 16/16  G 12/16 alwaysMounted=weapons 6/6 items 6/6 noToggle=yes`.
+- The screenshot does not introduce weapon enable/disable controls; weapons remain represented as mounted blocks.
+
+Remaining issues:
+
+1. MechLab now has first-class screenshot evidence and can move to regression.
+2. The next product task should strengthen `damage-demo` so limb/cockpit/ejection damage reads clearly at screenshot scale.
+
+Next priority:
+
+1. C1 strengthen damage demo readability.

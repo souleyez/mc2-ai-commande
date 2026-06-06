@@ -39,6 +39,7 @@ namespace MC2Demo.Presentation
         private const string CapturePresetHangarContact = "hangar-contact";
         private const string CapturePresetNorthPatrol = "north-patrol";
         private const string CapturePresetDamageDemo = "damage-demo";
+        private const string CapturePresetMechLab = "mechlab";
         private const int OccupancyLandingReviewMarkerCount = 16;
         private const float OcclusionFadeUpdateSpeed = 8f;
         private const float OcclusionBoundsRadiusPixelCap = 320f;
@@ -190,6 +191,7 @@ namespace MC2Demo.Presentation
             public string[] currentObjectives;
             public string occupancy;
             public string occupancyPlaceholders;
+            public string mechLab;
             public VisualCaptureCameraState camera;
             public VisualCaptureReferenceState referenceAssets;
         }
@@ -5427,6 +5429,9 @@ namespace MC2Demo.Presentation
                 case CapturePresetDamageDemo:
                     RunStartupDamageDemoCapturePrelude();
                     break;
+                case CapturePresetMechLab:
+                    RunStartupMechLabCapturePrelude();
+                    break;
                 default:
                     startupSmokeFailed = true;
                     Debug.LogWarning("MC2 capture preset blocked: unknown preset '" + preset + "'.");
@@ -5471,6 +5476,120 @@ namespace MC2Demo.Presentation
             ForceStartupDamageDemoSections();
             cameraZoomScale = Mathf.Min(cameraZoomScale, 0.82f);
             ApplyCameraProjection();
+        }
+
+        private void RunStartupMechLabCapturePrelude()
+        {
+            OpenLoadoutPanel();
+            selectedMechLabBayPage = MechLabBayOpsPageIndex;
+            loadoutScroll = Vector2.zero;
+            UnitState unit = SelectedMechBayLoadoutUnit();
+            if (unit != null)
+            {
+                selectedMechBayLoadoutUnitId = unit.Id;
+                EnsureMechLabCaptureFillers(unit);
+                CombatLoadoutPreview preview = LoadoutPreviewFor(unit);
+                int selectedWeaponIndex = SelectedLoadoutWeaponIndexFor(unit, preview);
+                CombatLoadoutPreviewItem selectedItem = LoadoutPreviewItemForWeapon(preview, selectedWeaponIndex);
+                if (selectedItem != null)
+                {
+                    SetSelectedLoadoutGridCell(unit, selectedItem.GridX, selectedItem.GridY);
+                }
+
+                statusText = "Mech Lab capture: " + TruncateText(unit.UnitType, 24);
+            }
+
+            AdvanceStartupSimulation(0.25f);
+        }
+
+        private void EnsureMechLabCaptureFillers(UnitState unit)
+        {
+            if (unit == null)
+            {
+                return;
+            }
+
+            CombatLoadoutPreview preview = LoadoutPreviewFor(unit);
+            bool hasArmor = LoadoutPreviewHasFiller(preview, LoadoutItemCategory.ArmorPlate);
+            bool hasSink = LoadoutPreviewHasFiller(preview, LoadoutItemCategory.HeatSink);
+            if (hasArmor && hasSink)
+            {
+                return;
+            }
+
+            List<CombatLoadoutFillerOverride> fillerOverrides = MutableLoadoutFillerOverridesFor(unit);
+            if (!hasArmor && TryFindOpenLoadoutGridCell(preview, out int armorX, out int armorY))
+            {
+                UpsertLoadoutFillerOverride(fillerOverrides, armorX, armorY, LoadoutItemCategory.ArmorPlate);
+                preview = LoadoutPreviewFor(unit);
+            }
+
+            if (!hasSink && TryFindOpenLoadoutGridCell(preview, out int sinkX, out int sinkY))
+            {
+                UpsertLoadoutFillerOverride(fillerOverrides, sinkX, sinkY, LoadoutItemCategory.HeatSink);
+            }
+        }
+
+        private static bool LoadoutPreviewHasFiller(CombatLoadoutPreview preview, string category)
+        {
+            foreach (CombatLoadoutPreviewBlock block in preview?.Blocks ?? Array.Empty<CombatLoadoutPreviewBlock>())
+            {
+                if (block != null && block.IsSingleCellFiller && block.Category == category)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool TryFindOpenLoadoutGridCell(CombatLoadoutPreview preview, out int gridX, out int gridY)
+        {
+            if (preview != null)
+            {
+                for (int row = 0; row < preview.GridHeight; row++)
+                {
+                    for (int column = 0; column < preview.GridWidth; column++)
+                    {
+                        if (CountLoadoutCellsAt(preview, column, row) == 0)
+                        {
+                            gridX = column;
+                            gridY = row;
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            gridX = -1;
+            gridY = -1;
+            return false;
+        }
+
+        private static void UpsertLoadoutFillerOverride(
+            List<CombatLoadoutFillerOverride> fillerOverrides,
+            int gridX,
+            int gridY,
+            string category)
+        {
+            if (fillerOverrides == null)
+            {
+                return;
+            }
+
+            CombatLoadoutFillerOverride existing = FindFillerOverride(fillerOverrides, gridX, gridY);
+            if (existing == null)
+            {
+                fillerOverrides.Add(new CombatLoadoutFillerOverride
+                {
+                    gridX = gridX,
+                    gridY = gridY,
+                    category = category
+                });
+                return;
+            }
+
+            existing.category = category;
         }
 
         private void ForceStartupDamageDemoSections()
@@ -5623,6 +5742,7 @@ namespace MC2Demo.Presentation
                 currentObjectives = ObjectiveLabels(observation?.currentObjectives),
                 occupancy = BuildCaptureOccupancySummary(),
                 occupancyPlaceholders = lastOccupancyPlaceholderSummary,
+                mechLab = BuildCaptureMechLabSummary(),
                 camera = BuildCaptureCameraState(),
                 referenceAssets = new VisualCaptureReferenceState
                 {
@@ -5639,6 +5759,87 @@ namespace MC2Demo.Presentation
         {
             string battleSummary = mission == null ? "BattleOccupancy=mission unavailable" : mission.OccupancySummary();
             return battleSummary + "; " + DemoTerrainView.CurrentLandingAuditSummary();
+        }
+
+        private string BuildCaptureMechLabSummary()
+        {
+            if (!showLoadoutPanel)
+            {
+                return "MechLabCapture=closed";
+            }
+
+            UnitState unit = SelectedMechBayLoadoutUnit();
+            if (unit == null)
+            {
+                return "MechLabCapture=open noUnit";
+            }
+
+            CombatLoadoutPreview preview = LoadoutPreviewFor(unit);
+            int selectedWeaponIndex = SelectedLoadoutWeaponIndexFor(unit, preview);
+            CombatLoadoutPreviewGridCell selectedWeaponCell = LoadoutCellForSelectedWeapon(preview, selectedWeaponIndex);
+            string weaponBlock = LoadoutBlockLabel(unit, selectedWeaponCell);
+            if (string.IsNullOrWhiteSpace(weaponBlock))
+            {
+                weaponBlock = "none";
+            }
+
+            string fillers = LoadoutCaptureFillerSummary(preview);
+            string pressure = ProjectedLoadoutPressureText(preview);
+            string fitState = ProjectedLoadoutStateText(preview);
+            string alwaysMounted = BuildLoadoutAlwaysMountedCompactCheck(unit, preview).Summary;
+            return "MechLabCapture=open flow="
+                + DemoFlowScreenName(demoFlowScreen)
+                + " unit="
+                + TruncateText(unit.UnitType, 18)
+                + " weaponBlock="
+                + weaponBlock
+                + " fillers="
+                + fillers
+                + " fit="
+                + fitState
+                + " pressure="
+                + pressure
+                + " "
+                + alwaysMounted;
+        }
+
+        private static string LoadoutCaptureFillerSummary(CombatLoadoutPreview preview)
+        {
+            bool hasArmor = false;
+            bool hasSink = false;
+            foreach (CombatLoadoutPreviewBlock block in preview?.Blocks ?? Array.Empty<CombatLoadoutPreviewBlock>())
+            {
+                if (block == null || !block.IsSingleCellFiller)
+                {
+                    continue;
+                }
+
+                if (block.Category == LoadoutItemCategory.ArmorPlate)
+                {
+                    hasArmor = true;
+                }
+                else if (block.Category == LoadoutItemCategory.HeatSink)
+                {
+                    hasSink = true;
+                }
+            }
+
+            if (hasArmor && hasSink)
+            {
+                return "A+/C+";
+            }
+
+            if (hasArmor)
+            {
+                return "A+";
+            }
+
+            if (hasSink)
+            {
+                return "C+";
+            }
+
+            return "none";
         }
 
         private VisualCaptureCameraState BuildCaptureCameraState()

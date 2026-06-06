@@ -167,6 +167,10 @@ function Test-CaptureSidecar {
         throw "Sidecar has invalid camera state: $Path"
     }
 
+    if ($ExpectedPreset -eq "mechlab") {
+        Test-MechLabCaptureSidecar -Sidecar $sidecar -Path $Path
+    }
+
     $placeholderSummary = [string]$sidecar.occupancyPlaceholders
     if ($ExpectOccupancyPlaceholders) {
         foreach ($fragment in @(
@@ -187,6 +191,49 @@ function Test-CaptureSidecar {
     }
 
     return $sidecar
+}
+
+function Test-MechLabCaptureSidecar {
+    param(
+        [object]$Sidecar,
+        [string]$Path
+    )
+
+    if ($Sidecar.flowScreen -ne "Mech Lab") {
+        throw "MechLab capture did not open the Mech Lab flow: $Path -> $($Sidecar.flowScreen)"
+    }
+
+    $summary = [string]$Sidecar.mechLab
+    foreach ($fragment in @(
+        "MechLabCapture=open",
+        "weaponBlock=",
+        "fillers=A+/C+",
+        "fit=",
+        "pressure=H ",
+        " W ",
+        "alwaysMounted=weapons",
+        "noToggle=yes"
+    )) {
+        if ($summary -notlike "*$fragment*") {
+            throw "MechLab sidecar summary missing '$fragment': $Path -> $summary"
+        }
+    }
+
+    if ($summary -notmatch "\d+x\d+") {
+        throw "MechLab sidecar summary missing block shape label: $Path -> $summary"
+    }
+
+    foreach ($forbidden in @("toggle", "enable", "disable", "unmount")) {
+        if ($summary -match "(?i)(^|[\s=_-])$forbidden($|[\s=_-])") {
+            throw "MechLab sidecar summary contains forbidden weapon toggle copy '$forbidden': $Path -> $summary"
+        }
+    }
+
+    foreach ($forbidden in @("启用", "关闭")) {
+        if ($summary.IndexOf($forbidden, [StringComparison]::OrdinalIgnoreCase) -ge 0) {
+            throw "MechLab sidecar summary contains forbidden weapon toggle copy '$forbidden': $Path -> $summary"
+        }
+    }
 }
 
 $results = New-Object System.Collections.Generic.List[object]
@@ -257,6 +304,7 @@ foreach ($normalizedPreset in (Expand-CapturePresets $Presets)) {
         VisibleHostiles = [int]$sidecar.visibleHostileCount
         UniqueColors = $imageCheck.UniqueColors
         CenterLitRatio = $imageCheck.CenterLitRatio
+        MechLab = if ($normalizedPreset -eq "mechlab") { [string]$sidecar.mechLab } else { "" }
     })
 }
 

@@ -32,7 +32,7 @@
 - AI directive adapter 已提交：`9bf26bd Guard AI directive adapter`.
 - AI advice window 已提交：`b40372d Show optional AI advice window`.
 - Battle occupancy readability re-audit 已提交：`87006c3 Re-audit battle occupancy readability`.
-- 下一步是 `M2 Capture MechLab fitting evidence`.
+- 下一步是 `C1 Strengthen damage demo readability`.
 
 ## 1. First Demo Product Scope
 
@@ -88,7 +88,7 @@
 
 | Gap | Why It Matters | Next Task |
 | --- | --- | --- |
-| MechLab 手感还要继续靠近整块占格 | 装配是核心乐趣之一 | M1/M2 |
+| MechLab 后续只需回归 | 整块占格和截图证据已完成，后续 UI 改动需要保持这个体验不退化 | G3 regression |
 | 损伤卖点还可以更强 | 断臂、腿瘫、弹射是差异化卖点；V2 已增强当前截图 spotlight，后续还可补动画故事 | C1 |
 | Demo 还缺三分钟演示话术和证据页 | 后续融资/协作需要可展示包 | H1-H3 |
 | 公开内容安全还需要脚本 guard | 本地参考包和公开包要分清 | P1/P2 |
@@ -247,8 +247,8 @@ Do not stage generated PNG/JSON/log evidence unless explicitly requested.
 | 4 | Done | `Improve reference visual readability` | G2 battle readability |
 | 5 | Done | `Lock occupancy placeholder review layer` | G7 collision evidence |
 | 6 | Done | `Polish MechLab block fitting` | G3 MechLab feel |
-| 7 | Next | `Capture MechLab fitting evidence` | G3 MechLab evidence |
-| 8 | Pending | `Strengthen damage demo readability` | G1 combat feel |
+| 7 | Done | `Capture MechLab fitting evidence` | G3 MechLab evidence |
+| 8 | Next | `Strengthen damage demo readability` | G1 combat feel |
 | 9 | Pending | `Keep battle UI sparse` | G1/G2 UI readability |
 | 10 | Pending | `Write playable demo walkthrough` | G8 handoff |
 | 11 | Pending | `Prepare repeatable Windows demo build` | G8 handoff |
@@ -530,7 +530,9 @@ git diff --check
 
 ### M2: Capture MechLab Fitting Evidence
 
-**Status:** Next.
+**Status:** Completed 2026-06-07.
+
+**Result:** `scripts/unity/capture_reference_visuals.ps1 -Presets mechlab` now produces a first-class MechLab screenshot and sidecar evidence. The Unity capture preset opens the MechLab, selects the default mech, ensures the capture draft visibly contains weapon block shape, one armor filler and one heat-sink filler, and records `MechLabCapture=open ... fillers=A+/C+ ... pressure=H ... W ... noToggle=yes`. Evidence: `analysis-output/reference-visual-captures/mechlab.png`, `analysis-output/reference-visual-captures/mechlab.json`, and `analysis-output/reference-visual-captures/mechlab.log`.
 
 **Goal:** 留一张能给人看的装配界面截图，而不是只靠 smoke 文本。
 
