@@ -12,15 +12,16 @@
 
 ## 1. Plan Role
 
-这份文档是 2026-06-07 之后继续开发的主执行计划。它替代旧的线性阶段清单作为日常入口，但不删除旧文档，因为旧文档里还有历史审计、任务背景和验证命令。
+这份文档是 2026-06-07 的主执行计划和历史上下文。更新后的日常执行入口是 `docs-playable-demo-completion-plan-2026-06-07.md`，这份旧计划继续保留，因为里面还有阶段背景、历史审计和验证命令。
 
 优先参考顺序：
 
-1. `docs-playable-demo-current-detailed-plan-2026-06-07.md`: 当前主执行计划。
-2. `docs-reference-visual-audit-2026-06-07.md`: 截图证据和可读性回归。
-3. `docs-content-replacement-plan.md`: 私有参考包和公开替换包边界。
-4. `docs-ai-commander-directive-contract.md`: AI 副官 observation/directive 边界。
-5. `docs-platform-ecosystem-plan.md`: 地图服务器、排行、奖励认证和创作者生态的长期方向。
+1. `docs-playable-demo-completion-plan-2026-06-07.md`: 当前更细的主执行计划。
+2. `docs-playable-demo-current-detailed-plan-2026-06-07.md`: 历史上下文和阶段背景。
+3. `docs-reference-visual-audit-2026-06-07.md`: 截图证据和可读性回归。
+4. `docs-content-replacement-plan.md`: 私有参考包和公开替换包边界。
+5. `docs-ai-commander-directive-contract.md`: AI 副官 observation/directive 边界。
+6. `docs-platform-ecosystem-plan.md`: 地图服务器、排行、奖励认证和创作者生态的长期方向。
 
 旧计划保留为背景：
 
@@ -51,8 +52,8 @@
 
 当前主要缺口：
 
-- 缺一条“从启动到改装、出战、指挥、损伤、战后、回机库”的完整可见流程审计。
-- 战斗中信息仍可能偏多，需要把 HUD 锁成状态栏 + 喷射 + 任务地图 + 暂停/系统 + 必要目标提示。
+- visible-flow smoke 已经覆盖“状态栏单机命令、喷射、全队移动、接敌、集火、战报、回机库、装配 compact、再启动 identity”，下一步缺的是完整 walkthrough 截图证据。
+- 战斗 HUD 已经压成较小的右侧状态块；后续仍要继续减轻左侧状态栏视觉重量，但不能牺牲状态栏作为主要控制面的作用。
 - `hangar-contact`、`damage-demo` 等关键截图还需要继续防止模型/特效/道具在一个区域堆成一团。
 - 物理碰撞占位需要持续作为 BattleCore 证据维护，不能只靠 Unity 视觉碰撞。
 - 装配界面虽然已有格子，但需要进一步接近“原版那种整块占格、简单直观”的手感。
@@ -284,6 +285,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_refere
 **Commit:** `Freeze minimal battle HUD`
 
 ### Task 1.2: Build One Complete Visible Flow Smoke
+
+**Status:** Completed 2026-06-07. The script now reports `actions=37` and covers status-row solo command, auto rejoin, partial Jet, squad move, encounter pacing, squad attack, debrief, Mech Lab compact loadout, squad swap/relaunch, restart identity and commander observation. Evidence is recorded in `docs-reference-visual-audit-2026-06-07.md` under `Stage 1.2 Visible Playable Flow Smoke Result`.
 
 **Files:**
 

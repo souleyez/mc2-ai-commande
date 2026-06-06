@@ -527,3 +527,54 @@ Next priority:
 1. Stage 1 / Task 1.2 visible playable flow smoke.
 2. Stage 1 / Task 1.3 capture walkthrough image set.
 3. Stage 2 hangar composition and occupancy placeholder work.
+
+## Stage 1.2 Visible Playable Flow Smoke Result
+
+Implemented on 2026-06-07:
+
+- Expanded `mc2_01-visible-flow-audit.txt` from a broad loop smoke into a complete visible-flow guard.
+- Added status-row selection for `unit-1`, a single-unit map click, solo command assertion and auto-rejoin assertion.
+- Added partial squad Jet coverage: one legal unit enters `jetting`, the other visible rows remain ready, and all rows return to ready after advance.
+- Added squad move and squad attack accepted-count assertions.
+- Added encounter pacing assertions before and during the hangar engagement.
+- Kept the debrief, Mech Lab compact loadout, squad swap, hidden preview handoff, relaunch identity and commander observation checks.
+
+Validation evidence:
+
+```text
+analysis-output/unity-player-visible-flow-audit.log
+unity-mc2-demo/Assets/StreamingAssets/CommanderScripts/mc2_01-visible-flow-audit.txt
+```
+
+Validation results:
+
+```text
+Command script: actions=37.
+Partial Jet: squad jump accepted=1.
+Squad move: accepted=3.
+Squad attack: accepted=3.
+Debrief visible assertion: OK.
+Debrief summary assertion: OK.
+Loadout compact assertion: OK.
+Smoke exit: MC2 demo smoke test exiting with code 0.
+Failure scan: no assertion failed, failed:, or Debug.LogError lines.
+```
+
+Observed effect:
+
+- The command file now proves a full player-visible loop instead of only isolated battle features.
+- Status-row solo command and automatic return-to-squad are guarded by smoke.
+- Per-mech Jet legality is guarded in the same end-to-end flow.
+- The Mech Lab handoff and relaunch identity remain covered after the added battle steps.
+
+Remaining issues:
+
+1. This is a command/state smoke, not a screenshot walkthrough.
+2. The next task should capture and inspect the full walkthrough image set.
+3. `hangar-contact` and `damage-demo` remain the main visual pressure cases after flow is guarded.
+
+Next priority:
+
+1. Stage 1 / Task 1.3 capture walkthrough image set.
+2. Stage 2 / Task 2.1 occupancy evidence against screenshots.
+3. Stage 2 / Task 2.2 presentation collision placeholders.
