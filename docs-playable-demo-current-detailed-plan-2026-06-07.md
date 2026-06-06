@@ -369,6 +369,8 @@ git diff --check
 
 ### Task 2.1: Audit Occupancy Evidence Against Screenshots
 
+**Status:** Completed 2026-06-07. Evidence is recorded in `docs-reference-visual-audit-2026-06-07.md` under `Stage 2.1 Battle Occupancy Evidence Audit Result`. Current conclusion: hard-object occupancy evidence is present; remaining hangar/damage density is mainly encounter pressure, fixed-camera compression, left HUD weight and damage/effect scale.
+
 **Files:**
 
 - Modify: `unity-mc2-demo/Assets/Scripts/BattleCore/BattleMission.cs`

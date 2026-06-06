@@ -248,6 +248,8 @@ git diff --check
 
 ### Task 2.1: Audit Occupancy Evidence Against Screenshots
 
+**Status:** Completed 2026-06-07. Validator and refreshed `hangar-contact` / `damage-demo` captures confirm the current pile-up is not missing baseline BattleCore occupancy evidence: unit radii, targetable structure blockers, hard terrain-object blockers and water/map-bound landing predicates are all present. Remaining density is primarily encounter pressure, fixed-camera compression, left HUD weight and damage/effect scale.
+
 **Files:**
 
 - Modify: `docs-reference-visual-audit-2026-06-07.md`
@@ -838,27 +840,27 @@ Recently completed:
 
 1. `Guard visible playable flow`
 2. `Document visible flow capture baseline`
+3. `Audit battle occupancy evidence`
 
 From the current point, recommended next commits:
 
-1. `Audit battle occupancy evidence`
-2. `Show collision occupancy placeholders`
-3. `Tune hangar encounter composition`
-4. `Regress weapon family cues`
-5. `Lock section damage and ejection cues`
-6. `Lock armor hardness damage rule`
-7. `Remove weapon toggle semantics`
-8. `Make MechLab grid blocks explicit`
-9. `Prove loadout battle effects`
-10. `Simplify debrief player flow`
-11. `Guard repair and relaunch loop`
-12. `Freeze AI observation contract`
-13. `Guard AI directive adapter`
-14. `Show optional AI advice window`
-15. `Document private reference content boundary`
-16. `Add public build content safety check`
-17. `Prepare repeatable Windows demo build`
-18. `Package playable demo evidence`
+1. `Show collision occupancy placeholders`
+2. `Tune hangar encounter composition`
+3. `Regress weapon family cues`
+4. `Lock section damage and ejection cues`
+5. `Lock armor hardness damage rule`
+6. `Remove weapon toggle semantics`
+7. `Make MechLab grid blocks explicit`
+8. `Prove loadout battle effects`
+9. `Simplify debrief player flow`
+10. `Guard repair and relaunch loop`
+11. `Freeze AI observation contract`
+12. `Guard AI directive adapter`
+13. `Show optional AI advice window`
+14. `Document private reference content boundary`
+15. `Add public build content safety check`
+16. `Prepare repeatable Windows demo build`
+17. `Package playable demo evidence`
 
 每个提交结束必须记录：
 

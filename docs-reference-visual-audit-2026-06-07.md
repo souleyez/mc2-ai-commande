@@ -656,3 +656,67 @@ Next priority:
 1. Stage 2 / Task 2.1 occupancy evidence against `hangar-contact` and `damage-demo` screenshots.
 2. Stage 2 / Task 2.2 presentation collision placeholders to make hard occupancy visible during review.
 3. Then tune hangar composition or damage-world cues based on that evidence, instead of guessing.
+
+## Stage 2.1 Battle Occupancy Evidence Audit Result
+
+Implemented on 2026-06-07:
+
+- Re-ran the mission contract validator after the walkthrough capture baseline.
+- Refreshed only the two stress screenshots: `hangar-contact` and `damage-demo`.
+- Audited current screenshots against the rules-side occupancy evidence and the known terrain-object classification rules.
+- Did not change BattleCore rules in this pass because the current evidence already covers the obvious hard blockers.
+
+Validation commands:
+
+```powershell
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoValidator.ValidateMissionContract -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-validate-occupancy-evidence.log"
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_reference_visuals.ps1 -Presets hangar-contact,damage-demo
+```
+
+Validation evidence:
+
+```text
+analysis-output/unity-validate-occupancy-evidence.log
+analysis-output/reference-visual-captures/hangar-contact.png
+analysis-output/reference-visual-captures/hangar-contact.json
+analysis-output/reference-visual-captures/damage-demo.png
+analysis-output/reference-visual-captures/damage-demo.json
+```
+
+Validation result:
+
+```text
+Validator: MC2 demo contract validation OK: 29 units, 3 player units, 9 objectives, 1 structure, 10000 terrain samples, 1000 terrain objects, combat simulation passed.
+```
+
+Current stress capture evidence:
+
+| Preset | Mission Time | Camera Ortho | Active Hostiles | Visible Hostiles | Battle Occupancy |
+| --- | ---: | ---: | ---: | ---: | --- |
+| `hangar-contact` | 20.81s | 29.11 | 20 | 16 | `units 23/29`, `structures 1`, `hardProps 80`, `maxStructureRadius=215`, `maxPropRadius=78` |
+| `damage-demo` | 38.78s | 35.50 | 20 | 19 | `units 22/29`, `structures 1`, `hardProps 80`, `maxStructureRadius=215`, `maxPropRadius=78` |
+
+Occupancy classification:
+
+| Screenshot object class | Current evidence | Judgment |
+| --- | --- | --- |
+| Objective hangar / target structure | `structures 1 maxStructureRadius=215` and validator `ValidateStructureCollisionOccupancy` | BattleCore hard blocker. |
+| Airfield buildings, quonsets, portable buildings, tower, dome, aircraft | `hardProps 80 building=21 aircraft=4 other=18`, created from `BUILDING` terrain objects | BattleCore hard blockers. |
+| Barricades, sandbags, walls, barriers | `hardProps 80 barricade=37`, created from selected `TREE` terrain objects whose names imply hard obstacles | BattleCore hard blockers. |
+| Water, shore and map edge | `Landing=DemoTerrainView ... externalPredicate=water+mapBounds` and validator jump rejection for hard terrain objects | Landing and Jet legality evidence is present. |
+| Forest/tree masses and rocky visual clusters | `OcclusionFade=active 305/1493` on `hangar-contact`, `345/1493` on `damage-demo`; not counted in `hardProps` unless named as barricade/wall/sandbag | Presentation/occlusion objects, not first-version hard movement blockers. |
+| Left status/control surface | Not gameplay occupancy | UI weight issue, not collision issue. |
+
+Current diagnosis:
+
+- The remaining hangar crowding is not primarily caused by missing baseline occupancy. The sidecars prove unit radii, structure blockers, hard terrain-object blockers and water/map-bound landing predicates.
+- `hangar-contact` remains dense because 20 enemies are active and 16 are visible around one hangar objective at fixed camera yaw/pitch.
+- `damage-demo` remains weak as a selling screenshot because its camera zooms out to `ortho=35.50`, making the world-space damage event small while the left status panel carries most of the information.
+- The visible forest/tree/rock mass is intentionally not a hard blocker in this first slice; it is handled by occlusion fade and should not be converted to broad collision without a specific movement failure.
+- No Unity-only collider or presentation-only object should be promoted to gameplay truth without adding BattleCore validation first.
+
+Next priority:
+
+1. Stage 2 / Task 2.2 presentation collision placeholders, so hard blockers can be reviewed visually against the screenshot.
+2. Stage 2 / Task 2.3 hangar composition tuning if placeholders show rules occupancy is correct but visual pressure remains too tight.
+3. Stage 3 / damage-world cues if `damage-demo` remains weaker because damage events are too small rather than because units lack legal spacing.
