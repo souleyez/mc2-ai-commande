@@ -8,7 +8,7 @@
 
 **Tech Stack:** Unity 6, C#, Windows Standalone, deterministic BattleCore, PowerShell validator/build/smoke/capture scripts, `mc2-unity-demo-contract-v1`, private local reference content pack, replaceable public content pack, Git/GitHub.
 
-**Revision:** 2026-06-07 overall detailed plan v1.
+**Revision:** 2026-06-07 overall detailed plan v2. The deeper task-by-task plan is now `docs-playable-demo-v1-detailed-plan-2026-06-07.md`.
 
 ---
 
@@ -18,12 +18,13 @@
 
 实际继续开发时按这个顺序看：
 
-1. `docs-playable-demo-overall-detailed-plan-2026-06-07.md`: 总计划、阶段门、长期边界。
+1. `docs-playable-demo-v1-detailed-plan-2026-06-07.md`: 更细的产品边界、架构边界、提交级任务、验收门和后续路线。
 2. `docs-playable-demo-current-execution-plan-2026-06-07.md`: 当前唯一日常执行入口，从 `Current Commit Queue` 的第一个 `Next` 或 `In Progress` 开始。
-3. `docs-reference-visual-audit-2026-06-07.md`: 截图、sidecar、smoke、validator 证据。
-4. `docs-ai-commander-directive-contract.md`: AI 副官 observation/directive 合同。
-5. `docs-content-replacement-plan.md` 和 `docs-content-pack.md`: 私有参考包与公开替换包边界。
-6. `docs-platform-ecosystem-plan.md`: 地图服务器、排行、奖励认证、创作者生态、链上分账等后续平台方向。
+3. `docs-playable-demo-overall-detailed-plan-2026-06-07.md`: 总计划、阶段门、长期边界和历史上下文。
+4. `docs-reference-visual-audit-2026-06-07.md`: 截图、sidecar、smoke、validator 证据。
+5. `docs-ai-commander-directive-contract.md`: AI 副官 observation/directive 合同。
+6. `docs-content-replacement-plan.md` 和 `docs-content-pack.md`: 私有参考包与公开替换包边界。
+7. `docs-platform-ecosystem-plan.md`: 地图服务器、排行、奖励认证、创作者生态、链上分账等后续平台方向。
 
 当用户说“按计划继续”：
 

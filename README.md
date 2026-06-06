@@ -138,7 +138,10 @@ Preview a new replacement pack scaffold:
 
 ## 关键文档
 
-- `docs-playable-demo-fine-grained-current-plan-2026-06-07.md`: 当前主执行计划 v2，按真实阶段、当前脏工作树、提交顺序、文件、验证命令、阶段门和后续队列推进。
+- `docs-playable-demo-v1-detailed-plan-2026-06-07.md`: 当前更细的 V1 Demo 计划书，覆盖产品边界、架构边界、提交级任务、验收门和后续路线。
+- `docs-playable-demo-current-execution-plan-2026-06-07.md`: 当前日常执行入口，用户说“按计划继续”时从这里的 `Current Commit Queue` 往下做。
+- `docs-playable-demo-overall-detailed-plan-2026-06-07.md`: 总计划、阶段门、长期边界和历史上下文。
+- `docs-playable-demo-fine-grained-current-plan-2026-06-07.md`: 旧的细粒度执行计划，保留阶段历史。
 - `docs-playable-demo-locked-execution-plan-2026-06-07.md`: 旧的锁定执行计划，保留阶段历史、已完成任务和早期 Sprint Board。
 - `docs-playable-demo-completion-plan-2026-06-07.md`: 阶段摘要计划，保留阶段清单、验证矩阵和最近提交队列。
 - `docs-playable-demo-detailed-roadmap-2026-06-07.md`: 旧的细化路线图，保留历史上下文。

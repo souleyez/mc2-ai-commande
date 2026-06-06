@@ -8,7 +8,7 @@
 
 **Tech Stack:** Unity 6, C#, Windows Standalone, deterministic BattleCore, PowerShell validation/capture scripts, `mc2-unity-demo-contract-v1`, private local reference content pack, Git/GitHub.
 
-**Revision:** 2026-06-07 current execution plan v4. This is the current canonical day-to-day execution queue. The broader product and phase roadmap is now `docs-playable-demo-overall-detailed-plan-2026-06-07.md`. Older `docs-playable-demo-*.md` files are history, evidence, or task archives.
+**Revision:** 2026-06-07 current execution plan v5. This is the current canonical day-to-day execution queue. The deeper product and task map is now `docs-playable-demo-v1-detailed-plan-2026-06-07.md`; the broader phase roadmap remains `docs-playable-demo-overall-detailed-plan-2026-06-07.md`. Older `docs-playable-demo-*.md` files are history, evidence, or task archives.
 
 ---
 
@@ -27,11 +27,15 @@
 
 当前真实起点：
 
-- Branch: `master...ai-origin/master [ahead 52]`.
+- Branch: `master...ai-origin/master [ahead 57]`.
 - AI compact observation 已提交：`af7dbe9 Freeze AI observation contract`.
 - AI directive adapter 已提交：`9bf26bd Guard AI directive adapter`.
 - AI advice window 已提交：`b40372d Show optional AI advice window`.
 - Battle occupancy readability re-audit 已提交：`87006c3 Re-audit battle occupancy readability`.
+- Visual readability 已提交：`527a6be Improve reference visual readability`.
+- Occupancy placeholder review layer 已提交：`1bd22e2 Lock occupancy placeholder review layer`.
+- MechLab block fitting 已提交：`74e24bf Polish MechLab block fitting`.
+- MechLab fitting evidence capture 已提交：`6ffa2ea Capture MechLab fitting evidence`.
 - 下一步是 `C1 Strengthen damage demo readability`.
 
 ## 1. First Demo Product Scope
