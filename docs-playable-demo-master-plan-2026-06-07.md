@@ -2,7 +2,7 @@
 
 > **For Codex:** Execute this plan task-by-task. Each task should end with validation evidence and a small commit.
 
-**Current detailed execution entry:** `docs-playable-demo-detailed-execution-plan-2026-06-07.md` is now the preferred day-to-day plan. This master plan keeps the broader phase background and historical context.
+**Current detailed execution entry:** `docs-playable-demo-current-detailed-plan-2026-06-07.md` is now the preferred day-to-day plan. `docs-playable-demo-detailed-execution-plan-2026-06-07.md` remains as historical phase context.
 
 **Goal:** 把当前 Unity 6 Windows 原型推进到一版可演示、可截图、可继续融资的轻量机甲战术指挥 Demo：玩家能改装 1-6 台机甲，进入一张参考小地图，用极少 UI 完成移动、集火、喷射、独立命令、损伤结算和再次出战。
 

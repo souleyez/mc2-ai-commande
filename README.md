@@ -138,7 +138,8 @@ Preview a new replacement pack scaffold:
 
 ## 关键文档
 
-- `docs-playable-demo-detailed-execution-plan-2026-06-07.md`: 当前主执行计划，从 Phase C 指挥闭环继续推进。
+- `docs-playable-demo-current-detailed-plan-2026-06-07.md`: 当前主执行计划，按现有实现重排到完整可见流程、战场占位、机库、AI 和演示交付。
+- `docs-playable-demo-detailed-execution-plan-2026-06-07.md`: 旧的阶段执行计划，保留历史上下文和早期任务拆解。
 - `docs-mc2-ai-commander-demo-execution-plan.md`: 早期 AI 指挥 Demo 执行计划。
 - `docs-ai-commander-directive-contract.md`: AI 副官高层指令边界。
 - `docs-platform-ecosystem-plan.md`: 地图服务器、奖励认证、排行和创作者生态设想。

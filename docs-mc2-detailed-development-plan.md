@@ -16,7 +16,8 @@
 
 当前更细的执行型计划书：
 
-- `docs-playable-demo-detailed-execution-plan-2026-06-07.md`：当前主执行入口。它从 Phase C 指挥战斗闭环开始，细化到每个后续小提交、触碰文件、验证命令、验收标准和 stop conditions。后续继续开发时优先按这份计划执行。
+- `docs-playable-demo-current-detailed-plan-2026-06-07.md`：当前主执行入口。它按实际实现状态重排，把下一步收束到完整可见流程审计、最小战斗 HUD、战场占位证据、机库格子手感、AI 副官能力窗口和演示交付。
+- `docs-playable-demo-detailed-execution-plan-2026-06-07.md`：旧的阶段执行计划。保留 Phase C 等历史任务背景、已完成验证证据和早期拆解，但后续继续开发优先看当前计划。
 - `docs-playable-demo-master-plan-2026-06-07.md`：保留完整阶段背景、历史任务和主计划脉络。本文件保留总体产品判断和阶段记录。
 
 当前执行状态：
@@ -30,7 +31,7 @@
 - Phase C / Task C1：command state validator 已完成。`mc2_01-combat-situation.txt` 和 `mc2_01-solo-order-state.txt` 现在都覆盖默认全队、单机独立命令、独立时全队接受数减少、完成后自动归队和归队后继续接受全队命令。
 - Phase C / Task C2：status-row selection and click contract 已完成。smoke 现在覆盖状态栏点选单机、地图点击下达独立命令、目标点击下达单机攻击、可见选择恢复全队、状态栏 solo 标记和完成后自动归队。
 - Phase C / Task C3：Finalize Squad Jet Landing Rules 已完成。validator 覆盖硬 terrain object 喷射落点拒绝，squad-jet smoke 证明单台合法机甲喷射时其他非法落点机甲保持 ready。
-- 真实下一步是 Phase C / Task C4：Freeze Minimal Battle UI。战斗中只保留状态栏、喷射、任务地图、暂停/系统和必要目标提示，继续收掉多余信息。
+- 真实下一步是当前计划 Stage 0/1：先跑完整 baseline audit，再冻结最小战斗 HUD，并用 `mc2_01-visible-flow-audit.txt` 守住从机库到战报再回机库的可见闭环。
 - BattleCore 仍是权威物理占位层。Unity 可以显示碰撞占位和辅助反馈，但合法落点、单位排布、结构/terrain object 占用必须由 BattleCore 可验证地决定。
 
 当前项目不是从零开始，已经进入“可见 Demo 打磨”阶段。核心问题已经从“能不能跑”转为“看起来是否像一款可信的战术机甲游戏”。

@@ -2,6 +2,8 @@
 
 > **For Codex:** Execute this plan task-by-task. Each task should end with validation evidence and a small commit.
 
+**Status Update 2026-06-07:** This file is now historical phase context. Continue day-to-day work from `docs-playable-demo-current-detailed-plan-2026-06-07.md`, which reflects the current implementation state and the next visible-flow/occupancy/HUD work.
+
 **Goal:** 把当前 Unity 6 Windows 原型收成一版能演示、能截图、能继续融资推进的机甲战术指挥 Demo。
 
 **Architecture:** `BattleCore` 负责确定性规则、任务、命令、伤害、碰撞占位、结算和 AI 可观察状态。Unity Presentation 负责输入、镜头、UI、模型、材质、特效和截图验证。本地开发可以用私有参考内容包验证战场比例和手感，公开构建必须切到可替换内容包，不能携带原版资产、原版文案、商标或专有名称。
