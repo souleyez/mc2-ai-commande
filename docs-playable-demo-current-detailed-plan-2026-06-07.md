@@ -164,6 +164,8 @@ Known good evidence strings:
 
 ### Task 0.1: Run Full Local Evidence Pass
 
+**Status:** Completed 2026-06-07. Evidence recorded in `docs-reference-visual-audit-2026-06-07.md` under `Stage 0 Baseline Audit Result`.
+
 **Files:**
 
 - Read: `analysis-output/*.log`
@@ -199,6 +201,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_refere
 
 ### Task 0.2: Verify Scene Churn And Worktree Hygiene
 
+**Status:** Completed 2026-06-07. Unity scene fileID churn was inspected and restored; generated logs/screenshots remain ignored.
+
 **Files:**
 
 - Read: `unity-mc2-demo/Assets/Scenes/Mc2Demo.unity`
@@ -231,6 +235,8 @@ git check-ignore -v analysis-output/reference-visual-captures/spawn.png
 目标：把“玩家真的能看见并走完一轮”钉住。这里优先级高于新玩法。
 
 ### Task 1.1: Freeze Minimal Battle HUD
+
+**Status:** Completed 2026-06-07. The active battle mission brief now stays compact, the right combat panel is shorter, and validation evidence is recorded in `docs-reference-visual-audit-2026-06-07.md` under `Stage 1.1 Minimal Battle HUD Result`.
 
 **Files:**
 

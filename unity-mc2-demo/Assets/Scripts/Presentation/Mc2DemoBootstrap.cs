@@ -11314,8 +11314,7 @@ namespace MC2Demo.Presentation
         private bool ShouldUseCompactMissionBriefPanel()
         {
             return mission != null
-                && mission.Result == MissionResultState.InProgress
-                && string.Equals(CombatTempoMode(), "fire", StringComparison.Ordinal);
+                && mission.Result == MissionResultState.InProgress;
         }
 
         private void DrawCompactMissionBriefPanel(Rect panel)
@@ -18133,8 +18132,8 @@ namespace MC2Demo.Presentation
 
         private Rect CombatPanelRect()
         {
-            float width = ShouldUseCompactMissionBriefPanel() ? 320f : 344f;
-            return new Rect(Screen.width - width - 16f, 12f, width, 154f);
+            float width = 320f;
+            return new Rect(Screen.width - width - 16f, 12f, width, 112f);
         }
 
         private Rect MissionBriefPanelRect()
@@ -18143,7 +18142,7 @@ namespace MC2Demo.Presentation
             float y = combatPanel.yMax + 8f;
             if (ShouldUseCompactMissionBriefPanel())
             {
-                return new Rect(combatPanel.x, y, combatPanel.width, 86f);
+                return new Rect(combatPanel.x, y, combatPanel.width, 74f);
             }
 
             float height = Mathf.Min(Mathf.Clamp(Screen.height * 0.28f, 150f, 230f), Mathf.Max(120f, Screen.height - y - 16f));

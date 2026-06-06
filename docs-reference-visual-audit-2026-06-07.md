@@ -467,3 +467,63 @@ Next priority:
 1. Stage 0 / Task 0.2 worktree and private-output hygiene check.
 2. Stage 1 / Task 1.1 minimal battle HUD.
 3. Stage 2 occupancy placeholder/debug visibility only after HUD is no longer obscuring the scene.
+
+## Stage 1.1 Minimal Battle HUD Result
+
+Implemented on 2026-06-07:
+
+- Changed the mission brief to use the compact objective panel throughout active battle instead of showing the full visible objective list outside fire mode.
+- Reduced the right combat panel height from 154px to 112px.
+- Reduced the compact objective panel height from 86px to 74px.
+- Kept the left mech status rows, Jet, Map, Bay and System controls unchanged so the command loop remains the same.
+- Kept BattleCore, mission triggers, enemy counts, damage, occupancy and camera behavior unchanged.
+
+Validation evidence:
+
+```text
+analysis-output/unity-validate-minimal-battle-hud.log
+analysis-output/unity-build-minimal-battle-hud.log
+analysis-output/unity-player-minimal-battle-hud.log
+analysis-output/reference-visual-captures/spawn.png
+analysis-output/reference-visual-captures/spawn.json
+analysis-output/reference-visual-captures/hangar-contact.png
+analysis-output/reference-visual-captures/hangar-contact.json
+analysis-output/reference-visual-captures/damage-demo.png
+analysis-output/reference-visual-captures/damage-demo.json
+```
+
+Validation results:
+
+```text
+Validator: MC2 demo contract validation OK.
+Build: Build Finished, Result: Success; MC2 Unity demo Windows build OK.
+Combat smoke: MC2 demo smoke test exiting with code 0.
+Smoke HUD assertion: missionBrief=compact full=6/6 active=[active] ... h=74.
+```
+
+Current capture matrix after HUD pass:
+
+| Preset | Mission Time | Camera Ortho | Active Hostiles | Visible Hostiles | HUD Result |
+| --- | ---: | ---: | ---: | ---: | --- |
+| `spawn` | 1.06s | 29.11 | 0 | 0 | Right mission list is no longer a large objective roster; it is now a compact active objective block. More of the first-screen airfield and water are visible. |
+| `hangar-contact` | 20.78s | 29.11 | 20 | 16 | Right HUD no longer reaches deep into the center-right battlefield. The hangar fight remains dense, but it is less obscured by UI. |
+| `damage-demo` | 38.76s | 35.50 | 20 | 19 | Damage status remains clear on the left; the right HUD now leaves the lower-right battlefield open. Combat density, not the mission list, is the remaining weakness. |
+
+Observed effect:
+
+- The right side now behaves like a compact status stack instead of a secondary mission/debug dashboard.
+- Existing command-state smoke still passes, including quiet, contact and fire tempo assertions.
+- Enemy pressure remained the same: `hangar-contact` is still 20 active / 16 visible, and `damage-demo` is still 20 active / 19 visible.
+- The visible improvement is purely presentation: less HUD coverage, same combat loop.
+
+Remaining issues:
+
+1. The left status panel is still visually heavy, but it is also the main control surface and should be tuned carefully rather than removed.
+2. The right combat panel still shows short log text; a later polish pass can reduce it to icons/pulses once command smoke covers the same states.
+3. `hangar-contact` and `damage-demo` still need local composition/occupancy review after the visible-flow smoke is guarded.
+
+Next priority:
+
+1. Stage 1 / Task 1.2 visible playable flow smoke.
+2. Stage 1 / Task 1.3 capture walkthrough image set.
+3. Stage 2 hangar composition and occupancy placeholder work.
