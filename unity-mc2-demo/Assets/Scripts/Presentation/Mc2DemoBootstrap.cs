@@ -180,6 +180,7 @@ namespace MC2Demo.Presentation
             public string[] visibleHostiles;
             public string[] currentObjectives;
             public string occupancy;
+            public string occupancyPlaceholders;
             public VisualCaptureCameraState camera;
             public VisualCaptureReferenceState referenceAssets;
         }
@@ -346,6 +347,7 @@ namespace MC2Demo.Presentation
         private string lastReferenceStructureSummary = "ReferenceStructures=not attempted";
         private string lastReferenceScaleSummary = "ReferenceScale=not attempted";
         private string lastOcclusionFadeSummary = "OcclusionFade=not attempted";
+        private string lastOccupancyPlaceholderSummary = "OccupancyPlaceholders=disabled";
         private Vector2 loadoutScroll;
         private Vector2 mechLabBayScroll;
         private int selectedMechLabBayPage;
@@ -500,6 +502,7 @@ namespace MC2Demo.Presentation
             CreateTerrainObjects();
             CreateUnits();
             CreateStaticObjects();
+            CreateOccupancyPlaceholders();
             lastReferenceScaleSummary = ReferenceObjMeshLibrary.ScaleAuditSummary()
                 + "; "
                 + ReferencePropLibrary.ScaleAuditSummary();
@@ -723,6 +726,7 @@ namespace MC2Demo.Presentation
             lastContactCount = 0;
             lastReferenceScaleSummary = "ReferenceScale=not attempted";
             lastOcclusionFadeSummary = "OcclusionFade=not attempted";
+            lastOccupancyPlaceholderSummary = "OccupancyPlaceholders=disabled";
             mainCamera = null;
             DestroyOwnedTextures();
 
@@ -5353,6 +5357,7 @@ namespace MC2Demo.Presentation
                 visibleHostiles = VisibleHostileLabels(),
                 currentObjectives = ObjectiveLabels(observation?.currentObjectives),
                 occupancy = BuildCaptureOccupancySummary(),
+                occupancyPlaceholders = lastOccupancyPlaceholderSummary,
                 camera = BuildCaptureCameraState(),
                 referenceAssets = new VisualCaptureReferenceState
                 {
@@ -7861,6 +7866,75 @@ namespace MC2Demo.Presentation
                 + referenceStructures.ToString(CultureInfo.InvariantCulture)
                 + " fallback "
                 + fallbackStructures.ToString(CultureInfo.InvariantCulture);
+        }
+
+        private void CreateOccupancyPlaceholders()
+        {
+            lastOccupancyPlaceholderSummary = "OccupancyPlaceholders=disabled";
+            if (mission == null || !ShouldShowOccupancyPlaceholders())
+            {
+                return;
+            }
+
+            int structures = 0;
+            int hardProps = 0;
+            int total = 0;
+            foreach (BattleOccupancyRegion region in mission.OccupancyPlaceholderRegions())
+            {
+                if (region == null)
+                {
+                    continue;
+                }
+
+                CreateOccupancyPlaceholder(region);
+                total++;
+                if (string.Equals(region.Kind, "structure", StringComparison.OrdinalIgnoreCase))
+                {
+                    structures++;
+                }
+                else if (string.Equals(region.Kind, "hardProp", StringComparison.OrdinalIgnoreCase))
+                {
+                    hardProps++;
+                }
+            }
+
+            lastOccupancyPlaceholderSummary = "OccupancyPlaceholders=enabled total "
+                + total.ToString(CultureInfo.InvariantCulture)
+                + " structures "
+                + structures.ToString(CultureInfo.InvariantCulture)
+                + " hardProps "
+                + hardProps.ToString(CultureInfo.InvariantCulture)
+                + " source=BattleMission.OccupancyPlaceholderRegions";
+            Debug.Log("MC2 occupancy placeholders: " + lastOccupancyPlaceholderSummary);
+        }
+
+        private static bool ShouldShowOccupancyPlaceholders()
+        {
+            return string.Equals(Environment.GetEnvironmentVariable("MC2_SHOW_OCCUPANCY_PLACEHOLDERS"), "1", StringComparison.Ordinal)
+                || HasCommandLineArg(Environment.GetCommandLineArgs(), "-mc2ShowOccupancyPlaceholders");
+        }
+
+        private void CreateOccupancyPlaceholder(BattleOccupancyRegion region)
+        {
+            GameObject marker = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            marker.name = "Occupancy " + region.Kind + " " + region.Id;
+            Vector3 position = DemoUnitView.MissionToWorld(region.Position);
+            position.y = DemoTerrainView.HeightAt(region.Position) + 0.075f;
+            float diameter = Mathf.Clamp(region.Radius / 50f, 0.26f, 5.2f);
+            marker.transform.position = position;
+            marker.transform.localScale = new Vector3(diameter, 0.018f, diameter);
+
+            Collider collider = marker.GetComponent<Collider>();
+            if (collider != null)
+            {
+                collider.enabled = false;
+            }
+
+            bool isStructure = string.Equals(region.Kind, "structure", StringComparison.OrdinalIgnoreCase);
+            Color color = isStructure
+                ? new Color(1f, 0.42f, 0.10f, 0.24f)
+                : new Color(0.20f, 0.86f, 1f, 0.18f);
+            AssignMaterial(marker, isStructure ? "OccupancyStructure" : "OccupancyHardProp", color);
         }
 
         private Vector3 StructureScale(StructureState structure)

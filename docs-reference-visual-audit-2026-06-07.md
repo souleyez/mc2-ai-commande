@@ -720,3 +720,71 @@ Next priority:
 1. Stage 2 / Task 2.2 presentation collision placeholders, so hard blockers can be reviewed visually against the screenshot.
 2. Stage 2 / Task 2.3 hangar composition tuning if placeholders show rules occupancy is correct but visual pressure remains too tight.
 3. Stage 3 / damage-world cues if `damage-demo` remains weaker because damage events are too small rather than because units lack legal spacing.
+
+## Stage 2.2 Presentation Collision Placeholder Result
+
+Implemented on 2026-06-07:
+
+- Added `BattleMission.OccupancyPlaceholderRegions()` as the rules-side source for reviewable hard occupancy regions.
+- Added a `BattleOccupancyRegion` read-only data type with kind, id, label, mission position and radius.
+- Added Unity presentation placeholders that draw subtle low ground discs for those regions only when `MC2_SHOW_OCCUPANCY_PLACEHOLDERS=1` or `-mc2ShowOccupancyPlaceholders` is set.
+- Added a top-level `occupancyPlaceholders` field to capture sidecars.
+- Updated `scripts/unity/capture_reference_visuals.ps1` so reference captures enable placeholders by default; use `-NoOccupancyPlaceholders` for clean non-audit captures.
+- Kept movement, landing, targeting, collision and mission rules unchanged.
+
+Modified files:
+
+```text
+unity-mc2-demo/Assets/Scripts/BattleCore/BattleMission.cs
+unity-mc2-demo/Assets/Scripts/Presentation/Mc2DemoBootstrap.cs
+scripts/unity/capture_reference_visuals.ps1
+```
+
+Validation commands:
+
+```powershell
+git diff --check
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoValidator.ValidateMissionContract -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-validate-occupancy-placeholders.log"
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoBuilder.BuildWindows64 -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-build-occupancy-placeholders.log"
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_reference_visuals.ps1 -Presets hangar-contact,damage-demo
+```
+
+Validation evidence:
+
+```text
+analysis-output/unity-validate-occupancy-placeholders.log
+analysis-output/unity-build-occupancy-placeholders.log
+analysis-output/reference-visual-captures/hangar-contact.png
+analysis-output/reference-visual-captures/hangar-contact.json
+analysis-output/reference-visual-captures/hangar-contact.log
+analysis-output/reference-visual-captures/damage-demo.png
+analysis-output/reference-visual-captures/damage-demo.json
+analysis-output/reference-visual-captures/damage-demo.log
+```
+
+Validation results:
+
+```text
+Validator: MC2 demo contract validation OK.
+Build: Build Finished, Result: Success; MC2 Unity demo Windows build OK.
+hangar-contact: OccupancyPlaceholders=enabled total 81 structures 1 hardProps 80 source=BattleMission.OccupancyPlaceholderRegions.
+damage-demo: OccupancyPlaceholders=enabled total 81 structures 1 hardProps 80 source=BattleMission.OccupancyPlaceholderRegions.
+```
+
+Observed effect:
+
+- `hangar-contact` now shows faint structure/hard-prop footprint discs around the hangar and nearby hard objects without turning the screenshot into a debug grid.
+- `damage-demo` shows the same hard occupancy review layer while keeping the damage status UI and battlefield readable.
+- The placeholder count matches the previously audited occupancy summary: one targetable structure plus 80 hard terrain-object blockers.
+- The placeholders make it clear that the remaining dense hangar read is not caused by missing obvious hard-object occupancy. It is still mostly encounter pressure, fixed camera compression, UI weight and damage/effect readability.
+
+Remaining issues:
+
+1. The placeholder layer is useful for audit but should stay out of normal player-facing presentation.
+2. The left status/control surface remains heavy.
+3. `hangar-contact` still needs composition tuning, and `damage-demo` still needs stronger world-space damage/ejection cues.
+
+Next priority:
+
+1. Stage 2 / Task 2.3 tune hangar encounter composition without reducing enemy pressure.
+2. Then Stage 3 damage and weapon readability work, especially for `damage-demo`.

@@ -281,6 +281,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_refere
 
 ### Task 2.2: Add Presentation Collision Placeholders
 
+**Status:** Completed 2026-06-07. `BattleMission` now exposes read-only occupancy regions for targetable structures and hard terrain props. Unity capture renders subtle low ground placeholders only when `MC2_SHOW_OCCUPANCY_PLACEHOLDERS=1` or `-mc2ShowOccupancyPlaceholders` is set; the reference capture script enables this by default and supports `-NoOccupancyPlaceholders`. Sidecars now report `OccupancyPlaceholders=enabled total 81 structures 1 hardProps 80 source=BattleMission.OccupancyPlaceholderRegions`.
+
 **Files:**
 
 - Modify: `unity-mc2-demo/Assets/Scripts/Presentation/DemoTerrainView.cs`
@@ -841,26 +843,26 @@ Recently completed:
 1. `Guard visible playable flow`
 2. `Document visible flow capture baseline`
 3. `Audit battle occupancy evidence`
+4. `Show collision occupancy placeholders`
 
 From the current point, recommended next commits:
 
-1. `Show collision occupancy placeholders`
-2. `Tune hangar encounter composition`
-3. `Regress weapon family cues`
-4. `Lock section damage and ejection cues`
-5. `Lock armor hardness damage rule`
-6. `Remove weapon toggle semantics`
-7. `Make MechLab grid blocks explicit`
-8. `Prove loadout battle effects`
-9. `Simplify debrief player flow`
-10. `Guard repair and relaunch loop`
-11. `Freeze AI observation contract`
-12. `Guard AI directive adapter`
-13. `Show optional AI advice window`
-14. `Document private reference content boundary`
-15. `Add public build content safety check`
-16. `Prepare repeatable Windows demo build`
-17. `Package playable demo evidence`
+1. `Tune hangar encounter composition`
+2. `Regress weapon family cues`
+3. `Lock section damage and ejection cues`
+4. `Lock armor hardness damage rule`
+5. `Remove weapon toggle semantics`
+6. `Make MechLab grid blocks explicit`
+7. `Prove loadout battle effects`
+8. `Simplify debrief player flow`
+9. `Guard repair and relaunch loop`
+10. `Freeze AI observation contract`
+11. `Guard AI directive adapter`
+12. `Show optional AI advice window`
+13. `Document private reference content boundary`
+14. `Add public build content safety check`
+15. `Prepare repeatable Windows demo build`
+16. `Package playable demo evidence`
 
 每个提交结束必须记录：
 

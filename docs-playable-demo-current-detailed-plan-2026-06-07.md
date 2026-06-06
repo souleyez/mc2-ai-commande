@@ -406,6 +406,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_refere
 
 ### Task 2.2: Add Presentation Collision Placeholders For Debug Visibility
 
+**Status:** Completed 2026-06-07. Evidence is recorded in `docs-reference-visual-audit-2026-06-07.md` under `Stage 2.2 Presentation Collision Placeholder Result`. The placeholder source is `BattleMission.OccupancyPlaceholderRegions`, and refreshed stress captures report `OccupancyPlaceholders=enabled total 81 structures 1 hardProps 80`.
+
 **Files:**
 
 - Modify: `unity-mc2-demo/Assets/Scripts/Presentation/DemoUnitView.cs`

@@ -185,6 +185,34 @@ namespace MC2Demo.BattleCore
                 + " destinationFallback=structure+hardProp";
         }
 
+        public IEnumerable<BattleOccupancyRegion> OccupancyPlaceholderRegions()
+        {
+            foreach (StructureState structure in structures)
+            {
+                if (!IsBlockingStructure(structure))
+                {
+                    continue;
+                }
+
+                yield return new BattleOccupancyRegion(
+                    "structure",
+                    structure.Id,
+                    structure.ObjectType,
+                    structure.MissionPosition,
+                    StructureCollisionRadius(structure));
+            }
+
+            foreach (TerrainObjectObstacle obstacle in terrainObjectObstacles)
+            {
+                yield return new BattleOccupancyRegion(
+                    "hardProp",
+                    obstacle.Id,
+                    obstacle.Label,
+                    obstacle.Position,
+                    obstacle.Radius);
+            }
+        }
+
         public static BattleMission FromJson(string json, CombatProfileCatalog combatProfiles = null)
         {
             MissionContract contract = JsonUtility.FromJson<MissionContract>(json);
@@ -2091,6 +2119,24 @@ namespace MC2Demo.BattleCore
         {
             return BrainEquals(unit, "mc2_01_LRMs") && unit.SpawnPosition.x < 0f;
         }
+    }
+
+    public sealed class BattleOccupancyRegion
+    {
+        public BattleOccupancyRegion(string kind, string id, string label, Vector2 position, float radius)
+        {
+            Kind = string.IsNullOrWhiteSpace(kind) ? "unknown" : kind;
+            Id = string.IsNullOrWhiteSpace(id) ? "occupancy-region" : id;
+            Label = label ?? "";
+            Position = position;
+            Radius = Mathf.Max(1f, radius);
+        }
+
+        public string Kind { get; }
+        public string Id { get; }
+        public string Label { get; }
+        public Vector2 Position { get; }
+        public float Radius { get; }
     }
 
     public sealed class UnitActivationEvent

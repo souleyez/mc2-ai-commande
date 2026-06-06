@@ -4,6 +4,7 @@ param(
     [string[]]$Presets = @("spawn", "airfield", "hangar-contact", "north-patrol", "damage-demo"),
     [int]$Width = 1280,
     [int]$Height = 720,
+    [switch]$NoOccupancyPlaceholders,
     [switch]$SkipRun
 )
 
@@ -186,11 +187,29 @@ foreach ($normalizedPreset in (Expand-CapturePresets $Presets)) {
             "-logFile", $logPath
         )
 
-        & $gameExe @args
-        $exitCodeVariable = Get-Variable -Name LASTEXITCODE -ErrorAction SilentlyContinue
-        $exitCode = if ($null -eq $exitCodeVariable) { 0 } else { [int]$exitCodeVariable.Value }
-        if ($exitCode -ne 0) {
-            throw "Capture preset '$normalizedPreset' failed with exit code $exitCode. Log: $logPath"
+        $previousOccupancyPlaceholderEnv = $env:MC2_SHOW_OCCUPANCY_PLACEHOLDERS
+        try {
+            if ($NoOccupancyPlaceholders) {
+                Remove-Item Env:\MC2_SHOW_OCCUPANCY_PLACEHOLDERS -ErrorAction SilentlyContinue
+            }
+            else {
+                $env:MC2_SHOW_OCCUPANCY_PLACEHOLDERS = "1"
+            }
+
+            & $gameExe @args
+            $exitCodeVariable = Get-Variable -Name LASTEXITCODE -ErrorAction SilentlyContinue
+            $exitCode = if ($null -eq $exitCodeVariable) { 0 } else { [int]$exitCodeVariable.Value }
+            if ($exitCode -ne 0) {
+                throw "Capture preset '$normalizedPreset' failed with exit code $exitCode. Log: $logPath"
+            }
+        }
+        finally {
+            if ($null -eq $previousOccupancyPlaceholderEnv) {
+                Remove-Item Env:\MC2_SHOW_OCCUPANCY_PLACEHOLDERS -ErrorAction SilentlyContinue
+            }
+            else {
+                $env:MC2_SHOW_OCCUPANCY_PLACEHOLDERS = $previousOccupancyPlaceholderEnv
+            }
         }
 
         Wait-CaptureFile -Path $pngPath
