@@ -809,12 +809,14 @@ git status --short
 
 ## 9. 下一步
 
-下一步从 **Task 1: 完成战场视觉审计表** 开始。如果当前目标是继续解决“模型堆在一起、画面糊”的问题，应直接进入 Task 2 和 Task 3：
+2026-06-07 更新：**Task 1** 已形成 `docs-reference-visual-audit-2026-06-07.md`，并完成第一轮 Task 2/Task 3 进展：BattleCore 已加入 targetable structure 占位、移动目标和喷射落点会避开结构核心，敌方攻击环改为 24 槽但保持在武器射程内。验证日志见 `analysis-output/unity-validate-structure-occupancy-r3.log`、`analysis-output/unity-build-structure-occupancy-r1.log`、`analysis-output/unity-player-structure-occupancy-smoke-r1.log`。
+
+下一步如果继续解决“模型堆在一起、画面糊”的问题，应进入 **Task 4: 固定镜头和遮挡处理**，同时补 Task 3 的大型 terrain object 占位：
 
 1. 重新捕获关键截图。
-2. 对比当前机甲/建筑/地形比例。
-3. 调整视觉 scale 和 BattleCore 占位半径。
-4. 增加静态障碍占位。
+2. 避免右侧任务/战况面板覆盖 hangar-contact 主战区。
+3. 给大型 airfield building、barricade、tree mass 增加简化占位。
+4. 复查 hangar-contact 和 damage-demo 的中心构图。
 5. 构建、smoke、截图验证。
 
 这条线完成后，再回到机甲装配界面。

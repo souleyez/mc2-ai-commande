@@ -289,7 +289,7 @@ namespace MC2Demo.BattleCore
             MissionPosition += toTarget.normalized * Mathf.Min(step, distance);
         }
 
-        public void ApplyCollisionDisplacement(Vector2 displacement)
+        public void ApplyCollisionDisplacement(Vector2 displacement, bool shiftMoveTarget = false)
         {
             if (!IsActive || IsDestroyed || IsJumping || displacement.sqrMagnitude <= 0.0001f)
             {
@@ -297,7 +297,7 @@ namespace MC2Demo.BattleCore
             }
 
             MissionPosition += displacement;
-            if (!HasMoveOrder && !HasAttackOrder)
+            if (shiftMoveTarget || (!HasMoveOrder && !HasAttackOrder))
             {
                 MoveTarget += displacement;
             }

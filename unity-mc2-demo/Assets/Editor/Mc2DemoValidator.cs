@@ -128,6 +128,7 @@ namespace MC2Demo.EditorTools
             ValidateNavMarkerPatrolOrders();
             ValidateEnemyAttackFormationSpacing();
             ValidateUnitCollisionSeparation();
+            ValidateStructureCollisionOccupancy();
             ValidateJumpCommand(BattleMission.FromJson(contractJson, combatProfiles));
             ValidateCombatSimulation(mission);
             ValidateStructureObjective(new BattleMission(MakeStructureObjectiveContract(), CombatProfileCatalog.Empty));
@@ -2331,6 +2332,44 @@ namespace MC2Demo.EditorTools
             if (Vector2.Distance(first.MissionPosition, second.MissionPosition) < 45f)
             {
                 throw new InvalidDataException("Expected stacked enemy units to separate after BattleCore collision resolution.");
+            }
+        }
+
+        private static void ValidateStructureCollisionOccupancy()
+        {
+            BattleMission mission = new(MakeStructureCollisionContract(), CombatProfileCatalog.Empty);
+            UnitState player = mission.FindUnit("structure-collision-player");
+            StructureState structure = mission.FindStructure("structure-collision-blocker");
+            if (player == null || structure == null)
+            {
+                throw new InvalidDataException("Structure collision validation requires one player unit and one structure.");
+            }
+
+            int accepted = mission.IssueDetachedMove(player.Id, structure.MissionPosition);
+            if (accepted != 1)
+            {
+                throw new InvalidDataException("Expected detached move toward structure to be accepted.");
+            }
+
+            float expectedClearance = structure.Radius + 65f;
+            if (Vector2.Distance(player.MoveTarget, structure.MissionPosition) < expectedClearance)
+            {
+                throw new InvalidDataException("Expected structure-centered move target to be pushed outside the blocker.");
+            }
+
+            for (int tick = 0; tick < 120 && player.HasMoveOrder; tick++)
+            {
+                mission.Tick(0.1f);
+            }
+
+            if (Vector2.Distance(player.MissionPosition, structure.MissionPosition) < expectedClearance)
+            {
+                throw new InvalidDataException("Expected unit to park outside static structure occupancy.");
+            }
+
+            if (player.HasMoveOrder)
+            {
+                throw new InvalidDataException("Expected structure occupancy fallback destination to be reachable.");
             }
         }
 
@@ -4656,6 +4695,60 @@ namespace MC2Demo.EditorTools
                         teamId = 1,
                         unitType = "Centipede",
                         position = new MissionPose { x = 0f, y = 0f, rotation = 0f }
+                    }
+                },
+                objectives = new[]
+                {
+                    new ObjectiveDefinition
+                    {
+                        id = "hold-open",
+                        index = 0,
+                        hidden = false,
+                        conditions = new[]
+                        {
+                            new ObjectiveCondition
+                            {
+                                type = "MoveAnyUnitToArea",
+                                targetArea = new TargetArea { x = 5000f, y = 0f, radius = 40f }
+                            }
+                        }
+                    }
+                }
+            };
+        }
+
+        private static MissionContract MakeStructureCollisionContract()
+        {
+            return new MissionContract
+            {
+                mission = new MissionDefinition
+                {
+                    id = "validator-structure-collision",
+                    terrain = new TerrainDefinition { minX = -1000f, minY = 1000f, waterElevation = 350f }
+                },
+                units = new[]
+                {
+                    new UnitSpawn
+                    {
+                        spawnId = "structure-collision-player",
+                        isPlayerUnit = true,
+                        teamId = 0,
+                        unitType = "Werewolf",
+                        position = new MissionPose { x = -420f, y = 0f, rotation = 0f }
+                    }
+                },
+                staticObjects = new[]
+                {
+                    new StaticObjectSpawn
+                    {
+                        objectId = "structure-collision-blocker",
+                        objectType = "Structure",
+                        teamId = 1,
+                        targetable = true,
+                        objectiveTarget = true,
+                        position = new MissionPose { x = 0f, y = 0f, rotation = 0f },
+                        radius = 100f,
+                        maxStructure = 45f
                     }
                 },
                 objectives = new[]

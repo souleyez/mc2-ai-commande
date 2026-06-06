@@ -13,12 +13,14 @@ namespace MC2Demo.BattleCore
         private const float SquadAttackUnitStandOff = 120f;
         private const float SquadAttackStructureStandOffPadding = 100f;
         private const float EnemyAttackMinFormationRadius = 60f;
-        private const float EnemyAttackMaxFormationRadius = 130f;
+        private const float EnemyAttackMaxFormationRadius = 160f;
         private const float UnitCollisionInfantryRadius = 20f;
-        private const float UnitCollisionVehicleRadius = 40f;
-        private const float UnitCollisionMechRadius = 49f;
-        private const float UnitCollisionMaxPushPerPass = 30f;
-        private const int UnitCollisionPasses = 2;
+        private const float UnitCollisionVehicleRadius = 42f;
+        private const float UnitCollisionMechRadius = 50f;
+        private const float UnitCollisionMaxPushPerPass = 35f;
+        private const int UnitCollisionPasses = 3;
+        private const float StructureCollisionPadding = 35f;
+        private const float StructureCollisionMaxPushPerPass = 70f;
 
         public MissionContract Contract { get; }
         public IReadOnlyList<UnitState> Units => units;
@@ -136,7 +138,11 @@ namespace MC2Demo.BattleCore
             for (int index = 0; index < squadUnits.Count; index++)
             {
                 UnitState unit = squadUnits[index];
-                unit.SetMoveOrder(missionPoint + SquadMoveFormationOffset(index, squadUnits.Count, approach), detached: false);
+                Vector2 destination = ResolveMoveDestination(
+                    unit,
+                    missionPoint + SquadMoveFormationOffset(index, squadUnits.Count, approach),
+                    approach);
+                unit.SetMoveOrder(destination, detached: false);
                 accepted++;
             }
 
@@ -153,7 +159,9 @@ namespace MC2Demo.BattleCore
             UnitState unit = FindUnit(unitId);
             if (unit != null && unit.IsPlayerUnit)
             {
-                unit.SetMoveOrder(missionPoint, detached: true);
+                unit.SetMoveOrder(
+                    ResolveMoveDestination(unit, missionPoint, missionPoint - unit.MissionPosition),
+                    detached: true);
                 return 1;
             }
 
@@ -241,7 +249,12 @@ namespace MC2Demo.BattleCore
             int accepted = 0;
             foreach (UnitState unit in PlayerUnits())
             {
-                if (!unit.IsDetached && unit.TryStartJumpToward(missionPoint, jumpDistance, isLandingAllowed, detached: false))
+                if (!unit.IsDetached
+                    && unit.TryStartJumpToward(
+                        missionPoint,
+                        jumpDistance,
+                        landingPoint => IsLandingAllowed(unit, landingPoint, isLandingAllowed),
+                        detached: false))
                 {
                     accepted++;
                 }
@@ -258,7 +271,13 @@ namespace MC2Demo.BattleCore
             }
 
             UnitState unit = FindUnit(unitId);
-            if (unit != null && unit.IsPlayerUnit && unit.TryStartJumpToward(missionPoint, jumpDistance, isLandingAllowed, detached: true))
+            if (unit != null
+                && unit.IsPlayerUnit
+                && unit.TryStartJumpToward(
+                    missionPoint,
+                    jumpDistance,
+                    landingPoint => IsLandingAllowed(unit, landingPoint, isLandingAllowed),
+                    detached: true))
             {
                 return 1;
             }
@@ -291,6 +310,8 @@ namespace MC2Demo.BattleCore
                 unit.TickWeapon(clampedDeltaTime);
             }
 
+            ResolveUnitCollisions();
+            ResolveStructureCollisions();
             ResolveUnitCollisions();
 
             foreach (UnitState unit in units)
@@ -646,6 +667,59 @@ namespace MC2Demo.BattleCore
             }
         }
 
+        private void ResolveStructureCollisions()
+        {
+            if (structures.Count == 0)
+            {
+                return;
+            }
+
+            foreach (UnitState unit in units)
+            {
+                if (!CanResolveUnitCollision(unit))
+                {
+                    continue;
+                }
+
+                foreach (StructureState structure in structures)
+                {
+                    if (!IsBlockingStructure(structure))
+                    {
+                        continue;
+                    }
+
+                    float minimumDistance = StructureCollisionRadius(structure) + UnitCollisionRadius(unit);
+                    Vector2 delta = unit.MissionPosition - structure.MissionPosition;
+                    float distanceSqr = delta.sqrMagnitude;
+                    if (distanceSqr >= minimumDistance * minimumDistance)
+                    {
+                        continue;
+                    }
+
+                    float distance = 0f;
+                    Vector2 direction;
+                    if (distanceSqr <= 0.0001f)
+                    {
+                        direction = PairSeparationDirection(structure.Id, unit.Id);
+                    }
+                    else
+                    {
+                        distance = Mathf.Sqrt(distanceSqr);
+                        direction = delta / Mathf.Max(0.001f, distance);
+                    }
+
+                    float push = Mathf.Min(minimumDistance - distance, StructureCollisionMaxPushPerPass);
+                    if (push <= 0f)
+                    {
+                        continue;
+                    }
+
+                    bool shiftMoveTarget = IsPointInsideStructureObstacle(unit.MoveTarget, unit, structure);
+                    unit.ApplyCollisionDisplacement(direction * push, shiftMoveTarget);
+                }
+            }
+        }
+
         private static bool CanResolveUnitCollision(UnitState unit)
         {
             return unit != null && unit.IsActive && !unit.IsDestroyed && !unit.IsJumping;
@@ -778,15 +852,121 @@ namespace MC2Demo.BattleCore
             }
 
             int unitNumber = UnitIdNumber(unit.Id);
-            int slot = Mathf.Abs((unitNumber * 7) % 16);
-            int ring = Mathf.Abs((unitNumber / 16) % 2);
-            float angle = (slot * (Mathf.PI * 2f / 16f)) + (ring * Mathf.PI / 16f);
-            float radius = Mathf.Clamp(
-                unit.CombatWeaponRange * 0.65f,
+            int slot = Mathf.Abs((unitNumber * 7) % 24);
+            int ring = Mathf.Abs((unitNumber / 24) % 2);
+            float angle = (slot * (Mathf.PI * 2f / 24f)) + (ring * Mathf.PI / 24f);
+            float desiredRadius = Mathf.Clamp(
+                unit.CombatWeaponRange * 0.60f,
                 EnemyAttackMinFormationRadius,
                 EnemyAttackMaxFormationRadius);
+            float radius = Mathf.Min(desiredRadius, Mathf.Max(40f, unit.CombatWeaponRange - 5f));
 
             return new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * radius;
+        }
+
+        private Vector2 ResolveMoveDestination(UnitState unit, Vector2 desiredPoint, Vector2 approach)
+        {
+            if (unit == null || structures.Count == 0)
+            {
+                return desiredPoint;
+            }
+
+            Vector2 resolvedPoint = desiredPoint;
+            for (int pass = 0; pass < 2; pass++)
+            {
+                foreach (StructureState structure in structures)
+                {
+                    if (!TryGetStructureEscape(unit, structure, resolvedPoint, approach, out Vector2 escape))
+                    {
+                        continue;
+                    }
+
+                    resolvedPoint += escape;
+                }
+            }
+
+            return resolvedPoint;
+        }
+
+        private bool IsLandingAllowed(UnitState unit, Vector2 landingPoint, Func<Vector2, bool> externalLandingAllowed)
+        {
+            if (externalLandingAllowed != null && !externalLandingAllowed(landingPoint))
+            {
+                return false;
+            }
+
+            return !IsPointInsideAnyStructureObstacle(unit, landingPoint);
+        }
+
+        private bool IsPointInsideAnyStructureObstacle(UnitState unit, Vector2 point)
+        {
+            foreach (StructureState structure in structures)
+            {
+                if (IsPointInsideStructureObstacle(point, unit, structure))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private bool TryGetStructureEscape(
+            UnitState unit,
+            StructureState structure,
+            Vector2 point,
+            Vector2 approach,
+            out Vector2 escape)
+        {
+            escape = Vector2.zero;
+            if (unit == null || !IsBlockingStructure(structure))
+            {
+                return false;
+            }
+
+            float minimumDistance = StructureCollisionRadius(structure) + UnitCollisionRadius(unit);
+            Vector2 delta = point - structure.MissionPosition;
+            float distanceSqr = delta.sqrMagnitude;
+            if (distanceSqr >= minimumDistance * minimumDistance)
+            {
+                return false;
+            }
+
+            float distance = 0f;
+            Vector2 direction;
+            if (distanceSqr <= 0.0001f)
+            {
+                direction = NormalizedOrDefault(-approach, PairSeparationDirection(structure.Id, unit.Id));
+            }
+            else
+            {
+                distance = Mathf.Sqrt(distanceSqr);
+                direction = delta / Mathf.Max(0.001f, distance);
+            }
+
+            escape = direction * (minimumDistance - distance);
+            return escape.sqrMagnitude > 0.0001f;
+        }
+
+        private bool IsPointInsideStructureObstacle(Vector2 point, UnitState unit, StructureState structure)
+        {
+            if (unit == null || !IsBlockingStructure(structure))
+            {
+                return false;
+            }
+
+            float minimumDistance = StructureCollisionRadius(structure) + UnitCollisionRadius(unit);
+            return (point - structure.MissionPosition).sqrMagnitude < minimumDistance * minimumDistance;
+        }
+
+        private static bool IsBlockingStructure(StructureState structure)
+        {
+            return structure != null && !structure.IsDestroyed && structure.Radius > 0f;
+        }
+
+        private static float StructureCollisionRadius(StructureState structure)
+        {
+            return Mathf.Max(60f, structure.Radius + StructureCollisionPadding);
         }
 
         private static Vector2 NormalizedOrDefault(Vector2 value, Vector2 fallback)
