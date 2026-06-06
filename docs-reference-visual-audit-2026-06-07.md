@@ -1736,3 +1736,60 @@ Remaining issues:
 Next priority:
 
 1. M1 polish MechLab block fitting.
+
+## M1 MechLab Block-Fitting Result
+
+Implemented on 2026-06-07:
+
+- Added explicit `CombatLoadoutPreviewBlock` summaries so the MechLab can reason about whole weapon blocks instead of only scattered occupied cells.
+- Weapon cells now carry shape labels such as `2x1` and the visible block label includes that shape cue.
+- Armor plates and heat sinks remain single-cell fillers with compact labels (`A+`, `C+`) so they do not compete with weapon blocks.
+- Player-facing fallback copy now says `Select weapon block` instead of implying a mounted/unmounted or enable/disable toggle.
+- Smoke now asserts all source weapons are represented by mounted weapon blocks and reports `alwaysMounted=weapons 8/8 items 8/8 noToggle=yes`.
+
+Modified files:
+
+```text
+unity-mc2-demo/Assets/Scripts/BattleCore/CombatLoadoutPreview.cs
+unity-mc2-demo/Assets/Scripts/BattleCore/LoadoutValidator.cs
+unity-mc2-demo/Assets/Scripts/Presentation/Mc2DemoBootstrap.cs
+unity-mc2-demo/Assets/Editor/Mc2DemoValidator.cs
+unity-mc2-demo/Assets/StreamingAssets/CommanderScripts/mc2_01-loadout-compact.txt
+docs-reference-visual-audit-2026-06-07.md
+docs-playable-demo-current-execution-plan-2026-06-07.md
+docs-playable-demo-overall-detailed-plan-2026-06-07.md
+```
+
+Validation commands:
+
+```powershell
+git diff --check
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoValidator.ValidateMissionContract -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-validate-mechlab-blocks.log"
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoBuilder.BuildWindows64 -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-build-mechlab-blocks.log"
+& "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo\Builds\Windows\MC2UnityDemo.exe" -batchmode -nographics -mc2SmokeTest -mc2CommandFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo\Assets\StreamingAssets\CommanderScripts\mc2_01-loadout-compact.txt" -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-player-mechlab-blocks.log"
+```
+
+Validation results:
+
+```text
+git diff --check: clean, with Windows line-ending warnings only.
+Validator: MC2 demo contract validation OK.
+Build: Build Finished, Result: Success; MC2 Unity demo Windows build OK.
+Player smoke: MC2 loadout compact assertion OK.
+```
+
+Observed effect:
+
+- The smoke summary now includes `blockLabel=1 AC10 2x1/A+/C+`.
+- The grid cue reports `GridBlock=outer-frame+contiguous-weapon+cell-dividers+single-cell-filler+shape-label+block-summary`.
+- The always-mounted check reports `alwaysMounted=weapons 8/8 items 8/8 noToggle=yes`.
+- The current Bushwacker fit still immediately surfaces an overweight state as `Review Weight`, which keeps invalid/over-limit feedback short.
+
+Remaining issues:
+
+1. This pass proves the MechLab contract through code and smoke; it still needs a first-class screenshot.
+2. The next task should add or reuse a `mechlab` capture preset and record the visible fitting result.
+
+Next priority:
+
+1. M2 capture MechLab fitting evidence.

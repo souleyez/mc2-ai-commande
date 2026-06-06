@@ -3994,6 +3994,7 @@ namespace MC2Demo.Presentation
             LoadoutCompactCheck placementHeaderCheck = BuildLoadoutPlacementHeaderCompactCheck(unit, preview);
             LoadoutCompactCheck blockLabelCheck = BuildLoadoutBlockLabelCompactCheck(unit, preview);
             LoadoutCompactCheck gridBlockCueCheck = BuildLoadoutGridBlockCueCompactCheck(preview);
+            LoadoutCompactCheck alwaysMountedCheck = BuildLoadoutAlwaysMountedCompactCheck(unit, preview);
             LoadoutCompactCheck selectedSummaryCheck = BuildLoadoutSelectedSummaryCompactCheck(unit, preview, weapons[0]);
             LoadoutCompactCheck weaponDetailCheck = BuildLoadoutWeaponDetailCompactCheck(unit, preview);
             LoadoutCompactCheck componentDetailCheck = BuildLoadoutComponentDetailCompactCheck();
@@ -4030,6 +4031,8 @@ namespace MC2Demo.Presentation
                 + " "
                 + gridBlockCueCheck.Summary
                 + " "
+                + alwaysMountedCheck.Summary
+                + " "
                 + selectedSummaryCheck.Summary
                 + " "
                 + weaponDetailCheck.Summary
@@ -4063,6 +4066,7 @@ namespace MC2Demo.Presentation
                     && placementHeaderCheck.Accepted
                     && blockLabelCheck.Accepted
                     && gridBlockCueCheck.Accepted
+                    && alwaysMountedCheck.Accepted
                     && selectedSummaryCheck.Accepted
                     && weaponDetailCheck.Accepted
                     && componentDetailCheck.Accepted
@@ -4749,9 +4753,12 @@ namespace MC2Demo.Presentation
                     LoadoutItemCategory.HeatSink,
                     ""));
             bool accepted = string.Equals(weaponLabel, "1 AC10", StringComparison.Ordinal)
+                || weaponLabel.StartsWith("1 AC10 ", StringComparison.Ordinal);
+            accepted = accepted
+                && weaponLabel.IndexOf("x", StringComparison.Ordinal) >= 0
                 && weaponLabel.IndexOf("Autocannon", StringComparison.OrdinalIgnoreCase) < 0
                 && weaponLabel.IndexOf("(", StringComparison.Ordinal) < 0
-                && weaponLabel.Length <= 8
+                && weaponLabel.Length <= 12
                 && string.Equals(armorLabel, "A+", StringComparison.Ordinal)
                 && string.Equals(sinkLabel, "C+", StringComparison.Ordinal)
                 && armorLabel.IndexOf("ARM", StringComparison.OrdinalIgnoreCase) < 0
@@ -4772,21 +4779,22 @@ namespace MC2Demo.Presentation
             bool hasContiguousWeapon = false;
             bool hasPlacedSingleCellFiller = false;
             bool hasShapeLabel = false;
-            CombatLoadoutPreviewGridCell[] occupiedCells = preview?.OccupiedCells ?? Array.Empty<CombatLoadoutPreviewGridCell>();
-            for (int index = 0; index < occupiedCells.Length; index++)
+            CombatLoadoutPreviewBlock[] blocks = preview?.Blocks ?? Array.Empty<CombatLoadoutPreviewBlock>();
+            for (int index = 0; index < blocks.Length; index++)
             {
-                CombatLoadoutPreviewGridCell cell = occupiedCells[index];
-                int blockCells = CountLoadoutBlockCells(preview, cell);
-                if (cell != null && cell.SourceWeaponIndex >= 0 && blockCells > 1)
+                CombatLoadoutPreviewBlock block = blocks[index];
+                if (block == null)
                 {
-                    hasContiguousWeapon = true;
-                    hasShapeLabel |= LoadoutBlockShapeText(preview, cell).IndexOf("x", StringComparison.Ordinal) > 0;
+                    continue;
                 }
 
-                if (cell != null
-                    && cell.SourceWeaponIndex < 0
-                    && (cell.Category == LoadoutItemCategory.ArmorPlate || cell.Category == LoadoutItemCategory.HeatSink)
-                    && blockCells == 1)
+                if (block.IsWeapon && block.CellCount > 1 && block.CellCount == block.Width * block.Height)
+                {
+                    hasContiguousWeapon = true;
+                    hasShapeLabel |= block.ShapeLabel.IndexOf("x", StringComparison.Ordinal) > 0;
+                }
+
+                if (block.IsSingleCellFiller)
                 {
                     hasPlacedSingleCellFiller = true;
                 }
@@ -4800,7 +4808,8 @@ namespace MC2Demo.Presentation
                 && cueSummary.IndexOf("outer-frame", StringComparison.Ordinal) >= 0
                 && cueSummary.IndexOf("cell-dividers", StringComparison.Ordinal) >= 0
                 && cueSummary.IndexOf("single-cell-filler", StringComparison.Ordinal) >= 0
-                && cueSummary.IndexOf("shape-label", StringComparison.Ordinal) >= 0;
+                && cueSummary.IndexOf("shape-label", StringComparison.Ordinal) >= 0
+                && preview?.Blocks?.Length > 0;
             return new LoadoutCompactCheck(
                 accepted,
                 cueSummary
@@ -4814,7 +4823,93 @@ namespace MC2Demo.Presentation
 
         private static string LoadoutGridBlockCueSummary()
         {
-            return "GridBlock=outer-frame+contiguous-weapon+cell-dividers+single-cell-filler+shape-label";
+            return "GridBlock=outer-frame+contiguous-weapon+cell-dividers+single-cell-filler+shape-label+block-summary";
+        }
+
+        private static LoadoutCompactCheck BuildLoadoutAlwaysMountedCompactCheck(UnitState unit, CombatLoadoutPreview preview)
+        {
+            int sourceWeaponCount = unit?.Profile?.Weapons?.Length ?? 0;
+            bool[] itemSeen = new bool[sourceWeaponCount];
+            bool[] blockSeen = new bool[sourceWeaponCount];
+            int weaponItemCount = 0;
+            int weaponBlockCount = 0;
+            string labels = "";
+
+            CombatLoadoutPreviewItem[] items = preview?.Items ?? Array.Empty<CombatLoadoutPreviewItem>();
+            for (int index = 0; index < items.Length; index++)
+            {
+                CombatLoadoutPreviewItem item = items[index];
+                if (item == null || item.SourceWeaponIndex < 0 || item.SourceWeaponIndex >= sourceWeaponCount)
+                {
+                    continue;
+                }
+
+                if (!itemSeen[item.SourceWeaponIndex])
+                {
+                    itemSeen[item.SourceWeaponIndex] = true;
+                    weaponItemCount++;
+                }
+            }
+
+            CombatLoadoutPreviewBlock[] blocks = preview?.Blocks ?? Array.Empty<CombatLoadoutPreviewBlock>();
+            for (int index = 0; index < blocks.Length; index++)
+            {
+                CombatLoadoutPreviewBlock block = blocks[index];
+                if (block == null || !block.IsWeapon || block.SourceWeaponIndex < 0 || block.SourceWeaponIndex >= sourceWeaponCount)
+                {
+                    continue;
+                }
+
+                if (!blockSeen[block.SourceWeaponIndex])
+                {
+                    blockSeen[block.SourceWeaponIndex] = true;
+                    weaponBlockCount++;
+                    labels += " " + (block.DisplayName ?? "") + " " + block.ShapeLabel;
+                }
+            }
+
+            bool allItemsPresent = sourceWeaponCount > 0 && weaponItemCount == sourceWeaponCount;
+            bool allBlocksPresent = sourceWeaponCount > 0 && weaponBlockCount == sourceWeaponCount;
+            bool noToggleCopy = !ContainsWeaponToggleCopy(labels)
+                && !ContainsWeaponToggleCopy(LoadoutGridBlockCueSummary())
+                && !ContainsWeaponToggleCopy(LoadoutWeaponButtonLabel(unit?.Profile?.Weapons?[0], preview, 0, false, false));
+            bool accepted = allItemsPresent && allBlocksPresent && noToggleCopy;
+            return new LoadoutCompactCheck(
+                accepted,
+                "alwaysMounted=weapons "
+                + weaponBlockCount.ToString(CultureInfo.InvariantCulture)
+                + "/"
+                + sourceWeaponCount.ToString(CultureInfo.InvariantCulture)
+                + " items "
+                + weaponItemCount.ToString(CultureInfo.InvariantCulture)
+                + "/"
+                + sourceWeaponCount.ToString(CultureInfo.InvariantCulture)
+                + " noToggle="
+                + (noToggleCopy ? "yes" : "no"));
+        }
+
+        private static bool ContainsWeaponToggleCopy(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                return false;
+            }
+
+            if (text.IndexOf("启用", StringComparison.OrdinalIgnoreCase) >= 0
+                || text.IndexOf("关闭", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return true;
+            }
+
+            string normalized = " " + text.Replace("/", " ").Replace("-", " ").Replace("_", " ").ToLowerInvariant() + " ";
+            return normalized.IndexOf(" toggle ", StringComparison.Ordinal) >= 0
+                || normalized.IndexOf(" enable ", StringComparison.Ordinal) >= 0
+                || normalized.IndexOf(" enabled ", StringComparison.Ordinal) >= 0
+                || normalized.IndexOf(" disable ", StringComparison.Ordinal) >= 0
+                || normalized.IndexOf(" disabled ", StringComparison.Ordinal) >= 0
+                || normalized.IndexOf(" unmount ", StringComparison.Ordinal) >= 0
+                || normalized.IndexOf(" off ", StringComparison.Ordinal) >= 0
+                || normalized.IndexOf(" on ", StringComparison.Ordinal) >= 0;
         }
 
         private static bool HasLoadoutSingleCellFillerLanguage()
@@ -16399,7 +16494,10 @@ namespace MC2Demo.Presentation
             string prefix = cell.SourceWeaponIndex >= 0
                 ? (cell.SourceWeaponIndex + 1).ToString(CultureInfo.InvariantCulture) + " "
                 : "";
-            return prefix + ShortLoadoutItemName(name);
+            string shape = cell.ShapeCellCount > 1 && !string.IsNullOrWhiteSpace(cell.ShapeLabel)
+                ? " " + cell.ShapeLabel
+                : "";
+            return prefix + ShortLoadoutItemName(name) + shape;
         }
 
         private static string LoadoutBlockDetailText(
@@ -16570,6 +16668,12 @@ namespace MC2Demo.Presentation
                 return "1x1";
             }
 
+            CombatLoadoutPreviewBlock block = LoadoutBlockForCell(preview, blockCell);
+            if (block != null && !string.IsNullOrWhiteSpace(block.ShapeLabel))
+            {
+                return block.ShapeLabel;
+            }
+
             int minX = int.MaxValue;
             int minY = int.MaxValue;
             int maxX = int.MinValue;
@@ -16591,12 +16695,42 @@ namespace MC2Demo.Presentation
 
             if (minX == int.MaxValue || minY == int.MaxValue)
             {
-                return "1x1";
+                return string.IsNullOrWhiteSpace(blockCell.ShapeLabel) ? "1x1" : blockCell.ShapeLabel;
             }
 
             return (maxX - minX + 1).ToString(CultureInfo.InvariantCulture)
                 + "x"
                 + (maxY - minY + 1).ToString(CultureInfo.InvariantCulture);
+        }
+
+        private static CombatLoadoutPreviewBlock LoadoutBlockForCell(CombatLoadoutPreview preview, CombatLoadoutPreviewGridCell blockCell)
+        {
+            CombatLoadoutPreviewBlock[] blocks = preview?.Blocks ?? Array.Empty<CombatLoadoutPreviewBlock>();
+            for (int index = 0; index < blocks.Length; index++)
+            {
+                CombatLoadoutPreviewBlock block = blocks[index];
+                if (block == null || blockCell == null)
+                {
+                    continue;
+                }
+
+                if (block.IsWeapon || blockCell.SourceWeaponIndex >= 0)
+                {
+                    if (block.SourceWeaponIndex == blockCell.SourceWeaponIndex)
+                    {
+                        return block;
+                    }
+
+                    continue;
+                }
+
+                if (string.Equals(block.ItemId, blockCell.ItemId, StringComparison.OrdinalIgnoreCase))
+                {
+                    return block;
+                }
+            }
+
+            return null;
         }
 
         private static CombatWeaponDefinition LoadoutWeaponForCell(UnitState unit, CombatLoadoutPreviewGridCell cell)
@@ -16662,7 +16796,7 @@ namespace MC2Demo.Presentation
             CombatLoadoutPreviewItem selectedItem = LoadoutPreviewItemForWeapon(preview, selectedWeaponIndex);
             if (selectedItem == null)
             {
-                GUI.Label(new Rect(x, y, width, 18f), "Select a mounted weapon");
+                GUI.Label(new Rect(x, y, width, 18f), "Select weapon block");
                 return;
             }
 
@@ -17599,7 +17733,7 @@ namespace MC2Demo.Presentation
             CombatLoadoutPreviewItem selectedItem = LoadoutPreviewItemForWeapon(preview, selectedWeaponIndex);
             if (selectedItem == null)
             {
-                statusText = "Select mounted weapon first";
+                statusText = "Select weapon block first";
                 return;
             }
 
@@ -17630,7 +17764,7 @@ namespace MC2Demo.Presentation
                 || selectedWeaponIndex < 0
                 || selectedWeaponIndex >= placementOverrides.Length)
             {
-                statusText = "Select mounted weapon first";
+                statusText = "Select weapon block first";
                 return;
             }
 

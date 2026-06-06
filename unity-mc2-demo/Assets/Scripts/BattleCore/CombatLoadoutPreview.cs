@@ -11,6 +11,7 @@ namespace MC2Demo.BattleCore
         public int GridHeight { get; }
         public CombatLoadoutPreviewGridCell[] OccupiedCells { get; }
         public CombatLoadoutPreviewItem[] Items { get; }
+        public CombatLoadoutPreviewBlock[] Blocks { get; }
         public float HeatLimit { get; }
         public float WeightLimit { get; }
 
@@ -22,7 +23,8 @@ namespace MC2Demo.BattleCore
             CombatLoadoutPreviewGridCell[] occupiedCells,
             CombatLoadoutPreviewItem[] items,
             float heatLimit,
-            float weightLimit)
+            float weightLimit,
+            CombatLoadoutPreviewBlock[] blocks = null)
         {
             Validation = validation;
             GridCapacity = gridCapacity;
@@ -30,6 +32,7 @@ namespace MC2Demo.BattleCore
             GridHeight = gridHeight;
             OccupiedCells = occupiedCells ?? Array.Empty<CombatLoadoutPreviewGridCell>();
             Items = items ?? Array.Empty<CombatLoadoutPreviewItem>();
+            Blocks = blocks ?? Array.Empty<CombatLoadoutPreviewBlock>();
             HeatLimit = heatLimit;
             WeightLimit = weightLimit;
         }
@@ -44,6 +47,8 @@ namespace MC2Demo.BattleCore
         public string DisplayName { get; }
         public string Category { get; }
         public string WeaponType { get; }
+        public string ShapeLabel { get; }
+        public int ShapeCellCount { get; }
 
         internal CombatLoadoutPreviewItem(
             int sourceWeaponIndex,
@@ -52,7 +57,9 @@ namespace MC2Demo.BattleCore
             string itemId,
             string displayName,
             string category,
-            string weaponType)
+            string weaponType,
+            string shapeLabel = null,
+            int shapeCellCount = 1)
         {
             SourceWeaponIndex = sourceWeaponIndex;
             GridX = gridX;
@@ -61,6 +68,8 @@ namespace MC2Demo.BattleCore
             DisplayName = displayName;
             Category = category;
             WeaponType = weaponType;
+            ShapeLabel = string.IsNullOrWhiteSpace(shapeLabel) ? "1x1" : shapeLabel;
+            ShapeCellCount = Math.Max(1, shapeCellCount);
         }
     }
 
@@ -73,6 +82,8 @@ namespace MC2Demo.BattleCore
         public string DisplayName { get; }
         public string Category { get; }
         public string WeaponType { get; }
+        public string ShapeLabel { get; }
+        public int ShapeCellCount { get; }
 
         internal CombatLoadoutPreviewGridCell(
             int x,
@@ -81,7 +92,9 @@ namespace MC2Demo.BattleCore
             string itemId,
             string displayName,
             string category,
-            string weaponType)
+            string weaponType,
+            string shapeLabel = null,
+            int shapeCellCount = 1)
         {
             X = x;
             Y = y;
@@ -90,6 +103,58 @@ namespace MC2Demo.BattleCore
             DisplayName = displayName;
             Category = category;
             WeaponType = weaponType;
+            ShapeLabel = string.IsNullOrWhiteSpace(shapeLabel) ? "1x1" : shapeLabel;
+            ShapeCellCount = Math.Max(1, shapeCellCount);
+        }
+    }
+
+    public sealed class CombatLoadoutPreviewBlock
+    {
+        public int SourceWeaponIndex { get; }
+        public string ItemId { get; }
+        public string DisplayName { get; }
+        public string Category { get; }
+        public string WeaponType { get; }
+        public int MinX { get; }
+        public int MinY { get; }
+        public int MaxX { get; }
+        public int MaxY { get; }
+        public int Width => MaxX - MinX + 1;
+        public int Height => MaxY - MinY + 1;
+        public int CellCount { get; }
+        public string ShapeLabel { get; }
+        public bool IsWeapon => SourceWeaponIndex >= 0;
+        public bool IsSingleCellFiller =>
+            SourceWeaponIndex < 0
+            && CellCount == 1
+            && Width == 1
+            && Height == 1
+            && (Category == LoadoutItemCategory.ArmorPlate || Category == LoadoutItemCategory.HeatSink);
+
+        internal CombatLoadoutPreviewBlock(
+            int sourceWeaponIndex,
+            string itemId,
+            string displayName,
+            string category,
+            string weaponType,
+            int minX,
+            int minY,
+            int maxX,
+            int maxY,
+            int cellCount,
+            string shapeLabel)
+        {
+            SourceWeaponIndex = sourceWeaponIndex;
+            ItemId = itemId;
+            DisplayName = displayName;
+            Category = category;
+            WeaponType = weaponType;
+            MinX = minX;
+            MinY = minY;
+            MaxX = maxX;
+            MaxY = maxY;
+            CellCount = Math.Max(1, cellCount);
+            ShapeLabel = string.IsNullOrWhiteSpace(shapeLabel) ? Width + "x" + Height : shapeLabel;
         }
     }
 
@@ -175,6 +240,8 @@ namespace MC2Demo.BattleCore
                 }
 
                 CombatWeaponDefinition weapon = weapons[index];
+                string shapeLabel = ShapeLabelFor(weaponShapes[index]);
+                int shapeCellCount = Math.Max(1, weaponShapes[index]?.Length ?? 0);
                 string itemId = "source-weapon-" + index;
                 LoadoutItemDefinition item = new()
                 {
@@ -205,7 +272,9 @@ namespace MC2Demo.BattleCore
                     itemId,
                     string.IsNullOrEmpty(weapon?.name) ? itemId : weapon.name,
                     LoadoutItemCategory.Weapon,
-                    weapon?.type));
+                    weapon?.type,
+                    shapeLabel,
+                    shapeCellCount));
                 foreach (LoadoutGridCell shapeCell in weaponShapes[index])
                 {
                     int cellX = sourcePlacements[index].gridX + shapeCell.x;
@@ -217,7 +286,9 @@ namespace MC2Demo.BattleCore
                         itemId,
                         string.IsNullOrEmpty(weapon?.name) ? itemId : weapon.name,
                         LoadoutItemCategory.Weapon,
-                        weapon?.type));
+                        weapon?.type,
+                        shapeLabel,
+                        shapeCellCount));
                     if (IsInsideGrid(cellX, cellY, ProjectedGridWidth, gridHeight))
                     {
                         occupiedInBounds[cellX, cellY] = true;
@@ -244,6 +315,7 @@ namespace MC2Demo.BattleCore
             LoadoutPlacedItemDefinition[] placedItemDefinitions = placedItems.ToArray();
             CombatLoadoutPreviewItem[] previewItemDefinitions = previewItems.ToArray();
             CombatLoadoutPreviewGridCell[] occupiedCellDefinitions = occupiedCells.ToArray();
+            CombatLoadoutPreviewBlock[] blockDefinitions = BuildPreviewBlocks(occupiedCellDefinitions);
 
             LoadoutContract contract = new()
             {
@@ -285,7 +357,8 @@ namespace MC2Demo.BattleCore
                 occupiedCellDefinitions,
                 previewItemDefinitions,
                 heatLimit,
-                weightLimit);
+                weightLimit,
+                blockDefinitions);
         }
 
         private static void AddProjectedFillerItems(
@@ -378,7 +451,9 @@ namespace MC2Demo.BattleCore
                         itemId,
                         displayName,
                         category,
-                        null));
+                        null,
+                        "1x1",
+                        1));
                     occupiedCells.Add(new CombatLoadoutPreviewGridCell(
                         x,
                         y,
@@ -386,7 +461,9 @@ namespace MC2Demo.BattleCore
                         itemId,
                         displayName,
                         category,
-                        null));
+                        null,
+                        "1x1",
+                        1));
                     occupiedInBounds[x, y] = true;
                     remainingWeight -= itemWeight;
                     if (useHeatSink)
@@ -431,6 +508,92 @@ namespace MC2Demo.BattleCore
         private static bool IsInsideGrid(int x, int y, int width, int height)
         {
             return x >= 0 && y >= 0 && x < width && y < height;
+        }
+
+        private static CombatLoadoutPreviewBlock[] BuildPreviewBlocks(CombatLoadoutPreviewGridCell[] occupiedCells)
+        {
+            List<CombatLoadoutPreviewBlock> blocks = new();
+            HashSet<string> seen = new(StringComparer.Ordinal);
+            CombatLoadoutPreviewGridCell[] cells = occupiedCells ?? Array.Empty<CombatLoadoutPreviewGridCell>();
+            for (int index = 0; index < cells.Length; index++)
+            {
+                CombatLoadoutPreviewGridCell seed = cells[index];
+                string key = PreviewBlockKey(seed);
+                if (seed == null || !seen.Add(key))
+                {
+                    continue;
+                }
+
+                int minX = seed.X;
+                int minY = seed.Y;
+                int maxX = seed.X;
+                int maxY = seed.Y;
+                int cellCount = 0;
+                for (int otherIndex = 0; otherIndex < cells.Length; otherIndex++)
+                {
+                    CombatLoadoutPreviewGridCell candidate = cells[otherIndex];
+                    if (!SamePreviewBlock(seed, candidate))
+                    {
+                        continue;
+                    }
+
+                    minX = Math.Min(minX, candidate.X);
+                    minY = Math.Min(minY, candidate.Y);
+                    maxX = Math.Max(maxX, candidate.X);
+                    maxY = Math.Max(maxY, candidate.Y);
+                    cellCount++;
+                }
+
+                string shapeLabel = string.IsNullOrWhiteSpace(seed.ShapeLabel)
+                    ? (maxX - minX + 1).ToString(System.Globalization.CultureInfo.InvariantCulture)
+                        + "x"
+                        + (maxY - minY + 1).ToString(System.Globalization.CultureInfo.InvariantCulture)
+                    : seed.ShapeLabel;
+                blocks.Add(new CombatLoadoutPreviewBlock(
+                    seed.SourceWeaponIndex,
+                    seed.ItemId,
+                    seed.DisplayName,
+                    seed.Category,
+                    seed.WeaponType,
+                    minX,
+                    minY,
+                    maxX,
+                    maxY,
+                    cellCount,
+                    shapeLabel));
+            }
+
+            return blocks.ToArray();
+        }
+
+        private static string PreviewBlockKey(CombatLoadoutPreviewGridCell cell)
+        {
+            if (cell == null)
+            {
+                return "";
+            }
+
+            if (cell.SourceWeaponIndex >= 0)
+            {
+                return "weapon:" + cell.SourceWeaponIndex.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            }
+
+            return "item:" + (cell.ItemId ?? cell.Category ?? "");
+        }
+
+        private static bool SamePreviewBlock(CombatLoadoutPreviewGridCell left, CombatLoadoutPreviewGridCell right)
+        {
+            if (left == null || right == null)
+            {
+                return false;
+            }
+
+            if (left.SourceWeaponIndex >= 0 || right.SourceWeaponIndex >= 0)
+            {
+                return left.SourceWeaponIndex == right.SourceWeaponIndex;
+            }
+
+            return string.Equals(left.ItemId, right.ItemId, StringComparison.OrdinalIgnoreCase);
         }
 
         private static void ApplyPlacementOverrides(
@@ -505,6 +668,41 @@ namespace MC2Demo.BattleCore
         private static LoadoutGridCell[] SingleCellShape()
         {
             return new[] { new LoadoutGridCell { x = 0, y = 0 } };
+        }
+
+        private static string ShapeLabelFor(LoadoutGridCell[] shape)
+        {
+            if (shape == null || shape.Length == 0)
+            {
+                return "1x1";
+            }
+
+            int minX = int.MaxValue;
+            int minY = int.MaxValue;
+            int maxX = int.MinValue;
+            int maxY = int.MinValue;
+            for (int index = 0; index < shape.Length; index++)
+            {
+                LoadoutGridCell cell = shape[index];
+                if (cell == null)
+                {
+                    continue;
+                }
+
+                minX = Math.Min(minX, cell.x);
+                minY = Math.Min(minY, cell.y);
+                maxX = Math.Max(maxX, cell.x);
+                maxY = Math.Max(maxY, cell.y);
+            }
+
+            if (minX == int.MaxValue || minY == int.MaxValue)
+            {
+                return "1x1";
+            }
+
+            return (maxX - minX + 1).ToString(System.Globalization.CultureInfo.InvariantCulture)
+                + "x"
+                + (maxY - minY + 1).ToString(System.Globalization.CultureInfo.InvariantCulture);
         }
 
         private static LoadoutGridCell[] VerticalShape(int height)

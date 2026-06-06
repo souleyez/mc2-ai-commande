@@ -97,9 +97,9 @@ AI 副官的定位：
 
 当前分支状态：
 
-- Branch: `master...ai-origin/master [ahead 52]`.
+- Branch: `master...ai-origin/master` with local demo commits ahead of remote.
 - 当前日常执行入口：`docs-playable-demo-current-execution-plan-2026-06-07.md`.
-- 当前下一步：`M1 Polish MechLab block fitting`.
+- 当前下一步：`M2 Capture MechLab fitting evidence`.
 
 已收口的事实：
 
@@ -114,7 +114,7 @@ AI 副官的定位：
 | HUD | 战斗中信息已压缩，不追求大量数据面板 | reference captures |
 | Combat cues | 武器方向、命中、爆炸、残骸、断臂、腿瘫、弹射已有基础 | validator + `damage-demo` |
 | Armor hardness | 装甲板走整体硬度，部位损伤仍保留 | validator |
-| MechLab | 整块武器格子、装甲板、散热器、热量、重量、合法性已有基础 | loadout validator + smoke |
+| MechLab | 整块武器 block summary、形状标签、装甲板/散热器单格填充、热量、重量、合法性已有 smoke 证据 | loadout validator + smoke |
 | Debrief loop | 战报、维修、回机库、再出战基础完成，不暴露保存槽概念 | repair/relaunch validator + smoke |
 | AI observation | Compact schema and prompt budget locked | `analysis-output/unity-validate-ai-observation.log` |
 | AI directive | High-level directive adapter guarded, missing key falls back locally | `analysis-output/unity-validate-ai-directive.log` |
@@ -125,10 +125,9 @@ AI 副官的定位：
 
 | Gap | Why It Matters | Current Plan |
 | --- | --- | --- |
-| MechLab 手感还要继续靠近整块占格 | 装配是长期核心乐趣，不应像普通表格编辑器 | M1/M2 MechLab polish |
+| MechLab 还缺首等截图证据 | 装配是长期核心乐趣，不能只靠 smoke 文本证明 | M2 MechLab capture |
 | 损伤卖点还可继续强化 | V2 已增强当前截图 spotlight；后续可补断臂、腿瘫、弹射的事件动画故事 | C1 combat feel |
 | 碰撞占位后续只需回归 | V3 已提供单位、结构、hardProp 和 landing blocked 审计层；后续发现具体碰撞 bug 再加 close-up preset | V3 regression |
-| MechLab 手感还需更像整块占格 | 装配是长期核心乐趣，不应像普通表格编辑器 | M1/M2 MechLab polish |
 | Demo 还缺完整演示话术和证据页 | 后续融资或协作需要三分钟可讲清楚 | H1-H3 handoff |
 | 公开内容安全还要脚本 guard | 本地参考包可以开发验证，公开包不能混入旧素材 | P1/P2 content boundary |
 
@@ -298,7 +297,7 @@ Do not stage generated PNG/JSON/log evidence unless explicitly requested.
 
 ### Milestone 1: Reference Visual Readability
 
-**Status:** V2 completed 2026-06-07. Keep this milestone in regression while the next active task moves to M1.
+**Status:** V2 completed 2026-06-07. Keep this milestone in regression while the next active task moves to M2.
 
 **Goal:** 让第一张图看起来像 3D 战场，不像色块或模型团。优先解决远景可读性、损伤 spotlight、局部拥挤、材质对比和构图。
 
@@ -461,7 +460,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_refere
 
 ### Milestone 5: MechLab Block-Fitting Slice
 
-**Status:** Active. Current next task is M1.
+**Status:** Active. M1 completed; current next task is M2.
 
 **Goal:** 装配界面尽量参照原作“整块武器放格子”的直观乐趣，同时保持第一版轻量。
 
@@ -476,12 +475,13 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_refere
 
 **Tasks:**
 
-1. Mounted weapon renders as one contiguous block.
-2. Multi-cell weapon shows occupied shape and internal cell divisions.
-3. Armor plate and heat sink are single-cell fillers.
-4. Heat, mass, slot conflict and legal/illegal state update immediately.
-5. Weapon mounted means weapon enabled; remove player-facing toggle language.
-6. Loadout affects BattleCore unit stats, weapons, heat capacity and armor hardness.
+1. Done: mounted weapon renders as one contiguous block with block summary evidence.
+2. Done: multi-cell weapon shows occupied shape and internal cell divisions.
+3. Done: armor plate and heat sink are single-cell fillers.
+4. Done: heat, mass, slot conflict and legal/illegal state update immediately.
+5. Done: weapon mounted means weapon enabled; player-facing toggle language is rejected by smoke.
+6. Next: capture first-class MechLab screenshot evidence.
+7. Ongoing regression: loadout affects BattleCore unit stats, weapons, heat capacity and armor hardness.
 
 **Validation:**
 
@@ -682,8 +682,8 @@ Current recommended order:
 | --- | --- | --- | --- |
 | 1 | Done | `Improve reference visual readability` | Make `hangar-contact` and `damage-demo` read as battlefield, not model knot |
 | 2 | Done | `Lock occupancy placeholder review layer` | Make physical blockers auditable without cluttering player HUD |
-| 3 | Next | `Polish MechLab block fitting` | Make loadout grid closer to original-style block fitting |
-| 4 | Pending | `Capture MechLab fitting evidence` | Prove loadout UI and smoke flow |
+| 3 | Done | `Polish MechLab block fitting` | Make loadout grid closer to original-style block fitting |
+| 4 | Next | `Capture MechLab fitting evidence` | Prove loadout UI and smoke flow |
 | 5 | Pending | `Strengthen damage demo readability` | Push limb/cockpit/ejection story into screenshot-grade clarity |
 | 6 | Pending | `Keep battle UI sparse` | Final pass against too much battle information |
 | 7 | Pending | `Write playable demo walkthrough` | Create three-minute demo narrative |

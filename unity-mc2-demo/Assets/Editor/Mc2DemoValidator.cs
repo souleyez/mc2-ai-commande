@@ -968,6 +968,21 @@ namespace MC2Demo.EditorTools
                     throw new InvalidDataException("Projected loadout did not expose any multi-cell weapon shape for " + unitType);
                 }
 
+                if (!HasWeaponBlockForEverySourceWeapon(preview, profile.Weapons.Length))
+                {
+                    throw new InvalidDataException("Projected loadout did not keep every source weapon mounted as a block for " + unitType);
+                }
+
+                if (!AllWeaponBlocksHaveShapeLabels(preview))
+                {
+                    throw new InvalidDataException("Projected loadout weapon blocks are missing shape labels for " + unitType);
+                }
+
+                if (!AllFillerBlocksAreSingleCell(preview))
+                {
+                    throw new InvalidDataException("Projected loadout filler blocks must stay single-cell for " + unitType);
+                }
+
                 if (Math.Abs(preview.Validation.TotalHeat - profile.HeatPerShot) > 0.001f)
                 {
                     throw new InvalidDataException("Projected loadout heat does not match source heat for " + unitType);
@@ -982,24 +997,6 @@ namespace MC2Demo.EditorTools
                     || Math.Abs(preview.WeightLimit - profile.LoadLimit) > 0.001f)
                 {
                     throw new InvalidDataException("Projected loadout limits do not match source limits for " + unitType);
-                }
-
-                bool[] mountedWeapons = new bool[profile.Weapons.Length];
-                for (int index = 0; index < mountedWeapons.Length; index++)
-                {
-                    mountedWeapons[index] = true;
-                }
-
-                mountedWeapons[0] = false;
-                CombatLoadoutPreview unmountedPreview = CombatLoadoutPreviewBuilder.Build(unitType, profile, mountedWeapons);
-                if (HasPreviewCellForWeapon(unmountedPreview, 0))
-                {
-                    throw new InvalidDataException("Projected unmounted loadout still exposes unmounted weapon cell for " + unitType);
-                }
-
-                if (unmountedPreview.Validation.TotalHeat >= preview.Validation.TotalHeat)
-                {
-                    throw new InvalidDataException("Projected unmounted loadout did not reduce heat for " + unitType);
                 }
 
                 if (preview.Validation.TotalArmorHardnessBonus <= 0f
@@ -1164,13 +1161,73 @@ namespace MC2Demo.EditorTools
         {
             foreach (CombatLoadoutPreviewGridCell cell in preview.OccupiedCells)
             {
-                if (cell != null && CountPreviewCellsForWeapon(preview, cell.SourceWeaponIndex) > 1)
+                if (cell != null && cell.SourceWeaponIndex >= 0 && CountPreviewCellsForWeapon(preview, cell.SourceWeaponIndex) > 1)
                 {
                     return true;
                 }
             }
 
             return false;
+        }
+
+        private static bool HasWeaponBlockForEverySourceWeapon(CombatLoadoutPreview preview, int sourceWeaponCount)
+        {
+            if (preview == null || sourceWeaponCount <= 0)
+            {
+                return false;
+            }
+
+            bool[] seen = new bool[sourceWeaponCount];
+            int count = 0;
+            foreach (CombatLoadoutPreviewBlock block in preview.Blocks)
+            {
+                if (block == null || !block.IsWeapon || block.SourceWeaponIndex < 0 || block.SourceWeaponIndex >= sourceWeaponCount)
+                {
+                    continue;
+                }
+
+                if (!seen[block.SourceWeaponIndex])
+                {
+                    seen[block.SourceWeaponIndex] = true;
+                    count++;
+                }
+            }
+
+            return count == sourceWeaponCount;
+        }
+
+        private static bool AllWeaponBlocksHaveShapeLabels(CombatLoadoutPreview preview)
+        {
+            foreach (CombatLoadoutPreviewBlock block in preview?.Blocks ?? Array.Empty<CombatLoadoutPreviewBlock>())
+            {
+                if (block != null
+                    && block.IsWeapon
+                    && (block.CellCount <= 0 || string.IsNullOrWhiteSpace(block.ShapeLabel) || block.ShapeLabel.IndexOf("x", StringComparison.Ordinal) < 0))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static bool AllFillerBlocksAreSingleCell(CombatLoadoutPreview preview)
+        {
+            foreach (CombatLoadoutPreviewBlock block in preview?.Blocks ?? Array.Empty<CombatLoadoutPreviewBlock>())
+            {
+                if (block == null || block.IsWeapon)
+                {
+                    continue;
+                }
+
+                if ((block.Category == LoadoutItemCategory.ArmorPlate || block.Category == LoadoutItemCategory.HeatSink)
+                    && !block.IsSingleCellFiller)
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         private static bool HasLoadoutErrorContaining(CombatLoadoutPreview preview, string text)
@@ -1361,25 +1418,6 @@ namespace MC2Demo.EditorTools
                 throw new InvalidDataException("Preview-driven loadout did not apply full mounted weapon, heat, armor and weight stats to UnitState.");
             }
 
-            int removedWeaponIndex = FirstWeightedWeaponIndex(profile);
-            bool[] mountedWeapons = new bool[profile.Weapons.Length];
-            for (int index = 0; index < mountedWeapons.Length; index++)
-            {
-                mountedWeapons[index] = true;
-            }
-
-            mountedWeapons[removedWeaponIndex] = false;
-            CombatLoadoutPreview reducedPreview = CombatLoadoutPreviewBuilder.Build(unitType, profile, mountedWeapons);
-            UnitState reducedUnit = MakeLoadoutValidationUnit("preview-reduced-loadout", unitType, combatProfiles);
-            reducedUnit.ApplyDemoLoadout(UnitLoadoutCombatOverrideBuilder.Build(profile, reducedPreview));
-            if (reducedUnit.CombatTotalWeaponWeight >= fullUnit.CombatTotalWeaponWeight
-                || reducedUnit.CombatHeatPerShot >= fullUnit.CombatHeatPerShot
-                || reducedPreview.Validation.TotalWeight >= fullPreview.Validation.TotalWeight
-                || reducedPreview.Validation.TotalHeat >= fullPreview.Validation.TotalHeat)
-            {
-                throw new InvalidDataException("Preview-driven unmounted weapon did not reduce battle-ready heat and weight.");
-            }
-
             if (!TryFindOpenLoadoutCell(fullPreview, out int fillerX, out int fillerY))
             {
                 throw new InvalidDataException("Expected an open projected loadout cell for filler combat-effect validation.");
@@ -1441,21 +1479,6 @@ namespace MC2Demo.EditorTools
                 unitType = unitType,
                 position = new MissionPose()
             }, combatProfiles);
-        }
-
-        private static int FirstWeightedWeaponIndex(CombatProfile profile)
-        {
-            CombatWeaponDefinition[] weapons = profile?.Weapons ?? Array.Empty<CombatWeaponDefinition>();
-            for (int index = 0; index < weapons.Length; index++)
-            {
-                CombatWeaponDefinition weapon = weapons[index];
-                if (weapon != null && weapon.weight > 0f && weapon.heat > 0f)
-                {
-                    return index;
-                }
-            }
-
-            throw new InvalidDataException("Expected at least one weighted heated weapon for preview-driven loadout validation.");
         }
 
         private static bool TryFindOpenLoadoutCell(CombatLoadoutPreview preview, out int x, out int y)

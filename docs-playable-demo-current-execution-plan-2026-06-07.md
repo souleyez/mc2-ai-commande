@@ -32,7 +32,7 @@
 - AI directive adapter 已提交：`9bf26bd Guard AI directive adapter`.
 - AI advice window 已提交：`b40372d Show optional AI advice window`.
 - Battle occupancy readability re-audit 已提交：`87006c3 Re-audit battle occupancy readability`.
-- 下一步是 `M1 Polish MechLab block fitting`.
+- 下一步是 `M2 Capture MechLab fitting evidence`.
 
 ## 1. First Demo Product Scope
 
@@ -246,8 +246,8 @@ Do not stage generated PNG/JSON/log evidence unless explicitly requested.
 | 3 | Done | `Re-audit battle occupancy readability` | G2/G7 readability and occupancy |
 | 4 | Done | `Improve reference visual readability` | G2 battle readability |
 | 5 | Done | `Lock occupancy placeholder review layer` | G7 collision evidence |
-| 6 | Next | `Polish MechLab block fitting` | G3 MechLab feel |
-| 7 | Pending | `Capture MechLab fitting evidence` | G3 MechLab evidence |
+| 6 | Done | `Polish MechLab block fitting` | G3 MechLab feel |
+| 7 | Next | `Capture MechLab fitting evidence` | G3 MechLab evidence |
 | 8 | Pending | `Strengthen damage demo readability` | G1 combat feel |
 | 9 | Pending | `Keep battle UI sparse` | G1/G2 UI readability |
 | 10 | Pending | `Write playable demo walkthrough` | G8 handoff |
@@ -488,7 +488,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_refere
 
 ### M1: Polish MechLab Block Fitting
 
-**Status:** Pending.
+**Status:** Completed 2026-06-07.
+
+**Result:** MechLab preview now carries explicit block summaries for mounted weapon blocks and single-cell armor/sink fillers. Multi-cell weapon blocks show shape labels such as `2x1`, smoke proves all source weapons remain mounted (`alwaysMounted=weapons 8/8 items 8/8 noToggle=yes`), and the player-facing fallback text now asks for a weapon block rather than implying a weapon enable/disable toggle. Evidence: `analysis-output/unity-validate-mechlab-blocks.log`, `analysis-output/unity-build-mechlab-blocks.log`, and `analysis-output/unity-player-mechlab-blocks.log`.
 
 **Goal:** 装配界面继续靠近“整块武器放进格子”的乐趣，而不是表格编辑；武器装上即启用。
 
@@ -528,7 +530,7 @@ git diff --check
 
 ### M2: Capture MechLab Fitting Evidence
 
-**Status:** Pending after M1.
+**Status:** Next.
 
 **Goal:** 留一张能给人看的装配界面截图，而不是只靠 smoke 文本。
 

@@ -92,12 +92,12 @@ namespace MC2Demo.BattleCore
             result.OccupiedGridCells = occupiedGrid.Count;
             if (chassis.heatLimit > 0f && result.TotalHeat > chassis.heatLimit)
             {
-                result.AddError("Loadout heat exceeds chassis limit.");
+                result.AddError("Heat over.");
             }
 
             if (chassis.weightLimit > 0f && result.TotalWeight > chassis.weightLimit)
             {
-                result.AddError("Loadout weight exceeds chassis limit.");
+                result.AddError("Weight over.");
             }
 
             return result;
@@ -142,7 +142,7 @@ namespace MC2Demo.BattleCore
             LoadoutGridCell[] shapeCells = TransformShapeCells(item.shapeCells, placedItem.rotated);
             if (shapeCells.Length == 0)
             {
-                result.AddError("Grid item has no shape cells: " + item.itemId);
+                result.AddError("Grid missing shape: " + item.itemId);
                 return;
             }
 
@@ -155,13 +155,13 @@ namespace MC2Demo.BattleCore
 
                 if (x < 0 || y < 0 || x >= grid.width || y >= grid.height)
                 {
-                    result.AddError("Item " + item.itemId + " occupies out-of-bounds cell " + cellKey + ".");
+                    result.AddError("Grid out-of-bounds " + cellKey + ": " + item.itemId);
                     continue;
                 }
 
                 if (blockedCells.Contains(cellKey))
                 {
-                    result.AddError("Item " + item.itemId + " occupies blocked cell " + cellKey + ".");
+                    result.AddError("Grid blocked " + cellKey + ": " + item.itemId);
                     continue;
                 }
 
