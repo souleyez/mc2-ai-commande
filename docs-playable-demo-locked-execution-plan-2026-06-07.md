@@ -33,8 +33,8 @@
 2. Stage 2 战场空间、碰撞占位和 hangar encounter 构图已经收口：BattleCore occupancy、hard prop placeholder、hangar pressure spread 都有证据。
 3. 当前处在 Stage 3: Combat Feel Lock。
 4. `Regress weapon family cues` 已完成并提交为 `4ea5666`。
-5. 当前工作树里已有 `Lock section damage and ejection cues` 的未提交代码草稿，涉及 `DemoUnitView.cs`、`Mc2DemoBootstrap.cs`、`Mc2DemoValidator.cs`。下一步不是开新功能，而是验证、截图、补审计文档并提交这一块。
-6. Stage 3.2 提交后立即进入 `Lock armor hardness damage rule`，再进入 Stage 4 MechLab。
+5. `Lock section damage and ejection cues` 已完成验证并进入提交队列。
+6. 下一提交优先做 `Lock armor hardness damage rule`，再进入 Stage 4 MechLab。
 7. 工作树提交前必须保持干净；Unity scene fileID churn 不得误提交，生成截图/日志/JSON 默认不进 Git。
 
 当前已知真实文件校准：
@@ -224,7 +224,7 @@ Do not stage generated PNG/JSON/log evidence unless explicitly requested.
 | Occupancy/collision | Evidence present | Must remain BattleCore-backed | Keep validator and sidecar guards; Unity placeholders stay review-only |
 | Command flow | Smoke-covered | Keep UI simple | Regression only unless player flow breaks |
 | Weapon effects | Completed for current pass | Needs only regression unless `damage-demo` becomes unreadable | Guard with combat situation smoke and damage capture |
-| Section damage/ejection | In progress | Current code draft needs validator, build, capture, smoke and audit entry | Finish Stage 3.2 before starting new feature work |
+| Section damage/ejection | Completed for current pass | Future polish can add closer motion/capture readability | Regression only unless `damage-demo` regresses |
 | Armor hardness | Next | Need simple BattleCore proof and one-line design rule | Stage 3.3 |
 | MechLab | Functional | Needs original-like block fitting polish and no weapon-toggle semantics | Stage 4 |
 | Debrief/repair | Basic | Needs clean first-demo loop, no save UI in normal flow | Stage 5 |
@@ -322,7 +322,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_refere
 
 ### Task 3.2: Lock Section Damage And Ejection Cues
 
-**Status:** In progress. A code draft exists in the current worktree and must be validated before any new feature work.
+**Status:** Completed 2026-06-07.
+
+**Result:** `DemoUnitView` now adds arm firepower-lost markers, leg danger ring/mobility beacon and cockpit escape-column/route cues. `Mc2DemoBootstrap` guards those cue fragments in the combat situation smoke summary, and `Mc2DemoValidator` now asserts that cockpit critical destruction kills the unit. Evidence is recorded in `docs-reference-visual-audit-2026-06-07.md` under `Stage 3.2 Section Damage And Ejection Cue Result`.
 
 **Goal:** Arm loss, leg disable and cockpit ejection are visible world events and match status rows.
 
@@ -894,12 +896,7 @@ Recently completed:
 4. `Show collision occupancy placeholders`
 5. `Tune hangar encounter composition`
 6. `Regress weapon family cues`
-
-In progress:
-
-1. `Lock section damage and ejection cues`
-   - Source draft exists.
-   - Required before commit: validator, Windows build, `damage-demo` capture, visible-flow smoke, audit entry.
+7. `Lock section damage and ejection cues`
 
 Next commits:
 
@@ -931,19 +928,16 @@ Use this board when continuing with "按计划继续". Start at the first incomp
 
 ### Sprint A: Finish Combat Feel
 
-| Order | Commit | Purpose | Main Files | Required Evidence |
-| --- | --- | --- | --- | --- |
-| A1 | `Lock section damage and ejection cues` | Make arm loss, leg disable and cockpit ejection readable in the world and guarded by smoke | `DemoUnitView.cs`, `Mc2DemoBootstrap.cs`, `Mc2DemoValidator.cs`, visual audit | validator, build, `damage-demo` capture, visible-flow smoke |
-| A2 | `Lock armor hardness damage rule` | Keep armor simple: one hardness value before section damage | `UnitState.cs`, `CombatLoadoutPreview.cs`, `LoadoutValidator.cs`, validator, design docs | validator |
+| Order | Status | Commit | Purpose | Main Files | Required Evidence |
+| --- | --- | --- | --- | --- | --- |
+| A1 | Done | `Lock section damage and ejection cues` | Make arm loss, leg disable and cockpit ejection readable in the world and guarded by smoke | `DemoUnitView.cs`, `Mc2DemoBootstrap.cs`, `Mc2DemoValidator.cs`, visual audit | validator, build, `damage-demo` capture, visible-flow smoke |
+| A2 | Next | `Lock armor hardness damage rule` | Keep armor simple: one hardness value before section damage | `UnitState.cs`, `CombatLoadoutPreview.cs`, `LoadoutValidator.cs`, validator, design docs | validator |
 
 Sprint A detail:
 
-1. Finish the existing Stage 3.2 draft.
-2. Inspect `damage-demo.png`; if ejection is still tiny, adjust world cue size before committing.
-3. Add visual audit result with exact evidence paths.
-4. Commit Stage 3.2 by itself.
-5. Implement armor hardness proof without adding per-location armor.
-6. Commit Stage 3.3 by itself.
+1. Stage 3.2 is complete for this pass; keep it as a regression target.
+2. Implement armor hardness proof without adding per-location armor.
+3. Commit Stage 3.3 by itself.
 
 ### Sprint B: Make MechLab Feel Like Fitting Parts
 

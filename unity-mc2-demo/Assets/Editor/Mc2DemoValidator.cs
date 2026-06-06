@@ -2973,6 +2973,20 @@ namespace MC2Demo.EditorTools
             {
                 throw new InvalidDataException("Expected destroyed legs to slow movement and reject jump commands.");
             }
+
+            UnitState cockpitTarget = new(new UnitSpawn
+            {
+                spawnId = "modifier-cockpit-target",
+                isPlayerUnit = true,
+                teamId = 0,
+                unitType = "ModifierPlayer",
+                position = new MissionPose { x = 0f, y = 0f, rotation = 0f }
+            }, MakeSectionModifierProfiles());
+            cockpitTarget.ApplyDirectSectionDamage("Cockpit", 50f);
+            if (!cockpitTarget.IsDestroyed)
+            {
+                throw new InvalidDataException("Expected destroyed cockpit to destroy the unit and trigger ejection path.");
+            }
         }
 
         private static void ValidateHeatManagement()

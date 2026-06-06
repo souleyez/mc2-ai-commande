@@ -923,3 +923,75 @@ Next priority:
 
 1. Stage 3 / Task 3.2 lock section damage and ejection cues.
 2. Stage 3 / Task 3.3 lock armor hardness damage rule.
+
+## Stage 3.2 Section Damage And Ejection Cue Result
+
+Implemented on 2026-06-07:
+
+- Added stronger world-space section damage cues in `DemoUnitView`.
+- Destroyed arms now add firepower-lost markers on top of the existing missing socket, flag, cable, detached part and landing debris cues.
+- Destroyed legs now add a ground danger ring and mobility-lost beacon on top of the existing collapse, red cross, skid, dust and broken cable cues.
+- Destroyed cockpit now adds a taller escape column and evacuation direction marker, and the ejection chute now draws a visible escape route beam.
+- Expanded `SectionDamageCueSummary()` and the combat situation smoke assertion so the new cue language is guarded by automated flow tests.
+- Added validator evidence that destroying the cockpit critical section destroys the unit, matching the ejection path.
+- Restored Unity scene fileID churn after the Windows build; no scene content change is part of this task.
+
+Modified files:
+
+```text
+unity-mc2-demo/Assets/Scripts/Presentation/DemoUnitView.cs
+unity-mc2-demo/Assets/Scripts/Presentation/Mc2DemoBootstrap.cs
+unity-mc2-demo/Assets/Editor/Mc2DemoValidator.cs
+docs-reference-visual-audit-2026-06-07.md
+docs-playable-demo-locked-execution-plan-2026-06-07.md
+```
+
+Validation commands:
+
+```powershell
+git diff --check
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoValidator.ValidateMissionContract -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-validate-section-damage-lock.log"
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoBuilder.BuildWindows64 -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-build-section-damage-lock.log"
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_reference_visuals.ps1 -Presets damage-demo
+& "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo\Builds\Windows\MC2UnityDemo.exe" -batchmode -nographics -mc2SmokeTest -mc2CommandFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo\Assets\StreamingAssets\CommanderScripts\mc2_01-visible-flow-audit.txt" -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-player-visible-flow-after-section-damage-lock.log"
+```
+
+Validation evidence:
+
+```text
+analysis-output/unity-validate-section-damage-lock.log
+analysis-output/unity-build-section-damage-lock.log
+analysis-output/reference-visual-captures/damage-demo.png
+analysis-output/reference-visual-captures/damage-demo.json
+analysis-output/reference-visual-captures/damage-demo.log
+analysis-output/unity-player-visible-flow-after-section-damage-lock.log
+```
+
+Validation results:
+
+```text
+git diff --check: clean, with Windows line-ending warnings only.
+Validator: MC2 demo contract validation OK.
+Build: Build Finished, Result: Success; MC2 Unity demo Windows build OK.
+damage-demo: activeHostileCount 20, visibleHostileCount 20, OccupancyPlaceholders=enabled total 81 structures 1 hardProps 80.
+Visible-flow smoke: MC2 demo smoke test exiting with code 0.
+Smoke assertion: sectionFx=Arms=missing-socket+flag+flight+landing-debris+firepower-marker Legs=collapse+red-cross+skid+dust+danger-ring+mobility-beacon Cockpit=breach+ejection-pod+chute+landing+arc+distress+escape-column+route.
+```
+
+Observed effect:
+
+- `damage-demo` still preserves the same heavy encounter pressure: 20 active / 20 visible hostiles around the hangar.
+- World-space section cues are easier to spot in the fight center: red/orange mobility and firepower loss markers sit near the damaged player units, and the blue cockpit escape route/pilot landing cue is visible near the ejection path.
+- The left status rows still agree with the forced damage setup: unit-1 left arm, unit-2 legs and unit-3 cockpit/destroyed state are represented in the UI.
+- Weapon-family direction cues and hard occupancy placeholder evidence did not regress.
+
+Remaining issues:
+
+1. `damage-demo` remains a wide, dense screenshot; it proves the cue language but still reads busy as an investor-facing image.
+2. The left status surface remains visually heavy, but it is still the main first-version command/status interface.
+3. Future polish should make damage events easier to read in motion or add a closer damage-focused capture preset, instead of weakening the actual mission pressure.
+
+Next priority:
+
+1. Stage 3 / Task 3.3 lock armor hardness damage rule.
+2. Then Stage 4 / Task 4.1 audit mounted weapon semantics.

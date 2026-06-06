@@ -353,6 +353,8 @@ namespace MC2Demo.Presentation
                 CreateDamageBeacon("Cockpit Ejection Beacon", new Vector3(0f, 0.98f, 0.36f), new Color(0.58f, 0.92f, 1f, 1f), 0.055f, 0.42f);
                 CreateDamageFlag("Cockpit Lost Flag", new Vector3(0f, 1.12f, 0.18f), new Vector3(0.46f, 0.07f, 0.11f), new Color(0.62f, 0.95f, 1f, 1f));
                 CreateDamageLink("Cockpit Ejection Rail", new Vector3(-0.16f, 0.64f, 0.36f), new Vector3(0.16f, 1.05f, 0.46f), new Color(0.58f, 0.92f, 1f, 0.92f), 0.018f);
+                CreateDamageBeacon("Cockpit Escape Column", new Vector3(0f, 1.34f, 0.40f), new Color(0.58f, 0.92f, 1f, 0.92f), 0.070f, 0.72f);
+                CreateDamageFlag("Cockpit Evac Direction", new Vector3(0.24f, 1.62f, 0.34f), new Vector3(0.62f, 0.06f, 0.10f), new Color(0.62f, 0.95f, 1f, 0.92f));
                 DetachPart("Cockpit", new Vector3(0f, 0.8f, 0.45f), new Color(1f, 0.65f, 0.18f, 0.72f));
                 SpawnCockpitEjection();
                 return;
@@ -364,6 +366,7 @@ namespace MC2Demo.Presentation
                 CreateDamageBeacon("Left Arm Missing Beacon", new Vector3(-0.58f, 0.42f, 0.06f), new Color(1f, 0.34f, 0.08f, 1f), 0.045f, 0.32f);
                 CreateDamageFlag("Left Arm Lost Flag", new Vector3(-0.32f, 0.92f, 0.12f), new Vector3(0.28f, 0.08f, 0.10f), new Color(1f, 0.32f, 0.08f, 1f));
                 CreateDamageLink("Left Broken Cable", new Vector3(-0.48f, 0.25f, 0.08f), new Vector3(-0.78f, 0.02f, 0.20f), new Color(1f, 0.52f, 0.12f, 0.92f), 0.015f);
+                CreateDamageFlag("Left Firepower Lost Marker", new Vector3(-0.62f, 0.72f, 0.28f), new Vector3(0.46f, 0.09f, 0.12f), new Color(1f, 0.16f, 0.08f, 0.96f));
                 DetachPart("Left Arm", new Vector3(-0.9f, 0.25f, 0.15f), new Color(1f, 0.42f, 0.08f, 0.68f));
                 SpawnDamageBurst(SectionWorldPoint(new Vector3(-0.62f, 0.08f, 0f)), 0.8f);
                 return;
@@ -375,6 +378,7 @@ namespace MC2Demo.Presentation
                 CreateDamageBeacon("Right Arm Missing Beacon", new Vector3(0.58f, 0.42f, 0.06f), new Color(1f, 0.34f, 0.08f, 1f), 0.045f, 0.32f);
                 CreateDamageFlag("Right Arm Lost Flag", new Vector3(0.32f, 0.92f, 0.12f), new Vector3(0.28f, 0.08f, 0.10f), new Color(1f, 0.32f, 0.08f, 1f));
                 CreateDamageLink("Right Broken Cable", new Vector3(0.48f, 0.25f, 0.08f), new Vector3(0.78f, 0.02f, 0.20f), new Color(1f, 0.52f, 0.12f, 0.92f), 0.015f);
+                CreateDamageFlag("Right Firepower Lost Marker", new Vector3(0.62f, 0.72f, 0.28f), new Vector3(0.46f, 0.09f, 0.12f), new Color(1f, 0.16f, 0.08f, 0.96f));
                 DetachPart("Right Arm", new Vector3(0.9f, 0.25f, 0.15f), new Color(1f, 0.42f, 0.08f, 0.68f));
                 SpawnDamageBurst(SectionWorldPoint(new Vector3(0.62f, 0.08f, 0f)), 0.8f);
                 return;
@@ -386,6 +390,7 @@ namespace MC2Demo.Presentation
                 CreateDamageBeacon("Leg Failure Beacon", new Vector3(0f, -0.10f, 0.12f), new Color(1f, 0.22f, 0.10f, 1f), 0.06f, 0.30f);
                 CreateDamageFlag("Leg Failure Flag", new Vector3(0f, 0.78f, 0.14f), new Vector3(0.54f, 0.08f, 0.10f), new Color(1f, 0.12f, 0.08f, 1f));
                 CreateDamageFlag("Leg Failure Crossbar", new Vector3(0f, -0.28f, 0.18f), new Vector3(0.70f, 0.08f, 0.10f), new Color(1f, 0.16f, 0.08f, 1f));
+                CreateDamageBeacon("Mobility Lost Beacon", new Vector3(0f, 0.42f, 0.20f), new Color(1f, 0.12f, 0.08f, 0.96f), 0.065f, 0.56f);
                 CreateDamageLink("Left Leg Broken Cable", new Vector3(-0.18f, -0.28f, 0.08f), new Vector3(-0.42f, -0.58f, 0.18f), new Color(1f, 0.42f, 0.10f, 0.90f), 0.014f);
                 CreateDamageLink("Right Leg Broken Cable", new Vector3(0.18f, -0.28f, 0.08f), new Vector3(0.42f, -0.58f, 0.18f), new Color(1f, 0.42f, 0.10f, 0.90f), 0.014f);
                 DetachPart("Left Leg", new Vector3(-0.38f, 0.12f, -0.25f), new Color(0.82f, 0.32f, 0.12f, 0.66f));
@@ -539,6 +544,8 @@ namespace MC2Demo.Presentation
             CreateWorldDamageObject("Leg Collapse Skid L", PrimitiveType.Cube, center - right * 0.22f - forward * 0.20f, forwardYaw, new Vector3(0.11f, 0.018f, 0.66f), scorch);
             CreateWorldDamageObject("Leg Collapse Skid R", PrimitiveType.Cube, center + right * 0.22f - forward * 0.18f, forwardYaw, new Vector3(0.11f, 0.018f, 0.58f), scorch);
             CreateWorldDamageObject("Leg Immobilized Ground Bar", PrimitiveType.Cube, center + Vector3.up * 0.035f, forwardYaw * Quaternion.Euler(0f, 90f, 0f), new Vector3(0.84f, 0.026f, 0.070f), signal);
+            CreateWorldDamageObject("Leg Immobilized Danger Ring", PrimitiveType.Cylinder, center + Vector3.up * 0.045f, Quaternion.identity, new Vector3(0.88f, 0.012f, 0.88f), new Color(1f, 0.14f, 0.06f, 0.46f));
+            CreateWorldDamageObject("Leg Mobility Lost Beacon", PrimitiveType.Cylinder, center + Vector3.up * 0.36f, Quaternion.identity, new Vector3(0.050f, 0.34f, 0.050f), signal);
             CreateTransient("Leg Collapse Dust Ring", PrimitiveType.Cylinder, center, new Color(0.62f, 0.52f, 0.38f, 0.34f), 1.35f, new Vector3(0.34f, 0.012f, 0.34f), new Vector3(1.22f, 0.006f, 1.22f));
             CreateMovingTransient("Leg Drag Spark", PrimitiveType.Sphere, center + right * 0.20f + Vector3.up * 0.10f, center - forward * 0.46f + right * 0.08f + Vector3.up * 0.05f, new Color(1f, 0.44f, 0.08f, 0.66f), 0.85f, Vector3.one * 0.07f, Vector3.one * 0.23f);
         }
@@ -709,7 +716,7 @@ namespace MC2Demo.Presentation
 
         public static string SectionDamageCueSummary()
         {
-            return "Arms=missing-socket+flag+flight+landing-debris Legs=collapse+red-cross+skid+dust Cockpit=breach+ejection-pod+chute+landing+arc+distress Critical=smoke+sparks Ground=critical+lost+pilot Wreck=blast+smoke+marker+debris+salvage";
+            return "Arms=missing-socket+flag+flight+landing-debris+firepower-marker Legs=collapse+red-cross+skid+dust+danger-ring+mobility-beacon Cockpit=breach+ejection-pod+chute+landing+arc+distress+escape-column+route Critical=smoke+sparks Ground=critical+lost+pilot Wreck=blast+smoke+marker+debris+salvage";
         }
 
         public static string JetCueSummary()
@@ -830,6 +837,7 @@ namespace MC2Demo.Presentation
             CreateBeam("Pilot Chute Cord L", canopy - right * 0.24f, podPoint, new Color(0.86f, 0.96f, 1f, 0.58f), 2.2f, 0.010f);
             CreateBeam("Pilot Chute Cord R", canopy + right * 0.24f, podPoint, new Color(0.86f, 0.96f, 1f, 0.58f), 2.2f, 0.010f);
             CreateMovingTransient("Pilot Chute Pod", PrimitiveType.Sphere, podPoint, landing + Vector3.up * 0.08f, new Color(0.88f, 0.95f, 1f, 0.72f), 2.2f, Vector3.one * 0.16f, Vector3.one * 0.22f);
+            CreateBeam("Pilot Escape Route", apex, landing + Vector3.up * 0.16f, new Color(0.58f, 0.92f, 1f, 0.42f), 2.65f, 0.028f);
             CreateTransient("Pilot Landing Beacon", PrimitiveType.Cylinder, landing, new Color(0.58f, 0.92f, 1f, 0.48f), 2.6f, new Vector3(0.18f, 0.012f, 0.18f), new Vector3(0.62f, 0.006f, 0.62f));
             CreateBeam("Pilot Landing Signal", landing + Vector3.up * 0.06f, landing + Vector3.up * 0.92f, new Color(0.58f, 0.92f, 1f, 0.56f), 2.35f, 0.022f);
             CreatePilotDistressMarker(landing);

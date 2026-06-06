@@ -2920,9 +2920,9 @@ namespace MC2Demo.Presentation
             string hostilePressureFx = HostilePressureCueSummary();
             bool hostilePressureFxOk = hostilePressureFx.IndexOf("HostilePressure=centroid+tempo+beacon+vector", StringComparison.Ordinal) >= 0;
             string sectionFx = DemoUnitView.SectionDamageCueSummary();
-            bool sectionFxOk = sectionFx.IndexOf("Arms=missing-socket+flag+flight+landing-debris", StringComparison.Ordinal) >= 0
-                && sectionFx.IndexOf("Legs=collapse+red-cross+skid+dust", StringComparison.Ordinal) >= 0
-                && sectionFx.IndexOf("Cockpit=breach+ejection-pod+chute+landing+arc+distress", StringComparison.Ordinal) >= 0
+            bool sectionFxOk = sectionFx.IndexOf("Arms=missing-socket+flag+flight+landing-debris+firepower-marker", StringComparison.Ordinal) >= 0
+                && sectionFx.IndexOf("Legs=collapse+red-cross+skid+dust+danger-ring+mobility-beacon", StringComparison.Ordinal) >= 0
+                && sectionFx.IndexOf("Cockpit=breach+ejection-pod+chute+landing+arc+distress+escape-column+route", StringComparison.Ordinal) >= 0
                 && sectionFx.IndexOf("Critical=smoke+sparks", StringComparison.Ordinal) >= 0
                 && sectionFx.IndexOf("Ground=critical+lost+pilot", StringComparison.Ordinal) >= 0
                 && sectionFx.IndexOf("Wreck=blast+smoke+marker+debris+salvage", StringComparison.Ordinal) >= 0;
