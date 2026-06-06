@@ -788,3 +788,72 @@ Next priority:
 
 1. Stage 2 / Task 2.3 tune hangar encounter composition without reducing enemy pressure.
 2. Then Stage 3 damage and weapon readability work, especially for `damage-demo`.
+
+## Stage 2.3 Hangar Encounter Composition Result
+
+Implemented on 2026-06-07:
+
+- Changed `mc2_01` enemy attack target selection so active enemy pressure is deterministically distributed across the available player squad instead of collapsing onto one nearest player unit.
+- Kept source enemy activation counts, source brain names and existing attack-slot offsets intact.
+- Added `ValidateEnemyAttackTargetSpread` to prove the `mc2_01` pressure set uses all three player targets and does not silently dogpile one squad member.
+- Kept attack movement inside existing `EnemyAttackFormationOffset` and weapon-range validation.
+- Restored Unity scene fileID churn after build/capture; no scene content change is part of this task.
+
+Modified files:
+
+```text
+unity-mc2-demo/Assets/Scripts/BattleCore/BattleMission.cs
+unity-mc2-demo/Assets/Editor/Mc2DemoValidator.cs
+```
+
+Validation commands:
+
+```powershell
+git diff --check
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoValidator.ValidateMissionContract -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-validate-hangar-composition.log"
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoBuilder.BuildWindows64 -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-build-hangar-composition.log"
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_reference_visuals.ps1 -Presets hangar-contact,damage-demo
+& "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo\Builds\Windows\MC2UnityDemo.exe" -batchmode -nographics -mc2SmokeTest -mc2CommandFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo\Assets\StreamingAssets\CommanderScripts\mc2_01-visible-flow-audit.txt" -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-player-visible-flow-after-hangar-composition.log"
+```
+
+Validation evidence:
+
+```text
+analysis-output/unity-validate-hangar-composition.log
+analysis-output/unity-build-hangar-composition.log
+analysis-output/reference-visual-captures/hangar-contact.png
+analysis-output/reference-visual-captures/hangar-contact.json
+analysis-output/reference-visual-captures/hangar-contact.log
+analysis-output/reference-visual-captures/damage-demo.png
+analysis-output/reference-visual-captures/damage-demo.json
+analysis-output/reference-visual-captures/damage-demo.log
+analysis-output/unity-player-visible-flow-after-hangar-composition.log
+```
+
+Validation results:
+
+```text
+Validator: MC2 demo contract validation OK.
+Build: Build Finished, Result: Success; MC2 Unity demo Windows build OK.
+hangar-contact: activeHostileCount 20, visibleHostileCount 16, OccupancyPlaceholders=enabled total 81 structures 1 hardProps 80.
+damage-demo: activeHostileCount 20, visibleHostileCount 20, OccupancyPlaceholders=enabled total 81 structures 1 hardProps 80.
+Visible-flow smoke: MC2 demo smoke test exiting with code 0.
+```
+
+Observed effect:
+
+- Encounter pressure was preserved: `hangar-contact` still has 20 active / 16 visible hostiles and `damage-demo` still has 20 active hostiles.
+- The hangar fight now distributes enemy attack pressure across the player squad, so player units, enemy groups and objective pressure read as a tight fight around the hangar rather than one purely same-target knot.
+- Hard occupancy evidence stayed visible and unchanged: one targetable structure plus 80 hard terrain-object blockers.
+- `damage-demo` now keeps all 20 hostiles visible at the wider camera, but it still depends too much on the left status panel to sell damage events.
+
+Remaining issues:
+
+1. `hangar-contact` is still intentionally dense because 20 enemies are active around one objective at a fixed camera angle.
+2. The left status/control surface remains visually heavy in battle screenshots.
+3. The next visible gain should come from Stage 3 weapon-family cues and stronger world-space damage/ejection events, not from reducing enemy count.
+
+Next priority:
+
+1. Stage 3 / Task 3.1 regress weapon family cues.
+2. Stage 3 / Task 3.2 lock section damage and ejection cues.

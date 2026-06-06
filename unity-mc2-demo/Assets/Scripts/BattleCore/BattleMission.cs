@@ -595,7 +595,7 @@ namespace MC2Demo.BattleCore
                 return;
             }
 
-            UnitState playerTarget = FindNearestPlayerUnit(unit, EnemyAlertRange(unit));
+            UnitState playerTarget = FindEnemyAttackPlayerUnit(unit, EnemyAlertRange(unit));
             if (playerTarget != null)
             {
                 unit.SetAttackOrder(playerTarget.Id, playerTarget.MissionPosition, detached: false, EnemyAttackFormationOffset(unit));
@@ -606,6 +606,44 @@ namespace MC2Demo.BattleCore
             {
                 unit.SetMoveOrder(patrolPoint, detached: false);
             }
+        }
+
+        private UnitState FindEnemyAttackPlayerUnit(UnitState seeker, float maxDistance)
+        {
+            if (!UsesMc2OneEncounterRules())
+            {
+                return FindNearestPlayerUnit(seeker, maxDistance);
+            }
+
+            List<UnitState> candidates = new();
+            float maxDistanceSqr = maxDistance * maxDistance;
+            foreach (UnitState candidate in units)
+            {
+                if (!candidate.IsActive || candidate.IsDestroyed || !candidate.IsPlayerUnit)
+                {
+                    continue;
+                }
+
+                float distanceSqr = (candidate.MissionPosition - seeker.MissionPosition).sqrMagnitude;
+                if (distanceSqr <= maxDistanceSqr)
+                {
+                    candidates.Add(candidate);
+                }
+            }
+
+            if (candidates.Count == 0)
+            {
+                return null;
+            }
+
+            if (candidates.Count == 1)
+            {
+                return candidates[0];
+            }
+
+            candidates.Sort(CompareUnitIds);
+            int targetSlot = Mathf.Abs(UnitIdNumber(seeker.Id) + EnemyTargetGroupOffset(seeker)) % candidates.Count;
+            return candidates[targetSlot];
         }
 
         private UnitState FindNearestPlayerUnit(UnitState seeker, float maxDistance)
@@ -629,6 +667,33 @@ namespace MC2Demo.BattleCore
             }
 
             return bestTarget;
+        }
+
+        private static int CompareUnitIds(UnitState first, UnitState second)
+        {
+            if (ReferenceEquals(first, second))
+            {
+                return 0;
+            }
+
+            if (first == null)
+            {
+                return -1;
+            }
+
+            if (second == null)
+            {
+                return 1;
+            }
+
+            int firstNumber = UnitIdNumber(first.Id);
+            int secondNumber = UnitIdNumber(second.Id);
+            if (firstNumber != secondNumber)
+            {
+                return firstNumber.CompareTo(secondNumber);
+            }
+
+            return string.Compare(first.Id, second.Id, StringComparison.OrdinalIgnoreCase);
         }
 
         private static float EnemyAlertRange(UnitState unit)
@@ -1093,6 +1158,31 @@ namespace MC2Demo.BattleCore
             if (IsInfantryUnit(unit))
             {
                 return 15;
+            }
+
+            return 0;
+        }
+
+        private static int EnemyTargetGroupOffset(UnitState unit)
+        {
+            if (BrainEquals(unit, "mc2_01_infantry_ambush"))
+            {
+                return 1;
+            }
+
+            if (BrainEquals(unit, "mc2_01_infantry_ambush2"))
+            {
+                return 2;
+            }
+
+            if (BrainStartsWith(unit, "mc2_01_Pat1_2") || IsEastLrmGroup(unit))
+            {
+                return 1;
+            }
+
+            if (BrainStartsWith(unit, "mc2_01_Pat2") || BrainEquals(unit, "mc2_01_Pat4"))
+            {
+                return 2;
             }
 
             return 0;
@@ -2097,6 +2187,14 @@ namespace MC2Demo.BattleCore
         {
             return Contract?.mission != null
                 && string.Equals(Contract.mission.id, missionId, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private bool UsesMc2OneEncounterRules()
+        {
+            return IsMission("mc2_01")
+                || (Contract?.mission != null
+                    && !string.IsNullOrEmpty(Contract.mission.id)
+                    && Contract.mission.id.StartsWith("validator-mc2_01", StringComparison.OrdinalIgnoreCase));
         }
 
         private static bool BrainEquals(UnitState unit, string brain)

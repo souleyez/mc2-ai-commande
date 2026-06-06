@@ -40,9 +40,9 @@
 
 当前真实阶段：
 
-1. **正在收 Stage 2：战场空间和碰撞可读性。**
-2. 下一提交应优先做 `Tune hangar encounter composition`。
-3. 然后进入 Stage 3：武器、损伤、弹射和装甲硬度手感锁定。
+1. **Stage 2：战场空间和碰撞可读性已经收完当前必需项。**
+2. 下一提交应优先做 `Regress weapon family cues`。
+3. 当前进入 Stage 3：武器、损伤、弹射和装甲硬度手感锁定。
 
 ## 1. First Demo Definition
 
@@ -148,9 +148,11 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_refere
 
 ### Task 2.3: Tune Hangar Encounter Composition
 
-**Status:** Next.
+**Status:** Completed 2026-06-07.
 
 **Goal:** 保留战斗压力和敌人数量，但把 `hangar-contact` 的敌我、目标、硬物读清，不再像所有东西挤在一个点。
+
+**Result:** `mc2_01` enemy pressure now distributes deterministically across the available player squad instead of collapsing onto one nearest player unit. Validator coverage proves all three player targets are used and no single target receives more than 9 of the 20 pressure enemies. `hangar-contact` remains 20 active / 16 visible hostiles, and `damage-demo` remains 20 active hostiles with occupancy placeholders still enabled.
 
 **Files:**
 
@@ -768,26 +770,26 @@ Recently completed:
 2. `Document visible flow capture baseline`
 3. `Audit battle occupancy evidence`
 4. `Show collision occupancy placeholders`
+5. `Tune hangar encounter composition`
 
 Next commits:
 
-1. `Tune hangar encounter composition`
-2. `Regress weapon family cues`
-3. `Lock section damage and ejection cues`
-4. `Lock armor hardness damage rule`
-5. `Audit mounted weapon semantics`
-6. `Make MechLab grid blocks explicit`
-7. `Prove loadout battle effects`
-8. `Simplify debrief player flow`
-9. `Guard repair and relaunch loop`
-10. `Freeze AI observation contract`
-11. `Guard AI directive adapter`
-12. `Show optional AI advice window`
-13. `Document private reference content boundary`
-14. `Add public build content safety check`
-15. `Add playable demo walkthrough`
-16. `Prepare repeatable Windows demo build`
-17. `Package playable demo evidence`
+1. `Regress weapon family cues`
+2. `Lock section damage and ejection cues`
+3. `Lock armor hardness damage rule`
+4. `Audit mounted weapon semantics`
+5. `Make MechLab grid blocks explicit`
+6. `Prove loadout battle effects`
+7. `Simplify debrief player flow`
+8. `Guard repair and relaunch loop`
+9. `Freeze AI observation contract`
+10. `Guard AI directive adapter`
+11. `Show optional AI advice window`
+12. `Document private reference content boundary`
+13. `Add public build content safety check`
+14. `Add playable demo walkthrough`
+15. `Prepare repeatable Windows demo build`
+16. `Package playable demo evidence`
 
 ## 13. Definition Of Done
 

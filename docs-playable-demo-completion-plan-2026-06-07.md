@@ -315,6 +315,8 @@ git diff --check
 
 ### Task 2.3: Tune Hangar Composition Without Reducing Pressure
 
+**Status:** Completed 2026-06-07. Enemy attack pressure now distributes deterministically across the player squad for `mc2_01` instead of collapsing onto one nearest player unit. Validator coverage proves the pressure set uses all three player targets while preserving enemy activation counts, attack-slot range checks and occupancy placeholder evidence. Refreshed `hangar-contact` remains 20 active / 16 visible hostiles; `damage-demo` remains 20 active hostiles.
+
 **Files:**
 
 - Modify: `unity-mc2-demo/Assets/Scripts/BattleCore/BattleMission.cs`
@@ -845,25 +847,25 @@ Recently completed:
 2. `Document visible flow capture baseline`
 3. `Audit battle occupancy evidence`
 4. `Show collision occupancy placeholders`
+5. `Tune hangar encounter composition`
 
 From the current point, recommended next commits:
 
-1. `Tune hangar encounter composition`
-2. `Regress weapon family cues`
-3. `Lock section damage and ejection cues`
-4. `Lock armor hardness damage rule`
-5. `Remove weapon toggle semantics`
-6. `Make MechLab grid blocks explicit`
-7. `Prove loadout battle effects`
-8. `Simplify debrief player flow`
-9. `Guard repair and relaunch loop`
-10. `Freeze AI observation contract`
-11. `Guard AI directive adapter`
-12. `Show optional AI advice window`
-13. `Document private reference content boundary`
-14. `Add public build content safety check`
-15. `Prepare repeatable Windows demo build`
-16. `Package playable demo evidence`
+1. `Regress weapon family cues`
+2. `Lock section damage and ejection cues`
+3. `Lock armor hardness damage rule`
+4. `Remove weapon toggle semantics`
+5. `Make MechLab grid blocks explicit`
+6. `Prove loadout battle effects`
+7. `Simplify debrief player flow`
+8. `Guard repair and relaunch loop`
+9. `Freeze AI observation contract`
+10. `Guard AI directive adapter`
+11. `Show optional AI advice window`
+12. `Document private reference content boundary`
+13. `Add public build content safety check`
+14. `Prepare repeatable Windows demo build`
+15. `Package playable demo evidence`
 
 每个提交结束必须记录：
 

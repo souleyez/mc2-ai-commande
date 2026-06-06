@@ -131,6 +131,7 @@ namespace MC2Demo.EditorTools
             ValidateNavMarkerPatrolOrders();
             ValidateInfantryAmbushParkingSpread(combatProfiles);
             ValidateEnemyAttackFormationSpacing(combatProfiles);
+            ValidateEnemyAttackTargetSpread(combatProfiles);
             ValidateUnitCollisionSeparation();
             ValidateStructureCollisionOccupancy();
             ValidateTerrainObjectCollisionOccupancy();
@@ -2397,6 +2398,83 @@ namespace MC2Demo.EditorTools
                             + slotDistance);
                     }
                 }
+            }
+        }
+
+        private static void ValidateEnemyAttackTargetSpread(CombatProfileCatalog combatProfiles)
+        {
+            BattleMission mission = new(MakeEnemyAttackTargetSpreadContract(), combatProfiles);
+            string[] playerIds =
+            {
+                "formation-player-1",
+                "formation-player-2",
+                "formation-player-3"
+            };
+
+            string[] enemyIds =
+            {
+                "unit-4", "unit-5", "unit-6", "unit-7", "unit-8",
+                "unit-10", "unit-11", "unit-12", "unit-13",
+                "unit-15", "unit-16", "unit-17", "unit-18", "unit-19",
+                "unit-20", "unit-21", "unit-22",
+                "unit-27", "unit-28", "unit-29"
+            };
+
+            mission.Tick(0.1f);
+            Dictionary<string, int> targetCounts = new(StringComparer.OrdinalIgnoreCase);
+            for (int index = 0; index < playerIds.Length; index++)
+            {
+                targetCounts[playerIds[index]] = 0;
+            }
+
+            for (int index = 0; index < enemyIds.Length; index++)
+            {
+                UnitState enemy = mission.FindUnit(enemyIds[index]);
+                if (enemy == null)
+                {
+                    throw new InvalidDataException("Enemy attack target spread validation missing enemy " + enemyIds[index] + ".");
+                }
+
+                if (!enemy.HasAttackOrder || string.IsNullOrWhiteSpace(enemy.AttackTargetId))
+                {
+                    throw new InvalidDataException("Expected enemy to acquire a player target for spread validation: " + enemyIds[index]);
+                }
+
+                if (!targetCounts.ContainsKey(enemy.AttackTargetId))
+                {
+                    throw new InvalidDataException(
+                        "Expected enemy attack target to be one of the spread validation players. enemy="
+                        + enemy.Id
+                        + " target="
+                        + enemy.AttackTargetId);
+                }
+
+                targetCounts[enemy.AttackTargetId]++;
+            }
+
+            int usedTargets = 0;
+            int maxTargetCount = 0;
+            foreach (KeyValuePair<string, int> pair in targetCounts)
+            {
+                if (pair.Value > 0)
+                {
+                    usedTargets++;
+                    maxTargetCount = Mathf.Max(maxTargetCount, pair.Value);
+                }
+            }
+
+            if (usedTargets < playerIds.Length)
+            {
+                throw new InvalidDataException(
+                    "Expected mc2_01 enemy pressure to spread across the full player squad, usedTargets="
+                    + usedTargets);
+            }
+
+            if (maxTargetCount > 9)
+            {
+                throw new InvalidDataException(
+                    "Expected mc2_01 enemy pressure not to collapse onto one player target, maxTargetCount="
+                    + maxTargetCount);
             }
         }
 
@@ -4866,6 +4944,90 @@ namespace MC2Demo.EditorTools
             };
         }
 
+        private static MissionContract MakeEnemyAttackTargetSpreadContract()
+        {
+            return new MissionContract
+            {
+                mission = new MissionDefinition
+                {
+                    id = "validator-mc2_01-attack-spread",
+                    terrain = new TerrainDefinition { minX = -1000f, minY = 1000f, waterElevation = 350f }
+                },
+                units = new[]
+                {
+                    new UnitSpawn
+                    {
+                        spawnId = "formation-player-1",
+                        isPlayerUnit = true,
+                        teamId = 0,
+                        unitType = "Werewolf",
+                        position = new MissionPose { x = 0f, y = 0f, rotation = 0f }
+                    },
+                    new UnitSpawn
+                    {
+                        spawnId = "formation-player-2",
+                        isPlayerUnit = true,
+                        teamId = 0,
+                        unitType = "Bushwacker",
+                        position = new MissionPose { x = 0f, y = 0f, rotation = 0f }
+                    },
+                    new UnitSpawn
+                    {
+                        spawnId = "formation-player-3",
+                        isPlayerUnit = true,
+                        teamId = 0,
+                        unitType = "Bushwacker",
+                        position = new MissionPose { x = 0f, y = 0f, rotation = 0f }
+                    },
+                    MakeFormationEnemy("unit-4", "Centipede", "mc2_01_Pat1_1", 180f, 0f),
+                    MakeFormationEnemy("unit-5", "Centipede", "mc2_01_Pat1_1", 220f, 36f),
+                    MakeFormationEnemy("unit-6", "UrbanMech", "mc2_01_Pat2", 260f, -42f),
+                    MakeFormationEnemy("unit-7", "Harasser", "mc2_01_Pat4", 300f, 72f),
+                    MakeFormationEnemy("unit-8", "Harasser", "mc2_01_Pat4", 340f, -78f),
+                    MakeFormationEnemy("unit-10", "LRMC", "mc2_01_Pat1_2", 380f, 108f),
+                    MakeFormationEnemy("unit-11", "LRMC", "mc2_01_Pat1_2", 420f, -114f),
+                    MakeFormationEnemy("unit-12", "Centipede", "mc2_01_Pat1", 460f, 144f),
+                    MakeFormationEnemy("unit-13", "UrbanMech", "mc2_01_Pat2_2", 500f, -150f),
+                    MakeFormationEnemy("unit-15", "Infantry", "mc2_01_infantry_ambush", 210f, 180f),
+                    MakeFormationEnemy("unit-16", "Infantry", "mc2_01_infantry_ambush", 250f, -186f),
+                    MakeFormationEnemy("unit-17", "Infantry", "mc2_01_infantry_ambush", 290f, 216f),
+                    MakeFormationEnemy("unit-18", "Infantry", "mc2_01_infantry_ambush", 330f, -222f),
+                    MakeFormationEnemy("unit-19", "Infantry", "mc2_01_infantry_ambush", 370f, 252f),
+                    MakeFormationEnemy("unit-20", "Infantry", "mc2_01_infantry_ambush2", 410f, -258f),
+                    MakeFormationEnemy("unit-21", "Infantry", "mc2_01_infantry_ambush2", 450f, 288f),
+                    MakeFormationEnemy("unit-22", "Infantry", "mc2_01_infantry_ambush2", 490f, -294f),
+                    MakeFormationEnemy("unit-27", "LRMC", "mc2_01_LRMs", 540f, 180f),
+                    MakeFormationEnemy("unit-28", "Centipede", "mc2_01_Pat1", 580f, -180f),
+                    MakeFormationEnemy("unit-29", "LRMC", "mc2_01_LRMs", 620f, 216f)
+                },
+                objectives = new[]
+                {
+                    new ObjectiveDefinition
+                    {
+                        id = "hold-open",
+                        index = 0,
+                        hidden = false,
+                        conditions = new[]
+                        {
+                            new ObjectiveCondition
+                            {
+                                type = "MoveAnyUnitToArea",
+                                targetArea = new TargetArea { x = 5000f, y = 0f, radius = 40f }
+                            }
+                        },
+                        actions = new[]
+                        {
+                            new ObjectiveAction
+                            {
+                                type = "SetBooleanFlag",
+                                flag = new FlagAction { id = "ambush-test", value = true }
+                            }
+                        }
+                    }
+                }
+            };
+        }
+
         private static UnitSpawn MakeFormationEnemy(string spawnId, string unitType, float x, float y)
         {
             return new UnitSpawn
@@ -4876,6 +5038,13 @@ namespace MC2Demo.EditorTools
                 unitType = unitType,
                 position = new MissionPose { x = x, y = y, rotation = 0f }
             };
+        }
+
+        private static UnitSpawn MakeFormationEnemy(string spawnId, string unitType, string brain, float x, float y)
+        {
+            UnitSpawn spawn = MakeFormationEnemy(spawnId, unitType, x, y);
+            spawn.brain = brain;
+            return spawn;
         }
 
         private static MissionContract MakeInfantryAmbushParkingContract()
