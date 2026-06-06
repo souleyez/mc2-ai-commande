@@ -21,14 +21,14 @@
 当前优先级：
 
 1. 先收当前未提交的 AI compact observation 变更，避免脏工作树继续漂着。
-2. 完成 AI 副官能力窗口的最小闭环，但不让 AI 进入逐帧战斗。
+2. 完成 AI 副官 UI 能力窗口，但不让 AI 进入逐帧战斗。
 3. 回到游戏本身：战场碰撞占位证据、模型/地形可读性、装配手感、损伤卖点、投资演示包。
 4. 保持第一版只做 Windows 本地可玩 Demo，不扩保存系统、不做实时 PVP、不做移动端、不做链上系统。
 
 当前真实工作树提醒：
 
 - Branch: `master...ai-origin/master [ahead 47]`。
-- 当前 Stage 6 / D1 compact AI observation 已完成验证，下一步从 D2 directive adapter 开始。
+- 当前 Stage 6 / D1 compact AI observation 和 D2 directive adapter 已完成验证，下一步从 D3 optional AI advice window 开始。
 
 主要配套文档：
 
@@ -94,7 +94,7 @@
 | `hangar-contact`/`damage-demo` 仍可能显得挤 | 投资演示截图会被“堆一起”质疑 | 保留敌方压力，继续做构图、模型比例、占位可视化 |
 | 原版参考模型/地形还不够清楚 | 用户要看到接近参考原型的 3D 地形、建筑、机甲模型 | 建立 material/model/readability pass |
 | MechLab 手感仍是核心卖点 | 装配界面必须简单直观，接近原作整块占格乐趣 | 做交互和截图级 polish |
-| AI 副官还没有自然窗口 | 需求是 AI 做大决策，不拖慢战斗 | 完成 optional advice window |
+| AI 副官还没有自然窗口 | 需求是 AI 做大决策，不拖慢战斗 | D3 完成 optional advice window |
 | 公共内容安全 | 开发期可参考私有资源，公开演示要可替换 | 做 public content safety check |
 
 ## 3. First Demo Acceptance
@@ -416,7 +416,9 @@ git commit -m "Freeze AI observation contract"
 
 ### D2: Guard AI Directive Adapter
 
-**Status:** Pending.
+**Status:** Completed 2026-06-07.
+
+**Result:** `RuleCommander` directive conversion now has validator coverage for all four legal tokens, invalid text fallback, missing-key fallback normalization, ended-observation no-op behavior, and no direct `BattleMission` mutation. Startup `-mc2MinimaxCommanderSteps` no longer blocks on missing `MINIMAX_API_KEY`; it logs unavailable model state and runs the local `assault-objective` fallback. Evidence: `analysis-output/unity-validate-ai-directive.log`, `analysis-output/unity-build-ai-directive.log`, `analysis-output/unity-player-ai-directive-fallback.log`.
 
 **Goal:** AI output becomes ordinary BattleCore command intent, with safe fallback and no direct mission mutation.
 
@@ -1088,8 +1090,8 @@ Use this queue unless the user changes priority:
 | --- | --- | --- | --- |
 | 0 | Done | Preflight only | Dirty worktree understood |
 | 1 | Done | `Freeze AI observation contract` | G5 AI capability |
-| 2 | Next | `Guard AI directive adapter` | G5 AI capability |
-| 3 | Pending | `Show optional AI advice window` | G5 AI capability |
+| 2 | Done | `Guard AI directive adapter` | G5 AI capability |
+| 3 | Next | `Show optional AI advice window` | G5 AI capability |
 | 4 | Pending | `Re-audit battle occupancy readability` | G2 battle readability |
 | 5 | Pending | `Improve reference visual readability` | G2 battle readability |
 | 6 | Pending | `Lock occupancy placeholder review layer` | G2 collision evidence |

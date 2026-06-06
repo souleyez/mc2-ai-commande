@@ -5643,16 +5643,17 @@ namespace MC2Demo.Presentation
             Debug.Log("MC2 MiniMax commander config: " + config.DescribeWithoutSecrets());
             if (!config.IsConfigured)
             {
-                Debug.LogWarning("MC2 MiniMax commander blocked: set MINIMAX_API_KEY in the process environment.");
-                return index + 1;
+                Debug.LogWarning("MC2 MiniMax commander unavailable: set MINIMAX_API_KEY to use the model; using rule fallback.");
             }
 
-            MiniMaxCommander commander = new(config);
+            MiniMaxCommander commander = config.IsConfigured ? new MiniMaxCommander(config) : null;
             RuleCommander fallbackCommander = new();
             for (int step = 0; step < steps && mission.Result == MissionResultState.InProgress; step++)
             {
                 CommanderObservation observation = observationPort.Observe();
-                MiniMaxCommanderResult result = commander.ChooseDirective(observation);
+                MiniMaxCommanderResult result = commander == null
+                    ? MiniMaxCommanderResult.Failed("MiniMax unavailable; rule fallback active.")
+                    : commander.ChooseDirective(observation);
                 string directive = result.Directive;
                 string source = "minimax";
 

@@ -4120,15 +4120,80 @@ namespace MC2Demo.EditorTools
                 throw new InvalidDataException("Expected rule commander structure command to parse: " + structureError);
             }
 
+            string assaultDirectiveCommand = commander.ChooseCommandForDirective(structureObservation, RuleCommander.DirectiveAssaultObjective);
+            if (assaultDirectiveCommand != structureCommand)
+            {
+                throw new InvalidDataException("Expected assault-objective directive to use the ordinary objective command: " + assaultDirectiveCommand);
+            }
+
+            string invalidDirectiveCommand = commander.ChooseCommandForDirective(structureObservation, "fire-every-weapon-at-exact-target");
+            if (invalidDirectiveCommand != structureCommand)
+            {
+                throw new InvalidDataException("Expected invalid AI directive text to fall back to assault-objective: " + invalidDirectiveCommand);
+            }
+
             if (commander.ChooseCommandForDirective(structureObservation, RuleCommander.DirectiveHold) != "")
             {
                 throw new InvalidDataException("Expected hold directive to produce no immediate local command.");
+            }
+
+            string regroupDirectiveCommand = commander.ChooseCommandForDirective(structureObservation, RuleCommander.DirectiveRegroup);
+            if (!CommanderCommandPort.TryParse(regroupDirectiveCommand, out CommanderCommand parsedRegroup, out string regroupError)
+                || parsedRegroup.Kind != CommanderCommandKind.Move
+                || parsedRegroup.Scope != CommanderCommandScope.Squad)
+            {
+                throw new InvalidDataException("Expected regroup directive to produce a squad move command: " + regroupError);
             }
 
             string directiveCommand = commander.ChooseCommandForDirective(attackObservation, RuleCommander.DirectiveEngageHostiles);
             if (directiveCommand != "squad attack unit enemy-near")
             {
                 throw new InvalidDataException("Expected engage-hostiles directive to use local target selection: " + directiveCommand);
+            }
+
+            string engageWithoutHostiles = commander.ChooseCommandForDirective(structureObservation, RuleCommander.DirectiveEngageHostiles);
+            if (engageWithoutHostiles != structureCommand)
+            {
+                throw new InvalidDataException("Expected engage-hostiles to continue the objective when no hostile is in range: " + engageWithoutHostiles);
+            }
+
+            if (RuleCommander.NormalizeDirective("engage hostiles") != RuleCommander.DirectiveEngageHostiles
+                || RuleCommander.NormalizeDirective("REGROUP") != RuleCommander.DirectiveRegroup
+                || RuleCommander.NormalizeDirective("hold") != RuleCommander.DirectiveHold
+                || RuleCommander.NormalizeDirective("") != RuleCommander.DirectiveAssaultObjective
+                || RuleCommander.NormalizeDirective("drop-table") != RuleCommander.DirectiveAssaultObjective)
+            {
+                throw new InvalidDataException("Expected directive normalization to accept known tokens and fall back safely.");
+            }
+
+            CommanderObservation endedObservation = new()
+            {
+                missionEnded = true,
+                result = MissionResultState.Victory.ToString(),
+                playerUnits = Array.Empty<CommanderUnitObservation>(),
+                activeHostiles = Array.Empty<CommanderUnitObservation>(),
+                targetableStructures = Array.Empty<CommanderStructureObservation>(),
+                currentObjectives = Array.Empty<CommanderObjectiveObservation>()
+            };
+            if (commander.ChooseCommandForDirective(endedObservation, RuleCommander.DirectiveAssaultObjective) != ""
+                || commander.ChooseCommandForDirective(endedObservation, RuleCommander.DirectiveEngageHostiles) != ""
+                || commander.ChooseCommandForDirective(endedObservation, RuleCommander.DirectiveRegroup) != ""
+                || commander.ChooseCommandForDirective(endedObservation, RuleCommander.DirectiveHold) != "")
+            {
+                throw new InvalidDataException("Expected ended observations to reject every AI directive.");
+            }
+
+            BattleMission mutationMission = new(MakeCommandPortContract(), CombatProfileCatalog.Empty);
+            CommanderObservation mutationObservation = new CommanderObservationPort(mutationMission).Observe();
+            string localCommand = commander.ChooseCommandForDirective(mutationObservation, "engage hostiles");
+            if (mutationMission.FindUnit("player-1").HasMoveOrder
+                || mutationMission.FindUnit("player-1").HasAttackOrder
+                || mutationMission.FindUnit("player-1").IsDetached
+                || mutationMission.FindUnit("player-2").HasMoveOrder
+                || mutationMission.FindUnit("player-2").HasAttackOrder
+                || mutationMission.FindUnit("player-2").IsDetached)
+            {
+                throw new InvalidDataException("Expected directive adapter to return a local command without mutating BattleMission directly: " + localCommand);
             }
         }
 
@@ -4150,6 +4215,26 @@ namespace MC2Demo.EditorTools
             if (directive != RuleCommander.DirectiveRegroup)
             {
                 throw new InvalidDataException("Expected MiniMax commander to extract fenced directive, got: " + directive);
+            }
+
+            directive = MiniMaxCommander.ExtractDirectiveFromText("attack enemy-1 at 100 100");
+            if (directive != "")
+            {
+                throw new InvalidDataException("Expected MiniMax commander to reject exact target or coordinate text without a legal directive, got: " + directive);
+            }
+
+            MiniMaxCommanderResult missingKey = new MiniMaxCommander(new MiniMaxCommanderConfig())
+                .ChooseDirective(new CommanderObservation
+                {
+                    missionId = "validator-minimax-missing-key",
+                    result = MissionResultState.InProgress.ToString(),
+                    missionEnded = false
+                });
+            if (missingKey.Success
+                || !string.IsNullOrWhiteSpace(missingKey.Directive)
+                || RuleCommander.NormalizeDirective(missingKey.Directive) != RuleCommander.DirectiveAssaultObjective)
+            {
+                throw new InvalidDataException("Expected missing MiniMax API key to stay local and normalize to assault-objective fallback.");
             }
         }
 

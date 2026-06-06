@@ -1296,7 +1296,71 @@ Remaining issues:
 
 Next priority:
 
-1. Stage 6 / D2 guard AI directive adapter.
+1. Stage 6 / D3 show optional AI advice window.
+
+## Stage 6.2 AI Directive Adapter Result
+
+Implemented on 2026-06-07:
+
+- Added validator coverage for all four legal directive tokens: `assault-objective`, `engage-hostiles`, `regroup` and `hold`.
+- Added invalid directive fallback coverage: unknown model text normalizes through `assault-objective`.
+- Added ended-observation coverage: every directive returns no local command once the mission is ended.
+- Added no-direct-mutation coverage: directive conversion returns a command string and does not mutate `BattleMission` orders by itself.
+- Added missing-key fallback coverage for the MiniMax result path.
+- Updated startup `-mc2MinimaxCommanderSteps` so missing `MINIMAX_API_KEY` logs model unavailability and continues through local rule fallback instead of blocking.
+
+Modified files:
+
+```text
+unity-mc2-demo/Assets/Editor/Mc2DemoValidator.cs
+unity-mc2-demo/Assets/Scripts/Presentation/Mc2DemoBootstrap.cs
+docs-ai-commander-directive-contract.md
+docs-playable-demo-fine-grained-current-plan-2026-06-07.md
+docs-playable-demo-locked-execution-plan-2026-06-07.md
+docs-reference-visual-audit-2026-06-07.md
+```
+
+Validation commands:
+
+```powershell
+git diff --check
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoValidator.ValidateMissionContract -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-validate-ai-directive.log"
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoBuilder.BuildWindows64 -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-build-ai-directive.log"
+$env:MINIMAX_API_KEY=''; & "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo\Builds\Windows\MC2UnityDemo.exe" -batchmode -nographics -mc2SmokeTest -mc2MinimaxCommanderSteps 1 -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-player-ai-directive-fallback.log"
+```
+
+Validation evidence:
+
+```text
+analysis-output/unity-validate-ai-directive.log
+analysis-output/unity-build-ai-directive.log
+analysis-output/unity-player-ai-directive-fallback.log
+```
+
+Validation results:
+
+```text
+git diff --check: clean, with Windows line-ending warnings only.
+Validator: MC2 demo contract validation OK.
+Build: Build Finished, Result: Success; MC2 Unity demo Windows build OK.
+Fallback smoke: source=rule_fallback directive=assault-objective command=squad move 3136 -789.333.
+Fallback smoke exit: MC2 demo smoke test exiting with code 0.
+```
+
+Observed effect:
+
+- AI directives are now ordinary local command suggestions, not mission mutations.
+- Missing model configuration no longer stops the startup commander path.
+- The first-demo local fallback remains deterministic and uses `assault-objective`.
+
+Remaining issues:
+
+1. D3 still needs to surface this AI capability as a small optional UI window rather than a debug log.
+2. Later work should keep model calls asynchronous or pre-mission/paused, not live frame-by-frame.
+
+Next priority:
+
+1. Stage 6 / D3 show optional AI advice window.
 
 ## Stage 6.1 Compact AI Observation Result
 

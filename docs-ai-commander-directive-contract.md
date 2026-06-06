@@ -18,6 +18,7 @@ The AI commander is a strategic draft assistant, not a direct unit controller. I
 - Model output: one directive token.
 - Local responsibility: pathing, exact target selection, movement legality, jump landing checks, heat/cooldown timing, weapon fire, damage, and objective completion.
 - Failure behavior: if the model is slow, unavailable, or returns invalid text, use `assault-objective`.
+- Adapter behavior: model output is normalized into one of the legal directive tokens, then converted into an ordinary local command string. The adapter returns commands; it must not mutate `BattleMission` directly.
 
 ## Compact Observation V1
 
@@ -60,6 +61,8 @@ hold
 - `engage-hostiles`: local commander prioritizes hostile units already in weapon range; if no good target exists, it continues the objective.
 - `regroup`: local commander pulls the squad toward the commander unit before continuing.
 - `hold`: local commander issues no new startup command for this phase.
+
+Invalid directive text, missing model output, missing API keys, HTTP failures, and timeout failures all normalize through the local fallback path. The first-demo fallback directive is `assault-objective`.
 
 ## Latency Rules
 

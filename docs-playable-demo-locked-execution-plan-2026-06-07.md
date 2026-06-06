@@ -682,6 +682,8 @@ git diff --check
 
 **Goal:** AI directive becomes ordinary BattleCore commands and has safe fallback.
 
+**Status:** Completed 2026-06-07. Validator coverage now guards all legal directive tokens, invalid fallback, ended-observation no-op, missing-key fallback normalization and no direct `BattleMission` mutation. The startup MiniMax path now falls back to local rule commander steps when `MINIMAX_API_KEY` is not configured. Evidence: `analysis-output/unity-validate-ai-directive.log`, `analysis-output/unity-build-ai-directive.log`, `analysis-output/unity-player-ai-directive-fallback.log`.
+
 **Files:**
 
 - Create or Modify: `unity-mc2-demo/Assets/Scripts/BattleCore/AiCommanderDirective.cs`
@@ -944,8 +946,8 @@ Recently completed:
 Current state:
 
 - Current stage: Stage 6 / AI Commander Capability Window.
-- Current next commit: `Guard AI directive adapter`.
-- Current demo risk: battle loop is now guarded; AI deputy has a compact observation contract, but its directive adapter and optional advice window still need to prove they do not block local play.
+- Current next commit: `Show optional AI advice window`.
+- Current demo risk: battle loop is now guarded; AI deputy has compact observation and directive fallback, but the optional advice window still needs to land without cluttering battle UI.
 - Current build risk: Unity batch build can dirty `Assets/Scenes/Mc2Demo.unity` with fileID churn; inspect and restore before commit.
 - Current content risk: private reference content can be used locally for validation but must stay out of Git and public packages.
 
@@ -958,8 +960,8 @@ Next commits:
 | C1 | Done | `Simplify debrief player flow` | G4 Battle loop |
 | C2 | Done | `Guard repair and relaunch loop` | G4 Battle loop |
 | D1 | Done | `Freeze AI observation contract` | G5 AI capability |
-| D2 | Next | `Guard AI directive adapter` | G5 AI capability |
-| D3 | Pending | `Show optional AI advice window` | G5 AI capability |
+| D2 | Done | `Guard AI directive adapter` | G5 AI capability |
+| D3 | Next | `Show optional AI advice window` | G5 AI capability |
 | E1 | Pending | `Document private reference content boundary` | G6 Public boundary |
 | E2 | Pending | `Add public build content safety check` | G6 Public boundary |
 | E3 | Pending | `Add playable demo walkthrough` | Demo handoff |
@@ -1186,6 +1188,10 @@ git diff --check
 ### D2: Guard AI Directive Adapter
 
 **Goal:** Convert model output into ordinary BattleCore commands with strict fallback and no direct mission mutation.
+
+**Status:** Completed 2026-06-07.
+
+**Result:** `RuleCommander` now has validator evidence for every legal directive token, invalid fallback to `assault-objective`, ended-observation no-op and no direct mission mutation. `Mc2DemoBootstrap` now lets `-mc2MinimaxCommanderSteps` continue through rule fallback when MiniMax is unavailable instead of blocking startup.
 
 **Files:**
 
