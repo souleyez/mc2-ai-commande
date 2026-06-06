@@ -1087,6 +1087,35 @@ namespace MC2Demo.EditorTools
                 throw new InvalidDataException("Runtime armor hardness did not reduce incoming section damage.");
             }
 
+            UnitState armoredSectionBreak = new(new UnitSpawn
+            {
+                spawnId = "armored-section-break-test",
+                teamId = 0,
+                isPlayerUnit = true,
+                unitType = "Werewolf",
+                position = new MissionPose()
+            }, combatProfiles);
+            armoredSectionBreak.ApplyDemoLoadout(new UnitLoadoutCombatOverride
+            {
+                weaponRange = armoredSectionBreak.Profile.WeaponRange,
+                weaponDamage = armoredSectionBreak.Profile.WeaponDamage,
+                weaponCooldown = armoredSectionBreak.Profile.WeaponCooldown,
+                heatPerShot = armoredSectionBreak.Profile.HeatPerShot,
+                heatDissipationPerSecond = armoredSectionBreak.Profile.HeatDissipationPerSecond,
+                armorHardnessBonus = 4f,
+                totalWeaponWeight = armoredSectionBreak.Profile.TotalWeaponWeight,
+                primaryWeaponName = armoredSectionBreak.Profile.PrimaryWeaponName,
+                primaryWeaponType = armoredSectionBreak.Profile.PrimaryWeaponType,
+                primarySpecialEffect = armoredSectionBreak.Profile.PrimarySpecialEffect
+            });
+            DamageSection torsoSection = FindDamageSection(armoredSectionBreak, "Torso");
+            float torsoBreakRawDamage = (torsoSection.MaxHitPoints + 1f) / armoredSectionBreak.CombatIncomingDamageMultiplier;
+            armoredSectionBreak.ApplyDirectSectionDamage("Torso", torsoBreakRawDamage);
+            if (!torsoSection.IsDestroyed || armoredSectionBreak.IsDestroyed)
+            {
+                throw new InvalidDataException("Runtime armor hardness should still allow non-critical section destruction without erasing section damage.");
+            }
+
             UnitState attacker = new(new UnitSpawn
             {
                 spawnId = "armor-event-attacker",
@@ -1121,6 +1150,19 @@ namespace MC2Demo.EditorTools
             {
                 throw new InvalidDataException("Runtime armor hardness did not surface mitigation in combat events.");
             }
+        }
+
+        private static DamageSection FindDamageSection(UnitState unit, string sectionName)
+        {
+            foreach (DamageSection section in unit.Sections)
+            {
+                if (section != null && string.Equals(section.Name, sectionName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return section;
+                }
+            }
+
+            throw new InvalidDataException("Missing damage section " + sectionName + " on unit " + unit.Id);
         }
 
         private static LoadoutItemDefinition FindLoadoutItem(LoadoutContract contract, string itemId)

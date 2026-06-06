@@ -995,3 +995,58 @@ Next priority:
 
 1. Stage 3 / Task 3.3 lock armor hardness damage rule.
 2. Then Stage 4 / Task 4.1 audit mounted weapon semantics.
+
+## Stage 3.3 Armor Hardness Rule Result
+
+Implemented on 2026-06-07:
+
+- Kept armor plates as one overall hardness value, exposed through loadout preview totals and applied to `UnitState` as `CombatArmorHardnessBonus`.
+- Confirmed damage mitigation stays simple: incoming raw damage is reduced by `CombatIncomingDamageMultiplier` before section damage allocation.
+- Added validator evidence that armored and unarmored units take different section damage from the same direct hit.
+- Added validator evidence that high enough damage still destroys a non-critical section on an armored unit, proving armor hardness does not erase the section damage system.
+- Kept cockpit, torso, arm and leg section destruction behavior intact.
+
+Modified files:
+
+```text
+unity-mc2-demo/Assets/Editor/Mc2DemoValidator.cs
+docs-mc2-detailed-development-plan.md
+docs-reference-visual-audit-2026-06-07.md
+docs-playable-demo-locked-execution-plan-2026-06-07.md
+```
+
+Validation commands:
+
+```powershell
+git diff --check
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoValidator.ValidateMissionContract -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-validate-armor-hardness-lock.log"
+```
+
+Validation evidence:
+
+```text
+analysis-output/unity-validate-armor-hardness-lock.log
+```
+
+Validation results:
+
+```text
+git diff --check: clean, with Windows line-ending warnings only.
+Validator: MC2 demo contract validation OK.
+```
+
+Observed effect:
+
+- Armor is now locked as a cheap deterministic rule suitable for later server validation.
+- The MechLab rule stays easy to explain: armor plates increase overall hardness, but they do not add per-location armor bookkeeping.
+- The validator proves both halves of the intended behavior: armor reduces incoming section damage, and enough damage can still destroy a section.
+
+Remaining issues:
+
+1. The MechLab UI still needs Stage 4 polish so players see armor plates and heat sinks as clear single-cell fillers.
+2. Stage 4 should now audit mounted weapon semantics before changing grid visuals.
+
+Next priority:
+
+1. Stage 4 / Task 4.1 audit mounted weapon semantics.
+2. Then Stage 4 / Task 4.2 make MechLab grid blocks explicit.

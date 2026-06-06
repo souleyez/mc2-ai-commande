@@ -31,11 +31,12 @@
 
 1. Stage 1 可见流程已经锁住：visible-flow smoke 能覆盖机库、出战、独立命令、喷射、集火、战报、回机库和再启动 identity。
 2. Stage 2 战场空间、碰撞占位和 hangar encounter 构图已经收口：BattleCore occupancy、hard prop placeholder、hangar pressure spread 都有证据。
-3. 当前处在 Stage 3: Combat Feel Lock。
+3. Stage 3 Combat Feel Lock 已完成当前锁定项：武器类型 cue、部位损伤/弹射 cue、装甲硬度规则。
 4. `Regress weapon family cues` 已完成并提交为 `4ea5666`。
-5. `Lock section damage and ejection cues` 已完成验证并进入提交队列。
-6. 下一提交优先做 `Lock armor hardness damage rule`，再进入 Stage 4 MechLab。
-7. 工作树提交前必须保持干净；Unity scene fileID churn 不得误提交，生成截图/日志/JSON 默认不进 Git。
+5. `Lock section damage and ejection cues` 已完成并提交为 `db1efa7`。
+6. `Lock armor hardness damage rule` 已完成验证并进入提交队列。
+7. 当前下一步进入 Stage 4 MechLab，优先做 `Audit mounted weapon semantics`。
+8. 工作树提交前必须保持干净；Unity scene fileID churn 不得误提交，生成截图/日志/JSON 默认不进 Git。
 
 当前已知真实文件校准：
 
@@ -225,8 +226,8 @@ Do not stage generated PNG/JSON/log evidence unless explicitly requested.
 | Command flow | Smoke-covered | Keep UI simple | Regression only unless player flow breaks |
 | Weapon effects | Completed for current pass | Needs only regression unless `damage-demo` becomes unreadable | Guard with combat situation smoke and damage capture |
 | Section damage/ejection | Completed for current pass | Future polish can add closer motion/capture readability | Regression only unless `damage-demo` regresses |
-| Armor hardness | Next | Need simple BattleCore proof and one-line design rule | Stage 3.3 |
-| MechLab | Functional | Needs original-like block fitting polish and no weapon-toggle semantics | Stage 4 |
+| Armor hardness | Completed for current pass | Future tuning can adjust numbers, not the rule shape | Regression only |
+| MechLab | Functional | Needs original-like block fitting polish and no weapon-toggle semantics | Start Stage 4.1 |
 | Debrief/repair | Basic | Needs clean first-demo loop, no save UI in normal flow | Stage 5 |
 | AI deputy | Experimental | Needs compact optional capability window and offline fallback | Stage 6 |
 | Public safety | Partially documented | Needs build/content guard and README cleanup where needed | Stage 7 |
@@ -382,6 +383,10 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_refere
 **Commit:** `Lock section damage and ejection cues`
 
 ### Task 3.3: Lock Armor Hardness Damage Rule
+
+**Status:** Completed 2026-06-07.
+
+**Result:** Armor plates remain one overall hardness value. Validator coverage now proves the same direct hit damages armored units less than unarmored units, combat events surface mitigation, and high enough damage still destroys a non-critical section on an armored unit. The design rule is documented in `docs-mc2-detailed-development-plan.md`.
 
 **Goal:** Armor plates increase one overall hardness value; section damage remains the fun part.
 
@@ -897,23 +902,23 @@ Recently completed:
 5. `Tune hangar encounter composition`
 6. `Regress weapon family cues`
 7. `Lock section damage and ejection cues`
+8. `Lock armor hardness damage rule`
 
 Next commits:
 
-1. `Lock armor hardness damage rule`
-2. `Audit mounted weapon semantics`
-3. `Make MechLab grid blocks explicit`
-4. `Prove loadout battle effects`
-5. `Simplify debrief player flow`
-6. `Guard repair and relaunch loop`
-7. `Freeze AI observation contract`
-8. `Guard AI directive adapter`
-9. `Show optional AI advice window`
-10. `Document private reference content boundary`
-11. `Add public build content safety check`
-12. `Add playable demo walkthrough`
-13. `Prepare repeatable Windows demo build`
-14. `Package playable demo evidence`
+1. `Audit mounted weapon semantics`
+2. `Make MechLab grid blocks explicit`
+3. `Prove loadout battle effects`
+4. `Simplify debrief player flow`
+5. `Guard repair and relaunch loop`
+6. `Freeze AI observation contract`
+7. `Guard AI directive adapter`
+8. `Show optional AI advice window`
+9. `Document private reference content boundary`
+10. `Add public build content safety check`
+11. `Add playable demo walkthrough`
+12. `Prepare repeatable Windows demo build`
+13. `Package playable demo evidence`
 
 Every commit must record:
 
@@ -931,21 +936,21 @@ Use this board when continuing with "按计划继续". Start at the first incomp
 | Order | Status | Commit | Purpose | Main Files | Required Evidence |
 | --- | --- | --- | --- | --- | --- |
 | A1 | Done | `Lock section damage and ejection cues` | Make arm loss, leg disable and cockpit ejection readable in the world and guarded by smoke | `DemoUnitView.cs`, `Mc2DemoBootstrap.cs`, `Mc2DemoValidator.cs`, visual audit | validator, build, `damage-demo` capture, visible-flow smoke |
-| A2 | Next | `Lock armor hardness damage rule` | Keep armor simple: one hardness value before section damage | `UnitState.cs`, `CombatLoadoutPreview.cs`, `LoadoutValidator.cs`, validator, design docs | validator |
+| A2 | Done | `Lock armor hardness damage rule` | Keep armor simple: one hardness value before section damage | `UnitState.cs`, `CombatLoadoutPreview.cs`, `LoadoutValidator.cs`, validator, design docs | validator |
 
 Sprint A detail:
 
-1. Stage 3.2 is complete for this pass; keep it as a regression target.
-2. Implement armor hardness proof without adding per-location armor.
-3. Commit Stage 3.3 by itself.
+1. Sprint A is complete for this pass.
+2. Keep weapon cue, section damage and armor hardness as regression targets while Stage 4 changes MechLab.
+3. Next work starts at Sprint B / B1.
 
 ### Sprint B: Make MechLab Feel Like Fitting Parts
 
-| Order | Commit | Purpose | Main Files | Required Evidence |
-| --- | --- | --- | --- | --- |
-| B1 | `Audit mounted weapon semantics` | Ensure installed weapons are always active and no player-facing weapon toggle remains | `CombatLoadoutPreview.cs`, `Mc2DemoBootstrap.cs`, `Mc2DemoValidator.cs` | `rg` audit, validator |
-| B2 | `Make MechLab grid blocks explicit` | Render weapons as contiguous shape blocks; armor/sinks as single-cell fillers | `LoadoutContract.cs`, `LoadoutValidator.cs`, `CombatLoadoutPreview.cs`, `Mc2DemoBootstrap.cs` | validator, `mc2_01-loadout-compact.txt` smoke |
-| B3 | `Prove loadout battle effects` | Confirm fitted weapons/armor/heat sinks affect BattleCore combat behavior | `UnitState.cs`, `CombatLoadoutPreview.cs`, `MechBayInventoryContract.cs`, validator | validator, optional combat smoke |
+| Order | Status | Commit | Purpose | Main Files | Required Evidence |
+| --- | --- | --- | --- | --- | --- |
+| B1 | Next | `Audit mounted weapon semantics` | Ensure installed weapons are always active and no player-facing weapon toggle remains | `CombatLoadoutPreview.cs`, `Mc2DemoBootstrap.cs`, `Mc2DemoValidator.cs` | `rg` audit, validator |
+| B2 | Pending | `Make MechLab grid blocks explicit` | Render weapons as contiguous shape blocks; armor/sinks as single-cell fillers | `LoadoutContract.cs`, `LoadoutValidator.cs`, `CombatLoadoutPreview.cs`, `Mc2DemoBootstrap.cs` | validator, `mc2_01-loadout-compact.txt` smoke |
+| B3 | Pending | `Prove loadout battle effects` | Confirm fitted weapons/armor/heat sinks affect BattleCore combat behavior | `UnitState.cs`, `CombatLoadoutPreview.cs`, `MechBayInventoryContract.cs`, validator | validator, optional combat smoke |
 
 Sprint B detail:
 
