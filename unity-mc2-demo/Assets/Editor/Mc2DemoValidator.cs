@@ -2541,6 +2541,22 @@ namespace MC2Demo.EditorTools
             {
                 throw new InvalidDataException("Expected terrain object fallback destination to be reachable.");
             }
+
+            BattleMission jumpMission = new(MakeTerrainObjectCollisionContract(), CombatProfileCatalog.Empty);
+            UnitState jumpPlayer = jumpMission.FindUnit("terrain-object-collision-player");
+            Vector2 jumpStart = jumpPlayer == null ? Vector2.zero : jumpPlayer.MissionPosition;
+            int blockedJump = jumpMission.IssueDetachedJump(
+                "terrain-object-collision-player",
+                jumpStart + new Vector2(1000f, 0f),
+                420f,
+                _ => true);
+            if (blockedJump != 0
+                || jumpPlayer == null
+                || jumpPlayer.IsJumping
+                || Vector2.Distance(jumpStart, jumpPlayer.MissionPosition) > 0.01f)
+            {
+                throw new InvalidDataException("Expected hard terrain-object jump landing to be rejected without moving the unit.");
+            }
         }
 
         private static void ValidateOccupancySummaryEvidence(BattleMission mission)

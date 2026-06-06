@@ -240,10 +240,13 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_refere
 
 ### Task C3: Finalize Squad Jet Landing Rules
 
+**Status:** Completed 2026-06-07. Existing BattleCore jump logic already computes each mech's fixed-distance landing from its own position and rejects illegal landings through the BattleCore landing predicate. This pass added validator coverage for hard terrain-object jump rejection and strengthened the squad-jet smoke so it proves `unit-1` jumps while `unit-2` and `unit-3` stay ready.
+
 **Files:**
 
-- Modify: `unity-mc2-demo/Assets/Scripts/BattleCore/BattleMission.cs`
-- Modify: `unity-mc2-demo/Assets/Scripts/BattleCore/CommanderCommandPort.cs`
+- Audit: `unity-mc2-demo/Assets/Scripts/BattleCore/BattleMission.cs`
+- Audit: `unity-mc2-demo/Assets/Scripts/BattleCore/CommanderCommandPort.cs`
+- Modify: `unity-mc2-demo/Assets/Editor/Mc2DemoValidator.cs`
 - Modify: `unity-mc2-demo/Assets/StreamingAssets/CommanderScripts/mc2_01-squad-jet-partial.txt`
 
 **Steps:**
@@ -268,6 +271,11 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_refere
 
 - 喷射命令不会因为单台机甲非法落点而取消整队。
 - BattleCore 仍是唯一权威判定。
+
+**Validation Evidence:**
+
+- `analysis-output/unity-validate-jet-rules.log`: mission validator exits with `MC2 demo contract validation OK` and includes hard terrain-object jump rejection coverage.
+- `analysis-output/unity-player-squad-jet-partial.log`: squad-jet smoke exits with code `0`; assertions show `unit-1:jetting` while `unit-2:ready` and `unit-3:ready`, then all three return to `ready`.
 
 **Commit:** `Finalize squad jet landing rules`
 
@@ -748,22 +756,21 @@ git diff --check
 
 推荐后续提交顺序：
 
-1. `Finalize squad jet landing rules`
-2. `Freeze minimal battle UI`
-3. `Document command loop visual baseline`
-4. `Differentiate weapon visual effects`
-5. `Strengthen mech section damage cues`
-6. `Simplify armor hardness damage math`
-7. `Remove weapon toggle leftovers`
-8. `Make mech lab grid item fitting explicit`
-9. `Apply mech lab loadouts in battle`
-10. `Hide save system from first demo flow`
-11. `Tighten debrief and repair loop`
-12. `Freeze AI commander observation contract`
-13. `Add AI commander directive adapter`
-14. `Document replaceable visual content packs`
-15. `Prepare repeatable Windows demo build`
-16. `Add playable demo walkthrough`
+1. `Freeze minimal battle UI`
+2. `Document command loop visual baseline`
+3. `Differentiate weapon visual effects`
+4. `Strengthen mech section damage cues`
+5. `Simplify armor hardness damage math`
+6. `Remove weapon toggle leftovers`
+7. `Make mech lab grid item fitting explicit`
+8. `Apply mech lab loadouts in battle`
+9. `Hide save system from first demo flow`
+10. `Tighten debrief and repair loop`
+11. `Freeze AI commander observation contract`
+12. `Add AI commander directive adapter`
+13. `Document replaceable visual content packs`
+14. `Prepare repeatable Windows demo build`
+15. `Add playable demo walkthrough`
 
 每个提交都记录：
 
