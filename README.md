@@ -166,9 +166,10 @@ passes the public boundary check, but it is not a mountable runtime pack yet.
 
 ## 关键文档
 
+- `docs-ai-rts-commander-v1-detailed-execution-plan-2026-06-07.md`: 当前最新细计划书，按提交级任务拆分 MechLab、装配影响战斗、损伤表现、公开替换包、AI 回归守护和平台契约。
 - `docs-ai-rts-commander-detailed-roadmap-2026-06-07.md`: 当前细化路线图，覆盖真实进度、V4 进行中工作、提交级任务、验收命令、停止条件和后续平台路线。
 - `docs-ai-rts-commander-overall-implementation-plan-2026-06-07.md`: 当前定格版整体计划书，覆盖产品方向、架构边界、里程碑和总路线，并指向细化路线图。
-- `docs-playable-demo-current-execution-plan-2026-06-07.md`: 当前日常执行入口，用户说“按计划继续”时从这里的 `Current Commit Queue` 往下做。
+- `docs-playable-demo-current-execution-plan-2026-06-07.md`: 旧的日常执行入口，保留当前仓库历史上下文、已完成任务和早期 `Current Commit Queue`。
 - `docs-playable-demo-v1-detailed-plan-2026-06-07.md`: V1 Demo 细化计划，保留产品边界、架构边界、提交级任务、验收门和后续路线。
 - `docs-playable-demo-walkthrough-2026-06-07.md`: 当前三分钟可玩 Demo 演示脚本，覆盖机库装配、战场指挥、喷射、损伤、战报、维修和后续方向。
 - `docs-playable-demo-investor-evidence-2026-06-07.md`: 当前可玩 Demo 证据页，列出本地 ignored 截图、sidecar 摘要、三分钟展示顺序和公开内容边界。

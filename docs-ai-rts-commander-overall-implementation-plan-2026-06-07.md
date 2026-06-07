@@ -8,7 +8,7 @@
 
 **Tech Stack:** Unity 6, C#, Windows Standalone first, deterministic BattleCore, PowerShell validator/build/smoke/capture scripts, replaceable content packs, optional high-level AI deputy adapter, future main server and map server contracts.
 
-**Revision:** 2026-06-07 v2. This is the fixed overall plan. The fine-grained roadmap is `docs-ai-rts-commander-detailed-roadmap-2026-06-07.md`; the day-to-day queue remains `docs-playable-demo-current-execution-plan-2026-06-07.md`.
+**Revision:** 2026-06-07 v3. This is the fixed overall plan. The newest detailed execution plan is `docs-ai-rts-commander-v1-detailed-execution-plan-2026-06-07.md`; the supporting roadmap is `docs-ai-rts-commander-detailed-roadmap-2026-06-07.md`; the archived day-to-day queue remains `docs-playable-demo-current-execution-plan-2026-06-07.md`.
 
 ---
 
@@ -24,6 +24,7 @@
 
 ```text
 docs-ai-rts-commander-overall-implementation-plan-2026-06-07.md
+docs-ai-rts-commander-v1-detailed-execution-plan-2026-06-07.md
 docs-ai-rts-commander-detailed-roadmap-2026-06-07.md
 docs-playable-demo-current-execution-plan-2026-06-07.md
 ```
@@ -31,12 +32,13 @@ docs-playable-demo-current-execution-plan-2026-06-07.md
 分工：
 
 1. 本文件管产品方向、架构边界、里程碑和长期平台路线。
-2. `docs-ai-rts-commander-detailed-roadmap-2026-06-07.md` 管当前真实状态、阶段拆解、提交级任务、验收命令和停止条件。
-3. `docs-playable-demo-current-execution-plan-2026-06-07.md` 管“按计划继续”时的下一步提交队列。
+2. `docs-ai-rts-commander-v1-detailed-execution-plan-2026-06-07.md` 管最新提交级执行计划、文件入口、命令、验收标准和停止条件。
+3. `docs-ai-rts-commander-detailed-roadmap-2026-06-07.md` 管当前真实状态、阶段拆解、历史工作包和路线说明。
+4. `docs-playable-demo-current-execution-plan-2026-06-07.md` 保留旧的日常执行上下文和已完成任务证据。
 
 执行顺序：
 
-1. 先看当前执行计划 `## 5. Current Commit Queue` 的第一个 `Next` 或 `In Progress`。
+1. 先看最新细计划 `docs-ai-rts-commander-v1-detailed-execution-plan-2026-06-07.md` 的第一个 `Next` 或 `In Progress`。
 2. 每次只做一个可验证小提交。
 3. BattleCore 规则先于 Unity 表现。
 4. 截图和 smoke 只能作为证据，不能代替规则验证。
@@ -510,28 +512,26 @@ scripts/content-pack/check_public_content_boundary.ps1
 
 ## 8. Current Commit Queue
 
-The live queue remains in `docs-playable-demo-current-execution-plan-2026-06-07.md`. The detailed rationale and acceptance gates for each item are in `docs-ai-rts-commander-detailed-roadmap-2026-06-07.md`.
+The live queue is now `docs-ai-rts-commander-v1-detailed-execution-plan-2026-06-07.md`. The older `docs-playable-demo-current-execution-plan-2026-06-07.md` remains useful for completed-task context and evidence history.
 
 Current recommended queue:
 
 | Order | Status | Commit | Purpose |
 | --- | --- | --- | --- |
-| 1 | Done | `Strengthen damage demo readability` | Make damage story visible |
-| 2 | Done | `Keep battle UI sparse` | Reduce battle information clutter |
-| 3 | Done | `Write playable demo walkthrough` | Create 3-minute script |
-| 4 | Done | `Prepare repeatable Windows demo build` | Make build/run repeatable |
-| 5 | Done | `Package playable demo evidence` | Gather evidence paths and captions |
-| 6 | Done | `Document reference content boundary` | Clarify private/public content split |
-| 7 | Done | `Add public content boundary check` | Add non-destructive build-path safety check |
-| 8 | Done | `Run demo handoff gate audit` | Validate build, smoke, captures and content boundary together |
-| 9 | Done | `Polish crowded contact occupancy` | Finish V4 spacing/contact sidecar WIP and validate captures |
-| 10 | Done | `Refresh playable demo evidence` | Re-run validator, build, smoke and captures after V4 |
-| 11 | Done | `Open public replacement content slice` | Start text-safe/art-safe content pack path |
-| 12 | Next | `Polish MechLab grid feel` | Keep equipment-grid fitting as a core fun loop |
+| 1 | Next | `Polish MechLab grid feel` | Make equipment-grid fitting physical, short and readable |
+| 2 | Next | `Prove loadout battle effects` | Prove mounted weapons, armor and cooling alter BattleCore |
+| 3 | Next | `Polish weapon and damage readability` | Strengthen weapon families and section damage story |
+| 4 | Next | `Guard sparse battle UI regression` | Keep battle UI clean while preserving command controls |
+| 5 | Next | `Prepare public art-safe mission slice` | Move from text-safe metadata toward public visual replacement |
+| 6 | Later | `Guard AI deputy regression` | Keep AI optional, high-level and offline-safe |
+| 7 | Later | `Document platform reward contracts` | Define main-server reward authority and map-server limits |
+| 8 | Later | `Plan map authoring prototype` | Prepare map package/editor validation rules |
+| 9 | Later | `Plan web ranking prototype` | Prepare ranking, player profile and battle-record pages |
+| 10 | Later | `Plan creator economy boundary` | Keep creator economy and chain layer late and optional |
 
 ## 9. Detailed Near-Term Tasks
 
-The historical task notes below are kept for context and evidence. For the current executable breakdown, use `docs-ai-rts-commander-detailed-roadmap-2026-06-07.md`, starting with D1 `MechLab Grid Feel Pass`.
+The historical task notes below are kept for context and evidence. For the current executable breakdown, use `docs-ai-rts-commander-v1-detailed-execution-plan-2026-06-07.md`, starting with Task 1 `Polish MechLab Grid Feel`.
 
 ### Task P2: Add Public Content Boundary Check
 

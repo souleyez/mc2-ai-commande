@@ -8,7 +8,7 @@
 
 **Tech Stack:** Unity 6, C#, Windows Standalone first, deterministic BattleCore, PowerShell validator/build/smoke/capture scripts, replaceable content packs, optional high-level AI deputy adapter, future main server/map server/Web ranking.
 
-**Revision:** 2026-06-07 v2. This is the current fine-grained roadmap. Day-to-day execution still starts from `docs-playable-demo-current-execution-plan-2026-06-07.md`.
+**Revision:** 2026-06-07 v3. The newest detailed execution plan is `docs-ai-rts-commander-v1-detailed-execution-plan-2026-06-07.md`. This file remains the supporting roadmap and historical work-package record; day-to-day execution should use the newest detailed plan first, then `docs-playable-demo-current-execution-plan-2026-06-07.md` for archived context.
 
 ---
 
@@ -16,8 +16,9 @@
 
 当用户说“按计划继续”时：
 
-1. 先看 `docs-playable-demo-current-execution-plan-2026-06-07.md` 的 `Current Commit Queue`。
-2. 如果队列不明确，就回到本文件的 `## 8. Current Execution Queue`。
+1. 先看 `docs-ai-rts-commander-v1-detailed-execution-plan-2026-06-07.md` 的 `Current Commit Queue`。
+2. 如果需要历史上下文，再看 `docs-playable-demo-current-execution-plan-2026-06-07.md` 的 `Current Commit Queue`。
+3. 如果队列仍不明确，就回到本文件的 `## 8. Current Execution Queue`。
 3. 每次只做一个小提交，提交必须能用 validator、build、smoke、capture 或 docs check 说明。
 4. 当前队列从 `Polish MechLab grid feel` 继续；如果之后又出现未提交 source WIP，先验收它再开新功能。
 5. 不提交 `analysis-output/` 下的截图、sidecar JSON、构建日志或 player build，除非用户明确要求打包。

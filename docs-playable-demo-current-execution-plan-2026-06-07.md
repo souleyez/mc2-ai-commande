@@ -8,13 +8,13 @@
 
 **Tech Stack:** Unity 6, C#, Windows Standalone, deterministic BattleCore, PowerShell validation/capture scripts, `mc2-unity-demo-contract-v1`, private local reference content pack, Git/GitHub.
 
-**Revision:** 2026-06-07 current execution plan v10. This is the current canonical day-to-day execution queue. The fixed overall plan is `docs-ai-rts-commander-overall-implementation-plan-2026-06-07.md`; the fine-grained roadmap is `docs-ai-rts-commander-detailed-roadmap-2026-06-07.md`; `docs-playable-demo-v1-detailed-plan-2026-06-07.md` and older `docs-playable-demo-*.md` files remain history, evidence, or task archives.
+**Revision:** 2026-06-07 current execution plan v11. This file is now the archived day-to-day queue and completed-task context. The latest detailed execution plan is `docs-ai-rts-commander-v1-detailed-execution-plan-2026-06-07.md`; the fixed overall plan is `docs-ai-rts-commander-overall-implementation-plan-2026-06-07.md`; the fine-grained roadmap is `docs-ai-rts-commander-detailed-roadmap-2026-06-07.md`; `docs-playable-demo-v1-detailed-plan-2026-06-07.md` and older `docs-playable-demo-*.md` files remain history, evidence, or task archives.
 
 ---
 
 ## 0. Execution Rule
 
-当用户说“按计划继续”时，从本文件 `## 5. Current Commit Queue` 的第一个 `Next` 或 `In Progress` 任务开始。
+当用户说“按计划继续”时，优先看 `docs-ai-rts-commander-v1-detailed-execution-plan-2026-06-07.md` 的 `## 5. Current Commit Queue`；如果需要当前仓库历史上下文，再回到本文件 `## 5. Current Commit Queue` 的第一个 `Next` 或 `In Progress` 任务。
 
 每个小提交只做一个可验证增量：
 
