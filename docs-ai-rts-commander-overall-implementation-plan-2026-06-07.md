@@ -89,7 +89,7 @@ Playable Demo Handoff: 把已能跑的 Windows 本地 Demo 收成可重复构建
 | Command loop | 默认全队、状态栏单选、独立命令、自动归队、喷射、战报基础完成 | visible-flow smoke |
 | Sparse battle UI | 战斗中不显示过量信息，只保留必要状态和按钮 | UI smoke + captures |
 | Damage story | 武器命中、爆炸、断臂、腿瘫、驾驶舱弹射已有基础 | validator + `damage-demo` |
-| MechLab | 整块武器占格、装甲板、散热器、热量、重量、合法性已有基础 | loadout validator + `mechlab` capture |
+| MechLab | 整块武器占格、装甲板、散热器、热量、重量、合法性和战斗数值接入已有基础 | loadout validator + `mechlab` capture |
 | Debrief loop | 战报、一键维修、回机库、再次出战已有基础 | repair/relaunch smoke |
 | AI deputy | compact observation、directive adapter、AI advice window 已有基础 | AI validator + smoke |
 | Content boundary | README 和内容包文档已开始转向项目自有叙事 | README + content docs |
@@ -99,7 +99,7 @@ Playable Demo Handoff: 把已能跑的 Windows 本地 Demo 收成可重复构建
 | Gap | Why It Matters | Next Move |
 | --- | --- | --- |
 | 视觉还需要稳定回归 | 当前已有样子，但机甲、道具、遮挡、占位仍要避免退化成堆叠 | 每次视觉改动跑 capture + sidecar |
-| Demo handoff 已过 development-only 门检 | 构建、smoke、截图、walkthrough、内容边界已能一口气解释；当前 dev build 会被正确标记为 development-only | Prove loadout battle effects |
+| Demo handoff 已过 development-only 门检 | 构建、smoke、截图、walkthrough、内容边界已能一口气解释；当前 dev build 会被正确标记为 development-only | Polish weapon and damage readability |
 | 压力图已完成 V4 占位刷新 | `hangar-contact` 仍是最拥挤截图，但已有 `unitRadii 24/54/64` 和 `ContactSpread` 证据 | Refresh full evidence before next feature |
 | 公开替换包还没进入生产 | 投资/公开演示需要至少 text-safe，最好 art-safe | 开 P3 content replacement slice |
 
@@ -519,7 +519,7 @@ Current recommended queue:
 | Order | Status | Commit | Purpose |
 | --- | --- | --- | --- |
 | 1 | Done | `Polish MechLab grid feel` | Make equipment-grid fitting physical, short and readable |
-| 2 | Next | `Prove loadout battle effects` | Prove mounted weapons, armor and cooling alter BattleCore |
+| 2 | Done | `Prove loadout battle effects` | Prove mounted weapons, armor and cooling alter BattleCore |
 | 3 | Next | `Polish weapon and damage readability` | Strengthen weapon families and section damage story |
 | 4 | Next | `Guard sparse battle UI regression` | Keep battle UI clean while preserving command controls |
 | 5 | Next | `Prepare public art-safe mission slice` | Move from text-safe metadata toward public visual replacement |

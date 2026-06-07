@@ -31,6 +31,10 @@ namespace MC2Demo.BattleCore
         public float CombatArmorHardnessBonus => appliedLoadout?.armorHardnessBonus ?? 0f;
         public float CombatIncomingDamageMultiplier => 1f / (1f + Mathf.Max(0f, CombatArmorHardnessBonus) * ArmorHardnessReductionPerPoint);
         public float CombatTotalWeaponWeight => appliedLoadout?.totalWeaponWeight ?? Profile.TotalWeaponWeight;
+        public int CombatMountedWeaponCount => appliedLoadout == null ? Profile.Weapons.Length : Math.Max(0, appliedLoadout.mountedWeaponCount);
+        public int CombatSourceWeaponCount => appliedLoadout == null
+            ? Profile.Weapons.Length
+            : Math.Max(Math.Max(0, appliedLoadout.sourceWeaponCount), CombatMountedWeaponCount);
         public string CombatPrimaryWeaponName => appliedLoadout?.primaryWeaponName ?? Profile.PrimaryWeaponName;
         public string CombatPrimaryWeaponType => appliedLoadout?.primaryWeaponType ?? Profile.PrimaryWeaponType;
         public int CombatPrimarySpecialEffect => appliedLoadout?.primarySpecialEffect ?? Profile.PrimarySpecialEffect;
@@ -675,6 +679,8 @@ namespace MC2Demo.BattleCore
         public float heatDissipationPerSecond;
         public float armorHardnessBonus;
         public float totalWeaponWeight;
+        public int mountedWeaponCount;
+        public int sourceWeaponCount;
         public string primaryWeaponName;
         public string primaryWeaponType;
         public int primarySpecialEffect;
@@ -690,6 +696,11 @@ namespace MC2Demo.BattleCore
             }
 
             CombatWeaponDefinition[] sourceWeapons = profile.Weapons ?? Array.Empty<CombatWeaponDefinition>();
+            if (preview?.Validation != null && !preview.Validation.IsValid)
+            {
+                return null;
+            }
+
             CombatWeaponDefinition[] mountedWeapons = MountedWeaponsForPreview(sourceWeapons, preview);
             float heatSinkBonus = preview?.Validation.TotalHeatDissipationBonus ?? 0f;
             float armorHardnessBonus = preview?.Validation.TotalArmorHardnessBonus ?? 0f;
@@ -706,6 +717,8 @@ namespace MC2Demo.BattleCore
                     heatDissipationPerSecond = profile.HeatDissipationPerSecond + heatSinkBonus,
                     armorHardnessBonus = armorHardnessBonus,
                     totalWeaponWeight = preview?.Validation.TotalWeight ?? 0f,
+                    mountedWeaponCount = 0,
+                    sourceWeaponCount = sourceWeapons.Length,
                     primaryWeaponName = "No Weapons",
                     primaryWeaponType = "Generic",
                     primarySpecialEffect = 0
@@ -722,6 +735,8 @@ namespace MC2Demo.BattleCore
                 heatDissipationPerSecond = profile.HeatDissipationPerSecond + heatSinkBonus,
                 armorHardnessBonus = armorHardnessBonus,
                 totalWeaponWeight = preview?.Validation.TotalWeight ?? mountedWeight,
+                mountedWeaponCount = mountedWeapons.Length,
+                sourceWeaponCount = sourceWeapons.Length,
                 primaryWeaponName = hasFullSourceWeaponSet && !string.IsNullOrEmpty(profile.PrimaryWeaponName)
                     ? profile.PrimaryWeaponName
                     : string.IsNullOrEmpty(primaryWeapon?.name) ? "Mounted Weapons" : primaryWeapon.name,

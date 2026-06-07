@@ -55,8 +55,6 @@ Playable Demo Handoff 后的 V1 打磨期
 
 | Gap | Why It Matters | First Task |
 | --- | --- | --- |
-| MechLab 装配还需要更像真实格子装备 | 这是第一版除战斗外的核心乐趣 | `Polish MechLab grid feel` |
-| 装配效果需要证明能进入战斗 | 否则机库只是静态 UI | `Prove loadout battle effects` |
 | 武器和部位损伤还要更有记忆点 | 机甲游戏卖点不能只靠血条 | `Polish weapon and damage readability` |
 | 公开内容只有 text-safe metadata | 投资/公开演示需要 art-safe mission slice | `Prepare art-safe mission slice` |
 | 平台路线还只是文档方向 | 后续地图服务器、奖励认证、排行要有契约 | `Document platform reward contracts` |
@@ -207,7 +205,7 @@ Known good strings:
 | Order | Status | Commit | Purpose | Primary Gate |
 | --- | --- | --- | --- | --- |
 | 1 | Done | `Polish MechLab grid feel` | 装配格子更像整块装备放入槽位 | validator + build + `mechlab` capture |
-| 2 | Next | `Prove loadout battle effects` | 证明装配影响 BattleCore 战斗 | loadout validator |
+| 2 | Done | `Prove loadout battle effects` | 证明装配影响 BattleCore 战斗 | validator + build + visible-flow smoke |
 | 3 | Next | `Polish weapon and damage readability` | 强化武器类型、断臂、腿瘫、弹射故事 | `damage-demo` capture |
 | 4 | Next | `Guard sparse battle UI regression` | 确保战斗中不显示太多信息 | visible-flow smoke + captures |
 | 5 | Next | `Prepare public art-safe mission slice` | 做第一张图的公开替换内容切片计划和入口 | boundary check |
@@ -318,7 +316,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_refere
 
 ### Task 2: Prove Loadout Changes Battle
 
-**Status:** Next.
+**Status:** Completed 2026-06-07.
+
+**Result:** Added a BattleCore-level guard and validator proof that MechLab previews are not static UI. `UnitLoadoutCombatOverride` now records source and mounted weapon counts, `UnitState` exposes those effective combat counts, and invalid preview fits no longer build or apply combat overrides. The validator now proves that the UI preview's mounted weapon blocks match the BattleCore-applied weapon count, that legal armor and heat-sink edits deterministically change armor hardness/cooling in `UnitState`, and that an overlap/invalid fit cannot silently enter battle.
 
 **Goal:** 证明 MechLab 不是静态展示：装上的武器、装甲板、散热器会进入 BattleCore 并影响战斗。
 
@@ -378,6 +378,8 @@ git diff --check
 - Validator proves UI displayed loadout equals BattleCore applied loadout.
 - One equipment change produces one deterministic combat-stat change.
 - Existing battle smoke still passes.
+
+**Validated:** `git diff --check`; `analysis-output/unity-validate-loadout-battle-effect.log`; `analysis-output/unity-build-loadout-battle-effect.log`; `analysis-output/unity-player-loadout-battle-effect.log`.
 
 **Commit:** `Prove loadout battle effects`
 

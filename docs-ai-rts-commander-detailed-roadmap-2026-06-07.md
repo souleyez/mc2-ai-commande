@@ -20,7 +20,7 @@
 2. 如果需要历史上下文，再看 `docs-playable-demo-current-execution-plan-2026-06-07.md` 的 `Current Commit Queue`。
 3. 如果队列仍不明确，就回到本文件的 `## 8. Current Execution Queue`。
 3. 每次只做一个小提交，提交必须能用 validator、build、smoke、capture 或 docs check 说明。
-4. 当前队列从 `Prove loadout battle effects` 继续；如果之后又出现未提交 source WIP，先验收它再开新功能。
+4. 当前队列从 `Polish weapon and damage readability` 继续；如果之后又出现未提交 source WIP，先验收它再开新功能。
 5. 不提交 `analysis-output/` 下的截图、sidecar JSON、构建日志或 player build，除非用户明确要求打包。
 6. Unity 运行后如果只有 scene fileID churn，先手动审查，不随手提交。
 
@@ -202,7 +202,7 @@ Known good strings:
 | M1 Visual occupancy | Done | 战场不再像模型堆叠，sidecar 有物理证据 | `hangar-contact` readable, V4 passed |
 | M2 First controlled demo | Done | 本地 development Demo 可用于小范围展示 | build + smoke + evidence page updated |
 | M3 Public replacement slice | Done | 开始把 development-only 证据转向 text-safe/public-safe 内容包 | clean pack boundary check |
-| M4 MechLab fun | Active | 装配格子更接近整块占格乐趣，并证明装配影响战斗 | `mechlab` screenshot and loadout validator |
+| M4 MechLab fun | Done for V1 | 装配格子更接近整块占格乐趣，并证明装配影响战斗 | `mechlab` screenshot, loadout validator, visible-flow smoke |
 | M5 Combat damage sell | Next | 武器类型、断臂、腿瘫、弹射更清楚 | `damage-demo` screenshot tells the story |
 | M6 AI deputy V1 | Foundation Done | AI 做高层建议，不拖慢本地战斗 | no-key/offline smoke passes |
 | M7 Platform contracts | Deferred | 主服务器、地图服务器、排行、认证奖励 | only after local demo is convincing |
@@ -411,7 +411,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_refere
 
 ### D2: Prove Loadout Changes Battle
 
-**Status:** After D1.
+**Status:** Completed 2026-06-07.
+
+**Result:** Added mounted/source weapon-count evidence to the BattleCore loadout override and exposed the effective counts through `UnitState`. Invalid loadout previews now return no combat override, while valid preview edits can be applied only after the loadout validator passes. The validator now proves that full preview weapon blocks match BattleCore mounted weapon count, that armor plate edits increase armor hardness and reduce incoming damage multiplier, that heat-sink edits increase cooling, and that overlap/invalid placement cannot become an applied combat loadout.
 
 **Goal:** 机库不只是摆样子，装配必须进入 BattleCore 战斗结果。
 
@@ -440,6 +442,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_refere
 
 - 至少一个装备变化能改变战斗数值或状态。
 - Validator 能证明 UI displayed loadout equals BattleCore applied loadout.
+
+**Validated:** `git diff --check`; `analysis-output/unity-validate-loadout-battle-effect.log`; `analysis-output/unity-build-loadout-battle-effect.log`; `analysis-output/unity-player-loadout-battle-effect.log`.
 
 **Commit:** `Prove loadout battle effects`
 
@@ -568,7 +572,7 @@ The first controlled demo is ready when:
 | 2 | Done | `Refresh playable demo evidence` | Re-run validator, build, smoke and capture after V4 |
 | 3 | Done | `Open public replacement content slice` | Start text-safe and provenance-clean public content path |
 | 4 | Done | `Polish MechLab grid feel` | Make equipment grid more physical and original-like without toggles |
-| 5 | Next | `Prove loadout battle effects` | Prove fitted weapons, armor and cooling affect BattleCore |
+| 5 | Done | `Prove loadout battle effects` | Prove fitted weapons, armor and cooling affect BattleCore |
 | 6 | Next | `Polish weapon and damage readability` | Strengthen weapon families and section damage story |
 | 7 | Later | `Guard AI deputy regression` | Keep AI compact, high-level and offline-safe |
 | 8 | Later | `Document platform reward contracts` | Prepare map server and reward certification docs after demo |

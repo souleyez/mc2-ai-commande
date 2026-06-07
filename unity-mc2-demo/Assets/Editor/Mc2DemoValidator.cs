@@ -1341,6 +1341,8 @@ namespace MC2Demo.EditorTools
                 heatDissipationPerSecond = 9f,
                 armorHardnessBonus = 4f,
                 totalWeaponWeight = 12f,
+                mountedWeaponCount = 1,
+                sourceWeaponCount = unit.Profile.Weapons.Length,
                 primaryWeaponName = "Runtime Test Laser",
                 primaryWeaponType = "Energy",
                 primarySpecialEffect = 4
@@ -1354,6 +1356,8 @@ namespace MC2Demo.EditorTools
                 || Math.Abs(unit.CombatHeatDissipationPerSecond - 9f) > 0.001f
                 || Math.Abs(unit.CombatArmorHardnessBonus - 4f) > 0.001f
                 || unit.CombatIncomingDamageMultiplier >= 1f
+                || unit.CombatMountedWeaponCount != 1
+                || unit.CombatSourceWeaponCount != unit.Profile.Weapons.Length
                 || unit.CombatPrimaryWeaponName != "Runtime Test Laser"
                 || unit.CombatPrimaryWeaponType != "Energy"
                 || unit.CombatPrimarySpecialEffect != 4)
@@ -1365,7 +1369,9 @@ namespace MC2Demo.EditorTools
             if (unit.HasAppliedDemoLoadout
                 || Math.Abs(unit.CombatWeaponRange - sourceRange) > 0.001f
                 || Math.Abs(unit.CombatWeaponDamage - sourceDamage) > 0.001f
-                || unit.CombatArmorHardnessBonus > 0f)
+                || unit.CombatArmorHardnessBonus > 0f
+                || unit.CombatMountedWeaponCount != unit.Profile.Weapons.Length
+                || unit.CombatSourceWeaponCount != unit.Profile.Weapons.Length)
             {
                 throw new InvalidDataException("Runtime loadout combat override did not clear back to source stats.");
             }
@@ -1397,6 +1403,8 @@ namespace MC2Demo.EditorTools
                 heatDissipationPerSecond = armored.Profile.HeatDissipationPerSecond,
                 armorHardnessBonus = 4f,
                 totalWeaponWeight = armored.Profile.TotalWeaponWeight,
+                mountedWeaponCount = armored.Profile.Weapons.Length,
+                sourceWeaponCount = armored.Profile.Weapons.Length,
                 primaryWeaponName = armored.Profile.PrimaryWeaponName,
                 primaryWeaponType = armored.Profile.PrimaryWeaponType,
                 primarySpecialEffect = armored.Profile.PrimarySpecialEffect
@@ -1426,6 +1434,8 @@ namespace MC2Demo.EditorTools
                 heatDissipationPerSecond = armoredSectionBreak.Profile.HeatDissipationPerSecond,
                 armorHardnessBonus = 4f,
                 totalWeaponWeight = armoredSectionBreak.Profile.TotalWeaponWeight,
+                mountedWeaponCount = armoredSectionBreak.Profile.Weapons.Length,
+                sourceWeaponCount = armoredSectionBreak.Profile.Weapons.Length,
                 primaryWeaponName = armoredSectionBreak.Profile.PrimaryWeaponName,
                 primaryWeaponType = armoredSectionBreak.Profile.PrimaryWeaponType,
                 primarySpecialEffect = armoredSectionBreak.Profile.PrimarySpecialEffect
@@ -1463,6 +1473,8 @@ namespace MC2Demo.EditorTools
                 heatDissipationPerSecond = armorEventTarget.Profile.HeatDissipationPerSecond,
                 armorHardnessBonus = 4f,
                 totalWeaponWeight = armorEventTarget.Profile.TotalWeaponWeight,
+                mountedWeaponCount = armorEventTarget.Profile.Weapons.Length,
+                sourceWeaponCount = armorEventTarget.Profile.Weapons.Length,
                 primaryWeaponName = armorEventTarget.Profile.PrimaryWeaponName,
                 primaryWeaponType = armorEventTarget.Profile.PrimaryWeaponType,
                 primarySpecialEffect = armorEventTarget.Profile.PrimarySpecialEffect
@@ -1476,11 +1488,27 @@ namespace MC2Demo.EditorTools
 
         private static void ValidatePreviewDrivenLoadoutCombatOverride(CombatProfileCatalog combatProfiles)
         {
-            const string unitType = "Bushwacker";
+            const string unitType = "Werewolf";
             CombatProfile profile = combatProfiles.ForUnitType(unitType, true);
             CombatLoadoutPreview fullPreview = CombatLoadoutPreviewBuilder.Build(unitType, profile);
+            if (!fullPreview.Validation.IsValid)
+            {
+                throw new InvalidDataException("Expected preview-driven loadout validation fixture to start from a valid fit.");
+            }
+
+            int previewWeaponCount = CountPreviewSourceWeapons(fullPreview);
+            if (previewWeaponCount != profile.Weapons.Length)
+            {
+                throw new InvalidDataException("Preview-driven loadout did not expose every source weapon as a mounted block.");
+            }
+
             UnitState fullUnit = MakeLoadoutValidationUnit("preview-full-loadout", unitType, combatProfiles);
             UnitLoadoutCombatOverride fullOverride = UnitLoadoutCombatOverrideBuilder.Build(profile, fullPreview);
+            if (fullOverride == null)
+            {
+                throw new InvalidDataException("Preview-driven valid loadout did not build a combat override.");
+            }
+
             fullUnit.ApplyDemoLoadout(fullOverride);
             if (!fullUnit.HasAppliedDemoLoadout
                 || Math.Abs(fullUnit.CombatTotalWeaponWeight - fullPreview.Validation.TotalWeight) > 0.001f
@@ -1488,57 +1516,93 @@ namespace MC2Demo.EditorTools
                 || Math.Abs(fullUnit.CombatArmorHardnessBonus - fullPreview.Validation.TotalArmorHardnessBonus) > 0.001f
                 || Math.Abs(fullUnit.CombatHeatPerShot - profile.HeatPerShot) > 0.001f
                 || Math.Abs(fullUnit.CombatWeaponRange - profile.WeaponRange) > 0.001f
-                || Math.Abs(fullUnit.CombatWeaponDamage - profile.WeaponDamage) > 0.001f)
+                || Math.Abs(fullUnit.CombatWeaponDamage - profile.WeaponDamage) > 0.001f
+                || fullUnit.CombatMountedWeaponCount != previewWeaponCount
+                || fullUnit.CombatSourceWeaponCount != profile.Weapons.Length)
             {
                 throw new InvalidDataException("Preview-driven loadout did not apply full mounted weapon, heat, armor and weight stats to UnitState.");
             }
 
-            if (!TryFindOpenLoadoutCell(fullPreview, out int fillerX, out int fillerY))
-            {
-                throw new InvalidDataException("Expected an open projected loadout cell for filler combat-effect validation.");
-            }
-
-            CombatLoadoutPreview armorPreview = CombatLoadoutPreviewBuilder.Build(
+            CombatLoadoutPreviewItem firstItem = fullPreview.Items[0];
+            CombatLoadoutPreviewItem secondItem = fullPreview.Items[Math.Min(1, fullPreview.Items.Length - 1)];
+            CombatLoadoutPreview overlapPreview = CombatLoadoutPreviewBuilder.Build(
                 unitType,
                 profile,
                 null,
-                null,
                 new[]
                 {
-                    new CombatLoadoutFillerOverride
+                    new CombatLoadoutPlacementOverride
                     {
-                        gridX = fillerX,
-                        gridY = fillerY,
-                        category = LoadoutItemCategory.ArmorPlate
+                        sourceWeaponIndex = firstItem.SourceWeaponIndex,
+                        gridX = secondItem.GridX,
+                        gridY = secondItem.GridY
                     }
                 });
+            UnitLoadoutCombatOverride overlapOverride = UnitLoadoutCombatOverrideBuilder.Build(profile, overlapPreview);
+            UnitState invalidUnit = MakeLoadoutValidationUnit("preview-invalid-loadout", unitType, combatProfiles);
+            invalidUnit.ApplyDemoLoadout(overlapOverride);
+            if (overlapPreview.Validation.IsValid || overlapOverride != null || invalidUnit.HasAppliedDemoLoadout)
+            {
+                throw new InvalidDataException("Preview-driven invalid loadout should not build or apply a combat override.");
+            }
+
+            if (!TryBuildValidFillerEffectPreviews(
+                    unitType,
+                    profile,
+                    fullPreview,
+                    LoadoutItemCategory.ArmorPlate,
+                    out CombatLoadoutPreview armorBasePreview,
+                    out CombatLoadoutPreview armorPreview))
+            {
+                throw new InvalidDataException("Expected a valid armor filler edit that changes preview combat stats.");
+            }
+
+            UnitState armorBaseUnit = MakeLoadoutValidationUnit("preview-armor-base-loadout", unitType, combatProfiles);
             UnitState armorUnit = MakeLoadoutValidationUnit("preview-armor-loadout", unitType, combatProfiles);
-            armorUnit.ApplyDemoLoadout(UnitLoadoutCombatOverrideBuilder.Build(profile, armorPreview));
-            if (armorPreview.Validation.TotalArmorHardnessBonus <= fullPreview.Validation.TotalArmorHardnessBonus
+            UnitLoadoutCombatOverride armorBaseOverride = UnitLoadoutCombatOverrideBuilder.Build(profile, armorBasePreview);
+            UnitLoadoutCombatOverride armorOverride = UnitLoadoutCombatOverrideBuilder.Build(profile, armorPreview);
+            if (armorBaseOverride == null || armorOverride == null)
+            {
+                throw new InvalidDataException("Preview-driven armor filler loadout did not build a combat override.");
+            }
+
+            armorBaseUnit.ApplyDemoLoadout(armorBaseOverride);
+            armorUnit.ApplyDemoLoadout(armorOverride);
+            if (armorPreview.Validation.TotalArmorHardnessBonus <= armorBasePreview.Validation.TotalArmorHardnessBonus
                 || Math.Abs(armorUnit.CombatArmorHardnessBonus - armorPreview.Validation.TotalArmorHardnessBonus) > 0.001f
-                || armorUnit.CombatIncomingDamageMultiplier >= 1f)
+                || armorUnit.CombatArmorHardnessBonus <= armorBaseUnit.CombatArmorHardnessBonus
+                || armorUnit.CombatIncomingDamageMultiplier >= armorBaseUnit.CombatIncomingDamageMultiplier
+                || armorUnit.CombatMountedWeaponCount != previewWeaponCount)
             {
                 throw new InvalidDataException("Preview-driven armor filler did not apply armor hardness to UnitState combat stats.");
             }
 
-            CombatLoadoutPreview heatSinkPreview = CombatLoadoutPreviewBuilder.Build(
-                unitType,
-                profile,
-                null,
-                null,
-                new[]
-                {
-                    new CombatLoadoutFillerOverride
-                    {
-                        gridX = fillerX,
-                        gridY = fillerY,
-                        category = LoadoutItemCategory.HeatSink
-                    }
-                });
+            if (!TryBuildValidFillerEffectPreviews(
+                    unitType,
+                    profile,
+                    fullPreview,
+                    LoadoutItemCategory.HeatSink,
+                    out CombatLoadoutPreview heatSinkBasePreview,
+                    out CombatLoadoutPreview heatSinkPreview))
+            {
+                throw new InvalidDataException("Expected a valid heat-sink filler edit that changes preview combat stats.");
+            }
+
+            UnitState heatSinkBaseUnit = MakeLoadoutValidationUnit("preview-heat-sink-base-loadout", unitType, combatProfiles);
             UnitState heatSinkUnit = MakeLoadoutValidationUnit("preview-heat-sink-loadout", unitType, combatProfiles);
-            heatSinkUnit.ApplyDemoLoadout(UnitLoadoutCombatOverrideBuilder.Build(profile, heatSinkPreview));
-            if (heatSinkPreview.Validation.TotalHeatDissipationBonus <= fullPreview.Validation.TotalHeatDissipationBonus
-                || Math.Abs(heatSinkUnit.CombatHeatDissipationPerSecond - (profile.HeatDissipationPerSecond + heatSinkPreview.Validation.TotalHeatDissipationBonus)) > 0.001f)
+            UnitLoadoutCombatOverride heatSinkBaseOverride = UnitLoadoutCombatOverrideBuilder.Build(profile, heatSinkBasePreview);
+            UnitLoadoutCombatOverride heatSinkOverride = UnitLoadoutCombatOverrideBuilder.Build(profile, heatSinkPreview);
+            if (heatSinkBaseOverride == null || heatSinkOverride == null)
+            {
+                throw new InvalidDataException("Preview-driven heat-sink filler loadout did not build a combat override.");
+            }
+
+            heatSinkBaseUnit.ApplyDemoLoadout(heatSinkBaseOverride);
+            heatSinkUnit.ApplyDemoLoadout(heatSinkOverride);
+            if (heatSinkPreview.Validation.TotalHeatDissipationBonus <= heatSinkBasePreview.Validation.TotalHeatDissipationBonus
+                || Math.Abs(heatSinkUnit.CombatHeatDissipationPerSecond - (profile.HeatDissipationPerSecond + heatSinkPreview.Validation.TotalHeatDissipationBonus)) > 0.001f
+                || heatSinkUnit.CombatHeatDissipationPerSecond <= heatSinkBaseUnit.CombatHeatDissipationPerSecond
+                || heatSinkUnit.CombatMountedWeaponCount != previewWeaponCount)
             {
                 throw new InvalidDataException("Preview-driven heat-sink filler did not apply cooling to UnitState combat stats.");
             }
@@ -1584,6 +1648,140 @@ namespace MC2Demo.EditorTools
             x = -1;
             y = -1;
             return false;
+        }
+
+        private static bool TryBuildValidFillerEffectPreviews(
+            string unitType,
+            CombatProfile profile,
+            CombatLoadoutPreview sourcePreview,
+            string category,
+            out CombatLoadoutPreview basePreview,
+            out CombatLoadoutPreview effectPreview)
+        {
+            basePreview = null;
+            effectPreview = null;
+            if (sourcePreview == null)
+            {
+                return false;
+            }
+
+            foreach (CombatLoadoutPreviewGridCell cell in sourcePreview.OccupiedCells)
+            {
+                if (cell == null || cell.SourceWeaponIndex >= 0)
+                {
+                    continue;
+                }
+
+                CombatLoadoutPreview candidateBase = BuildFillerEditPreview(
+                    unitType,
+                    profile,
+                    cell.X,
+                    cell.Y,
+                    LoadoutFillerOverrideCategory.Empty);
+                CombatLoadoutPreview candidateEffect = BuildFillerEditPreview(unitType, profile, cell.X, cell.Y, category);
+                if (FillerEffectChangesCombatStats(candidateBase, candidateEffect, category))
+                {
+                    basePreview = candidateBase;
+                    effectPreview = candidateEffect;
+                    return true;
+                }
+            }
+
+            for (int row = 0; row < sourcePreview.GridHeight; row++)
+            {
+                for (int column = 0; column < sourcePreview.GridWidth; column++)
+                {
+                    if (IsLoadoutCellOccupied(sourcePreview, column, row))
+                    {
+                        continue;
+                    }
+
+                    CombatLoadoutPreview candidateEffect = BuildFillerEditPreview(unitType, profile, column, row, category);
+                    if (FillerEffectChangesCombatStats(sourcePreview, candidateEffect, category))
+                    {
+                        basePreview = sourcePreview;
+                        effectPreview = candidateEffect;
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        private static CombatLoadoutPreview BuildFillerEditPreview(string unitType, CombatProfile profile, int x, int y, string category)
+        {
+            return CombatLoadoutPreviewBuilder.Build(
+                unitType,
+                profile,
+                null,
+                null,
+                new[]
+                {
+                    new CombatLoadoutFillerOverride
+                    {
+                        gridX = x,
+                        gridY = y,
+                        category = category
+                    }
+                });
+        }
+
+        private static bool FillerEffectChangesCombatStats(
+            CombatLoadoutPreview basePreview,
+            CombatLoadoutPreview effectPreview,
+            string category)
+        {
+            if (basePreview?.Validation == null
+                || effectPreview?.Validation == null
+                || !basePreview.Validation.IsValid
+                || !effectPreview.Validation.IsValid)
+            {
+                return false;
+            }
+
+            if (category == LoadoutItemCategory.ArmorPlate)
+            {
+                return effectPreview.Validation.TotalArmorHardnessBonus
+                    > basePreview.Validation.TotalArmorHardnessBonus + 0.001f;
+            }
+
+            if (category == LoadoutItemCategory.HeatSink)
+            {
+                return effectPreview.Validation.TotalHeatDissipationBonus
+                    > basePreview.Validation.TotalHeatDissipationBonus + 0.001f;
+            }
+
+            return false;
+        }
+
+        private static bool IsLoadoutCellOccupied(CombatLoadoutPreview preview, int x, int y)
+        {
+            foreach (CombatLoadoutPreviewGridCell cell in preview?.OccupiedCells ?? Array.Empty<CombatLoadoutPreviewGridCell>())
+            {
+                if (cell != null && cell.X == x && cell.Y == y)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static int CountPreviewSourceWeapons(CombatLoadoutPreview preview)
+        {
+            HashSet<int> sourceWeaponIndexes = new();
+            CombatLoadoutPreviewItem[] items = preview?.Items ?? Array.Empty<CombatLoadoutPreviewItem>();
+            for (int index = 0; index < items.Length; index++)
+            {
+                int sourceWeaponIndex = items[index]?.SourceWeaponIndex ?? -1;
+                if (sourceWeaponIndex >= 0)
+                {
+                    sourceWeaponIndexes.Add(sourceWeaponIndex);
+                }
+            }
+
+            return sourceWeaponIndexes.Count;
         }
 
         private static DamageSection FindDamageSection(UnitState unit, string sectionName)

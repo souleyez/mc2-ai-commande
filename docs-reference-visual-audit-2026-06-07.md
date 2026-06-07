@@ -123,6 +123,39 @@ Visual judgment:
 - Mounted weapons remain whole blocks with shape labels; armor plates and heat sinks remain single-cell fillers.
 - The screenshot still reads as a fitting surface rather than a large instruction panel.
 
+## Loadout Battle Effect Refresh 2026-06-07
+
+Refreshed after `Prove loadout battle effects` with:
+
+```powershell
+git diff --check
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoValidator.ValidateMissionContract -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-validate-loadout-battle-effect.log"
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoBuilder.BuildWindows64 -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-build-loadout-battle-effect.log"
+& "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo\Builds\Windows\MC2UnityDemo.exe" -batchmode -nographics -mc2SmokeTest -mc2CommandFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo\Assets\StreamingAssets\CommanderScripts\mc2_01-visible-flow-audit.txt" -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-player-loadout-battle-effect.log"
+```
+
+Validation status:
+
+- `analysis-output/unity-validate-loadout-battle-effect.log` reports `MC2 demo contract validation OK`.
+- `analysis-output/unity-build-loadout-battle-effect.log` reports `Build Finished, Result: Success` and `MC2 Unity demo Windows build OK`.
+- `analysis-output/unity-player-loadout-battle-effect.log` reaches victory, debrief, MechLab relaunch, restart identity and loadout compact checks.
+- The Unity scene file only received fileID churn from the Windows build and was manually restored.
+
+Observed rules evidence:
+
+- `UnitLoadoutCombatOverride` now records source and mounted weapon counts.
+- `UnitState` exposes effective source/mounted weapon counts next to effective range, damage, cooldown, heat, cooling and armor hardness.
+- Valid preview weapon blocks must match the BattleCore mounted weapon count.
+- Legal armor filler edits increase armor hardness and lower incoming damage multiplier.
+- Legal heat-sink filler edits increase combat heat dissipation.
+- Invalid overlap previews return no combat override and cannot become an applied combat loadout.
+
+Engineering judgment:
+
+- MechLab fitting is now connected to battle rules through BattleCore, not Presentation-only UI state.
+- The task did not rebalance source weapon numbers or add public art changes.
+- Next priority is the visible combat story: weapon-family readability, section damage, lost arms/legs and cockpit ejection at screenshot scale.
+
 ## Capture Matrix
 
 | Preset | Mission Time | Camera Ortho | Active Hostiles | Visible Hostiles | Evidence | Readability Result |

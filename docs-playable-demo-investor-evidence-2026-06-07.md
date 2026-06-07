@@ -62,6 +62,19 @@ Refreshed on 2026-06-07 after `Polish MechLab grid feel`.
 
 MechLab judgment: the fitting screen now proves whole weapon blocks, single-cell armor/cooling fillers, short H/W/G pressure, explicit cell-state evidence, and `noToggle=yes` for mounted weapons.
 
+## Loadout Battle Effect Refresh
+
+Refreshed on 2026-06-07 after `Prove loadout battle effects`.
+
+| Gate | Result | Evidence |
+| --- | --- | --- |
+| Markdown/code whitespace | Pass | `git diff --check` |
+| Mission validator | Pass | `analysis-output/unity-validate-loadout-battle-effect.log` reports `MC2 demo contract validation OK`. |
+| Windows build | Pass | `analysis-output/unity-build-loadout-battle-effect.log` reports `Build Finished, Result: Success` and `MC2 Unity demo Windows build OK`. |
+| Visible-flow smoke | Pass | `analysis-output/unity-player-loadout-battle-effect.log` reaches victory, debrief, MechLab relaunch and loadout compact checks. |
+
+Loadout judgment: MechLab previews now have a guarded gameplay path. BattleCore records source/mounted weapon counts, rejects invalid preview fits, and applies legal armor/heat-sink changes to the same `UnitState` combat fields used by live battle.
+
 ## Capture Command
 
 Run from the repository root:
