@@ -264,6 +264,23 @@ Copy-Item ..\analysis-output\unity-demo-contract\project-owned-linked-dev\mc2_01
 The contract JSON is generated from the private local reference content pack and
 is ignored by git.
 
+Repeatable Windows demo handoff:
+
+Use the repository root `BUILD-WIN.md` as the canonical short checklist for the
+current Unity 6 Windows playable demo. The handoff path is:
+
+1. Run `MC2Demo.EditorTools.Mc2DemoValidator.ValidateMissionContract`.
+2. Run `MC2Demo.EditorTools.Mc2DemoBuilder.BuildWindows64`.
+3. Smoke `Builds\Windows\MC2UnityDemo.exe` with
+   `Assets\StreamingAssets\CommanderScripts\mc2_01-visible-flow-audit.txt`.
+4. Capture visual evidence with `scripts\unity\capture_reference_visuals.ps1`
+   when screenshots or sidecars are needed.
+
+The expected generated evidence lives under the ignored `analysis-output/`
+folder. The built player lives under the ignored `Builds/Windows/` folder.
+Private reference-art exports are local development evidence only; public builds
+must use project-owned or properly licensed replacement content packs.
+
 Rebuild the demo scene and Windows player:
 
 ```powershell

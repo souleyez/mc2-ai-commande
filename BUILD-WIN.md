@@ -1,3 +1,74 @@
+Current Unity 6 Windows Demo handoff
+====================================
+
+This is the current repeatable path for the playable Windows demo. The older
+native/C++ build notes are still kept below for historical engine work, but the
+active first playable demo is the Unity 6 project in `unity-mc2-demo`.
+
+Run these commands from the repository root:
+
+```powershell
+cd C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2
+```
+
+Validate the mission, loadout, AI boundary, occupancy, damage, and command-file
+contracts:
+
+```powershell
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" `
+  -batchmode -quit `
+  -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" `
+  -executeMethod MC2Demo.EditorTools.Mc2DemoValidator.ValidateMissionContract `
+  -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-validate-demo-package.log"
+```
+
+Build the Windows player:
+
+```powershell
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" `
+  -batchmode -quit `
+  -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" `
+  -executeMethod MC2Demo.EditorTools.Mc2DemoBuilder.BuildWindows64 `
+  -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-build-demo-package.log"
+```
+
+Smoke the visible playable loop:
+
+```powershell
+& "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo\Builds\Windows\MC2UnityDemo.exe" `
+  -batchmode -nographics -mc2SmokeTest `
+  -mc2CommandFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo\Assets\StreamingAssets\CommanderScripts\mc2_01-visible-flow-audit.txt" `
+  -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-player-demo-package.log"
+```
+
+Capture reference screenshots and JSON sidecars when visual evidence is needed:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass `
+  -File scripts\unity\capture_reference_visuals.ps1 `
+  -Presets mechlab,spawn,airfield,hangar-contact,damage-demo,north-patrol
+```
+
+Expected success strings:
+
+- `MC2 demo contract validation OK`
+- `Build Finished, Result: Success`
+- `MC2 Unity demo Windows build OK`
+- `MC2 demo smoke test exiting with code 0`
+- `MC2 reference visual captures passed`
+
+Generated logs, screenshots, JSON sidecars, and Windows player builds stay under
+ignored paths such as `analysis-output/` and `unity-mc2-demo/Builds/`. Do not
+stage them unless a later task explicitly asks for a packaged evidence drop.
+
+The private local reference content pack is optional for development evidence:
+it can improve scale, pacing, and readability while validating the demo, but it
+is not public release content. Public or commercial builds must use
+project-owned or properly licensed replacement content packs.
+
+Legacy native Windows build notes
+=================================
+
 Preparing 3rdparties:
 ====================
 

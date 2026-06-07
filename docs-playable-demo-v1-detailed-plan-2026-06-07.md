@@ -30,7 +30,7 @@ Current branch snapshot when this plan was written:
   - `1bd22e2 Lock occupancy placeholder review layer`
   - `74e24bf Polish MechLab block fitting`
   - `6ffa2ea Capture MechLab fitting evidence`
-- Current next gameplay task: `H2 Prepare repeatable Windows Demo build`.
+- Current next gameplay task: `H3 Package playable demo evidence`.
 
 ## 1. Product Definition
 
@@ -230,8 +230,8 @@ The authoritative queue is still in `docs-playable-demo-current-execution-plan-2
 | C1 | Done | `Strengthen damage demo readability` | Make limb/cockpit/ejection damage readable at screenshot scale |
 | C2 | Done | `Keep battle UI sparse` | Ensure battle UI stays clean while preserving command/damage state |
 | H1 | Done | `Write playable demo walkthrough` | Create a three-minute demonstration script |
-| H2 | Next | `Prepare repeatable Windows demo build` | Document and verify repeatable build/smoke/capture commands |
-| H3 | Pending | `Package playable demo evidence` | Build an evidence page with screenshot beats and captions |
+| H2 | Done | `Prepare repeatable Windows demo build` | Document and verify repeatable build/smoke/capture commands |
+| H3 | Next | `Package playable demo evidence` | Build an evidence page with screenshot beats and captions |
 | P1 | Pending | `Document reference content boundary` | Make private reference vs public content boundary explicit |
 | P2 | Pending | `Add public content boundary check` | Add a safe check for public packaging |
 
@@ -346,7 +346,9 @@ git diff --check
 
 ### Task H2: Prepare Repeatable Windows Demo Build
 
-**Status:** Next.
+**Status:** Completed 2026-06-07.
+
+**Result:** The root `BUILD-WIN.md` now has a current Unity 6 Windows Demo handoff checklist with validator, build, visible-flow smoke, reference capture command, expected success strings, ignored evidence paths and private-reference-content boundary. `unity-mc2-demo/README.md` points to that checklist. Verified with `analysis-output/unity-validate-demo-package.log`, `analysis-output/unity-build-demo-package.log`, and `analysis-output/unity-player-demo-package.log`.
 
 **Goal:** Make local build, smoke and capture reproducible without relying on memory.
 
@@ -381,6 +383,8 @@ git diff --check
 **Commit:** `Prepare repeatable Windows demo build`
 
 ### Task H3: Package Playable Demo Evidence
+
+**Status:** Next.
 
 **Goal:** Create a small evidence page that tells the Demo story without checking in generated screenshots.
 
