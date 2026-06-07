@@ -4,6 +4,22 @@ Purpose: one concise evidence page for showing the current Windows playable Demo
 
 The current evidence proves a local playable loop: MechLab fitting, squad launch, sparse tactical command, contact pressure, visible section damage, and a repeatable capture/build path. It is still a prototype evidence pack, not final public art.
 
+## Handoff Gate Audit
+
+Refreshed on 2026-06-07 after `ce5dced Add public content boundary check`.
+
+| Gate | Result | Evidence |
+| --- | --- | --- |
+| Markdown/code whitespace | Pass | `git diff --check` |
+| Mission validator | Pass | `analysis-output/unity-validate-handoff.log` reports `MC2 demo contract validation OK: 29 units, 3 player units, 9 objectives, 1 structure, 10000 terrain samples, 1000 terrain objects, combat simulation passed.` |
+| Windows build | Pass | `analysis-output/unity-build-handoff.log` reports `Build Finished, Result: Success` and `MC2 Unity demo Windows build OK`. |
+| Visible-flow smoke | Pass | `analysis-output/unity-player-handoff-visible-flow.log` reports `MC2 demo smoke test exiting with code 0`. |
+| Six capture presets | Pass | `mechlab`, `spawn`, `airfield`, `hangar-contact`, `damage-demo`, `north-patrol` PNG/JSON sidecars refreshed under `analysis-output/reference-visual-captures/`. |
+| Clean starter boundary | Pass | `check_public_content_boundary.ps1` returns `Result: OK` for `content-packs/project-owned-starter.example.json`. |
+| Current build public boundary | Development-only | The current Windows dev build returns `Result: FAILED` with 172 expected findings, including `MC2UnityDemo`, `mc2_01` command/mission ids, local paths, reference-linked pack traces and legacy unit markers. This is a correct warning, not a build failure. |
+
+Handoff judgment: the local Windows Demo is buildable, smoke-tested, capturable and explainable as a development Demo. It is not public-safe until a clean replacement content pack and public build identity replace the current development-only markers.
+
 ## Capture Command
 
 Run from the repository root:
@@ -38,7 +54,7 @@ mechlab: MechLabCapture=open ... weaponBlock=1 Streak ... 1x2 fillers=A+/C+ fit=
 spawn: BattleHud=active controls=statusRows+jet+map+bay+system combatPanel=h78 combatLogVisible=no objectivePanel=compactObjective objectiveH=74 missionMap=closed saveUi=disabled
 airfield: activeHostileCount=12 visibleHostileCount=8 currentObjective=Destroy Hangar
 hangar-contact: activeHostileCount=20 visibleHostileCount=16 OccupancyPlaceholders=enabled total 120 units 23 playerUnits 3 hostileUnits 20 structures 1 hardProps 80 landingBlockedMarkers 16
-damage-demo: DamageStory=units 3/3 lostSections=3 arms=1 legs=1 cockpit=1 pilotRisk=1 destroyedUnits=1 story=unit-1:left-arm-lost,unit-2:legs-lost,unit-3:cockpit-lost
+damage-demo: activeHostileCount=20 visibleHostileCount=16 DamageStory=units 3/3 lostSections=3 arms=1 legs=1 cockpit=1 pilotRisk=1 destroyedUnits=1 story=unit-1:left-arm-lost,unit-2:legs-lost,unit-3:cockpit-lost
 north-patrol: activeHostileCount=24 visibleHostileCount=10 status=north encounter trigger completed.
 ```
 

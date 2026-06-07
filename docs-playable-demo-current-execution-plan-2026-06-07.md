@@ -42,7 +42,7 @@
 - Repeatable Windows build 已提交：`3753857 Prepare repeatable Windows demo build`.
 - Demo evidence package 已提交：`0bb822b Package playable demo evidence`.
 - Content boundary documentation 已提交：`4819657 Document reference content boundary`.
-- Public content boundary check 已完成，下一步是 `H4 Run demo handoff gate audit`.
+- H4 handoff audit 已完成，下一步是 `V4 Polish crowded contact occupancy`.
 
 ## 1. First Demo Product Scope
 
@@ -99,8 +99,8 @@
 | Gap | Why It Matters | Next Task |
 | --- | --- | --- |
 | MechLab 后续只需回归 | 整块占格和截图证据已完成，后续 UI 改动需要保持这个体验不退化 | G3 regression |
-| Demo 公开边界说明已收口 | P1 已补 README、内容包合同和替换计划；P2 已补打包路径检查脚本 | H4 handoff audit |
-| 公开内容安全还需要干净替换包 | 当前开发 build 会被边界检查正确标为不适合公开发布 | H4 audit, then R1 replacement slice |
+| Demo handoff 已审计 | H4 已验证 build、smoke、capture 和 boundary；当前 Demo 可作为 development-only 本地演示 | V4 crowded contact polish |
+| 公开内容安全还需要干净替换包 | 当前开发 build 会被边界检查正确标为不适合公开发布 | R1 replacement slice later |
 
 ## 3. Architecture Contracts
 
@@ -264,7 +264,8 @@ Do not stage generated PNG/JSON/log evidence unless explicitly requested.
 | 12 | Done | `Package playable demo evidence` | G8 handoff |
 | 13 | Done | `Document reference content boundary` | G6 public boundary |
 | 14 | Done | `Add public content boundary check` | G6 public boundary |
-| 15 | Next | `Run demo handoff gate audit` | G8 handoff |
+| 15 | Done | `Run demo handoff gate audit` | G8 handoff |
+| 16 | Next | `Polish crowded contact occupancy` | G2/G7 readability and occupancy |
 
 ## 6. Detailed Tasks
 
@@ -850,7 +851,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\content-pack\check_p
 
 ### H4: Run Demo Handoff Gate Audit
 
-**Status:** Next.
+**Status:** Completed 2026-06-07.
+
+**Result:** H4 passed the local handoff gates for a development Demo. `git diff --check` passed. `analysis-output/unity-validate-handoff.log` reports contract validation OK. `analysis-output/unity-build-handoff.log` reports `Build Finished, Result: Success` and `MC2 Unity demo Windows build OK`. `analysis-output/unity-player-handoff-visible-flow.log` reports smoke exit code `0`. The six capture presets refreshed under `analysis-output/reference-visual-captures/`. Public boundary status is explicit: `project-owned-starter.example.json` returns `Result: OK`, while the current Windows dev build returns expected `Result: FAILED` with 172 findings, so it remains development-only.
 
 **Goal:** 把“能跑、能看、能讲、能解释边界”一次性验证出来。
 
@@ -888,6 +891,46 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_refere
 - Generated artifacts remain ignored unless the user asks to package them.
 
 **Commit:** `Audit playable demo handoff gate`
+
+### V4: Polish Crowded Contact Occupancy
+
+**Status:** Next.
+
+**Goal:** 继续解决 `hangar-contact` 仍然偏密的问题，让主战斗截图更像战术交战，而不是所有单位围着一个建筑挤在一起。
+
+**Files:**
+
+- Modify: `unity-mc2-demo/Assets/Scripts/BattleCore/BattleMission.cs`
+- Modify if needed: `unity-mc2-demo/Assets/Scripts/Presentation/Mc2DemoBootstrap.cs`
+- Modify if needed: `scripts/unity/capture_reference_visuals.ps1`
+- Modify: `docs-reference-visual-audit-2026-06-07.md`
+- Modify: `docs-playable-demo-investor-evidence-2026-06-07.md`
+
+**Steps:**
+
+1. Inspect current `hangar-contact.json` and `damage-demo.json` occupancy fields.
+2. Decide whether the density is caused by unit attack-slot spacing, target parking, spawn activation, camera composition, or visual scale.
+3. Prefer BattleCore spacing/occupancy evidence over presentation-only fixes.
+4. If adding a new capture preset or sidecar field helps, keep it small and H4-compatible.
+5. Re-run validator, build or smoke as appropriate.
+6. Capture `hangar-contact` and `damage-demo`.
+7. Update visual audit with before/after evidence.
+
+**Validation:**
+
+```powershell
+git diff --check
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoValidator.ValidateMissionContract -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-validate-crowded-contact.log"
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_reference_visuals.ps1 -Presets hangar-contact,damage-demo
+```
+
+**Acceptance:**
+
+- `hangar-contact` remains tactically readable with terrain, objective, squad, hostile direction and damage cues visible.
+- Occupancy sidecar still proves unit, structure, hardProp and landing-blocked regions.
+- No additional battle UI is added to explain the fight.
+
+**Commit:** `Polish crowded contact occupancy`
 
 ## 7. Milestone Gates
 

@@ -32,7 +32,7 @@ Current branch snapshot after the latest plan refresh:
   - `3753857 Prepare repeatable Windows demo build`
   - `0bb822b Package playable demo evidence`
   - `4819657 Document reference content boundary`
-- Current next gameplay task: `H4 Run demo handoff gate audit`.
+- Current next gameplay task: `V4 Polish crowded contact occupancy`.
 
 ## 1. Product Definition
 
@@ -236,7 +236,8 @@ The authoritative queue is still in `docs-playable-demo-current-execution-plan-2
 | H3 | Done | `Package playable demo evidence` | Build an evidence page with screenshot beats and captions |
 | P1 | Done | `Document reference content boundary` | Make private reference vs public content boundary explicit |
 | P2 | Done | `Add public content boundary check` | Add a safe check for public packaging |
-| H4 | Next | `Run demo handoff gate audit` | Validate build, smoke, captures and content boundary together |
+| H4 | Done | `Run demo handoff gate audit` | Validate build, smoke, captures and content boundary together |
+| V4 | Next | `Polish crowded contact occupancy` | Improve the densest contact screenshot with BattleCore evidence |
 
 ## 6. Detailed Execution Tasks
 

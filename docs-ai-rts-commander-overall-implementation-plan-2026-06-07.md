@@ -87,9 +87,9 @@ Playable Demo Handoff: 把已能跑的 Windows 本地 Demo 收成可重复构建
 
 | Gap | Why It Matters | Next Move |
 | --- | --- | --- |
-| 公开内容边界检查已补齐 | 开发期可用私有参考内容，公开打包不能混入；当前 dev build 会被正确标记为 development-only | H4 handoff gate audit |
 | 视觉还需要稳定回归 | 当前已有样子，但机甲、道具、遮挡、占位仍要避免退化成堆叠 | 每次视觉改动跑 capture + sidecar |
-| Demo handoff 还差最终门检 | 构建、smoke、截图、walkthrough、内容边界要能一口气解释 | Handoff gate audit |
+| Demo handoff 已过 development-only 门检 | 构建、smoke、截图、walkthrough、内容边界已能一口气解释；当前 dev build 会被正确标记为 development-only | V4 crowded contact polish |
+| 压力图仍偏密 | `hangar-contact` 能读但仍是最拥挤截图，需要继续用 BattleCore 占位和构图证据打开战斗关系 | V4 crowded contact polish |
 | 公开替换包还没进入生产 | 投资/公开演示需要至少 text-safe，最好 art-safe | 开 P3 content replacement slice |
 
 ## 3. First Version Scope
@@ -283,7 +283,9 @@ scripts/content-pack/check_public_content_boundary.ps1
 
 ### Milestone 1: Demo Handoff Gate
 
-**Status:** Next.
+**Status:** Completed 2026-06-07.
+
+**Result:** H4 confirmed the local Windows Demo is buildable, smoke-tested, capturable and explainable as a development Demo. Validator, Windows build and visible-flow smoke passed. Six capture presets refreshed. The clean starter manifest passes public boundary, while the current dev build is correctly marked development-only.
 
 **Goal:** 能把本地 Demo 给协作者或投资人看，并解释它的产品价值和开发边界。
 
@@ -512,7 +514,7 @@ Current recommended queue:
 | 5 | Done | `Package playable demo evidence` | Gather evidence paths and captions |
 | 6 | Done | `Document reference content boundary` | Clarify private/public content split |
 | 7 | Done | `Add public content boundary check` | Add non-destructive build-path safety check |
-| 8 | Next | `Run demo handoff gate audit` | Validate build, smoke, captures and content boundary together |
+| 8 | Done | `Run demo handoff gate audit` | Validate build, smoke, captures and content boundary together |
 | 9 | Next | `Polish crowded contact occupancy` | Fix any remaining model overlap with BattleCore evidence |
 | 10 | Next | `Open public replacement slice` | Start text-safe/art-safe content pack path |
 

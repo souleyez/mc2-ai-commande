@@ -14,6 +14,36 @@ Capture outputs remain ignored under:
 analysis-output/reference-visual-captures/
 ```
 
+## Handoff Refresh 2026-06-07
+
+H4 refreshed the full evidence set with:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_reference_visuals.ps1 -Presets spawn,airfield,hangar-contact,damage-demo,north-patrol,mechlab
+```
+
+Validation status:
+
+- `git diff --check` passed.
+- `analysis-output/unity-validate-handoff.log` reports `MC2 demo contract validation OK`.
+- `analysis-output/unity-build-handoff.log` reports `Build Finished, Result: Success` and `MC2 Unity demo Windows build OK`.
+- `analysis-output/unity-player-handoff-visible-flow.log` reports `MC2 demo smoke test exiting with code 0`.
+- `check_public_content_boundary.ps1` returns `Result: OK` for `content-packs/project-owned-starter.example.json`.
+- The current Windows development build returns expected `Result: FAILED` with 172 public-boundary findings, so it remains development-only.
+
+Latest refreshed sidecar counts:
+
+| Preset | PNG Bytes | Mission Time | Active Hostiles | Visible Hostiles | Key Evidence |
+| --- | ---: | ---: | ---: | ---: | --- |
+| `mechlab` | 200183 | 0.25s | 0 | 0 | `MechLabCapture=open`, `Fit OK`, weapon blocks, fillers and no weapon toggle |
+| `spawn` | 368272 | 1.39s | 0 | 0 | sparse battle HUD, commander-follow camera, 100 occupancy placeholders |
+| `airfield` | 364402 | 13.09s | 12 | 8 | readable terrain/water/runway and first contact direction |
+| `hangar-contact` | 363932 | 21.09s | 20 | 16 | compact objective card, 120 occupancy placeholders, still the densest fight |
+| `damage-demo` | 382118 | 39.09s | 20 | 16 | arm lost, legs lost, cockpit lost, pilot risk and destroyed unit |
+| `north-patrol` | 402584 | 55.09s | 24 | 10 | wider patrol slice remains readable |
+
+Handoff visual judgment: the Demo is now demonstrable as a local Windows prototype. `hangar-contact` is still the pressure-test image and should drive the next polish pass: improve crowded contact occupancy/spacing and contact composition without adding more UI.
+
 ## Capture Matrix
 
 | Preset | Mission Time | Camera Ortho | Active Hostiles | Visible Hostiles | Evidence | Readability Result |
