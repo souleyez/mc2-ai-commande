@@ -15,9 +15,11 @@ namespace MC2Demo.Presentation
         private const int MaxCompositeSide = 2048;
         private static readonly Dictionary<int, LoadedTerrainTexture> TextureCache = new();
         private static readonly HashSet<int> MissingTextureIds = new();
+        private static readonly HashSet<int> LoggedMissingTextureIds = new();
         private static TerrainTextureManifest manifestCache;
         private static string manifestPathCache;
         private static bool manifestLoadAttempted;
+        private static bool loggedFirstTerrainTextureSource;
 
         public static bool TryBuildCompositeTexture(MissionContract contract, out Texture2D texture, out string summary)
         {
@@ -312,6 +314,7 @@ namespace MC2Demo.Presentation
             if (string.IsNullOrWhiteSpace(texturePath) || !File.Exists(texturePath))
             {
                 MissingTextureIds.Add(textureId);
+                LogMissingTexture(textureId, entry, texturePath, manifestPath);
                 return null;
             }
 
@@ -319,11 +322,13 @@ namespace MC2Demo.Presentation
             {
                 LoadedTerrainTexture loaded = LoadTexture(texturePath, textureId, Path.GetDirectoryName(manifestPath) ?? "");
                 TextureCache[textureId] = loaded;
+                LogTerrainTextureSource(textureId, entry, texturePath, manifestPath);
                 return loaded;
             }
             catch (Exception ex)
             {
                 MissingTextureIds.Add(textureId);
+                LogMissingTexture(textureId, entry, texturePath, manifestPath);
                 Debug.LogWarning("Failed to load terrain reference texture "
                     + textureId.ToString(CultureInfo.InvariantCulture)
                     + " from "
@@ -345,6 +350,53 @@ namespace MC2Demo.Presentation
             }
 
             return null;
+        }
+
+        private static void LogTerrainTextureSource(
+            int textureId,
+            TerrainTextureEntry entry,
+            string texturePath,
+            string manifestPath)
+        {
+            if (loggedFirstTerrainTextureSource)
+            {
+                return;
+            }
+
+            loggedFirstTerrainTextureSource = true;
+            string sourceName = string.IsNullOrWhiteSpace(entry?.sourceName) ? "<unknown>" : entry.sourceName;
+            Debug.Log("Mapped private terrain texture manifest asset: textureId="
+                + textureId.ToString(CultureInfo.InvariantCulture)
+                + " source="
+                + sourceName
+                + " path="
+                + texturePath
+                + " manifest="
+                + manifestPath);
+        }
+
+        private static void LogMissingTexture(
+            int textureId,
+            TerrainTextureEntry entry,
+            string texturePath,
+            string manifestPath)
+        {
+            if (!LoggedMissingTextureIds.Add(textureId))
+            {
+                return;
+            }
+
+            string sourceName = string.IsNullOrWhiteSpace(entry?.sourceName) ? "<missing-entry>" : entry.sourceName;
+            string pathText = string.IsNullOrWhiteSpace(texturePath) ? "<none>" : texturePath;
+            Debug.LogWarning("No loadable private terrain texture for textureId="
+                + textureId.ToString(CultureInfo.InvariantCulture)
+                + " source="
+                + sourceName
+                + " path="
+                + pathText
+                + " manifest="
+                + manifestPath
+                + "; using procedural terrain fallback tile.");
         }
 
         private static string ResolveTexturePath(TerrainTextureEntry entry, string manifestPath)
@@ -637,6 +689,7 @@ namespace MC2Demo.Presentation
             }
 
             manifestLoadAttempted = true;
+            int checkedPathCount = 0;
             foreach (string candidate in CandidateManifestPaths())
             {
                 if (string.IsNullOrWhiteSpace(candidate) || !File.Exists(candidate))
@@ -644,18 +697,27 @@ namespace MC2Demo.Presentation
                     continue;
                 }
 
+                checkedPathCount++;
                 try
                 {
                     manifest = JsonUtility.FromJson<TerrainTextureManifest>(File.ReadAllText(candidate));
                     if (manifest?.textures == null || manifest.textures.Length == 0)
                     {
+                        Debug.LogWarning("Private terrain texture manifest has no textures: " + candidate);
                         continue;
                     }
 
                     manifestCache = manifest;
                     manifestPathCache = candidate;
                     manifestPath = candidate;
-                    Debug.Log("Loaded private terrain texture manifest: " + candidate);
+                    Debug.Log("Loaded private terrain texture manifest: "
+                        + candidate
+                        + " schema="
+                        + manifest.schema
+                        + " assetClass="
+                        + manifest.assetClass
+                        + " textures="
+                        + manifest.textures.Length.ToString(CultureInfo.InvariantCulture));
                     return true;
                 }
                 catch (Exception ex)
@@ -666,6 +728,9 @@ namespace MC2Demo.Presentation
 
             manifest = null;
             manifestPath = "";
+            Debug.Log("Private terrain texture manifest not found or empty; checked "
+                + checkedPathCount.ToString(CultureInfo.InvariantCulture)
+                + " existing manifest candidate(s). Source terrain vertex-color fallback remains available.");
             return false;
         }
 
@@ -748,14 +813,17 @@ namespace MC2Demo.Presentation
         private sealed class TerrainTextureManifest
         {
             public string schema;
+            public string assetClass;
             public string missionId;
             public string outputRoot;
+            public int textureCount;
             public TerrainTextureEntry[] textures;
         }
 
         [Serializable]
         private sealed class TerrainTextureEntry
         {
+            public string assetClass;
             public int textureId;
             public string sourceName;
             public string relativePath;

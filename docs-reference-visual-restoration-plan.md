@@ -120,7 +120,7 @@ Internal screenshot:
 
 ## Task 1: Replace Runtime OBJ Parsing With A Stable Reference Visual Manifest
 
-**Status:** Exporter-side manifest stabilization completed 2026-06-07. Unity manifest-first loader hardening remains the next B2 task in `docs-ai-rts-commander-current-detailed-plan-2026-06-07.md`.
+**Status:** Exporter-side manifest stabilization and Unity manifest-first loader hardening completed 2026-06-07. Replaceable visual id documentation remains the next B3 task in `docs-ai-rts-commander-current-detailed-plan-2026-06-07.md`.
 
 **Files:**
 
@@ -162,6 +162,11 @@ Missing-source probe for __missing_reference_probe__: Reference visual exports: 
 export_terrain_texture_audit.ps1 -ExportReferenceTextures: Terrain reference textures exported: 103.
 export_reference_visual_pack.ps1 -Names werewolf,bushwacker,centipede,harasser,lrmc,urbanmech,starslayer -IncludeMissionProps: Reference visual exports: 47; missing sources: 0.
 Final local ignored manifest sample: 7 unit entries, 40 prop entries, 19 texture warnings, private-development-only provenance.
+git diff --check -- unity-mc2-demo/Assets/Scripts/Presentation/ReferenceObjMeshLibrary.cs unity-mc2-demo/Assets/Scripts/Presentation/ReferenceTerrainTextureLibrary.cs: passed, with only LF/CRLF warnings.
+analysis-output/unity-build-reference-loader.log: Build Finished, Result: Success; MC2 Unity demo Windows build OK.
+capture_reference_visuals.ps1 -Presets spawn,airfield: MC2 reference visual captures passed: 2 preset(s).
+Manifest loader logs map unit assets, prop assets, and terrain texture ids to the private-development manifest.
+Manifest-missing fallback capture passed for `spawn`, with logs for missing manifests, loose OBJ fallback, primitive fallback, and source terrain vertex-color fallback.
 ```
 
 **Acceptance:**
@@ -169,7 +174,8 @@ Final local ignored manifest sample: 7 unit entries, 40 prop entries, 19 texture
 - Exporter manifest lists the seven first-slice unit visuals.
 - Exporter manifest can also hold the seven unit visuals plus 40 first-slice mission prop visuals.
 - Missing private source files produce manifest warnings instead of broken docs or Python tracebacks.
-- Unity log mapping and missing-manifest primitive fallback remain B2 acceptance items.
+- Unity logs manifest-selected asset ids for first-slice units, props, and terrain textures.
+- Missing manifest still falls back cleanly through loose OBJ or primitive/vertex-color development visuals.
 
 ## Task 2: Restore Mech Facing, Scale, And Node Hierarchy
 

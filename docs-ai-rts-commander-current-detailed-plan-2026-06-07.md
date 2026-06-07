@@ -115,7 +115,7 @@
 | A5 | Done | `Gate first map visual slice` | sidecar 检查第一图视觉、稀疏 UI、碰撞不回退 | build + five battle captures |
 | A6 | Done | `Refresh demo evidence after visual pass` | 更新证据页和审计文档 | six captures + docs |
 | B1 | Done | `Stabilize reference visual manifest export` | 私有参考单位/道具/地形资源导出 manifest | exporter dry run + missing-source probe |
-| B2 | Next | `Harden Unity reference visual loader` | Unity 优先读 manifest，缺失安全回退 | build + fallback capture |
+| B2 | Done | `Harden Unity reference visual loader` | Unity 优先读 manifest，缺失安全回退 | build + fallback capture |
 | B3 | Next | `Document replaceable visual ids` | 固化换包 id，方便以后整包替换 | docs + boundary check |
 | C1 | Later | `Seal visible playable walkthrough` | 启动、机库、战斗、损伤、结算、重开完整流程 | visible-flow smoke |
 | C2 | Later | `Refresh investor evidence package` | 更新本地演示证据，不提交生成截图 | six captures + docs |
@@ -141,10 +141,10 @@
 | B1.6 | Done | 恢复本地完整 unit+prop ignored manifest，避免后续 Unity capture 只剩道具或只剩单位 | exporter scripts | `export_reference_visual_pack.ps1 -Names ... -IncludeMissionProps` contains units and mission props |
 | B1.7 | Done | 更新参考视觉恢复计划，记录 B1 manifest v2 字段、验证命令和 private-development-only 边界 | `docs-reference-visual-restoration-plan.md` | `git diff --check` |
 | B1.8 | Done | 检查 generated private derivatives 未进入 git，提交 B1 | scripts + docs only | `git status --short --branch --untracked-files=all`; commit `Stabilize reference visual manifest export` |
-| B2.1 | Next | 审计 Unity 三个 reference loader 读 manifest 的字段和 fallback 逻辑 | `ReferenceObjMeshLibrary.cs`; `ReferencePropLibrary.cs`; `ReferenceTerrainTextureLibrary.cs` | docs note or code diff identifies exact fallback path |
-| B2.2 | Next | Loader 优先使用 manifest，并把缺失 manifest、缺失 OBJ、缺失 texture 的日志分清楚 | Unity reference loader files | Unity build |
-| B2.3 | Next | 做 manifest-missing fallback capture，证明没私有包也不会崩 | Unity build + capture scripts | `spawn,airfield` capture passes with fallback |
-| B2.4 | Next | 提交 B2 | Unity loader files + docs | commit `Harden Unity reference visual loader` |
+| B2.1 | Done | 审计 Unity 三个 reference loader 读 manifest 的字段和 fallback 逻辑 | `ReferenceObjMeshLibrary.cs`; `ReferencePropLibrary.cs`; `ReferenceTerrainTextureLibrary.cs` | docs note or code diff identifies exact fallback path |
+| B2.2 | Done | Loader 优先使用 manifest，并把缺失 manifest、缺失 OBJ、缺失 texture 的日志分清楚 | Unity reference loader files | Unity build |
+| B2.3 | Done | 做 manifest-missing fallback capture，证明没私有包也不会崩 | Unity build + capture scripts | `spawn,airfield` capture passes with fallback |
+| B2.4 | Done | 提交 B2 | Unity loader files + docs | commit `Harden Unity reference visual loader` |
 | B3.1 | Next | 定义 stable visual id 命名规则：unit、prop、terrain、texture、fx、ui | `docs-content-pack.md`; `docs-content-replacement-plan.md` | docs check |
 | B3.2 | Next | 补一个 project-owned visual slice 示例，不含私有路径和旧专有名称 | `content-packs/project-owned-visual-slice.example.json` if needed | public boundary dry run |
 | B3.3 | Next | 提交 B3 | content docs/example | commit `Document replaceable visual ids` |
@@ -554,7 +554,7 @@ Manifest v2 provenance: private-development-only.
 
 **Goal:** Unity 读取 manifest 优先，缺失时能回退到开发占位，不因为本地私有素材缺失导致 Demo 无法启动。
 
-**Status:** Next after B1. Do not start this until B1 manifest export is committed, because B2 should consume a stable manifest shape rather than chase exporter churn.
+**Status:** Completed 2026-06-07. Unity now consumes the B1 manifest v2 fields first and logs missing-manifest, loose-OBJ, primitive, texture, and terrain fallback paths clearly.
 
 **Files:**
 
@@ -595,6 +595,18 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_refere
 - Loader log records selected manifest asset ids.
 - Missing manifest still boots with clear fallback visuals.
 - Public replacement pack can later reuse the same ids.
+
+**Completed Evidence:**
+
+```text
+git diff --check -- unity-mc2-demo/Assets/Scripts/Presentation/ReferenceObjMeshLibrary.cs unity-mc2-demo/Assets/Scripts/Presentation/ReferenceTerrainTextureLibrary.cs: passed, with only LF/CRLF warnings.
+analysis-output/unity-build-reference-loader.log: Build Finished, Result: Success; MC2 Unity demo Windows build OK.
+capture_reference_visuals.ps1 -Presets spawn,airfield: MC2 reference visual captures passed: 2 preset(s).
+Normal manifest logs: Loaded private reference visual manifest schema=mc2-reference-visual-manifest-v1 version=2 exports=47; mapped unit assets werewolf/bushwacker/centipede/urbanmech/harasser/starslayer/lrmc and prop asset hangar.
+Terrain manifest logs: Loaded private terrain texture manifest assetClass=terrain-texture-pack textures=103; mapped textureId=2; composite loaded with missingSamples=0.
+Manifest-missing fallback capture: MC2 reference visual captures passed: 1 preset(s); logs reported missing visual/terrain manifests, loose OBJ fallback, primitive fallback for unmatched slayerp, and source terrain vertex-color fallback.
+Final normal captures were rerun after restoring ignored manifests.
+```
 
 **Commit:** `Harden Unity reference visual loader`
 
