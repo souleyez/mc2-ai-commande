@@ -19541,7 +19541,7 @@ namespace MC2Demo.Presentation
                 && compact.averagePlayerStructurePercent < 45
                 && compact.hostileCount > 0)
             {
-                return RuleCommander.DirectiveRegroup;
+                return RuleCommander.DirectiveWithdrawIfCritical;
             }
 
             string command = new RuleCommander().ChooseCommand(observation);
@@ -19563,6 +19563,7 @@ namespace MC2Demo.Presentation
             return string.Equals(directive, RuleCommander.DirectiveAssaultObjective, StringComparison.Ordinal)
                 || string.Equals(directive, RuleCommander.DirectiveEngageHostiles, StringComparison.Ordinal)
                 || string.Equals(directive, RuleCommander.DirectiveRegroup, StringComparison.Ordinal)
+                || string.Equals(directive, RuleCommander.DirectiveWithdrawIfCritical, StringComparison.Ordinal)
                 || string.Equals(directive, RuleCommander.DirectiveHold, StringComparison.Ordinal);
         }
 
@@ -19574,6 +19575,8 @@ namespace MC2Demo.Presentation
                     return "Engage nearby hostiles";
                 case RuleCommander.DirectiveRegroup:
                     return "Regroup damaged units";
+                case RuleCommander.DirectiveWithdrawIfCritical:
+                    return "Withdraw if critical";
                 case RuleCommander.DirectiveHold:
                     return "Hold current position";
                 case RuleCommander.DirectiveAssaultObjective:

@@ -8,7 +8,7 @@
 
 **Tech Stack:** Unity 6, C#, Windows Standalone first, deterministic BattleCore, PowerShell build/smoke/capture scripts, replaceable content packs, optional high-level AI deputy, later main server/map server/Web ranking contracts.
 
-**Revision:** 2026-06-07 v5. This file is the fine-grained execution plan paired with `docs-ai-rts-commander-current-master-plan-2026-06-07.md`. The private reference visual bridge, local investor evidence package, and art-safe metadata contract are now sealed for the current Windows Demo. The current focus is `E1 Guard AI Deputy Offline Behavior`: keep model use high-level, slow-frequency, optional, and absent from normal smoke.
+**Revision:** 2026-06-07 v6. This file is the fine-grained execution plan paired with `docs-ai-rts-commander-current-master-plan-2026-06-07.md`. The private reference visual bridge, local investor evidence package, art-safe metadata contract, and AI deputy offline guard are now sealed for the current Windows Demo. The current focus is `F1 Document Reward Authority Contract`: main server owns portable rewards, while map servers can only submit signed/verified claims.
 
 ---
 
@@ -26,23 +26,23 @@
 | 部位损伤 | 断臂、腿瘫、驾驶舱损毁/弹射、残骸故事已有 | `damage-demo` sidecar |
 | 稀疏战斗 UI | 大日志、存档、账号、调试覆盖层已被 sidecar 守护 | `SparseBattleUi` gate |
 | 物理占位 | 单位、建筑、硬道具、水域、地图边界已有规则证据 | `ContactClearance` gate |
-| AI 副官 | observation/directive 基础存在，保持高层慢频率 | no-key/offline-first direction |
+| AI 副官 | observation/directive 基础存在，保持高层慢频率；`withdraw-if-critical` 已纳入合法高层指令 | no-key/offline-first direction |
 | 内容边界 | README 已改成 AI RTS Commander Lab 叙事；text-safe、visual-id、art-safe metadata 均通过 boundary check | public boundary docs and checker |
 | 演示证据 | 六截图、visible-flow、walkthrough 和 investor evidence 已刷新 | C1/C2 docs and ignored capture sidecars |
 | 公开替换合同 | `project-owned-art-safe-slice.example.json` 已定义一张图的 clean art target | metadata-only, not runtime pack |
 
 当前最重要的问题：
 
-1. `E1` AI 副官需要继续守住慢频高层决策，不进入逐帧战斗，不让模型 API 延迟或 token 消耗影响本地 Demo。
+1. `F1` 需要把主服务器奖励权威写清楚：地图服务器和客户端只提交 claim，不能直接发放可携带奖励。
 2. D1 只是 art-safe metadata 合同，不是可挂载 runtime pack；后续 D2 才能进入清权资产生产和 mountable pack。
 3. 私有参考素材可以继续用于本机开发验证，但公开材料不能把它描述成最终产品内容。
-4. `F1-F4` 平台化方向很清楚，但现在先写奖励认证、地图包、排行、创作者边界契约，不先写服务器。
+4. `F2-F4` 平台化方向很清楚，但现在先写地图包、排行、创作者边界契约，不先写服务器。
 
 当前工作区注意事项：
 
-- 若当前 `git status` 只剩 D1 docs/metadata 改动，先完成校验并提交，再进入 E1。
+- 若当前 `git status` 只剩 E1 AI guard 改动，先完成校验并提交，再进入 F1。
 - D1 新增的是 metadata 示例文件；不允许把私有 OBJ/TGA/PNG/JSON、截图、log 或 Unity build 输出加入 git。
-- 后续 E1 如涉及代码，只改 AI observation/directive/offline guard，不改战斗逐帧规则。
+- 后续 F1-F4 先写平台契约，不先写服务器实现。
 - 如果 Unity batch 运行后只造成 `unity-mc2-demo/Assets/Scenes/Mc2Demo.unity` fileID churn，不要纳入提交。
 
 ## 1. Execution Rules
@@ -101,8 +101,8 @@
 | M7 | 私有参考视觉包稳定化 | Done | manifest-driven, missing-safe, replaceable |
 | M8 | 可展示 Demo 封口 | Done | 六截图、visible-flow、walkthrough、一页证据 |
 | M9 | Public art-safe slice | Done for metadata | 替换包 provenance 和 boundary check |
-| M10 | AI 副官守护 | Next | no-token smoke, high-level directive only |
-| M11 | 平台契约 | Later | 地图服务器、奖励认证、排行、创作者边界文档 |
+| M10 | AI 副官守护 | Done | no-token smoke, high-level directive only |
+| M11 | 平台契约 | Next | 地图服务器、奖励认证、排行、创作者边界文档 |
 
 ## 4. Fine-Grained Commit Queue
 
@@ -121,8 +121,8 @@
 | C1 | Done | `Seal visible playable walkthrough` | 启动、机库、战斗、损伤、结算、重开完整流程 | visible-flow smoke |
 | C2 | Done | `Refresh investor evidence package` | 更新本地演示证据，不提交生成截图 | six captures + docs |
 | D1 | Done | `Prepare public art-safe mission slice` | 从 text-safe 进入公开视觉替换包计划 | boundary check |
-| E1 | Next | `Guard AI deputy offline behavior` | AI 高层、可离线、不逐帧、不花 smoke token | validator |
-| F1 | Later | `Document reward authority contract` | 主服务器认证奖励，地图服务器只提交 claim | docs |
+| E1 | Done | `Guard AI deputy offline behavior` | AI 高层、可离线、不逐帧、不花 smoke token | validator |
+| F1 | Next | `Document reward authority contract` | 主服务器认证奖励，地图服务器只提交 claim | docs |
 | F2 | Later | `Document map authoring contract` | 开源地图编辑器和地图包最小契约 | docs |
 | F3 | Later | `Document web ranking contract` | Web 排行、战绩、地图页和隐私边界 | docs |
 | F4 | Later | `Document creator economy boundary` | 皮肤、地图、分成、可选链上边界 | docs |
@@ -158,8 +158,9 @@
 | D1.4 | Done | 跑 public boundary 检查，必要时加强 checker 对新 manifest 字段的扫描 | content-pack checker + example | `Result: OK` |
 | D1.5 | Done | 更新主计划/细计划/README/证据页，明确当前 dev build 仍非 public-safe | README + plan/evidence docs | `git diff --check` |
 | D1.6 | Done | 提交 D1 | docs + metadata only | commit `Prepare public art-safe mission slice` |
-| E1.1 | Next | 守住 AI 副官慢频高层决策，不花 smoke token | AI contract docs/code if needed | validator/no-key path |
-| F1-F4 | Later | 只写平台契约，不先写服务器 | platform docs | `git diff --check` |
+| E1.1 | Done | 守住 AI 副官慢频高层决策，不花 smoke token | AI contract docs/code if needed | validator/no-key path |
+| F1.1 | Next | 写主服务器奖励权威契约，定义 claim/grant、签名、重放校验、ledger 边界 | platform docs | `git diff --check` |
+| F2-F4 | Later | 只写平台契约，不先写服务器 | platform docs | `git diff --check` |
 
 ## 5. Detailed Execution Tasks
 

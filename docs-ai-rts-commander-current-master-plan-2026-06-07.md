@@ -302,8 +302,8 @@ Known good strings:
 | 10 | Done | `Seal visible playable walkthrough` | 启动、机库、战斗、损伤、结算、重开完整流程封口 | visible-flow smoke |
 | 11 | Done | `Refresh investor evidence package` | 更新当前本地证据页，说明能演示什么、哪些仍是原型 | six captures + docs |
 | 12 | Done | `Prepare public art-safe mission slice` | 从 text-safe metadata 进入第一张图的公开视觉替换计划 | boundary check + provenance docs |
-| 13 | Next | `Guard AI deputy regression` | AI 保持高层、可离线、无 token smoke | validator/smoke |
-| 14 | Later | `Document platform reward contracts` | 主服务器、地图服务器、奖励认证契约 | docs check |
+| 13 | Done | `Guard AI deputy regression` | AI 保持高层、可离线、无 token smoke | validator/smoke |
+| 14 | Next | `Document platform reward contracts` | 主服务器、地图服务器、奖励认证契约 | docs check |
 | 15 | Later | `Plan map authoring prototype` | 地图包、触发、奖励引用和验证器规划 | docs check |
 | 16 | Later | `Plan web ranking prototype` | 排行、战绩、地图页和公开资料规划 | docs check |
 | 17 | Later | `Plan creator economy boundary` | 创作者分成、皮肤、自定义、链上边界 | docs check |
@@ -570,7 +570,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\content-pack\check_p
 
 ### Task 9: Guard AI Deputy Regression
 
-**Status:** Later, after core battle/visual loop remains stable.
+**Status:** Completed 2026-06-07.
 
 **Goal:** AI 副官保持“小而稳”：大决策、慢频率、可离线，不进入帧级战斗。
 
@@ -589,6 +589,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\content-pack\check_p
    - `assault-objective`;
    - `engage-hostiles`;
    - `regroup`;
+   - `withdraw-if-critical`;
    - `hold`.
 3. Guard no-key and timeout fallback.
 4. Ensure no model calls from draw/update loops.
@@ -607,6 +608,17 @@ git diff --check
 - No-key local demo works.
 - Smoke tests do not spend model tokens.
 - AI does not issue exact per-frame movement or shot commands.
+
+**Completed Evidence:**
+
+```text
+RuleCommander now supports withdraw-if-critical as a high-level directive mapped to deterministic local regroup/objective commands.
+MiniMax prompt/extraction now accepts assault-objective, engage-hostiles, regroup, withdraw-if-critical and hold.
+analysis-output/unity-validate-ai-deputy-offline.log: MC2 demo contract validation OK.
+analysis-output/unity-build-ai-deputy-offline.log: Build Finished, Result: Success; MC2 Unity demo Windows build OK.
+analysis-output/unity-player-ai-deputy-offline.log: MC2 AI deputy window assertion OK: state=Offline mode=Local fallback intent=assault-objective advice=Advance objective.
+analysis-output/unity-player-ai-deputy-offline.log: MC2 demo smoke test exiting with code 0.
+```
 
 **Commit:** `Guard AI deputy regression`
 
@@ -815,8 +827,8 @@ git diff --check
 | M7 Private reference bridge | Done | manifest-driven, optional, ignored, replaceable |
 | M8 Controlled demo evidence | Done | visible-flow, six captures, walkthrough and investor evidence refreshed |
 | M9 Public-safe slice | Done for metadata | art-safe manifest/provenance and boundary check pass |
-| M10 AI deputy V1 | Next | offline/no-key and high-level directive guarded |
-| M11 Platform contracts | Later | main server reward authority and map-server limits documented |
+| M10 AI deputy V1 | Done | offline/no-key and high-level directive guarded |
+| M11 Platform contracts | Next | main server reward authority and map-server limits documented |
 
 ## 8. First Controlled Demo Definition Of Done
 
@@ -855,4 +867,4 @@ Stop and reassess if:
 
 ## 10. One-Line Direction
 
-Windows 本地 Demo 的画面、碰撞、稀疏 UI、MechLab、损伤故事、演示证据和公开 art-safe 元数据合同已经收稳；下一步守住 AI 副官离线/高层决策边界；随后再做地图服务器、奖励认证、Web 排行和创作者生态。
+Windows 本地 Demo 的画面、碰撞、稀疏 UI、MechLab、损伤故事、演示证据、公开 art-safe 元数据合同和 AI 副官离线边界已经收稳；下一步写主服务器奖励认证和地图服务器边界；随后再做地图包、Web 排行和创作者生态。

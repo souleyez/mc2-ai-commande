@@ -430,6 +430,7 @@ namespace MC2Demo.BattleCore
                     RuleCommander.DirectiveAssaultObjective,
                     RuleCommander.DirectiveEngageHostiles,
                     RuleCommander.DirectiveRegroup,
+                    RuleCommander.DirectiveWithdrawIfCritical,
                     RuleCommander.DirectiveHold
                 },
                 detailBudget = "phase-summary-only"

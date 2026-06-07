@@ -54,12 +54,14 @@ The full `CommanderObservation` can remain available to local deterministic syst
 assault-objective
 engage-hostiles
 regroup
+withdraw-if-critical
 hold
 ```
 
 - `assault-objective`: local commander advances the mission objective, attacking objective structures if in range.
 - `engage-hostiles`: local commander prioritizes hostile units already in weapon range; if no good target exists, it continues the objective.
 - `regroup`: local commander pulls the squad toward the commander unit before continuing.
+- `withdraw-if-critical`: local commander checks the compact/local squad damage state; if critical, it uses the local regroup command, otherwise it continues the objective.
 - `hold`: local commander issues no new startup command for this phase.
 
 Invalid directive text, missing model output, missing API keys, HTTP failures, and timeout failures all normalize through the local fallback path. The first-demo fallback directive is `assault-objective`.

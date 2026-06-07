@@ -4307,6 +4307,7 @@ namespace MC2Demo.EditorTools
             if (!ContainsIntent(compact.availableIntents, RuleCommander.DirectiveAssaultObjective)
                 || !ContainsIntent(compact.availableIntents, RuleCommander.DirectiveEngageHostiles)
                 || !ContainsIntent(compact.availableIntents, RuleCommander.DirectiveRegroup)
+                || !ContainsIntent(compact.availableIntents, RuleCommander.DirectiveWithdrawIfCritical)
                 || !ContainsIntent(compact.availableIntents, RuleCommander.DirectiveHold))
             {
                 throw new InvalidDataException("Expected compact commander observation to expose the available high-level intents.");
@@ -4533,6 +4534,50 @@ namespace MC2Demo.EditorTools
                 throw new InvalidDataException("Expected regroup directive to produce a squad move command: " + regroupError);
             }
 
+            string nonCriticalWithdrawCommand = commander.ChooseCommandForDirective(structureObservation, RuleCommander.DirectiveWithdrawIfCritical);
+            if (nonCriticalWithdrawCommand != structureCommand)
+            {
+                throw new InvalidDataException("Expected withdraw-if-critical to continue objective when squad state is not critical: " + nonCriticalWithdrawCommand);
+            }
+
+            CommanderObservation criticalObservation = new()
+            {
+                missionId = "validator-rule-critical",
+                result = MissionResultState.InProgress.ToString(),
+                missionEnded = false,
+                playerUnits = new[]
+                {
+                    new CommanderUnitObservation
+                    {
+                        id = "player-1",
+                        active = true,
+                        destroyed = false,
+                        structureRatio = 0.3f,
+                        x = 10f,
+                        y = 20f
+                    },
+                    new CommanderUnitObservation
+                    {
+                        id = "player-2",
+                        active = true,
+                        destroyed = false,
+                        structureRatio = 0.5f,
+                        x = 120f,
+                        y = 40f
+                    }
+                },
+                activeHostiles = Array.Empty<CommanderUnitObservation>(),
+                targetableStructures = Array.Empty<CommanderStructureObservation>(),
+                currentObjectives = Array.Empty<CommanderObjectiveObservation>()
+            };
+            string criticalWithdrawCommand = commander.ChooseCommandForDirective(criticalObservation, RuleCommander.DirectiveWithdrawIfCritical);
+            if (!CommanderCommandPort.TryParse(criticalWithdrawCommand, out CommanderCommand parsedWithdraw, out string withdrawError)
+                || parsedWithdraw.Kind != CommanderCommandKind.Move
+                || parsedWithdraw.Scope != CommanderCommandScope.Squad)
+            {
+                throw new InvalidDataException("Expected withdraw-if-critical to use a local squad move when squad state is critical: " + withdrawError);
+            }
+
             string directiveCommand = commander.ChooseCommandForDirective(attackObservation, RuleCommander.DirectiveEngageHostiles);
             if (directiveCommand != "squad attack unit enemy-near")
             {
@@ -4547,6 +4592,7 @@ namespace MC2Demo.EditorTools
 
             if (RuleCommander.NormalizeDirective("engage hostiles") != RuleCommander.DirectiveEngageHostiles
                 || RuleCommander.NormalizeDirective("REGROUP") != RuleCommander.DirectiveRegroup
+                || RuleCommander.NormalizeDirective("withdraw_if_critical") != RuleCommander.DirectiveWithdrawIfCritical
                 || RuleCommander.NormalizeDirective("hold") != RuleCommander.DirectiveHold
                 || RuleCommander.NormalizeDirective("") != RuleCommander.DirectiveAssaultObjective
                 || RuleCommander.NormalizeDirective("drop-table") != RuleCommander.DirectiveAssaultObjective)
@@ -4566,6 +4612,7 @@ namespace MC2Demo.EditorTools
             if (commander.ChooseCommandForDirective(endedObservation, RuleCommander.DirectiveAssaultObjective) != ""
                 || commander.ChooseCommandForDirective(endedObservation, RuleCommander.DirectiveEngageHostiles) != ""
                 || commander.ChooseCommandForDirective(endedObservation, RuleCommander.DirectiveRegroup) != ""
+                || commander.ChooseCommandForDirective(endedObservation, RuleCommander.DirectiveWithdrawIfCritical) != ""
                 || commander.ChooseCommandForDirective(endedObservation, RuleCommander.DirectiveHold) != "")
             {
                 throw new InvalidDataException("Expected ended observations to reject every AI directive.");
@@ -4603,6 +4650,18 @@ namespace MC2Demo.EditorTools
             if (directive != RuleCommander.DirectiveRegroup)
             {
                 throw new InvalidDataException("Expected MiniMax commander to extract fenced directive, got: " + directive);
+            }
+
+            directive = MiniMaxCommander.ExtractDirectiveFromText("{\"directive\":\"withdraw-if-critical\"}");
+            if (directive != RuleCommander.DirectiveWithdrawIfCritical)
+            {
+                throw new InvalidDataException("Expected MiniMax commander to extract withdraw-if-critical directive, got: " + directive);
+            }
+
+            directive = MiniMaxCommander.ExtractDirectiveFromText("withdraw if critical");
+            if (directive != RuleCommander.DirectiveWithdrawIfCritical)
+            {
+                throw new InvalidDataException("Expected MiniMax commander to normalize spaced withdraw directive, got: " + directive);
             }
 
             directive = MiniMaxCommander.ExtractDirectiveFromText("attack enemy-1 at 100 100");

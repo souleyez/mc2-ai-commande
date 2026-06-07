@@ -9,7 +9,9 @@ namespace MC2Demo.BattleCore
         public const string DirectiveAssaultObjective = "assault-objective";
         public const string DirectiveEngageHostiles = "engage-hostiles";
         public const string DirectiveRegroup = "regroup";
+        public const string DirectiveWithdrawIfCritical = "withdraw-if-critical";
         public const string DirectiveHold = "hold";
+        private const float CriticalAverageStructureThreshold = 0.45f;
 
         public string ChooseCommand(CommanderObservation observation)
         {
@@ -55,6 +57,8 @@ namespace MC2Demo.BattleCore
                     return "";
                 case DirectiveRegroup:
                     return RegroupCommand(observation);
+                case DirectiveWithdrawIfCritical:
+                    return ShouldWithdraw(observation) ? RegroupCommand(observation) : ChooseCommand(observation);
                 case DirectiveEngageHostiles:
                     CommanderUnitObservation hostile = ClosestHostileInRange(observation);
                     return hostile == null ? ChooseCommand(observation) : "squad attack unit " + hostile.id;
@@ -76,6 +80,7 @@ namespace MC2Demo.BattleCore
             {
                 DirectiveEngageHostiles => DirectiveEngageHostiles,
                 DirectiveRegroup => DirectiveRegroup,
+                DirectiveWithdrawIfCritical => DirectiveWithdrawIfCritical,
                 DirectiveHold => DirectiveHold,
                 _ => DirectiveAssaultObjective
             };
@@ -268,6 +273,48 @@ namespace MC2Demo.BattleCore
             }
 
             return ChooseObjectiveCommand(observation);
+        }
+
+        private static bool ShouldWithdraw(CommanderObservation observation)
+        {
+            CommanderCompactObservation compact = observation.compact;
+            if (compact != null && compact.activePlayerUnitCount > 0)
+            {
+                return compact.destroyedPlayerUnitCount > 0
+                    || compact.averagePlayerStructurePercent > 0 && compact.averagePlayerStructurePercent < Mathf.RoundToInt(CriticalAverageStructureThreshold * 100f);
+            }
+
+            CommanderUnitObservation[] players = observation.playerUnits ?? Array.Empty<CommanderUnitObservation>();
+            int active = 0;
+            int knownStructure = 0;
+            float totalStructure = 0f;
+            for (int index = 0; index < players.Length; index++)
+            {
+                CommanderUnitObservation player = players[index];
+                if (player == null)
+                {
+                    continue;
+                }
+
+                if (player.destroyed)
+                {
+                    return true;
+                }
+
+                if (!player.active)
+                {
+                    continue;
+                }
+
+                active++;
+                if (player.structureRatio > 0f)
+                {
+                    knownStructure++;
+                    totalStructure += Mathf.Clamp01(player.structureRatio);
+                }
+            }
+
+            return active > 0 && knownStructure > 0 && totalStructure / knownStructure < CriticalAverageStructureThreshold;
         }
 
         private static string ChooseObjectiveCommand(CommanderObservation observation)

@@ -125,10 +125,10 @@ namespace MC2Demo.BattleCore
         {
             return string.Join(
                 " ",
-                "You are the tactical commander for a MechCommander-style prototype.",
+                "You are the tactical commander for an AI tactical RTS prototype.",
                 "You make slow, high-level decisions only; local battle code handles movement, target choice, firing, heat, and avoidance.",
                 "Return exactly one directive token and nothing else.",
-                "Valid directive tokens: assault-objective, engage-hostiles, regroup, hold.",
+                "Valid directive tokens: assault-objective, engage-hostiles, regroup, withdraw-if-critical, hold.",
                 "Use assault-objective when unsure.",
                 "Never return coordinates, unit ids, markdown, JSON, commentary, or examples.",
                 "If missionEnded is true, return hold.");
@@ -526,12 +526,13 @@ namespace MC2Demo.BattleCore
                 return false;
             }
 
-            string normalized = candidate.Trim().ToLowerInvariant().Replace('_', '-');
+            string normalized = candidate.Trim().ToLowerInvariant().Replace('_', '-').Replace(' ', '-');
             string[] directives =
             {
                 RuleCommander.DirectiveAssaultObjective,
                 RuleCommander.DirectiveEngageHostiles,
                 RuleCommander.DirectiveRegroup,
+                RuleCommander.DirectiveWithdrawIfCritical,
                 RuleCommander.DirectiveHold
             };
             for (int index = 0; index < directives.Length; index++)
