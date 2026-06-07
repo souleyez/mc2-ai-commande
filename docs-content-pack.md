@@ -122,6 +122,43 @@ first project-owned naming, mission copy, pilot, unit, weapon, objective, UI tex
 and provenance shape can pass the public boundary check. It is not mountable
 until the required runtime files are supplied from cleared assets.
 
+`project-owned-visual-slice.example.json` is also metadata-only. It proves the
+first project-owned visual id scheme can pass the public boundary check before
+any cleared model, texture, effect, icon, or UI art files are available.
+
+## Stable Visual ID Contract
+
+Use stable project-facing visual ids as the bridge between BattleCore, Unity,
+content packs, and future product variants. These ids are allowed to stay stable
+while the actual mesh, texture, effect, icon, or audio files are replaced.
+
+Recommended prefixes:
+
+- `unit.<name>` for playable or hostile unit identities.
+- `model.unit.<name>` and `model.vehicle.<name>` for 3D unit meshes.
+- `texture.unit.<name>.<slot>` and `texture.vehicle.<name>.<slot>` for unit textures.
+- `terrain.<map>.<region>` for terrain semantic regions.
+- `material.terrain.<name>` and `texture.terrain.<name>` for terrain visuals.
+- `prop.<map-or-biome>.<name>` for structures, trees, barricades, vehicles, turrets and map dressing.
+- `model.prop.<map-or-biome>.<name>` and `texture.prop.<map-or-biome>.<name>.<slot>` for prop art.
+- `fx.weapon.<name>` for weapon effects.
+- `fx.damage.<name>` for section damage, ejection, wreck and explosion effects.
+- `ui.icon.<name>` and `ui.panel.<name>` for interface art.
+
+Rules:
+
+- Game logic should request stable ids, not local file paths.
+- A public pack may remap the same stable id to a different file as long as the
+  role and gameplay readability remain compatible.
+- Unit damage ids should keep common semantic node names such as
+  `node.left-arm`, `node.right-arm`, `node.left-leg`, `node.right-leg`, and
+  `node.cockpit`.
+- Terrain ids should describe gameplay-readable regions such as grass, runway,
+  water, rock, dirt, road, cliff, or shore instead of a tool-specific tile index.
+- Every public asset behind a stable id needs provenance before packaging.
+- Local private reference manifests can inform scale and readability, but public
+  replacement packs should expose only project-facing ids and cleared asset paths.
+
 ## Development Flow
 
 1. Validate a pack directory.

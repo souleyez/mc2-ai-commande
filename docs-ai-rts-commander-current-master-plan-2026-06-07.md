@@ -86,7 +86,7 @@ V1 Windows Playable Demo Polish -> Reference Visual Bridge Stabilization
 | 私有参考视觉 manifest 还在收尾 | 以后整包替换、换皮和公开安全包都依赖这个边界 | 完成 B1 exporter manifest |
 | Unity loader 需要更强缺失回退 | 本地私有素材缺失时 Demo 仍要能启动、能截图 | 完成 B2 manifest-first loader |
 | 画面还需继续接近真实 3D 战场 | 已有 gate，但模型/贴图/道具仍是投资展示的主观焦点 | B1/B2 后再做一次可见流程审计 |
-| 私有参考素材和公开版本边界仍要继续收 | 可以本地验证，但不能把未清权内容当产品发布 | B3/D1 art-safe replacement plan |
+| 私有参考素材和公开版本边界仍要继续收 | 可以本地验证，但不能把未清权内容当产品发布 | D1 art-safe replacement plan |
 | 平台化还是设想 | 地图服务器、奖励认证和 Web 排行要等 Demo 稳定后再做 | F1-F4 先写契约，不先写服务器 |
 
 ## 2. Product Scope Lock
@@ -299,8 +299,8 @@ Known good strings:
 | 6 | Done | `Refresh first map visual slice` | 让第一张图继续朝真实 3D 地形、建筑、机甲模型靠拢；terrain/unit/structure-prop passes and `FirstMapVisual` gate done | build + five visual captures |
 | 7 | Done | `Stabilize reference visual manifest export` | 私有参考模型/材质/道具/地形纹理导出走可审计 manifest，缺失时给清晰 warning | exporter validation + ignored manifest |
 | 8 | Done | `Harden Unity reference visual loader` | Unity manifest-first，缺失私有包时回退到明显开发占位 | build + fallback capture |
-| 9 | Next | `Document replaceable visual ids` | 固化换包 id，方便以后整包替换、换皮和公开安全包 | docs + boundary check |
-| 10 | Later | `Seal visible playable walkthrough` | 启动、机库、战斗、损伤、结算、重开完整流程封口 | visible-flow smoke |
+| 9 | Done | `Document replaceable visual ids` | 固化换包 id，方便以后整包替换、换皮和公开安全包 | docs + boundary check |
+| 10 | Next | `Seal visible playable walkthrough` | 启动、机库、战斗、损伤、结算、重开完整流程封口 | visible-flow smoke |
 | 11 | Later | `Refresh investor evidence package` | 更新当前本地证据页，说明能演示什么、哪些仍是原型 | six captures + docs |
 | 12 | Later | `Prepare public art-safe mission slice` | 从 text-safe metadata 进入第一张图的公开视觉替换计划 | boundary check + provenance docs |
 | 13 | Later | `Guard AI deputy regression` | AI 保持高层、可离线、无 token smoke | validator/smoke |
@@ -469,7 +469,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_refere
 
 ### Task 7: Stabilize Reference Visual Manifest
 
-**Status:** In Progress. Split into B1 exporter manifest, B2 Unity loader hardening, and B3 replaceable visual id documentation in the detailed plan.
+**Status:** Completed 2026-06-07. B1 exporter manifest, B2 Unity loader hardening, and B3 replaceable visual id documentation are done; public art-safe replacement remains Task 8/D1.
 
 **Goal:** 开发期继续借助本地参考素材验证比例和节奏，但加载边界要可替换、可缺失回退、可审计。
 
@@ -813,7 +813,7 @@ git diff --check
 | M4 Damage story | Done for V1, polish later | damage-demo shows weapon families and section consequences |
 | M5 Sparse HUD | Done with guard | regression guard added and capture sidecar proves it |
 | M6 Visual/collision readability | Done with gate | first map no longer reads as color blocks or one-point pile |
-| M7 Private reference bridge | In Progress | manifest-driven, optional, ignored, replaceable |
+| M7 Private reference bridge | Done | manifest-driven, optional, ignored, replaceable |
 | M8 Public-safe slice | Later | art-safe manifest/provenance and boundary check pass |
 | M9 AI deputy V1 | Foundation done | offline/no-key and high-level directive guarded |
 | M10 Platform contracts | Later | main server reward authority and map-server limits documented |

@@ -68,6 +68,17 @@ Milestone 3: art-safe vertical slice
 - Keep the same runtime contract and mission load path.
 - Use this as the first investor-safe capture target.
 
+Current visual-id artifact:
+
+- `content-packs/project-owned-visual-slice.example.json` defines a
+  metadata-only visual id scaffold for the first controlled Demo slice.
+- It intentionally contains no mountable model, texture, effect, icon, UI art or
+  audio files yet.
+- It keeps stable ids for units, terrain regions, props, weapon effects, damage
+  effects and UI art so future cleared assets can be swapped as a whole pack.
+- It must pass `check_public_content_boundary.ps1` before any real cleared
+  assets are added behind those ids.
+
 Milestone 4: clean public pack
 
 - Remove all local reference links.

@@ -34,7 +34,7 @@
 1. B1 参考视觉导出 manifest 正在收尾，当前工作区已有未提交脚本改动，需要先完成、验证、记录、提交。
 2. Unity loader 还需要 B2 加固：manifest 优先、缺失源安全回退、日志能说明到底用了哪个 asset id。
 3. 画面已过第一轮 `FirstMapVisual` gate，但还需要在 B1/B2 稳定后再跑一轮完整可见流程审计。
-4. 私有参考素材和公开可发布素材的边界需要 B3/D1 继续固化，避免以后换皮/换包成本过高。
+4. 私有参考素材和公开可发布素材的边界需要 D1 继续固化，避免以后公开包和本地验证包混在一起。
 5. 平台化方向很清楚，但现在只能写契约，不应该先写服务器。
 
 当前工作区注意事项：
@@ -97,8 +97,8 @@
 | M4 | 部位损伤卖点 | Done for V1, polish later | `damage-demo` 有断臂、腿、驾驶舱故事 |
 | M5 | 稀疏 UI | Done with guard | `SparseBattleUi` sidecar gate |
 | M6 | 3D 地图视觉与占位 | Done with gate | 五张战斗截图通过 `FirstMapVisual` gate |
-| M7 | 私有参考视觉包稳定化 | In Progress | manifest-driven, missing-safe, replaceable |
-| M8 | 可展示 Demo 封口 | Next after M7 | 六截图、visible-flow、walkthrough、一页证据 |
+| M7 | 私有参考视觉包稳定化 | Done | manifest-driven, missing-safe, replaceable |
+| M8 | 可展示 Demo 封口 | Next | 六截图、visible-flow、walkthrough、一页证据 |
 | M9 | Public art-safe slice | Later | 替换包 provenance 和 boundary check |
 | M10 | AI 副官守护 | Later | no-token smoke, high-level directive only |
 | M11 | 平台契约 | Later | 地图服务器、奖励认证、排行、创作者边界文档 |
@@ -116,8 +116,8 @@
 | A6 | Done | `Refresh demo evidence after visual pass` | 更新证据页和审计文档 | six captures + docs |
 | B1 | Done | `Stabilize reference visual manifest export` | 私有参考单位/道具/地形资源导出 manifest | exporter dry run + missing-source probe |
 | B2 | Done | `Harden Unity reference visual loader` | Unity 优先读 manifest，缺失安全回退 | build + fallback capture |
-| B3 | Next | `Document replaceable visual ids` | 固化换包 id，方便以后整包替换 | docs + boundary check |
-| C1 | Later | `Seal visible playable walkthrough` | 启动、机库、战斗、损伤、结算、重开完整流程 | visible-flow smoke |
+| B3 | Done | `Document replaceable visual ids` | 固化换包 id，方便以后整包替换 | docs + boundary check |
+| C1 | Next | `Seal visible playable walkthrough` | 启动、机库、战斗、损伤、结算、重开完整流程 | visible-flow smoke |
 | C2 | Later | `Refresh investor evidence package` | 更新本地演示证据，不提交生成截图 | six captures + docs |
 | D1 | Later | `Prepare public art-safe mission slice` | 从 text-safe 进入公开视觉替换包计划 | boundary check |
 | E1 | Later | `Guard AI deputy offline behavior` | AI 高层、可离线、不逐帧、不花 smoke token | validator |
@@ -145,11 +145,11 @@
 | B2.2 | Done | Loader 优先使用 manifest，并把缺失 manifest、缺失 OBJ、缺失 texture 的日志分清楚 | Unity reference loader files | Unity build |
 | B2.3 | Done | 做 manifest-missing fallback capture，证明没私有包也不会崩 | Unity build + capture scripts | `spawn,airfield` capture passes with fallback |
 | B2.4 | Done | 提交 B2 | Unity loader files + docs | commit `Harden Unity reference visual loader` |
-| B3.1 | Next | 定义 stable visual id 命名规则：unit、prop、terrain、texture、fx、ui | `docs-content-pack.md`; `docs-content-replacement-plan.md` | docs check |
-| B3.2 | Next | 补一个 project-owned visual slice 示例，不含私有路径和旧专有名称 | `content-packs/project-owned-visual-slice.example.json` if needed | public boundary dry run |
-| B3.3 | Next | 提交 B3 | content docs/example | commit `Document replaceable visual ids` |
-| C1.1 | Later | 跑 visible-flow：机库、出战、战斗、损伤、胜利、战报、维修、回机库、重开 | visible-flow command file + docs | player smoke exits 0 |
-| C1.2 | Later | 修 walkthrough 到非开发人员能照着演示 | `docs-playable-demo-walkthrough-2026-06-07.md` | docs check |
+| B3.1 | Done | 定义 stable visual id 命名规则：unit、prop、terrain、texture、fx、ui | `docs-content-pack.md`; `docs-content-replacement-plan.md` | docs check |
+| B3.2 | Done | 补一个 project-owned visual slice 示例，不含私有路径和旧专有名称 | `content-packs/project-owned-visual-slice.example.json` if needed | public boundary dry run |
+| B3.3 | Done | 提交 B3 | content docs/example | commit `Document replaceable visual ids` |
+| C1.1 | Next | 跑 visible-flow：机库、出战、战斗、损伤、胜利、战报、维修、回机库、重开 | visible-flow command file + docs | player smoke exits 0 |
+| C1.2 | Next | 修 walkthrough 到非开发人员能照着演示 | `docs-playable-demo-walkthrough-2026-06-07.md` | docs check |
 | C2.1 | Later | 重跑六截图证据并刷新 investor evidence | capture scripts + evidence docs | six captures pass |
 | D1.1 | Later | 写 art-safe mission slice，不要求本阶段全量美术完工 | content-pack docs/example | boundary check OK |
 | E1.1 | Later | 守住 AI 副官慢频高层决策，不花 smoke token | AI contract docs/code if needed | validator/no-key path |
@@ -614,6 +614,8 @@ Final normal captures were rerun after restoring ignored manifests.
 
 **Goal:** 为以后“整包替换”和换皮项目留下稳定 id 体系，不把旧素材路径写死进产品逻辑。
 
+**Status:** Completed 2026-06-07. Stable project-facing visual id rules and a boundary-clean metadata scaffold now exist.
+
 **Files:**
 
 - Modify: `docs-content-pack.md`
@@ -626,6 +628,8 @@ Final normal captures were rerun after restoring ignored manifests.
 ```powershell
 git diff --check
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\content-pack\check_public_content_boundary.ps1 -Path "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\content-packs\project-owned-starter.example.json" -DryRun
+python -m json.tool content-packs/project-owned-visual-slice.example.json
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\content-pack\check_public_content_boundary.ps1 -Path "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\content-packs\project-owned-visual-slice.example.json" -DryRun
 ```
 
 **Acceptance:**
@@ -633,6 +637,17 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\content-pack\check_p
 - Visual ids are project-facing, not legacy-name-facing.
 - Docs clearly separate private reference pack and public replacement pack.
 - Clean starter boundary still returns `Result: OK`.
+- Visual slice scaffold boundary returns `Result: OK`.
+
+**Completed Evidence:**
+
+```text
+content-packs/project-owned-visual-slice.example.json added as metadata-only-not-mountable visual id scaffold.
+docs-content-pack.md now defines stable id prefixes for units, models, textures, terrain, props, weapon FX, damage FX and UI.
+docs-content-replacement-plan.md now records the visual-id artifact under the art-safe vertical slice milestone.
+python -m json.tool content-packs/project-owned-visual-slice.example.json: passed.
+check_public_content_boundary.ps1 -Path content-packs/project-owned-visual-slice.example.json -DryRun: Result: OK.
+```
 
 **Commit:** `Document replaceable visual ids`
 

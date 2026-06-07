@@ -1,0 +1,173 @@
+{
+  "id": "project-owned-visual-slice",
+  "title": "Project Owned Visual Slice",
+  "kind": "replacement",
+  "license": "project-owned-or-cleared",
+  "version": "0.1.0",
+  "engineContract": "mc2-content-pack-v1",
+  "visualContract": "ai-tactical-visual-pack-v1",
+  "replacementStatus": "visual-id-scaffold",
+  "runtimeStatus": "metadata-only-not-mountable",
+  "product": {
+    "id": "ai-tactical-command",
+    "title": "AI Tactical Command",
+    "titleZh": "AI 战术指挥",
+    "language": "zh-CN",
+    "audience": "controlled-demo"
+  },
+  "visualIds": {
+    "units": [
+      {
+        "id": "unit.frost-wolf",
+        "role": "commander-assault",
+        "model": "model.unit.frost-wolf",
+        "primaryTexture": "texture.unit.frost-wolf.base",
+        "damageNodes": [
+          "node.left-arm",
+          "node.right-arm",
+          "node.left-leg",
+          "node.right-leg",
+          "node.cockpit"
+        ]
+      },
+      {
+        "id": "unit.iron-wood",
+        "role": "fire-support",
+        "model": "model.unit.iron-wood",
+        "primaryTexture": "texture.unit.iron-wood.base",
+        "damageNodes": [
+          "node.left-arm",
+          "node.right-arm",
+          "node.left-leg",
+          "node.right-leg",
+          "node.cockpit"
+        ]
+      },
+      {
+        "id": "unit.black-ridge",
+        "role": "close-pressure",
+        "model": "model.unit.black-ridge",
+        "primaryTexture": "texture.unit.black-ridge.base",
+        "damageNodes": [
+          "node.left-arm",
+          "node.right-arm",
+          "node.left-leg",
+          "node.right-leg",
+          "node.cockpit"
+        ]
+      },
+      {
+        "id": "unit.gray-harbor-scout",
+        "role": "light-vehicle",
+        "model": "model.vehicle.gray-harbor-scout",
+        "primaryTexture": "texture.vehicle.gray-harbor-scout.base"
+      }
+    ],
+    "terrain": [
+      {
+        "id": "terrain.island-airfield.grass",
+        "material": "material.terrain.grass-damp",
+        "texture": "texture.terrain.grass-damp"
+      },
+      {
+        "id": "terrain.island-airfield.runway",
+        "material": "material.terrain.runway-worn",
+        "texture": "texture.terrain.runway-worn"
+      },
+      {
+        "id": "terrain.island-airfield.water",
+        "material": "material.terrain.shallow-water",
+        "texture": "texture.terrain.shallow-water"
+      },
+      {
+        "id": "terrain.island-airfield.rock",
+        "material": "material.terrain.wet-rock",
+        "texture": "texture.terrain.wet-rock"
+      }
+    ],
+    "props": [
+      {
+        "id": "prop.airfield.main-hangar",
+        "model": "model.prop.airfield.main-hangar",
+        "primaryTexture": "texture.prop.airfield.main-hangar.base",
+        "collision": "hard"
+      },
+      {
+        "id": "prop.airfield.watchtower",
+        "model": "model.prop.airfield.watchtower",
+        "primaryTexture": "texture.prop.airfield.watchtower.base",
+        "collision": "hard"
+      },
+      {
+        "id": "prop.airfield.sandbag-wall",
+        "model": "model.prop.airfield.sandbag-wall",
+        "primaryTexture": "texture.prop.airfield.sandbag-wall.base",
+        "collision": "hard"
+      },
+      {
+        "id": "prop.airfield.fuel-truck",
+        "model": "model.prop.airfield.fuel-truck",
+        "primaryTexture": "texture.prop.airfield.fuel-truck.base",
+        "collision": "hard"
+      },
+      {
+        "id": "prop.island.palm-cluster",
+        "model": "model.prop.island.palm-cluster",
+        "primaryTexture": "texture.prop.island.palm-cluster.base",
+        "collision": "soft-occluder"
+      }
+    ],
+    "weaponFx": [
+      {
+        "id": "fx.weapon.longbeam-laser",
+        "family": "energy",
+        "prefab": "fx.prefab.energy.longbeam"
+      },
+      {
+        "id": "fx.weapon.storm-autocannon",
+        "family": "ballistic",
+        "prefab": "fx.prefab.ballistic.storm"
+      },
+      {
+        "id": "fx.weapon.needle-missiles",
+        "family": "missile",
+        "prefab": "fx.prefab.missile.needle-swarm"
+      },
+      {
+        "id": "fx.damage.cockpit-ejection",
+        "family": "damage",
+        "prefab": "fx.prefab.damage.cockpit-ejection"
+      }
+    ],
+    "ui": [
+      {
+        "id": "ui.icon.jet",
+        "asset": "texture.ui.icon.jet"
+      },
+      {
+        "id": "ui.icon.repair",
+        "asset": "texture.ui.icon.repair"
+      },
+      {
+        "id": "ui.icon.ai-deputy",
+        "asset": "texture.ui.icon.ai-deputy"
+      },
+      {
+        "id": "ui.panel.mech-status",
+        "asset": "texture.ui.panel.mech-status"
+      }
+    ]
+  },
+  "provenance": {
+    "models": "No public models are included in this metadata slice.",
+    "textures": "No public textures are included in this metadata slice.",
+    "effects": "No public effects are included in this metadata slice.",
+    "ui": "No public UI art is included in this metadata slice.",
+    "review": "Boundary-clean visual id scaffold; a mountable pack still needs cleared runtime assets."
+  },
+  "notes": [
+    "This file defines stable visual ids for a future clean visual pack.",
+    "It must pass the public content boundary check.",
+    "It is not a complete runtime pack until the required engine files are supplied from cleared assets."
+  ]
+}

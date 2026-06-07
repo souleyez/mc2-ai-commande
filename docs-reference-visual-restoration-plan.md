@@ -120,7 +120,7 @@ Internal screenshot:
 
 ## Task 1: Replace Runtime OBJ Parsing With A Stable Reference Visual Manifest
 
-**Status:** Exporter-side manifest stabilization and Unity manifest-first loader hardening completed 2026-06-07. Replaceable visual id documentation remains the next B3 task in `docs-ai-rts-commander-current-detailed-plan-2026-06-07.md`.
+**Status:** Exporter-side manifest stabilization, Unity manifest-first loader hardening, and replaceable visual id documentation completed 2026-06-07. Public art-safe replacement remains the later D1 task in `docs-ai-rts-commander-current-detailed-plan-2026-06-07.md`.
 
 **Files:**
 
@@ -429,6 +429,8 @@ Manifest-missing fallback capture passed for `spawn`, with logs for missing mani
 
 ## Task 10: Prepare Replacement-Pack Boundaries While Using Original Reference Art
 
+**Status:** Completed 2026-06-07 for the visual id scaffold. A mountable public art-safe pack still requires cleared runtime assets.
+
 **Files:**
 
 - Modify: `docs-content-replacement-plan.md`
@@ -446,6 +448,7 @@ Manifest-missing fallback capture passed for `spawn`, with logs for missing mani
 
 - The Unity code never depends on original product names for public content.
 - The same visual ids can point to original local reference assets or project-owned replacements.
+- `content-packs/project-owned-visual-slice.example.json` passes the public content boundary check.
 
 ---
 
