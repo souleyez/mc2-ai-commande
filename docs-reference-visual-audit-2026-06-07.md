@@ -2296,6 +2296,59 @@ Visual judgment:
 - A first failed capture exposed a tiny `-0.2` vehicle clearance, which was treated as audit tolerance noise and normalized with a 0.5 world-unit overlap tolerance; larger negative clearance remains a capture failure.
 - Remaining visual discomfort should now be treated as camera compression, silhouette scale or composition work, not missing BattleCore collision.
 
+## First Map Visual Readability Audit
+
+Implemented on 2026-06-07 after the detailed plan A1 task.
+
+Reviewed current local captures:
+
+```text
+analysis-output/reference-visual-captures/spawn.png
+analysis-output/reference-visual-captures/airfield.png
+analysis-output/reference-visual-captures/hangar-contact.png
+analysis-output/reference-visual-captures/north-patrol.png
+analysis-output/reference-visual-captures/damage-demo.png
+```
+
+Current sidecar baseline:
+
+| Preset | Visual Role | Key Evidence | Audit Judgment |
+| --- | --- | --- | --- |
+| `spawn` | opening squad and map context | 3 player units, 0 hostiles, `BattleOccupancy=units 3/29`, sparse HUD, terrain composite `luma=81/98.8/187` | Strong for simple command UI, but the water/land boundary and runway/road detail still read soft at default zoom. The squad is visible, yet the mech silhouettes need stronger ground contact and friend identity. |
+| `airfield` | first contact and objective approach | 12 active hostiles, 8 visible, `ContactSpread nearestPH=704.7 nearestHH=108`, 80 hard props | Enemy direction is readable. The hangar, nearby structures and parked props flatten into gray/brown mush; trees become same-color dots; terrain still relies on broad color blocks. |
+| `hangar-contact` | densest pressure-test fight | 20 active hostiles, 16 visible, `ContactClearance overlaps=0 status=separated`, 80 hard props and 16 landing-blocked markers | This is crowded but not a BattleCore collision failure. The remaining problem is visual compression: small unit silhouettes, gray buildings, dark occluders, trees and effects all compete in one screen area. |
+| `north-patrol` | wider encounter slice | 24 active hostiles, 9 visible, `ContactSpread nearestPH=118 nearestHH=70.1`, wider camera composition offset | Best proof that the rules and assets can read in open space. The large water areas still look flat, hard black terrain/occlusion chunks dominate, and tree clusters need more tone separation. |
+| `damage-demo` | damage selling moment | 20 active hostiles, 16 visible, `DamageStory=left-arm-lost,legs-lost,cockpit-lost`, `ContactClearance overlaps=0 status=separated` | The HUD and sidecar tell the damage story clearly. The battlefield center remains busy; red/orange hit effects can steal focus from damaged mech shapes and cockpit/ejection cues. |
+
+Top visual causes, in priority order:
+
+1. **Terrain/water/shoreline flatness.** The first map has real source-driven terrain texture data, but at 1280x720 the water, land, shore, road and runway still read as broad soft color fields. A2 should tune terrain material strength, shore contrast and water treatment before adding new gameplay.
+2. **Unit silhouettes lack a persistent read layer.** Player and hostile colors exist, and reference units are loaded, but units are small under the fixed tactical camera. A3 should add subtle contact shadows or low-alpha faction rings under units, preserving BattleCore spacing and sparse HUD.
+3. **Buildings, props and trees collapse into local noise.** Sidecars prove `ReferenceProps=loaded 336 fallback 663` and `hardProps 80`, so the issue is not total absence of props. A4 should improve structure base pads, target structure contrast, fallback prop colors and tree tone separation.
+
+Secondary issues:
+
+- Combat effects are useful for weapon/damage storytelling, but in `hangar-contact` and `damage-demo` they can outdraw unit silhouettes.
+- Some dark occlusion/terrain chunks are too hard compared with the softened terrain palette.
+- The UI is not the current blocker. `SparseBattleUi` is healthy and should stay sparse instead of adding labels to explain the scene.
+
+BattleCore versus presentation judgment:
+
+| Issue | Layer | Reason |
+| --- | --- | --- |
+| Same-point unit pile concern | BattleCore already guarded | `ContactClearance overlaps=0 status=separated` in `hangar-contact` and `damage-demo`; do not solve this with presentation-only offsets. |
+| Shoreline/terrain contrast | Unity presentation | Movement and landing samples are already tracked; A2 can tune material/vertex color without changing pathing. |
+| Unit readability | Unity presentation | Add visual grounding/identity cues under units; keep collision radii and command slots untouched unless future sidecars prove real overlap. |
+| Building/prop readability | Unity presentation with existing BattleCore evidence | Hard props already contribute blockers; A4 should make them legible without inflating blocker geometry. |
+| Dense encounter pressure | Future encounter/camera tuning | Not part of A1-A4 unless visual fixes fail; current A1 evidence says visual compression is the first problem. |
+
+Next visual work should proceed in this order:
+
+1. A2 improve terrain and water readability.
+2. A3 improve unit silhouette readability.
+3. A4 improve structure and prop readability.
+4. A5 add a first-map visual sidecar gate so future captures cannot regress quietly.
+
 Next priority:
 
-1. Refresh first map visual slice.
+1. Improve terrain and water readability.
