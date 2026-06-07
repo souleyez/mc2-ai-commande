@@ -106,7 +106,7 @@
 | A3 | Done | `Improve unit silhouette readability` | 敌我机甲/车辆在默认镜头下更容易分辨 | build + `spawn,hangar-contact,damage-demo` captures |
 | A4 | Done | `Improve structure and prop readability` | 建筑、树木、机场道具不再是灰色糊团 | build + `airfield,hangar-contact,north-patrol` captures |
 | A5 | Done | `Gate first map visual slice` | sidecar 检查第一图视觉、稀疏 UI、碰撞不回退 | build + five battle captures |
-| A6 | Next | `Refresh demo evidence after visual pass` | 更新证据页和审计文档 | six captures + docs |
+| A6 | Done | `Refresh demo evidence after visual pass` | 更新证据页和审计文档 | six captures + docs |
 | B1 | Later | `Stabilize reference visual manifest export` | 私有参考单位/道具/地形资源导出 manifest | exporter dry run + build |
 | B2 | Later | `Harden Unity reference visual loader` | Unity 优先读 manifest，缺失安全回退 | build + fallback capture |
 | B3 | Later | `Document replaceable visual ids` | 固化换包 id，方便以后整包替换 | docs + boundary check |
@@ -399,6 +399,14 @@ FirstMapVisual: all five battle presets report status=ready, terrain=ready, unit
 ```powershell
 git diff --check
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_reference_visuals.ps1 -Presets mechlab,spawn,airfield,hangar-contact,damage-demo,north-patrol
+```
+
+**Completed Evidence:**
+
+```text
+capture_reference_visuals.ps1 -Presets mechlab,spawn,airfield,hangar-contact,damage-demo,north-patrol: MC2 reference visual captures passed: 6 preset(s).
+docs-playable-demo-investor-evidence-2026-06-07.md now leads with the current visual gate refresh, updated six screenshot beats, current sidecar highlights and a six-step three-minute demo order.
+docs-reference-visual-audit-2026-06-07.md records the A6 evidence refresh and keeps private reference visuals marked development-only.
 ```
 
 **Acceptance:**

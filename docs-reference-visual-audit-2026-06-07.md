@@ -2559,6 +2559,54 @@ Remaining issues:
 2. The evidence page and investor-facing walkthrough should be refreshed from the current six-capture set.
 3. Private reference visual manifest/export stability remains important for future whole-pack replacement.
 
+## Demo Evidence Refresh After Visual Gate
+
+Implemented on 2026-06-07 after the detailed plan A6 task.
+
+Changed evidence:
+
+- Refreshed the full six-preset evidence set: `mechlab`, `spawn`, `airfield`, `hangar-contact`, `damage-demo`, and `north-patrol`.
+- Updated `docs-playable-demo-investor-evidence-2026-06-07.md` so it leads with the current visual gate evidence instead of older handoff/V4 batches.
+- Updated each evidence beat to use current `FirstMapVisual`, `ContactClearance`, `BattleOccupancy`, `MechLabCapture`, and `DamageReadability` sidecar fields.
+- Updated the three-minute demo order to use six concise beats: fitting, spawn, readable airfield, dense hangar pressure, damage story, and wider north patrol.
+- Re-stated that the local captures may use private reference visuals and are not a public art-safe release package.
+
+Validation commands:
+
+```powershell
+git diff --check
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_reference_visuals.ps1 -Presets mechlab,spawn,airfield,hangar-contact,damage-demo,north-patrol
+```
+
+Validation evidence:
+
+```text
+capture_reference_visuals.ps1 -Presets mechlab,spawn,airfield,hangar-contact,damage-demo,north-patrol: MC2 reference visual captures passed: 6 preset(s).
+```
+
+Observed evidence page highlights:
+
+```text
+mechlab: MechLabCapture=open ... weaponBlock=1 Streak 1x2 fillers=A+/C+ fit=Fit OK ... noToggle=yes.
+spawn: FirstMapVisual status=ready playerUnits=3 activeHostiles=0 visibleHostiles=0 targetableStructures=1.
+airfield: FirstMapVisual status=ready activeHostiles=12 visibleHostiles=8 ContactClearance overlaps=0 status=separated.
+hangar-contact: FirstMapVisual status=ready activeHostiles=20 visibleHostiles=16 BattleOccupancy=units 23/29 hardProps 80 ContactClearance overlaps=0 status=separated.
+damage-demo: DamageStory=units 3/3 lostSections=3 arms=1 legs=1 cockpit=1 pilotRisk=1 destroyedUnits=1; DamageReadability=weaponFamilies energy+missile+ballistic+explosive.
+north-patrol: FirstMapVisual status=ready activeHostiles=24 visibleHostiles=9 units=27/29 ContactClearance overlaps=0 status=separated.
+```
+
+Visual judgment:
+
+- The evidence page now matches the post-visual-gate screenshots and sidecars.
+- The current three-minute order is credible for a local prototype demo because it starts from fitting, moves into command readability, then shows pressure, damage and wider trigger behavior.
+- This refresh deliberately does not claim the private reference visuals are final public product art.
+
+Remaining issues:
+
+1. Public replacement content and manifest/export stability are still required before public or commercial release.
+2. The demo evidence is strong enough for local walkthrough discussion, but the first mission still needs a final visible-flow seal before calling the whole V1 demo done.
+3. Some black prop/tree clusters remain heavy; the gate prevents regression but does not make them final art.
+
 Next priority:
 
-1. Refresh demo evidence after visual pass.
+1. Stabilize reference visual manifest export.
