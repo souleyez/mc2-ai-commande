@@ -161,11 +161,12 @@ return `Result: OK`; a development build with private reference markers returns
 
 ## 关键文档
 
-- `docs-ai-rts-commander-overall-implementation-plan-2026-06-07.md`: 当前定格版整体计划书，覆盖产品方向、当前阶段、架构边界、里程碑、近端任务和后续平台路线。
+- `docs-ai-rts-commander-detailed-roadmap-2026-06-07.md`: 当前细化路线图，覆盖真实进度、V4 进行中工作、提交级任务、验收命令、停止条件和后续平台路线。
+- `docs-ai-rts-commander-overall-implementation-plan-2026-06-07.md`: 当前定格版整体计划书，覆盖产品方向、架构边界、里程碑和总路线，并指向细化路线图。
+- `docs-playable-demo-current-execution-plan-2026-06-07.md`: 当前日常执行入口，用户说“按计划继续”时从这里的 `Current Commit Queue` 往下做。
 - `docs-playable-demo-v1-detailed-plan-2026-06-07.md`: V1 Demo 细化计划，保留产品边界、架构边界、提交级任务、验收门和后续路线。
 - `docs-playable-demo-walkthrough-2026-06-07.md`: 当前三分钟可玩 Demo 演示脚本，覆盖机库装配、战场指挥、喷射、损伤、战报、维修和后续方向。
 - `docs-playable-demo-investor-evidence-2026-06-07.md`: 当前可玩 Demo 证据页，列出本地 ignored 截图、sidecar 摘要、三分钟展示顺序和公开内容边界。
-- `docs-playable-demo-current-execution-plan-2026-06-07.md`: 当前日常执行入口，用户说“按计划继续”时从这里的 `Current Commit Queue` 往下做。
 - `docs-playable-demo-overall-detailed-plan-2026-06-07.md`: 总计划、产品分层、第一版工作包、阶段门、长期边界和历史上下文。
 - `docs-playable-demo-fine-grained-current-plan-2026-06-07.md`: 旧的细粒度执行计划，保留阶段历史。
 - `docs-playable-demo-locked-execution-plan-2026-06-07.md`: 旧的锁定执行计划，保留阶段历史、已完成任务和早期 Sprint Board。

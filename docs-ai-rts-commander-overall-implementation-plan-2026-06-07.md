@@ -8,7 +8,7 @@
 
 **Tech Stack:** Unity 6, C#, Windows Standalone first, deterministic BattleCore, PowerShell validator/build/smoke/capture scripts, replaceable content packs, optional high-level AI deputy adapter, future main server and map server contracts.
 
-**Revision:** 2026-06-07 v1. This is the current detailed overall plan. The day-to-day queue remains `docs-playable-demo-current-execution-plan-2026-06-07.md`.
+**Revision:** 2026-06-07 v2. This is the fixed overall plan. The fine-grained roadmap is `docs-ai-rts-commander-detailed-roadmap-2026-06-07.md`; the day-to-day queue remains `docs-playable-demo-current-execution-plan-2026-06-07.md`.
 
 ---
 
@@ -20,11 +20,19 @@
 2. 后续应该按什么阶段推进。
 3. 用户说“按计划继续”时，下一步具体做什么。
 
-日常开发入口仍然是：
+当前计划入口分三层：
 
 ```text
+docs-ai-rts-commander-overall-implementation-plan-2026-06-07.md
+docs-ai-rts-commander-detailed-roadmap-2026-06-07.md
 docs-playable-demo-current-execution-plan-2026-06-07.md
 ```
+
+分工：
+
+1. 本文件管产品方向、架构边界、里程碑和长期平台路线。
+2. `docs-ai-rts-commander-detailed-roadmap-2026-06-07.md` 管当前真实状态、阶段拆解、提交级任务、验收命令和停止条件。
+3. `docs-playable-demo-current-execution-plan-2026-06-07.md` 管“按计划继续”时的下一步提交队列。
 
 执行顺序：
 
@@ -35,6 +43,7 @@ docs-playable-demo-current-execution-plan-2026-06-07.md
 5. 不提交 generated PNG/JSON/log/build artifacts，除非用户明确要求。
 6. Unity build 后检查 scene fileID churn，非必要不入库。
 7. 任何公开文案只讲本项目自己的 AI RTS 指挥探索，不把本地参考内容当产品身份。
+8. 如果工作区已有 V4 拥挤接触 WIP，先完成 validator/capture/docs 验收，再开新功能。
 
 ## 1. Product North Star
 
@@ -501,7 +510,7 @@ scripts/content-pack/check_public_content_boundary.ps1
 
 ## 8. Current Commit Queue
 
-The live queue remains in `docs-playable-demo-current-execution-plan-2026-06-07.md`.
+The live queue remains in `docs-playable-demo-current-execution-plan-2026-06-07.md`. The detailed rationale and acceptance gates for each item are in `docs-ai-rts-commander-detailed-roadmap-2026-06-07.md`.
 
 Current recommended queue:
 
@@ -515,10 +524,14 @@ Current recommended queue:
 | 6 | Done | `Document reference content boundary` | Clarify private/public content split |
 | 7 | Done | `Add public content boundary check` | Add non-destructive build-path safety check |
 | 8 | Done | `Run demo handoff gate audit` | Validate build, smoke, captures and content boundary together |
-| 9 | Next | `Polish crowded contact occupancy` | Fix any remaining model overlap with BattleCore evidence |
-| 10 | Next | `Open public replacement slice` | Start text-safe/art-safe content pack path |
+| 9 | In Progress | `Polish crowded contact occupancy` | Finish V4 spacing/contact sidecar WIP and validate captures |
+| 10 | Next | `Refresh playable demo evidence` | Re-run validator, build, smoke and captures after V4 |
+| 11 | Next | `Open public replacement content slice` | Start text-safe/art-safe content pack path |
+| 12 | Next | `Polish MechLab grid feel` | Keep equipment-grid fitting as a core fun loop |
 
 ## 9. Detailed Near-Term Tasks
+
+The historical task notes below are kept for context and evidence. For the current executable breakdown, use `docs-ai-rts-commander-detailed-roadmap-2026-06-07.md`, starting with A1 `Finish V4 Contact Occupancy WIP`.
 
 ### Task P2: Add Public Content Boundary Check
 

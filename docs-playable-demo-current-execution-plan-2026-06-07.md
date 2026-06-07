@@ -8,7 +8,7 @@
 
 **Tech Stack:** Unity 6, C#, Windows Standalone, deterministic BattleCore, PowerShell validation/capture scripts, `mc2-unity-demo-contract-v1`, private local reference content pack, Git/GitHub.
 
-**Revision:** 2026-06-07 current execution plan v6. This is the current canonical day-to-day execution queue. The fixed overall plan is now `docs-ai-rts-commander-overall-implementation-plan-2026-06-07.md`; `docs-playable-demo-v1-detailed-plan-2026-06-07.md` and older `docs-playable-demo-*.md` files remain history, evidence, or task archives.
+**Revision:** 2026-06-07 current execution plan v7. This is the current canonical day-to-day execution queue. The fixed overall plan is `docs-ai-rts-commander-overall-implementation-plan-2026-06-07.md`; the fine-grained roadmap is `docs-ai-rts-commander-detailed-roadmap-2026-06-07.md`; `docs-playable-demo-v1-detailed-plan-2026-06-07.md` and older `docs-playable-demo-*.md` files remain history, evidence, or task archives.
 
 ---
 
@@ -42,7 +42,8 @@
 - Repeatable Windows build 已提交：`3753857 Prepare repeatable Windows demo build`.
 - Demo evidence package 已提交：`0bb822b Package playable demo evidence`.
 - Content boundary documentation 已提交：`4819657 Document reference content boundary`.
-- H4 handoff audit 已完成，下一步是 `V4 Polish crowded contact occupancy`.
+- H4 handoff audit 已完成，当前已有 V4 source WIP，下一步是先验证并收口 `V4 Polish crowded contact occupancy`.
+- V4 WIP touches `BattleMission.cs`, `Mc2DemoValidator.cs`, and `Mc2DemoBootstrap.cs`; do not open new feature work until validator, `hangar-contact`, and `damage-demo` captures pass.
 
 ## 1. First Demo Product Scope
 
@@ -265,7 +266,9 @@ Do not stage generated PNG/JSON/log evidence unless explicitly requested.
 | 13 | Done | `Document reference content boundary` | G6 public boundary |
 | 14 | Done | `Add public content boundary check` | G6 public boundary |
 | 15 | Done | `Run demo handoff gate audit` | G8 handoff |
-| 16 | Next | `Polish crowded contact occupancy` | G2/G7 readability and occupancy |
+| 16 | In Progress | `Polish crowded contact occupancy` | G2/G7 readability and occupancy |
+| 17 | Next | `Refresh playable demo evidence` | G8 handoff after V4 |
+| 18 | Next | `Open public replacement content slice` | G6 public boundary |
 
 ## 6. Detailed Tasks
 
@@ -894,7 +897,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_refere
 
 ### V4: Polish Crowded Contact Occupancy
 
-**Status:** Next.
+**Status:** In Progress.
 
 **Goal:** 继续解决 `hangar-contact` 仍然偏密的问题，让主战斗截图更像战术交战，而不是所有单位围着一个建筑挤在一起。
 
