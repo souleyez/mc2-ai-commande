@@ -192,6 +192,7 @@ namespace MC2Demo.Presentation
             public string occupancy;
             public string occupancyPlaceholders;
             public string mechLab;
+            public string damageStory;
             public VisualCaptureCameraState camera;
             public VisualCaptureReferenceState referenceAssets;
         }
@@ -5474,7 +5475,7 @@ namespace MC2Demo.Presentation
             RunStartupHangarContactCapturePrelude();
             AdvanceStartupSimulation(18f);
             ForceStartupDamageDemoSections();
-            cameraZoomScale = Mathf.Min(cameraZoomScale, 0.82f);
+            cameraZoomScale = Mathf.Clamp(Mathf.Max(cameraZoomScale, 1.16f), cameraZoomMin, cameraZoomMax);
             ApplyCameraProjection();
         }
 
@@ -5633,6 +5634,7 @@ namespace MC2Demo.Presentation
             float leftArmDamage = ApplyStartupDamageDemoSection(first, "Left Arm");
             float legDamage = ApplyStartupDamageDemoSection(second, "Legs");
             float cockpitDamage = ApplyStartupDamageDemoSection(third, "Cockpit");
+            statusText = "Damage demo: arm lost, legs disabled, cockpit ejection.";
             AddCombatLogLine("Capture damage demo: " + first.Id + " left arm, " + second.Id + " legs, " + third.Id + " cockpit");
             Debug.Log(
                 "MC2 damage demo forced sections: leftArm="
@@ -5743,6 +5745,7 @@ namespace MC2Demo.Presentation
                 occupancy = BuildCaptureOccupancySummary(),
                 occupancyPlaceholders = lastOccupancyPlaceholderSummary,
                 mechLab = BuildCaptureMechLabSummary(),
+                damageStory = BuildCaptureDamageStorySummary(),
                 camera = BuildCaptureCameraState(),
                 referenceAssets = new VisualCaptureReferenceState
                 {
@@ -5759,6 +5762,164 @@ namespace MC2Demo.Presentation
         {
             string battleSummary = mission == null ? "BattleOccupancy=mission unavailable" : mission.OccupancySummary();
             return battleSummary + "; " + DemoTerrainView.CurrentLandingAuditSummary();
+        }
+
+        private string BuildCaptureDamageStorySummary()
+        {
+            if (mission == null)
+            {
+                return "DamageStory=mission unavailable";
+            }
+
+            int totalUnits = 0;
+            int damagedUnits = 0;
+            int destroyedUnits = 0;
+            int lostSections = 0;
+            int criticalSections = 0;
+            int armLosses = 0;
+            int legLosses = 0;
+            int cockpitLosses = 0;
+            int pilotRiskUnits = 0;
+            List<string> unitStories = new();
+            foreach (UnitState unit in mission.PlayerUnits())
+            {
+                if (unit == null)
+                {
+                    continue;
+                }
+
+                totalUnits++;
+                if (unit.IsDestroyed)
+                {
+                    destroyedUnits++;
+                }
+
+                bool pilotRisk = false;
+                List<string> sectionTokens = new();
+                foreach (DamageSection section in unit.Sections ?? Array.Empty<DamageSection>())
+                {
+                    if (section == null)
+                    {
+                        continue;
+                    }
+
+                    string token = CaptureDamageSectionToken(section.Name);
+                    if (section.IsDestroyed)
+                    {
+                        lostSections++;
+                        sectionTokens.Add(token + "-lost");
+                        if (CaptureDamageSectionIsArm(section.Name))
+                        {
+                            armLosses++;
+                        }
+
+                        if (CaptureDamageSectionIsLeg(section.Name))
+                        {
+                            legLosses++;
+                        }
+
+                        if (CaptureDamageSectionIsCockpit(section.Name))
+                        {
+                            cockpitLosses++;
+                            pilotRisk = true;
+                        }
+
+                        if (section.IsCritical)
+                        {
+                            pilotRisk = true;
+                        }
+
+                        continue;
+                    }
+
+                    if (section.Ratio < CriticalSectionStatusRatio)
+                    {
+                        criticalSections++;
+                        sectionTokens.Add(token + "-critical");
+                    }
+                }
+
+                if (pilotRisk)
+                {
+                    pilotRiskUnits++;
+                }
+
+                if (sectionTokens.Count <= 0)
+                {
+                    continue;
+                }
+
+                damagedUnits++;
+                unitStories.Add(TruncateText(unit.Id + ":" + string.Join("+", sectionTokens), 92));
+            }
+
+            if (damagedUnits <= 0)
+            {
+                return "DamageStory=units 0/"
+                    + totalUnits.ToString(CultureInfo.InvariantCulture)
+                    + " none";
+            }
+
+            return "DamageStory=units "
+                + damagedUnits.ToString(CultureInfo.InvariantCulture)
+                + "/"
+                + totalUnits.ToString(CultureInfo.InvariantCulture)
+                + " lostSections="
+                + lostSections.ToString(CultureInfo.InvariantCulture)
+                + " criticalSections="
+                + criticalSections.ToString(CultureInfo.InvariantCulture)
+                + " arms="
+                + armLosses.ToString(CultureInfo.InvariantCulture)
+                + " legs="
+                + legLosses.ToString(CultureInfo.InvariantCulture)
+                + " cockpit="
+                + cockpitLosses.ToString(CultureInfo.InvariantCulture)
+                + " pilotRisk="
+                + pilotRiskUnits.ToString(CultureInfo.InvariantCulture)
+                + " destroyedUnits="
+                + destroyedUnits.ToString(CultureInfo.InvariantCulture)
+                + " story="
+                + string.Join(",", unitStories);
+        }
+
+        private static string CaptureDamageSectionToken(string sectionName)
+        {
+            if (CaptureDamageSectionIsCockpit(sectionName))
+            {
+                return "cockpit";
+            }
+
+            if (CaptureDamageSectionIsLeg(sectionName))
+            {
+                return "legs";
+            }
+
+            if (CaptureDamageSectionIsArm(sectionName))
+            {
+                return (sectionName ?? "").IndexOf("left", StringComparison.OrdinalIgnoreCase) >= 0 ? "left-arm" : "right-arm";
+            }
+
+            string text = string.IsNullOrWhiteSpace(sectionName) ? "section" : sectionName.Trim().ToLowerInvariant();
+            return text.Replace(" ", "-");
+        }
+
+        private static bool CaptureDamageSectionIsArm(string sectionName)
+        {
+            return !string.IsNullOrWhiteSpace(sectionName)
+                && sectionName.IndexOf("arm", StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        private static bool CaptureDamageSectionIsLeg(string sectionName)
+        {
+            return !string.IsNullOrWhiteSpace(sectionName)
+                && sectionName.IndexOf("leg", StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        private static bool CaptureDamageSectionIsCockpit(string sectionName)
+        {
+            return !string.IsNullOrWhiteSpace(sectionName)
+                && (sectionName.IndexOf("cockpit", StringComparison.OrdinalIgnoreCase) >= 0
+                    || sectionName.IndexOf("pilot", StringComparison.OrdinalIgnoreCase) >= 0);
         }
 
         private string BuildCaptureMechLabSummary()

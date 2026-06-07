@@ -36,7 +36,7 @@
 - Occupancy placeholder review layer 已提交：`1bd22e2 Lock occupancy placeholder review layer`.
 - MechLab block fitting 已提交：`74e24bf Polish MechLab block fitting`.
 - MechLab fitting evidence capture 已提交：`6ffa2ea Capture MechLab fitting evidence`.
-- 下一步是 `C1 Strengthen damage demo readability`.
+- 下一步是 `C2 Keep battle UI sparse`.
 
 ## 1. First Demo Product Scope
 
@@ -93,7 +93,7 @@
 | Gap | Why It Matters | Next Task |
 | --- | --- | --- |
 | MechLab 后续只需回归 | 整块占格和截图证据已完成，后续 UI 改动需要保持这个体验不退化 | G3 regression |
-| 损伤卖点还可以更强 | 断臂、腿瘫、弹射是差异化卖点；V2 已增强当前截图 spotlight，后续还可补动画故事 | C1 |
+| 战斗 UI 仍需最后收紧 | C1 已把 `damage-demo` 损伤故事推进到截图级；下一步要防止战斗画面继续堆文字和面板 | C2 |
 | Demo 还缺三分钟演示话术和证据页 | 后续融资/协作需要可展示包 | H1-H3 |
 | 公开内容安全还需要脚本 guard | 本地参考包和公开包要分清 | P1/P2 |
 
@@ -252,8 +252,8 @@ Do not stage generated PNG/JSON/log evidence unless explicitly requested.
 | 5 | Done | `Lock occupancy placeholder review layer` | G7 collision evidence |
 | 6 | Done | `Polish MechLab block fitting` | G3 MechLab feel |
 | 7 | Done | `Capture MechLab fitting evidence` | G3 MechLab evidence |
-| 8 | Next | `Strengthen damage demo readability` | G1 combat feel |
-| 9 | Pending | `Keep battle UI sparse` | G1/G2 UI readability |
+| 8 | Done | `Strengthen damage demo readability` | G1 combat feel |
+| 9 | Next | `Keep battle UI sparse` | G1/G2 UI readability |
 | 10 | Pending | `Write playable demo walkthrough` | G8 handoff |
 | 11 | Pending | `Prepare repeatable Windows demo build` | G8 handoff |
 | 12 | Pending | `Package playable demo evidence` | G8 handoff |
@@ -568,7 +568,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_refere
 
 ### C1: Strengthen Damage Demo Readability
 
-**Status:** Pending.
+**Status:** Completed 2026-06-07.
+
+**Result:** `damage-demo` now frames the damaged squad closer, reports a concise top-bar story, and writes a `damageStory` sidecar summary proving `left-arm-lost`, `legs-lost`, and `cockpit-lost` in the player squad. The capture script now rejects a damage-demo preset that is too zoomed out or missing the forced section-damage story. Evidence: `analysis-output/unity-validate-damage-selling-moment.log`, `analysis-output/unity-build-damage-selling-moment.log`, `analysis-output/reference-visual-captures/damage-demo.png`, `analysis-output/reference-visual-captures/damage-demo.json`, and `analysis-output/reference-visual-captures/damage-demo.log`.
 
 **Goal:** `damage-demo` 必须一眼看出这是机甲部位损伤战斗，而不是普通 RTS 小兵血条。
 
@@ -608,7 +610,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_refere
 
 ### C2: Keep Battle UI Sparse
 
-**Status:** Pending when UI starts creeping.
+**Status:** Next.
 
 **Goal:** 战斗中不用显示太多信息，但状态栏必须承担控制和损伤概览。
 

@@ -30,7 +30,7 @@ Current branch snapshot when this plan was written:
   - `1bd22e2 Lock occupancy placeholder review layer`
   - `74e24bf Polish MechLab block fitting`
   - `6ffa2ea Capture MechLab fitting evidence`
-- Current next gameplay task: `C1 Strengthen damage demo readability`.
+- Current next gameplay task: `C2 Keep battle UI sparse`.
 
 ## 1. Product Definition
 
@@ -227,8 +227,8 @@ The authoritative queue is still in `docs-playable-demo-current-execution-plan-2
 
 | Order | Status | Commit | Purpose |
 | --- | --- | --- | --- |
-| C1 | Next | `Strengthen damage demo readability` | Make limb/cockpit/ejection damage readable at screenshot scale |
-| C2 | Pending | `Keep battle UI sparse` | Ensure battle UI stays clean while preserving command/damage state |
+| C1 | Done | `Strengthen damage demo readability` | Make limb/cockpit/ejection damage readable at screenshot scale |
+| C2 | Next | `Keep battle UI sparse` | Ensure battle UI stays clean while preserving command/damage state |
 | H1 | Pending | `Write playable demo walkthrough` | Create a three-minute demonstration script |
 | H2 | Pending | `Prepare repeatable Windows demo build` | Document and verify repeatable build/smoke/capture commands |
 | H3 | Pending | `Package playable demo evidence` | Build an evidence page with screenshot beats and captions |
@@ -238,6 +238,8 @@ The authoritative queue is still in `docs-playable-demo-current-execution-plan-2
 ## 6. Detailed Execution Tasks
 
 ### Task C1: Strengthen Damage Demo Readability
+
+**Status:** Completed 2026-06-07.
 
 **Goal:** `damage-demo` must read as mech section-damage combat, not generic RTS health bars.
 

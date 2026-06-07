@@ -100,7 +100,7 @@ AI 副官的定位：
 
 - Branch: `master...ai-origin/master` with local demo commits ahead of remote.
 - 当前日常执行入口：`docs-playable-demo-current-execution-plan-2026-06-07.md`.
-- 当前下一步：`C1 Strengthen damage demo readability`.
+- 当前下一步：`C2 Keep battle UI sparse`.
 
 已收口的事实：
 
@@ -126,7 +126,7 @@ AI 副官的定位：
 
 | Gap | Why It Matters | Current Plan |
 | --- | --- | --- |
-| 损伤卖点还可继续强化 | V2 已增强当前截图 spotlight；后续可补断臂、腿瘫、弹射的事件动画故事 | C1 combat feel |
+| 战斗 UI 仍需最后收紧 | C1 已增强 `damage-demo` 的部位损伤故事；下一步要防止战斗画面继续堆文字和面板 | C2 battle UI |
 | 碰撞占位后续只需回归 | V3 已提供单位、结构、hardProp 和 landing blocked 审计层；后续发现具体碰撞 bug 再加 close-up preset | V3 regression |
 | Demo 还缺完整演示话术和证据页 | 后续融资或协作需要三分钟可讲清楚 | H1-H3 handoff |
 | 公开内容安全还要脚本 guard | 本地参考包可以开发验证，公开包不能混入旧素材 | P1/P2 content boundary |
@@ -297,7 +297,7 @@ Do not stage generated PNG/JSON/log evidence unless explicitly requested.
 
 ### Milestone 1: Reference Visual Readability
 
-**Status:** V2 completed 2026-06-07. Keep this milestone in regression while the next active task moves to C1.
+**Status:** V2 and C1 completed 2026-06-07. Keep this milestone in regression while the next active task moves to C2.
 
 **Goal:** 让第一张图看起来像 3D 战场，不像色块或模型团。优先解决远景可读性、损伤 spotlight、局部拥挤、材质对比和构图。
 
@@ -460,7 +460,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_refere
 
 ### Milestone 5: MechLab Block-Fitting Slice
 
-**Status:** M1 and M2 completed; keep in regression while the next active task moves to C1.
+**Status:** M1 and M2 completed; keep in regression while the next active task moves to C2.
 
 **Goal:** 装配界面尽量参照原作“整块武器放格子”的直观乐趣，同时保持第一版轻量。
 
@@ -684,8 +684,8 @@ Current recommended order:
 | 2 | Done | `Lock occupancy placeholder review layer` | Make physical blockers auditable without cluttering player HUD |
 | 3 | Done | `Polish MechLab block fitting` | Make loadout grid closer to original-style block fitting |
 | 4 | Done | `Capture MechLab fitting evidence` | Prove loadout UI and smoke flow |
-| 5 | Next | `Strengthen damage demo readability` | Push limb/cockpit/ejection story into screenshot-grade clarity |
-| 6 | Pending | `Keep battle UI sparse` | Final pass against too much battle information |
+| 5 | Done | `Strengthen damage demo readability` | Push limb/cockpit/ejection story into screenshot-grade clarity |
+| 6 | Next | `Keep battle UI sparse` | Final pass against too much battle information |
 | 7 | Pending | `Write playable demo walkthrough` | Create three-minute demo narrative |
 | 8 | Pending | `Prepare repeatable Windows demo build` | Make local build/running repeatable |
 | 9 | Pending | `Package playable demo evidence` | Collect proof paths, not generated artifacts |

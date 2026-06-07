@@ -1855,3 +1855,68 @@ Remaining issues:
 Next priority:
 
 1. C1 strengthen damage demo readability.
+
+## C1 Damage Demo Readability Result
+
+Implemented on 2026-06-07:
+
+- Changed the `damage-demo` capture prelude from a wide battlefield pullback to a closer tactical framing around the damaged squad.
+- Kept BattleCore section state as the source of truth: the preset still forces one left-arm loss, one legs loss, and one cockpit loss through `ApplyDirectSectionDamage`.
+- Added a concise capture-only status line: `Damage demo: arm lost, legs disabled, cockpit ejection.`
+- Added `damageStory` to capture sidecars so the screenshot evidence can prove the forced section-damage story without relying only on visual inspection.
+- Updated `scripts/unity/capture_reference_visuals.ps1` so the `damage-demo` preset fails if the capture is too zoomed out or if the sidecar does not include `left-arm-lost`, `legs-lost`, `cockpit-lost`, `pilotRisk`, and lost-section counts.
+- Restored Unity scene fileID churn after the build; no intentional scene changes were kept.
+
+Modified files:
+
+```text
+scripts/unity/capture_reference_visuals.ps1
+unity-mc2-demo/Assets/Scripts/Presentation/Mc2DemoBootstrap.cs
+docs-reference-visual-audit-2026-06-07.md
+docs-playable-demo-current-execution-plan-2026-06-07.md
+docs-playable-demo-v1-detailed-plan-2026-06-07.md
+```
+
+Validation commands:
+
+```powershell
+git diff --check
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoValidator.ValidateMissionContract -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-validate-damage-selling-moment.log"
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoBuilder.BuildWindows64 -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-build-damage-selling-moment.log"
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_reference_visuals.ps1 -Presets damage-demo
+```
+
+Validation evidence:
+
+```text
+analysis-output/unity-validate-damage-selling-moment.log
+analysis-output/unity-build-damage-selling-moment.log
+analysis-output/reference-visual-captures/damage-demo.png
+analysis-output/reference-visual-captures/damage-demo.json
+analysis-output/reference-visual-captures/damage-demo.log
+```
+
+Validation results:
+
+```text
+git diff --check: clean, with Windows line-ending warnings only.
+Validator: MC2 demo contract validation OK.
+Build: Build Finished, Result: Success; MC2 Unity demo Windows build OK.
+Capture: damage-demo passed sidecar validation.
+```
+
+Observed effect:
+
+- `damage-demo` camera changed from `zoomScale=0.82`, `orthographicSize=35.50` to `zoomScale=1.16`, `orthographicSize=25.09`.
+- Visible hostiles in frame dropped from 20 to 16 while active hostile pressure stayed 20, so the screenshot keeps the same encounter but no longer tries to show the whole island.
+- Sidecar now reports `DamageStory=units 3/3 lostSections=3 criticalSections=0 arms=1 legs=1 cockpit=1 pilotRisk=1 destroyedUnits=1 story=unit-1:left-arm-lost,unit-2:legs-lost,unit-3:cockpit-lost`.
+- The top status line and left status rows confirm the same damage story while keeping the battle HUD sparse.
+
+Remaining issues:
+
+1. The damage event is now screenshot-grade enough for C1, but later combat-feel work can still add more authored animation for ejection, limb separation, and wreck readability.
+2. The next product task should audit active battle UI density so the stronger damage story does not invite adding too much text.
+
+Next priority:
+
+1. C2 keep battle UI sparse.

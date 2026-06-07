@@ -170,6 +170,9 @@ function Test-CaptureSidecar {
     if ($ExpectedPreset -eq "mechlab") {
         Test-MechLabCaptureSidecar -Sidecar $sidecar -Path $Path
     }
+    elseif ($ExpectedPreset -eq "damage-demo") {
+        Test-DamageDemoCaptureSidecar -Sidecar $sidecar -Path $Path
+    }
 
     $placeholderSummary = [string]$sidecar.occupancyPlaceholders
     if ($ExpectOccupancyPlaceholders) {
@@ -191,6 +194,49 @@ function Test-CaptureSidecar {
     }
 
     return $sidecar
+}
+
+function Test-DamageDemoCaptureSidecar {
+    param(
+        [object]$Sidecar,
+        [string]$Path
+    )
+
+    if ($Sidecar.flowScreen -ne "Battle") {
+        throw "Damage demo capture did not stay in battle flow: $Path -> $($Sidecar.flowScreen)"
+    }
+
+    if ([double]$Sidecar.camera.zoomScale -lt 1.05) {
+        throw "Damage demo capture is too zoomed out for section-damage readability: $Path -> zoom=$($Sidecar.camera.zoomScale)"
+    }
+
+    $summary = [string]$Sidecar.damageStory
+    foreach ($fragment in @(
+        "DamageStory=units",
+        "left-arm-lost",
+        "legs-lost",
+        "cockpit-lost",
+        "lostSections=",
+        "pilotRisk=",
+        "destroyedUnits=",
+        "story="
+    )) {
+        if ($summary -notlike "*$fragment*") {
+            throw "Damage demo sidecar summary missing '$fragment': $Path -> $summary"
+        }
+    }
+
+    foreach ($pattern in @(
+        "lostSections=[1-9]",
+        "arms=[1-9]",
+        "legs=[1-9]",
+        "cockpit=[1-9]",
+        "pilotRisk=[1-9]"
+    )) {
+        if ($summary -notmatch $pattern) {
+            throw "Damage demo sidecar summary did not prove '$pattern': $Path -> $summary"
+        }
+    }
 }
 
 function Test-MechLabCaptureSidecar {
