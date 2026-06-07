@@ -199,6 +199,7 @@ namespace MC2Demo.Presentation
             public string occupancyPlaceholders;
             public string terrainReadability;
             public string unitReadability;
+            public string structureReadability;
             public string contactSpread;
             public string contactClearance;
             public string mechLab;
@@ -5822,6 +5823,7 @@ namespace MC2Demo.Presentation
                 occupancyPlaceholders = lastOccupancyPlaceholderSummary,
                 terrainReadability = BuildCaptureTerrainReadabilitySummary(),
                 unitReadability = BuildCaptureUnitReadabilitySummary(),
+                structureReadability = BuildCaptureStructureReadabilitySummary(),
                 contactSpread = BuildCaptureContactSpreadSummary(),
                 contactClearance = BuildCaptureContactClearanceSummary(),
                 mechLab = BuildCaptureMechLabSummary(),
@@ -5993,6 +5995,140 @@ namespace MC2Demo.Presentation
                 + " damaged="
                 + damagedUnits.ToString(CultureInfo.InvariantCulture)
                 + " style=grounded-silhouette+friend-foe-footprint labels=no pathing=unchanged collision=unchanged";
+        }
+
+        private string BuildCaptureStructureReadabilitySummary()
+        {
+            if (mission == null)
+            {
+                return "StructureReadability=mission unavailable";
+            }
+
+            int structures = 0;
+            int activeStructures = 0;
+            int targetableStructures = 0;
+            int structureViewsWithCue = 0;
+            foreach (StructureState structure in mission.Structures)
+            {
+                if (structure == null)
+                {
+                    continue;
+                }
+
+                structures++;
+                if (!structure.IsDestroyed)
+                {
+                    activeStructures++;
+                }
+
+                if (structure.IsTargetable)
+                {
+                    targetableStructures++;
+                }
+
+                if (!string.IsNullOrWhiteSpace(structure.Id)
+                    && structureViews.TryGetValue(structure.Id, out DemoStructureView view)
+                    && view != null)
+                {
+                    structureViewsWithCue++;
+                }
+            }
+
+            int terrainProps = 0;
+            int hardProps = 0;
+            int buildingProps = 0;
+            int aircraftProps = 0;
+            int vehicleProps = 0;
+            int barricadeProps = 0;
+            int treeProps = 0;
+            int treeObjects = 0;
+            int smallProps = 0;
+            int otherProps = 0;
+            TerrainObjectSpawn[] terrainObjects = mission.Contract?.terrainObjects ?? Array.Empty<TerrainObjectSpawn>();
+            foreach (TerrainObjectSpawn terrainObject in terrainObjects)
+            {
+                if (terrainObject?.position == null || IsCoveredByTargetStructure(terrainObject))
+                {
+                    continue;
+                }
+
+                terrainProps++;
+                if (IsHardTerrainObjectVisual(terrainObject))
+                {
+                    hardProps++;
+                }
+
+                string category = ReferencePropLibrary.TerrainVisualCategoryFor(terrainObject);
+                if (string.Equals(category, "building", StringComparison.OrdinalIgnoreCase))
+                {
+                    buildingProps++;
+                }
+                else if (string.Equals(category, "aircraft", StringComparison.OrdinalIgnoreCase))
+                {
+                    aircraftProps++;
+                }
+                else if (string.Equals(category, "vehicle", StringComparison.OrdinalIgnoreCase))
+                {
+                    vehicleProps++;
+                }
+                else if (string.Equals(category, "barricade", StringComparison.OrdinalIgnoreCase))
+                {
+                    barricadeProps++;
+                }
+                else if (string.Equals(category, "tree", StringComparison.OrdinalIgnoreCase))
+                {
+                    treeProps++;
+                }
+                else if (string.Equals(category, "smallProp", StringComparison.OrdinalIgnoreCase))
+                {
+                    smallProps++;
+                }
+                else
+                {
+                    otherProps++;
+                }
+
+                if (string.Equals(terrainObject.objectClass, "TREE", StringComparison.OrdinalIgnoreCase))
+                {
+                    treeObjects++;
+                }
+            }
+
+            return DemoStructureView.StructureReadabilityCueSummary()
+                + " structures="
+                + structures.ToString(CultureInfo.InvariantCulture)
+                + " activeStructures="
+                + activeStructures.ToString(CultureInfo.InvariantCulture)
+                + " structureViews="
+                + structureViewsWithCue.ToString(CultureInfo.InvariantCulture)
+                + " targetable="
+                + targetableStructures.ToString(CultureInfo.InvariantCulture)
+                + " terrainProps="
+                + terrainProps.ToString(CultureInfo.InvariantCulture)
+                + " hardProps="
+                + hardProps.ToString(CultureInfo.InvariantCulture)
+                + " building="
+                + buildingProps.ToString(CultureInfo.InvariantCulture)
+                + " aircraft="
+                + aircraftProps.ToString(CultureInfo.InvariantCulture)
+                + " vehicle="
+                + vehicleProps.ToString(CultureInfo.InvariantCulture)
+                + " barricade="
+                + barricadeProps.ToString(CultureInfo.InvariantCulture)
+                + " tree="
+                + treeProps.ToString(CultureInfo.InvariantCulture)
+                + " treeObjects="
+                + treeObjects.ToString(CultureInfo.InvariantCulture)
+                + " smallProp="
+                + smallProps.ToString(CultureInfo.InvariantCulture)
+                + " other="
+                + otherProps.ToString(CultureInfo.InvariantCulture)
+                + " color=category-tone-separation textureTint=category-base visualOnly=yes collision=unchanged blockerGeometry=unchanged "
+                + lastReferenceStructureSummary
+                + "; "
+                + lastReferencePropSummary
+                + "; "
+                + lastReferenceScaleSummary;
         }
 
         private static bool UnitHasSectionDamage(UnitState unit)
@@ -9494,27 +9630,89 @@ namespace MC2Demo.Presentation
         {
             if (terrainObject.damage != 0)
             {
-                return new Color(0.30f, 0.27f, 0.22f);
+                return new Color(0.34f, 0.28f, 0.22f);
+            }
+
+            string category = ReferencePropLibrary.TerrainVisualCategoryFor(terrainObject);
+            if (string.Equals(category, "aircraft", StringComparison.OrdinalIgnoreCase))
+            {
+                return new Color(0.66f, 0.64f, 0.56f);
+            }
+
+            if (string.Equals(category, "vehicle", StringComparison.OrdinalIgnoreCase))
+            {
+                return new Color(0.46f, 0.43f, 0.36f);
+            }
+
+            if (string.Equals(category, "barricade", StringComparison.OrdinalIgnoreCase))
+            {
+                return new Color(0.58f, 0.50f, 0.34f);
+            }
+
+            if (string.Equals(category, "smallProp", StringComparison.OrdinalIgnoreCase))
+            {
+                return new Color(0.50f, 0.48f, 0.40f);
             }
 
             if (string.Equals(terrainObject.objectClass, "TREE", StringComparison.OrdinalIgnoreCase))
             {
                 if (ContainsIgnoreCase(terrainObject.fileName, "Light"))
                 {
-                    return new Color(0.82f, 0.73f, 0.46f);
+                    return new Color(0.62f, 0.60f, 0.36f);
                 }
 
-                return new Color(0.13f, 0.34f, 0.17f);
+                return new Color(0.18f, 0.40f, 0.20f);
             }
 
             if (string.Equals(terrainObject.objectClass, "BUILDING", StringComparison.OrdinalIgnoreCase))
             {
                 return terrainObject.teamId >= 0
-                    ? new Color(0.55f, 0.44f, 0.33f)
-                    : new Color(0.33f, 0.35f, 0.34f);
+                    ? new Color(0.61f, 0.48f, 0.34f)
+                    : new Color(0.42f, 0.43f, 0.38f);
             }
 
-            return new Color(0.42f, 0.42f, 0.38f);
+            if (string.Equals(category, "building", StringComparison.OrdinalIgnoreCase))
+            {
+                return new Color(0.46f, 0.44f, 0.38f);
+            }
+
+            return new Color(0.44f, 0.42f, 0.36f);
+        }
+
+        private static bool IsHardTerrainObjectVisual(TerrainObjectSpawn terrainObject)
+        {
+            if (terrainObject == null)
+            {
+                return false;
+            }
+
+            if (string.Equals(terrainObject.objectClass, "BUILDING", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            if (!string.Equals(terrainObject.objectClass, "TREE", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            string name = TerrainObjectAuditName(terrainObject);
+            return ContainsIgnoreCase(name, "Barricade")
+                || ContainsIgnoreCase(name, "SandBag")
+                || ContainsIgnoreCase(name, "Wall")
+                || ContainsIgnoreCase(name, "Barrier");
+        }
+
+        private static string TerrainObjectAuditName(TerrainObjectSpawn terrainObject)
+        {
+            if (terrainObject == null)
+            {
+                return "";
+            }
+
+            return !string.IsNullOrWhiteSpace(terrainObject.assetId)
+                ? terrainObject.assetId
+                : terrainObject.fileName ?? "";
         }
 
         private static bool ContainsIgnoreCase(string value, string fragment)

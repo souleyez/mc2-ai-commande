@@ -1165,7 +1165,10 @@ namespace MC2Demo.Presentation
             if (TryLoadTexture(assetName, out Texture2D texture))
             {
                 material.mainTexture = texture;
-                material.color = Color.white;
+                Color baseTint = useTeamColor
+                    ? Color.white
+                    : Color.Lerp(Color.white, fallbackColor, 0.30f);
+                material.color = baseTint;
                 if (material.HasProperty("_TeamColor"))
                 {
                     material.SetColor("_TeamColor", teamColor);
@@ -1178,7 +1181,7 @@ namespace MC2Demo.Presentation
 
                 if (material.HasProperty("_BaseTint"))
                 {
-                    material.SetColor("_BaseTint", Color.white);
+                    material.SetColor("_BaseTint", baseTint);
                 }
             }
 

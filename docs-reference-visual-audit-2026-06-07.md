@@ -2451,6 +2451,57 @@ Remaining issues:
 2. The hangar fight remains visually dense; A4 should improve building/prop bases and target-structure contrast before adding more combat effects.
 3. A5 should later turn first-map visual quality into a consolidated sidecar gate.
 
+## Structure And Prop Readability Refresh
+
+Implemented on 2026-06-07 after the detailed plan A4 task.
+
+Changed evidence:
+
+- Added a low-alpha base shadow under live structures.
+- Added a low-alpha amber footprint cue under targetable structures so the hangar's occupied footprint is visible without adding labels.
+- Tuned terrain object fallback colors by category: building, aircraft, vehicle, barricade, tree, small prop, damaged prop and other.
+- Applied a light category tint to textured reference props and structures, so loaded private reference meshes no longer discard the fallback color family entirely.
+- Added capture sidecar `structureReadability`.
+- Updated `capture_reference_visuals.ps1` so battle captures fail if structure/prop readability evidence is missing.
+- Kept BattleCore collision, hard-prop radii, structure radii, pathing, camera rotation and gameplay rules unchanged.
+
+Validation commands:
+
+```powershell
+git diff --check
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoBuilder.BuildWindows64 -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-build-structure-prop-readability.log"
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_reference_visuals.ps1 -Presets airfield,hangar-contact,north-patrol
+```
+
+Validation evidence:
+
+```text
+analysis-output/unity-build-structure-prop-readability.log: Build Finished, Result: Success; MC2 Unity demo Windows build OK.
+capture_reference_visuals.ps1 -Presets airfield,hangar-contact,north-patrol: MC2 reference visual captures passed: 3 preset(s).
+```
+
+Observed sidecar evidence:
+
+```text
+airfield: StructureReadability=base-shadow+target-footprint ... structures=1 activeStructures=1 structureViews=1 targetable=1 terrainProps=999 hardProps=80 building=32 aircraft=4 vehicle=12 barricade=108 tree=733 treeObjects=956 smallProp=103 other=7 ... visualOnly=yes collision=unchanged blockerGeometry=unchanged.
+hangar-contact: StructureReadability=base-shadow+target-footprint ... structures=1 activeStructures=1 structureViews=1 targetable=1 terrainProps=999 hardProps=80 building=32 aircraft=4 vehicle=12 barricade=108 tree=733 treeObjects=956 smallProp=103 other=7 ... visualOnly=yes collision=unchanged blockerGeometry=unchanged.
+north-patrol: StructureReadability=base-shadow+target-footprint ... structures=1 activeStructures=1 structureViews=1 targetable=1 terrainProps=999 hardProps=80 building=32 aircraft=4 vehicle=12 barricade=108 tree=733 treeObjects=956 smallProp=103 other=7 ... visualOnly=yes collision=unchanged blockerGeometry=unchanged.
+reference assets: ReferenceStructures=loaded 1 fallback 0; ReferenceProps=loaded 336 fallback 663; ReferencePropScale=structure 1/0 building 29/3 aircraft 4/0 vehicle 9/3 barricade 90/18 tree 139/594 smallProp 65/38 other 0/7.
+```
+
+Visual judgment:
+
+- `airfield` now reads more like an airport combat area: runway/road texture, hangar mass, parked props, hostile vehicle group and tree line are distinguishable at default zoom.
+- `hangar-contact` exposes the target hangar's position and occupied footprint more clearly. The fight is still dense, but it no longer reads as one shapeless pile of units, building and black prop mass.
+- `north-patrol` shows the larger map texture, scattered tree clusters and hard prop groups without hiding the main hostile contact.
+- This pass intentionally keeps the footprint cue subtle and presentation-only; `BattleOccupancy` and `ContactClearance` remain the source of truth for actual collision and spacing.
+
+Remaining issues:
+
+1. The right-side tree mass in `airfield` and some black reference prop clusters can still feel heavy; future work should prefer occlusion/fade tuning over increasing UI labels.
+2. `hangar-contact` is still the densest readability stress test, especially once weapon effects stack on top of structures.
+3. A5 should turn terrain, unit, structure, sparse HUD, occupancy and contact-clearance checks into one first-map visual gate.
+
 Next priority:
 
-1. Improve structure and prop readability.
+1. Gate first map visual slice.

@@ -17,6 +17,8 @@ namespace MC2Demo.Presentation
         private bool destroyedPoseApplied;
         private bool mediumDamageCueApplied;
         private bool criticalDamageCueApplied;
+        private GameObject baseShadowCue;
+        private GameObject targetFootprintCue;
         private readonly List<Material> ownedMaterials = new();
 
         public void Bind(StructureState structure, Renderer visualRenderer = null)
@@ -31,6 +33,7 @@ namespace MC2Demo.Presentation
             }
 
             transform.position = GroundedPosition(structure.MissionPosition, liveScale.y);
+            CreateReadabilityCues();
         }
 
         public void PulseHit(Color color, float duration = 0.18f)
@@ -54,6 +57,7 @@ namespace MC2Demo.Presentation
             }
 
             ApplyPersistentDamageCues();
+            UpdateReadabilityCues();
             ApplyDamageColor();
             if (!Structure.IsDestroyed || destroyedPoseApplied)
             {
@@ -70,6 +74,43 @@ namespace MC2Demo.Presentation
         public static string StructureDamageCueSummary()
         {
             return "Structure=scar+smoke+collapse+rubble";
+        }
+
+        public static string StructureReadabilityCueSummary()
+        {
+            return "StructureReadability=base-shadow+target-footprint baseShadow=low-black targetFootprint=amber target=distinct labels=no battleCore=unchanged";
+        }
+
+        private void CreateReadabilityCues()
+        {
+            baseShadowCue = CreateReadabilityCue(
+                "Structure Base Shadow",
+                new Vector3(0f, -0.49f, 0f),
+                new Vector3(0.86f, 0.010f, 0.68f),
+                new Color(0.018f, 0.016f, 0.012f, 0.30f));
+
+            if (Structure != null && Structure.IsTargetable)
+            {
+                targetFootprintCue = CreateReadabilityCue(
+                    "Target Structure Footprint",
+                    new Vector3(0f, -0.485f, 0f),
+                    new Vector3(1.04f, 0.012f, 0.82f),
+                    new Color(1f, 0.56f, 0.12f, 0.26f));
+            }
+        }
+
+        private void UpdateReadabilityCues()
+        {
+            bool visible = Structure != null && !Structure.IsDestroyed;
+            if (baseShadowCue != null)
+            {
+                baseShadowCue.SetActive(visible);
+            }
+
+            if (targetFootprintCue != null)
+            {
+                targetFootprintCue.SetActive(visible);
+            }
         }
 
         private void ApplyPersistentDamageCues()
@@ -220,6 +261,33 @@ namespace MC2Demo.Presentation
             {
                 Destroy(cueCollider);
             }
+        }
+
+        private GameObject CreateReadabilityCue(
+            string cueName,
+            Vector3 localPosition,
+            Vector3 localScale,
+            Color color)
+        {
+            GameObject cue = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            cue.name = Structure.Id + " " + cueName;
+            cue.transform.SetParent(transform, false);
+            cue.transform.localPosition = localPosition;
+            cue.transform.localScale = localScale;
+
+            Renderer cueRenderer = cue.GetComponent<Renderer>();
+            if (cueRenderer != null)
+            {
+                cueRenderer.sharedMaterial = CreateOwnedMaterial(color, transparent: true);
+            }
+
+            Collider cueCollider = cue.GetComponent<Collider>();
+            if (cueCollider != null)
+            {
+                Destroy(cueCollider);
+            }
+
+            return cue;
         }
 
         private Material CreateOwnedMaterial(Color color, bool transparent)

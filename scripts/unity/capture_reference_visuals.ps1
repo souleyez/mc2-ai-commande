@@ -209,6 +209,7 @@ function Test-CaptureSidecar {
         Test-BattleHudCaptureSidecar -Sidecar $sidecar -Path $Path
         Test-TerrainReadabilityCaptureSidecar -Sidecar $sidecar -Path $Path
         Test-UnitReadabilityCaptureSidecar -Sidecar $sidecar -Path $Path
+        Test-StructureReadabilityCaptureSidecar -Sidecar $sidecar -Path $Path
     }
 
     $placeholderSummary = [string]$sidecar.occupancyPlaceholders
@@ -370,6 +371,61 @@ function Test-UnitReadabilityCaptureSidecar {
         if ($hostileUnits -le 0) {
             throw "Unit readability sidecar did not prove hostile unit cues: $Path -> $summary"
         }
+    }
+}
+
+function Test-StructureReadabilityCaptureSidecar {
+    param(
+        [object]$Sidecar,
+        [string]$Path
+    )
+
+    $summary = [string]$Sidecar.structureReadability
+    foreach ($fragment in @(
+        "StructureReadability=base-shadow+target-footprint",
+        "baseShadow=low-black",
+        "targetFootprint=amber",
+        "target=distinct",
+        "labels=no",
+        "battleCore=unchanged",
+        "structures=",
+        "structureViews=",
+        "targetable=",
+        "terrainProps=",
+        "hardProps=",
+        "building=",
+        "aircraft=",
+        "barricade=",
+        "treeObjects=",
+        "color=category-tone-separation",
+        "textureTint=category-base",
+        "visualOnly=yes",
+        "collision=unchanged",
+        "blockerGeometry=unchanged",
+        "ReferenceStructures=loaded",
+        "ReferenceProps=loaded",
+        "ReferencePropScale="
+    )) {
+        if ($summary -notlike "*$fragment*") {
+            throw "Structure readability sidecar summary missing '$fragment': $Path -> $summary"
+        }
+    }
+
+    $structures = Read-SummaryNumber -Summary $summary -Pattern "structures=([0-9]+)" -Context $Path
+    $structureViews = Read-SummaryNumber -Summary $summary -Pattern "structureViews=([0-9]+)" -Context $Path
+    $targetable = Read-SummaryNumber -Summary $summary -Pattern "targetable=([0-9]+)" -Context $Path
+    $terrainProps = Read-SummaryNumber -Summary $summary -Pattern "terrainProps=([0-9]+)" -Context $Path
+    $hardProps = Read-SummaryNumber -Summary $summary -Pattern "hardProps=([0-9]+)" -Context $Path
+    $buildings = Read-SummaryNumber -Summary $summary -Pattern "building=([0-9]+)" -Context $Path
+    $aircraft = Read-SummaryNumber -Summary $summary -Pattern "aircraft=([0-9]+)" -Context $Path
+    $barricades = Read-SummaryNumber -Summary $summary -Pattern "barricade=([0-9]+)" -Context $Path
+    $treeObjects = Read-SummaryNumber -Summary $summary -Pattern "treeObjects=([0-9]+)" -Context $Path
+    if ($structures -le 0 -or $structureViews -lt $structures -or $targetable -le 0) {
+        throw "Structure readability sidecar did not prove target structure cues: $Path -> $summary"
+    }
+
+    if ($terrainProps -le 0 -or $hardProps -le 0 -or $buildings -le 0 -or $aircraft -le 0 -or $barricades -le 0 -or $treeObjects -le 0) {
+        throw "Structure readability sidecar did not prove map prop category coverage: $Path -> $summary"
     }
 }
 
