@@ -208,6 +208,7 @@ function Test-CaptureSidecar {
     if ($sidecar.flowScreen -eq "Battle") {
         Test-BattleHudCaptureSidecar -Sidecar $sidecar -Path $Path
         Test-TerrainReadabilityCaptureSidecar -Sidecar $sidecar -Path $Path
+        Test-UnitReadabilityCaptureSidecar -Sidecar $sidecar -Path $Path
     }
 
     $placeholderSummary = [string]$sidecar.occupancyPlaceholders
@@ -324,6 +325,51 @@ function Test-TerrainReadabilityCaptureSidecar {
     $runway = Read-SummaryNumber -Summary $summary -Pattern "runway=([0-9]+)" -Context $Path
     if ($water -le 0 -or $shore -le 0 -or $runway -le 0) {
         throw "Terrain readability sidecar did not prove water, shore and runway coverage: $Path -> $summary"
+    }
+}
+
+function Test-UnitReadabilityCaptureSidecar {
+    param(
+        [object]$Sidecar,
+        [string]$Path
+    )
+
+    $summary = [string]$Sidecar.unitReadability
+    foreach ($fragment in @(
+        "UnitReadability=contact-shadow+faction-footprint-ring",
+        "contactShadow=low-black",
+        "factionRing=player-cyan+hostile-red",
+        "labels=no",
+        "sectionDamage=overlays",
+        "battleCore=unchanged",
+        "units=",
+        "activeViews=",
+        "player=",
+        "hostile=",
+        "tall=",
+        "vehicle=",
+        "infantry=",
+        "style=grounded-silhouette+friend-foe-footprint",
+        "pathing=unchanged",
+        "collision=unchanged"
+    )) {
+        if ($summary -notlike "*$fragment*") {
+            throw "Unit readability sidecar summary missing '$fragment': $Path -> $summary"
+        }
+    }
+
+    $activeUnits = Read-SummaryNumber -Summary $summary -Pattern "units=([0-9]+)" -Context $Path
+    $activeViews = Read-SummaryNumber -Summary $summary -Pattern "activeViews=([0-9]+)" -Context $Path
+    $playerUnits = Read-SummaryNumber -Summary $summary -Pattern "player=([0-9]+)" -Context $Path
+    if ($activeUnits -le 0 -or $activeViews -le 0 -or $playerUnits -le 0) {
+        throw "Unit readability sidecar did not prove active player unit cues: $Path -> $summary"
+    }
+
+    if ($Sidecar.preset -ne "spawn") {
+        $hostileUnits = Read-SummaryNumber -Summary $summary -Pattern "hostile=([0-9]+)" -Context $Path
+        if ($hostileUnits -le 0) {
+            throw "Unit readability sidecar did not prove hostile unit cues: $Path -> $summary"
+        }
     }
 }
 

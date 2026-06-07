@@ -25,6 +25,8 @@ namespace MC2Demo.Presentation
         private bool wasJumping;
         private bool wasHeatLocked;
         private float jetTrailCooldown;
+        private GameObject contactShadowCue;
+        private GameObject factionFootprintCue;
         private GameObject heatVentCue;
         private GameObject heatLockCue;
         private GameObject sectionDamageRingCue;
@@ -80,6 +82,7 @@ namespace MC2Demo.Presentation
         private void Update()
         {
             ApplyPosition();
+            ApplyReadabilityGroundCues();
             ApplyJetVisuals();
             ApplyHeatVisuals();
             ApplyHitFlash();
@@ -299,12 +302,42 @@ namespace MC2Demo.Presentation
 
         private void CreateHeatCueParts()
         {
+            contactShadowCue = CreateHeatCuePart("Contact Shadow", PrimitiveType.Cylinder, new Vector3(0f, -0.482f, 0f), ContactShadowScale(Unit), new Color(0.015f, 0.018f, 0.016f, ContactShadowAlpha(Unit)));
+            factionFootprintCue = CreateHeatCuePart("Faction Footprint Ring", PrimitiveType.Cylinder, new Vector3(0f, -0.468f, 0f), FactionFootprintScale(Unit), FactionFootprintColor(Unit));
             heatVentCue = CreateHeatCuePart("Heat Vent Ring", PrimitiveType.Cylinder, new Vector3(0f, -0.46f, 0f), new Vector3(0.70f, 0.016f, 0.70f), new Color(1f, 0.40f, 0.06f, 0.36f));
             heatLockCue = CreateHeatCuePart("Heat Lock Beacon", PrimitiveType.Cylinder, new Vector3(0f, 0.78f, 0.04f), new Vector3(0.13f, 0.46f, 0.13f), new Color(1f, 0.11f, 0.04f, 0.82f));
             sectionDamageRingCue = CreateHeatCuePart("Section Damage Ground Ring", PrimitiveType.Cylinder, new Vector3(0f, -0.58f, 0f), new Vector3(0.84f, 0.014f, 0.84f), new Color(1f, 0.52f, 0.08f, 0.34f));
             sectionDamageBeaconCue = CreateHeatCuePart("Section Damage Beacon", PrimitiveType.Cylinder, new Vector3(0f, 0.64f, 0.10f), new Vector3(0.052f, 0.34f, 0.052f), new Color(1f, 0.34f, 0.08f, 0.62f));
             SetHeatCueVisible(false, false);
             SetSectionDamageGroundCueVisible(false);
+        }
+
+        private void ApplyReadabilityGroundCues()
+        {
+            bool visible = Unit != null && Unit.IsActive && !Unit.IsDestroyed;
+            if (contactShadowCue != null)
+            {
+                contactShadowCue.SetActive(visible);
+                if (visible)
+                {
+                    contactShadowCue.transform.localPosition = new Vector3(0f, -0.482f, 0f);
+                    contactShadowCue.transform.localRotation = Quaternion.Inverse(transform.rotation);
+                    contactShadowCue.transform.localScale = ContactShadowScale(Unit);
+                    SetCueColor(contactShadowCue, new Color(0.015f, 0.018f, 0.016f, ContactShadowAlpha(Unit)));
+                }
+            }
+
+            if (factionFootprintCue != null)
+            {
+                factionFootprintCue.SetActive(visible);
+                if (visible)
+                {
+                    factionFootprintCue.transform.localPosition = new Vector3(0f, -0.468f, 0f);
+                    factionFootprintCue.transform.localRotation = Quaternion.Inverse(transform.rotation);
+                    factionFootprintCue.transform.localScale = FactionFootprintScale(Unit);
+                    SetCueColor(factionFootprintCue, FactionFootprintColor(Unit));
+                }
+            }
         }
 
         private void CreateSectionPart(string sectionName, PrimitiveType primitive, Vector3 localPosition, Vector3 localScale)
@@ -744,6 +777,64 @@ namespace MC2Demo.Presentation
         public static string HeatCueSummary()
         {
             return "Heat=vent+lock";
+        }
+
+        public static string UnitReadabilityCueSummary()
+        {
+            return "UnitReadability=contact-shadow+faction-footprint-ring contactShadow=low-black factionRing=player-cyan+hostile-red alpha=low labels=no sectionDamage=overlays battleCore=unchanged";
+        }
+
+        private static Vector3 ContactShadowScale(UnitState unit)
+        {
+            float radius = UnitReadabilityRadius(unit);
+            return new Vector3(radius * 1.08f, 0.010f, radius * 1.08f);
+        }
+
+        private static Vector3 FactionFootprintScale(UnitState unit)
+        {
+            float radius = UnitReadabilityRadius(unit);
+            return new Vector3(radius * 0.92f, 0.012f, radius * 0.92f);
+        }
+
+        private static float UnitReadabilityRadius(UnitState unit)
+        {
+            if (unit == null)
+            {
+                return 0.58f;
+            }
+
+            if (ReferenceObjMeshLibrary.IsInfantryUnit(unit.UnitType))
+            {
+                return 0.34f;
+            }
+
+            if (unit.IsPlayerUnit || ReferenceObjMeshLibrary.IsTallReferenceUnit(unit.UnitType))
+            {
+                return 0.86f;
+            }
+
+            return 0.66f;
+        }
+
+        private static float ContactShadowAlpha(UnitState unit)
+        {
+            if (unit != null && ReferenceObjMeshLibrary.IsInfantryUnit(unit.UnitType))
+            {
+                return 0.18f;
+            }
+
+            return unit?.IsPlayerUnit == true ? 0.30f : 0.25f;
+        }
+
+        private static Color FactionFootprintColor(UnitState unit)
+        {
+            if (unit?.IsPlayerUnit == true)
+            {
+                return new Color(0.12f, 0.82f, 1f, 0.34f);
+            }
+
+            float alpha = unit != null && ReferenceObjMeshLibrary.IsInfantryUnit(unit.UnitType) ? 0.20f : 0.30f;
+            return new Color(1f, 0.18f, 0.24f, alpha);
         }
 
         private void SpawnJetTakeoffCue()

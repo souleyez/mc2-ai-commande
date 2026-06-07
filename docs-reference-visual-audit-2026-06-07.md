@@ -2400,6 +2400,57 @@ Remaining issues:
 2. Structures, trees and props still need contrast and base-shadow work.
 3. Dense combat effects can still steal focus in the hangar and damage presets, which should be handled after unit silhouettes.
 
+## Unit Silhouette Readability Refresh
+
+Implemented on 2026-06-07 after the detailed plan A3 task.
+
+Changed evidence:
+
+- Added a persistent low-alpha black contact shadow under active, non-destroyed units.
+- Added a persistent low-alpha faction footprint layer: cyan for player units and red for hostile units.
+- Kept these cues below heat, section-damage, cockpit/ejection, wreck and salvage cues so damage storytelling remains the stronger visual event.
+- Added capture sidecar `unitReadability`.
+- Updated `capture_reference_visuals.ps1` so battle captures fail if unit readability evidence is missing.
+- Kept BattleCore collision, command slots, pathing, camera rotation and gameplay rules unchanged.
+
+Validation commands:
+
+```powershell
+git diff --check
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoBuilder.BuildWindows64 -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-build-unit-readability.log"
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_reference_visuals.ps1 -Presets spawn,hangar-contact,damage-demo
+```
+
+Validation evidence:
+
+```text
+analysis-output/unity-build-unit-readability.log: Build Finished, Result: Success; MC2 Unity demo Windows build OK.
+capture_reference_visuals.ps1 -Presets spawn,hangar-contact,damage-demo: MC2 reference visual captures passed: 3 preset(s).
+```
+
+Observed sidecar evidence:
+
+```text
+spawn: UnitReadability=contact-shadow+faction-footprint-ring ... units=3/29 activeViews=3 player=3 hostile=0 tall=3 vehicle=0 infantry=0 damaged=0 ... labels=no pathing=unchanged collision=unchanged.
+hangar-contact: UnitReadability=contact-shadow+faction-footprint-ring ... units=23/29 activeViews=23 player=3 hostile=20 tall=5 vehicle=10 infantry=8 damaged=0 ... labels=no pathing=unchanged collision=unchanged.
+damage-demo: UnitReadability=contact-shadow+faction-footprint-ring ... units=22/29 activeViews=22 player=2 hostile=20 tall=4 vehicle=10 infantry=8 damaged=2 ... labels=no pathing=unchanged collision=unchanged.
+hangar-contact: ContactClearance ... overlaps=0 worstClearance=0 status=separated.
+damage-demo: ContactClearance ... overlaps=0 worstClearance=0 status=separated.
+```
+
+Visual judgment:
+
+- `spawn` keeps the clean squad-first view while giving active units a more grounded footprint.
+- `hangar-contact` still reads as the densest fight, but the added footprint layer helps separate active units from the runway/structure texture without adding labels.
+- `damage-demo` preserves the section-damage story; damage rings, red section cues, cockpit/ejection cues and wreck state remain visually stronger than the low-alpha team footprints.
+- This pass intentionally avoids presentation-only spacing offsets, so the existing `ContactClearance` gate remains the authority for real separation.
+
+Remaining issues:
+
+1. Structure, prop and tree readability is now the next visual bottleneck.
+2. The hangar fight remains visually dense; A4 should improve building/prop bases and target-structure contrast before adding more combat effects.
+3. A5 should later turn first-map visual quality into a consolidated sidecar gate.
+
 Next priority:
 
-1. Improve unit silhouette readability.
+1. Improve structure and prop readability.

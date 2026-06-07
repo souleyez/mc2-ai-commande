@@ -198,6 +198,7 @@ namespace MC2Demo.Presentation
             public string occupancy;
             public string occupancyPlaceholders;
             public string terrainReadability;
+            public string unitReadability;
             public string contactSpread;
             public string contactClearance;
             public string mechLab;
@@ -5820,6 +5821,7 @@ namespace MC2Demo.Presentation
                 occupancy = BuildCaptureOccupancySummary(),
                 occupancyPlaceholders = lastOccupancyPlaceholderSummary,
                 terrainReadability = BuildCaptureTerrainReadabilitySummary(),
+                unitReadability = BuildCaptureUnitReadabilitySummary(),
                 contactSpread = BuildCaptureContactSpreadSummary(),
                 contactClearance = BuildCaptureContactClearanceSummary(),
                 mechLab = BuildCaptureMechLabSummary(),
@@ -5913,6 +5915,102 @@ namespace MC2Demo.Presentation
                 + " textured="
                 + texturedSamples.ToString(CultureInfo.InvariantCulture)
                 + " style=raised-shore+runway-contrast+water-muted pathing=unchanged";
+        }
+
+        private string BuildCaptureUnitReadabilitySummary()
+        {
+            if (mission == null)
+            {
+                return "UnitReadability=mission unavailable";
+            }
+
+            int activeUnits = 0;
+            int activeViews = 0;
+            int playerUnits = 0;
+            int hostileUnits = 0;
+            int tallUnits = 0;
+            int vehicleUnits = 0;
+            int infantryUnits = 0;
+            int damagedUnits = 0;
+            foreach (UnitState unit in mission.Units)
+            {
+                if (unit == null || !unit.IsActive || unit.IsDestroyed)
+                {
+                    continue;
+                }
+
+                activeUnits++;
+                if (unitViews.TryGetValue(unit.Id, out DemoUnitView view) && view != null)
+                {
+                    activeViews++;
+                }
+
+                if (unit.IsPlayerUnit)
+                {
+                    playerUnits++;
+                }
+                else
+                {
+                    hostileUnits++;
+                }
+
+                if (ReferenceObjMeshLibrary.IsInfantryUnit(unit.UnitType))
+                {
+                    infantryUnits++;
+                }
+                else if (unit.IsPlayerUnit || ReferenceObjMeshLibrary.IsTallReferenceUnit(unit.UnitType))
+                {
+                    tallUnits++;
+                }
+                else
+                {
+                    vehicleUnits++;
+                }
+
+                if (UnitHasSectionDamage(unit))
+                {
+                    damagedUnits++;
+                }
+            }
+
+            return DemoUnitView.UnitReadabilityCueSummary()
+                + " units="
+                + activeUnits.ToString(CultureInfo.InvariantCulture)
+                + "/"
+                + mission.Units.Count.ToString(CultureInfo.InvariantCulture)
+                + " activeViews="
+                + activeViews.ToString(CultureInfo.InvariantCulture)
+                + " player="
+                + playerUnits.ToString(CultureInfo.InvariantCulture)
+                + " hostile="
+                + hostileUnits.ToString(CultureInfo.InvariantCulture)
+                + " tall="
+                + tallUnits.ToString(CultureInfo.InvariantCulture)
+                + " vehicle="
+                + vehicleUnits.ToString(CultureInfo.InvariantCulture)
+                + " infantry="
+                + infantryUnits.ToString(CultureInfo.InvariantCulture)
+                + " damaged="
+                + damagedUnits.ToString(CultureInfo.InvariantCulture)
+                + " style=grounded-silhouette+friend-foe-footprint labels=no pathing=unchanged collision=unchanged";
+        }
+
+        private static bool UnitHasSectionDamage(UnitState unit)
+        {
+            if (unit?.Sections == null)
+            {
+                return false;
+            }
+
+            foreach (DamageSection section in unit.Sections)
+            {
+                if (section != null && section.HitPoints < section.MaxHitPoints)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private string BuildCaptureContactSpreadSummary()
