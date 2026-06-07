@@ -8,7 +8,7 @@
 
 **Tech Stack:** Unity 6, C#, Windows Standalone first, deterministic BattleCore, PowerShell validator/build/smoke/capture scripts, replaceable content packs, optional high-level AI deputy adapter, later main server/map server/Web ranking contracts.
 
-**Revision:** 2026-06-07 v1. This is the current master plan requested after the visible 3D/collision pass discussion. Older plan files remain evidence/history; this file is the first place to read when the user says "按计划继续".
+**Revision:** 2026-06-07 v2. This is the current master plan requested after the visible 3D/collision pass discussion. Older plan files remain evidence/history; this file is the first place to read when the user says "按计划继续". The finer task breakdown now lives in `docs-ai-rts-commander-current-detailed-plan-2026-06-07.md`.
 
 ---
 
@@ -32,6 +32,7 @@
 | File | Purpose |
 | --- | --- |
 | `docs-ai-rts-commander-current-master-plan-2026-06-07.md` | 当前主计划和提交级队列 |
+| `docs-ai-rts-commander-current-detailed-plan-2026-06-07.md` | 当前阶段的细颗粒执行计划、提交批次和验收门槛 |
 | `docs-ai-rts-commander-overall-implementation-plan-2026-06-07.md` | 产品方向、架构边界和长期里程碑 |
 | `docs-ai-rts-commander-v1-detailed-execution-plan-2026-06-07.md` | 上一版细计划，保留已完成任务细节 |
 | `docs-ai-rts-commander-detailed-roadmap-2026-06-07.md` | 路线图和历史工作包 |
@@ -289,6 +290,7 @@ Known good strings:
 
 | Order | Status | Commit | Purpose | Primary Gate |
 | --- | --- | --- | --- | --- |
+| 0 | Done | `Refresh detailed master plan` | 把当前阶段、缺口、可展示 Demo 路线和后续平台契约拆成更细执行计划 | `git diff --check` |
 | 1 | Done | `Polish MechLab grid feel` | 装配格子更像整块装备放入槽位 | validator + build + `mechlab` capture |
 | 2 | Done | `Prove loadout battle effects` | 证明装配影响 BattleCore 战斗 | validator + build + visible-flow smoke |
 | 3 | Done | `Polish weapon and damage readability` | 强化武器类型、断臂、腿瘫、弹射故事 | validator + build + `damage-demo` capture |
@@ -304,6 +306,8 @@ Known good strings:
 | 13 | Later | `Plan creator economy boundary` | 创作者分成、皮肤、自定义、链上边界 | docs check |
 
 ## 6. Detailed Tasks
+
+本节保留主计划级任务说明。当前阶段的更细执行颗粒、每个小提交的文件清单、验收门槛和命令见 `docs-ai-rts-commander-current-detailed-plan-2026-06-07.md`。
 
 ### Task 4: Guard Sparse Battle UI Regression
 
