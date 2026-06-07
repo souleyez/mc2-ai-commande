@@ -19,7 +19,7 @@
 1. 先看 `docs-playable-demo-current-execution-plan-2026-06-07.md` 的 `Current Commit Queue`。
 2. 如果队列不明确，就回到本文件的 `## 8. Current Execution Queue`。
 3. 每次只做一个小提交，提交必须能用 validator、build、smoke、capture 或 docs check 说明。
-4. 当前有未提交的 V4 代码改动时，先完成 V4 验收，不另开新功能。
+4. 当前队列从 `Refresh playable demo evidence` 继续；如果之后又出现未提交 source WIP，先验收它再开新功能。
 5. 不提交 `analysis-output/` 下的截图、sidecar JSON、构建日志或 player build，除非用户明确要求打包。
 6. Unity 运行后如果只有 scene fileID churn，先手动审查，不随手提交。
 
@@ -40,15 +40,16 @@
 | AI deputy | compact observation、directive adapter、能力窗口已有基础 | AI validator/smoke |
 | Content boundary | README 和脚本已经把私有参考包与公开包分开 | `check_public_content_boundary.ps1` |
 
-当前工作区还有一个进行中的 V4 改动：
+V4 crowded contact occupancy 已完成：
 
-| File | WIP Intent |
+| Evidence | Result |
 | --- | --- |
-| `unity-mc2-demo/Assets/Scripts/BattleCore/BattleMission.cs` | 增大单位占位半径和碰撞分离强度 |
-| `unity-mc2-demo/Assets/Editor/Mc2DemoValidator.cs` | 调整占位断言和 summary 期望 |
-| `unity-mc2-demo/Assets/Scripts/Presentation/Mc2DemoBootstrap.cs` | 在 capture sidecar 增加 `ContactSpread` 距离证据 |
+| `analysis-output/unity-validate-crowded-contact.log` | Validator OK |
+| `analysis-output/unity-build-crowded-contact.log` | Windows build OK |
+| `hangar-contact` sidecar | `unitRadii infantry=24 vehicle=54 mech=64`, `ContactSpread=players 3 hostiles 20 nearestPH=272.8 nearestHH=48` |
+| `damage-demo` sidecar | `unitRadii infantry=24 vehicle=54 mech=64`, `ContactSpread=players 2 hostiles 20 nearestPH=118 nearestHH=78`, damage story intact |
 
-这个 WIP 必须先验收或回滚成新方案，然后再做公开替换包或新功能。
+下一步先刷新完整 Demo 证据，再开公开替换包或新功能。
 
 ## 2. Product Direction
 
@@ -197,7 +198,7 @@ Known good strings:
 | Milestone | Status | Goal | Exit Gate |
 | --- | --- | --- | --- |
 | M0 Handoff hygiene | Done | 构建、smoke、walkthrough、证据、内容边界能解释 | H4 gate passed |
-| M1 Visual occupancy | In Progress | 战场不再像模型堆叠，sidecar 有物理证据 | `hangar-contact` readable, V4 passed |
+| M1 Visual occupancy | Done | 战场不再像模型堆叠，sidecar 有物理证据 | `hangar-contact` readable, V4 passed |
 | M2 First controlled demo | Next | 本地 development Demo 可用于小范围展示 | build + smoke + evidence page updated |
 | M3 MechLab fun | Next | 装配格子更接近整块占格乐趣 | `mechlab` screenshot and loadout validator |
 | M4 Combat damage sell | Next | 武器类型、断臂、腿瘫、弹射更清楚 | `damage-demo` screenshot tells the story |
@@ -209,7 +210,9 @@ Known good strings:
 
 ### A1: Finish V4 Contact Occupancy WIP
 
-**Status:** In Progress.
+**Status:** Completed 2026-06-07.
+
+**Result:** Unit collision radii increased to `24/54/64`, unit-target range checks now include target footprint, capture sidecars include `ContactSpread`, and the capture script cleans up leftover local player processes after timeout. Validator, Windows build, `hangar-contact`, and `damage-demo` evidence all passed.
 
 **Goal:** 验证当前碰撞半径和 `ContactSpread` sidecar 改动是否真的改善 `hangar-contact`，并确保没有破坏任务规则。
 
@@ -554,7 +557,7 @@ The first controlled demo is ready when:
 
 | Order | Status | Commit | Purpose |
 | --- | --- | --- | --- |
-| 1 | In Progress | `Polish crowded contact occupancy` | Finish current V4 WIP, validate BattleCore spacing and sidecar `ContactSpread` |
+| 1 | Done | `Polish crowded contact occupancy` | Finish V4, validate BattleCore spacing and sidecar `ContactSpread` |
 | 2 | Next | `Refresh playable demo evidence` | Re-run validator, build, smoke and capture after V4 |
 | 3 | Next | `Open public replacement content slice` | Start text-safe and provenance-clean public content path |
 | 4 | Next | `Polish MechLab grid feel` | Make equipment grid more physical and original-like without toggles |
@@ -579,4 +582,4 @@ Stop and reassess if:
 
 ## 10. One-Line Direction
 
-先把当前 V4 拥挤接触和物理占位验收掉，再刷新完整 Demo 证据；随后开公开替换包，同时继续打磨 MechLab 装配乐趣、部位损伤卖点和可选 AI 副官，平台化和地图服务器等到本地战斗真正好看、好玩、好讲以后再动。
+先刷新完整 Demo 证据；随后开公开替换包，同时继续打磨 MechLab 装配乐趣、部位损伤卖点和可选 AI 副官，平台化和地图服务器等到本地战斗真正好看、好玩、好讲以后再动。

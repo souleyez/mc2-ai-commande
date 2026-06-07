@@ -365,7 +365,8 @@ namespace MC2Demo.BattleCore
         public bool IsInWeaponRange(UnitState target)
         {
             return target != null
-                && Vector2.Distance(MissionPosition, target.MissionPosition) <= CombatWeaponRange;
+                && Vector2.Distance(MissionPosition, target.MissionPosition)
+                    <= CombatWeaponRange + BattleMission.UnitCollisionRadius(target);
         }
 
         public bool IsInWeaponRange(StructureState target)

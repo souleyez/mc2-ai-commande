@@ -191,6 +191,7 @@ namespace MC2Demo.Presentation
             public string[] currentObjectives;
             public string occupancy;
             public string occupancyPlaceholders;
+            public string contactSpread;
             public string mechLab;
             public string damageStory;
             public string battleHud;
@@ -5745,6 +5746,7 @@ namespace MC2Demo.Presentation
                 currentObjectives = ObjectiveLabels(observation?.currentObjectives),
                 occupancy = BuildCaptureOccupancySummary(),
                 occupancyPlaceholders = lastOccupancyPlaceholderSummary,
+                contactSpread = BuildCaptureContactSpreadSummary(),
                 mechLab = BuildCaptureMechLabSummary(),
                 damageStory = BuildCaptureDamageStorySummary(),
                 battleHud = BuildCaptureBattleHudSummary(),
@@ -5764,6 +5766,155 @@ namespace MC2Demo.Presentation
         {
             string battleSummary = mission == null ? "BattleOccupancy=mission unavailable" : mission.OccupancySummary();
             return battleSummary + "; " + DemoTerrainView.CurrentLandingAuditSummary();
+        }
+
+        private string BuildCaptureContactSpreadSummary()
+        {
+            if (mission == null)
+            {
+                return "ContactSpread=mission unavailable";
+            }
+
+            List<UnitState> players = new();
+            List<UnitState> hostiles = new();
+            foreach (UnitState unit in mission.Units)
+            {
+                if (unit == null || !unit.IsActive || unit.IsDestroyed)
+                {
+                    continue;
+                }
+
+                if (unit.IsPlayerUnit)
+                {
+                    players.Add(unit);
+                }
+                else
+                {
+                    hostiles.Add(unit);
+                }
+            }
+
+            float nearestPlayerHostile = MinimumCrossDistance(players, hostiles);
+            float nearestHostileHostile = MinimumPairDistance(hostiles);
+            float nearestPlayerPlayer = MinimumPairDistance(players);
+            float playerSpan = MaximumPairDistance(players);
+            float hostileSpan = MaximumPairDistance(hostiles);
+            float centroidDistance = CentroidDistance(players, hostiles);
+
+            return "ContactSpread=players "
+                + players.Count.ToString(CultureInfo.InvariantCulture)
+                + " hostiles "
+                + hostiles.Count.ToString(CultureInfo.InvariantCulture)
+                + " nearestPH="
+                + FormatCaptureDistance(nearestPlayerHostile)
+                + " nearestHH="
+                + FormatCaptureDistance(nearestHostileHostile)
+                + " nearestPP="
+                + FormatCaptureDistance(nearestPlayerPlayer)
+                + " playerSpan="
+                + FormatCaptureDistance(playerSpan)
+                + " hostileSpan="
+                + FormatCaptureDistance(hostileSpan)
+                + " centroidDistance="
+                + FormatCaptureDistance(centroidDistance);
+        }
+
+        private static float MinimumCrossDistance(IReadOnlyList<UnitState> first, IReadOnlyList<UnitState> second)
+        {
+            if (first == null || second == null || first.Count == 0 || second.Count == 0)
+            {
+                return float.NaN;
+            }
+
+            float minimum = float.MaxValue;
+            for (int firstIndex = 0; firstIndex < first.Count; firstIndex++)
+            {
+                for (int secondIndex = 0; secondIndex < second.Count; secondIndex++)
+                {
+                    minimum = Mathf.Min(
+                        minimum,
+                        Vector2.Distance(first[firstIndex].MissionPosition, second[secondIndex].MissionPosition));
+                }
+            }
+
+            return minimum;
+        }
+
+        private static float MinimumPairDistance(IReadOnlyList<UnitState> units)
+        {
+            if (units == null || units.Count < 2)
+            {
+                return float.NaN;
+            }
+
+            float minimum = float.MaxValue;
+            for (int outer = 0; outer < units.Count; outer++)
+            {
+                for (int inner = outer + 1; inner < units.Count; inner++)
+                {
+                    minimum = Mathf.Min(
+                        minimum,
+                        Vector2.Distance(units[outer].MissionPosition, units[inner].MissionPosition));
+                }
+            }
+
+            return minimum;
+        }
+
+        private static float MaximumPairDistance(IReadOnlyList<UnitState> units)
+        {
+            if (units == null || units.Count < 2)
+            {
+                return 0f;
+            }
+
+            float maximum = 0f;
+            for (int outer = 0; outer < units.Count; outer++)
+            {
+                for (int inner = outer + 1; inner < units.Count; inner++)
+                {
+                    maximum = Mathf.Max(
+                        maximum,
+                        Vector2.Distance(units[outer].MissionPosition, units[inner].MissionPosition));
+                }
+            }
+
+            return maximum;
+        }
+
+        private static float CentroidDistance(IReadOnlyList<UnitState> first, IReadOnlyList<UnitState> second)
+        {
+            if (!TryUnitCentroid(first, out Vector2 firstCentroid)
+                || !TryUnitCentroid(second, out Vector2 secondCentroid))
+            {
+                return float.NaN;
+            }
+
+            return Vector2.Distance(firstCentroid, secondCentroid);
+        }
+
+        private static bool TryUnitCentroid(IReadOnlyList<UnitState> units, out Vector2 centroid)
+        {
+            centroid = Vector2.zero;
+            if (units == null || units.Count == 0)
+            {
+                return false;
+            }
+
+            for (int index = 0; index < units.Count; index++)
+            {
+                centroid += units[index].MissionPosition;
+            }
+
+            centroid /= units.Count;
+            return true;
+        }
+
+        private static string FormatCaptureDistance(float value)
+        {
+            return float.IsNaN(value)
+                ? "n/a"
+                : value.ToString("0.#", CultureInfo.InvariantCulture);
         }
 
         private string BuildCaptureDamageStorySummary()

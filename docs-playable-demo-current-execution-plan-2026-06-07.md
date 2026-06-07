@@ -8,7 +8,7 @@
 
 **Tech Stack:** Unity 6, C#, Windows Standalone, deterministic BattleCore, PowerShell validation/capture scripts, `mc2-unity-demo-contract-v1`, private local reference content pack, Git/GitHub.
 
-**Revision:** 2026-06-07 current execution plan v7. This is the current canonical day-to-day execution queue. The fixed overall plan is `docs-ai-rts-commander-overall-implementation-plan-2026-06-07.md`; the fine-grained roadmap is `docs-ai-rts-commander-detailed-roadmap-2026-06-07.md`; `docs-playable-demo-v1-detailed-plan-2026-06-07.md` and older `docs-playable-demo-*.md` files remain history, evidence, or task archives.
+**Revision:** 2026-06-07 current execution plan v8. This is the current canonical day-to-day execution queue. The fixed overall plan is `docs-ai-rts-commander-overall-implementation-plan-2026-06-07.md`; the fine-grained roadmap is `docs-ai-rts-commander-detailed-roadmap-2026-06-07.md`; `docs-playable-demo-v1-detailed-plan-2026-06-07.md` and older `docs-playable-demo-*.md` files remain history, evidence, or task archives.
 
 ---
 
@@ -42,8 +42,8 @@
 - Repeatable Windows build 已提交：`3753857 Prepare repeatable Windows demo build`.
 - Demo evidence package 已提交：`0bb822b Package playable demo evidence`.
 - Content boundary documentation 已提交：`4819657 Document reference content boundary`.
-- H4 handoff audit 已完成，当前已有 V4 source WIP，下一步是先验证并收口 `V4 Polish crowded contact occupancy`.
-- V4 WIP touches `BattleMission.cs`, `Mc2DemoValidator.cs`, and `Mc2DemoBootstrap.cs`; do not open new feature work until validator, `hangar-contact`, and `damage-demo` captures pass.
+- V4 crowded contact occupancy 已验证，下一步是 `Refresh playable demo evidence`.
+- V4 evidence: `analysis-output/unity-validate-crowded-contact.log`, `analysis-output/unity-build-crowded-contact.log`, refreshed `hangar-contact` and `damage-demo` captures with `ContactSpread`.
 
 ## 1. First Demo Product Scope
 
@@ -100,7 +100,7 @@
 | Gap | Why It Matters | Next Task |
 | --- | --- | --- |
 | MechLab 后续只需回归 | 整块占格和截图证据已完成，后续 UI 改动需要保持这个体验不退化 | G3 regression |
-| Demo handoff 已审计 | H4 已验证 build、smoke、capture 和 boundary；当前 Demo 可作为 development-only 本地演示 | V4 crowded contact polish |
+| Demo handoff 已审计 | H4 已验证 build、smoke、capture 和 boundary；V4 已补充 contact-spread evidence | Refresh playable demo evidence |
 | 公开内容安全还需要干净替换包 | 当前开发 build 会被边界检查正确标为不适合公开发布 | R1 replacement slice later |
 
 ## 3. Architecture Contracts
@@ -266,7 +266,7 @@ Do not stage generated PNG/JSON/log evidence unless explicitly requested.
 | 13 | Done | `Document reference content boundary` | G6 public boundary |
 | 14 | Done | `Add public content boundary check` | G6 public boundary |
 | 15 | Done | `Run demo handoff gate audit` | G8 handoff |
-| 16 | In Progress | `Polish crowded contact occupancy` | G2/G7 readability and occupancy |
+| 16 | Done | `Polish crowded contact occupancy` | G2/G7 readability and occupancy |
 | 17 | Next | `Refresh playable demo evidence` | G8 handoff after V4 |
 | 18 | Next | `Open public replacement content slice` | G6 public boundary |
 
@@ -897,7 +897,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_refere
 
 ### V4: Polish Crowded Contact Occupancy
 
-**Status:** In Progress.
+**Status:** Completed 2026-06-07.
+
+**Result:** V4 increased BattleCore unit radii to `infantry=24 vehicle=54 mech=64`, added unit-target footprint compensation to weapon range, and added capture sidecar `ContactSpread` evidence. `analysis-output/unity-validate-crowded-contact.log` reports contract validation OK. `analysis-output/unity-build-crowded-contact.log` reports `Build Finished, Result: Success` and `MC2 Unity demo Windows build OK`. Refreshed `hangar-contact` and `damage-demo` captures pass with `ContactSpread` and the damage story intact. `capture_reference_visuals.ps1` now waits longer for late capture presets and cleans leftover local player processes after timeout.
 
 **Goal:** 继续解决 `hangar-contact` 仍然偏密的问题，让主战斗截图更像战术交战，而不是所有单位围着一个建筑挤在一起。
 

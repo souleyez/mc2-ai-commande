@@ -4,6 +4,7 @@ param(
     [string[]]$Presets = @("spawn", "airfield", "hangar-contact", "north-patrol", "damage-demo"),
     [int]$Width = 1280,
     [int]$Height = 720,
+    [int]$CaptureTimeoutSeconds = 45,
     [switch]$NoOccupancyPlaceholders,
     [switch]$SkipRun
 )
@@ -122,7 +123,7 @@ function Test-CaptureImage {
 function Wait-CaptureFile {
     param(
         [string]$Path,
-        [int]$TimeoutSeconds = 15
+        [int]$TimeoutSeconds = 45
     )
 
     $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
@@ -141,6 +142,29 @@ function Wait-CaptureFile {
     }
 
     throw "Timed out waiting for capture file: $Path"
+}
+
+function Stop-CapturePlayer {
+    param([string]$ExecutablePath)
+
+    $resolvedExe = (Resolve-Path -LiteralPath $ExecutablePath).Path
+    $buildDir = Split-Path -Parent $resolvedExe
+    Get-Process | Where-Object {
+        try {
+            if ($_.Path -eq $resolvedExe) {
+                $true
+            }
+            elseif ($_.ProcessName -eq "UnityCrashHandler64" -and $_.Path) {
+                $_.Path.StartsWith($buildDir, [StringComparison]::OrdinalIgnoreCase)
+            }
+            else {
+                $false
+            }
+        }
+        catch {
+            $false
+        }
+    } | Stop-Process -Force -ErrorAction SilentlyContinue
 }
 
 function Test-CaptureSidecar {
@@ -352,11 +376,20 @@ foreach ($normalizedPreset in (Expand-CapturePresets $Presets)) {
                 $env:MC2_SHOW_OCCUPANCY_PLACEHOLDERS = "1"
             }
 
-            & $gameExe @args
-            $exitCodeVariable = Get-Variable -Name LASTEXITCODE -ErrorAction SilentlyContinue
-            $exitCode = if ($null -eq $exitCodeVariable) { 0 } else { [int]$exitCodeVariable.Value }
-            if ($exitCode -ne 0) {
-                throw "Capture preset '$normalizedPreset' failed with exit code $exitCode. Log: $logPath"
+            try {
+                & $gameExe @args
+                $exitCodeVariable = Get-Variable -Name LASTEXITCODE -ErrorAction SilentlyContinue
+                $exitCode = if ($null -eq $exitCodeVariable) { 0 } else { [int]$exitCodeVariable.Value }
+                if ($exitCode -ne 0) {
+                    throw "Capture preset '$normalizedPreset' failed with exit code $exitCode. Log: $logPath"
+                }
+
+                Wait-CaptureFile -Path $pngPath -TimeoutSeconds $CaptureTimeoutSeconds
+                Wait-CaptureFile -Path $jsonPath -TimeoutSeconds $CaptureTimeoutSeconds
+            }
+            catch {
+                Stop-CapturePlayer -ExecutablePath $gameExe
+                throw
             }
         }
         finally {
@@ -368,8 +401,7 @@ foreach ($normalizedPreset in (Expand-CapturePresets $Presets)) {
             }
         }
 
-        Wait-CaptureFile -Path $pngPath
-        Wait-CaptureFile -Path $jsonPath
+        Stop-CapturePlayer -ExecutablePath $gameExe
     }
 
     $imageCheck = Test-CaptureImage -Path $pngPath -ExpectedWidth $Width -ExpectedHeight $Height

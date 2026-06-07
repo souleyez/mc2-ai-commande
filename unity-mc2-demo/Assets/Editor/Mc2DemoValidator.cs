@@ -2771,7 +2771,8 @@ namespace MC2Demo.EditorTools
                         + slotRadius);
                 }
 
-                if (slotRadius > Mathf.Max(40f, enemy.CombatWeaponRange - 1f))
+                float usefulRange = enemy.CombatWeaponRange + BattleMission.UnitCollisionRadius(player);
+                if (slotRadius > Mathf.Max(40f, usefulRange - 1f))
                 {
                     throw new InvalidDataException(
                         "Expected enemy attack formation slot to stay inside useful weapon range. enemy="
@@ -2779,7 +2780,9 @@ namespace MC2Demo.EditorTools
                         + " radius="
                         + slotRadius
                         + " range="
-                        + enemy.CombatWeaponRange);
+                        + enemy.CombatWeaponRange
+                        + " targetRadius="
+                        + BattleMission.UnitCollisionRadius(player));
                 }
             }
 
@@ -2941,7 +2944,7 @@ namespace MC2Demo.EditorTools
             }
 
             mission.Tick(0.1f);
-            if (Vector2.Distance(first.MissionPosition, second.MissionPosition) < 45f)
+            if (Vector2.Distance(first.MissionPosition, second.MissionPosition) < 60f)
             {
                 throw new InvalidDataException("Expected stacked enemy units to separate after BattleCore collision resolution.");
             }
@@ -3042,7 +3045,7 @@ namespace MC2Demo.EditorTools
         {
             string summary = mission?.OccupancySummary() ?? "";
             RequireSummaryFragment(summary, "BattleOccupancy=units", "occupancy summary");
-            RequireSummaryFragment(summary, "unitRadii infantry=20 vehicle=42 mech=50", "occupancy summary");
+            RequireSummaryFragment(summary, "unitRadii infantry=24 vehicle=54 mech=64", "occupancy summary");
             RequireSummaryFragment(summary, "structures 1", "occupancy summary");
             RequireSummaryFragment(summary, "hardProps ", "occupancy summary");
             RequireSummaryFragment(summary, "destinationFallback=structure+hardProp", "occupancy summary");

@@ -21,11 +21,11 @@ namespace MC2Demo.BattleCore
         private const float EnemyAttackVehicleMaxFormationRadius = 370f;
         private const float EnemyAttackMechMinFormationRadius = 220f;
         private const float EnemyAttackMechMaxFormationRadius = 400f;
-        private const float UnitCollisionInfantryRadius = 20f;
-        private const float UnitCollisionVehicleRadius = 42f;
-        private const float UnitCollisionMechRadius = 50f;
-        private const float UnitCollisionMaxPushPerPass = 35f;
-        private const int UnitCollisionPasses = 3;
+        private const float UnitCollisionInfantryRadius = 24f;
+        private const float UnitCollisionVehicleRadius = 54f;
+        private const float UnitCollisionMechRadius = 64f;
+        private const float UnitCollisionMaxPushPerPass = 42f;
+        private const int UnitCollisionPasses = 4;
         private const float StructureCollisionPadding = 35f;
         private const float StructureCollisionMaxPushPerPass = 70f;
         private const float TerrainObjectCollisionMaxPushPerPass = 45f;
@@ -544,7 +544,6 @@ namespace MC2Demo.BattleCore
 
             UnitState bestTarget = null;
             float bestDistanceSqr = float.MaxValue;
-            float rangeSqr = attacker.CombatWeaponRange * attacker.CombatWeaponRange;
 
             foreach (UnitState candidate in units)
             {
@@ -553,8 +552,9 @@ namespace MC2Demo.BattleCore
                     continue;
                 }
 
+                float effectiveRange = attacker.CombatWeaponRange + UnitCollisionRadius(candidate);
                 float distanceSqr = (candidate.MissionPosition - attacker.MissionPosition).sqrMagnitude;
-                if (distanceSqr <= rangeSqr && distanceSqr < bestDistanceSqr)
+                if (distanceSqr <= effectiveRange * effectiveRange && distanceSqr < bestDistanceSqr)
                 {
                     bestTarget = candidate;
                     bestDistanceSqr = distanceSqr;
@@ -1007,7 +1007,7 @@ namespace MC2Demo.BattleCore
             return unit != null && unit.IsActive && !unit.IsDestroyed && !unit.IsJumping;
         }
 
-        private static float UnitCollisionRadius(UnitState unit)
+        public static float UnitCollisionRadius(UnitState unit)
         {
             if (unit == null)
             {

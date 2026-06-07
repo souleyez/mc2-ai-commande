@@ -38,11 +38,43 @@ Latest refreshed sidecar counts:
 | `mechlab` | 200183 | 0.25s | 0 | 0 | `MechLabCapture=open`, `Fit OK`, weapon blocks, fillers and no weapon toggle |
 | `spawn` | 368272 | 1.39s | 0 | 0 | sparse battle HUD, commander-follow camera, 100 occupancy placeholders |
 | `airfield` | 364402 | 13.09s | 12 | 8 | readable terrain/water/runway and first contact direction |
-| `hangar-contact` | 363932 | 21.09s | 20 | 16 | compact objective card, 120 occupancy placeholders, still the densest fight |
-| `damage-demo` | 382118 | 39.09s | 20 | 16 | arm lost, legs lost, cockpit lost, pilot risk and destroyed unit |
+| `hangar-contact` | 365073 | 21.09s | 20 | 16 | unit radii `24/54/64`, `ContactSpread=players 3 hostiles 20 nearestPH=272.8 nearestHH=48`, 120 occupancy placeholders |
+| `damage-demo` | 384076 | 39.12s | 20 | 16 | unit radii `24/54/64`, `ContactSpread=players 2 hostiles 20 nearestPH=118 nearestHH=78`, arm lost, legs lost, cockpit lost, pilot risk and destroyed unit |
 | `north-patrol` | 402584 | 55.09s | 24 | 10 | wider patrol slice remains readable |
 
 Handoff visual judgment: the Demo is now demonstrable as a local Windows prototype. `hangar-contact` is still the pressure-test image and should drive the next polish pass: improve crowded contact occupancy/spacing and contact composition without adding more UI.
+
+## V4 Crowded Contact Occupancy Result
+
+Implemented on 2026-06-07:
+
+- Increased BattleCore unit collision radii from `infantry=20 vehicle=42 mech=50` to `infantry=24 vehicle=54 mech=64`.
+- Increased unit collision push from `35` to `42` and collision passes from `3` to `4`.
+- Kept unit-vs-unit weapon range playable after larger footprints by treating unit targets like structures: effective range now includes the target unit footprint radius.
+- Added capture sidecar `ContactSpread` evidence with player/hostile counts, nearest player-hostile distance, nearest hostile-hostile distance, player span, hostile span and centroid distance.
+- Hardened `capture_reference_visuals.ps1` with a `CaptureTimeoutSeconds` parameter and cleanup for leftover local player processes after capture timeout.
+
+Validation evidence:
+
+```text
+analysis-output/unity-validate-crowded-contact.log
+analysis-output/unity-build-crowded-contact.log
+analysis-output/reference-visual-captures/hangar-contact.png
+analysis-output/reference-visual-captures/hangar-contact.json
+analysis-output/reference-visual-captures/damage-demo.png
+analysis-output/reference-visual-captures/damage-demo.json
+```
+
+Observed sidecar evidence:
+
+- `hangar-contact`: `activeHostileCount=20`, `visibleHostileCount=16`, `BattleOccupancy=units 23/29 unitRadii infantry=24 vehicle=54 mech=64`, `ContactSpread=players 3 hostiles 20 nearestPH=272.8 nearestHH=48 nearestPP=259.1 playerSpan=519.9 hostileSpan=4304.2 centroidDistance=1161.6`.
+- `damage-demo`: `activeHostileCount=20`, `visibleHostileCount=16`, `BattleOccupancy=units 22/29 unitRadii infantry=24 vehicle=54 mech=64`, `ContactSpread=players 2 hostiles 20 nearestPH=118 nearestHH=78 nearestPP=207.6 playerSpan=207.6 hostileSpan=4334.8 centroidDistance=836.5`.
+
+Visual judgment:
+
+- `hangar-contact` is still the densest screenshot, but it now reads as a crowded hangar fight with terrain, objective, player squad, hostile direction and occupancy evidence, not a same-coordinate pile.
+- `damage-demo` preserves the section-damage story while reporting wider hostile separation; the status rows still show left arm loss, leg damage, cockpit loss, pilot risk and destroyed state.
+- The next visual pass should be a full demo evidence refresh, not another immediate collision pass, unless a later screenshot regresses.
 
 ## Capture Matrix
 

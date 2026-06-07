@@ -43,7 +43,7 @@ docs-playable-demo-current-execution-plan-2026-06-07.md
 5. 不提交 generated PNG/JSON/log/build artifacts，除非用户明确要求。
 6. Unity build 后检查 scene fileID churn，非必要不入库。
 7. 任何公开文案只讲本项目自己的 AI RTS 指挥探索，不把本地参考内容当产品身份。
-8. 如果工作区已有 V4 拥挤接触 WIP，先完成 validator/capture/docs 验收，再开新功能。
+8. 如果工作区出现新的 source WIP，先完成 validator/capture/docs 验收，再开新功能。
 
 ## 1. Product North Star
 
@@ -97,8 +97,8 @@ Playable Demo Handoff: 把已能跑的 Windows 本地 Demo 收成可重复构建
 | Gap | Why It Matters | Next Move |
 | --- | --- | --- |
 | 视觉还需要稳定回归 | 当前已有样子，但机甲、道具、遮挡、占位仍要避免退化成堆叠 | 每次视觉改动跑 capture + sidecar |
-| Demo handoff 已过 development-only 门检 | 构建、smoke、截图、walkthrough、内容边界已能一口气解释；当前 dev build 会被正确标记为 development-only | V4 crowded contact polish |
-| 压力图仍偏密 | `hangar-contact` 能读但仍是最拥挤截图，需要继续用 BattleCore 占位和构图证据打开战斗关系 | V4 crowded contact polish |
+| Demo handoff 已过 development-only 门检 | 构建、smoke、截图、walkthrough、内容边界已能一口气解释；当前 dev build 会被正确标记为 development-only | Refresh playable demo evidence |
+| 压力图已完成 V4 占位刷新 | `hangar-contact` 仍是最拥挤截图，但已有 `unitRadii 24/54/64` 和 `ContactSpread` 证据 | Refresh full evidence before next feature |
 | 公开替换包还没进入生产 | 投资/公开演示需要至少 text-safe，最好 art-safe | 开 P3 content replacement slice |
 
 ## 3. First Version Scope
@@ -524,14 +524,14 @@ Current recommended queue:
 | 6 | Done | `Document reference content boundary` | Clarify private/public content split |
 | 7 | Done | `Add public content boundary check` | Add non-destructive build-path safety check |
 | 8 | Done | `Run demo handoff gate audit` | Validate build, smoke, captures and content boundary together |
-| 9 | In Progress | `Polish crowded contact occupancy` | Finish V4 spacing/contact sidecar WIP and validate captures |
+| 9 | Done | `Polish crowded contact occupancy` | Finish V4 spacing/contact sidecar WIP and validate captures |
 | 10 | Next | `Refresh playable demo evidence` | Re-run validator, build, smoke and captures after V4 |
 | 11 | Next | `Open public replacement content slice` | Start text-safe/art-safe content pack path |
 | 12 | Next | `Polish MechLab grid feel` | Keep equipment-grid fitting as a core fun loop |
 
 ## 9. Detailed Near-Term Tasks
 
-The historical task notes below are kept for context and evidence. For the current executable breakdown, use `docs-ai-rts-commander-detailed-roadmap-2026-06-07.md`, starting with A1 `Finish V4 Contact Occupancy WIP`.
+The historical task notes below are kept for context and evidence. For the current executable breakdown, use `docs-ai-rts-commander-detailed-roadmap-2026-06-07.md`, starting with B1 `Refresh Full Demo Handoff Evidence`.
 
 ### Task P2: Add Public Content Boundary Check
 
