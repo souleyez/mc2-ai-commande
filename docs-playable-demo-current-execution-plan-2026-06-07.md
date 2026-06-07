@@ -36,7 +36,7 @@
 - Occupancy placeholder review layer 已提交：`1bd22e2 Lock occupancy placeholder review layer`.
 - MechLab block fitting 已提交：`74e24bf Polish MechLab block fitting`.
 - MechLab fitting evidence capture 已提交：`6ffa2ea Capture MechLab fitting evidence`.
-- 下一步是 `P1 Document reference content boundary`.
+- 下一步是 `P2 Add public content boundary check`.
 
 ## 1. First Demo Product Scope
 
@@ -93,8 +93,8 @@
 | Gap | Why It Matters | Next Task |
 | --- | --- | --- |
 | MechLab 后续只需回归 | 整块占格和截图证据已完成，后续 UI 改动需要保持这个体验不退化 | G3 regression |
-| Demo 公开边界还需要收口 | H3 已补证据页；后续融资/协作需要清楚说明私有参考内容和公开替换包边界 | P1/P2 |
-| 公开内容安全还需要脚本 guard | 本地参考包和公开包要分清 | P1/P2 |
+| Demo 公开边界说明已收口 | P1 已补 README、内容包合同和替换计划；后续需要脚本化检查防止打包混入私有参考内容 | P2 |
+| 公开内容安全还需要脚本 guard | 本地参考包和公开包已文档化，但还缺打包前自动检查 | P2 |
 
 ## 3. Architecture Contracts
 
@@ -256,8 +256,8 @@ Do not stage generated PNG/JSON/log evidence unless explicitly requested.
 | 10 | Done | `Write playable demo walkthrough` | G8 handoff |
 | 11 | Done | `Prepare repeatable Windows demo build` | G8 handoff |
 | 12 | Done | `Package playable demo evidence` | G8 handoff |
-| 13 | Next | `Document reference content boundary` | G6 public boundary |
-| 14 | Pending | `Add public content boundary check` | G6 public boundary |
+| 13 | Done | `Document reference content boundary` | G6 public boundary |
+| 14 | Next | `Add public content boundary check` | G6 public boundary |
 
 ## 6. Detailed Tasks
 
@@ -760,7 +760,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_refere
 
 ### P1: Document Reference Content Boundary
 
-**Status:** Next.
+**Status:** Completed 2026-06-07.
+
+**Result:** README now states the public product framing and release checklist: AI-assisted tactical RTS command, deterministic mech squad battle, optional AI deputy, replaceable content packs and future community maps. `docs-content-replacement-plan.md` now defines local reference, reference-linked dev, text-safe, art-safe and clean public pack states. `docs-content-pack.md` now defines public boundary states, clean replacement requirements and neutral reference manifest wording. `unity-mc2-demo/README.md` now explains that source-derived ids and encounter labels are development contract terms, not public product names.
 
 **Goal:** 让仓库和 README 说清楚：开发可以用私有参考包验证，本项目价值在 AI RTS 指挥和可替换内容包，不在搬运旧素材。
 
@@ -802,7 +804,7 @@ git diff --check
 
 ### P2: Add Public Content Boundary Check
 
-**Status:** Pending.
+**Status:** Next.
 
 **Goal:** 发布或对外演示前能检查 build path 没混入私有参考素材。
 

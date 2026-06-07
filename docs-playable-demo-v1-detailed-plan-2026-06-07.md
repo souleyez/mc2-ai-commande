@@ -30,7 +30,7 @@ Current branch snapshot when this plan was written:
   - `1bd22e2 Lock occupancy placeholder review layer`
   - `74e24bf Polish MechLab block fitting`
   - `6ffa2ea Capture MechLab fitting evidence`
-- Current next gameplay task: `P1 Document reference content boundary`.
+- Current next gameplay task: `P2 Add public content boundary check`.
 
 ## 1. Product Definition
 
@@ -232,8 +232,8 @@ The authoritative queue is still in `docs-playable-demo-current-execution-plan-2
 | H1 | Done | `Write playable demo walkthrough` | Create a three-minute demonstration script |
 | H2 | Done | `Prepare repeatable Windows demo build` | Document and verify repeatable build/smoke/capture commands |
 | H3 | Done | `Package playable demo evidence` | Build an evidence page with screenshot beats and captions |
-| P1 | Next | `Document reference content boundary` | Make private reference vs public content boundary explicit |
-| P2 | Pending | `Add public content boundary check` | Add a safe check for public packaging |
+| P1 | Done | `Document reference content boundary` | Make private reference vs public content boundary explicit |
+| P2 | Next | `Add public content boundary check` | Add a safe check for public packaging |
 
 ## 6. Detailed Execution Tasks
 
@@ -418,7 +418,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_refere
 
 ### Task P1: Document Reference Content Boundary
 
-**Status:** Next.
+**Status:** Completed 2026-06-07.
+
+**Result:** README now states the public product framing and release checklist. `docs-content-replacement-plan.md` now defines local reference, linked development, text-safe, art-safe and clean public pack states. `docs-content-pack.md` now defines the pack public boundary, clean replacement requirements and neutral local-reference manifest wording. `unity-mc2-demo/README.md` now marks source-derived ids and encounter labels as development contract terms, not public product names.
 
 **Goal:** Make the repo safe to show: the project is AI RTS commander exploration with replaceable content packs, not a public asset clone.
 
@@ -451,6 +453,8 @@ rg -n "MechCommander|MechWarrior|原版|旧作|clone|复刻|private|reference" R
 **Commit:** `Document reference content boundary`
 
 ### Task P2: Add Public Content Boundary Check
+
+**Status:** Next.
 
 **Goal:** Before public packaging, have a safe non-destructive check that warns if private/reference content leaks into a build path.
 

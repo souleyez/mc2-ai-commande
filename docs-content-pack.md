@@ -4,13 +4,28 @@ This project can be developed as an engine shell plus a replaceable content pack
 The shell is the compiled game executable, DLLs, renderer, mission runtime, and
 tools. The content pack is everything the shell loads as game data.
 
-The short-term goal is to use the original local assets as a reference pack for
-playability checks. The long-term goal is to replace that pack with a clean
-project-owned pack without changing game logic.
+The short-term goal is to use local reference assets as a private reference pack
+for playability checks. The long-term goal is to replace that pack with a clean
+project-owned or properly licensed pack without changing game logic.
 
 This document defines the pack contract. It does not grant rights to redistribute
-original MechCommander 2 art, text, audio, missions, trademarks, or other content.
-Public or commercial builds should use a replacement pack.
+third-party art, text, audio, missions, trademarks, private exports, or other
+uncleared content. Public or commercial builds must use a replacement pack.
+
+## Public Boundary
+
+The pack system has three distinct states:
+
+| State | Manifest Signals | Allowed Use | Distribution Rule |
+| --- | --- | --- | --- |
+| Local reference | `kind=reference`, `license=local-reference-only`, reference-only source paths | Private mechanics, scale, pacing and mission-structure validation | Do not publish |
+| Linked development replacement | `kind=replacement`, `seedMode=ReferenceLinks`, notes mention scaffold or local validation | Private work while replacing names, text, art and effects | Do not publish |
+| Clean replacement | `kind=replacement`, no reference links, provenance notes for every asset source | Public demo, investor-safe build, partner review, commercial build | Publish only after boundary check |
+
+Reference-linked packs are useful because they keep gameplay validation moving.
+They are not safe release artifacts. A public build must be able to run from its
+own replacement pack without local reference links, private extraction folders,
+or uncleared names, stories, art, audio, video, icons or marks.
 
 ## Pack Layout
 
@@ -72,27 +87,34 @@ so this boundary matches the current project instead of inventing a new format.
 
 ```json
 {
-  "id": "mc2-original-local",
-  "title": "MC2 Original Local Reference Pack",
+  "id": "local-reference-dev",
+  "title": "Local Reference Dev Pack",
   "kind": "reference",
   "license": "local-reference-only",
   "version": "0.1.0",
   "engineContract": "mc2-content-pack-v1",
   "product": {
-    "id": "mc2-reference",
-    "title": "MC2 Reference",
+    "id": "local-reference-dev",
+    "title": "Local Reference Dev Pack",
     "language": "en",
     "audience": "local-development"
   },
   "notes": [
     "Use only for local development validation.",
-    "Do not redistribute original art assets in public builds."
+    "Do not redistribute reference assets in public builds.",
+    "Replace this pack before investor-safe or public packaging."
   ]
 }
 ```
 
 Replacement packs should keep the same `engineContract` while changing content,
 names, art, text, missions, and legal provenance.
+
+The repository may still contain a legacy local-reference example manifest for
+tool fallback. Treat it as a private development locator, not as a publishable
+pack template. New public-facing scaffolds should start from
+`content-packs/project-owned-starter.example.json` or a clean pack generated with
+`new_content_pack.ps1 -SeedMode Empty`.
 
 ## Development Flow
 
@@ -113,10 +135,15 @@ Preview a pack mount:
 
 ```powershell
 & .\scripts\content-pack\mount_content_pack.ps1 `
-  -PackPath .\content-packs\mc2-original.local.example.json `
+  -PackPath .\content-packs\project-owned-linked-dev `
   -RunPath .\mc2-run64-dev `
   -DryRun
 ```
+
+`project-owned-linked-dev` is still a private linked-development pack because
+its manifest uses `seedMode=ReferenceLinks`. Use this command to validate the
+mounting mechanics, not to certify a public build. For public packaging, pass a
+completed clean replacement pack instead.
 
 Remove `-DryRun` to actually mount the pack. Actual mounts replace only the
 content entries listed in this document. Existing runtime entries are first
@@ -131,7 +158,7 @@ To add only preference files to an existing runtime shell:
 
 ```powershell
 & .\scripts\content-pack\mount_content_pack.ps1 `
-  -PackPath .\content-packs\mc2-original.local.example.json `
+  -PackPath .\content-packs\project-owned-linked-dev `
   -RunPath .\runtime-shell-dev `
   -OnlyPreferences
 ```
@@ -155,7 +182,7 @@ Preview a clean runtime shell with a mounted content pack:
 & .\scripts\content-pack\new_runtime_shell.ps1 `
   -ShellSourcePath .\mc2-run64-dev `
   -OutputPath .\runtime-shell-dev `
-  -PackPath .\content-packs\mc2-original.local.example.json `
+  -PackPath .\content-packs\project-owned-linked-dev `
   -DryRun
 ```
 
@@ -177,7 +204,8 @@ Run the local development shell:
 
 When `content-packs\project-owned-linked-dev` exists, the start and shortcut
 scripts use it as the default development pack. Otherwise they fall back to the
-local original reference manifest.
+local reference manifest. That fallback is for private development only; public
+packaging should pass an explicit clean replacement pack path.
 
 Check the current runtime shell:
 
@@ -225,7 +253,8 @@ Create a new content pack scaffold:
 ```
 
 Use `-SeedMode ReferenceLinks` only for private development packs that link to
-the local reference pack while replacement work is underway.
+the local reference pack while replacement work is underway. Use `-SeedMode
+Empty` for public-facing pack scaffolds.
 
 See `docs-content-replacement-plan.md` for the replacement milestones.
 
@@ -246,12 +275,14 @@ same scripts.
 
 This makes variants convenient technically, but not automatically safe legally.
 A public variant still needs project-owned or properly licensed assets and text.
+It also needs a manifest/provenance review and the P2 public content boundary
+check before packaging.
 
 ## Pack Replacement Rule
 
-Game code should not hard-code original asset names beyond what is necessary to
-load the current mission and runtime data. New gameplay and AI work should talk
-to stable concepts such as unit definitions, weapon definitions, mission
-triggers, terrain, effects, and UI strings.
+Game code should not hard-code reference asset names beyond what is necessary to
+load the current private development mission and runtime data. New gameplay and
+AI work should talk to stable concepts such as unit definitions, weapon
+definitions, mission triggers, terrain, effects, and UI strings.
 
-That keeps the engine work useful after the original reference pack is replaced.
+That keeps the engine work useful after the local reference pack is replaced.

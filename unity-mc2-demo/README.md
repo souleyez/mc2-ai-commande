@@ -1,10 +1,16 @@
-# MC2 Unity Demo
+# Unity Tactical Commander Demo
 
-This Unity 6 project is the first playable shell for the MC2-style command demo.
-It reads `mc2-unity-demo-contract-v1` from `StreamingAssets` and builds a
-reference-derived battlefield at runtime. Current committed visuals still fall
+This Unity 6 project is the first playable shell for the tactical commander
+demo. It reads `mc2-unity-demo-contract-v1` from `StreamingAssets` and builds a
+contract-driven battlefield at runtime. Current committed visuals still fall
 back to generated placeholders unless a private, ignored reference-art export is
 prepared locally.
+
+This README is development-facing. Source-derived mission ids, command files,
+and internal encounter labels are contract/testing terms, not public product
+names. Public builds and public-facing docs should use project-owned names,
+project-owned or licensed content packs, and the AI-assisted tactical RTS
+commander framing described in the repository README.
 
 Current demo behavior:
 
@@ -14,10 +20,10 @@ Current demo behavior:
 - routes objective, contact, combat, and result events through a script-signal bridge for later ABL/AI hooks
 - pulses script-signal bridge events at the battlefield source position
 - builds a source-driven 100 x 100 terrain mesh and water plane from packet data
-- places original terrain object records as lightweight trees and buildings
+- places contract terrain object records as lightweight trees and buildings
 - activates enemy groups from source mission brain names and objective progress
 - moves activated enemy groups with lightweight source-brain patrol orders backed by source nav markers
-- groups enemy contact logs into source-style encounter beats such as Airfield patrol, North patrol, Infantry ambush, and Starslayer lance
+- groups enemy contact logs into contract encounter beats such as airfield patrol, north patrol, infantry ambush, and north-lance pressure
 - marks activated enemy contact groups with a short tactical wake ring, beacon, ping, and group-count pips in the battlefield
 - follows the first player mech as commander
 - defaults to squad orders, with status-bar click for detached single-unit order
@@ -71,17 +77,17 @@ Current demo behavior:
 - shows animated limb breakoff, persistent missing-part flags, red leg-collapse cues, section sparks, smoke, cockpit ejection pod/chute/landing cues, and destroyed-mech wreck blast/debris markers
 - marks critical and destroyed section bars with compact `!` and `X` labels in squad and Mech Lab status lines
 - applies simple section penalties: destroyed arms reduce firepower, destroyed legs slow movement and disable Jet
-- tracks source-derived weapon heat, cooling, and heat lockouts in combat
+- tracks contract-derived weapon heat, cooling, and heat lockouts in combat
 - shows heat vent and heat-lock cues on hot mechs without adding combat HUD rows
-- carries source weapon type and special-effect metadata into combat visuals
+- carries weapon type and special-effect metadata into combat visuals
 - can use ignored private reference-art exports from local TGL/TGA assets during
   development; public builds must replace that pack with project-owned art
 - shows weapon name, range, cooldown, heat lock, and range readiness in the unit panel
-- opens a mech bay preview with source weapon loadout, heat, weight, range, damage, and section status
+- opens a mech bay preview with contract weapon loadout, heat, weight, range, damage, and section status
 - focuses the mech bay fitting view on one selected squad mech at a time with compact squad buttons, draft markers, selected-mech fit-pressure bars, and player-facing chassis/pilot titles
 - defines the first BattleCore loadout contract for chassis grids, item shapes, heat, weight, and special equipment slots
 - validates loadout grid placement, rotation, blocked cells, overlap, heat, weight, and equipment slot compatibility
-- shows projected source loadout validation status, heat/load limits, and occupied grid cells in the mech bay
+- shows projected loadout validation status, heat/load limits, and occupied grid cells in the mech bay
 - draws compact `Fit OK` or `Review` status plus `H/W/G` heat, weight, and grid usage readouts so fitting pressure is visible before reading the numeric limits
 - hides zero repair cost from the selected mech condition row and shows an `OK` repair button state until a damaged mech needs repair
 - treats fitted weapons as always active and uses the weapon list only to select mounted weapons for slot editing
@@ -94,8 +100,8 @@ Current demo behavior:
 - uses compact S/M/L range-band and `WxH` shape labels with matching colors on mounted weapon buttons
 - highlights the selected mounted weapon row in the fitting list
 - visualizes the projected mech bay slot grid with placeholder multi-cell weapon shapes
-- renders projected payload items as larger whole-block grid pieces with original-style empty/short/mid/long/component color bands
-- prefers compact weapon short codes such as `AC10` inside weapon blocks when source names include a parenthetical code
+- renders projected payload items as larger whole-block grid pieces with short/mid/long/component color bands
+- prefers compact weapon short codes such as `AC10` inside weapon blocks when weapon names include a parenthetical code
 - labels armor and heat-sink component blocks as compact `A+` and `C+` grid symbols
 - shows selected or hovered payload details with compact weapon short codes, heat, weight, damage, range, cooldown, and compact `A+` or `C+` component bonuses
 - highlights hovered payload blocks and empty cells so the grid reads as direct block editing instead of tiny cell picking
@@ -175,7 +181,7 @@ Current demo behavior:
 - supports explicit command-file `saved-account-export <path>` and `saved-account-import-preview <path>` actions for manual local account JSON file checks
 - supports explicit command-file `saved-account-import-apply-preview <path>` to show what a future import apply would change without mutating the mech bay
 - shows the latest import apply preview in the mech bay summary as a read-only confirmation row
-- supports explicit command-file `saved-account-import-apply <path>` to apply a matching accepted preview to the local mech bay through a cloned-inventory guard
+- supports explicit command-file `saved-account-import-apply <path>` to apply a matching accepted preview to the local mech bay through a copied-inventory guard
 - supports explicit command-file `saved-account-load-default-preview` and `saved-account-load-default-apply` actions for the persistent demo save file
 - supports explicit command-file `saved-account-save-current-default` to write the active account to the persistent demo save file
 - supports `-mc2LoadDefaultSave` to explicitly restore the persistent demo save during startup when that file exists
@@ -196,7 +202,7 @@ Current demo behavior:
 - maps the handoff roster into restart spawn intents behind the Launch guard
 - supports shared UI and command-file reserve setup that runs payout assembly, NPC hiring, weapon purchase, fit review, squad swap, and restart identity assertions
 - enables Launch only after a validated BattleMission construction path is available
-- keeps MissionContract clone and BattleMission construction validation behind that guarded Launch path
+- keeps MissionContract copy and BattleMission construction validation behind that guarded Launch path
 - can restart the active battle by building a replacement BattleMission, immediately disabling old runtime scene roots, and rebuilding Unity views from the guarded path
 - keeps the mech bay open and paused when restart Apply is triggered from the mech bay, while system/CLI restarts return directly to battle
 - shows a post-restart mission-state roster line with active, deployed, ready, repair, held, fit, and unavailable counts
@@ -357,7 +363,7 @@ Run the player with a startup command file that attacks the hangar and asserts t
   -logFile "$PWD\..\analysis-output\unity-player-hangar-ambush.log"
 ```
 
-Run the player with a startup command file that enters the west trigger zone and asserts the Starslayer lance plus VO beat:
+Run the player with a startup command file that enters the west trigger zone and asserts the north-lance encounter plus VO beat:
 
 ```powershell
 & .\Builds\Windows\MC2UnityDemo.exe `
@@ -514,7 +520,7 @@ command unit unit-1 move 3221 -277
 
 Relative command-file paths are checked from the current working directory first, then from the player `StreamingAssets` folder.
 
-Command files also support `prepare-local-candidate`, `prepare-depot-candidate`, `squad-swap`, `hide-squad-preview`, `saved-account-report`, `saved-account-save-load-preview`, `saved-account-export <path>`, `saved-account-import-preview <path>`, `saved-account-import-apply-preview <path>`, `saved-account-import-apply <path>`, `saved-account-load-default-preview`, `saved-account-save-current-default`, `saved-account-load-default-apply`, `mech-bay-launch`, `assert-restart-identity depot`, `assert-debrief-summary`, `assert-command-result [blocked|accepted=N]`, `assert-combat-situation [quiet|contact|tracking|fire] [solo=N] [jumping=N] [salvage=N]`, `assert-encounter-pacing`, `assert-objective-graph`, and `assert-loadout-compact`. `prepare-local-candidate` runs the payout, assembly, NPC hire, weapon shop, and warehouse fit-review services before the swap, then logs a read-only saved-account delta and auto-saves the account snapshot; `hide-squad-preview` verifies the completed replacement cue survives into the general next-mission handoff; `assert-debrief-summary` verifies result counters, the compact Outcome row, mission result cue contract, compact section-tagged player damage rows, compact destroyed-target rows, and compact debrief combat rows; `assert-command-result` verifies the previous CLI command was blocked or accepted by exactly `N` units; `assert-combat-situation` verifies the combat HUD situation row counters, compact battle pulse row, source-group contact pressure contract, commanded Focus contract, recent-contact tempo, compact battle mission-panel objective names, optional expected Tempo mode, optional detached solo count, optional active jumping count, and optional hostile wreck salvage count; `assert-encounter-pacing` verifies source-paced `mc2_01` encounter activation across the initial airfield beat, hangar-triggered ambush beat, area-7 Starslayer beat, and Starslayer-cleared VO hook; `assert-objective-graph` verifies the source objective graph, hidden first-patrol glue objective, flag edges, north-island unlock, Starslayer area trigger, and Starslayer VO target count; `assert-loadout-compact` verifies compact mech-bay fitting title, weapon-button, and grid-spacing contracts; `saved-account-report` validates and logs a JSON dry-run of the local account snapshot without writing a file; `saved-account-save-load-preview` serializes and loads that snapshot in memory to prove the future save/load boundary; `saved-account-export` writes a JSON file only when the script provides a path, `saved-account-import-preview` validates a file without applying it to the mech bay, `saved-account-import-apply-preview` adds the identity guard plus would-change delta for a future apply, then exposes the latest preview as a guarded mech bay Apply row with a manual JSON path Preview field, Default/Export/Load helpers, and a compact Last Save result line, `saved-account-import-apply` requires that matching accepted preview before replacing the local mech bay with a cloned loaded inventory, then auto-saves the resulting local account, `saved-account-save-current-default` writes the active account to the persistent demo save path, and the default-load commands reuse the same guard against that path; `prepare-depot-candidate` remains a legacy direct smoke fallback.
+Command files also support `prepare-local-candidate`, `prepare-depot-candidate`, `squad-swap`, `hide-squad-preview`, `saved-account-report`, `saved-account-save-load-preview`, `saved-account-export <path>`, `saved-account-import-preview <path>`, `saved-account-import-apply-preview <path>`, `saved-account-import-apply <path>`, `saved-account-load-default-preview`, `saved-account-save-current-default`, `saved-account-load-default-apply`, `mech-bay-launch`, `assert-restart-identity depot`, `assert-debrief-summary`, `assert-command-result [blocked|accepted=N]`, `assert-combat-situation [quiet|contact|tracking|fire] [solo=N] [jumping=N] [salvage=N]`, `assert-encounter-pacing`, `assert-objective-graph`, and `assert-loadout-compact`. `prepare-local-candidate` runs the payout, assembly, NPC hire, weapon shop, and warehouse fit-review services before the swap, then logs a read-only saved-account delta and auto-saves the account snapshot; `hide-squad-preview` verifies the completed replacement cue survives into the general next-mission handoff; `assert-debrief-summary` verifies result counters, the compact Outcome row, mission result cue contract, compact section-tagged player damage rows, compact destroyed-target rows, and compact debrief combat rows; `assert-command-result` verifies the previous CLI command was blocked or accepted by exactly `N` units; `assert-combat-situation` verifies the combat HUD situation row counters, compact battle pulse row, source-group contact pressure contract, commanded Focus contract, recent-contact tempo, compact battle mission-panel objective names, optional expected Tempo mode, optional detached solo count, optional active jumping count, and optional hostile wreck salvage count; `assert-encounter-pacing` verifies source-paced `mc2_01` encounter activation across the initial airfield beat, hangar-triggered ambush beat, area-7 north-lance beat, and north-lance-cleared VO hook; `assert-objective-graph` verifies the source objective graph, hidden first-patrol glue objective, flag edges, north-island unlock, north-lance area trigger, and north-lance VO target count; `assert-loadout-compact` verifies compact mech-bay fitting title, weapon-button, and grid-spacing contracts; `saved-account-report` validates and logs a JSON dry-run of the local account snapshot without writing a file; `saved-account-save-load-preview` serializes and loads that snapshot in memory to prove the future save/load boundary; `saved-account-export` writes a JSON file only when the script provides a path, `saved-account-import-preview` validates a file without applying it to the mech bay, `saved-account-import-apply-preview` adds the identity guard plus would-change delta for a future apply, then exposes the latest preview as a guarded mech bay Apply row with a manual JSON path Preview field, Default/Export/Load helpers, and a compact Last Save result line, `saved-account-import-apply` requires that matching accepted preview before replacing the local mech bay with a copied loaded inventory, then auto-saves the resulting local account, `saved-account-save-current-default` writes the active account to the persistent demo save path, and the default-load commands reuse the same guard against that path; `prepare-depot-candidate` remains a legacy direct smoke fallback.
 
 Commander observation reports include `reportIndex` and `missionTimeSeconds` so future AI adapters can correlate decisions with elapsed battle time.
 
