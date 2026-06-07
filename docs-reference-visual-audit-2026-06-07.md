@@ -2502,6 +2502,63 @@ Remaining issues:
 2. `hangar-contact` is still the densest readability stress test, especially once weapon effects stack on top of structures.
 3. A5 should turn terrain, unit, structure, sparse HUD, occupancy and contact-clearance checks into one first-map visual gate.
 
+## First Map Visual Gate
+
+Implemented on 2026-06-07 after the detailed plan A5 task.
+
+Changed evidence:
+
+- Added capture sidecar `firstMapVisual`.
+- `firstMapVisual` now summarizes terrain, unit, structure, sparse HUD, BattleCore occupancy and contact-clearance readiness in one stable text field.
+- Updated `capture_reference_visuals.ps1` so every battle capture checks:
+  - nonblank PNG and sufficient unique colors;
+  - sparse battle HUD;
+  - BattleCore occupancy;
+  - ContactClearance with `overlaps=0` and `status=separated`;
+  - `TerrainReadability`;
+  - `UnitReadability`;
+  - `StructureReadability`;
+  - `FirstMapVisual`.
+- Kept checks textual and stable rather than exact PNG-byte based.
+
+Validation commands:
+
+```powershell
+git diff --check
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoBuilder.BuildWindows64 -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-build-first-map-visual-gate.log"
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_reference_visuals.ps1 -Presets spawn,airfield,hangar-contact,north-patrol,damage-demo
+```
+
+Validation evidence:
+
+```text
+analysis-output/unity-build-first-map-visual-gate.log: Build Finished, Result: Success; MC2 Unity demo Windows build OK.
+capture_reference_visuals.ps1 -Presets spawn,airfield,hangar-contact,north-patrol,damage-demo: MC2 reference visual captures passed: 5 preset(s).
+```
+
+Observed first-map gate evidence:
+
+```text
+spawn: FirstMapVisual ... status=ready terrain=ready unit=ready structure=ready sparseHud=ready occupancy=ready contact=separated damageStory=ready playerUnits=3 activeHostiles=0 visibleHostiles=0 targetableStructures=1.
+airfield: FirstMapVisual ... status=ready terrain=ready unit=ready structure=ready sparseHud=ready occupancy=ready contact=separated damageStory=ready playerUnits=3 activeHostiles=12 visibleHostiles=8 targetableStructures=1.
+hangar-contact: FirstMapVisual ... status=ready terrain=ready unit=ready structure=ready sparseHud=ready occupancy=ready contact=separated damageStory=ready playerUnits=3 activeHostiles=20 visibleHostiles=16 targetableStructures=1.
+north-patrol: FirstMapVisual ... status=ready terrain=ready unit=ready structure=ready sparseHud=ready occupancy=ready contact=separated damageStory=ready playerUnits=3 activeHostiles=24 visibleHostiles=9 targetableStructures=1.
+damage-demo: FirstMapVisual ... status=ready terrain=ready unit=ready structure=ready sparseHud=ready occupancy=ready contact=separated damageStory=ready playerUnits=3 activeHostiles=20 visibleHostiles=16 targetableStructures=1.
+```
+
+Visual judgment:
+
+- A5 is a regression gate, not a new art pass. It freezes the current first-map readability gains so future UI, shader, model, effect or reference-pack work cannot silently regress the battle view.
+- `spawn` remains valid even with no active hostiles because it still proves player units, target structure, terrain, sparse HUD, occupancy and separated contact state.
+- `hangar-contact` remains the main pile-up stress test, now guarded by image checks, BattleOccupancy, ContactClearance and FirstMapVisual together.
+- `damage-demo` continues to carry the damage story while also passing the first-map visibility gate.
+
+Remaining issues:
+
+1. The first-map visual slice is now guarded, but it is still prototype art quality rather than final public-safe art.
+2. The evidence page and investor-facing walkthrough should be refreshed from the current six-capture set.
+3. Private reference visual manifest/export stability remains important for future whole-pack replacement.
+
 Next priority:
 
-1. Gate first map visual slice.
+1. Refresh demo evidence after visual pass.

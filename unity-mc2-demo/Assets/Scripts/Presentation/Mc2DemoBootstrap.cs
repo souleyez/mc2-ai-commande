@@ -195,6 +195,7 @@ namespace MC2Demo.Presentation
             public string[] activeHostiles;
             public string[] visibleHostiles;
             public string[] currentObjectives;
+            public string firstMapVisual;
             public string occupancy;
             public string occupancyPlaceholders;
             public string terrainReadability;
@@ -5800,6 +5801,13 @@ namespace MC2Demo.Presentation
         private VisualCaptureSidecar BuildCaptureSidecar(string screenshotPath)
         {
             CommanderObservation observation = observationPort?.Observe();
+            string occupancySummary = BuildCaptureOccupancySummary();
+            string terrainReadabilitySummary = BuildCaptureTerrainReadabilitySummary();
+            string unitReadabilitySummary = BuildCaptureUnitReadabilitySummary();
+            string structureReadabilitySummary = BuildCaptureStructureReadabilitySummary();
+            string contactClearanceSummary = BuildCaptureContactClearanceSummary();
+            string battleHudSummary = BuildCaptureBattleHudSummary();
+            string damageStorySummary = BuildCaptureDamageStorySummary();
             return new VisualCaptureSidecar
             {
                 preset = lastCapturePreset,
@@ -5819,17 +5827,25 @@ namespace MC2Demo.Presentation
                 activeHostiles = UnitLabels(observation?.activeHostiles),
                 visibleHostiles = VisibleHostileLabels(),
                 currentObjectives = ObjectiveLabels(observation?.currentObjectives),
-                occupancy = BuildCaptureOccupancySummary(),
+                firstMapVisual = BuildCaptureFirstMapVisualSummary(
+                    occupancySummary,
+                    terrainReadabilitySummary,
+                    unitReadabilitySummary,
+                    structureReadabilitySummary,
+                    contactClearanceSummary,
+                    battleHudSummary,
+                    damageStorySummary),
+                occupancy = occupancySummary,
                 occupancyPlaceholders = lastOccupancyPlaceholderSummary,
-                terrainReadability = BuildCaptureTerrainReadabilitySummary(),
-                unitReadability = BuildCaptureUnitReadabilitySummary(),
-                structureReadability = BuildCaptureStructureReadabilitySummary(),
+                terrainReadability = terrainReadabilitySummary,
+                unitReadability = unitReadabilitySummary,
+                structureReadability = structureReadabilitySummary,
                 contactSpread = BuildCaptureContactSpreadSummary(),
-                contactClearance = BuildCaptureContactClearanceSummary(),
+                contactClearance = contactClearanceSummary,
                 mechLab = BuildCaptureMechLabSummary(),
-                damageStory = BuildCaptureDamageStorySummary(),
+                damageStory = damageStorySummary,
                 damageReadability = BuildCaptureDamageReadabilitySummary(),
-                battleHud = BuildCaptureBattleHudSummary(),
+                battleHud = battleHudSummary,
                 camera = BuildCaptureCameraState(),
                 referenceAssets = new VisualCaptureReferenceState
                 {
@@ -5846,6 +5862,100 @@ namespace MC2Demo.Presentation
         {
             string battleSummary = mission == null ? "BattleOccupancy=mission unavailable" : mission.OccupancySummary();
             return battleSummary + "; " + DemoTerrainView.CurrentLandingAuditSummary();
+        }
+
+        private string BuildCaptureFirstMapVisualSummary(
+            string occupancySummary,
+            string terrainReadabilitySummary,
+            string unitReadabilitySummary,
+            string structureReadabilitySummary,
+            string contactClearanceSummary,
+            string battleHudSummary,
+            string damageStorySummary)
+        {
+            if (demoFlowScreen != DemoFlowScreen.Battle || mission == null)
+            {
+                return "FirstMapVisual=inactive flow=" + DemoFlowScreenName(demoFlowScreen);
+            }
+
+            bool terrainReady = SummaryHas(terrainReadabilitySummary, "TerrainReadability=samples")
+                && SummaryHas(terrainReadabilitySummary, "waterSurface=readable-overlay")
+                && SummaryHas(terrainReadabilitySummary, "shore=")
+                && SummaryHas(terrainReadabilitySummary, "runway=")
+                && SummaryHas(terrainReadabilitySummary, "pathing=unchanged");
+            bool unitReady = SummaryHas(unitReadabilitySummary, "UnitReadability=contact-shadow+faction-footprint-ring")
+                && SummaryHas(unitReadabilitySummary, "activeViews=")
+                && SummaryHas(unitReadabilitySummary, "style=grounded-silhouette+friend-foe-footprint")
+                && SummaryHas(unitReadabilitySummary, "collision=unchanged");
+            bool structureReady = SummaryHas(structureReadabilitySummary, "StructureReadability=base-shadow+target-footprint")
+                && SummaryHas(structureReadabilitySummary, "targetable=")
+                && SummaryHas(structureReadabilitySummary, "hardProps=")
+                && SummaryHas(structureReadabilitySummary, "blockerGeometry=unchanged");
+            bool sparseHudReady = SparseBattleUiRegressionSummaryOk(battleHudSummary);
+            bool occupancyReady = SummaryHas(occupancySummary, "BattleOccupancy=units")
+                && SummaryHas(occupancySummary, "unitRadii")
+                && SummaryHas(occupancySummary, "structures ")
+                && SummaryHas(occupancySummary, "hardProps ")
+                && SummaryHas(occupancySummary, "destinationFallback=structure+hardProp")
+                && SummaryHas(occupancySummary, "Landing=DemoTerrainView")
+                && SummaryHas(occupancySummary, "externalPredicate=water+mapBounds");
+            bool contactReady = SummaryHas(contactClearanceSummary, "ContactClearance=players")
+                && SummaryHas(contactClearanceSummary, "overlaps=0")
+                && SummaryHas(contactClearanceSummary, "status=separated");
+            bool damageStoryAvailable = SummaryHas(damageStorySummary, "DamageStory=units");
+            bool ready = terrainReady
+                && unitReady
+                && structureReady
+                && sparseHudReady
+                && occupancyReady
+                && contactReady
+                && damageStoryAvailable;
+
+            return "FirstMapVisual=terrain+unit+structure+sparse-ui+occupancy+contact"
+                + " preset="
+                + (lastCapturePreset ?? "")
+                + " flow="
+                + DemoFlowScreenName(demoFlowScreen)
+                + " status="
+                + (ready ? "ready" : "needs-review")
+                + " terrain="
+                + ReadyFlag(terrainReady)
+                + " unit="
+                + ReadyFlag(unitReady)
+                + " structure="
+                + ReadyFlag(structureReady)
+                + " sparseHud="
+                + ReadyFlag(sparseHudReady)
+                + " occupancy="
+                + ReadyFlag(occupancyReady)
+                + " contact="
+                + (contactReady ? "separated" : "needs-review")
+                + " damageStory="
+                + ReadyFlag(damageStoryAvailable)
+                + " image=external-script-gated png=nonblank+unique-colors"
+                + " battleCore=occupancy+contact-clearance"
+                + " sparseUi=statusRows+compactObjective"
+                + " privateReference=replaceable"
+                + " visualOnly=yes pathing=unchanged collision=unchanged"
+                + " playerUnits="
+                + CountCapturePlayerUnits().ToString(CultureInfo.InvariantCulture)
+                + " activeHostiles="
+                + CountActiveHostiles().ToString(CultureInfo.InvariantCulture)
+                + " visibleHostiles="
+                + VisibleHostileLabels().Length.ToString(CultureInfo.InvariantCulture)
+                + " targetableStructures="
+                + CountTargetableStructures().ToString(CultureInfo.InvariantCulture);
+        }
+
+        private static bool SummaryHas(string summary, string fragment)
+        {
+            return !string.IsNullOrWhiteSpace(summary)
+                && summary.IndexOf(fragment, StringComparison.Ordinal) >= 0;
+        }
+
+        private static string ReadyFlag(bool ready)
+        {
+            return ready ? "ready" : "missing";
         }
 
         private string BuildCaptureTerrainReadabilitySummary()
@@ -6676,6 +6786,25 @@ namespace MC2Demo.Presentation
             foreach (UnitState unit in mission.PlayerUnits())
             {
                 if (unit != null)
+                {
+                    count++;
+                }
+            }
+
+            return count;
+        }
+
+        private int CountTargetableStructures()
+        {
+            int count = 0;
+            if (mission == null)
+            {
+                return count;
+            }
+
+            foreach (StructureState structure in mission.Structures)
+            {
+                if (structure != null && structure.IsTargetable)
                 {
                     count++;
                 }

@@ -89,7 +89,7 @@
 | M3 | MechLab 核心乐趣 | Done for V1, polish later | 格子、装配合法性、战斗影响均有证据 |
 | M4 | 部位损伤卖点 | Done for V1, polish later | `damage-demo` 有断臂、腿、驾驶舱故事 |
 | M5 | 稀疏 UI | Done with guard | `SparseBattleUi` sidecar gate |
-| M6 | 3D 地图视觉与占位 | Active | 五张战斗截图能读清战场，不像色块 |
+| M6 | 3D 地图视觉与占位 | Done with gate | 五张战斗截图通过 `FirstMapVisual` gate |
 | M7 | 私有参考视觉包稳定化 | Next | manifest-driven, missing-safe, replaceable |
 | M8 | 可展示 Demo 封口 | Next | 六截图、visible-flow、walkthrough、一页证据 |
 | M9 | Public art-safe slice | Later | 替换包 provenance 和 boundary check |
@@ -105,7 +105,7 @@
 | A2 | Done | `Improve terrain and water readability` | 地面、水域、岸线、跑道/道路不再像一整块平色 | build + `spawn,airfield,north-patrol` captures |
 | A3 | Done | `Improve unit silhouette readability` | 敌我机甲/车辆在默认镜头下更容易分辨 | build + `spawn,hangar-contact,damage-demo` captures |
 | A4 | Done | `Improve structure and prop readability` | 建筑、树木、机场道具不再是灰色糊团 | build + `airfield,hangar-contact,north-patrol` captures |
-| A5 | Next | `Gate first map visual slice` | sidecar 检查第一图视觉、稀疏 UI、碰撞不回退 | capture script gates |
+| A5 | Done | `Gate first map visual slice` | sidecar 检查第一图视觉、稀疏 UI、碰撞不回退 | build + five battle captures |
 | A6 | Next | `Refresh demo evidence after visual pass` | 更新证据页和审计文档 | six captures + docs |
 | B1 | Later | `Stabilize reference visual manifest export` | 私有参考单位/道具/地形资源导出 manifest | exporter dry run + build |
 | B2 | Later | `Harden Unity reference visual loader` | Unity 优先读 manifest，缺失安全回退 | build + fallback capture |
@@ -351,6 +351,14 @@ StructureReadability: structures=1 structureViews=1 targetable=1 terrainProps=99
 git diff --check
 & "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoBuilder.BuildWindows64 -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-build-first-map-visual-gate.log"
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_reference_visuals.ps1 -Presets spawn,airfield,hangar-contact,north-patrol,damage-demo
+```
+
+**Completed Evidence:**
+
+```text
+analysis-output/unity-build-first-map-visual-gate.log: Build Finished, Result: Success; MC2 Unity demo Windows build OK.
+capture_reference_visuals.ps1 -Presets spawn,airfield,hangar-contact,north-patrol,damage-demo: MC2 reference visual captures passed: 5 preset(s).
+FirstMapVisual: all five battle presets report status=ready, terrain=ready, unit=ready, structure=ready, sparseHud=ready, occupancy=ready, contact=separated, visualOnly=yes, pathing=unchanged, collision=unchanged.
 ```
 
 **Acceptance:**

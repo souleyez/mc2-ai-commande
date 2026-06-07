@@ -201,15 +201,14 @@ function Test-CaptureSidecar {
         Test-HangarContactCaptureSidecar -Sidecar $sidecar -Path $Path
     }
 
-    if ($ExpectedPreset -eq "hangar-contact" -or $ExpectedPreset -eq "damage-demo") {
-        Test-ContactClearanceCaptureSidecar -Sidecar $sidecar -Path $Path
-    }
-
     if ($sidecar.flowScreen -eq "Battle") {
         Test-BattleHudCaptureSidecar -Sidecar $sidecar -Path $Path
+        Test-BattleOccupancyCaptureSidecar -Sidecar $sidecar -Path $Path
+        Test-ContactClearanceCaptureSidecar -Sidecar $sidecar -Path $Path
         Test-TerrainReadabilityCaptureSidecar -Sidecar $sidecar -Path $Path
         Test-UnitReadabilityCaptureSidecar -Sidecar $sidecar -Path $Path
         Test-StructureReadabilityCaptureSidecar -Sidecar $sidecar -Path $Path
+        Test-FirstMapVisualCaptureSidecar -Sidecar $sidecar -Path $Path
     }
 
     $placeholderSummary = [string]$sidecar.occupancyPlaceholders
@@ -329,6 +328,44 @@ function Test-TerrainReadabilityCaptureSidecar {
     }
 }
 
+function Test-BattleOccupancyCaptureSidecar {
+    param(
+        [object]$Sidecar,
+        [string]$Path
+    )
+
+    $summary = [string]$Sidecar.occupancy
+    foreach ($fragment in @(
+        "BattleOccupancy=units",
+        "unitRadii infantry=24 vehicle=54 mech=64",
+        "structures ",
+        "maxStructureRadius=",
+        "hardProps ",
+        "building=",
+        "aircraft=",
+        "barricade=",
+        "other=",
+        "maxPropRadius=",
+        "destinationFallback=structure+hardProp",
+        "Landing=DemoTerrainView",
+        "externalPredicate=water+mapBounds"
+    )) {
+        if ($summary -notlike "*$fragment*") {
+            throw "Battle occupancy sidecar summary missing '$fragment': $Path -> $summary"
+        }
+    }
+
+    $units = Read-SummaryNumber -Summary $summary -Pattern "BattleOccupancy=units ([0-9]+)" -Context $Path
+    $structures = Read-SummaryNumber -Summary $summary -Pattern "structures ([0-9]+)" -Context $Path
+    $hardProps = Read-SummaryNumber -Summary $summary -Pattern "hardProps ([0-9]+)" -Context $Path
+    $buildingProps = Read-SummaryNumber -Summary $summary -Pattern "building=([0-9]+)" -Context $Path
+    $aircraftProps = Read-SummaryNumber -Summary $summary -Pattern "aircraft=([0-9]+)" -Context $Path
+    $barricades = Read-SummaryNumber -Summary $summary -Pattern "barricade=([0-9]+)" -Context $Path
+    if ($units -le 0 -or $structures -le 0 -or $hardProps -le 0 -or $buildingProps -le 0 -or $aircraftProps -le 0 -or $barricades -le 0) {
+        throw "Battle occupancy sidecar did not prove unit, structure and hard-prop coverage: $Path -> $summary"
+    }
+}
+
 function Test-UnitReadabilityCaptureSidecar {
     param(
         [object]$Sidecar,
@@ -426,6 +463,56 @@ function Test-StructureReadabilityCaptureSidecar {
 
     if ($terrainProps -le 0 -or $hardProps -le 0 -or $buildings -le 0 -or $aircraft -le 0 -or $barricades -le 0 -or $treeObjects -le 0) {
         throw "Structure readability sidecar did not prove map prop category coverage: $Path -> $summary"
+    }
+}
+
+function Test-FirstMapVisualCaptureSidecar {
+    param(
+        [object]$Sidecar,
+        [string]$Path
+    )
+
+    $summary = [string]$Sidecar.firstMapVisual
+    foreach ($fragment in @(
+        "FirstMapVisual=terrain+unit+structure+sparse-ui+occupancy+contact",
+        "flow=Battle",
+        "status=ready",
+        "terrain=ready",
+        "unit=ready",
+        "structure=ready",
+        "sparseHud=ready",
+        "occupancy=ready",
+        "contact=separated",
+        "damageStory=ready",
+        "image=external-script-gated",
+        "png=nonblank+unique-colors",
+        "battleCore=occupancy+contact-clearance",
+        "sparseUi=statusRows+compactObjective",
+        "privateReference=replaceable",
+        "visualOnly=yes",
+        "pathing=unchanged",
+        "collision=unchanged",
+        "playerUnits=",
+        "activeHostiles=",
+        "visibleHostiles=",
+        "targetableStructures="
+    )) {
+        if ($summary -notlike "*$fragment*") {
+            throw "First map visual sidecar summary missing '$fragment': $Path -> $summary"
+        }
+    }
+
+    $players = Read-SummaryNumber -Summary $summary -Pattern "playerUnits=([0-9]+)" -Context $Path
+    $targetable = Read-SummaryNumber -Summary $summary -Pattern "targetableStructures=([0-9]+)" -Context $Path
+    if ($players -le 0 -or $targetable -le 0) {
+        throw "First map visual sidecar did not prove player units and objective structure: $Path -> $summary"
+    }
+
+    if ($Sidecar.preset -ne "spawn") {
+        $activeHostiles = Read-SummaryNumber -Summary $summary -Pattern "activeHostiles=([0-9]+)" -Context $Path
+        if ($activeHostiles -le 0) {
+            throw "First map visual sidecar did not prove hostile presence: $Path -> $summary"
+        }
     }
 }
 
