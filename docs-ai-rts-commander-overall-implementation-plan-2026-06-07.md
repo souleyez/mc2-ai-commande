@@ -97,7 +97,7 @@ Playable Demo Handoff: 把已能跑的 Windows 本地 Demo 收成可重复构建
 | Gap | Why It Matters | Next Move |
 | --- | --- | --- |
 | 视觉还需要稳定回归 | 当前已有样子，但机甲、道具、遮挡、占位仍要避免退化成堆叠 | 每次视觉改动跑 capture + sidecar |
-| Demo handoff 已过 development-only 门检 | 构建、smoke、截图、walkthrough、内容边界已能一口气解释；当前 dev build 会被正确标记为 development-only | Refresh playable demo evidence |
+| Demo handoff 已过 development-only 门检 | 构建、smoke、截图、walkthrough、内容边界已能一口气解释；当前 dev build 会被正确标记为 development-only | Open public replacement content slice |
 | 压力图已完成 V4 占位刷新 | `hangar-contact` 仍是最拥挤截图，但已有 `unitRadii 24/54/64` 和 `ContactSpread` 证据 | Refresh full evidence before next feature |
 | 公开替换包还没进入生产 | 投资/公开演示需要至少 text-safe，最好 art-safe | 开 P3 content replacement slice |
 
@@ -525,13 +525,13 @@ Current recommended queue:
 | 7 | Done | `Add public content boundary check` | Add non-destructive build-path safety check |
 | 8 | Done | `Run demo handoff gate audit` | Validate build, smoke, captures and content boundary together |
 | 9 | Done | `Polish crowded contact occupancy` | Finish V4 spacing/contact sidecar WIP and validate captures |
-| 10 | Next | `Refresh playable demo evidence` | Re-run validator, build, smoke and captures after V4 |
+| 10 | Done | `Refresh playable demo evidence` | Re-run validator, build, smoke and captures after V4 |
 | 11 | Next | `Open public replacement content slice` | Start text-safe/art-safe content pack path |
 | 12 | Next | `Polish MechLab grid feel` | Keep equipment-grid fitting as a core fun loop |
 
 ## 9. Detailed Near-Term Tasks
 
-The historical task notes below are kept for context and evidence. For the current executable breakdown, use `docs-ai-rts-commander-detailed-roadmap-2026-06-07.md`, starting with B1 `Refresh Full Demo Handoff Evidence`.
+The historical task notes below are kept for context and evidence. For the current executable breakdown, use `docs-ai-rts-commander-detailed-roadmap-2026-06-07.md`, starting with C1 `Start Public Replacement Content Slice`.
 
 ### Task P2: Add Public Content Boundary Check
 

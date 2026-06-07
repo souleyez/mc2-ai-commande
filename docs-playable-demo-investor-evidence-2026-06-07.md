@@ -34,6 +34,22 @@ Refreshed on 2026-06-07 after `Polish crowded contact occupancy`.
 
 V4 judgment: the hangar fight remains intentionally dense, but the screenshots now have explicit BattleCore occupancy and contact-spread evidence. The next pass should refresh the full demo evidence set rather than immediately adding more battle UI.
 
+## Full Demo Refresh
+
+Refreshed on 2026-06-07 after V4.
+
+| Gate | Result | Evidence |
+| --- | --- | --- |
+| Markdown/code whitespace | Pass | `git diff --check` |
+| Mission validator | Pass | `analysis-output/unity-validate-demo-refresh.log` reports `MC2 demo contract validation OK`. |
+| Windows build | Pass | `analysis-output/unity-build-demo-refresh.log` reports `Build Finished, Result: Success` and `MC2 Unity demo Windows build OK`. |
+| Visible-flow smoke | Pass | `analysis-output/unity-player-demo-refresh.log` reports `MC2 demo smoke test exiting with code 0`. |
+| Six capture presets | Pass | `capture_reference_visuals.ps1` reports `MC2 reference visual captures passed: 6 preset(s)` for `mechlab`, `spawn`, `airfield`, `hangar-contact`, `damage-demo`, and `north-patrol`. |
+| Clean starter boundary | Pass | `check_public_content_boundary.ps1` returns `Result: OK` for `content-packs/project-owned-starter.example.json`. |
+| Current build public boundary | Development-only | The current Windows dev build returns expected `Result: FAILED` with 172 findings. |
+
+Refresh judgment: the local development Demo is again validated as buildable, smoke-tested, capturable and explicitly development-only. The next product task is the public replacement content slice.
+
 ## Capture Command
 
 Run from the repository root:
@@ -65,11 +81,11 @@ Current refreshed sidecars report:
 
 ```text
 mechlab: MechLabCapture=open ... weaponBlock=1 Streak ... 1x2 fillers=A+/C+ fit=Fit OK pressure=H 12/22  W 16/16  G 12/16 alwaysMounted=weapons 6/6 items 6/6 noToggle=yes
-spawn: BattleHud=active controls=statusRows+jet+map+bay+system combatPanel=h78 combatLogVisible=no objectivePanel=compactObjective objectiveH=74 missionMap=closed saveUi=disabled
-airfield: activeHostileCount=12 visibleHostileCount=8 currentObjective=Destroy Hangar
+spawn: activeHostileCount=0 visibleHostileCount=0 BattleHud=active controls=statusRows+jet+map+bay+system combatPanel=h78 combatLogVisible=no objectivePanel=compactObjective objectiveH=74 missionMap=closed saveUi=disabled ContactSpread=players 3 hostiles 0 nearestPH=n/a nearestHH=n/a nearestPP=128
+airfield: activeHostileCount=12 visibleHostileCount=8 ContactSpread=players 3 hostiles 12 nearestPH=704.7 nearestHH=108 currentObjective=Destroy Hangar
 hangar-contact: activeHostileCount=20 visibleHostileCount=16 BattleOccupancy=units 23/29 unitRadii infantry=24 vehicle=54 mech=64 ContactSpread=players 3 hostiles 20 nearestPH=272.8 nearestHH=48 nearestPP=259.1 playerSpan=519.9 hostileSpan=4304.2 centroidDistance=1161.6
-damage-demo: activeHostileCount=20 visibleHostileCount=16 BattleOccupancy=units 22/29 unitRadii infantry=24 vehicle=54 mech=64 ContactSpread=players 2 hostiles 20 nearestPH=118 nearestHH=78 nearestPP=207.6 playerSpan=207.6 hostileSpan=4334.8 centroidDistance=836.5 DamageStory=units 3/3 lostSections=3 arms=1 legs=1 cockpit=1 pilotRisk=1 destroyedUnits=1 story=unit-1:left-arm-lost,unit-2:legs-lost,unit-3:cockpit-lost
-north-patrol: activeHostileCount=24 visibleHostileCount=10 status=north encounter trigger completed.
+damage-demo: activeHostileCount=20 visibleHostileCount=16 BattleOccupancy=units 22/29 unitRadii infantry=24 vehicle=54 mech=64 ContactSpread=players 2 hostiles 20 nearestPH=118 nearestHH=78 nearestPP=207.6 playerSpan=207.6 hostileSpan=4336.7 centroidDistance=836.7 DamageStory=units 3/3 lostSections=3 arms=1 legs=1 cockpit=1 pilotRisk=1 destroyedUnits=1 story=unit-1:left-arm-lost,unit-2:legs-lost,unit-3:cockpit-lost
+north-patrol: activeHostileCount=24 visibleHostileCount=9 ContactSpread=players 3 hostiles 24 nearestPH=118 nearestHH=70.1 status=north encounter trigger completed.
 ```
 
 ## Suggested Three-Minute Use

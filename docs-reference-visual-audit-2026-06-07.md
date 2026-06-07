@@ -36,11 +36,11 @@ Latest refreshed sidecar counts:
 | Preset | PNG Bytes | Mission Time | Active Hostiles | Visible Hostiles | Key Evidence |
 | --- | ---: | ---: | ---: | ---: | --- |
 | `mechlab` | 200183 | 0.25s | 0 | 0 | `MechLabCapture=open`, `Fit OK`, weapon blocks, fillers and no weapon toggle |
-| `spawn` | 368272 | 1.39s | 0 | 0 | sparse battle HUD, commander-follow camera, 100 occupancy placeholders |
-| `airfield` | 364402 | 13.09s | 12 | 8 | readable terrain/water/runway and first contact direction |
-| `hangar-contact` | 365073 | 21.09s | 20 | 16 | unit radii `24/54/64`, `ContactSpread=players 3 hostiles 20 nearestPH=272.8 nearestHH=48`, 120 occupancy placeholders |
-| `damage-demo` | 384076 | 39.12s | 20 | 16 | unit radii `24/54/64`, `ContactSpread=players 2 hostiles 20 nearestPH=118 nearestHH=78`, arm lost, legs lost, cockpit lost, pilot risk and destroyed unit |
-| `north-patrol` | 402584 | 55.09s | 24 | 10 | wider patrol slice remains readable |
+| `spawn` | 368280 | 1.41s | 0 | 0 | sparse battle HUD, commander-follow camera, unit radii `24/54/64`, 100 occupancy placeholders |
+| `airfield` | 364612 | 13.14s | 12 | 8 | readable terrain/water/runway and first contact direction, `ContactSpread nearestPH=704.7 nearestHH=108` |
+| `hangar-contact` | 365154 | 21.16s | 20 | 16 | unit radii `24/54/64`, `ContactSpread=players 3 hostiles 20 nearestPH=272.8 nearestHH=48`, 120 occupancy placeholders |
+| `damage-demo` | 383890 | 39.14s | 20 | 16 | unit radii `24/54/64`, `ContactSpread=players 2 hostiles 20 nearestPH=118 nearestHH=78`, arm lost, legs lost, cockpit lost, pilot risk and destroyed unit |
+| `north-patrol` | 407406 | 55.12s | 24 | 9 | wider patrol slice remains readable, `ContactSpread nearestPH=118 nearestHH=70.1` |
 
 Handoff visual judgment: the Demo is now demonstrable as a local Windows prototype. `hangar-contact` is still the pressure-test image and should drive the next polish pass: improve crowded contact occupancy/spacing and contact composition without adding more UI.
 
@@ -75,6 +75,26 @@ Visual judgment:
 - `hangar-contact` is still the densest screenshot, but it now reads as a crowded hangar fight with terrain, objective, player squad, hostile direction and occupancy evidence, not a same-coordinate pile.
 - `damage-demo` preserves the section-damage story while reporting wider hostile separation; the status rows still show left arm loss, leg damage, cockpit loss, pilot risk and destroyed state.
 - The next visual pass should be a full demo evidence refresh, not another immediate collision pass, unless a later screenshot regresses.
+
+## Full Demo Evidence Refresh 2026-06-07
+
+Refreshed after V4 with:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_reference_visuals.ps1 -Presets mechlab,spawn,airfield,hangar-contact,damage-demo,north-patrol
+```
+
+Validation status:
+
+- `git diff --check` passed.
+- `analysis-output/unity-validate-demo-refresh.log` reports `MC2 demo contract validation OK`.
+- `analysis-output/unity-build-demo-refresh.log` reports `Build Finished, Result: Success` and `MC2 Unity demo Windows build OK`.
+- `analysis-output/unity-player-demo-refresh.log` reports `MC2 demo smoke test exiting with code 0`.
+- `capture_reference_visuals.ps1` reports `MC2 reference visual captures passed: 6 preset(s)`.
+- `check_public_content_boundary.ps1` returns `Result: OK` for `content-packs/project-owned-starter.example.json`.
+- The current Windows development build still returns expected `Result: FAILED` with 172 public-boundary findings, so it remains development-only.
+
+Current full-refresh judgment: V4 did not make the hangar fight quiet, but it made the density measurable. The six-preset set is healthy enough for the next task to move from visual occupancy back to package/public-boundary work.
 
 ## Capture Matrix
 
