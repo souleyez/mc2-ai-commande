@@ -8,7 +8,7 @@
 
 **Tech Stack:** Unity 6, C#, Windows Standalone, deterministic BattleCore, PowerShell validator/build/smoke/capture scripts, `mc2-unity-demo-contract-v1`, private local reference content pack, replaceable public content pack, Git/GitHub.
 
-**Revision:** 2026-06-07 overall detailed plan v2. The deeper task-by-task plan is now `docs-playable-demo-v1-detailed-plan-2026-06-07.md`.
+**Revision:** 2026-06-07 overall detailed plan v3. The deeper task-by-task plan is now `docs-playable-demo-v1-detailed-plan-2026-06-07.md`.
 
 ---
 
@@ -58,6 +58,21 @@ AI 副官的定位：
 - 后续可以开放皮肤、地图自定义和创作者分成。
 - 链上只适合后期做创作者收益证明、皮肤收藏或活动奖池，不进入第一版本地 Demo。
 
+### 1.1 Product Layer Map
+
+后续不要把所有想法同时塞进第一版。产品按层推进：
+
+| Layer | Purpose | First Visible Form | Deferred Form |
+| --- | --- | --- | --- |
+| 战斗核心 | 让机甲小队在地图上自己会打，玩家只下达关键意图 | 一张本地任务图，固定视角，小队命令，喷射，部位损伤 | 多任务、多地形、多敌军脚本、难度曲线 |
+| 装配养成 | 让玩家在战前做有意义的机甲和武器组合 | MechLab 格子装配、热量、重量、硬度、维修 | 工匠改造、高级机体、高级武器、皮肤 |
+| AI 副官 | 减少微操，把玩家从“点每一下”提升到“做战术判断” | 能力窗口、高层建议、离线 fallback | AI 托管、语音/文本指挥、纸面结算预测 |
+| 内容包 | 开发期验证节奏，公开期可替换素材 | 私有参考包只做本地证据；公开包可替换 | 项目自有美术、合作方授权包、社区内容包 |
+| 平台服务 | 让奖励、排行、地图生态可信 | 先只保留协议和文档边界 | 主服务器、地图服务器、认证奖励、Web 排行 |
+| 创作者经济 | 让地图和皮肤贡献有收益闭环 | 只保留长期设计 | 分成、活动池、可选链上证明 |
+
+当前只冲前四层的最小闭环：战斗核心、装配养成、AI 副官轻接入、内容包边界。平台服务和创作者经济暂时只写接口方向，不进入本地 Demo 开发节奏。
+
 ## 2. First Playable Demo Scope
 
 第一版只做 Windows 本地可玩 Demo，目标是能演示、能截图、能讲清楚价值。
@@ -91,6 +106,23 @@ AI 副官的定位：
 - AI 导演。
 - 大模型逐帧战斗控制。
 - 公开发布私有参考素材、旧作剧情、旧作专有名称、旧作商标或旧作文案。
+
+### 2.1 First Demo Work Packages
+
+第一版 Demo 的交付物拆成 8 个工作包。每个工作包都要有“玩家能看见的结果”和“开发能验证的证据”。
+
+| Package | Player Result | Engineering Result | Current State | Exit Evidence |
+| --- | --- | --- | --- | --- |
+| W1 战场可读性 | 地形、水面、建筑、敌我单位不是色块和一团模型 | capture preset 和 sidecar 能说明镜头、单位、占位、hostile 数 | 基础完成，回归保持 | `spawn,airfield,hangar-contact,north-patrol` |
+| W2 物理占位 | 单位、建筑、水域、硬障碍不会让人感觉穿模乱叠 | BattleCore occupancy 是规则真相，Unity 只显示审计层 | 已完成，回归保持 | `occupancyPlaceholders` sidecar |
+| W3 指挥 UI | 默认全队、点状态栏单独命令、喷射、任务地图、系统按钮足够完成任务 | command smoke 覆盖全队、单机、喷射、归队、战报 | 已完成稀疏化 | `visible-flow-audit` smoke |
+| W4 战斗表现 | 武器方向、命中、爆炸、残骸、断臂、腿瘫、弹射能讲故事 | BattleCore 部位损伤和 Unity world cue 对齐 | 基础完成，继续截图级打磨 | `damage-demo` capture + sidecar |
+| W5 MechLab | 武器整块占格，装甲板/散热器补格，热量/重量/合法性清楚 | Loadout contract/validator/smoke/capture 一致 | 已完成首轮 | `mechlab` capture + loadout smoke |
+| W6 战后循环 | 战报、维修、回机库、再出战顺畅，不做保存槽 | repair/relaunch 状态在 BattleCore 可测 | 基础完成，需最终演示审计 | visible flow smoke |
+| W7 AI 副官 | 显示“它能帮你做大判断”，但不拖慢本地战斗 | observation/directive 合同稳定，离线 fallback | 基础完成，回归保持 | AI validator + advice window smoke |
+| W8 交付包 | 协作者能构建、运行、演示、解释内容边界 | BUILD/README/证据页/边界检查齐全 | H1 done, H2 next | walkthrough + build docs + evidence page |
+
+这 8 个工作包都达到“能演示”后，才进入更多地图、公开替换包、服务器和经济系统。
 
 ## 3. Current State Snapshot
 
@@ -129,6 +161,33 @@ AI 副官的定位：
 | Demo 还缺可重复构建和证据页 | H1 已补三分钟 walkthrough；后续融资或协作需要可重复构建命令和证据页 | H2-H3 handoff |
 | 碰撞占位后续只需回归 | V3 已提供单位、结构、hardProp 和 landing blocked 审计层；后续发现具体碰撞 bug 再加 close-up preset | V3 regression |
 | 公开内容安全还要脚本 guard | 本地参考包可以开发验证，公开包不能混入旧素材 | P1/P2 content boundary |
+
+### 3.1 Current Phase Judgment
+
+现在不是“从零搭技术”的阶段，也还不是“扩内容/做平台”的阶段。当前阶段应定义为：
+
+```text
+Playable Demo Handoff: 把已能跑的本地 Demo 收成可重复构建、可展示、可解释、可继续开发的版本。
+```
+
+当前阶段的优先级：
+
+1. 可重复构建：任何协作者能按 `BUILD-WIN.md` 构建 Windows Demo。
+2. 可重复验证：validator、smoke、capture 命令能证明主流程没退化。
+3. 可重复演示：walkthrough 能三分钟讲清 MechLab、战斗、损伤、维修和 AI 副官。
+4. 可安全公开：README 和内容包文档不把私有参考素材当作公开产品资产。
+5. 可继续扩展：后续地图、机甲、服务器、AI 托管都不需要推翻 BattleCore/Unity 边界。
+
+当前阶段暂时不碰：
+
+- 新经济系统；
+- 新账号系统；
+- 新 PVP；
+- 新地图服务器；
+- 大规模素材替换；
+- 复杂 AI 托管。
+
+这些都等 H2-H3-P1-P2 收口后再开新阶段计划。
 
 ## 4. Architecture Rules
 
@@ -567,7 +626,7 @@ git diff --check
 
 ### Milestone 8: Demo Handoff And Public Boundary
 
-**Status:** Pending.
+**Status:** Active. H1 walkthrough completed 2026-06-07; H2 repeatable Windows build is next.
 
 **Goal:** 把本地 Demo 收成可演示包：能构建、能截图、能讲、能明确区分私有参考内容和公开内容。
 
@@ -582,8 +641,8 @@ git diff --check
 
 **Tasks:**
 
-1. Write a three-minute playable walkthrough.
-2. Prepare repeatable Windows demo build command.
+1. Done: write a three-minute playable walkthrough.
+2. Next: prepare repeatable Windows demo build command.
 3. Package evidence list: logs, scripts, screenshot preset names, not generated binaries unless requested.
 4. Document private reference pack versus public replacement pack.
 5. Add a public content boundary check that fails if forbidden reference paths/names are packaged.
