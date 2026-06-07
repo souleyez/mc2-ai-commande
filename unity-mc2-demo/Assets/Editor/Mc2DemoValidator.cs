@@ -3691,11 +3691,16 @@ namespace MC2Demo.EditorTools
             }
 
             structureBefore = target.CurrentStructure;
-            player.FireAt(target);
+            CombatEvent reducedShot = player.FireAt(target);
             float reducedDamage = structureBefore - target.CurrentStructure;
             if (reducedDamage > 41f || reducedDamage < 39f)
             {
                 throw new InvalidDataException("Expected damaged arms to reduce weapon damage to 40, got " + reducedDamage);
+            }
+
+            if (reducedShot.Damage > 41f || reducedShot.Damage < 39f || reducedShot.WeaponType != "EnergyWeapon")
+            {
+                throw new InvalidDataException("Expected damaged-arm combat event to expose reduced weapon damage and source weapon family.");
             }
 
             Vector2 start = player.MissionPosition;
@@ -3726,7 +3731,7 @@ namespace MC2Demo.EditorTools
                 position = new MissionPose { x = 0f, y = 0f, rotation = 0f }
             }, MakeSectionModifierProfiles());
             cockpitTarget.ApplyDirectSectionDamage("Cockpit", 50f);
-            if (!cockpitTarget.IsDestroyed)
+            if (!cockpitTarget.IsDestroyed || cockpitTarget.LastHitSection != "Cockpit")
             {
                 throw new InvalidDataException("Expected destroyed cockpit to destroy the unit and trigger ejection path.");
             }
@@ -6424,6 +6429,20 @@ namespace MC2Demo.EditorTools
                             new CombatSectionDefinition { name = "Left Arm", structure = 10f },
                             new CombatSectionDefinition { name = "Right Arm", structure = 10f },
                             new CombatSectionDefinition { name = "Legs", structure = 10f }
+                        },
+                        weapons = new[]
+                        {
+                            new CombatWeaponDefinition
+                            {
+                                name = "Validator Section Laser",
+                                type = "EnergyWeapon",
+                                heat = 0f,
+                                damage = 100f,
+                                damagePerTenSeconds = 1000f,
+                                recycleTime = 0.1f,
+                                rangeMax = 1000f,
+                                specialEffect = 15
+                            }
                         },
                         combatProfile = new CombatProfileFields
                         {

@@ -294,6 +294,37 @@ function Test-DamageDemoCaptureSidecar {
             throw "Damage demo sidecar summary did not prove '$pattern': $Path -> $summary"
         }
     }
+
+    $readability = [string]$Sidecar.damageReadability
+    foreach ($fragment in @(
+        "DamageReadability=weaponFamilies energy+missile+ballistic+explosive",
+        "weaponShapes beam+arc+tracer+shock",
+        "hitCues direction+severity+muzzle",
+        "sectionConsequences arms-firepower legs-mobility cockpit-ejection wreck-salvage",
+        "hud=section-bars+short-labels+sparse",
+        "Energy=beam+pillar+muzzle+flash+scorch+direction-core",
+        "Missile=arc+blast+salvo-spread+crater+approach-pips",
+        "Ballistic=tracer+sparks+muzzle+punch+debris+snap-line",
+        "Arms=missing-socket+flag+flight+landing-debris+firepower-marker",
+        "Legs=collapse+red-cross+skid+dust+danger-ring+mobility-beacon",
+        "Cockpit=breach+ejection-pod+chute+landing+arc+distress+escape-column+route",
+        "SectionStatus=bar+short-label+critical+destroyed"
+    )) {
+        if ($readability -notlike "*$fragment*") {
+            throw "Damage demo readability summary missing '$fragment': $Path -> $readability"
+        }
+    }
+
+    foreach ($pattern in @(
+        "story=units [1-9]/",
+        "arms=[1-9]",
+        "legs=[1-9]",
+        "cockpit=[1-9]"
+    )) {
+        if ($readability -notmatch $pattern) {
+            throw "Damage demo readability summary did not prove '$pattern': $Path -> $readability"
+        }
+    }
 }
 
 function Test-MechLabCaptureSidecar {

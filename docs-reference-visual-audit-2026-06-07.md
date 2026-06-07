@@ -156,6 +156,38 @@ Engineering judgment:
 - The task did not rebalance source weapon numbers or add public art changes.
 - Next priority is the visible combat story: weapon-family readability, section damage, lost arms/legs and cockpit ejection at screenshot scale.
 
+## Weapon And Damage Readability Refresh 2026-06-07
+
+Refreshed after `Polish weapon and damage readability` with:
+
+```powershell
+git diff --check
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoValidator.ValidateMissionContract -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-validate-damage-readability.log"
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoBuilder.BuildWindows64 -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-build-damage-readability.log"
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_reference_visuals.ps1 -Presets damage-demo,hangar-contact
+```
+
+Validation status:
+
+- `analysis-output/unity-validate-damage-readability.log` reports `MC2 demo contract validation OK`.
+- `analysis-output/unity-build-damage-readability.log` reports `Build Finished, Result: Success` and `MC2 Unity demo Windows build OK`.
+- `capture_reference_visuals.ps1 -Presets damage-demo,hangar-contact` reports `MC2 reference visual captures passed: 2 preset(s)`.
+- The Unity scene file only received fileID churn from the Windows build and was manually restored.
+
+Observed sidecar evidence:
+
+- `damage-demo`: `DamageStory=units 3/3 lostSections=3 criticalSections=0 arms=1 legs=1 cockpit=1 pilotRisk=1 destroyedUnits=1 story=unit-1:left-arm-lost,unit-2:legs-lost,unit-3:cockpit-lost`.
+- `damage-demo`: `DamageReadability=weaponFamilies energy+missile+ballistic+explosive weaponShapes beam+arc+tracer+shock hitCues direction+severity+muzzle sectionConsequences arms-firepower legs-mobility cockpit-ejection wreck-salvage hud=section-bars+short-labels+sparse`.
+- `damage-demo`: sparse HUD remains `combatPanel=h78 combatLogVisible=no objectivePanel=compactObjective`.
+- `hangar-contact`: `ContactSpread=players 3 hostiles 20 nearestPH=272.8 nearestHH=48 nearestPP=259.1 playerSpan=519.9 hostileSpan=4295.4 centroidDistance=1160.5`.
+
+Visual judgment:
+
+- `damage-demo` now has both screenshot and sidecar evidence for the core mech-damage story: arm loss, leg loss, cockpit loss, pilot risk and wreck state.
+- Weapon families remain readable as distinct cue buckets without reintroducing a large battle log.
+- `hangar-contact` remains dense but did not regress into same-coordinate stacking.
+- Next priority is to lock sparse battle UI as a regression gate before further visual work.
+
 ## Capture Matrix
 
 | Preset | Mission Time | Camera Ortho | Active Hostiles | Visible Hostiles | Evidence | Readability Result |

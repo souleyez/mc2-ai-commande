@@ -194,6 +194,7 @@ namespace MC2Demo.Presentation
             public string contactSpread;
             public string mechLab;
             public string damageStory;
+            public string damageReadability;
             public string battleHud;
             public VisualCaptureCameraState camera;
             public VisualCaptureReferenceState referenceAssets;
@@ -5772,6 +5773,7 @@ namespace MC2Demo.Presentation
                 contactSpread = BuildCaptureContactSpreadSummary(),
                 mechLab = BuildCaptureMechLabSummary(),
                 damageStory = BuildCaptureDamageStorySummary(),
+                damageReadability = BuildCaptureDamageReadabilitySummary(),
                 battleHud = BuildCaptureBattleHudSummary(),
                 camera = BuildCaptureCameraState(),
                 referenceAssets = new VisualCaptureReferenceState
@@ -6096,6 +6098,32 @@ namespace MC2Demo.Presentation
             return !string.IsNullOrWhiteSpace(sectionName)
                 && (sectionName.IndexOf("cockpit", StringComparison.OrdinalIgnoreCase) >= 0
                     || sectionName.IndexOf("pilot", StringComparison.OrdinalIgnoreCase) >= 0);
+        }
+
+        private string BuildCaptureDamageReadabilitySummary()
+        {
+            string story = BuildCaptureDamageStorySummary();
+            string weaponFamilies = WeaponFxCueSummary();
+            string weaponStatus = WeaponStatusCueSummary();
+            string sectionCues = DemoUnitView.SectionDamageCueSummary();
+            string sectionStatus = SectionStatusCueSummary();
+            return "DamageReadability=weaponFamilies energy+missile+ballistic+explosive"
+                + " weaponShapes beam+arc+tracer+shock"
+                + " hitCues direction+severity+muzzle"
+                + " sectionConsequences arms-firepower legs-mobility cockpit-ejection wreck-salvage"
+                + " hud=section-bars+short-labels+sparse"
+                + " story="
+                + (story.StartsWith("DamageStory=", StringComparison.Ordinal)
+                    ? story.Substring("DamageStory=".Length)
+                    : story)
+                + " fx="
+                + weaponFamilies
+                + " "
+                + weaponStatus
+                + " "
+                + sectionCues
+                + " "
+                + sectionStatus;
         }
 
         private string BuildCaptureMechLabSummary()

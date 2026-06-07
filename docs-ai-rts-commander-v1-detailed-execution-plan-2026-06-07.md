@@ -55,7 +55,7 @@ Playable Demo Handoff 后的 V1 打磨期
 
 | Gap | Why It Matters | First Task |
 | --- | --- | --- |
-| 武器和部位损伤还要更有记忆点 | 机甲游戏卖点不能只靠血条 | `Polish weapon and damage readability` |
+| 战斗 UI 稀疏性需要固化成回归门槛 | 已证明损伤故事后，后续改动不能把大日志/杂项 UI 带回战斗 | `Guard sparse battle UI regression` |
 | 公开内容只有 text-safe metadata | 投资/公开演示需要 art-safe mission slice | `Prepare art-safe mission slice` |
 | 平台路线还只是文档方向 | 后续地图服务器、奖励认证、排行要有契约 | `Document platform reward contracts` |
 
@@ -206,7 +206,7 @@ Known good strings:
 | --- | --- | --- | --- | --- |
 | 1 | Done | `Polish MechLab grid feel` | 装配格子更像整块装备放入槽位 | validator + build + `mechlab` capture |
 | 2 | Done | `Prove loadout battle effects` | 证明装配影响 BattleCore 战斗 | validator + build + visible-flow smoke |
-| 3 | Next | `Polish weapon and damage readability` | 强化武器类型、断臂、腿瘫、弹射故事 | `damage-demo` capture |
+| 3 | Done | `Polish weapon and damage readability` | 强化武器类型、断臂、腿瘫、弹射故事 | validator + build + `damage-demo`/`hangar-contact` capture |
 | 4 | Next | `Guard sparse battle UI regression` | 确保战斗中不显示太多信息 | visible-flow smoke + captures |
 | 5 | Next | `Prepare public art-safe mission slice` | 做第一张图的公开替换内容切片计划和入口 | boundary check |
 | 6 | Later | `Guard AI deputy regression` | AI 保持高层、可离线、无 token smoke | validator/smoke |
@@ -385,7 +385,9 @@ git diff --check
 
 ### Task 3: Polish Weapon And Damage Readability
 
-**Status:** After Task 2.
+**Status:** Completed 2026-06-07.
+
+**Result:** Added a first-class `damageReadability` capture sidecar summary and made `damage-demo` capture fail if weapon-family cues, hit cues, section consequences, sparse HUD evidence and serious damage-story counts are missing. Strengthened BattleCore validator coverage so the section-damage fixture carries real weapon metadata, damaged arms expose reduced combat-event damage, destroyed legs still slow/disable jump, and cockpit destruction records a cockpit hit. Refreshed `damage-demo` and `hangar-contact`; `damage-demo` now proves weapon families, LA/LG/CP loss and sparse status-row readability in one sidecar.
 
 **Goal:** 让机甲战斗比普通 RTS 血条互扣更有卖点：武器类型、命中方向、断臂、腿瘫、驾驶舱弹射在截图尺度上可见。
 
@@ -443,6 +445,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_refere
 - `damage-demo` 不看日志也能看出一次严重部位损伤故事。
 - 特效不遮住单位、地形或状态栏。
 - `hangar-contact` 不回退成视觉堆叠。
+
+**Validated:** `git diff --check`; `analysis-output/unity-validate-damage-readability.log`; `analysis-output/unity-build-damage-readability.log`; `capture_reference_visuals.ps1 -Presets damage-demo,hangar-contact`.
 
 **Commit:** `Polish weapon and damage readability`
 

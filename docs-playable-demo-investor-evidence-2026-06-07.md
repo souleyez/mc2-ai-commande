@@ -75,6 +75,20 @@ Refreshed on 2026-06-07 after `Prove loadout battle effects`.
 
 Loadout judgment: MechLab previews now have a guarded gameplay path. BattleCore records source/mounted weapon counts, rejects invalid preview fits, and applies legal armor/heat-sink changes to the same `UnitState` combat fields used by live battle.
 
+## Weapon And Damage Readability Refresh
+
+Refreshed on 2026-06-07 after `Polish weapon and damage readability`.
+
+| Gate | Result | Evidence |
+| --- | --- | --- |
+| Markdown/code whitespace | Pass | `git diff --check` |
+| Mission validator | Pass | `analysis-output/unity-validate-damage-readability.log` reports `MC2 demo contract validation OK`. |
+| Windows build | Pass | `analysis-output/unity-build-damage-readability.log` reports `Build Finished, Result: Success` and `MC2 Unity demo Windows build OK`. |
+| Damage capture | Pass | `analysis-output/reference-visual-captures/damage-demo.png` and `.json` refreshed with `damageReadability`. |
+| Hangar regression capture | Pass | `analysis-output/reference-visual-captures/hangar-contact.png` and `.json` refreshed with contact spread and sparse battle HUD intact. |
+
+Damage judgment: the damage-demo sidecar now proves weapon families, beam/arc/tracer/shock shapes, hit cue families, section consequences, sparse HUD state, `left-arm-lost`, `legs-lost`, `cockpit-lost`, pilot risk and destroyed-unit evidence in one capture.
+
 ## Capture Command
 
 Run from the repository root:
@@ -97,7 +111,7 @@ analysis-output/reference-visual-captures/
 | Squad spawn | `analysis-output/reference-visual-captures/spawn.png` and `.json` | Battle starts with a sparse HUD, commander-follow camera, 3-player squad, objective card, Jet/Map/Bay/System controls, and no combat log wall. | The default command state is simple enough for future touch control: whole squad first, status rows for exceptions. |
 | Airfield contact | `analysis-output/reference-visual-captures/airfield.png` and `.json` | Terrain, water, runway/road tones, props, 12 active hostiles, 8 visible hostiles, and the next hangar objective are readable. | The map is now a tactical space with terrain and contact direction, not just colored blocks. |
 | Hangar pressure | `analysis-output/reference-visual-captures/hangar-contact.png` and `.json` | A dense objective fight is visible with 20 active hostiles, 16 visible hostiles, sparse battle card, compact objective card, `unitRadii infantry=24 vehicle=54 mech=64`, and `ContactSpread` proof. | This is the current pressure-test image: it shows the battle system under load while proving the units are separated by BattleCore, not merely painted apart. |
-| Damage story | `analysis-output/reference-visual-captures/damage-demo.png` and `.json` | Section damage is explicit: `left-arm-lost`, `legs-lost`, `cockpit-lost`, pilot risk, destroyed unit, sparse status-row confirmation, and `ContactSpread=players 2 hostiles 20 nearestPH=118 nearestHH=78`. | The selling point is not only HP bars; arms, legs, cockpit, ejection, and wreck state can drive tactical drama. |
+| Damage story | `analysis-output/reference-visual-captures/damage-demo.png` and `.json` | Section damage is explicit: `damageReadability=weaponFamilies energy+missile+ballistic+explosive`, `left-arm-lost`, `legs-lost`, `cockpit-lost`, pilot risk, destroyed unit, sparse status-row confirmation, and `ContactSpread=players 2 hostiles 20 nearestPH=118 nearestHH=78`. | The selling point is not only HP bars; arms, legs, cockpit, ejection, weapon family cues, and wreck state can drive tactical drama. |
 | North patrol / wider contact | `analysis-output/reference-visual-captures/north-patrol.png` and `.json` | A larger encounter slice stays readable with 24 active hostiles and 10 visible hostiles while occupancy and objective state remain tracked. | The same rules can cover broader patrol/trigger beats beyond the starting hangar fight. |
 
 ## Sidecar Highlights
@@ -110,6 +124,7 @@ spawn: activeHostileCount=0 visibleHostileCount=0 BattleHud=active controls=stat
 airfield: activeHostileCount=12 visibleHostileCount=8 ContactSpread=players 3 hostiles 12 nearestPH=704.7 nearestHH=108 currentObjective=Destroy Hangar
 hangar-contact: activeHostileCount=20 visibleHostileCount=16 BattleOccupancy=units 23/29 unitRadii infantry=24 vehicle=54 mech=64 ContactSpread=players 3 hostiles 20 nearestPH=272.8 nearestHH=48 nearestPP=259.1 playerSpan=519.9 hostileSpan=4304.2 centroidDistance=1161.6
 damage-demo: activeHostileCount=20 visibleHostileCount=16 BattleOccupancy=units 22/29 unitRadii infantry=24 vehicle=54 mech=64 ContactSpread=players 2 hostiles 20 nearestPH=118 nearestHH=78 nearestPP=207.6 playerSpan=207.6 hostileSpan=4336.7 centroidDistance=836.7 DamageStory=units 3/3 lostSections=3 arms=1 legs=1 cockpit=1 pilotRisk=1 destroyedUnits=1 story=unit-1:left-arm-lost,unit-2:legs-lost,unit-3:cockpit-lost
+damageReadability: weaponFamilies energy+missile+ballistic+explosive; weaponShapes beam+arc+tracer+shock; sectionConsequences arms-firepower legs-mobility cockpit-ejection wreck-salvage; hud=section-bars+short-labels+sparse
 north-patrol: activeHostileCount=24 visibleHostileCount=9 ContactSpread=players 3 hostiles 24 nearestPH=118 nearestHH=70.1 status=north encounter trigger completed.
 ```
 
