@@ -8,7 +8,7 @@
 
 **Tech Stack:** Unity 6, C#, Windows Standalone, deterministic BattleCore, PowerShell validator/build/smoke/capture scripts, `mc2-unity-demo-contract-v1`, private local reference content pack, replaceable public content pack, Git/GitHub.
 
-**Revision:** 2026-06-07 v1. This is the detailed product and execution map. The day-to-day queue remains `docs-playable-demo-current-execution-plan-2026-06-07.md`.
+**Revision:** 2026-06-07 v2. This is a V1 detailed product and execution map. The fixed overall plan is now `docs-ai-rts-commander-overall-implementation-plan-2026-06-07.md`; the day-to-day queue remains `docs-playable-demo-current-execution-plan-2026-06-07.md`.
 
 ---
 
@@ -22,14 +22,16 @@ When the user says `按计划继续`, use this order:
 4. Make one small, verified commit at a time.
 5. Do not stage generated `analysis-output` PNG/JSON/log files unless the user explicitly asks.
 
-Current branch snapshot when this plan was written:
+Current branch snapshot after the latest plan refresh:
 
-- Branch: `master...ai-origin/master [ahead 57]`.
+- Branch: `master...ai-origin/master [ahead 65]`.
 - Latest completed commits include:
-  - `527a6be Improve reference visual readability`
-  - `1bd22e2 Lock occupancy placeholder review layer`
-  - `74e24bf Polish MechLab block fitting`
-  - `6ffa2ea Capture MechLab fitting evidence`
+  - `295268f Strengthen damage demo readability`
+  - `a0d8750 Keep battle UI sparse`
+  - `85bb0ea Write playable demo walkthrough`
+  - `3753857 Prepare repeatable Windows demo build`
+  - `0bb822b Package playable demo evidence`
+  - `4819657 Document reference content boundary`
 - Current next gameplay task: `P2 Add public content boundary check`.
 
 ## 1. Product Definition

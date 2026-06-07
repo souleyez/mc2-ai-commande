@@ -8,7 +8,7 @@
 
 **Tech Stack:** Unity 6, C#, Windows Standalone, deterministic BattleCore, PowerShell validation/capture scripts, `mc2-unity-demo-contract-v1`, private local reference content pack, Git/GitHub.
 
-**Revision:** 2026-06-07 current execution plan v5. This is the current canonical day-to-day execution queue. The deeper product and task map is now `docs-playable-demo-v1-detailed-plan-2026-06-07.md`; the broader phase roadmap remains `docs-playable-demo-overall-detailed-plan-2026-06-07.md`. Older `docs-playable-demo-*.md` files are history, evidence, or task archives.
+**Revision:** 2026-06-07 current execution plan v6. This is the current canonical day-to-day execution queue. The fixed overall plan is now `docs-ai-rts-commander-overall-implementation-plan-2026-06-07.md`; `docs-playable-demo-v1-detailed-plan-2026-06-07.md` and older `docs-playable-demo-*.md` files remain history, evidence, or task archives.
 
 ---
 
@@ -27,7 +27,7 @@
 
 当前真实起点：
 
-- Branch: `master...ai-origin/master [ahead 57]`.
+- Branch: `master...ai-origin/master [ahead 65]`.
 - AI compact observation 已提交：`af7dbe9 Freeze AI observation contract`.
 - AI directive adapter 已提交：`9bf26bd Guard AI directive adapter`.
 - AI advice window 已提交：`b40372d Show optional AI advice window`.
@@ -36,6 +36,12 @@
 - Occupancy placeholder review layer 已提交：`1bd22e2 Lock occupancy placeholder review layer`.
 - MechLab block fitting 已提交：`74e24bf Polish MechLab block fitting`.
 - MechLab fitting evidence capture 已提交：`6ffa2ea Capture MechLab fitting evidence`.
+- Damage readability 已提交：`295268f Strengthen damage demo readability`.
+- Sparse battle UI 已提交：`a0d8750 Keep battle UI sparse`.
+- Walkthrough 已提交：`85bb0ea Write playable demo walkthrough`.
+- Repeatable Windows build 已提交：`3753857 Prepare repeatable Windows demo build`.
+- Demo evidence package 已提交：`0bb822b Package playable demo evidence`.
+- Content boundary documentation 已提交：`4819657 Document reference content boundary`.
 - 下一步是 `P2 Add public content boundary check`.
 
 ## 1. First Demo Product Scope
