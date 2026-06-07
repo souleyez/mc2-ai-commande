@@ -8,7 +8,7 @@
 
 **Tech Stack:** Unity 6, C#, Windows Standalone first, deterministic BattleCore, PowerShell validator/build/smoke/capture scripts, replaceable content packs, optional high-level AI deputy adapter, later main server/map server/Web ranking contracts.
 
-**Revision:** 2026-06-07 v5. This is the current master plan after the private reference visual bridge, visible-flow seal, investor evidence package, and art-safe metadata target were refreshed. Older plan files remain evidence/history; this file is the first place to read when the user says "按计划继续". The finer task breakdown now lives in `docs-ai-rts-commander-current-detailed-plan-2026-06-07.md`.
+**Revision:** 2026-06-07 v6. This is the current master plan after the private reference visual bridge, visible-flow seal, investor evidence package, art-safe metadata target, AI deputy offline guard, and platform reward authority contract were refreshed. Older plan files remain evidence/history; this file is the first place to read when the user says "按计划继续". The finer task breakdown now lives in `docs-ai-rts-commander-current-detailed-plan-2026-06-07.md`.
 
 ---
 
@@ -303,8 +303,8 @@ Known good strings:
 | 11 | Done | `Refresh investor evidence package` | 更新当前本地证据页，说明能演示什么、哪些仍是原型 | six captures + docs |
 | 12 | Done | `Prepare public art-safe mission slice` | 从 text-safe metadata 进入第一张图的公开视觉替换计划 | boundary check + provenance docs |
 | 13 | Done | `Guard AI deputy regression` | AI 保持高层、可离线、无 token smoke | validator/smoke |
-| 14 | Next | `Document platform reward contracts` | 主服务器、地图服务器、奖励认证契约 | docs check |
-| 15 | Later | `Plan map authoring prototype` | 地图包、触发、奖励引用和验证器规划 | docs check |
+| 14 | Done | `Document platform reward contracts` | 主服务器、地图服务器、奖励认证契约 | docs check |
+| 15 | Next | `Plan map authoring prototype` | 地图包、触发、奖励引用和验证器规划 | docs check |
 | 16 | Later | `Plan web ranking prototype` | 排行、战绩、地图页和公开资料规划 | docs check |
 | 17 | Later | `Plan creator economy boundary` | 创作者分成、皮肤、自定义、链上边界 | docs check |
 
@@ -624,7 +624,7 @@ analysis-output/unity-player-ai-deputy-offline.log: MC2 demo smoke test exiting 
 
 ### Task 10: Document Platform Reward Contracts
 
-**Status:** Deferred until the local Demo is convincing.
+**Status:** Completed 2026-06-07.
 
 **Goal:** 把“合作方或自己可以搭地图服务器，但奖励必须由主服务器认证”的架构写成可执行契约。
 
@@ -670,6 +670,14 @@ git diff --check
 - Map server cannot mint portable rewards.
 - Main server owns inventory, token ledger, reward tables and rankings.
 - BattleCore remains reusable for validation.
+
+**Completed Evidence:**
+
+```text
+docs-platform-reward-contract-2026-06-07.md defines actors, reward lifecycle, session ticket, reward claim payload, validation gates, claim states, grant calculation, ledger rules, rejection/capping examples, ranking publication and first implementation slice.
+docs-platform-ecosystem-plan.md links to the detailed reward authority contract.
+README.md lists the reward authority contract under key docs.
+```
 
 **Commit:** `Document platform reward contracts`
 
@@ -828,7 +836,7 @@ git diff --check
 | M8 Controlled demo evidence | Done | visible-flow, six captures, walkthrough and investor evidence refreshed |
 | M9 Public-safe slice | Done for metadata | art-safe manifest/provenance and boundary check pass |
 | M10 AI deputy V1 | Done | offline/no-key and high-level directive guarded |
-| M11 Platform contracts | Next | main server reward authority and map-server limits documented |
+| M11 Platform contracts | In Progress | main server reward authority done; map authoring, ranking and creator boundaries remain |
 
 ## 8. First Controlled Demo Definition Of Done
 
@@ -867,4 +875,4 @@ Stop and reassess if:
 
 ## 10. One-Line Direction
 
-Windows 本地 Demo 的画面、碰撞、稀疏 UI、MechLab、损伤故事、演示证据、公开 art-safe 元数据合同和 AI 副官离线边界已经收稳；下一步写主服务器奖励认证和地图服务器边界；随后再做地图包、Web 排行和创作者生态。
+Windows 本地 Demo 的画面、碰撞、稀疏 UI、MechLab、损伤故事、演示证据、公开 art-safe 元数据合同、AI 副官离线边界和主服务器奖励权威契约已经收稳；下一步写地图包/编辑器契约；随后再做 Web 排行和创作者生态。

@@ -139,6 +139,15 @@ player account + signed squad + map version + session id + result summary
   -> account ledger mutation
 ```
 
+Detailed reward authority contract:
+
+- `docs-platform-reward-contract-2026-06-07.md`
+
+That contract defines session tickets, reward claims, validation gates, claim
+states, grant calculation, idempotent ledger rules, rejection/capping examples,
+and ranking publication boundaries. It is intentionally a contract document,
+not a server implementation.
+
 Anti-abuse controls:
 
 - per-map reward caps

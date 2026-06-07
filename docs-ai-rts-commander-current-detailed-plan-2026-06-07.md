@@ -8,7 +8,7 @@
 
 **Tech Stack:** Unity 6, C#, Windows Standalone first, deterministic BattleCore, PowerShell build/smoke/capture scripts, replaceable content packs, optional high-level AI deputy, later main server/map server/Web ranking contracts.
 
-**Revision:** 2026-06-07 v6. This file is the fine-grained execution plan paired with `docs-ai-rts-commander-current-master-plan-2026-06-07.md`. The private reference visual bridge, local investor evidence package, art-safe metadata contract, and AI deputy offline guard are now sealed for the current Windows Demo. The current focus is `F1 Document Reward Authority Contract`: main server owns portable rewards, while map servers can only submit signed/verified claims.
+**Revision:** 2026-06-07 v7. This file is the fine-grained execution plan paired with `docs-ai-rts-commander-current-master-plan-2026-06-07.md`. The private reference visual bridge, local investor evidence package, art-safe metadata contract, AI deputy offline guard, and reward authority contract are now sealed for the current Windows Demo. The current focus is `F2 Document Map Authoring Contract`: open/community maps must be editable and verifiable, while portable rewards remain main-server certified.
 
 ---
 
@@ -33,16 +33,16 @@
 
 当前最重要的问题：
 
-1. `F1` 需要把主服务器奖励权威写清楚：地图服务器和客户端只提交 claim，不能直接发放可携带奖励。
+1. `F2` 需要把开源地图编辑器和地图包契约写清楚：地图可自建、可验证、可引用奖励表，但不能直接发放可携带奖励。
 2. D1 只是 art-safe metadata 合同，不是可挂载 runtime pack；后续 D2 才能进入清权资产生产和 mountable pack。
 3. 私有参考素材可以继续用于本机开发验证，但公开材料不能把它描述成最终产品内容。
-4. `F2-F4` 平台化方向很清楚，但现在先写地图包、排行、创作者边界契约，不先写服务器。
+4. `F3-F4` 平台化方向很清楚，但现在先写地图包、排行、创作者边界契约，不先写服务器。
 
 当前工作区注意事项：
 
-- 若当前 `git status` 只剩 E1 AI guard 改动，先完成校验并提交，再进入 F1。
+- 若当前 `git status` 只剩 F1 契约文档改动，先完成校验并提交，再进入 F2。
 - D1 新增的是 metadata 示例文件；不允许把私有 OBJ/TGA/PNG/JSON、截图、log 或 Unity build 输出加入 git。
-- 后续 F1-F4 先写平台契约，不先写服务器实现。
+- 后续 F2-F4 先写平台契约，不先写服务器实现。
 - 如果 Unity batch 运行后只造成 `unity-mc2-demo/Assets/Scenes/Mc2Demo.unity` fileID churn，不要纳入提交。
 
 ## 1. Execution Rules
@@ -102,7 +102,7 @@
 | M8 | 可展示 Demo 封口 | Done | 六截图、visible-flow、walkthrough、一页证据 |
 | M9 | Public art-safe slice | Done for metadata | 替换包 provenance 和 boundary check |
 | M10 | AI 副官守护 | Done | no-token smoke, high-level directive only |
-| M11 | 平台契约 | Next | 地图服务器、奖励认证、排行、创作者边界文档 |
+| M11 | 平台契约 | In Progress | 奖励认证契约完成；地图包、排行、创作者边界待写 |
 
 ## 4. Fine-Grained Commit Queue
 
@@ -122,8 +122,8 @@
 | C2 | Done | `Refresh investor evidence package` | 更新本地演示证据，不提交生成截图 | six captures + docs |
 | D1 | Done | `Prepare public art-safe mission slice` | 从 text-safe 进入公开视觉替换包计划 | boundary check |
 | E1 | Done | `Guard AI deputy offline behavior` | AI 高层、可离线、不逐帧、不花 smoke token | validator |
-| F1 | Next | `Document reward authority contract` | 主服务器认证奖励，地图服务器只提交 claim | docs |
-| F2 | Later | `Document map authoring contract` | 开源地图编辑器和地图包最小契约 | docs |
+| F1 | Done | `Document reward authority contract` | 主服务器认证奖励，地图服务器只提交 claim | docs |
+| F2 | Next | `Document map authoring contract` | 开源地图编辑器和地图包最小契约 | docs |
 | F3 | Later | `Document web ranking contract` | Web 排行、战绩、地图页和隐私边界 | docs |
 | F4 | Later | `Document creator economy boundary` | 皮肤、地图、分成、可选链上边界 | docs |
 
@@ -159,8 +159,9 @@
 | D1.5 | Done | 更新主计划/细计划/README/证据页，明确当前 dev build 仍非 public-safe | README + plan/evidence docs | `git diff --check` |
 | D1.6 | Done | 提交 D1 | docs + metadata only | commit `Prepare public art-safe mission slice` |
 | E1.1 | Done | 守住 AI 副官慢频高层决策，不花 smoke token | AI contract docs/code if needed | validator/no-key path |
-| F1.1 | Next | 写主服务器奖励权威契约，定义 claim/grant、签名、重放校验、ledger 边界 | platform docs | `git diff --check` |
-| F2-F4 | Later | 只写平台契约，不先写服务器 | platform docs | `git diff --check` |
+| F1.1 | Done | 写主服务器奖励权威契约，定义 claim/grant、签名、重放校验、ledger 边界 | platform docs | `git diff --check` |
+| F2.1 | Next | 写地图包/编辑器契约，定义地图元数据、触发图、敌人、奖励引用和验证器边界 | platform docs | `git diff --check` |
+| F3-F4 | Later | 只写排行和创作者契约，不先写服务器 | platform docs | `git diff --check` |
 
 ## 5. Detailed Execution Tasks
 
@@ -846,6 +847,8 @@ git diff --check
 
 ### F1: Document Reward Authority Contract
 
+**Status:** Completed 2026-06-07.
+
 **Goal:** 把“地图服务器可以由合作方搭，但奖励必须由主服务器认证”写成契约。
 
 **Files:**
@@ -873,9 +876,19 @@ git diff --check
 - Main server can reject or cap suspicious claims.
 - Contract does not require chain in first platform version.
 
+**Completed Evidence:**
+
+```text
+docs-platform-reward-contract-2026-06-07.md defines actors, reward lifecycle, session ticket, reward claim payload, validation gates, claim states, grant calculation, ledger rules, rejection/capping examples, ranking publication and first implementation slice.
+docs-platform-ecosystem-plan.md links to the detailed reward authority contract.
+README.md lists the reward authority contract under key docs.
+```
+
 **Commit:** `Document reward authority contract`
 
 ### F2: Document Map Authoring Contract
+
+**Status:** Next.
 
 **Goal:** 为未来开源地图编辑器和社区地图包定义最小可验证格式。
 
@@ -1041,4 +1054,4 @@ Stop and reassess before committing if:
 
 ## 9. One-Line Direction
 
-Windows 本地 Demo 的第一张 3D 战场、碰撞占位、稀疏 UI、MechLab、损伤故事和演示证据已经收成当前闭环；现在做公开 art-safe 内容包合同；之后再做 AI 托管守护、地图服务器、奖励认证、Web 排行和创作者生态。
+Windows 本地 Demo 的画面、碰撞、稀疏 UI、MechLab、损伤故事、演示证据、公开 art-safe 元数据合同、AI 副官离线边界和主服务器奖励权威契约已经收稳；下一步写地图包/编辑器契约；随后再做 Web 排行和创作者生态。

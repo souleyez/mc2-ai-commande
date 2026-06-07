@@ -193,6 +193,7 @@ one mission slice. It is still metadata-only, not a mountable runtime pack.
 - `docs-mc2-ai-commander-demo-execution-plan.md`: 早期 AI 指挥 Demo 执行计划。
 - `docs-ai-commander-directive-contract.md`: AI 副官高层指令边界。
 - `docs-platform-ecosystem-plan.md`: 地图服务器、奖励认证、排行和创作者生态设想。
+- `docs-platform-reward-contract-2026-06-07.md`: 主服务器奖励权威契约，说明地图服务器和客户端只提交 claim，最终 grant、库存、token ledger 和排行由主服务器认证。
 - `docs-content-pack.md`: 可替换内容包边界。
 - `unity-mc2-demo/README.md`: Unity 原型行为、构建和 smoke 命令。
 
