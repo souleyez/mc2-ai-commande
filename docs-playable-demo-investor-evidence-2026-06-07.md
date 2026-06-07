@@ -4,6 +4,21 @@ Purpose: one concise evidence page for showing the current Windows playable Demo
 
 The current evidence proves a local playable loop: MechLab fitting, squad launch, sparse tactical command, contact pressure, visible section damage, and a repeatable capture/build path. It is still a prototype evidence pack, not final public art.
 
+## Current Evidence Package Refresh
+
+Refreshed on 2026-06-07 after `Refresh investor evidence package`.
+
+| Gate | Result | Evidence |
+| --- | --- | --- |
+| Six capture presets | Pass | `capture_reference_visuals.ps1` reports `MC2 reference visual captures passed: 6 preset(s)` for `mechlab`, `spawn`, `airfield`, `hangar-contact`, `damage-demo`, and `north-patrol`. |
+| MechLab fitting | Pass | `mechlab` capture remains the fitting proof: whole weapon block, armor/cooling filler, H/W/G pressure, `Fit OK`, and `noToggle=yes`. |
+| First-map visual gate | Pass | `spawn`, `airfield`, `hangar-contact`, `damage-demo`, and `north-patrol` sidecars report `FirstMapVisual ... status=ready`, `sparseHud=ready`, `occupancy=ready`, and `contact=separated`. |
+| Contact and collision | Pass | Current battle sidecars report `ContactClearance ... overlaps=0 ... status=separated`, including dense objective and north patrol presets. |
+| Damage story | Pass | `damage-demo` reports `left-arm-lost`, `legs-lost`, `cockpit-lost`, `pilotRisk=1`, `destroyedUnits=1`, and weapon families `energy+missile+ballistic+explosive`. |
+| Replacement boundary | Pass | `content-packs/project-owned-starter.example.json` and `content-packs/project-owned-visual-slice.example.json` pass the public content boundary check; current local screenshots remain development evidence, not public final art. |
+
+Evidence-package judgment: the current local Windows Demo evidence set now combines the sealed visible-flow smoke, six fresh screenshots/sidecars, manifest-driven local visuals, and a clean replacement id path.
+
 ## Visible Flow Seal Refresh
 
 Refreshed on 2026-06-07 after `Seal visible playable walkthrough`.

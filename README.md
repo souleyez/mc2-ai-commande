@@ -163,10 +163,15 @@ The first clean text metadata target is
 `content-packs/project-owned-text-safe-slice.example.json`. It contains
 project-owned product, mission, unit, weapon, pilot, objective and UI names and
 passes the public boundary check, but it is not a mountable runtime pack yet.
+The first clean visual id metadata target is
+`content-packs/project-owned-visual-slice.example.json`. It defines project-owned
+unit, terrain, prop, weapon FX, damage FX and UI art ids for future cleared
+assets, and also passes the public boundary check.
 
 ## 关键文档
 
 - `docs-ai-rts-commander-current-master-plan-2026-06-07.md`: 当前主计划书，梳理现阶段、详细提交队列、视觉/碰撞回归、私有参考视觉边界、公开替换包、AI 副官和后续平台路线。
+- `docs-ai-rts-commander-current-detailed-plan-2026-06-07.md`: 当前细计划书，记录下一步提交队列、B/C/D/F 阶段状态、验证命令和停止条件。
 - `docs-ai-rts-commander-v1-detailed-execution-plan-2026-06-07.md`: 上一版细计划书，保留 MechLab、装配影响战斗、损伤表现、公开替换包、AI 回归守护和平台契约的任务细节。
 - `docs-ai-rts-commander-detailed-roadmap-2026-06-07.md`: 当前细化路线图，覆盖真实进度、V4 进行中工作、提交级任务、验收命令、停止条件和后续平台路线。
 - `docs-ai-rts-commander-overall-implementation-plan-2026-06-07.md`: 当前定格版整体计划书，覆盖产品方向、架构边界、里程碑和总路线，并指向细化路线图。

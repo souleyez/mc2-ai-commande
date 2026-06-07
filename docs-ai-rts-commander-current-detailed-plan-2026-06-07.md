@@ -8,7 +8,7 @@
 
 **Tech Stack:** Unity 6, C#, Windows Standalone first, deterministic BattleCore, PowerShell build/smoke/capture scripts, replaceable content packs, optional high-level AI deputy, later main server/map server/Web ranking contracts.
 
-**Revision:** 2026-06-07 v3. This file is the fine-grained execution plan paired with `docs-ai-rts-commander-current-master-plan-2026-06-07.md`. The current focus is no longer broad visual polishing; it is stabilizing the private reference visual manifest/export/loader boundary so the local Demo can keep using reference assets during development and later swap to a clean public content pack.
+**Revision:** 2026-06-07 v4. This file is the fine-grained execution plan paired with `docs-ai-rts-commander-current-master-plan-2026-06-07.md`. The private reference visual bridge and the local investor evidence package are now sealed for the current Windows Demo. The current focus is `D1 Prepare Public Art-Safe Mission Slice`: write the clean first-mission replacement contract so development can keep using private reference visuals locally while public/investor-safe work has a clear exit path.
 
 ---
 
@@ -27,21 +27,22 @@
 | 稀疏战斗 UI | 大日志、存档、账号、调试覆盖层已被 sidecar 守护 | `SparseBattleUi` gate |
 | 物理占位 | 单位、建筑、硬道具、水域、地图边界已有规则证据 | `ContactClearance` gate |
 | AI 副官 | observation/directive 基础存在，保持高层慢频率 | no-key/offline-first direction |
-| 内容边界 | README 已改成 AI RTS Commander Lab 叙事 | public boundary docs and checker |
+| 内容边界 | README 已改成 AI RTS Commander Lab 叙事；text-safe 和 visual-id metadata 均通过 boundary check | public boundary docs and checker |
+| 演示证据 | 六截图、visible-flow、walkthrough 和 investor evidence 已刷新 | C1/C2 docs and ignored capture sidecars |
 
 当前最重要的问题：
 
-1. B1 参考视觉导出 manifest 正在收尾，当前工作区已有未提交脚本改动，需要先完成、验证、记录、提交。
-2. Unity loader 还需要 B2 加固：manifest 优先、缺失源安全回退、日志能说明到底用了哪个 asset id。
-3. 画面已过第一轮 `FirstMapVisual` gate，但还需要在 B1/B2 稳定后再跑一轮完整可见流程审计。
-4. 私有参考素材和公开可发布素材的边界需要 D1 继续固化，避免以后公开包和本地验证包混在一起。
-5. 平台化方向很清楚，但现在只能写契约，不应该先写服务器。
+1. `D1` 还需要把第一张图的公开安全内容切片写成可审计 manifest：任务 id、地形材质、机甲轮廓、道具、武器/损伤 FX、UI 图标和 provenance 都要有位置。
+2. 现有 `project-owned-text-safe-slice.example.json` 和 `project-owned-visual-slice.example.json` 仍是 metadata-only，不是可挂载 runtime pack；文档必须继续明确这一点。
+3. 私有参考素材可以继续用于本机开发验证，但公开材料不能把它描述成最终产品内容。
+4. `E1` AI 副官需要继续守住慢频高层决策，不进入逐帧战斗。
+5. `F1-F4` 平台化方向很清楚，但现在先写奖励认证、地图包、排行、创作者边界契约，不先写服务器。
 
 当前工作区注意事项：
 
-- `scripts/content-pack/export_tgl_to_obj.py`、`scripts/content-pack/export_reference_visual_pack.ps1`、`scripts/content-pack/export_terrain_texture_audit.ps1` 有 B1 相关未提交改动。
-- 下一次继续开发时应先完成 B1，不要穿插新的 Unity UI 或战斗规则改动。
-- B1 生成的 OBJ/TGA/PNG/JSON/manifest 输出都应留在 `analysis-output/` 等 ignored 路径，不得 staging。
+- 若当前 `git status` 只剩 README、plan、investor evidence 这类文档改动，先完成校验并提交本次计划/证据刷新，再进入 D1。
+- D1 允许新增 metadata 示例文件；不允许把私有 OBJ/TGA/PNG/JSON、截图、log 或 Unity build 输出加入 git。
+- D1 是公开替换路径的合同，不要求本阶段画完所有清权模型和贴图。
 - 如果 Unity batch 运行后只造成 `unity-mc2-demo/Assets/Scenes/Mc2Demo.unity` fileID churn，不要纳入提交。
 
 ## 1. Execution Rules
@@ -98,8 +99,8 @@
 | M5 | 稀疏 UI | Done with guard | `SparseBattleUi` sidecar gate |
 | M6 | 3D 地图视觉与占位 | Done with gate | 五张战斗截图通过 `FirstMapVisual` gate |
 | M7 | 私有参考视觉包稳定化 | Done | manifest-driven, missing-safe, replaceable |
-| M8 | 可展示 Demo 封口 | Next | 六截图、visible-flow、walkthrough、一页证据 |
-| M9 | Public art-safe slice | Later | 替换包 provenance 和 boundary check |
+| M8 | 可展示 Demo 封口 | Done | 六截图、visible-flow、walkthrough、一页证据 |
+| M9 | Public art-safe slice | Next | 替换包 provenance 和 boundary check |
 | M10 | AI 副官守护 | Later | no-token smoke, high-level directive only |
 | M11 | 平台契约 | Later | 地图服务器、奖励认证、排行、创作者边界文档 |
 
@@ -118,8 +119,8 @@
 | B2 | Done | `Harden Unity reference visual loader` | Unity 优先读 manifest，缺失安全回退 | build + fallback capture |
 | B3 | Done | `Document replaceable visual ids` | 固化换包 id，方便以后整包替换 | docs + boundary check |
 | C1 | Done | `Seal visible playable walkthrough` | 启动、机库、战斗、损伤、结算、重开完整流程 | visible-flow smoke |
-| C2 | Next | `Refresh investor evidence package` | 更新本地演示证据，不提交生成截图 | six captures + docs |
-| D1 | Later | `Prepare public art-safe mission slice` | 从 text-safe 进入公开视觉替换包计划 | boundary check |
+| C2 | Done | `Refresh investor evidence package` | 更新本地演示证据，不提交生成截图 | six captures + docs |
+| D1 | Next | `Prepare public art-safe mission slice` | 从 text-safe 进入公开视觉替换包计划 | boundary check |
 | E1 | Later | `Guard AI deputy offline behavior` | AI 高层、可离线、不逐帧、不花 smoke token | validator |
 | F1 | Later | `Document reward authority contract` | 主服务器认证奖励，地图服务器只提交 claim | docs |
 | F2 | Later | `Document map authoring contract` | 开源地图编辑器和地图包最小契约 | docs |
@@ -150,8 +151,13 @@
 | B3.3 | Done | 提交 B3 | content docs/example | commit `Document replaceable visual ids` |
 | C1.1 | Done | 跑 visible-flow：机库、出战、战斗、损伤、胜利、战报、维修、回机库、重开 | visible-flow command file + docs | player smoke exits 0 |
 | C1.2 | Done | 修 walkthrough 到非开发人员能照着演示 | `docs-playable-demo-walkthrough-2026-06-07.md` | docs check |
-| C2.1 | Next | 重跑六截图证据并刷新 investor evidence | capture scripts + evidence docs | six captures pass |
-| D1.1 | Later | 写 art-safe mission slice，不要求本阶段全量美术完工 | content-pack docs/example | boundary check OK |
+| C2.1 | Done | 重跑六截图证据并刷新 investor evidence | capture scripts + evidence docs | six captures pass |
+| D1.1 | Next | 审计 `project-owned-text-safe-slice` 与 `project-owned-visual-slice`，列出 art-safe mission slice 需要合并和新增的字段 | content-pack examples + docs | fields checklist is explicit |
+| D1.2 | Later | 新建或更新 `project-owned-art-safe-slice.example.json`，只放项目自有 id、占位路径和 provenance，不放私有引用 | `content-packs/project-owned-art-safe-slice.example.json` | `python -m json.tool` |
+| D1.3 | Later | 更新 content pack/replacement 文档，说明 text-safe、visual-id、art-safe、runtime pack 四者区别 | `docs-content-pack.md`; `docs-content-replacement-plan.md` | docs check |
+| D1.4 | Later | 跑 public boundary 检查，必要时加强 checker 对新 manifest 字段的扫描 | content-pack checker + example | `Result: OK` |
+| D1.5 | Later | 更新主计划/细计划/README/证据页，明确当前 dev build 仍非 public-safe | README + plan/evidence docs | `git diff --check` |
+| D1.6 | Later | 提交 D1 | docs + metadata only | commit `Prepare public art-safe mission slice` |
 | E1.1 | Later | 守住 AI 副官慢频高层决策，不花 smoke token | AI contract docs/code if needed | validator/no-key path |
 | F1-F4 | Later | 只写平台契约，不先写服务器 | platform docs | `git diff --check` |
 
@@ -693,6 +699,8 @@ docs-playable-demo-investor-evidence-2026-06-07.md now leads with the visible-fl
 
 **Goal:** 把当前本地 Demo 的可展示能力整理成一页证据，方便后续融资沟通或内部演示。
 
+**Status:** Completed 2026-06-07. Six captures and the current evidence page were refreshed after B1-B3 and C1.
+
 **Files:**
 
 - Modify: `docs-playable-demo-investor-evidence-2026-06-07.md`
@@ -711,11 +719,22 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_refere
 - It clearly says public/commercial build needs clean content pack.
 - README points to current evidence and plan without old-game framing.
 
+**Completed Evidence:**
+
+```text
+capture_reference_visuals.ps1 -Presets mechlab,spawn,airfield,hangar-contact,damage-demo,north-patrol: MC2 reference visual captures passed: 6 preset(s).
+docs-playable-demo-investor-evidence-2026-06-07.md now leads with current evidence package refresh and visible-flow seal refresh.
+README.md points to current master plan, current detailed plan, walkthrough, investor evidence, text-safe metadata target and visual id metadata target.
+content-packs/project-owned-visual-slice.example.json and project-owned-starter.example.json pass public content boundary checks.
+```
+
 **Commit:** `Refresh investor evidence package`
 
 ### D1: Prepare Public Art-Safe Mission Slice
 
 **Goal:** 把第一张图从私有参考验证路线转成公开可替换路线，但不要求这一阶段就做完所有美术。
+
+**Status:** Next. This is the first task after the sealed local demo evidence package.
 
 **Files:**
 
@@ -723,6 +742,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_refere
 - Modify: `docs-content-pack.md`
 - Create or modify: `content-packs/project-owned-art-safe-slice.example.json`
 - Modify if needed: `scripts/content-pack/check_public_content_boundary.ps1`
+- Modify if needed: `README.md`
+- Modify: `docs-ai-rts-commander-current-master-plan-2026-06-07.md`
+- Modify: `docs-ai-rts-commander-current-detailed-plan-2026-06-07.md`
 
 **Slice Should Define:**
 
@@ -731,14 +753,30 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_refere
 - terrain material set;
 - 3 to 4 mech silhouettes;
 - common weapon FX;
+- common damage FX;
 - 3 to 5 structures/props;
 - MechLab/status icons;
 - provenance field for every public asset.
+- explicit metadata-only status until real files exist.
+
+**D1 Subtasks:**
+
+1. Read `content-packs/project-owned-text-safe-slice.example.json` and `content-packs/project-owned-visual-slice.example.json`.
+2. List which fields are reused directly and which new fields are needed for an art-safe mission slice.
+3. Create `content-packs/project-owned-art-safe-slice.example.json` with one public-facing mission id, project-owned unit ids, terrain material ids, prop ids, weapon FX ids, damage FX ids, UI icon ids and provenance placeholders.
+4. Keep every source path either absent, project-owned placeholder, or licensed placeholder; do not include private extraction paths, legacy names, local reference pack markers or development-only labels.
+5. Mark the manifest as metadata-only and not mountable until cleared runtime files exist.
+6. Run `python -m json.tool` on the new manifest.
+7. Run `check_public_content_boundary.ps1 -DryRun` on the new manifest.
+8. Update `docs-content-pack.md` and `docs-content-replacement-plan.md` so the four states are clear: text-safe, visual-id scaffold, art-safe metadata, clean runtime pack.
+9. Update README/current plans only enough to point at the new D1 artifact.
+10. Commit only docs and metadata; no screenshots, logs, OBJ, TGA, PNG, JSON sidecars or Unity build output.
 
 **Validation:**
 
 ```powershell
 git diff --check
+python -m json.tool content-packs\project-owned-art-safe-slice.example.json
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\content-pack\check_public_content_boundary.ps1 -Path "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\content-packs\project-owned-art-safe-slice.example.json" -DryRun
 ```
 
@@ -747,6 +785,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\content-pack\check_p
 - Clean candidate manifest passes boundary check.
 - Docs do not claim the private dev build is public-safe.
 - Public replacement work can begin without rewriting loaders.
+- The new manifest is explicit about provenance and metadata-only status.
+- The next engineer can start real cleared asset production without reading old private-reference notes first.
 
 **Commit:** `Prepare public art-safe mission slice`
 
@@ -989,4 +1029,4 @@ Stop and reassess before committing if:
 
 ## 9. One-Line Direction
 
-先把 Windows 本地 Demo 的第一张 3D 战场、碰撞占位、稀疏 UI、MechLab 和损伤故事收成能演示的闭环；然后把私有参考视觉沉淀为可替换 manifest；再做公开 art-safe 内容包；最后进入 AI 托管、地图服务器、奖励认证、Web 排行和创作者生态。
+Windows 本地 Demo 的第一张 3D 战场、碰撞占位、稀疏 UI、MechLab、损伤故事和演示证据已经收成当前闭环；现在做公开 art-safe 内容包合同；之后再做 AI 托管守护、地图服务器、奖励认证、Web 排行和创作者生态。
