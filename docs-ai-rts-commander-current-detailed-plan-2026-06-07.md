@@ -8,7 +8,7 @@
 
 **Tech Stack:** Unity 6, C#, Windows Standalone first, deterministic BattleCore, PowerShell build/smoke/capture scripts, replaceable content packs, optional high-level AI deputy, later main server/map server/Web ranking contracts.
 
-**Revision:** 2026-06-07 v2. This file is the fine-grained execution plan paired with `docs-ai-rts-commander-current-master-plan-2026-06-07.md`.
+**Revision:** 2026-06-07 v3. This file is the fine-grained execution plan paired with `docs-ai-rts-commander-current-master-plan-2026-06-07.md`. The current focus is no longer broad visual polishing; it is stabilizing the private reference visual manifest/export/loader boundary so the local Demo can keep using reference assets during development and later swap to a clean public content pack.
 
 ---
 
@@ -31,11 +31,18 @@
 
 当前最重要的问题：
 
-1. 画面仍然有“糊成一坨”的风险，尤其是 `hangar-contact`。
-2. 机甲、建筑、树木、地面材质在默认镜头下还不够像一个可信 3D 战场。
-3. 私有参考素材的 manifest 和替换边界需要再收稳，避免以后换皮/换包成本过高。
-4. 可展示 Demo 还需要一轮从启动、机库、战斗、损伤、结算、重开到截图证据的全链路封口。
+1. B1 参考视觉导出 manifest 正在收尾，当前工作区已有未提交脚本改动，需要先完成、验证、记录、提交。
+2. Unity loader 还需要 B2 加固：manifest 优先、缺失源安全回退、日志能说明到底用了哪个 asset id。
+3. 画面已过第一轮 `FirstMapVisual` gate，但还需要在 B1/B2 稳定后再跑一轮完整可见流程审计。
+4. 私有参考素材和公开可发布素材的边界需要 B3/D1 继续固化，避免以后换皮/换包成本过高。
 5. 平台化方向很清楚，但现在只能写契约，不应该先写服务器。
+
+当前工作区注意事项：
+
+- `scripts/content-pack/export_tgl_to_obj.py`、`scripts/content-pack/export_reference_visual_pack.ps1`、`scripts/content-pack/export_terrain_texture_audit.ps1` 有 B1 相关未提交改动。
+- 下一次继续开发时应先完成 B1，不要穿插新的 Unity UI 或战斗规则改动。
+- B1 生成的 OBJ/TGA/PNG/JSON/manifest 输出都应留在 `analysis-output/` 等 ignored 路径，不得 staging。
+- 如果 Unity batch 运行后只造成 `unity-mc2-demo/Assets/Scenes/Mc2Demo.unity` fileID churn，不要纳入提交。
 
 ## 1. Execution Rules
 
@@ -90,8 +97,8 @@
 | M4 | 部位损伤卖点 | Done for V1, polish later | `damage-demo` 有断臂、腿、驾驶舱故事 |
 | M5 | 稀疏 UI | Done with guard | `SparseBattleUi` sidecar gate |
 | M6 | 3D 地图视觉与占位 | Done with gate | 五张战斗截图通过 `FirstMapVisual` gate |
-| M7 | 私有参考视觉包稳定化 | Next | manifest-driven, missing-safe, replaceable |
-| M8 | 可展示 Demo 封口 | Next | 六截图、visible-flow、walkthrough、一页证据 |
+| M7 | 私有参考视觉包稳定化 | In Progress | manifest-driven, missing-safe, replaceable |
+| M8 | 可展示 Demo 封口 | Next after M7 | 六截图、visible-flow、walkthrough、一页证据 |
 | M9 | Public art-safe slice | Later | 替换包 provenance 和 boundary check |
 | M10 | AI 副官守护 | Later | no-token smoke, high-level directive only |
 | M11 | 平台契约 | Later | 地图服务器、奖励认证、排行、创作者边界文档 |
@@ -107,9 +114,9 @@
 | A4 | Done | `Improve structure and prop readability` | 建筑、树木、机场道具不再是灰色糊团 | build + `airfield,hangar-contact,north-patrol` captures |
 | A5 | Done | `Gate first map visual slice` | sidecar 检查第一图视觉、稀疏 UI、碰撞不回退 | build + five battle captures |
 | A6 | Done | `Refresh demo evidence after visual pass` | 更新证据页和审计文档 | six captures + docs |
-| B1 | Later | `Stabilize reference visual manifest export` | 私有参考单位/道具/地形资源导出 manifest | exporter dry run + build |
-| B2 | Later | `Harden Unity reference visual loader` | Unity 优先读 manifest，缺失安全回退 | build + fallback capture |
-| B3 | Later | `Document replaceable visual ids` | 固化换包 id，方便以后整包替换 | docs + boundary check |
+| B1 | In Progress | `Stabilize reference visual manifest export` | 私有参考单位/道具/地形资源导出 manifest | exporter dry run + missing-source probe |
+| B2 | Next | `Harden Unity reference visual loader` | Unity 优先读 manifest，缺失安全回退 | build + fallback capture |
+| B3 | Next | `Document replaceable visual ids` | 固化换包 id，方便以后整包替换 | docs + boundary check |
 | C1 | Later | `Seal visible playable walkthrough` | 启动、机库、战斗、损伤、结算、重开完整流程 | visible-flow smoke |
 | C2 | Later | `Refresh investor evidence package` | 更新本地演示证据，不提交生成截图 | six captures + docs |
 | D1 | Later | `Prepare public art-safe mission slice` | 从 text-safe 进入公开视觉替换包计划 | boundary check |
@@ -118,6 +125,35 @@
 | F2 | Later | `Document map authoring contract` | 开源地图编辑器和地图包最小契约 | docs |
 | F3 | Later | `Document web ranking contract` | Web 排行、战绩、地图页和隐私边界 | docs |
 | F4 | Later | `Document creator economy boundary` | 皮肤、地图、分成、可选链上边界 | docs |
+
+## 4.1 Immediate Micro-Queue
+
+这张表是接下来最应该照着做的“短步队列”。每一行都应尽量对应一个小验证点；只有达到 Gate 才进入下一行。
+
+| Step | Status | Action | Files | Gate |
+| --- | --- | --- | --- | --- |
+| P0 | Done by this doc | 更新当前主计划和细计划到 v3 | `docs-ai-rts-commander-current-master-plan-2026-06-07.md`; `docs-ai-rts-commander-current-detailed-plan-2026-06-07.md` | `git diff --check` |
+| B1.1 | In Progress | 完成参考视觉导出 manifest 字段：assetClass、provenance、generatedPaths、materialIds、textureRecords、nodeBuckets、missingSources、warnings | `scripts/content-pack/export_tgl_to_obj.py`; `scripts/content-pack/export_terrain_texture_audit.ps1` | `python -m py_compile` |
+| B1.2 | In Progress | 修正 `export_reference_visual_pack.ps1 -Names` 对逗号分隔名称的展开，并保持 `-IncludeMissionProps` 能同时导出单位和道具 | `scripts/content-pack/export_reference_visual_pack.ps1` | PowerShell syntax check |
+| B1.3 | Next | 跑七个首图单位导出验证 | exporter scripts | `export_reference_visual_pack.ps1 -Names werewolf,bushwacker,centipede,harasser,lrmc,urbanmech,starslayer` reports 7 exports and 0 missing sources |
+| B1.4 | Next | 跑缺失源 probe，确认 warning 清晰、manifest 不破 | exporter scripts | missing probe reports 0 exports, 1 missing source, generated manifest |
+| B1.5 | Next | 跑地形纹理 audit/export，确认 terrain texture manifest 也带 provenance/assetClass | `scripts/content-pack/export_terrain_texture_audit.ps1` | `export_terrain_texture_audit.ps1 -ExportReferenceTextures` reports expected texture manifest |
+| B1.6 | Next | 恢复本地完整 unit+prop ignored manifest，避免后续 Unity capture 只剩道具或只剩单位 | exporter scripts | `export_reference_visual_pack.ps1 -Names ... -IncludeMissionProps` contains units and mission props |
+| B1.7 | Next | 更新参考视觉恢复计划，记录 B1 manifest v2 字段、验证命令和 private-development-only 边界 | `docs-reference-visual-restoration-plan.md` | `git diff --check` |
+| B1.8 | Next | 检查 generated private derivatives 未进入 git，提交 B1 | scripts + docs only | `git status --short --branch --untracked-files=all`; commit `Stabilize reference visual manifest export` |
+| B2.1 | Next | 审计 Unity 三个 reference loader 读 manifest 的字段和 fallback 逻辑 | `ReferenceObjMeshLibrary.cs`; `ReferencePropLibrary.cs`; `ReferenceTerrainTextureLibrary.cs` | docs note or code diff identifies exact fallback path |
+| B2.2 | Next | Loader 优先使用 manifest，并把缺失 manifest、缺失 OBJ、缺失 texture 的日志分清楚 | Unity reference loader files | Unity build |
+| B2.3 | Next | 做 manifest-missing fallback capture，证明没私有包也不会崩 | Unity build + capture scripts | `spawn,airfield` capture passes with fallback |
+| B2.4 | Next | 提交 B2 | Unity loader files + docs | commit `Harden Unity reference visual loader` |
+| B3.1 | Next | 定义 stable visual id 命名规则：unit、prop、terrain、texture、fx、ui | `docs-content-pack.md`; `docs-content-replacement-plan.md` | docs check |
+| B3.2 | Next | 补一个 project-owned visual slice 示例，不含私有路径和旧专有名称 | `content-packs/project-owned-visual-slice.example.json` if needed | public boundary dry run |
+| B3.3 | Next | 提交 B3 | content docs/example | commit `Document replaceable visual ids` |
+| C1.1 | Later | 跑 visible-flow：机库、出战、战斗、损伤、胜利、战报、维修、回机库、重开 | visible-flow command file + docs | player smoke exits 0 |
+| C1.2 | Later | 修 walkthrough 到非开发人员能照着演示 | `docs-playable-demo-walkthrough-2026-06-07.md` | docs check |
+| C2.1 | Later | 重跑六截图证据并刷新 investor evidence | capture scripts + evidence docs | six captures pass |
+| D1.1 | Later | 写 art-safe mission slice，不要求本阶段全量美术完工 | content-pack docs/example | boundary check OK |
+| E1.1 | Later | 守住 AI 副官慢频高层决策，不花 smoke token | AI contract docs/code if needed | validator/no-key path |
+| F1-F4 | Later | 只写平台契约，不先写服务器 | platform docs | `git diff --check` |
 
 ## 5. Detailed Execution Tasks
 
@@ -421,6 +457,8 @@ docs-reference-visual-audit-2026-06-07.md records the A6 evidence refresh and ke
 
 **Goal:** 把本地参考模型、贴图、道具、地形纹理的导出结果整理成可审计 manifest，未来整包替换更容易。
 
+**Status:** In Progress on 2026-06-07. Script work exists locally and should be finished before any new Unity visual polish. This task is exporter-side only; Unity loader behavior is B2.
+
 **Files:**
 
 - Modify: `scripts/content-pack/export_tgl_to_obj.py`
@@ -439,17 +477,61 @@ docs-reference-visual-audit-2026-06-07.md records the A6 evidence refresh and ke
 - helper/node buckets if known;
 - provenance note: private-development-only.
 
+**Steps:**
+
+1. Keep `schema = mc2-reference-visual-manifest-v1` if Unity compatibility needs it, but add a separate manifest version field for richer export metadata.
+2. Record per-export identity:
+   - `assetId`;
+   - normalized source name;
+   - `assetClass`;
+   - `sourcePath`;
+   - `generatedPaths`;
+   - ignored output root.
+3. Record geometry counts:
+   - node count;
+   - shape/helper counts;
+   - vertex count;
+   - triangle count.
+4. Record material and texture data:
+   - material ids;
+   - texture ids;
+   - copied output path;
+   - source texture name;
+   - missing texture warning if applicable.
+5. Record node buckets:
+   - cockpit;
+   - left/right arm;
+   - left/right leg;
+   - torso;
+   - helpers;
+   - unmatched shape nodes.
+6. Add top-level `provenance` that clearly states private-development-only and not-public-safe.
+7. Add top-level `requestedAssets`, `exportCount`, `missingSourceCount`, `missingSources`, and `warnings`.
+8. Make missing TGL/texture sources produce warnings and manifest entries, not broken docs or Python tracebacks.
+9. Fix the PowerShell wrapper so comma-separated `-Names` and `-IncludeMissionProps` can be used together.
+10. Add the same provenance/assetClass discipline to terrain texture audit manifests.
+11. Rerun the normal unit export, missing-source probe, terrain texture export and final unit+prop export.
+12. Update `docs-reference-visual-restoration-plan.md` with the manifest v2 fields and validation evidence.
+13. Ensure generated private derivatives remain ignored.
+
 **Validation:**
 
 ```powershell
 git diff --check
 $env:PYTHONDONTWRITEBYTECODE='1'; python -m py_compile scripts/content-pack/export_tgl_to_obj.py
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\content-pack\export_reference_visual_pack.ps1 -Names werewolf,bushwacker,centipede,harasser,lrmc,urbanmech,starslayer
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\content-pack\export_reference_visual_pack.ps1 -Names __missing_reference_probe__ -OutputRoot analysis-output\unity-reference-art\missing-source-probe -ManifestPath analysis-output\unity-reference-art\missing-source-probe.json -NoCopyTextures
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\content-pack\export_terrain_texture_audit.ps1 -ExportReferenceTextures
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\content-pack\export_reference_visual_pack.ps1 -Names werewolf,bushwacker,centipede,harasser,lrmc,urbanmech,starslayer -IncludeMissionProps
 ```
 
 **Acceptance:**
 
 - Ignored manifest is generated.
+- Seven-unit export reports seven exports and zero missing source shapes.
+- Full unit+prop export contains both the first-slice unit assets and mission prop assets.
+- Missing-source probe reports a clear missing source warning and still writes a manifest.
+- Terrain texture manifest records private-development-only provenance.
 - No generated private derivatives are staged.
 - Missing source material yields clear warnings, not broken docs.
 
@@ -459,12 +541,33 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\content-pack\export_
 
 **Goal:** Unity 读取 manifest 优先，缺失时能回退到开发占位，不因为本地私有素材缺失导致 Demo 无法启动。
 
+**Status:** Next after B1. Do not start this until B1 manifest export is committed, because B2 should consume a stable manifest shape rather than chase exporter churn.
+
 **Files:**
 
 - Modify: `unity-mc2-demo/Assets/Scripts/Presentation/ReferenceObjMeshLibrary.cs`
 - Modify: `unity-mc2-demo/Assets/Scripts/Presentation/ReferencePropLibrary.cs`
 - Modify: `unity-mc2-demo/Assets/Scripts/Presentation/ReferenceTerrainTextureLibrary.cs`
 - Modify: `docs-reference-visual-restoration-plan.md`
+
+**Steps:**
+
+1. Read current loader code paths and list where each loader obtains OBJ, TGA, prop, and terrain texture paths.
+2. Ensure the manifest is the first source of truth for private reference visuals.
+3. Keep direct folder probing only as a development fallback and log when it is used.
+4. Map Unity unit/prop requests to stable manifest asset ids, not raw legacy file paths.
+5. If a manifest entry is missing, keep the demo booting with obvious fallback visuals.
+6. If an OBJ exists but texture is missing, load geometry with fallback material and log the missing texture id.
+7. If the entire ignored reference art folder is missing, still pass smoke/capture using primitive development visuals.
+8. Add sidecar/log evidence that records selected manifest asset ids for at least:
+   - commander unit;
+   - one enemy unit;
+   - one target structure;
+   - one terrain texture source or terrain fallback.
+9. Build Windows player.
+10. Capture `spawn,airfield`.
+11. Temporarily point loader to a missing manifest or use a missing-manifest option if available, then run a fallback capture/log check.
+12. Restore normal local manifest path before committing.
 
 **Validation:**
 

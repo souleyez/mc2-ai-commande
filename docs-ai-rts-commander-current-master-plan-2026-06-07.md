@@ -8,7 +8,7 @@
 
 **Tech Stack:** Unity 6, C#, Windows Standalone first, deterministic BattleCore, PowerShell validator/build/smoke/capture scripts, replaceable content packs, optional high-level AI deputy adapter, later main server/map server/Web ranking contracts.
 
-**Revision:** 2026-06-07 v2. This is the current master plan requested after the visible 3D/collision pass discussion. Older plan files remain evidence/history; this file is the first place to read when the user says "按计划继续". The finer task breakdown now lives in `docs-ai-rts-commander-current-detailed-plan-2026-06-07.md`.
+**Revision:** 2026-06-07 v3. This is the current master plan requested after the visible 3D/collision pass discussion and the follow-up request to produce a more detailed plan. Older plan files remain evidence/history; this file is the first place to read when the user says "按计划继续". The finer task breakdown now lives in `docs-ai-rts-commander-current-detailed-plan-2026-06-07.md`.
 
 ---
 
@@ -47,7 +47,7 @@
 当前阶段是：
 
 ```text
-V1 Windows Playable Demo Polish
+V1 Windows Playable Demo Polish -> Reference Visual Bridge Stabilization
 ```
 
 不是从零开发，也不是马上做平台。现在要把本地 Demo 收成：
@@ -83,11 +83,11 @@ V1 Windows Playable Demo Polish
 
 | Gap | Why It Matters | First Fix |
 | --- | --- | --- |
-| 画面还不够像真实 3D 地图 | 用户现在最在意“不是色块、不是糊成一坨” | 视觉与碰撞回归门槛 |
-| 机甲/建筑可能仍有堆叠观感 | 没有物理占位感会破坏指挥游戏可信度 | close contact + occupancy gate |
-| 稀疏 HUD 需要回归守护 | 后续 UI 很容易又长出日志、面板和调试文本 | sparse UI smoke/sidecar |
-| 私有参考素材和公开版本边界仍要继续收 | 可以本地验证，但不能把未清权内容当产品发布 | art-safe mission slice |
-| 平台化还是设想 | 地图服务器、奖励认证和 Web 排行要等 Demo 稳定后再做 | 先写契约，不先写服务器 |
+| 私有参考视觉 manifest 还在收尾 | 以后整包替换、换皮和公开安全包都依赖这个边界 | 完成 B1 exporter manifest |
+| Unity loader 需要更强缺失回退 | 本地私有素材缺失时 Demo 仍要能启动、能截图 | 完成 B2 manifest-first loader |
+| 画面还需继续接近真实 3D 战场 | 已有 gate，但模型/贴图/道具仍是投资展示的主观焦点 | B1/B2 后再做一次可见流程审计 |
+| 私有参考素材和公开版本边界仍要继续收 | 可以本地验证，但不能把未清权内容当产品发布 | B3/D1 art-safe replacement plan |
+| 平台化还是设想 | 地图服务器、奖励认证和 Web 排行要等 Demo 稳定后再做 | F1-F4 先写契约，不先写服务器 |
 
 ## 2. Product Scope Lock
 
@@ -297,13 +297,17 @@ Known good strings:
 | 4 | Done | `Guard sparse battle UI regression` | 固化战斗 UI 稀疏性，不让大日志/存档/账号面板回流 | visible-flow smoke + `spawn,damage-demo` capture |
 | 5 | Done | `Add close contact collision gate` | 把“堆在一起/碰撞不明显”变成可复现 sidecar 门槛 | `hangar-contact` capture + sidecar |
 | 6 | Done | `Refresh first map visual slice` | 让第一张图继续朝真实 3D 地形、建筑、机甲模型靠拢；terrain/unit/structure-prop passes and `FirstMapVisual` gate done | build + five visual captures |
-| 7 | Next | `Stabilize reference visual manifest` | 私有参考模型/材质/道具加载走 manifest，缺失时可回退 | build + screenshot/log |
-| 8 | Later | `Prepare public art-safe mission slice` | 从 text-safe metadata 进入第一张图的公开视觉替换计划 | boundary check + provenance docs |
-| 9 | Later | `Guard AI deputy regression` | AI 保持高层、可离线、无 token smoke | validator/smoke |
-| 10 | Later | `Document platform reward contracts` | 主服务器、地图服务器、奖励认证契约 | docs check |
-| 11 | Later | `Plan map authoring prototype` | 地图包、触发、奖励引用和验证器规划 | docs check |
-| 12 | Later | `Plan web ranking prototype` | 排行、战绩、地图页和公开资料规划 | docs check |
-| 13 | Later | `Plan creator economy boundary` | 创作者分成、皮肤、自定义、链上边界 | docs check |
+| 7 | In Progress | `Stabilize reference visual manifest export` | 私有参考模型/材质/道具/地形纹理导出走可审计 manifest，缺失时给清晰 warning | exporter validation + ignored manifest |
+| 8 | Next | `Harden Unity reference visual loader` | Unity manifest-first，缺失私有包时回退到明显开发占位 | build + fallback capture |
+| 9 | Next | `Document replaceable visual ids` | 固化换包 id，方便以后整包替换、换皮和公开安全包 | docs + boundary check |
+| 10 | Later | `Seal visible playable walkthrough` | 启动、机库、战斗、损伤、结算、重开完整流程封口 | visible-flow smoke |
+| 11 | Later | `Refresh investor evidence package` | 更新当前本地证据页，说明能演示什么、哪些仍是原型 | six captures + docs |
+| 12 | Later | `Prepare public art-safe mission slice` | 从 text-safe metadata 进入第一张图的公开视觉替换计划 | boundary check + provenance docs |
+| 13 | Later | `Guard AI deputy regression` | AI 保持高层、可离线、无 token smoke | validator/smoke |
+| 14 | Later | `Document platform reward contracts` | 主服务器、地图服务器、奖励认证契约 | docs check |
+| 15 | Later | `Plan map authoring prototype` | 地图包、触发、奖励引用和验证器规划 | docs check |
+| 16 | Later | `Plan web ranking prototype` | 排行、战绩、地图页和公开资料规划 | docs check |
+| 17 | Later | `Plan creator economy boundary` | 创作者分成、皮肤、自定义、链上边界 | docs check |
 
 ## 6. Detailed Tasks
 
@@ -465,7 +469,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_refere
 
 ### Task 7: Stabilize Reference Visual Manifest
 
-**Status:** Next after first map visual slice, or earlier if private reference assets load不稳定.
+**Status:** In Progress. Split into B1 exporter manifest, B2 Unity loader hardening, and B3 replaceable visual id documentation in the detailed plan.
 
 **Goal:** 开发期继续借助本地参考素材验证比例和节奏，但加载边界要可替换、可缺失回退、可审计。
 
@@ -481,19 +485,22 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_refere
 
 **Steps:**
 
-1. Ensure exporter writes an ignored manifest with:
+1. Finish exporter-side manifest work:
    - asset id;
    - source path;
    - generated OBJ/TGA paths;
+   - asset class;
+   - private-development-only provenance;
    - vertex/triangle/node counts;
    - section/helper node buckets when known;
    - material and texture ids.
-2. Ensure Unity loader reads manifest first and logs chosen asset id per unit/prop.
-3. Keep direct folder probing as fallback only.
-4. Missing manifest or missing private files must fall back to obvious development visuals, not crash.
-5. Keep all generated source derivatives ignored.
-6. Run build and one visual capture.
-7. Update docs to state this is private development-only.
+2. Finish missing-source behavior so absent TGL/texture material yields clear warnings and ignored manifests, not broken docs.
+3. Ensure Unity loader reads manifest first and logs chosen asset id per unit/prop/terrain texture.
+4. Keep direct folder probing as fallback only.
+5. Missing manifest or missing private files must fall back to obvious development visuals, not crash.
+6. Keep all generated source derivatives ignored.
+7. Run build and one visual capture after loader hardening.
+8. Update docs to state this is private development-only.
 
 **Validation:**
 
@@ -804,9 +811,9 @@ git diff --check
 | M2 First mission gameplay | Done for V1 | command loop, jet, debrief, repair, relaunch work |
 | M3 MechLab core fun | Done for V1, polish later | grid blocks, legal states, loadout battle effect proved |
 | M4 Damage story | Done for V1, polish later | damage-demo shows weapon families and section consequences |
-| M5 Sparse HUD | Active | regression guard added and capture sidecar proves it |
-| M6 Visual/collision readability | Active | first map no longer reads as color blocks or one-point pile |
-| M7 Private reference bridge | Active | manifest-driven, optional, ignored, replaceable |
+| M5 Sparse HUD | Done with guard | regression guard added and capture sidecar proves it |
+| M6 Visual/collision readability | Done with gate | first map no longer reads as color blocks or one-point pile |
+| M7 Private reference bridge | In Progress | manifest-driven, optional, ignored, replaceable |
 | M8 Public-safe slice | Later | art-safe manifest/provenance and boundary check pass |
 | M9 AI deputy V1 | Foundation done | offline/no-key and high-level directive guarded |
 | M10 Platform contracts | Later | main server reward authority and map-server limits documented |
