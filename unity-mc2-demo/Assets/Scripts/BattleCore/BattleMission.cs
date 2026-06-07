@@ -26,6 +26,7 @@ namespace MC2Demo.BattleCore
         private const float UnitCollisionMechRadius = 64f;
         private const float UnitCollisionMaxPushPerPass = 42f;
         private const int UnitCollisionPasses = 4;
+        private const float ContactClearanceOverlapTolerance = 0.5f;
         private const float StructureCollisionPadding = 35f;
         private const float StructureCollisionMaxPushPerPass = 70f;
         private const float TerrainObjectCollisionMaxPushPerPass = 45f;
@@ -185,6 +186,55 @@ namespace MC2Demo.BattleCore
                 + " destinationFallback=structure+hardProp";
         }
 
+        public string ContactClearanceSummary()
+        {
+            List<UnitState> players = new();
+            List<UnitState> hostiles = new();
+            List<UnitState> activeCollisionUnits = new();
+            foreach (UnitState unit in units)
+            {
+                if (!CanResolveUnitCollision(unit))
+                {
+                    continue;
+                }
+
+                activeCollisionUnits.Add(unit);
+                if (unit.IsPlayerUnit)
+                {
+                    players.Add(unit);
+                }
+                else
+                {
+                    hostiles.Add(unit);
+                }
+            }
+
+            UnitClearancePair nearestPlayerHostile = MinimumDistanceClearancePair(players, hostiles);
+            UnitClearancePair nearestHostileHostile = MinimumDistanceClearancePair(hostiles);
+            UnitClearancePair nearestPlayerPlayer = MinimumDistanceClearancePair(players);
+            UnitClearancePair worstPair = MinimumClearancePair(activeCollisionUnits);
+            int overlapCount = CountOverlappingUnitPairs(activeCollisionUnits);
+
+            return "ContactClearance=players "
+                + players.Count.ToString(CultureInfo.InvariantCulture)
+                + " hostiles "
+                + hostiles.Count.ToString(CultureInfo.InvariantCulture)
+                + " nearestPH="
+                + FormatUnitClearancePair(nearestPlayerHostile)
+                + " nearestHH="
+                + FormatUnitClearancePair(nearestHostileHostile)
+                + " nearestPP="
+                + FormatUnitClearancePair(nearestPlayerPlayer)
+                + " worst="
+                + FormatUnitClearancePair(worstPair)
+                + " overlaps="
+                + overlapCount.ToString(CultureInfo.InvariantCulture)
+                + " worstClearance="
+                + FormatClearanceDistance(worstPair.HasValue ? worstPair.Clearance : float.NaN)
+                + " status="
+                + (overlapCount == 0 ? "separated" : "overlap");
+        }
+
         public IEnumerable<BattleOccupancyRegion> OccupancyPlaceholderRegions()
         {
             foreach (UnitState unit in units)
@@ -233,6 +283,161 @@ namespace MC2Demo.BattleCore
             string team = unit?.IsPlayerUnit == true ? "player" : "hostile";
             string className = IsInfantryUnit(unit) ? "Infantry" : IsMechLikeUnit(unit) ? "Mech" : "Vehicle";
             return team + "Unit" + className;
+        }
+
+        private static UnitClearancePair MinimumDistanceClearancePair(IReadOnlyList<UnitState> units)
+        {
+            if (units == null || units.Count < 2)
+            {
+                return UnitClearancePair.Empty;
+            }
+
+            UnitClearancePair best = UnitClearancePair.Empty;
+            for (int outer = 0; outer < units.Count; outer++)
+            {
+                for (int inner = outer + 1; inner < units.Count; inner++)
+                {
+                    UnitClearancePair candidate = UnitClearancePair.From(units[outer], units[inner]);
+                    if (!best.HasValue || candidate.Distance < best.Distance)
+                    {
+                        best = candidate;
+                    }
+                }
+            }
+
+            return best;
+        }
+
+        private static UnitClearancePair MinimumDistanceClearancePair(
+            IReadOnlyList<UnitState> first,
+            IReadOnlyList<UnitState> second)
+        {
+            if (first == null || second == null || first.Count == 0 || second.Count == 0)
+            {
+                return UnitClearancePair.Empty;
+            }
+
+            UnitClearancePair best = UnitClearancePair.Empty;
+            for (int firstIndex = 0; firstIndex < first.Count; firstIndex++)
+            {
+                for (int secondIndex = 0; secondIndex < second.Count; secondIndex++)
+                {
+                    UnitClearancePair candidate = UnitClearancePair.From(first[firstIndex], second[secondIndex]);
+                    if (!best.HasValue || candidate.Distance < best.Distance)
+                    {
+                        best = candidate;
+                    }
+                }
+            }
+
+            return best;
+        }
+
+        private static UnitClearancePair MinimumClearancePair(IReadOnlyList<UnitState> units)
+        {
+            if (units == null || units.Count < 2)
+            {
+                return UnitClearancePair.Empty;
+            }
+
+            UnitClearancePair worst = UnitClearancePair.Empty;
+            for (int outer = 0; outer < units.Count; outer++)
+            {
+                for (int inner = outer + 1; inner < units.Count; inner++)
+                {
+                    UnitClearancePair candidate = UnitClearancePair.From(units[outer], units[inner]);
+                    if (!worst.HasValue || candidate.Clearance < worst.Clearance)
+                    {
+                        worst = candidate;
+                    }
+                }
+            }
+
+            return worst;
+        }
+
+        private static int CountOverlappingUnitPairs(IReadOnlyList<UnitState> units)
+        {
+            int overlaps = 0;
+            if (units == null || units.Count < 2)
+            {
+                return overlaps;
+            }
+
+            for (int outer = 0; outer < units.Count; outer++)
+            {
+                for (int inner = outer + 1; inner < units.Count; inner++)
+                {
+                    UnitClearancePair candidate = UnitClearancePair.From(units[outer], units[inner]);
+                    if (candidate.Clearance < -ContactClearanceOverlapTolerance)
+                    {
+                        overlaps++;
+                    }
+                }
+            }
+
+            return overlaps;
+        }
+
+        private static string FormatUnitClearancePair(UnitClearancePair pair)
+        {
+            if (!pair.HasValue)
+            {
+                return "n/a";
+            }
+
+            return pair.FirstId
+                + ">"
+                + pair.SecondId
+                + " distance="
+                + FormatClearanceDistance(pair.Distance)
+                + " radii="
+                + FormatClearanceDistance(pair.FirstRadius)
+                + "+"
+                + FormatClearanceDistance(pair.SecondRadius)
+                + " clearance="
+                + FormatClearanceDistance(pair.Clearance);
+        }
+
+        private static string FormatClearanceDistance(float value)
+        {
+            if (float.IsNaN(value))
+            {
+                return "n/a";
+            }
+
+            float normalized = Mathf.Abs(value) <= ContactClearanceOverlapTolerance ? 0f : value;
+            return normalized.ToString("0.#", CultureInfo.InvariantCulture);
+        }
+
+        private struct UnitClearancePair
+        {
+            public bool HasValue;
+            public string FirstId;
+            public string SecondId;
+            public float Distance;
+            public float FirstRadius;
+            public float SecondRadius;
+            public float Clearance;
+
+            public static UnitClearancePair Empty => new() { HasValue = false };
+
+            public static UnitClearancePair From(UnitState first, UnitState second)
+            {
+                float firstRadius = UnitCollisionRadius(first);
+                float secondRadius = UnitCollisionRadius(second);
+                float distance = Vector2.Distance(first.MissionPosition, second.MissionPosition);
+                return new UnitClearancePair
+                {
+                    HasValue = true,
+                    FirstId = first.Id,
+                    SecondId = second.Id,
+                    Distance = distance,
+                    FirstRadius = firstRadius,
+                    SecondRadius = secondRadius,
+                    Clearance = distance - firstRadius - secondRadius
+                };
+            }
         }
 
         public static BattleMission FromJson(string json, CombatProfileCatalog combatProfiles = null)

@@ -293,7 +293,7 @@ Known good strings:
 | 2 | Done | `Prove loadout battle effects` | 证明装配影响 BattleCore 战斗 | validator + build + visible-flow smoke |
 | 3 | Done | `Polish weapon and damage readability` | 强化武器类型、断臂、腿瘫、弹射故事 | validator + build + `damage-demo` capture |
 | 4 | Done | `Guard sparse battle UI regression` | 固化战斗 UI 稀疏性，不让大日志/存档/账号面板回流 | visible-flow smoke + `spawn,damage-demo` capture |
-| 5 | Next | `Add close contact collision gate` | 把“堆在一起/碰撞不明显”变成可复现 sidecar 门槛 | `hangar-contact` capture + sidecar |
+| 5 | Done | `Add close contact collision gate` | 把“堆在一起/碰撞不明显”变成可复现 sidecar 门槛 | `hangar-contact` capture + sidecar |
 | 6 | Next | `Refresh first map visual slice` | 让第一张图继续朝真实 3D 地形、建筑、机甲模型靠拢 | build + five visual captures |
 | 7 | Next | `Stabilize reference visual manifest` | 私有参考模型/材质/道具加载走 manifest，缺失时可回退 | build + screenshot/log |
 | 8 | Later | `Prepare public art-safe mission slice` | 从 text-safe metadata 进入第一张图的公开视觉替换计划 | boundary check + provenance docs |
@@ -361,7 +361,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_refere
 
 ### Task 5: Add Close Contact Collision Gate
 
-**Status:** Next after Task 4.
+**Status:** Completed 2026-06-07.
+
+**Result:** Added BattleCore `ContactClearanceSummary()` so close-contact captures can report nearest player-hostile, hostile-hostile and player-player pairs with center distance, collision radii, clearance, worst clearance, overlap count and separated/overlap status. Unity sidecars now write `contactClearance`, and `capture_reference_visuals.ps1` fails `hangar-contact`/`damage-demo` if real overlaps return. `hangar-contact` also now checks blocker counts, hard-prop categories, landing-blocked markers and contact spread. The observed dense hangar case is now measured as `overlaps=0 status=separated`; the closest contacts are touching or within the 0.5-unit collision audit tolerance, not real same-point stacking.
 
 **Goal:** 把“看起来堆在一起”和“应该有物理碰撞占位”变成可重复检查的规则，而不是每次只靠肉眼判断。
 

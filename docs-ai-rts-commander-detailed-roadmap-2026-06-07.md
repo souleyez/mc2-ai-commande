@@ -21,7 +21,7 @@
 3. 如果需要历史上下文，再看 `docs-playable-demo-current-execution-plan-2026-06-07.md` 的 `Current Commit Queue`。
 4. 如果队列仍不明确，就回到本文件的 `## 8. Current Execution Queue`。
 5. 每次只做一个小提交，提交必须能用 validator、build、smoke、capture 或 docs check 说明。
-6. 当前队列从 `Add close contact collision gate` 继续；如果之后又出现未提交 source WIP，先验收它再开新功能。
+6. 当前队列从 `Refresh first map visual slice` 继续；如果之后又出现未提交 source WIP，先验收它再开新功能。
 7. 不提交 `analysis-output/` 下的截图、sidecar JSON、构建日志或 player build，除非用户明确要求打包。
 8. Unity 运行后如果只有 scene fileID churn，先手动审查，不随手提交。
 
@@ -34,7 +34,7 @@
 | Windows local demo | 已能 batch build、smoke、capture | `analysis-output/unity-build-*.log`, smoke logs |
 | First mission | `mc2_01` 可加载地形、结构、目标、触发、单位、相机 | validator and capture sidecars |
 | Terrain readability | 水域、岸线、跑道、地面分区、建筑基底已有可读版本 | reference captures |
-| Physical occupancy | 单位、建筑、硬道具、水域、地图边界已有 BattleCore 证据 | `OccupancySummary()` |
+| Physical occupancy | 单位、建筑、硬道具、水域、地图边界已有 BattleCore 证据，近距离接触已有 `ContactClearance` 门槛 | `OccupancySummary()`, `ContactClearanceSummary()` |
 | Battle controls | 默认全队、状态栏单选、独立命令、自动归队、喷射已有 smoke | visible-flow script |
 | Sparse battle UI | 战斗中只保留状态栏、喷射、目标/地图、系统入口，并已有 `SparseBattleUi` 回归守护 | visible-flow smoke + capture sidecars |
 | Damage story | 断臂、腿瘫、驾驶舱损毁/弹射已有基础 | `damage-demo` |
@@ -578,9 +578,10 @@ The first controlled demo is ready when:
 | 5 | Done | `Prove loadout battle effects` | Prove fitted weapons, armor and cooling affect BattleCore |
 | 6 | Done | `Polish weapon and damage readability` | Strengthen weapon families and section damage story |
 | 7 | Done | `Guard sparse battle UI regression` | Keep battle UI clean while preserving command controls |
-| 8 | Next | `Add close contact collision gate` | Make crowded-contact spacing measurable in sidecars |
-| 9 | Later | `Guard AI deputy regression` | Keep AI compact, high-level and offline-safe |
-| 10 | Later | `Document platform reward contracts` | Prepare map server and reward certification docs after demo |
+| 8 | Done | `Add close contact collision gate` | Make crowded-contact spacing measurable in sidecars |
+| 9 | Next | `Refresh first map visual slice` | Improve first-map terrain, props, units and combat readability |
+| 10 | Later | `Guard AI deputy regression` | Keep AI compact, high-level and offline-safe |
+| 11 | Later | `Document platform reward contracts` | Prepare map server and reward certification docs after demo |
 
 ## 9. Stop Conditions
 

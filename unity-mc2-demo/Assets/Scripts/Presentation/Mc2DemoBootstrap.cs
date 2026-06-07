@@ -192,6 +192,7 @@ namespace MC2Demo.Presentation
             public string occupancy;
             public string occupancyPlaceholders;
             public string contactSpread;
+            public string contactClearance;
             public string mechLab;
             public string damageStory;
             public string damageReadability;
@@ -5812,6 +5813,7 @@ namespace MC2Demo.Presentation
                 occupancy = BuildCaptureOccupancySummary(),
                 occupancyPlaceholders = lastOccupancyPlaceholderSummary,
                 contactSpread = BuildCaptureContactSpreadSummary(),
+                contactClearance = BuildCaptureContactClearanceSummary(),
                 mechLab = BuildCaptureMechLabSummary(),
                 damageStory = BuildCaptureDamageStorySummary(),
                 damageReadability = BuildCaptureDamageReadabilitySummary(),
@@ -5883,6 +5885,11 @@ namespace MC2Demo.Presentation
                 + FormatCaptureDistance(hostileSpan)
                 + " centroidDistance="
                 + FormatCaptureDistance(centroidDistance);
+        }
+
+        private string BuildCaptureContactClearanceSummary()
+        {
+            return mission == null ? "ContactClearance=mission unavailable" : mission.ContactClearanceSummary();
         }
 
         private static float MinimumCrossDistance(IReadOnlyList<UnitState> first, IReadOnlyList<UnitState> second)

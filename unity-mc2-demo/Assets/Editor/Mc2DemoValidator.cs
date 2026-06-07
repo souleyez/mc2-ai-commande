@@ -3252,6 +3252,12 @@ namespace MC2Demo.EditorTools
             {
                 throw new InvalidDataException("Expected stacked enemy units to separate after BattleCore collision resolution.");
             }
+
+            string clearance = mission.ContactClearanceSummary();
+            RequireSummaryFragment(clearance, "ContactClearance=players 1 hostiles 2", "contact clearance summary");
+            RequireSummaryFragment(clearance, "nearestHH=", "contact clearance summary");
+            RequireSummaryFragment(clearance, "overlaps=0", "contact clearance summary");
+            RequireSummaryFragment(clearance, "status=separated", "contact clearance summary");
         }
 
         private static void ValidateStructureCollisionOccupancy()

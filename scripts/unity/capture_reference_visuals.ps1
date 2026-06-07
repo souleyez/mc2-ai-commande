@@ -197,6 +197,13 @@ function Test-CaptureSidecar {
     elseif ($ExpectedPreset -eq "damage-demo") {
         Test-DamageDemoCaptureSidecar -Sidecar $sidecar -Path $Path
     }
+    elseif ($ExpectedPreset -eq "hangar-contact") {
+        Test-HangarContactCaptureSidecar -Sidecar $sidecar -Path $Path
+    }
+
+    if ($ExpectedPreset -eq "hangar-contact" -or $ExpectedPreset -eq "damage-demo") {
+        Test-ContactClearanceCaptureSidecar -Sidecar $sidecar -Path $Path
+    }
 
     if ($sidecar.flowScreen -eq "Battle") {
         Test-BattleHudCaptureSidecar -Sidecar $sidecar -Path $Path
@@ -222,6 +229,20 @@ function Test-CaptureSidecar {
     }
 
     return $sidecar
+}
+
+function Read-SummaryNumber {
+    param(
+        [string]$Summary,
+        [string]$Pattern,
+        [string]$Context
+    )
+
+    if ($Summary -notmatch $Pattern) {
+        throw "Missing numeric summary pattern '$Pattern' in $Context`: $Summary"
+    }
+
+    return [double]$Matches[1]
 }
 
 function Test-BattleHudCaptureSidecar {
@@ -271,6 +292,110 @@ function Test-BattleHudCaptureSidecar {
     $height = [double]$Matches[1]
     if ($height -gt 84.0) {
         throw "Battle HUD combat panel is too tall for sparse mode: $Path -> $summary"
+    }
+}
+
+function Test-ContactClearanceCaptureSidecar {
+    param(
+        [object]$Sidecar,
+        [string]$Path
+    )
+
+    $summary = [string]$Sidecar.contactClearance
+    foreach ($fragment in @(
+        "ContactClearance=players",
+        "hostiles",
+        "nearestPH=",
+        "nearestHH=",
+        "nearestPP=",
+        "distance=",
+        "radii=",
+        "clearance=",
+        "overlaps=",
+        "worstClearance=",
+        "status=separated"
+    )) {
+        if ($summary -notlike "*$fragment*") {
+            throw "Contact clearance sidecar summary missing '$fragment': $Path -> $summary"
+        }
+    }
+
+    $overlaps = Read-SummaryNumber -Summary $summary -Pattern "overlaps=([0-9]+)" -Context $Path
+    if ($overlaps -ne 0) {
+        throw "Contact clearance sidecar reports overlapping unit pairs: $Path -> $summary"
+    }
+
+    if ($summary -match "worstClearance=([-0-9.]+)") {
+        $worstClearance = [double]$Matches[1]
+        if ($worstClearance -lt -0.1) {
+            throw "Contact clearance sidecar reports negative worst clearance: $Path -> $summary"
+        }
+    }
+    else {
+        throw "Contact clearance sidecar missing numeric worst clearance: $Path -> $summary"
+    }
+}
+
+function Test-HangarContactCaptureSidecar {
+    param(
+        [object]$Sidecar,
+        [string]$Path
+    )
+
+    if ($Sidecar.flowScreen -ne "Battle") {
+        throw "Hangar contact capture did not stay in battle flow: $Path -> $($Sidecar.flowScreen)"
+    }
+
+    if ([int]$Sidecar.activeHostileCount -lt 12 -or [int]$Sidecar.visibleHostileCount -lt 8) {
+        throw "Hangar contact capture has too little visible contact pressure: $Path -> active=$($Sidecar.activeHostileCount) visible=$($Sidecar.visibleHostileCount)"
+    }
+
+    $occupancy = [string]$Sidecar.occupancy
+    foreach ($fragment in @(
+        "BattleOccupancy=units",
+        "unitRadii infantry=24 vehicle=54 mech=64",
+        "structures 1",
+        "hardProps ",
+        "building=",
+        "aircraft=",
+        "barricade=",
+        "other=",
+        "destinationFallback=structure+hardProp",
+        "Landing=DemoTerrainView",
+        "externalPredicate=water+mapBounds"
+    )) {
+        if ($occupancy -notlike "*$fragment*") {
+            throw "Hangar contact occupancy summary missing '$fragment': $Path -> $occupancy"
+        }
+    }
+
+    $placeholderSummary = [string]$Sidecar.occupancyPlaceholders
+    $landingBlocked = Read-SummaryNumber -Summary $placeholderSummary -Pattern "landingBlockedMarkers ([0-9]+)" -Context $Path
+    if ($landingBlocked -le 0) {
+        throw "Hangar contact sidecar did not expose landing-blocked markers: $Path -> $placeholderSummary"
+    }
+
+    $spread = [string]$Sidecar.contactSpread
+    foreach ($fragment in @(
+        "ContactSpread=players",
+        "hostiles",
+        "nearestPH=",
+        "nearestHH=",
+        "nearestPP=",
+        "playerSpan=",
+        "hostileSpan=",
+        "centroidDistance="
+    )) {
+        if ($spread -notlike "*$fragment*") {
+            throw "Hangar contact spread summary missing '$fragment': $Path -> $spread"
+        }
+    }
+
+    $nearestPlayerHostile = Read-SummaryNumber -Summary $spread -Pattern "nearestPH=([0-9.]+)" -Context $Path
+    $playerSpan = Read-SummaryNumber -Summary $spread -Pattern "playerSpan=([0-9.]+)" -Context $Path
+    $hostileSpan = Read-SummaryNumber -Summary $spread -Pattern "hostileSpan=([0-9.]+)" -Context $Path
+    if ($nearestPlayerHostile -lt 90.0 -or $playerSpan -lt 100.0 -or $hostileSpan -lt 1000.0) {
+        throw "Hangar contact sidecar still reads as a one-point pile: $Path -> $spread"
     }
 }
 

@@ -103,6 +103,19 @@ Refreshed on 2026-06-07 after `Guard sparse battle UI regression`.
 
 Sparse UI judgment: the first-version battle view now has a hard evidence gate. It keeps the command surface visible without letting the battle turn back into log walls, save slots, account panels or debug overlays.
 
+## Close Contact Collision Gate
+
+Refreshed on 2026-06-07 after `Add close contact collision gate`.
+
+| Gate | Result | Evidence |
+| --- | --- | --- |
+| Mission validator | Pass | `analysis-output/unity-validate-close-contact-collision.log` reports `MC2 demo contract validation OK` and validates BattleCore contact-clearance evidence on the unit collision fixture. |
+| Windows build | Pass | `analysis-output/unity-build-close-contact-collision.log` reports `Build Finished, Result: Success` and `MC2 Unity demo Windows build OK`. |
+| Hangar contact capture | Pass | `analysis-output/reference-visual-captures/hangar-contact.json` reports `ContactClearance ... overlaps=0 ... status=separated`, `hardProps 80`, blocker categories, and `landingBlockedMarkers 16`. |
+| Damage regression capture | Pass | `analysis-output/reference-visual-captures/damage-demo.json` reports `ContactClearance ... overlaps=0 ... status=separated` while retaining the damage story. |
+
+Collision judgment: the crowded hangar fight is now measurable as close contact with collision circles touching or nearly touching, not a one-point pile. Future visual work should improve scale, silhouettes and camera composition while preserving this BattleCore gate.
+
 ## Capture Command
 
 Run from the repository root:
@@ -136,8 +149,8 @@ Current refreshed sidecars report:
 mechlab: MechLabCapture=open ... weaponBlock=1 Streak ... 1x2 fillers=A+/C+ fit=Fit OK pressure=H 12/22  W 16/16  G 12/16 CellState=OK OPEN4 OCC12 OCC!0 OOB0 alwaysMounted=weapons 6/6 items 6/6 noToggle=yes
 spawn: activeHostileCount=0 visibleHostileCount=0 BattleHud=active controls=statusRows+jet+map+bay+system combatPanel=h78 combatLogVisible=no objectivePanel=compactObjective objectiveH=74 missionMap=closed saveUi=disabled SparseBattleUi=statusRows+sections+solo controls=all+jet+map+bay+system combatLog=hidden accountUi=hidden debugOccupancy=sidecar-only overlays=hidden ContactSpread=players 3 hostiles 0 nearestPH=n/a nearestHH=n/a nearestPP=128
 airfield: activeHostileCount=12 visibleHostileCount=8 ContactSpread=players 3 hostiles 12 nearestPH=704.7 nearestHH=108 currentObjective=Destroy Hangar
-hangar-contact: activeHostileCount=20 visibleHostileCount=16 BattleOccupancy=units 23/29 unitRadii infantry=24 vehicle=54 mech=64 ContactSpread=players 3 hostiles 20 nearestPH=272.8 nearestHH=48 nearestPP=259.1 playerSpan=519.9 hostileSpan=4304.2 centroidDistance=1161.6
-damage-demo: activeHostileCount=20 visibleHostileCount=16 BattleOccupancy=units 22/29 unitRadii infantry=24 vehicle=54 mech=64 SparseBattleUi=statusRows+sections+solo combatLog=hidden accountUi=hidden debugOccupancy=sidecar-only overlays=hidden ContactSpread=players 2 hostiles 20 nearestPH=118 nearestHH=78 nearestPP=207.6 playerSpan=207.6 hostileSpan=4336.7 centroidDistance=836.7 DamageStory=units 3/3 lostSections=3 arms=1 legs=1 cockpit=1 pilotRisk=1 destroyedUnits=1 story=unit-1:left-arm-lost,unit-2:legs-lost,unit-3:cockpit-lost
+hangar-contact: activeHostileCount=20 visibleHostileCount=16 BattleOccupancy=units 23/29 unitRadii infantry=24 vehicle=54 mech=64 ContactSpread=players 3 hostiles 20 nearestPH=272.8 nearestHH=48 nearestPP=259.1 playerSpan=519.9 hostileSpan=4302 centroidDistance=1161.4 ContactClearance=overlaps=0 worstClearance=0 status=separated landingBlockedMarkers=16
+damage-demo: activeHostileCount=20 visibleHostileCount=16 BattleOccupancy=units 22/29 unitRadii infantry=24 vehicle=54 mech=64 SparseBattleUi=statusRows+sections+solo combatLog=hidden accountUi=hidden debugOccupancy=sidecar-only overlays=hidden ContactSpread=players 2 hostiles 20 nearestPH=118 nearestHH=61.8 nearestPP=207.6 playerSpan=207.6 hostileSpan=4331.1 centroidDistance=837 ContactClearance=overlaps=0 worstClearance=0 status=separated DamageStory=units 3/3 lostSections=3 arms=1 legs=1 cockpit=1 pilotRisk=1 destroyedUnits=1 story=unit-1:left-arm-lost,unit-2:legs-lost,unit-3:cockpit-lost
 damageReadability: weaponFamilies energy+missile+ballistic+explosive; weaponShapes beam+arc+tracer+shock; sectionConsequences arms-firepower legs-mobility cockpit-ejection wreck-salvage; hud=section-bars+short-labels+sparse
 north-patrol: activeHostileCount=24 visibleHostileCount=9 ContactSpread=players 3 hostiles 24 nearestPH=118 nearestHH=70.1 status=north encounter trigger completed.
 ```

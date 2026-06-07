@@ -101,8 +101,8 @@ Playable Demo Handoff: 把已能跑的 Windows 本地 Demo 收成可重复构建
 | Gap | Why It Matters | Next Move |
 | --- | --- | --- |
 | 视觉还需要稳定回归 | 当前已有样子，但机甲、道具、遮挡、占位仍要避免退化成堆叠 | 每次视觉改动跑 capture + sidecar |
-| Demo handoff 已过 development-only 门检 | 构建、smoke、截图、walkthrough、内容边界已能一口气解释；当前 dev build 会被正确标记为 development-only；稀疏战斗 UI 已有回归守护 | Add close contact collision gate |
-| 压力图已完成 V4 占位刷新 | `hangar-contact` 仍是最拥挤截图，但已有 `unitRadii 24/54/64` 和 `ContactSpread` 证据 | Turn close contact spacing into a capture gate |
+| Demo handoff 已过 development-only 门检 | 构建、smoke、截图、walkthrough、内容边界已能一口气解释；当前 dev build 会被正确标记为 development-only；稀疏战斗 UI 和近距离碰撞都有回归守护 | Refresh first map visual slice |
+| 压力图已完成 V4 占位刷新 | `hangar-contact` 仍是最拥挤截图，但已有 `unitRadii 24/54/64`、`ContactSpread` 和 `ContactClearance overlaps=0` 证据 | Use the gate while improving first-map readability |
 | 公开替换包还没进入生产 | 投资/公开演示需要至少 text-safe，最好 art-safe | 开 P3 content replacement slice |
 
 ## 3. First Version Scope
@@ -524,7 +524,7 @@ Current recommended queue:
 | 2 | Done | `Prove loadout battle effects` | Prove mounted weapons, armor and cooling alter BattleCore |
 | 3 | Done | `Polish weapon and damage readability` | Strengthen weapon families and section damage story |
 | 4 | Done | `Guard sparse battle UI regression` | Keep battle UI clean while preserving command controls |
-| 5 | Next | `Add close contact collision gate` | Make crowded-contact spacing measurable in sidecars |
+| 5 | Done | `Add close contact collision gate` | Make crowded-contact spacing measurable in sidecars |
 | 6 | Next | `Refresh first map visual slice` | Improve first-map terrain, props, units and combat readability |
 | 7 | Next | `Stabilize reference visual manifest` | Keep private reference loading replaceable and auditable |
 | 8 | Later | `Prepare public art-safe mission slice` | Move from text-safe metadata toward public visual replacement |

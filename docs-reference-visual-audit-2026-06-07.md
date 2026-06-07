@@ -2259,3 +2259,43 @@ damage-demo: SparseBattleUi=statusRows+sections+solo controls=all+jet+map+bay+sy
 Next priority:
 
 1. Add close contact collision gate.
+
+## Close Contact Collision Gate Refresh
+
+Implemented on 2026-06-07 after the current master plan Task 5.
+
+Changed evidence:
+
+- Added BattleCore `ContactClearanceSummary()` so dense contacts report nearest player-hostile, hostile-hostile and player-player pairs with center distance, collision radii, clearance, worst clearance, overlap count and separated/overlap status.
+- Added `contactClearance` to Unity capture sidecars.
+- Updated `capture_reference_visuals.ps1` so `hangar-contact` and `damage-demo` fail if real unit overlaps return.
+- Strengthened the `hangar-contact` capture gate to require BattleCore unit radii, structure and hard-prop blocker counts, hard-prop categories, landing-blocked markers and contact-spread evidence.
+- Kept the fix in BattleCore evidence, not a presentation-only visual offset.
+
+Validation evidence:
+
+```text
+git diff --check: clean, with Windows line-ending warnings only.
+analysis-output/unity-validate-close-contact-collision.log: MC2 demo contract validation OK.
+analysis-output/unity-build-close-contact-collision.log: Build Finished, Result: Success; MC2 Unity demo Windows build OK.
+capture_reference_visuals.ps1 -Presets hangar-contact,damage-demo: MC2 reference visual captures passed: 2 preset(s).
+```
+
+Observed sidecar evidence:
+
+```text
+hangar-contact: BattleOccupancy=units 23/29 unitRadii infantry=24 vehicle=54 mech=64 structures 1 hardProps 80 building=21 aircraft=4 barricade=37 other=18; landingBlockedMarkers 16.
+hangar-contact: ContactSpread=players 3 hostiles 20 nearestPH=272.8 nearestHH=48 nearestPP=259.1 playerSpan=519.9 hostileSpan=4302 centroidDistance=1161.4.
+hangar-contact: ContactClearance=players 3 hostiles 20 nearestPH=unit-2>unit-5 distance=272.8 radii=64+54 clearance=154.8 nearestHH=unit-19>unit-21 distance=48 radii=24+24 clearance=0 nearestPP=unit-1>unit-3 distance=259.1 radii=64+64 clearance=131.1 worst=unit-11>unit-12 distance=107.8 radii=54+54 clearance=0 overlaps=0 worstClearance=0 status=separated.
+damage-demo: ContactClearance=players 2 hostiles 20 nearestPH=unit-1>unit-5 distance=118 radii=64+54 clearance=0 nearestHH=unit-15>unit-20 distance=61.8 radii=24+24 clearance=13.8 nearestPP=unit-1>unit-2 distance=207.6 radii=64+64 clearance=79.6 worst=unit-4>unit-11 distance=108 radii=54+54 clearance=0 overlaps=0 worstClearance=0 status=separated.
+```
+
+Visual judgment:
+
+- The densest `hangar-contact` frame is now proven as crowded contact with touching or near-touching collision circles, not a same-coordinate pile.
+- A first failed capture exposed a tiny `-0.2` vehicle clearance, which was treated as audit tolerance noise and normalized with a 0.5 world-unit overlap tolerance; larger negative clearance remains a capture failure.
+- Remaining visual discomfort should now be treated as camera compression, silhouette scale or composition work, not missing BattleCore collision.
+
+Next priority:
+
+1. Refresh first map visual slice.
