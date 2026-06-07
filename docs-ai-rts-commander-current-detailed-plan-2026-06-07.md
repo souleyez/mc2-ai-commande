@@ -117,8 +117,8 @@
 | B1 | Done | `Stabilize reference visual manifest export` | 私有参考单位/道具/地形资源导出 manifest | exporter dry run + missing-source probe |
 | B2 | Done | `Harden Unity reference visual loader` | Unity 优先读 manifest，缺失安全回退 | build + fallback capture |
 | B3 | Done | `Document replaceable visual ids` | 固化换包 id，方便以后整包替换 | docs + boundary check |
-| C1 | Next | `Seal visible playable walkthrough` | 启动、机库、战斗、损伤、结算、重开完整流程 | visible-flow smoke |
-| C2 | Later | `Refresh investor evidence package` | 更新本地演示证据，不提交生成截图 | six captures + docs |
+| C1 | Done | `Seal visible playable walkthrough` | 启动、机库、战斗、损伤、结算、重开完整流程 | visible-flow smoke |
+| C2 | Next | `Refresh investor evidence package` | 更新本地演示证据，不提交生成截图 | six captures + docs |
 | D1 | Later | `Prepare public art-safe mission slice` | 从 text-safe 进入公开视觉替换包计划 | boundary check |
 | E1 | Later | `Guard AI deputy offline behavior` | AI 高层、可离线、不逐帧、不花 smoke token | validator |
 | F1 | Later | `Document reward authority contract` | 主服务器认证奖励，地图服务器只提交 claim | docs |
@@ -148,9 +148,9 @@
 | B3.1 | Done | 定义 stable visual id 命名规则：unit、prop、terrain、texture、fx、ui | `docs-content-pack.md`; `docs-content-replacement-plan.md` | docs check |
 | B3.2 | Done | 补一个 project-owned visual slice 示例，不含私有路径和旧专有名称 | `content-packs/project-owned-visual-slice.example.json` if needed | public boundary dry run |
 | B3.3 | Done | 提交 B3 | content docs/example | commit `Document replaceable visual ids` |
-| C1.1 | Next | 跑 visible-flow：机库、出战、战斗、损伤、胜利、战报、维修、回机库、重开 | visible-flow command file + docs | player smoke exits 0 |
-| C1.2 | Next | 修 walkthrough 到非开发人员能照着演示 | `docs-playable-demo-walkthrough-2026-06-07.md` | docs check |
-| C2.1 | Later | 重跑六截图证据并刷新 investor evidence | capture scripts + evidence docs | six captures pass |
+| C1.1 | Done | 跑 visible-flow：机库、出战、战斗、损伤、胜利、战报、维修、回机库、重开 | visible-flow command file + docs | player smoke exits 0 |
+| C1.2 | Done | 修 walkthrough 到非开发人员能照着演示 | `docs-playable-demo-walkthrough-2026-06-07.md` | docs check |
+| C2.1 | Next | 重跑六截图证据并刷新 investor evidence | capture scripts + evidence docs | six captures pass |
 | D1.1 | Later | 写 art-safe mission slice，不要求本阶段全量美术完工 | content-pack docs/example | boundary check OK |
 | E1.1 | Later | 守住 AI 副官慢频高层决策，不花 smoke token | AI contract docs/code if needed | validator/no-key path |
 | F1-F4 | Later | 只写平台契约，不先写服务器 | platform docs | `git diff --check` |
@@ -655,6 +655,8 @@ check_public_content_boundary.ps1 -Path content-packs/project-owned-visual-slice
 
 **Goal:** 确保真实演示时能从机库走到战斗，再到损伤、结算、维修、重开，不靠开发者口头补洞。
 
+**Status:** Completed 2026-06-07. The smoke path reaches combat, Debrief, Debrief summary, repair/Mech Lab, squad relaunch identity and compact loadout review.
+
 **Files:**
 
 - Modify if needed: `unity-mc2-demo/Assets/StreamingAssets/CommanderScripts/mc2_01-visible-flow-audit.txt`
@@ -674,6 +676,16 @@ git diff --check
 - Smoke 到达胜利、战报、维修、回机库、再次出战。
 - 不出现保存槽、账号面板、大日志。
 - 文档能给非开发人员照着演示。
+
+**Completed Evidence:**
+
+```text
+analysis-output/unity-player-visible-flow-seal.log: MC2 demo smoke test exiting with code 0.
+Debrief evidence: MC2 debrief resolve OK; MC2 debrief open OK; MC2 debrief summary assertion OK.
+Repair/relaunch evidence: actions=Repair & Mech Lab/Next Contract/Retry Battle/Close; MC2 saved account delta; assert-restart-identity depot; MC2 loadout compact assertion OK.
+docs-playable-demo-walkthrough-2026-06-07.md now points to the seal log and describes the proven loop.
+docs-playable-demo-investor-evidence-2026-06-07.md now leads with the visible-flow seal refresh.
+```
 
 **Commit:** `Seal visible playable walkthrough`
 

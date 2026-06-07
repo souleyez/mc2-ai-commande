@@ -300,8 +300,8 @@ Known good strings:
 | 7 | Done | `Stabilize reference visual manifest export` | 私有参考模型/材质/道具/地形纹理导出走可审计 manifest，缺失时给清晰 warning | exporter validation + ignored manifest |
 | 8 | Done | `Harden Unity reference visual loader` | Unity manifest-first，缺失私有包时回退到明显开发占位 | build + fallback capture |
 | 9 | Done | `Document replaceable visual ids` | 固化换包 id，方便以后整包替换、换皮和公开安全包 | docs + boundary check |
-| 10 | Next | `Seal visible playable walkthrough` | 启动、机库、战斗、损伤、结算、重开完整流程封口 | visible-flow smoke |
-| 11 | Later | `Refresh investor evidence package` | 更新当前本地证据页，说明能演示什么、哪些仍是原型 | six captures + docs |
+| 10 | Done | `Seal visible playable walkthrough` | 启动、机库、战斗、损伤、结算、重开完整流程封口 | visible-flow smoke |
+| 11 | Next | `Refresh investor evidence package` | 更新当前本地证据页，说明能演示什么、哪些仍是原型 | six captures + docs |
 | 12 | Later | `Prepare public art-safe mission slice` | 从 text-safe metadata 进入第一张图的公开视觉替换计划 | boundary check + provenance docs |
 | 13 | Later | `Guard AI deputy regression` | AI 保持高层、可离线、无 token smoke | validator/smoke |
 | 14 | Later | `Document platform reward contracts` | 主服务器、地图服务器、奖励认证契约 | docs check |

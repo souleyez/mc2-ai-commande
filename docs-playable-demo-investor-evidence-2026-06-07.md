@@ -4,6 +4,20 @@ Purpose: one concise evidence page for showing the current Windows playable Demo
 
 The current evidence proves a local playable loop: MechLab fitting, squad launch, sparse tactical command, contact pressure, visible section damage, and a repeatable capture/build path. It is still a prototype evidence pack, not final public art.
 
+## Visible Flow Seal Refresh
+
+Refreshed on 2026-06-07 after `Seal visible playable walkthrough`.
+
+| Gate | Result | Evidence |
+| --- | --- | --- |
+| Visible-flow smoke | Pass | `analysis-output/unity-player-visible-flow-seal.log` reports `MC2 demo smoke test exiting with code 0`. |
+| Combat command loop | Pass | The same log reports quiet, tracking and fire combat assertions with sparse UI, status rows, solo order, squad command, Jet, contact pressure and hidden combat log. |
+| Debrief | Pass | The log reports `MC2 debrief resolve OK`, `MC2 debrief open OK`, and `MC2 debrief summary assertion OK` with `result=Victory`, objectives `6/6`, payout/salvage/bounty rows and clear overlays. |
+| Repair and return path | Pass | The log reports `actions=Repair & Mech Lab/Next Contract/Retry Battle/Close`, saved account delta, compact loadout review, repair copy and Mech Lab route. |
+| Relaunch identity | Pass | The log reports `assert-restart-identity depot` and `MC2 loadout compact assertion OK` after the reserve squad path. |
+
+Visible-flow judgment: the local Windows Demo can now be described as a sealed first playable loop: fit squad, launch, issue squad/solo/Jet commands, fight to victory, read Debrief, repair or return to Mech Lab, and relaunch without relying on presenter hand-waving.
+
 ## Current Visual Gate Refresh
 
 Refreshed on 2026-06-07 after `Gate first map visual slice`.

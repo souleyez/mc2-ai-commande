@@ -22,6 +22,14 @@ Use the current Windows build or the local development shortcut. The walkthrough
 
 If the build uses local private reference content, describe it only as development evidence for scale, pacing, and readability. Public or commercial builds must use project-owned or licensed replacement content packs.
 
+Current seal evidence:
+
+```text
+analysis-output/unity-player-visible-flow-seal.log
+```
+
+The current seal smoke exits with code `0` and proves the scripted live path reaches combat, Debrief, Debrief summary, repair/Mech Lab, squad relaunch identity and compact loadout review.
+
 ## Three-Minute Talk Track
 
 ### 0:00 - 0:20: Open With The Product Idea
@@ -198,6 +206,7 @@ analysis-output/reference-visual-captures/mechlab.png
 analysis-output/reference-visual-captures/spawn.png
 analysis-output/reference-visual-captures/damage-demo.png
 analysis-output/reference-visual-captures/damage-demo.json
+analysis-output/unity-player-visible-flow-seal.log
 analysis-output/unity-player-battle-ui-sparse.log
 ```
 
