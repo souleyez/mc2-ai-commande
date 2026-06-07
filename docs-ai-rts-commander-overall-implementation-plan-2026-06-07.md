@@ -8,7 +8,7 @@
 
 **Tech Stack:** Unity 6, C#, Windows Standalone first, deterministic BattleCore, PowerShell validator/build/smoke/capture scripts, replaceable content packs, optional high-level AI deputy adapter, future main server and map server contracts.
 
-**Revision:** 2026-06-07 v3. This is the fixed overall plan. The newest detailed execution plan is `docs-ai-rts-commander-v1-detailed-execution-plan-2026-06-07.md`; the supporting roadmap is `docs-ai-rts-commander-detailed-roadmap-2026-06-07.md`; the archived day-to-day queue remains `docs-playable-demo-current-execution-plan-2026-06-07.md`.
+**Revision:** 2026-06-07 v4. This is the fixed overall plan. The current master execution plan is `docs-ai-rts-commander-current-master-plan-2026-06-07.md`; the previous detailed execution plan is `docs-ai-rts-commander-v1-detailed-execution-plan-2026-06-07.md`; the supporting roadmap is `docs-ai-rts-commander-detailed-roadmap-2026-06-07.md`; the archived day-to-day queue remains `docs-playable-demo-current-execution-plan-2026-06-07.md`.
 
 ---
 
@@ -24,6 +24,7 @@
 
 ```text
 docs-ai-rts-commander-overall-implementation-plan-2026-06-07.md
+docs-ai-rts-commander-current-master-plan-2026-06-07.md
 docs-ai-rts-commander-v1-detailed-execution-plan-2026-06-07.md
 docs-ai-rts-commander-detailed-roadmap-2026-06-07.md
 docs-playable-demo-current-execution-plan-2026-06-07.md
@@ -32,13 +33,14 @@ docs-playable-demo-current-execution-plan-2026-06-07.md
 分工：
 
 1. 本文件管产品方向、架构边界、里程碑和长期平台路线。
-2. `docs-ai-rts-commander-v1-detailed-execution-plan-2026-06-07.md` 管最新提交级执行计划、文件入口、命令、验收标准和停止条件。
-3. `docs-ai-rts-commander-detailed-roadmap-2026-06-07.md` 管当前真实状态、阶段拆解、历史工作包和路线说明。
-4. `docs-playable-demo-current-execution-plan-2026-06-07.md` 保留旧的日常执行上下文和已完成任务证据。
+2. `docs-ai-rts-commander-current-master-plan-2026-06-07.md` 管当前提交级主队列、视觉/碰撞回归、私有参考视觉边界和近期执行顺序。
+3. `docs-ai-rts-commander-v1-detailed-execution-plan-2026-06-07.md` 保留上一版提交级执行计划、文件入口、命令、验收标准和已完成任务细节。
+4. `docs-ai-rts-commander-detailed-roadmap-2026-06-07.md` 管当前真实状态、阶段拆解、历史工作包和路线说明。
+5. `docs-playable-demo-current-execution-plan-2026-06-07.md` 保留旧的日常执行上下文和已完成任务证据。
 
 执行顺序：
 
-1. 先看最新细计划 `docs-ai-rts-commander-v1-detailed-execution-plan-2026-06-07.md` 的第一个 `Next` 或 `In Progress`。
+1. 先看当前主计划 `docs-ai-rts-commander-current-master-plan-2026-06-07.md` 的第一个 `Next` 或 `In Progress`。
 2. 每次只做一个可验证小提交。
 3. BattleCore 规则先于 Unity 表现。
 4. 截图和 smoke 只能作为证据，不能代替规则验证。

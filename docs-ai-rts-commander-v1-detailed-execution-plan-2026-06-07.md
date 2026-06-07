@@ -8,7 +8,7 @@
 
 **Tech Stack:** Unity 6, C#, Windows Standalone first, deterministic BattleCore, PowerShell validator/build/smoke/capture scripts, replaceable content packs, optional high-level AI deputy adapter, later main server/map server/Web ranking contracts.
 
-**Revision:** 2026-06-07 v1. This is the more detailed plan requested after the current playable-demo handoff and public text-safe slice. The older plan entrypoints remain valid, but this file is the current fine-grained work plan.
+**Revision:** 2026-06-07 v2. This file is now the previous detailed execution plan and remains useful for completed MechLab, loadout, damage and AI task details. The current master execution entrypoint is `docs-ai-rts-commander-current-master-plan-2026-06-07.md`.
 
 ---
 
@@ -16,14 +16,15 @@
 
 当用户说“按计划继续”时，执行顺序是：
 
-1. 先看本文件 `## 5. Current Commit Queue`。
-2. 只取第一个 `Next` 或 `In Progress` 任务。
-3. 每次做一个小提交，不跨阶段偷做大功能。
-4. 先写或更新 validator/smoke/capture 证据，再做最小实现。
-5. BattleCore 规则优先，Unity 只负责表现。
-6. 不提交 `analysis-output/`、Unity player build、截图、sidecar JSON 或临时日志，除非用户明确要求打包。
-7. Unity 运行后检查 scene fileID churn；没有真实 scene 变更就不要入库。
-8. 公开文档只讲本项目自己的 AI RTS 指挥探索，不把本地参考内容当产品身份。
+1. 先看 `docs-ai-rts-commander-current-master-plan-2026-06-07.md` 的 `## 5. Current Commit Queue`。
+2. 如果需要上一版任务细节，再回到本文件 `## 5. Current Commit Queue`。
+3. 只取第一个 `Next` 或 `In Progress` 任务。
+4. 每次做一个小提交，不跨阶段偷做大功能。
+5. 先写或更新 validator/smoke/capture 证据，再做最小实现。
+6. BattleCore 规则优先，Unity 只负责表现。
+7. 不提交 `analysis-output/`、Unity player build、截图、sidecar JSON 或临时日志，除非用户明确要求打包。
+8. Unity 运行后检查 scene fileID churn；没有真实 scene 变更就不要入库。
+9. 公开文档只讲本项目自己的 AI RTS 指挥探索，不把本地参考内容当产品身份。
 
 仓库里 `docs` 当前是一个历史说明文件，不是目录；因此本计划按现有项目习惯放在根目录 `docs-*.md`。
 
