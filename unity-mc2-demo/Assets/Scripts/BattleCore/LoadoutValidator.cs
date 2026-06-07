@@ -14,6 +14,7 @@ namespace MC2Demo.BattleCore
         public float TotalArmorHardnessBonus { get; internal set; }
         public float TotalHeatDissipationBonus { get; internal set; }
         public int OccupiedGridCells { get; internal set; }
+        public string[] ShortStatusCodes { get; internal set; } = Array.Empty<string>();
 
         internal void AddError(string error)
         {
@@ -32,26 +33,26 @@ namespace MC2Demo.BattleCore
             if (contract == null)
             {
                 result.AddError("Loadout contract is missing.");
-                return result;
+                return FinalizeResult(result);
             }
 
             if (loadout == null)
             {
                 result.AddError("Loadout build is missing.");
-                return result;
+                return FinalizeResult(result);
             }
 
             LoadoutChassisDefinition chassis = FindChassis(contract, loadout.chassisId);
             if (chassis == null)
             {
                 result.AddError("Unknown chassis: " + loadout.chassisId);
-                return result;
+                return FinalizeResult(result);
             }
 
             if (chassis.slotGrid == null || chassis.slotGrid.width <= 0 || chassis.slotGrid.height <= 0)
             {
                 result.AddError("Chassis has no valid slot grid: " + chassis.chassisId);
-                return result;
+                return FinalizeResult(result);
             }
 
             Dictionary<string, string> occupiedGrid = new(StringComparer.Ordinal);
@@ -100,7 +101,70 @@ namespace MC2Demo.BattleCore
                 result.AddError("Weight over.");
             }
 
+            return FinalizeResult(result);
+        }
+
+        private static LoadoutValidationResult FinalizeResult(LoadoutValidationResult result)
+        {
+            result.ShortStatusCodes = BuildShortStatusCodes(result);
             return result;
+        }
+
+        private static string[] BuildShortStatusCodes(LoadoutValidationResult result)
+        {
+            if (result == null)
+            {
+                return Array.Empty<string>();
+            }
+
+            List<string> codes = new();
+            string[] errors = result.Errors;
+            if (errors.Length == 0)
+            {
+                AddCode(codes, "OK");
+                return codes.ToArray();
+            }
+
+            for (int index = 0; index < errors.Length; index++)
+            {
+                string error = errors[index] ?? "";
+                if (error.IndexOf("Heat over", StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    AddCode(codes, "HEAT!");
+                }
+                else if (error.IndexOf("Weight over", StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    AddCode(codes, "WT!");
+                }
+                else if (error.IndexOf("out-of-bounds", StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    AddCode(codes, "OOB");
+                }
+                else if (error.IndexOf("occupied by both", StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    AddCode(codes, "OCC!");
+                }
+                else if (error.IndexOf("blocked", StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    AddCode(codes, "BLK");
+                }
+                else
+                {
+                    AddCode(codes, "REVIEW");
+                }
+            }
+
+            return codes.ToArray();
+        }
+
+        private static void AddCode(List<string> codes, string code)
+        {
+            if (codes == null || string.IsNullOrWhiteSpace(code) || codes.Contains(code))
+            {
+                return;
+            }
+
+            codes.Add(code);
         }
 
         private static void ValidateEquipmentSlot(

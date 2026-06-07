@@ -953,6 +953,33 @@ namespace MC2Demo.EditorTools
                     throw new InvalidDataException("Projected loadout grid dimensions are invalid for " + unitType);
                 }
 
+                if (preview.CellStates.Length < preview.GridCapacity)
+                {
+                    throw new InvalidDataException("Projected loadout did not expose per-cell states for " + unitType);
+                }
+
+                if (!HasPreviewCellStateCode(preview, CombatLoadoutPreviewCellStateCode.Open)
+                    || !HasPreviewCellStateCode(preview, CombatLoadoutPreviewCellStateCode.Occupied))
+                {
+                    throw new InvalidDataException("Projected loadout should expose OPEN and OCC cell states for " + unitType);
+                }
+
+                if (preview.ShortStatusCodes.Length == 0)
+                {
+                    throw new InvalidDataException("Projected loadout should expose short status codes for " + unitType);
+                }
+
+                if (preview.Validation.IsValid && !HasPreviewShortStatusCode(preview, "OK"))
+                {
+                    throw new InvalidDataException("Projected valid loadout should expose OK short status for " + unitType);
+                }
+
+                if (!preview.Validation.IsValid
+                    && !HasAnyPreviewShortStatusCode(preview, "HEAT!", "WT!", "OOB", "OCC!", "BLK", "REVIEW"))
+                {
+                    throw new InvalidDataException("Projected invalid loadout should expose a short review status for " + unitType);
+                }
+
                 if (preview.Validation.OccupiedGridCells != preview.OccupiedCells.Length)
                 {
                     throw new InvalidDataException("Projected loadout validation and visual grid disagree for " + unitType);
@@ -1069,7 +1096,10 @@ namespace MC2Demo.EditorTools
                             gridY = secondItem.GridY
                         }
                     });
-                if (overlapPreview.Validation.IsValid || !HasLoadoutErrorContaining(overlapPreview, "occupied by both"))
+                if (overlapPreview.Validation.IsValid
+                    || !HasLoadoutErrorContaining(overlapPreview, "occupied by both")
+                    || !HasPreviewShortStatusCode(overlapPreview, "OCC!")
+                    || !HasPreviewCellStateCode(overlapPreview, CombatLoadoutPreviewCellStateCode.Conflict))
                 {
                     throw new InvalidDataException("Projected loadout placement override did not surface overlap validation for " + unitType);
                 }
@@ -1087,7 +1117,10 @@ namespace MC2Demo.EditorTools
                             gridY = 0
                         }
                     });
-                if (outOfBoundsPreview.Validation.IsValid || !HasLoadoutErrorContaining(outOfBoundsPreview, "out-of-bounds"))
+                if (outOfBoundsPreview.Validation.IsValid
+                    || !HasLoadoutErrorContaining(outOfBoundsPreview, "out-of-bounds")
+                    || !HasPreviewShortStatusCode(outOfBoundsPreview, "OOB")
+                    || !HasPreviewCellStateCode(outOfBoundsPreview, CombatLoadoutPreviewCellStateCode.OutOfBounds))
                 {
                     throw new InvalidDataException("Projected loadout placement override did not surface bounds validation for " + unitType);
                 }
@@ -1236,6 +1269,48 @@ namespace MC2Demo.EditorTools
             {
                 if (!string.IsNullOrEmpty(error)
                     && error.IndexOf(text, StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool HasPreviewShortStatusCode(CombatLoadoutPreview preview, string code)
+        {
+            string[] codes = preview?.ShortStatusCodes ?? preview?.Validation?.ShortStatusCodes ?? Array.Empty<string>();
+            for (int index = 0; index < codes.Length; index++)
+            {
+                if (string.Equals(codes[index], code, StringComparison.Ordinal))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool HasAnyPreviewShortStatusCode(CombatLoadoutPreview preview, params string[] expectedCodes)
+        {
+            for (int index = 0; index < expectedCodes.Length; index++)
+            {
+                if (HasPreviewShortStatusCode(preview, expectedCodes[index]))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool HasPreviewCellStateCode(CombatLoadoutPreview preview, string code)
+        {
+            CombatLoadoutPreviewCellState[] states = preview?.CellStates ?? Array.Empty<CombatLoadoutPreviewCellState>();
+            for (int index = 0; index < states.Length; index++)
+            {
+                CombatLoadoutPreviewCellState state = states[index];
+                if (state != null && string.Equals(state.Code, code, StringComparison.Ordinal))
                 {
                     return true;
                 }
@@ -1583,6 +1658,11 @@ namespace MC2Demo.EditorTools
                 throw new InvalidDataException("Unexpected synthetic loadout armor/heat-sink totals.");
             }
 
+            if (!HasLoadoutShortStatusCode(stockResult, "OK"))
+            {
+                throw new InvalidDataException("Synthetic stock loadout should expose OK short status.");
+            }
+
             AssertLoadoutValid(
                 contract,
                 MakeSyntheticLoadout(
@@ -1634,12 +1714,22 @@ namespace MC2Demo.EditorTools
             LoadoutChassisDefinition chassis = contract.chassisDefinitions[0];
             float oldHeatLimit = chassis.heatLimit;
             chassis.heatLimit = 7f;
-            AssertLoadoutInvalid(contract, stockLoadout, "heat limit overrun");
+            LoadoutValidationResult heatLimitResult = AssertLoadoutInvalid(contract, stockLoadout, "heat limit overrun");
+            if (!HasLoadoutShortStatusCode(heatLimitResult, "HEAT!"))
+            {
+                throw new InvalidDataException("Heat limit overrun should expose HEAT! short status.");
+            }
+
             chassis.heatLimit = oldHeatLimit;
 
             float oldWeightLimit = chassis.weightLimit;
             chassis.weightLimit = 10f;
-            AssertLoadoutInvalid(contract, stockLoadout, "weight limit overrun");
+            LoadoutValidationResult weightLimitResult = AssertLoadoutInvalid(contract, stockLoadout, "weight limit overrun");
+            if (!HasLoadoutShortStatusCode(weightLimitResult, "WT!"))
+            {
+                throw new InvalidDataException("Weight limit overrun should expose WT! short status.");
+            }
+
             chassis.weightLimit = oldWeightLimit;
         }
 
@@ -1652,13 +1742,29 @@ namespace MC2Demo.EditorTools
             }
         }
 
-        private static void AssertLoadoutInvalid(LoadoutContract contract, LoadoutBuildDefinition loadout, string scenario)
+        private static LoadoutValidationResult AssertLoadoutInvalid(LoadoutContract contract, LoadoutBuildDefinition loadout, string scenario)
         {
             LoadoutValidationResult result = LoadoutValidator.Validate(contract, loadout);
             if (result.IsValid)
             {
                 throw new InvalidDataException("Expected invalid loadout for " + scenario + ".");
             }
+
+            return result;
+        }
+
+        private static bool HasLoadoutShortStatusCode(LoadoutValidationResult result, string code)
+        {
+            string[] codes = result?.ShortStatusCodes ?? Array.Empty<string>();
+            for (int index = 0; index < codes.Length; index++)
+            {
+                if (string.Equals(codes[index], code, StringComparison.Ordinal))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private static string FirstLoadoutError(LoadoutValidationResult result)

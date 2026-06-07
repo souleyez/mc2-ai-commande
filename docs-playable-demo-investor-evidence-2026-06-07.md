@@ -50,6 +50,18 @@ Refreshed on 2026-06-07 after V4.
 
 Refresh judgment: the local development Demo is again validated as buildable, smoke-tested, capturable and explicitly development-only. The next product task is the public replacement content slice.
 
+## MechLab Grid Feel Refresh
+
+Refreshed on 2026-06-07 after `Polish MechLab grid feel`.
+
+| Gate | Result | Evidence |
+| --- | --- | --- |
+| Mission validator | Pass | `analysis-output/unity-validate-mechlab-grid-feel.log` reports `MC2 demo contract validation OK`. |
+| Windows build | Pass | `analysis-output/unity-build-mechlab-grid-feel.log` reports `Build Finished, Result: Success` and `MC2 Unity demo Windows build OK`. |
+| MechLab capture | Pass | `analysis-output/reference-visual-captures/mechlab.png` and `.json` refreshed with `CellState=OK OPEN4 OCC12 OCC!0 OOB0`. |
+
+MechLab judgment: the fitting screen now proves whole weapon blocks, single-cell armor/cooling fillers, short H/W/G pressure, explicit cell-state evidence, and `noToggle=yes` for mounted weapons.
+
 ## Capture Command
 
 Run from the repository root:
@@ -68,7 +80,7 @@ analysis-output/reference-visual-captures/
 
 | Beat | Local Evidence | What It Proves | Talk Track |
 | --- | --- | --- | --- |
-| MechLab fitting | `analysis-output/reference-visual-captures/mechlab.png` and `.json` | The fitting loop is visible: whole weapon blocks, `A+` armor, `C+` cooling, H/W/G pressure, `Fit OK`, and mounted weapons active by default. | The player prepares the squad by arranging physical equipment blocks instead of toggling abstract rows. |
+| MechLab fitting | `analysis-output/reference-visual-captures/mechlab.png` and `.json` | The fitting loop is visible: whole weapon blocks, `A+` armor, `C+` cooling, H/W/G pressure, `Fit OK`, `CellState=OK OPEN4 OCC12 OCC!0 OOB0`, and mounted weapons active by default. | The player prepares the squad by arranging physical equipment blocks instead of toggling abstract rows. |
 | Squad spawn | `analysis-output/reference-visual-captures/spawn.png` and `.json` | Battle starts with a sparse HUD, commander-follow camera, 3-player squad, objective card, Jet/Map/Bay/System controls, and no combat log wall. | The default command state is simple enough for future touch control: whole squad first, status rows for exceptions. |
 | Airfield contact | `analysis-output/reference-visual-captures/airfield.png` and `.json` | Terrain, water, runway/road tones, props, 12 active hostiles, 8 visible hostiles, and the next hangar objective are readable. | The map is now a tactical space with terrain and contact direction, not just colored blocks. |
 | Hangar pressure | `analysis-output/reference-visual-captures/hangar-contact.png` and `.json` | A dense objective fight is visible with 20 active hostiles, 16 visible hostiles, sparse battle card, compact objective card, `unitRadii infantry=24 vehicle=54 mech=64`, and `ContactSpread` proof. | This is the current pressure-test image: it shows the battle system under load while proving the units are separated by BattleCore, not merely painted apart. |
@@ -80,7 +92,7 @@ analysis-output/reference-visual-captures/
 Current refreshed sidecars report:
 
 ```text
-mechlab: MechLabCapture=open ... weaponBlock=1 Streak ... 1x2 fillers=A+/C+ fit=Fit OK pressure=H 12/22  W 16/16  G 12/16 alwaysMounted=weapons 6/6 items 6/6 noToggle=yes
+mechlab: MechLabCapture=open ... weaponBlock=1 Streak ... 1x2 fillers=A+/C+ fit=Fit OK pressure=H 12/22  W 16/16  G 12/16 CellState=OK OPEN4 OCC12 OCC!0 OOB0 alwaysMounted=weapons 6/6 items 6/6 noToggle=yes
 spawn: activeHostileCount=0 visibleHostileCount=0 BattleHud=active controls=statusRows+jet+map+bay+system combatPanel=h78 combatLogVisible=no objectivePanel=compactObjective objectiveH=74 missionMap=closed saveUi=disabled ContactSpread=players 3 hostiles 0 nearestPH=n/a nearestHH=n/a nearestPP=128
 airfield: activeHostileCount=12 visibleHostileCount=8 ContactSpread=players 3 hostiles 12 nearestPH=704.7 nearestHH=108 currentObjective=Destroy Hangar
 hangar-contact: activeHostileCount=20 visibleHostileCount=16 BattleOccupancy=units 23/29 unitRadii infantry=24 vehicle=54 mech=64 ContactSpread=players 3 hostiles 20 nearestPH=272.8 nearestHH=48 nearestPP=259.1 playerSpan=519.9 hostileSpan=4304.2 centroidDistance=1161.6

@@ -10,8 +10,10 @@ namespace MC2Demo.BattleCore
         public int GridWidth { get; }
         public int GridHeight { get; }
         public CombatLoadoutPreviewGridCell[] OccupiedCells { get; }
+        public CombatLoadoutPreviewCellState[] CellStates { get; }
         public CombatLoadoutPreviewItem[] Items { get; }
         public CombatLoadoutPreviewBlock[] Blocks { get; }
+        public string[] ShortStatusCodes { get; }
         public float HeatLimit { get; }
         public float WeightLimit { get; }
 
@@ -21,21 +23,33 @@ namespace MC2Demo.BattleCore
             int gridWidth,
             int gridHeight,
             CombatLoadoutPreviewGridCell[] occupiedCells,
+            CombatLoadoutPreviewCellState[] cellStates,
             CombatLoadoutPreviewItem[] items,
             float heatLimit,
             float weightLimit,
-            CombatLoadoutPreviewBlock[] blocks = null)
+            CombatLoadoutPreviewBlock[] blocks = null,
+            string[] shortStatusCodes = null)
         {
             Validation = validation;
             GridCapacity = gridCapacity;
             GridWidth = gridWidth;
             GridHeight = gridHeight;
             OccupiedCells = occupiedCells ?? Array.Empty<CombatLoadoutPreviewGridCell>();
+            CellStates = cellStates ?? Array.Empty<CombatLoadoutPreviewCellState>();
             Items = items ?? Array.Empty<CombatLoadoutPreviewItem>();
             Blocks = blocks ?? Array.Empty<CombatLoadoutPreviewBlock>();
+            ShortStatusCodes = shortStatusCodes ?? validation?.ShortStatusCodes ?? Array.Empty<string>();
             HeatLimit = heatLimit;
             WeightLimit = weightLimit;
         }
+    }
+
+    public static class CombatLoadoutPreviewCellStateCode
+    {
+        public const string Open = "OPEN";
+        public const string Occupied = "OCC";
+        public const string Conflict = "OCC!";
+        public const string OutOfBounds = "OOB";
     }
 
     public sealed class CombatLoadoutPreviewItem
@@ -105,6 +119,38 @@ namespace MC2Demo.BattleCore
             WeaponType = weaponType;
             ShapeLabel = string.IsNullOrWhiteSpace(shapeLabel) ? "1x1" : shapeLabel;
             ShapeCellCount = Math.Max(1, shapeCellCount);
+        }
+    }
+
+    public sealed class CombatLoadoutPreviewCellState
+    {
+        public int X { get; }
+        public int Y { get; }
+        public string Code { get; }
+        public int StackCount { get; }
+        public int SourceWeaponIndex { get; }
+        public string ItemId { get; }
+        public string Category { get; }
+        public bool IsOpen => string.Equals(Code, CombatLoadoutPreviewCellStateCode.Open, StringComparison.Ordinal);
+        public bool IsConflict => string.Equals(Code, CombatLoadoutPreviewCellStateCode.Conflict, StringComparison.Ordinal);
+        public bool IsOutOfBounds => string.Equals(Code, CombatLoadoutPreviewCellStateCode.OutOfBounds, StringComparison.Ordinal);
+
+        internal CombatLoadoutPreviewCellState(
+            int x,
+            int y,
+            string code,
+            int stackCount,
+            int sourceWeaponIndex = -1,
+            string itemId = null,
+            string category = null)
+        {
+            X = x;
+            Y = y;
+            Code = string.IsNullOrWhiteSpace(code) ? CombatLoadoutPreviewCellStateCode.Open : code;
+            StackCount = Math.Max(0, stackCount);
+            SourceWeaponIndex = sourceWeaponIndex;
+            ItemId = itemId;
+            Category = category;
         }
     }
 
@@ -349,16 +395,22 @@ namespace MC2Demo.BattleCore
             };
 
             LoadoutValidationResult validation = LoadoutValidator.Validate(contract, contract.loadouts[0]);
+            CombatLoadoutPreviewCellState[] cellStates = BuildCellStates(
+                occupiedCellDefinitions,
+                ProjectedGridWidth,
+                gridHeight);
             return new CombatLoadoutPreview(
                 validation,
                 gridCapacity,
                 ProjectedGridWidth,
                 gridHeight,
                 occupiedCellDefinitions,
+                cellStates,
                 previewItemDefinitions,
                 heatLimit,
                 weightLimit,
-                blockDefinitions);
+                blockDefinitions,
+                validation.ShortStatusCodes);
         }
 
         private static void AddProjectedFillerItems(
@@ -508,6 +560,68 @@ namespace MC2Demo.BattleCore
         private static bool IsInsideGrid(int x, int y, int width, int height)
         {
             return x >= 0 && y >= 0 && x < width && y < height;
+        }
+
+        private static CombatLoadoutPreviewCellState[] BuildCellStates(
+            CombatLoadoutPreviewGridCell[] occupiedCells,
+            int width,
+            int height)
+        {
+            List<CombatLoadoutPreviewCellState> states = new();
+            CombatLoadoutPreviewGridCell[] cells = occupiedCells ?? Array.Empty<CombatLoadoutPreviewGridCell>();
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    int stackCount = 0;
+                    CombatLoadoutPreviewGridCell first = null;
+                    for (int index = 0; index < cells.Length; index++)
+                    {
+                        CombatLoadoutPreviewGridCell cell = cells[index];
+                        if (cell == null || cell.X != x || cell.Y != y)
+                        {
+                            continue;
+                        }
+
+                        first ??= cell;
+                        stackCount++;
+                    }
+
+                    string code = stackCount == 0
+                        ? CombatLoadoutPreviewCellStateCode.Open
+                        : stackCount == 1
+                            ? CombatLoadoutPreviewCellStateCode.Occupied
+                            : CombatLoadoutPreviewCellStateCode.Conflict;
+                    states.Add(new CombatLoadoutPreviewCellState(
+                        x,
+                        y,
+                        code,
+                        stackCount,
+                        first?.SourceWeaponIndex ?? -1,
+                        first?.ItemId,
+                        first?.Category));
+                }
+            }
+
+            for (int index = 0; index < cells.Length; index++)
+            {
+                CombatLoadoutPreviewGridCell cell = cells[index];
+                if (cell == null || IsInsideGrid(cell.X, cell.Y, width, height))
+                {
+                    continue;
+                }
+
+                states.Add(new CombatLoadoutPreviewCellState(
+                    cell.X,
+                    cell.Y,
+                    CombatLoadoutPreviewCellStateCode.OutOfBounds,
+                    1,
+                    cell.SourceWeaponIndex,
+                    cell.ItemId,
+                    cell.Category));
+            }
+
+            return states.ToArray();
         }
 
         private static CombatLoadoutPreviewBlock[] BuildPreviewBlocks(CombatLoadoutPreviewGridCell[] occupiedCells)

@@ -99,7 +99,7 @@ Playable Demo Handoff: 把已能跑的 Windows 本地 Demo 收成可重复构建
 | Gap | Why It Matters | Next Move |
 | --- | --- | --- |
 | 视觉还需要稳定回归 | 当前已有样子，但机甲、道具、遮挡、占位仍要避免退化成堆叠 | 每次视觉改动跑 capture + sidecar |
-| Demo handoff 已过 development-only 门检 | 构建、smoke、截图、walkthrough、内容边界已能一口气解释；当前 dev build 会被正确标记为 development-only | Polish MechLab grid feel |
+| Demo handoff 已过 development-only 门检 | 构建、smoke、截图、walkthrough、内容边界已能一口气解释；当前 dev build 会被正确标记为 development-only | Prove loadout battle effects |
 | 压力图已完成 V4 占位刷新 | `hangar-contact` 仍是最拥挤截图，但已有 `unitRadii 24/54/64` 和 `ContactSpread` 证据 | Refresh full evidence before next feature |
 | 公开替换包还没进入生产 | 投资/公开演示需要至少 text-safe，最好 art-safe | 开 P3 content replacement slice |
 
@@ -518,7 +518,7 @@ Current recommended queue:
 
 | Order | Status | Commit | Purpose |
 | --- | --- | --- | --- |
-| 1 | Next | `Polish MechLab grid feel` | Make equipment-grid fitting physical, short and readable |
+| 1 | Done | `Polish MechLab grid feel` | Make equipment-grid fitting physical, short and readable |
 | 2 | Next | `Prove loadout battle effects` | Prove mounted weapons, armor and cooling alter BattleCore |
 | 3 | Next | `Polish weapon and damage readability` | Strengthen weapon families and section damage story |
 | 4 | Next | `Guard sparse battle UI regression` | Keep battle UI clean while preserving command controls |

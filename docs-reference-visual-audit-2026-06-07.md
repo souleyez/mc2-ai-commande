@@ -35,7 +35,7 @@ Latest refreshed sidecar counts:
 
 | Preset | PNG Bytes | Mission Time | Active Hostiles | Visible Hostiles | Key Evidence |
 | --- | ---: | ---: | ---: | ---: | --- |
-| `mechlab` | 200183 | 0.25s | 0 | 0 | `MechLabCapture=open`, `Fit OK`, weapon blocks, fillers and no weapon toggle |
+| `mechlab` | 203769 | 0.25s | 0 | 0 | `MechLabCapture=open`, `Fit OK`, weapon blocks, fillers, `CellState=OK OPEN4 OCC12 OCC!0 OOB0` and no weapon toggle |
 | `spawn` | 368280 | 1.41s | 0 | 0 | sparse battle HUD, commander-follow camera, unit radii `24/54/64`, 100 occupancy placeholders |
 | `airfield` | 364612 | 13.14s | 12 | 8 | readable terrain/water/runway and first contact direction, `ContactSpread nearestPH=704.7 nearestHH=108` |
 | `hangar-contact` | 365154 | 21.16s | 20 | 16 | unit radii `24/54/64`, `ContactSpread=players 3 hostiles 20 nearestPH=272.8 nearestHH=48`, 120 occupancy placeholders |
@@ -95,6 +95,33 @@ Validation status:
 - The current Windows development build still returns expected `Result: FAILED` with 172 public-boundary findings, so it remains development-only.
 
 Current full-refresh judgment: V4 did not make the hangar fight quiet, but it made the density measurable. The six-preset set is healthy enough for the next task to move from visual occupancy back to package/public-boundary work.
+
+## MechLab Grid Feel Refresh 2026-06-07
+
+Refreshed after `Polish MechLab grid feel` with:
+
+```powershell
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoValidator.ValidateMissionContract -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-validate-mechlab-grid-feel.log"
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoBuilder.BuildWindows64 -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-build-mechlab-grid-feel.log"
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_reference_visuals.ps1 -Presets mechlab
+```
+
+Validation status:
+
+- `analysis-output/unity-validate-mechlab-grid-feel.log` reports `MC2 demo contract validation OK`.
+- `analysis-output/unity-build-mechlab-grid-feel.log` reports `Build Finished, Result: Success` and `MC2 Unity demo Windows build OK`.
+- `capture_reference_visuals.ps1 -Presets mechlab` reports `MC2 reference visual captures passed: 1 preset(s)`.
+- The Unity scene file only received fileID churn from batch runs and was manually restored before commit.
+
+Observed sidecar evidence:
+
+- `mechlab`: PNG bytes `203769`, `MechLabCapture=open flow=Mech Lab unit=Werewolf`, `weaponBlock=1 Streak ... 1x2`, `fillers=A+/C+`, `fit=Fit OK`, `pressure=H 12/22  W 16/16  G 12/16`, `CellState=OK OPEN4 OCC12 OCC!0 OOB0`, `alwaysMounted=weapons 6/6 items 6/6 noToggle=yes`.
+
+Visual judgment:
+
+- The MechLab grid now exposes structured short state evidence for open, occupied, conflict and out-of-bounds cells while keeping the visible UI compact.
+- Mounted weapons remain whole blocks with shape labels; armor plates and heat sinks remain single-cell fillers.
+- The screenshot still reads as a fitting surface rather than a large instruction panel.
 
 ## Capture Matrix
 

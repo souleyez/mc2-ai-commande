@@ -44,7 +44,7 @@
 - Content boundary documentation 已提交：`4819657 Document reference content boundary`.
 - V4 crowded contact occupancy 已验证。
 - Full demo evidence refresh 已验证。
-- Public replacement content slice 已打开，下一步是 `Polish MechLab grid feel`.
+- Public replacement content slice 已打开，`Polish MechLab grid feel` 已完成，下一步是 `Prove loadout battle effects`.
 - V4 evidence: `analysis-output/unity-validate-crowded-contact.log`, `analysis-output/unity-build-crowded-contact.log`, refreshed `hangar-contact` and `damage-demo` captures with `ContactSpread`.
 - Full refresh evidence: `analysis-output/unity-validate-demo-refresh.log`, `analysis-output/unity-build-demo-refresh.log`, `analysis-output/unity-player-demo-refresh.log`, six refreshed captures, clean starter boundary OK, current dev build boundary expected failed with 172 findings.
 - Public slice evidence: `content-packs/project-owned-text-safe-slice.example.json` passes public boundary check and is metadata-only, not yet mountable.
@@ -104,7 +104,7 @@
 | Gap | Why It Matters | Next Task |
 | --- | --- | --- |
 | MechLab 后续只需回归 | 整块占格和截图证据已完成，后续 UI 改动需要保持这个体验不退化 | G3 regression |
-| Demo handoff 已刷新 | Full refresh 已验证 build、smoke、capture 和 boundary；V4 contact-spread evidence 已纳入证据页 | Polish MechLab grid feel |
+| Demo handoff 已刷新 | Full refresh 已验证 build、smoke、capture 和 boundary；V4 contact-spread evidence 已纳入证据页 | Prove loadout battle effects |
 | 公开内容安全还需要干净替换包 | 当前开发 build 会被边界检查正确标为不适合公开发布 | R1 replacement slice later |
 
 ## 3. Architecture Contracts
@@ -273,7 +273,8 @@ Do not stage generated PNG/JSON/log evidence unless explicitly requested.
 | 16 | Done | `Polish crowded contact occupancy` | G2/G7 readability and occupancy |
 | 17 | Done | `Refresh playable demo evidence` | G8 handoff after V4 |
 | 18 | Done | `Open public replacement content slice` | G6 public boundary |
-| 19 | Next | `Polish MechLab grid feel` | G3 MechLab feel |
+| 19 | Done | `Polish MechLab grid feel` | G3 MechLab feel |
+| 20 | Next | `Prove loadout battle effects` | G3 MechLab feel |
 
 ## 6. Detailed Tasks
 

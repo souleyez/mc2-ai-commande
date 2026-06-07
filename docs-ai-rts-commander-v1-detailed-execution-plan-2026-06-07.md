@@ -206,7 +206,7 @@ Known good strings:
 
 | Order | Status | Commit | Purpose | Primary Gate |
 | --- | --- | --- | --- | --- |
-| 1 | Next | `Polish MechLab grid feel` | 装配格子更像整块装备放入槽位 | validator + `mechlab` capture |
+| 1 | Done | `Polish MechLab grid feel` | 装配格子更像整块装备放入槽位 | validator + build + `mechlab` capture |
 | 2 | Next | `Prove loadout battle effects` | 证明装配影响 BattleCore 战斗 | loadout validator |
 | 3 | Next | `Polish weapon and damage readability` | 强化武器类型、断臂、腿瘫、弹射故事 | `damage-demo` capture |
 | 4 | Next | `Guard sparse battle UI regression` | 确保战斗中不显示太多信息 | visible-flow smoke + captures |
@@ -221,7 +221,9 @@ Known good strings:
 
 ### Task 1: Polish MechLab Grid Feel
 
-**Status:** Next.
+**Status:** Completed 2026-06-07.
+
+**Result:** Added structured MechLab cell-state evidence at the BattleCore preview boundary. `LoadoutValidationResult` now exposes short status codes such as `OK`, `HEAT!`, `WT!`, `OOB` and `OCC!`; `CombatLoadoutPreview` now exposes per-cell `OPEN`, `OCC`, `OCC!` and `OOB` states. The MechLab UI shows a compact state line, and the `mechlab` capture sidecar reports `CellState=OK OPEN4 OCC12 OCC!0 OOB0` while preserving whole weapon blocks, `A+`/`C+` fillers and `noToggle=yes`.
 
 **Goal:** 让 MechLab 一眼像“把整块武器、装甲板、散热器放进机甲槽位”，并且不再暗示武器能启用/关闭。
 
@@ -316,7 +318,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_refere
 
 ### Task 2: Prove Loadout Changes Battle
 
-**Status:** After Task 1.
+**Status:** Next.
 
 **Goal:** 证明 MechLab 不是静态展示：装上的武器、装甲板、散热器会进入 BattleCore 并影响战斗。
 

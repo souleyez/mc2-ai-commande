@@ -45,7 +45,7 @@ namespace MC2Demo.Presentation
         private const float OcclusionBoundsRadiusPixelCap = 320f;
         private const float LoadoutCardHeight = 456f;
         private const float LoadoutCardStride = 468f;
-        private const float LoadoutGridSectionMinHeight = 204f;
+        private const float LoadoutGridSectionMinHeight = 224f;
         private const float MechLabDedicatedLayoutMinWidth = 900f;
         private const float MechLabDedicatedLayoutMinHeight = 560f;
         private const float MechLabDedicatedBaySummaryHeight = 520f;
@@ -3999,6 +3999,7 @@ namespace MC2Demo.Presentation
             LoadoutCompactCheck placementHeaderCheck = BuildLoadoutPlacementHeaderCompactCheck(unit, preview);
             LoadoutCompactCheck blockLabelCheck = BuildLoadoutBlockLabelCompactCheck(unit, preview);
             LoadoutCompactCheck gridBlockCueCheck = BuildLoadoutGridBlockCueCompactCheck(preview);
+            LoadoutCompactCheck cellStateCheck = BuildLoadoutCellStateCompactCheck(preview);
             LoadoutCompactCheck alwaysMountedCheck = BuildLoadoutAlwaysMountedCompactCheck(unit, preview);
             LoadoutCompactCheck selectedSummaryCheck = BuildLoadoutSelectedSummaryCompactCheck(unit, preview, weapons[0]);
             LoadoutCompactCheck weaponDetailCheck = BuildLoadoutWeaponDetailCompactCheck(unit, preview);
@@ -4036,6 +4037,8 @@ namespace MC2Demo.Presentation
                 + " "
                 + gridBlockCueCheck.Summary
                 + " "
+                + cellStateCheck.Summary
+                + " "
                 + alwaysMountedCheck.Summary
                 + " "
                 + selectedSummaryCheck.Summary
@@ -4071,6 +4074,7 @@ namespace MC2Demo.Presentation
                     && placementHeaderCheck.Accepted
                     && blockLabelCheck.Accepted
                     && gridBlockCueCheck.Accepted
+                    && cellStateCheck.Accepted
                     && alwaysMountedCheck.Accepted
                     && selectedSummaryCheck.Accepted
                     && weaponDetailCheck.Accepted
@@ -4682,6 +4686,7 @@ namespace MC2Demo.Presentation
                 4,
                 4,
                 new[] { left, right },
+                Array.Empty<CombatLoadoutPreviewCellState>(),
                 new[] { item },
                 0f,
                 0f);
@@ -4829,6 +4834,22 @@ namespace MC2Demo.Presentation
         private static string LoadoutGridBlockCueSummary()
         {
             return "GridBlock=outer-frame+contiguous-weapon+cell-dividers+single-cell-filler+shape-label+block-summary";
+        }
+
+        private static LoadoutCompactCheck BuildLoadoutCellStateCompactCheck(CombatLoadoutPreview preview)
+        {
+            string summary = LoadoutCellStateSummary(preview);
+            bool accepted = preview != null
+                && HasLoadoutCellStateCode(preview, CombatLoadoutPreviewCellStateCode.Open)
+                && HasLoadoutCellStateCode(preview, CombatLoadoutPreviewCellStateCode.Occupied)
+                && HasLoadoutShortStatusCode(preview, "OK")
+                && summary.StartsWith("CellState=", StringComparison.Ordinal)
+                && summary.IndexOf("OPEN", StringComparison.Ordinal) >= 0
+                && summary.IndexOf("OCC", StringComparison.Ordinal) >= 0
+                && summary.IndexOf("OK", StringComparison.Ordinal) >= 0
+                && summary.IndexOf("toggle", StringComparison.OrdinalIgnoreCase) < 0
+                && summary.Length <= 72;
+            return new LoadoutCompactCheck(accepted, summary);
         }
 
         private static LoadoutCompactCheck BuildLoadoutAlwaysMountedCompactCheck(UnitState unit, CombatLoadoutPreview preview)
@@ -5047,6 +5068,7 @@ namespace MC2Demo.Presentation
                 1,
                 1,
                 new[] { cell },
+                Array.Empty<CombatLoadoutPreviewCellState>(),
                 Array.Empty<CombatLoadoutPreviewItem>(),
                 0f,
                 0f);
@@ -5079,6 +5101,7 @@ namespace MC2Demo.Presentation
                 4,
                 4,
                 Array.Empty<CombatLoadoutPreviewGridCell>(),
+                Array.Empty<CombatLoadoutPreviewCellState>(),
                 Array.Empty<CombatLoadoutPreviewItem>(),
                 0f,
                 0f);
@@ -6101,6 +6124,7 @@ namespace MC2Demo.Presentation
             string pressure = ProjectedLoadoutPressureText(preview);
             string fitState = ProjectedLoadoutStateText(preview);
             string alwaysMounted = BuildLoadoutAlwaysMountedCompactCheck(unit, preview).Summary;
+            string cellState = LoadoutCellStateSummary(preview);
             return "MechLabCapture=open flow="
                 + DemoFlowScreenName(demoFlowScreen)
                 + " unit="
@@ -6113,6 +6137,8 @@ namespace MC2Demo.Presentation
                 + fitState
                 + " pressure="
                 + pressure
+                + " "
+                + cellState
                 + " "
                 + alwaysMounted;
         }
@@ -16637,6 +16663,9 @@ namespace MC2Demo.Presentation
             DrawLoadoutLegend(railX, y + 24f, railWidth);
             GUI.Label(
                 new Rect(railX, y + 44f, railWidth, 18f),
+                TruncateText(LoadoutCellStateHudText(preview), 64));
+            GUI.Label(
+                new Rect(railX, y + 64f, railWidth, 18f),
                 TruncateText(LoadoutBlockDetailText(
                     unit,
                     preview,
@@ -16647,7 +16676,7 @@ namespace MC2Demo.Presentation
                     selectedGridCell,
                     selectedWeaponIndex),
                     64));
-            DrawLoadoutPlacementControls(unit, preview, railX, y + 78f, railWidth);
+            DrawLoadoutPlacementControls(unit, preview, railX, y + 98f, railWidth);
             return Mathf.Max(gridHeight + 2f, LoadoutGridSectionMinHeight);
         }
 
@@ -16782,6 +16811,78 @@ namespace MC2Demo.Presentation
             }
 
             return null;
+        }
+
+        private static string LoadoutCellStateSummary(CombatLoadoutPreview preview)
+        {
+            int open = CountLoadoutCellStates(preview, CombatLoadoutPreviewCellStateCode.Open);
+            int occupied = CountLoadoutCellStates(preview, CombatLoadoutPreviewCellStateCode.Occupied);
+            int conflict = CountLoadoutCellStates(preview, CombatLoadoutPreviewCellStateCode.Conflict);
+            int outOfBounds = CountLoadoutCellStates(preview, CombatLoadoutPreviewCellStateCode.OutOfBounds);
+            return "CellState="
+                + LoadoutShortStatusText(preview)
+                + " OPEN"
+                + open.ToString(CultureInfo.InvariantCulture)
+                + " OCC"
+                + occupied.ToString(CultureInfo.InvariantCulture)
+                + " OCC!"
+                + conflict.ToString(CultureInfo.InvariantCulture)
+                + " OOB"
+                + outOfBounds.ToString(CultureInfo.InvariantCulture);
+        }
+
+        private static string LoadoutCellStateHudText(CombatLoadoutPreview preview)
+        {
+            string summary = LoadoutCellStateSummary(preview);
+            return summary.StartsWith("CellState=", StringComparison.Ordinal)
+                ? "State " + summary.Substring("CellState=".Length)
+                : summary;
+        }
+
+        private static int CountLoadoutCellStates(CombatLoadoutPreview preview, string code)
+        {
+            int count = 0;
+            CombatLoadoutPreviewCellState[] states = preview?.CellStates ?? Array.Empty<CombatLoadoutPreviewCellState>();
+            for (int index = 0; index < states.Length; index++)
+            {
+                CombatLoadoutPreviewCellState state = states[index];
+                if (state != null && string.Equals(state.Code, code, StringComparison.Ordinal))
+                {
+                    count++;
+                }
+            }
+
+            return count;
+        }
+
+        private static bool HasLoadoutCellStateCode(CombatLoadoutPreview preview, string code)
+        {
+            return CountLoadoutCellStates(preview, code) > 0;
+        }
+
+        private static bool HasLoadoutShortStatusCode(CombatLoadoutPreview preview, string code)
+        {
+            string[] codes = preview?.ShortStatusCodes ?? preview?.Validation?.ShortStatusCodes ?? Array.Empty<string>();
+            for (int index = 0; index < codes.Length; index++)
+            {
+                if (string.Equals(codes[index], code, StringComparison.Ordinal))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static string LoadoutShortStatusText(CombatLoadoutPreview preview)
+        {
+            string[] codes = preview?.ShortStatusCodes ?? preview?.Validation?.ShortStatusCodes ?? Array.Empty<string>();
+            if (codes.Length == 0)
+            {
+                return preview?.Validation?.IsValid == false ? "REVIEW" : "OK";
+            }
+
+            return string.Join("/", codes);
         }
 
         private static CombatLoadoutPreviewGridCell LoadoutCellForSelectedWeapon(CombatLoadoutPreview preview, int selectedWeaponIndex)
