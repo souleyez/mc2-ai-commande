@@ -208,7 +208,7 @@ Known good strings:
 | 1 | Done | `Polish MechLab grid feel` | 装配格子更像整块装备放入槽位 | validator + build + `mechlab` capture |
 | 2 | Done | `Prove loadout battle effects` | 证明装配影响 BattleCore 战斗 | validator + build + visible-flow smoke |
 | 3 | Done | `Polish weapon and damage readability` | 强化武器类型、断臂、腿瘫、弹射故事 | validator + build + `damage-demo`/`hangar-contact` capture |
-| 4 | Next | `Guard sparse battle UI regression` | 确保战斗中不显示太多信息 | visible-flow smoke + captures |
+| 4 | Done | `Guard sparse battle UI regression` | 确保战斗中不显示太多信息 | visible-flow smoke + captures |
 | 5 | Next | `Prepare public art-safe mission slice` | 做第一张图的公开替换内容切片计划和入口 | boundary check |
 | 6 | Later | `Guard AI deputy regression` | AI 保持高层、可离线、无 token smoke | validator/smoke |
 | 7 | Later | `Document platform reward contracts` | 主服务器、地图服务器、奖励认证契约 | docs check |
@@ -453,7 +453,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_refere
 
 ### Task 4: Guard Sparse Battle UI Regression
 
-**Status:** After Task 3 or whenever battle UI is touched.
+**Status:** Completed 2026-06-07.
+
+**Result:** The live current master plan now carries the stricter Task 4 result. Battle screenshots and visible-flow smoke both include `SparseBattleUi=statusRows+sections+solo`, assert Jet/Map/Bay/System controls stay available, and reject visible combat log, save UI, account UI, debug occupancy overlay and forced overlays in the default combat view. `spawn` and `damage-demo` passed the new sidecar gate.
 
 **Goal:** 固化“战斗中不用显示太多信息”的产品决定。
 

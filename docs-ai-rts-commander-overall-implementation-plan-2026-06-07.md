@@ -101,8 +101,8 @@ Playable Demo Handoff: 把已能跑的 Windows 本地 Demo 收成可重复构建
 | Gap | Why It Matters | Next Move |
 | --- | --- | --- |
 | 视觉还需要稳定回归 | 当前已有样子，但机甲、道具、遮挡、占位仍要避免退化成堆叠 | 每次视觉改动跑 capture + sidecar |
-| Demo handoff 已过 development-only 门检 | 构建、smoke、截图、walkthrough、内容边界已能一口气解释；当前 dev build 会被正确标记为 development-only | Guard sparse battle UI regression |
-| 压力图已完成 V4 占位刷新 | `hangar-contact` 仍是最拥挤截图，但已有 `unitRadii 24/54/64` 和 `ContactSpread` 证据 | Refresh full evidence before next feature |
+| Demo handoff 已过 development-only 门检 | 构建、smoke、截图、walkthrough、内容边界已能一口气解释；当前 dev build 会被正确标记为 development-only；稀疏战斗 UI 已有回归守护 | Add close contact collision gate |
+| 压力图已完成 V4 占位刷新 | `hangar-contact` 仍是最拥挤截图，但已有 `unitRadii 24/54/64` 和 `ContactSpread` 证据 | Turn close contact spacing into a capture gate |
 | 公开替换包还没进入生产 | 投资/公开演示需要至少 text-safe，最好 art-safe | 开 P3 content replacement slice |
 
 ## 3. First Version Scope
@@ -514,7 +514,7 @@ scripts/content-pack/check_public_content_boundary.ps1
 
 ## 8. Current Commit Queue
 
-The live queue is now `docs-ai-rts-commander-v1-detailed-execution-plan-2026-06-07.md`. The older `docs-playable-demo-current-execution-plan-2026-06-07.md` remains useful for completed-task context and evidence history.
+The live queue is now `docs-ai-rts-commander-current-master-plan-2026-06-07.md`. The older `docs-ai-rts-commander-v1-detailed-execution-plan-2026-06-07.md` and `docs-playable-demo-current-execution-plan-2026-06-07.md` remain useful for completed-task context and evidence history.
 
 Current recommended queue:
 
@@ -523,13 +523,16 @@ Current recommended queue:
 | 1 | Done | `Polish MechLab grid feel` | Make equipment-grid fitting physical, short and readable |
 | 2 | Done | `Prove loadout battle effects` | Prove mounted weapons, armor and cooling alter BattleCore |
 | 3 | Done | `Polish weapon and damage readability` | Strengthen weapon families and section damage story |
-| 4 | Next | `Guard sparse battle UI regression` | Keep battle UI clean while preserving command controls |
-| 5 | Next | `Prepare public art-safe mission slice` | Move from text-safe metadata toward public visual replacement |
-| 6 | Later | `Guard AI deputy regression` | Keep AI optional, high-level and offline-safe |
-| 7 | Later | `Document platform reward contracts` | Define main-server reward authority and map-server limits |
-| 8 | Later | `Plan map authoring prototype` | Prepare map package/editor validation rules |
-| 9 | Later | `Plan web ranking prototype` | Prepare ranking, player profile and battle-record pages |
-| 10 | Later | `Plan creator economy boundary` | Keep creator economy and chain layer late and optional |
+| 4 | Done | `Guard sparse battle UI regression` | Keep battle UI clean while preserving command controls |
+| 5 | Next | `Add close contact collision gate` | Make crowded-contact spacing measurable in sidecars |
+| 6 | Next | `Refresh first map visual slice` | Improve first-map terrain, props, units and combat readability |
+| 7 | Next | `Stabilize reference visual manifest` | Keep private reference loading replaceable and auditable |
+| 8 | Later | `Prepare public art-safe mission slice` | Move from text-safe metadata toward public visual replacement |
+| 9 | Later | `Guard AI deputy regression` | Keep AI optional, high-level and offline-safe |
+| 10 | Later | `Document platform reward contracts` | Define main-server reward authority and map-server limits |
+| 11 | Later | `Plan map authoring prototype` | Prepare map package/editor validation rules |
+| 12 | Later | `Plan web ranking prototype` | Prepare ranking, player profile and battle-record pages |
+| 13 | Later | `Plan creator economy boundary` | Keep creator economy and chain layer late and optional |
 
 ## 9. Detailed Near-Term Tasks
 

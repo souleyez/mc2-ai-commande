@@ -2227,3 +2227,35 @@ Remaining issues:
 Next priority:
 
 1. P1 document reference content boundary.
+
+## Sparse Battle UI Regression Guard Refresh
+
+Implemented on 2026-06-07 after the current master plan Task 4.
+
+Changed evidence:
+
+- `Mc2DemoBootstrap` now appends a stricter `SparseBattleUi` summary to battle HUD sidecars and combat situation assertions.
+- The summary requires status rows, section/solo state, Jet/Map/Bay/System controls, compact objective, mission map availability, funds-only economy, disabled save UI, hidden account UI, hidden combat log, hidden overlays and debug occupancy as sidecar-only.
+- `capture_reference_visuals.ps1` now fails battle captures if the old large combat log, save UI, account UI, debug occupancy overlay or forced overlay state returns.
+- Restarted MechLab focus now follows the depot replacement mech after a squad-swap launch, so the visible-flow audit checks the active replacement loadout.
+- Compact loadout assertions no longer hardcode `AC10`; legal replacement loadouts such as `1 Streak 1x2/A+/C+` can pass.
+
+Validation evidence:
+
+```text
+git diff --check: clean, with Windows line-ending warnings only.
+analysis-output/unity-build-battle-ui-regression.log: Build Finished, Result: Success; MC2 Unity demo Windows build OK.
+analysis-output/unity-player-battle-ui-regression.log: MC2 demo smoke test exiting with code 0.
+capture_reference_visuals.ps1 -Presets spawn,damage-demo: MC2 reference visual captures passed: 2 preset(s).
+```
+
+Sidecar proof:
+
+```text
+spawn: SparseBattleUi=statusRows+sections+solo controls=all+jet+map+bay+system combatPanel=h78 combatLog=hidden objective=compactObjective missionMap=available-closed accountUi=hidden economyUi=funds-only saveUi=disabled debugOccupancy=sidecar-only overlays=hidden
+damage-demo: SparseBattleUi=statusRows+sections+solo controls=all+jet+map+bay+system combatPanel=h78 combatLog=hidden objective=compactObjective missionMap=available-closed accountUi=hidden economyUi=funds-only saveUi=disabled debugOccupancy=sidecar-only overlays=hidden
+```
+
+Next priority:
+
+1. Add close contact collision gate.

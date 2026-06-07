@@ -89,6 +89,20 @@ Refreshed on 2026-06-07 after `Polish weapon and damage readability`.
 
 Damage judgment: the damage-demo sidecar now proves weapon families, beam/arc/tracer/shock shapes, hit cue families, section consequences, sparse HUD state, `left-arm-lost`, `legs-lost`, `cockpit-lost`, pilot risk and destroyed-unit evidence in one capture.
 
+## Sparse Battle UI Regression Guard
+
+Refreshed on 2026-06-07 after `Guard sparse battle UI regression`.
+
+| Gate | Result | Evidence |
+| --- | --- | --- |
+| Markdown/code whitespace | Pass | `git diff --check` |
+| Windows build | Pass | `analysis-output/unity-build-battle-ui-regression.log` reports `Build Finished, Result: Success` and `MC2 Unity demo Windows build OK`. |
+| Visible-flow smoke | Pass | `analysis-output/unity-player-battle-ui-regression.log` reports `MC2 demo smoke test exiting with code 0` and combat situation assertions include `sparseUi=SparseBattleUi=statusRows+sections+solo`. |
+| Spawn capture | Pass | `analysis-output/reference-visual-captures/spawn.json` reports hidden combat log, disabled save UI, hidden account UI, sidecar-only debug occupancy and hidden overlays. |
+| Damage capture | Pass | `analysis-output/reference-visual-captures/damage-demo.json` reports the same sparse HUD contract while preserving the damage story. |
+
+Sparse UI judgment: the first-version battle view now has a hard evidence gate. It keeps the command surface visible without letting the battle turn back into log walls, save slots, account panels or debug overlays.
+
 ## Capture Command
 
 Run from the repository root:
@@ -120,10 +134,10 @@ Current refreshed sidecars report:
 
 ```text
 mechlab: MechLabCapture=open ... weaponBlock=1 Streak ... 1x2 fillers=A+/C+ fit=Fit OK pressure=H 12/22  W 16/16  G 12/16 CellState=OK OPEN4 OCC12 OCC!0 OOB0 alwaysMounted=weapons 6/6 items 6/6 noToggle=yes
-spawn: activeHostileCount=0 visibleHostileCount=0 BattleHud=active controls=statusRows+jet+map+bay+system combatPanel=h78 combatLogVisible=no objectivePanel=compactObjective objectiveH=74 missionMap=closed saveUi=disabled ContactSpread=players 3 hostiles 0 nearestPH=n/a nearestHH=n/a nearestPP=128
+spawn: activeHostileCount=0 visibleHostileCount=0 BattleHud=active controls=statusRows+jet+map+bay+system combatPanel=h78 combatLogVisible=no objectivePanel=compactObjective objectiveH=74 missionMap=closed saveUi=disabled SparseBattleUi=statusRows+sections+solo controls=all+jet+map+bay+system combatLog=hidden accountUi=hidden debugOccupancy=sidecar-only overlays=hidden ContactSpread=players 3 hostiles 0 nearestPH=n/a nearestHH=n/a nearestPP=128
 airfield: activeHostileCount=12 visibleHostileCount=8 ContactSpread=players 3 hostiles 12 nearestPH=704.7 nearestHH=108 currentObjective=Destroy Hangar
 hangar-contact: activeHostileCount=20 visibleHostileCount=16 BattleOccupancy=units 23/29 unitRadii infantry=24 vehicle=54 mech=64 ContactSpread=players 3 hostiles 20 nearestPH=272.8 nearestHH=48 nearestPP=259.1 playerSpan=519.9 hostileSpan=4304.2 centroidDistance=1161.6
-damage-demo: activeHostileCount=20 visibleHostileCount=16 BattleOccupancy=units 22/29 unitRadii infantry=24 vehicle=54 mech=64 ContactSpread=players 2 hostiles 20 nearestPH=118 nearestHH=78 nearestPP=207.6 playerSpan=207.6 hostileSpan=4336.7 centroidDistance=836.7 DamageStory=units 3/3 lostSections=3 arms=1 legs=1 cockpit=1 pilotRisk=1 destroyedUnits=1 story=unit-1:left-arm-lost,unit-2:legs-lost,unit-3:cockpit-lost
+damage-demo: activeHostileCount=20 visibleHostileCount=16 BattleOccupancy=units 22/29 unitRadii infantry=24 vehicle=54 mech=64 SparseBattleUi=statusRows+sections+solo combatLog=hidden accountUi=hidden debugOccupancy=sidecar-only overlays=hidden ContactSpread=players 2 hostiles 20 nearestPH=118 nearestHH=78 nearestPP=207.6 playerSpan=207.6 hostileSpan=4336.7 centroidDistance=836.7 DamageStory=units 3/3 lostSections=3 arms=1 legs=1 cockpit=1 pilotRisk=1 destroyedUnits=1 story=unit-1:left-arm-lost,unit-2:legs-lost,unit-3:cockpit-lost
 damageReadability: weaponFamilies energy+missile+ballistic+explosive; weaponShapes beam+arc+tracer+shock; sectionConsequences arms-firepower legs-mobility cockpit-ejection wreck-salvage; hud=section-bars+short-labels+sparse
 north-patrol: activeHostileCount=24 visibleHostileCount=9 ContactSpread=players 3 hostiles 24 nearestPH=118 nearestHH=70.1 status=north encounter trigger completed.
 ```

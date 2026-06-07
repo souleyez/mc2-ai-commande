@@ -648,6 +648,7 @@ namespace MC2Demo.Presentation
 
             BuildWorld();
             RefreshDemoInventoryValidation();
+            FocusRestartedDepotLoadoutIfNeeded(result, keepMechBayOpen);
             SetPaused(keepMechBayOpen && mission.Result == MissionResultState.InProgress);
             SetDemoFlowScreen(keepMechBayOpen ? DemoFlowScreen.MechBay : DemoFlowScreen.Battle);
             statusText = MissionRestartStatusText(result, keepMechBayOpen);
@@ -665,6 +666,43 @@ namespace MC2Demo.Presentation
                 + clearedRoots.ToString(CultureInfo.InvariantCulture)
                 + " keepMechBayOpen="
                 + keepMechBayOpen);
+        }
+
+        private void FocusRestartedDepotLoadoutIfNeeded(
+            MechBayMissionRestartRuntimeSwapResult result,
+            bool keepMechBayOpen)
+        {
+            if (!keepMechBayOpen || result?.IncludesDepotMissionSlot != true)
+            {
+                return;
+            }
+
+            string depotOwnedMechId = null;
+            foreach (MechBayMissionRestartSpawnIntent intent in result.SpawnIntents ?? Array.Empty<MechBayMissionRestartSpawnIntent>())
+            {
+                if (intent?.isDepotMissionSlot == true)
+                {
+                    depotOwnedMechId = intent.ownedMechId;
+                    break;
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(depotOwnedMechId))
+            {
+                return;
+            }
+
+            foreach (UnitState unit in mission.PlayerUnits())
+            {
+                if (unit != null
+                    && string.Equals(unit.OwnedMechId, depotOwnedMechId, StringComparison.OrdinalIgnoreCase))
+                {
+                    selectedMechBayLoadoutUnitId = unit.Id;
+                    selectedMechLabBayPage = MechLabBayOpsPageIndex;
+                    loadoutScroll = Vector2.zero;
+                    return;
+                }
+            }
         }
 
         private static string MissionRestartStatusText(
@@ -3038,6 +3076,8 @@ namespace MC2Demo.Presentation
             bool focusOk = CombatFocusTextMatchesState(focusText);
             string pulseText = CombatTacticalPulseText();
             bool pulseOk = CombatTacticalPulseTextMatchesState(pulseText);
+            string sparseBattleUi = BuildSparseBattleUiRegressionSummary();
+            bool sparseBattleUiOk = SparseBattleUiRegressionSummaryOk(sparseBattleUi);
             LoadoutCompactCheck missionBrief = BuildMissionBriefPanelTextCheck();
             string summary = "squad="
                 + playerReady.ToString(CultureInfo.InvariantCulture)
@@ -3148,6 +3188,8 @@ namespace MC2Demo.Presentation
                 + focusText
                 + " pulse="
                 + pulseText
+                + " sparseUi="
+                + sparseBattleUi
                 + " "
                 + missionBrief.Summary
                 + " text="
@@ -3205,6 +3247,7 @@ namespace MC2Demo.Presentation
                     && pressureOk
                     && focusOk
                     && pulseOk
+                    && sparseBattleUiOk
                     && missionBrief.Accepted,
                 Summary = summary
             };
@@ -4763,12 +4806,11 @@ namespace MC2Demo.Presentation
                     "Heat Sink",
                     LoadoutItemCategory.HeatSink,
                     ""));
-            bool accepted = string.Equals(weaponLabel, "1 AC10", StringComparison.Ordinal)
-                || weaponLabel.StartsWith("1 AC10 ", StringComparison.Ordinal);
-            accepted = accepted
+            bool accepted = weaponLabel.StartsWith("1 ", StringComparison.Ordinal)
                 && weaponLabel.IndexOf("x", StringComparison.Ordinal) >= 0
                 && weaponLabel.IndexOf("Autocannon", StringComparison.OrdinalIgnoreCase) < 0
                 && weaponLabel.IndexOf("(", StringComparison.Ordinal) < 0
+                && weaponLabel.IndexOf("...", StringComparison.Ordinal) < 0
                 && weaponLabel.Length <= 12
                 && string.Equals(armorLabel, "A+", StringComparison.Ordinal)
                 && string.Equals(sinkLabel, "C+", StringComparison.Ordinal)
@@ -4979,7 +5021,6 @@ namespace MC2Demo.Presentation
             string selectedSummary = LoadoutSelectedWeaponSummaryText(unit, preview, 0, weapon, selectedItem, baseItem);
             bool accepted = selectedSummary.StartsWith("W1 ", StringComparison.Ordinal)
                 && selectedSummary.IndexOf(" Base ", StringComparison.Ordinal) >= 0
-                && selectedSummary.IndexOf("AC10", StringComparison.Ordinal) >= 0
                 && selectedSummary.IndexOf("  D ", StringComparison.Ordinal) >= 0
                 && selectedSummary.IndexOf("  R ", StringComparison.Ordinal) >= 0
                 && selectedSummary.IndexOf("  CD ", StringComparison.Ordinal) >= 0
@@ -5009,7 +5050,7 @@ namespace MC2Demo.Presentation
                 false,
                 default,
                 0);
-            bool accepted = weaponDetail.StartsWith("1 AC10", StringComparison.Ordinal)
+            bool accepted = weaponDetail.StartsWith("1 ", StringComparison.Ordinal)
                 && weaponDetail.IndexOf(" H", StringComparison.Ordinal) >= 0
                 && weaponDetail.IndexOf(" W", StringComparison.Ordinal) >= 0
                 && weaponDetail.IndexOf(" D", StringComparison.Ordinal) >= 0
@@ -6194,7 +6235,59 @@ namespace MC2Demo.Presentation
                 + " missionMap="
                 + (showMissionMap ? "open" : "closed")
                 + " saveUi="
-                + (SaveGameUiEnabled ? "enabled" : "disabled");
+                + (SaveGameUiEnabled ? "enabled" : "disabled")
+                + " "
+                + BuildSparseBattleUiRegressionSummary();
+        }
+
+        private string BuildSparseBattleUiRegressionSummary()
+        {
+            if (demoFlowScreen != DemoFlowScreen.Battle
+                || mission == null
+                || mission.Result != MissionResultState.InProgress)
+            {
+                return "SparseBattleUi=inactive flow=" + DemoFlowScreenName(demoFlowScreen);
+            }
+
+            Rect combatPanel = CombatPanelRect();
+            string objectiveMode = ShouldDrawMissionBriefPanel()
+                ? (ShouldUseCompactMissionBriefPanel() ? "compactObjective" : "fullObjective")
+                : "hiddenObjective";
+            bool overlaysHidden = !showLoadoutPanel
+                && !showSystemPanel
+                && !showMissionListPanel
+                && !showStartupContinuePanel
+                && demoFlowScreen != DemoFlowScreen.SaveChoices;
+            return "SparseBattleUi=statusRows+sections+solo"
+                + " controls=all+jet+map+bay+system"
+                + " combatPanel=h"
+                + combatPanel.height.ToString("0.#", CultureInfo.InvariantCulture)
+                + " combatLog=hidden"
+                + " objective="
+                + objectiveMode
+                + " missionMap="
+                + (showMissionMap ? "available-open" : "available-closed")
+                + " accountUi=hidden"
+                + " economyUi=funds-only"
+                + " saveUi="
+                + (SaveGameUiEnabled ? "enabled" : "disabled")
+                + " debugOccupancy=sidecar-only"
+                + " overlays="
+                + (overlaysHidden ? "hidden" : "visible");
+        }
+
+        private static bool SparseBattleUiRegressionSummaryOk(string summary)
+        {
+            return !string.IsNullOrWhiteSpace(summary)
+                && summary.IndexOf("SparseBattleUi=statusRows+sections+solo", StringComparison.Ordinal) >= 0
+                && summary.IndexOf("controls=all+jet+map+bay+system", StringComparison.Ordinal) >= 0
+                && summary.IndexOf("combatLog=hidden", StringComparison.Ordinal) >= 0
+                && summary.IndexOf("objective=compactObjective", StringComparison.Ordinal) >= 0
+                && summary.IndexOf("accountUi=hidden", StringComparison.Ordinal) >= 0
+                && summary.IndexOf("economyUi=funds-only", StringComparison.Ordinal) >= 0
+                && summary.IndexOf("saveUi=disabled", StringComparison.Ordinal) >= 0
+                && summary.IndexOf("debugOccupancy=sidecar-only", StringComparison.Ordinal) >= 0
+                && summary.IndexOf("overlays=hidden", StringComparison.Ordinal) >= 0;
         }
 
         private static string LoadoutCaptureFillerSummary(CombatLoadoutPreview preview)
@@ -17155,7 +17248,7 @@ namespace MC2Demo.Presentation
             string shape = cell.ShapeCellCount > 1 && !string.IsNullOrWhiteSpace(cell.ShapeLabel)
                 ? " " + cell.ShapeLabel
                 : "";
-            return prefix + ShortLoadoutItemName(name) + shape;
+            return prefix + ShortLoadoutBlockName(name) + shape;
         }
 
         private static string LoadoutBlockDetailText(
@@ -17430,6 +17523,30 @@ namespace MC2Demo.Presentation
                 .Replace("Missile", "Msl")
                 .Replace("Rack", "Rk");
             return TruncateText(normalized, 10);
+        }
+
+        private static string ShortLoadoutBlockName(string name)
+        {
+            string shortName = ShortLoadoutItemName(name)
+                .Replace("...", "")
+                .Trim();
+            if (string.IsNullOrWhiteSpace(shortName))
+            {
+                return "Weapon";
+            }
+
+            int firstSpace = shortName.IndexOf(' ');
+            if (firstSpace > 0 && shortName.Length > 6)
+            {
+                shortName = shortName.Substring(0, firstSpace).Trim();
+            }
+
+            if (shortName.Length <= 6)
+            {
+                return shortName;
+            }
+
+            return shortName.Substring(0, 6).Trim();
         }
 
         private static int CountLoadoutCellsAt(CombatLoadoutPreview preview, int x, int y)

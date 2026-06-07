@@ -292,7 +292,7 @@ Known good strings:
 | 1 | Done | `Polish MechLab grid feel` | 装配格子更像整块装备放入槽位 | validator + build + `mechlab` capture |
 | 2 | Done | `Prove loadout battle effects` | 证明装配影响 BattleCore 战斗 | validator + build + visible-flow smoke |
 | 3 | Done | `Polish weapon and damage readability` | 强化武器类型、断臂、腿瘫、弹射故事 | validator + build + `damage-demo` capture |
-| 4 | Next | `Guard sparse battle UI regression` | 固化战斗 UI 稀疏性，不让大日志/存档/账号面板回流 | visible-flow smoke + `spawn,damage-demo` capture |
+| 4 | Done | `Guard sparse battle UI regression` | 固化战斗 UI 稀疏性，不让大日志/存档/账号面板回流 | visible-flow smoke + `spawn,damage-demo` capture |
 | 5 | Next | `Add close contact collision gate` | 把“堆在一起/碰撞不明显”变成可复现 sidecar 门槛 | `hangar-contact` capture + sidecar |
 | 6 | Next | `Refresh first map visual slice` | 让第一张图继续朝真实 3D 地形、建筑、机甲模型靠拢 | build + five visual captures |
 | 7 | Next | `Stabilize reference visual manifest` | 私有参考模型/材质/道具加载走 manifest，缺失时可回退 | build + screenshot/log |
@@ -307,7 +307,9 @@ Known good strings:
 
 ### Task 4: Guard Sparse Battle UI Regression
 
-**Status:** Next.
+**Status:** Completed 2026-06-07.
+
+**Result:** Added a stricter `SparseBattleUi` regression summary to the battle HUD sidecar and visible-flow combat assertion. Normal active battle now reports status rows, section/solo state, Jet/Map/Bay/System controls, compact objective, closed-but-available mission map, funds-only economy, disabled save UI, hidden account UI, hidden overlays, hidden combat log and debug occupancy as sidecar-only. `capture_reference_visuals.ps1` now fails `spawn` or `damage-demo` if large logs, save/account/debug overlays or visible overlays return. The task also fixed the restarted MechLab focus path after a depot squad swap and generalized compact loadout assertions so legal non-AC10 replacement loadouts can pass.
 
 **Goal:** 固化“战斗中不用显示太多信息”的产品决定，后续做视觉和特效时不能把战场盖住。
 

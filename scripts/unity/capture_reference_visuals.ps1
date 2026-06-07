@@ -236,10 +236,31 @@ function Test-BattleHudCaptureSidecar {
         "controls=statusRows+jet+map+bay+system",
         "combatLogVisible=no",
         "objectivePanel=compactObjective",
-        "saveUi=disabled"
+        "saveUi=disabled",
+        "SparseBattleUi=statusRows+sections+solo",
+        "controls=all+jet+map+bay+system",
+        "combatLog=hidden",
+        "objective=compactObjective",
+        "accountUi=hidden",
+        "economyUi=funds-only",
+        "debugOccupancy=sidecar-only",
+        "overlays=hidden"
     )) {
         if ($summary -notlike "*$fragment*") {
             throw "Battle HUD sidecar summary missing '$fragment': $Path -> $summary"
+        }
+    }
+
+    foreach ($forbidden in @(
+        "combatLogVisible=yes",
+        "combatLog=visible",
+        "saveUi=enabled",
+        "accountUi=visible",
+        "debugOccupancy=visible",
+        "overlays=visible"
+    )) {
+        if ($summary -like "*$forbidden*") {
+            throw "Battle HUD sidecar summary contains forbidden sparse-mode fragment '$forbidden': $Path -> $summary"
         }
     }
 
