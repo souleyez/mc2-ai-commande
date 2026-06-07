@@ -15,9 +15,9 @@ Refreshed on 2026-06-07 after `Refresh investor evidence package`.
 | First-map visual gate | Pass | `spawn`, `airfield`, `hangar-contact`, `damage-demo`, and `north-patrol` sidecars report `FirstMapVisual ... status=ready`, `sparseHud=ready`, `occupancy=ready`, and `contact=separated`. |
 | Contact and collision | Pass | Current battle sidecars report `ContactClearance ... overlaps=0 ... status=separated`, including dense objective and north patrol presets. |
 | Damage story | Pass | `damage-demo` reports `left-arm-lost`, `legs-lost`, `cockpit-lost`, `pilotRisk=1`, `destroyedUnits=1`, and weapon families `energy+missile+ballistic+explosive`. |
-| Replacement boundary | Pass | `content-packs/project-owned-starter.example.json` and `content-packs/project-owned-visual-slice.example.json` pass the public content boundary check; current local screenshots remain development evidence, not public final art. |
+| Replacement boundary | Pass | `content-packs/project-owned-starter.example.json`, `content-packs/project-owned-visual-slice.example.json`, and `content-packs/project-owned-art-safe-slice.example.json` pass the public content boundary check; current local screenshots remain development evidence, not public final art. |
 
-Evidence-package judgment: the current local Windows Demo evidence set now combines the sealed visible-flow smoke, six fresh screenshots/sidecars, manifest-driven local visuals, and a clean replacement id path.
+Evidence-package judgment: the current local Windows Demo evidence set now combines the sealed visible-flow smoke, six fresh screenshots/sidecars, manifest-driven local visuals, a clean replacement id path, and a metadata-only art-safe mission-slice target.
 
 ## Visible Flow Seal Refresh
 

@@ -79,6 +79,19 @@ Current visual-id artifact:
 - It must pass `check_public_content_boundary.ps1` before any real cleared
   assets are added behind those ids.
 
+Current art-safe target artifact:
+
+- `content-packs/project-owned-art-safe-slice.example.json` combines the
+  text-safe and visual-id scaffolds into the first mission-slice replacement
+  target.
+- It defines one clean mission id, visible names, units, terrain materials,
+  props, weapon FX, damage FX, UI art ids, planned cleared asset paths and
+  provenance placeholders.
+- It intentionally remains metadata-only and not mountable. It is a production
+  target for cleared art, not proof that a public runtime pack exists.
+- It must pass `check_public_content_boundary.ps1`; the mounted build must be
+  checked again after real assets are supplied.
+
 Milestone 4: clean public pack
 
 - Remove all local reference links.
@@ -141,6 +154,15 @@ Check the current text-safe metadata slice:
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\content-pack\check_public_content_boundary.ps1 `
   -Path ".\content-packs\project-owned-text-safe-slice.example.json" `
+  -DryRun
+```
+
+Check the current art-safe target metadata slice:
+
+```powershell
+python -m json.tool .\content-packs\project-owned-art-safe-slice.example.json
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\content-pack\check_public_content_boundary.ps1 `
+  -Path ".\content-packs\project-owned-art-safe-slice.example.json" `
   -DryRun
 ```
 

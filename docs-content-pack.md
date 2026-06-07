@@ -126,6 +126,12 @@ until the required runtime files are supplied from cleared assets.
 first project-owned visual id scheme can pass the public boundary check before
 any cleared model, texture, effect, icon, or UI art files are available.
 
+`project-owned-art-safe-slice.example.json` combines the text-safe and visual id
+scaffolds into the first art-safe mission-slice target. It records one clean
+mission id, unit ids, terrain material ids, prop ids, weapon and damage FX ids,
+UI art ids, planned cleared asset paths, provenance placeholders, and mounting
+prerequisites. It is still metadata-only, not a mountable runtime pack.
+
 ## Stable Visual ID Contract
 
 Use stable project-facing visual ids as the bridge between BattleCore, Unity,
@@ -158,6 +164,22 @@ Rules:
 - Every public asset behind a stable id needs provenance before packaging.
 - Local private reference manifests can inform scale and readability, but public
   replacement packs should expose only project-facing ids and cleared asset paths.
+
+## Metadata Slice Ladder
+
+Use these metadata artifacts in order:
+
+| Artifact | Purpose | Mountable? |
+| --- | --- | --- |
+| `project-owned-text-safe-slice.example.json` | Clean product, mission, unit, weapon, pilot, objective and UI copy | No |
+| `project-owned-visual-slice.example.json` | Stable project-facing visual ids for units, terrain, props, FX and UI art | No |
+| `project-owned-art-safe-slice.example.json` | Combined first-mission art-safe target with planned cleared paths and provenance placeholders | No |
+| Clean runtime pack | Real runtime files, final provenance, no local-only links | Yes |
+
+The first three files are contracts for replacement work. They should pass the
+public boundary checker, but they do not prove the game can run from cleared
+art yet. A clean runtime pack is only ready after the required engine files and
+assets exist and the mounted build also passes the public boundary checker.
 
 ## Development Flow
 

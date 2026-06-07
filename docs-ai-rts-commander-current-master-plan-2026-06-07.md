@@ -8,7 +8,7 @@
 
 **Tech Stack:** Unity 6, C#, Windows Standalone first, deterministic BattleCore, PowerShell validator/build/smoke/capture scripts, replaceable content packs, optional high-level AI deputy adapter, later main server/map server/Web ranking contracts.
 
-**Revision:** 2026-06-07 v4. This is the current master plan after the private reference visual bridge, visible-flow seal, and investor evidence package were refreshed. Older plan files remain evidence/history; this file is the first place to read when the user says "按计划继续". The finer task breakdown now lives in `docs-ai-rts-commander-current-detailed-plan-2026-06-07.md`.
+**Revision:** 2026-06-07 v5. This is the current master plan after the private reference visual bridge, visible-flow seal, investor evidence package, and art-safe metadata target were refreshed. Older plan files remain evidence/history; this file is the first place to read when the user says "按计划继续". The finer task breakdown now lives in `docs-ai-rts-commander-current-detailed-plan-2026-06-07.md`.
 
 ---
 
@@ -47,7 +47,7 @@
 当前阶段是：
 
 ```text
-V1 Windows Playable Demo Evidence Seal -> Public Art-Safe Mission Slice
+Public Art-Safe Mission Slice -> AI Deputy Offline Guard
 ```
 
 不是从零开发，也不是马上做平台。现在要把本地 Demo 收成：
@@ -77,16 +77,14 @@ V1 Windows Playable Demo Evidence Seal -> Public Art-Safe Mission Slice
 | Damage story | 武器类型、断臂、腿瘫、驾驶舱损毁/弹射已有基础 |
 | Sparse HUD | 战斗中不显示大日志和保存槽，主要保留状态行与少量按钮 |
 | AI deputy | compact observation、directive adapter、能力窗口已有基础 |
-| Content boundary | text-safe 和 visual-id metadata slice 均已通过 public boundary check |
+| Content boundary | text-safe、visual-id、art-safe metadata slice 均已通过 public boundary check |
 | Demo evidence | visible-flow、六截图、walkthrough、investor evidence 已刷新 |
 
 当前最大缺口：
 
 | Gap | Why It Matters | First Fix |
 | --- | --- | --- |
-| 公开安全视觉切片还只是 metadata | 现在本地 Demo 能演示，但不能把私有参考视觉当公开产品内容 | D1 `project-owned-art-safe-slice.example.json` |
-| text-safe、visual-id、art-safe、runtime pack 边界仍需讲清 | 否则后续换皮、融资材料和公开包容易混在一起 | D1 docs update and boundary check |
-| 清权资产还未真正接入运行包 | D1 是合同和路线，不是最终美术包 | D2 以后再做 mountable clean content pack |
+| 清权资产还未真正接入运行包 | D1 已有 metadata 合同，但不是最终美术包 | D2 以后再做 mountable clean content pack |
 | AI 副官仍要防止范围膨胀 | 模型只做大决策，不能拖慢本地战斗 | E1 offline/high-level guard |
 | 平台化还是设想 | 地图服务器、奖励认证和 Web 排行要等 Demo 稳定后再做 | F1-F4 先写契约，不先写服务器 |
 
@@ -303,8 +301,8 @@ Known good strings:
 | 9 | Done | `Document replaceable visual ids` | 固化换包 id，方便以后整包替换、换皮和公开安全包 | docs + boundary check |
 | 10 | Done | `Seal visible playable walkthrough` | 启动、机库、战斗、损伤、结算、重开完整流程封口 | visible-flow smoke |
 | 11 | Done | `Refresh investor evidence package` | 更新当前本地证据页，说明能演示什么、哪些仍是原型 | six captures + docs |
-| 12 | Next | `Prepare public art-safe mission slice` | 从 text-safe metadata 进入第一张图的公开视觉替换计划 | boundary check + provenance docs |
-| 13 | Later | `Guard AI deputy regression` | AI 保持高层、可离线、无 token smoke | validator/smoke |
+| 12 | Done | `Prepare public art-safe mission slice` | 从 text-safe metadata 进入第一张图的公开视觉替换计划 | boundary check + provenance docs |
+| 13 | Next | `Guard AI deputy regression` | AI 保持高层、可离线、无 token smoke | validator/smoke |
 | 14 | Later | `Document platform reward contracts` | 主服务器、地图服务器、奖励认证契约 | docs check |
 | 15 | Later | `Plan map authoring prototype` | 地图包、触发、奖励引用和验证器规划 | docs check |
 | 16 | Later | `Plan web ranking prototype` | 排行、战绩、地图页和公开资料规划 | docs check |
@@ -522,7 +520,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_refere
 
 ### Task 8: Prepare Public Art-Safe Mission Slice
 
-**Status:** Next.
+**Status:** Completed 2026-06-07 for metadata. The manifest and docs prove a clean replacement target; a mountable clean runtime pack remains later work.
 
 **Goal:** 从 text-safe metadata 进入第一张图的 art-safe 替换路径，给公开展示和融资材料留干净出口。
 
@@ -816,8 +814,8 @@ git diff --check
 | M6 Visual/collision readability | Done with gate | first map no longer reads as color blocks or one-point pile |
 | M7 Private reference bridge | Done | manifest-driven, optional, ignored, replaceable |
 | M8 Controlled demo evidence | Done | visible-flow, six captures, walkthrough and investor evidence refreshed |
-| M9 Public-safe slice | Next | art-safe manifest/provenance and boundary check pass |
-| M10 AI deputy V1 | Foundation done | offline/no-key and high-level directive guarded |
+| M9 Public-safe slice | Done for metadata | art-safe manifest/provenance and boundary check pass |
+| M10 AI deputy V1 | Next | offline/no-key and high-level directive guarded |
 | M11 Platform contracts | Later | main server reward authority and map-server limits documented |
 
 ## 8. First Controlled Demo Definition Of Done
@@ -857,4 +855,4 @@ Stop and reassess if:
 
 ## 10. One-Line Direction
 
-Windows 本地 Demo 的画面、碰撞、稀疏 UI、MechLab、损伤故事和演示证据已经收稳；现在进入第一张图的公开 art-safe 内容包合同；随后再做 AI 托管守护、地图服务器、奖励认证、Web 排行和创作者生态。
+Windows 本地 Demo 的画面、碰撞、稀疏 UI、MechLab、损伤故事、演示证据和公开 art-safe 元数据合同已经收稳；下一步守住 AI 副官离线/高层决策边界；随后再做地图服务器、奖励认证、Web 排行和创作者生态。

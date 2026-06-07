@@ -167,6 +167,10 @@ The first clean visual id metadata target is
 `content-packs/project-owned-visual-slice.example.json`. It defines project-owned
 unit, terrain, prop, weapon FX, damage FX and UI art ids for future cleared
 assets, and also passes the public boundary check.
+The first combined art-safe metadata target is
+`content-packs/project-owned-art-safe-slice.example.json`. It merges clean text,
+stable visual ids, planned cleared asset paths and provenance placeholders for
+one mission slice. It is still metadata-only, not a mountable runtime pack.
 
 ## 关键文档
 

@@ -1,0 +1,338 @@
+{
+  "id": "project-owned-art-safe-slice",
+  "title": "Project Owned Art Safe Slice",
+  "kind": "replacement",
+  "license": "project-owned-or-cleared",
+  "version": "0.1.0",
+  "engineContract": "mc2-content-pack-v1",
+  "visualContract": "ai-tactical-visual-pack-v1",
+  "replacementStatus": "art-safe-metadata",
+  "runtimeStatus": "metadata-only-not-mountable",
+  "product": {
+    "id": "ai-tactical-command",
+    "title": "AI Tactical Command",
+    "titleZh": "AI 战术指挥",
+    "language": "zh-CN",
+    "audience": "controlled-demo"
+  },
+  "fieldAudit": {
+    "reusedTextFields": [
+      "product",
+      "mission",
+      "objectives",
+      "unit-display-names",
+      "weapon-display-names",
+      "pilot-display-names",
+      "ui-copy"
+    ],
+    "reusedVisualFields": [
+      "unit-ids",
+      "terrain-material-ids",
+      "prop-ids",
+      "weapon-fx-ids",
+      "damage-fx-ids",
+      "ui-art-ids"
+    ],
+    "newArtSafeFields": [
+      "planned-cleared-asset-paths",
+      "per-asset-provenance-placeholders",
+      "mounting-prerequisites",
+      "public-safety-notes"
+    ]
+  },
+  "slice": {
+    "missionId": "island-airfield-contract",
+    "missionTitle": "孤岛机场合约",
+    "missionBrief": "侦察一处失联机场，确认守备火力，摧毁主机库并带队撤离。",
+    "playerCompany": "北湾雇佣连",
+    "opposingForce": "灰港守备队",
+    "objectives": [
+      "侦察失联机场",
+      "摧毁主机库",
+      "压制守备火力",
+      "保护指挥官机甲",
+      "带队撤离"
+    ],
+    "mechs": [
+      {
+        "id": "frost-wolf",
+        "displayName": "霜狼",
+        "role": "指挥突击",
+        "visualId": "unit.frost-wolf"
+      },
+      {
+        "id": "iron-wood",
+        "displayName": "铁木",
+        "role": "火力支援",
+        "visualId": "unit.iron-wood"
+      },
+      {
+        "id": "black-ridge",
+        "displayName": "黑岭",
+        "role": "近距压制",
+        "visualId": "unit.black-ridge"
+      },
+      {
+        "id": "gray-harbor-scout",
+        "displayName": "灰港侦察车",
+        "role": "快速警戒",
+        "visualId": "unit.gray-harbor-scout"
+      }
+    ],
+    "weapons": [
+      {
+        "id": "longbeam-laser",
+        "displayName": "长束激光",
+        "type": "energy",
+        "fx": "fx.weapon.longbeam-laser"
+      },
+      {
+        "id": "storm-autocannon",
+        "displayName": "风暴自动炮",
+        "type": "ballistic",
+        "fx": "fx.weapon.storm-autocannon"
+      },
+      {
+        "id": "needle-missiles",
+        "displayName": "针雨导弹",
+        "type": "missile",
+        "fx": "fx.weapon.needle-missiles"
+      }
+    ],
+    "uiText": {
+      "launch": "出战",
+      "mechBay": "机库",
+      "repairAll": "一键维修",
+      "missionMap": "任务地图",
+      "jet": "喷射",
+      "system": "系统",
+      "aiDeputy": "AI 副官",
+      "debrief": "战报"
+    }
+  },
+  "artSafeManifest": {
+    "units": [
+      {
+        "id": "unit.frost-wolf",
+        "role": "commander-assault",
+        "model": "model.unit.frost-wolf",
+        "plannedModelPath": "assets/project-owned/units/frost-wolf/model.fbx",
+        "primaryTexture": "texture.unit.frost-wolf.base",
+        "plannedTexturePath": "assets/project-owned/units/frost-wolf/base.png",
+        "damageNodes": [
+          "node.left-arm",
+          "node.right-arm",
+          "node.left-leg",
+          "node.right-leg",
+          "node.cockpit"
+        ],
+        "provenance": {
+          "origin": "to-be-produced",
+          "author": "project-team-or-cleared-vendor",
+          "license": "project-owned-or-cleared",
+          "reviewStatus": "pending-final-asset"
+        }
+      },
+      {
+        "id": "unit.iron-wood",
+        "role": "fire-support",
+        "model": "model.unit.iron-wood",
+        "plannedModelPath": "assets/project-owned/units/iron-wood/model.fbx",
+        "primaryTexture": "texture.unit.iron-wood.base",
+        "plannedTexturePath": "assets/project-owned/units/iron-wood/base.png",
+        "damageNodes": [
+          "node.left-arm",
+          "node.right-arm",
+          "node.left-leg",
+          "node.right-leg",
+          "node.cockpit"
+        ],
+        "provenance": {
+          "origin": "to-be-produced",
+          "author": "project-team-or-cleared-vendor",
+          "license": "project-owned-or-cleared",
+          "reviewStatus": "pending-final-asset"
+        }
+      },
+      {
+        "id": "unit.black-ridge",
+        "role": "close-pressure",
+        "model": "model.unit.black-ridge",
+        "plannedModelPath": "assets/project-owned/units/black-ridge/model.fbx",
+        "primaryTexture": "texture.unit.black-ridge.base",
+        "plannedTexturePath": "assets/project-owned/units/black-ridge/base.png",
+        "damageNodes": [
+          "node.left-arm",
+          "node.right-arm",
+          "node.left-leg",
+          "node.right-leg",
+          "node.cockpit"
+        ],
+        "provenance": {
+          "origin": "to-be-produced",
+          "author": "project-team-or-cleared-vendor",
+          "license": "project-owned-or-cleared",
+          "reviewStatus": "pending-final-asset"
+        }
+      },
+      {
+        "id": "unit.gray-harbor-scout",
+        "role": "light-vehicle",
+        "model": "model.vehicle.gray-harbor-scout",
+        "plannedModelPath": "assets/project-owned/vehicles/gray-harbor-scout/model.fbx",
+        "primaryTexture": "texture.vehicle.gray-harbor-scout.base",
+        "plannedTexturePath": "assets/project-owned/vehicles/gray-harbor-scout/base.png",
+        "provenance": {
+          "origin": "to-be-produced",
+          "author": "project-team-or-cleared-vendor",
+          "license": "project-owned-or-cleared",
+          "reviewStatus": "pending-final-asset"
+        }
+      }
+    ],
+    "terrain": [
+      {
+        "id": "terrain.island-airfield.grass",
+        "material": "material.terrain.grass-damp",
+        "texture": "texture.terrain.grass-damp",
+        "plannedTexturePath": "assets/project-owned/terrain/grass-damp.png",
+        "gameplayRole": "walkable-ground"
+      },
+      {
+        "id": "terrain.island-airfield.runway",
+        "material": "material.terrain.runway-worn",
+        "texture": "texture.terrain.runway-worn",
+        "plannedTexturePath": "assets/project-owned/terrain/runway-worn.png",
+        "gameplayRole": "walkable-hard-surface"
+      },
+      {
+        "id": "terrain.island-airfield.water",
+        "material": "material.terrain.shallow-water",
+        "texture": "texture.terrain.shallow-water",
+        "plannedTexturePath": "assets/project-owned/terrain/shallow-water.png",
+        "gameplayRole": "blocked-water"
+      },
+      {
+        "id": "terrain.island-airfield.rock",
+        "material": "material.terrain.wet-rock",
+        "texture": "texture.terrain.wet-rock",
+        "plannedTexturePath": "assets/project-owned/terrain/wet-rock.png",
+        "gameplayRole": "height-and-cover"
+      }
+    ],
+    "props": [
+      {
+        "id": "prop.airfield.main-hangar",
+        "model": "model.prop.airfield.main-hangar",
+        "plannedModelPath": "assets/project-owned/props/airfield/main-hangar/model.fbx",
+        "primaryTexture": "texture.prop.airfield.main-hangar.base",
+        "collision": "hard"
+      },
+      {
+        "id": "prop.airfield.watchtower",
+        "model": "model.prop.airfield.watchtower",
+        "plannedModelPath": "assets/project-owned/props/airfield/watchtower/model.fbx",
+        "primaryTexture": "texture.prop.airfield.watchtower.base",
+        "collision": "hard"
+      },
+      {
+        "id": "prop.airfield.sandbag-wall",
+        "model": "model.prop.airfield.sandbag-wall",
+        "plannedModelPath": "assets/project-owned/props/airfield/sandbag-wall/model.fbx",
+        "primaryTexture": "texture.prop.airfield.sandbag-wall.base",
+        "collision": "hard"
+      },
+      {
+        "id": "prop.airfield.fuel-truck",
+        "model": "model.prop.airfield.fuel-truck",
+        "plannedModelPath": "assets/project-owned/props/airfield/fuel-truck/model.fbx",
+        "primaryTexture": "texture.prop.airfield.fuel-truck.base",
+        "collision": "hard"
+      },
+      {
+        "id": "prop.island.palm-cluster",
+        "model": "model.prop.island.palm-cluster",
+        "plannedModelPath": "assets/project-owned/props/island/palm-cluster/model.fbx",
+        "primaryTexture": "texture.prop.island.palm-cluster.base",
+        "collision": "soft-occluder"
+      }
+    ],
+    "weaponFx": [
+      {
+        "id": "fx.weapon.longbeam-laser",
+        "family": "energy",
+        "plannedPrefabPath": "assets/project-owned/fx/weapons/longbeam-laser.prefab"
+      },
+      {
+        "id": "fx.weapon.storm-autocannon",
+        "family": "ballistic",
+        "plannedPrefabPath": "assets/project-owned/fx/weapons/storm-autocannon.prefab"
+      },
+      {
+        "id": "fx.weapon.needle-missiles",
+        "family": "missile",
+        "plannedPrefabPath": "assets/project-owned/fx/weapons/needle-missiles.prefab"
+      }
+    ],
+    "damageFx": [
+      {
+        "id": "fx.damage.left-arm-break",
+        "family": "section-damage",
+        "plannedPrefabPath": "assets/project-owned/fx/damage/left-arm-break.prefab"
+      },
+      {
+        "id": "fx.damage.leg-failure",
+        "family": "section-damage",
+        "plannedPrefabPath": "assets/project-owned/fx/damage/leg-failure.prefab"
+      },
+      {
+        "id": "fx.damage.cockpit-ejection",
+        "family": "pilot-safety",
+        "plannedPrefabPath": "assets/project-owned/fx/damage/cockpit-ejection.prefab"
+      },
+      {
+        "id": "fx.damage.wreck-explosion",
+        "family": "destroyed-unit",
+        "plannedPrefabPath": "assets/project-owned/fx/damage/wreck-explosion.prefab"
+      }
+    ],
+    "ui": [
+      {
+        "id": "ui.icon.jet",
+        "plannedTexturePath": "assets/project-owned/ui/icons/jet.png"
+      },
+      {
+        "id": "ui.icon.repair",
+        "plannedTexturePath": "assets/project-owned/ui/icons/repair.png"
+      },
+      {
+        "id": "ui.icon.ai-deputy",
+        "plannedTexturePath": "assets/project-owned/ui/icons/ai-deputy.png"
+      },
+      {
+        "id": "ui.panel.mech-status",
+        "plannedTexturePath": "assets/project-owned/ui/panels/mech-status.png"
+      }
+    ]
+  },
+  "mountingPrerequisites": [
+    "Supply cleared runtime model, texture, effect, UI and audio files for every planned asset path.",
+    "Keep stable ids unchanged when replacing placeholder files.",
+    "Run the public content boundary check on this manifest and the final mounted build folder.",
+    "Run the Windows visible-flow smoke and six capture presets after a mountable pack exists."
+  ],
+  "provenance": {
+    "text": "Project-owned placeholder copy drafted for this repository on 2026-06-07.",
+    "models": "Planned assets must be produced by the project team or a cleared vendor.",
+    "textures": "Planned assets must be produced by the project team or a cleared vendor.",
+    "effects": "Planned assets must be produced by the project team or a cleared vendor.",
+    "ui": "Planned assets must be produced by the project team or a cleared vendor.",
+    "audio": "No audio files are included in this metadata slice.",
+    "review": "Boundary-clean metadata only; a mountable pack still needs cleared runtime assets."
+  },
+  "notes": [
+    "This file combines the text-safe and visual-id scaffolds into the first art-safe mission slice target.",
+    "It must pass the public content boundary check.",
+    "It is not a complete runtime pack until the required engine files are supplied from cleared assets."
+  ]
+}
