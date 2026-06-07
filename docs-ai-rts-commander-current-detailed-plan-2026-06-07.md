@@ -8,7 +8,7 @@
 
 **Tech Stack:** Unity 6, C#, Windows Standalone first, deterministic BattleCore, PowerShell build/smoke/capture scripts, replaceable content packs, optional high-level AI deputy, later main server/map server/Web ranking contracts.
 
-**Revision:** 2026-06-07 v7. This file is the fine-grained execution plan paired with `docs-ai-rts-commander-current-master-plan-2026-06-07.md`. The private reference visual bridge, local investor evidence package, art-safe metadata contract, AI deputy offline guard, and reward authority contract are now sealed for the current Windows Demo. The current focus is `F2 Document Map Authoring Contract`: open/community maps must be editable and verifiable, while portable rewards remain main-server certified.
+**Revision:** 2026-06-07 v8. This file is the fine-grained execution plan paired with `docs-ai-rts-commander-current-master-plan-2026-06-07.md`. The private reference visual bridge, local investor evidence package, art-safe metadata contract, AI deputy offline guard, reward authority contract, and machine handoff plan are now sealed for the current Windows Demo. The current focus is `H2 Push Machine Handoff Checkpoint`: sync this local branch before switching machines, then prove validator/build/smoke on the new machine before resuming F2 map authoring contracts.
 
 ---
 
@@ -30,19 +30,22 @@
 | 内容边界 | README 已改成 AI RTS Commander Lab 叙事；text-safe、visual-id、art-safe metadata 均通过 boundary check | public boundary docs and checker |
 | 演示证据 | 六截图、visible-flow、walkthrough 和 investor evidence 已刷新 | C1/C2 docs and ignored capture sidecars |
 | 公开替换合同 | `project-owned-art-safe-slice.example.json` 已定义一张图的 clean art target | metadata-only, not runtime pack |
+| 换机交接 | `docs-machine-handoff-plan-2026-06-07.md` 已写清旧机推送、新机克隆、Unity 校验和本地私有资料边界 | push/clone/validator/build/smoke pending |
 
 当前最重要的问题：
 
-1. `F2` 需要把开源地图编辑器和地图包契约写清楚：地图可自建、可验证、可引用奖励表，但不能直接发放可携带奖励。
-2. D1 只是 art-safe metadata 合同，不是可挂载 runtime pack；后续 D2 才能进入清权资产生产和 mountable pack。
-3. 私有参考素材可以继续用于本机开发验证，但公开材料不能把它描述成最终产品内容。
-4. `F3-F4` 平台化方向很清楚，但现在先写地图包、排行、创作者边界契约，不先写服务器。
+1. `H2` 需要先把当前本机提交同步到新机器可见的地方：首选 `git push ai-origin master`，否则整仓迁移。
+2. 新机器必须先跑 Unity validator、Windows build 和 visible-flow smoke，再恢复产品开发。
+3. `F2` 仍是换机后的第一个产品任务：写开源地图编辑器和地图包契约，地图可自建、可验证、可引用奖励表，但不能直接发放可携带奖励。
+4. D1 只是 art-safe metadata 合同，不是可挂载 runtime pack；后续 D2 才能进入清权资产生产和 mountable pack。
+5. 私有参考素材可以继续用于本机开发验证，但公开材料不能把它描述成最终产品内容。
+6. `F3-F4` 平台化方向很清楚，但现在先写地图包、排行、创作者边界契约，不先写服务器。
 
 当前工作区注意事项：
 
-- 若当前 `git status` 只剩 F1 契约文档改动，先完成校验并提交，再进入 F2。
+- 若当前 `git status` 只剩 H1 换机计划文档改动，先完成校验并提交，再进入 H2。
 - D1 新增的是 metadata 示例文件；不允许把私有 OBJ/TGA/PNG/JSON、截图、log 或 Unity build 输出加入 git。
-- 后续 F2-F4 先写平台契约，不先写服务器实现。
+- 后续 H2 只做同步/验证，不做功能；F2-F4 先写平台契约，不先写服务器实现。
 - 如果 Unity batch 运行后只造成 `unity-mc2-demo/Assets/Scenes/Mc2Demo.unity` fileID churn，不要纳入提交。
 
 ## 1. Execution Rules
@@ -103,6 +106,7 @@
 | M9 | Public art-safe slice | Done for metadata | 替换包 provenance 和 boundary check |
 | M10 | AI 副官守护 | Done | no-token smoke, high-level directive only |
 | M11 | 平台契约 | In Progress | 奖励认证契约完成；地图包、排行、创作者边界待写 |
+| M12 | 换机开发交接 | In Progress | 交接计划完成；推送/克隆/validator/build/smoke 待执行 |
 
 ## 4. Fine-Grained Commit Queue
 
@@ -123,7 +127,9 @@
 | D1 | Done | `Prepare public art-safe mission slice` | 从 text-safe 进入公开视觉替换包计划 | boundary check |
 | E1 | Done | `Guard AI deputy offline behavior` | AI 高层、可离线、不逐帧、不花 smoke token | validator |
 | F1 | Done | `Document reward authority contract` | 主服务器认证奖励，地图服务器只提交 claim | docs |
-| F2 | Next | `Document map authoring contract` | 开源地图编辑器和地图包最小契约 | docs |
+| H1 | Done | `Prepare machine handoff plan` | 换机前后如何推送、克隆、验证、恢复本地私有资料和 AI key | docs |
+| H2 | Next | `Push machine handoff checkpoint` | 推送 `ai-origin master` 或确认整仓迁移，并在新机器跑最小验证 | git + Unity smoke |
+| F2 | Later | `Document map authoring contract` | 开源地图编辑器和地图包最小契约 | docs |
 | F3 | Later | `Document web ranking contract` | Web 排行、战绩、地图页和隐私边界 | docs |
 | F4 | Later | `Document creator economy boundary` | 皮肤、地图、分成、可选链上边界 | docs |
 
@@ -160,7 +166,9 @@
 | D1.6 | Done | 提交 D1 | docs + metadata only | commit `Prepare public art-safe mission slice` |
 | E1.1 | Done | 守住 AI 副官慢频高层决策，不花 smoke token | AI contract docs/code if needed | validator/no-key path |
 | F1.1 | Done | 写主服务器奖励权威契约，定义 claim/grant、签名、重放校验、ledger 边界 | platform docs | `git diff --check` |
-| F2.1 | Next | 写地图包/编辑器契约，定义地图元数据、触发图、敌人、奖励引用和验证器边界 | platform docs | `git diff --check` |
+| H1.1 | Done | 写换机交接计划，明确旧机推送、新机克隆、Unity 版本、fallback 验证、私有参考视觉和 AI key 边界 | handoff docs | `git diff --check` |
+| H2.1 | Next | 推送 `ai-origin master`，或确认整仓迁移；新机器 clone 后跑 validator/build/visible-flow smoke | git + Unity | clean status + expected success strings |
+| F2.1 | Later | 写地图包/编辑器契约，定义地图元数据、触发图、敌人、奖励引用和验证器边界 | platform docs | `git diff --check` |
 | F3-F4 | Later | 只写排行和创作者契约，不先写服务器 | platform docs | `git diff --check` |
 
 ## 5. Detailed Execution Tasks
@@ -886,9 +894,101 @@ README.md lists the reward authority contract under key docs.
 
 **Commit:** `Document reward authority contract`
 
-### F2: Document Map Authoring Contract
+### H1: Prepare Machine Handoff Plan
+
+**Status:** Completed 2026-06-07.
+
+**Goal:** 把换机开发前后必须做的事情写成可执行交接计划，避免新机器缺提交、缺 Unity 版本、缺 smoke 验证，或者把 ignored 私有资料误提交。
+
+**Files:**
+
+- Create: `docs-machine-handoff-plan-2026-06-07.md`
+- Modify: `README.md`
+- Modify: `docs-ai-rts-commander-current-master-plan-2026-06-07.md`
+- Modify: `docs-ai-rts-commander-current-detailed-plan-2026-06-07.md`
+
+**Completed Evidence:**
+
+```text
+docs-machine-handoff-plan-2026-06-07.md defines source push/copy, Unity 6000.4.7f1 setup, clone/import, clean fallback validator/build/smoke, optional private reference visual transfer, optional MiniMax environment variables, and stop conditions.
+README.md lists the machine handoff plan under key docs.
+Current master and detailed plans put H2 before F2.
+```
+
+**Validation:**
+
+```powershell
+git diff --check
+```
+
+**Commit:** `Prepare machine handoff plan`
+
+### H2: Push Machine Handoff Checkpoint
 
 **Status:** Next.
+
+**Goal:** 在真正换电脑前，把当前本机 `master` 同步到新机器能拿到的位置，并在新机器证明 Unity Demo 仍能跑。
+
+**Files:**
+
+- Modify: none expected
+- Read: `docs-machine-handoff-plan-2026-06-07.md`
+- Read: `BUILD-WIN.md`
+- Read: `unity-mc2-demo/README.md`
+
+**Steps:**
+
+1. On the old machine, run:
+
+```powershell
+git status --short --branch --untracked-files=all
+git log --oneline -5
+```
+
+2. Push if GitHub is available:
+
+```powershell
+git push ai-origin master
+```
+
+3. If push is not available, copy the whole repository with `.git`; do not stage ignored evidence.
+4. On the new machine, clone/open the repository and confirm the handoff commit is visible.
+5. Install Unity `6000.4.7f1` with Windows Build Support, or explicitly accept a compatible Unity 6 editor.
+6. Run the validator, Windows build, and visible-flow smoke from `docs-machine-handoff-plan-2026-06-07.md`.
+
+**Validation:**
+
+```powershell
+git status --short --branch --untracked-files=all
+```
+
+Expected after push:
+
+```text
+## master...ai-origin/master
+```
+
+Expected Unity strings on the new machine:
+
+```text
+MC2 demo contract validation OK
+Build Finished, Result: Success
+MC2 Unity demo Windows build OK
+MC2 demo smoke test exiting with code 0
+```
+
+**Acceptance:**
+
+- New machine can see the latest handoff commit.
+- Normal validator and smoke do not require `MINIMAX_API_KEY`.
+- Optional private reference visuals remain ignored and local-only.
+- No generated screenshot, log, JSON sidecar, Unity build output, or private reference export is staged.
+
+**Commit:** none expected after the push unless the new machine reveals a real doc/setup correction.
+
+### F2: Document Map Authoring Contract
+
+**Status:** Later, resume after H2 machine handoff verification.
 
 **Goal:** 为未来开源地图编辑器和社区地图包定义最小可验证格式。
 
@@ -1054,4 +1154,4 @@ Stop and reassess before committing if:
 
 ## 9. One-Line Direction
 
-Windows 本地 Demo 的画面、碰撞、稀疏 UI、MechLab、损伤故事、演示证据、公开 art-safe 元数据合同、AI 副官离线边界和主服务器奖励权威契约已经收稳；下一步写地图包/编辑器契约；随后再做 Web 排行和创作者生态。
+Windows 本地 Demo 的画面、碰撞、稀疏 UI、MechLab、损伤故事、演示证据、公开 art-safe 元数据合同、AI 副官离线边界和主服务器奖励权威契约已经收稳；换机交接计划已经写好，下一步先推送 `ai-origin` 或整仓迁移并在新机器跑 validator/build/smoke；之后恢复 F2 地图包/编辑器契约。

@@ -8,13 +8,14 @@
 
 **Tech Stack:** Unity 6, C#, Windows Standalone first, deterministic BattleCore, PowerShell validator/build/smoke/capture scripts, replaceable content packs, optional high-level AI deputy adapter, later main server/map server/Web ranking contracts.
 
-**Revision:** 2026-06-07 v6. This is the current master plan after the private reference visual bridge, visible-flow seal, investor evidence package, art-safe metadata target, AI deputy offline guard, and platform reward authority contract were refreshed. Older plan files remain evidence/history; this file is the first place to read when the user says "按计划继续". The finer task breakdown now lives in `docs-ai-rts-commander-current-detailed-plan-2026-06-07.md`.
+**Revision:** 2026-06-07 v7. This is the current master plan after the private reference visual bridge, visible-flow seal, investor evidence package, art-safe metadata target, AI deputy offline guard, platform reward authority contract, and machine handoff plan were refreshed. Older plan files remain evidence/history; this file is the first place to read when the user says "按计划继续". The finer task breakdown now lives in `docs-ai-rts-commander-current-detailed-plan-2026-06-07.md`.
 
 ---
 
 ## 0. How To Use This Plan
 
 当前仓库里 `docs` 是历史文件，不是目录，所以本计划继续按项目现有习惯放在根目录 `docs-*.md`。
+换机计划也按这个例外放在 `docs-machine-handoff-plan-2026-06-07.md`，没有创建 `docs/plans/` 目录。
 
 当用户说“按计划继续”时：
 
@@ -33,6 +34,7 @@
 | --- | --- |
 | `docs-ai-rts-commander-current-master-plan-2026-06-07.md` | 当前主计划和提交级队列 |
 | `docs-ai-rts-commander-current-detailed-plan-2026-06-07.md` | 当前阶段的细颗粒执行计划、提交批次和验收门槛 |
+| `docs-machine-handoff-plan-2026-06-07.md` | 换机开发交接计划：推送、克隆、Unity 校验、smoke、私有参考视觉和 AI key 边界 |
 | `docs-ai-rts-commander-overall-implementation-plan-2026-06-07.md` | 产品方向、架构边界和长期里程碑 |
 | `docs-ai-rts-commander-v1-detailed-execution-plan-2026-06-07.md` | 上一版细计划，保留已完成任务细节 |
 | `docs-ai-rts-commander-detailed-roadmap-2026-06-07.md` | 路线图和历史工作包 |
@@ -47,7 +49,7 @@
 当前阶段是：
 
 ```text
-Public Art-Safe Mission Slice -> AI Deputy Offline Guard
+Machine Handoff Checkpoint -> F2 Map Authoring Contract
 ```
 
 不是从零开发，也不是马上做平台。现在要把本地 Demo 收成：
@@ -84,9 +86,9 @@ Public Art-Safe Mission Slice -> AI Deputy Offline Guard
 
 | Gap | Why It Matters | First Fix |
 | --- | --- | --- |
+| 换机交接还没完成 | 本机 `master` 已领先 `ai-origin/master` 多个提交，新机器 clone 前必须同步 | H1 写交接计划，H2 推送或整仓迁移并在新机器跑 validator/build/smoke |
 | 清权资产还未真正接入运行包 | D1 已有 metadata 合同，但不是最终美术包 | D2 以后再做 mountable clean content pack |
-| AI 副官仍要防止范围膨胀 | 模型只做大决策，不能拖慢本地战斗 | E1 offline/high-level guard |
-| 平台化还是设想 | 地图服务器、奖励认证和 Web 排行要等 Demo 稳定后再做 | F1-F4 先写契约，不先写服务器 |
+| 平台化仍停在契约层 | 奖励权威已写清楚，地图包、排行和创作者边界还要补 | F2-F4 先写契约，不先写服务器 |
 
 ## 2. Product Scope Lock
 
@@ -304,9 +306,11 @@ Known good strings:
 | 12 | Done | `Prepare public art-safe mission slice` | 从 text-safe metadata 进入第一张图的公开视觉替换计划 | boundary check + provenance docs |
 | 13 | Done | `Guard AI deputy regression` | AI 保持高层、可离线、无 token smoke | validator/smoke |
 | 14 | Done | `Document platform reward contracts` | 主服务器、地图服务器、奖励认证契约 | docs check |
-| 15 | Next | `Plan map authoring prototype` | 地图包、触发、奖励引用和验证器规划 | docs check |
-| 16 | Later | `Plan web ranking prototype` | 排行、战绩、地图页和公开资料规划 | docs check |
-| 17 | Later | `Plan creator economy boundary` | 创作者分成、皮肤、自定义、链上边界 | docs check |
+| 15 | Done | `Prepare machine handoff plan` | 旧机推送、新机克隆、Unity 校验、smoke 和私有本地资料边界 | docs check |
+| 16 | Next | `Push machine handoff checkpoint` | 把本机 ahead 提交推到 `ai-origin`，或确认整仓迁移路径 | git status |
+| 17 | Later | `Plan map authoring prototype` | 地图包、触发、奖励引用和验证器规划 | docs check |
+| 18 | Later | `Plan web ranking prototype` | 排行、战绩、地图页和公开资料规划 | docs check |
+| 19 | Later | `Plan creator economy boundary` | 创作者分成、皮肤、自定义、链上边界 | docs check |
 
 ## 6. Detailed Tasks
 
@@ -837,6 +841,7 @@ git diff --check
 | M9 Public-safe slice | Done for metadata | art-safe manifest/provenance and boundary check pass |
 | M10 AI deputy V1 | Done | offline/no-key and high-level directive guarded |
 | M11 Platform contracts | In Progress | main server reward authority done; map authoring, ranking and creator boundaries remain |
+| M12 Machine handoff | In Progress | handoff plan done; push/clone/validator/build/smoke still pending before switching machines |
 
 ## 8. First Controlled Demo Definition Of Done
 
@@ -875,4 +880,4 @@ Stop and reassess if:
 
 ## 10. One-Line Direction
 
-Windows 本地 Demo 的画面、碰撞、稀疏 UI、MechLab、损伤故事、演示证据、公开 art-safe 元数据合同、AI 副官离线边界和主服务器奖励权威契约已经收稳；下一步写地图包/编辑器契约；随后再做 Web 排行和创作者生态。
+Windows 本地 Demo 的画面、碰撞、稀疏 UI、MechLab、损伤故事、演示证据、公开 art-safe 元数据合同、AI 副官离线边界和主服务器奖励权威契约已经收稳；换机交接计划已经写好，下一步先推送 `ai-origin` 或整仓迁移并在新机器跑 validator/build/smoke；之后恢复 F2 地图包/编辑器契约。
