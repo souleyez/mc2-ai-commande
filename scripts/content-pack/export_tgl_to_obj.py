@@ -12,6 +12,7 @@ import argparse
 import json
 import shutil
 import struct
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
@@ -25,6 +26,23 @@ TINY_TEXTURE_SIZE = 12
 NODE_ID_SIZE = 25
 DEFAULT_UNITY_VISUAL_SCALE = 3.0
 DEFAULT_UNITY_GROUND_OFFSET_Y = -0.5
+PRIVATE_REFERENCE_PROVENANCE = {
+    "status": "private-development-only",
+    "redistribution": "not-public-safe",
+    "replacementPolicy": "replace-with-project-owned-or-licensed-pack-before-public-release",
+    "note": "Generated from a local private reference content pack for scale, pacing, and readability validation only.",
+}
+UNIT_ASSET_IDS = {
+    "werewolf",
+    "bushwacker",
+    "urbanmech",
+    "starslayer",
+    "centipede",
+    "harasser",
+    "lrmc",
+    "infantry",
+    "poweredarmor",
+}
 
 UNITY_VISUAL_OVERRIDES: dict[str, dict[str, float]] = {
     "werewolf": {"unityScale": 3.0, "unityYawDegrees": 0.0, "groundOffsetY": -0.5},
@@ -269,10 +287,14 @@ def write_obj(
 
     copied_textures: list[str] = []
     copied_texture_paths: list[str] = []
+    texture_records: list[dict[str, object]] = []
+    warnings: list[str] = []
     with mtl_path.open("w", encoding="utf-8", newline="\n") as mtl:
         for index, texture in enumerate(shape.textures):
             material_name = material_names[index]
             base_name = texture_basename(texture.name)
+            copied_output_path = ""
+            texture_warning = ""
             mtl.write(f"newmtl {material_name}\n")
             mtl.write("Kd 1.0 1.0 1.0\n")
             mtl.write("Ka 0.15 0.15 0.15\n")
@@ -284,12 +306,28 @@ def write_obj(
                         if not target.exists():
                             shutil.copy2(source, target)
                         copied_textures.append(source.name)
-                        copied_texture_paths.append(str(target.resolve()))
+                        copied_output_path = str(target.resolve())
+                        copied_texture_paths.append(copied_output_path)
                         base_name = source.name
+                    else:
+                        texture_warning = f"Missing texture source for {texture.name}"
+                        warnings.append(texture_warning)
                 mtl.write(f"map_Kd {base_name}\n")
                 if texture.alpha:
                     mtl.write(f"map_d {base_name}\n")
             mtl.write("\n")
+            texture_records.append(
+                {
+                    "textureId": index,
+                    "sourceName": texture.name,
+                    "fileName": base_name,
+                    "materialId": material_name,
+                    "alpha": texture.alpha,
+                    "copied": bool(copied_output_path),
+                    "outputPath": copied_output_path,
+                    "warning": texture_warning,
+                }
+            )
 
     vertex_cursor = 1
     uv_cursor = 1
@@ -341,32 +379,54 @@ def write_obj(
             normal_cursor += len(node.vertices)
             total_vertices += len(node.vertices)
 
+    helper_node_names = sorted(
+        {
+            node.node_id
+            for node in shape.nodes
+            if node.node_id and (node.node_type == 0 or is_helper_geometry(node))
+        }
+    )
+    node_buckets = {
+        "cockpit": section_node_names(shape_nodes, "cockpit"),
+        "leftArm": section_node_names(shape_nodes, "left_arm"),
+        "rightArm": section_node_names(shape_nodes, "right_arm"),
+        "leftLeg": section_node_names(shape_nodes, "left_leg"),
+        "rightLeg": section_node_names(shape_nodes, "right_leg"),
+        "torso": section_node_names(shape_nodes, "torso"),
+        "shape": [node.node_id for node in shape_nodes if node.node_id],
+        "helper": helper_node_names,
+    }
     summary = {
         "assetId": shape_name,
+        "assetClass": asset_class_for(shape_name),
+        "provenance": PRIVATE_REFERENCE_PROVENANCE,
         "sourceName": shape.path.stem,
         "source": str(shape.path),
         "sourcePath": str(shape.path.resolve()),
         "outputDir": str(output_dir.resolve()),
         "obj": str(obj_path.resolve()),
         "mtl": str(mtl_path.resolve()),
+        "generatedPaths": {
+            "outputDir": str(output_dir.resolve()),
+            "obj": str(obj_path.resolve()),
+            "mtl": str(mtl_path.resolve()),
+            "summary": str((output_dir / f"{shape_name}.summary.json").resolve()),
+            "textures": sorted(set(copied_texture_paths)),
+        },
+        "ignoredOutputRoot": str(output_dir.resolve()),
         "nodes": len(shape.nodes),
         "nodeCount": len(shape.nodes),
         "shapeNodes": len(shape_nodes),
         "shapeNodeCount": len(shape_nodes),
-        "cockpitNodeNames": section_node_names(shape_nodes, "cockpit"),
-        "leftArmNodeNames": section_node_names(shape_nodes, "left_arm"),
-        "rightArmNodeNames": section_node_names(shape_nodes, "right_arm"),
-        "leftLegNodeNames": section_node_names(shape_nodes, "left_leg"),
-        "rightLegNodeNames": section_node_names(shape_nodes, "right_leg"),
-        "torsoNodeNames": section_node_names(shape_nodes, "torso"),
-        "shapeNodeNames": [node.node_id for node in shape_nodes if node.node_id],
-        "helperNodeNames": sorted(
-            {
-                node.node_id
-                for node in shape.nodes
-                if node.node_id and (node.node_type == 0 or is_helper_geometry(node))
-            }
-        ),
+        "nodeBuckets": node_buckets,
+        "cockpitNodeNames": node_buckets["cockpit"],
+        "leftArmNodeNames": node_buckets["leftArm"],
+        "rightArmNodeNames": node_buckets["rightArm"],
+        "leftLegNodeNames": node_buckets["leftLeg"],
+        "rightLegNodeNames": node_buckets["rightLeg"],
+        "torsoNodeNames": node_buckets["torso"],
+        "shapeNodeNames": node_buckets["shape"],
+        "helperNodeNames": node_buckets["helper"],
         "skippedHelperShapeNodes": len(
             [
                 node
@@ -378,7 +438,10 @@ def write_obj(
         else 0,
         "vertices": total_vertices,
         "triangles": total_triangles,
+        "materialIds": material_names,
+        "textureRecords": texture_records,
         "textures": [texture_basename(texture.name) for texture in shape.textures],
+        "textureIds": [index for index, _ in enumerate(shape.textures)],
         "copiedTextures": sorted(set(copied_textures)),
         "copiedTexturePaths": sorted(set(copied_texture_paths)),
         "scale": scale,
@@ -386,6 +449,7 @@ def write_obj(
         "unityScale": unity_override["unityScale"],
         "unityYawDegrees": unity_override["unityYawDegrees"],
         "groundOffsetY": unity_override["groundOffsetY"],
+        "warnings": warnings,
     }
     (output_dir / f"{shape_name}.summary.json").write_text(
         json.dumps(summary, indent=2),
@@ -481,6 +545,30 @@ def find_texture(texture_root: Path, base_name: str) -> Path | None:
     return None
 
 
+def normalize_asset_id(value: str) -> str:
+    return Path(value.strip()).stem.lower()
+
+
+def asset_class_for(asset_id: str) -> str:
+    normalized = normalize_asset_id(asset_id)
+    if normalized in UNIT_ASSET_IDS:
+        return "unit"
+    return "prop"
+
+
+def find_tgl_source(input_root: Path, name: str) -> Path | None:
+    direct = input_root / f"{name}.tgl"
+    if direct.exists():
+        return direct
+
+    normalized = normalize_asset_id(name)
+    for path in input_root.glob("*.tgl"):
+        if path.stem.lower() == normalized:
+            return path
+
+    return None
+
+
 def parse_names(raw_names: list[str]) -> list[str]:
     names: list[str] = []
     for raw in raw_names:
@@ -541,11 +629,24 @@ def main() -> int:
     output_root = args.output_root
     texture_root = args.texture_root or (input_root / "128")
     summaries = []
+    missing_sources = []
+    manifest_warnings = []
 
     for name in names:
-        source = input_root / f"{name}.tgl"
-        if not source.exists():
-            raise FileNotFoundError(f"Missing TGL source: {source}")
+        source = find_tgl_source(input_root, name)
+        if source is None:
+            requested_path = input_root / f"{name}.tgl"
+            missing = {
+                "assetId": normalize_asset_id(name),
+                "requestedName": name,
+                "assetClass": asset_class_for(name),
+                "sourcePath": str(requested_path.resolve()),
+                "warning": f"Missing TGL source: {requested_path}",
+            }
+            missing_sources.append(missing)
+            manifest_warnings.append(missing["warning"])
+            print(f"warning: {missing['warning']}", file=sys.stderr)
+            continue
 
         shape = parse_tgl(source)
         summary = write_obj(
@@ -564,6 +665,9 @@ def main() -> int:
             f"{summary['vertices']} vertices, "
             f"{summary['triangles']} triangles -> {summary['obj']}"
         )
+        for warning in summary.get("warnings", []):
+            manifest_warnings.append(f"{summary['assetId']}: {warning}")
+            print(f"warning: {summary['assetId']}: {warning}", file=sys.stderr)
 
     manifest_path = args.manifest_path or (output_root / "manifest.json")
     output_root.mkdir(parents=True, exist_ok=True)
@@ -572,7 +676,17 @@ def main() -> int:
         json.dumps(
             {
                 "schema": "mc2-reference-visual-manifest-v1",
+                "manifestVersion": 2,
                 "generatedBy": "scripts/content-pack/export_tgl_to_obj.py",
+                "provenance": PRIVATE_REFERENCE_PROVENANCE,
+                "inputRoot": str(input_root.resolve()),
+                "outputRoot": str(output_root.resolve()),
+                "textureRoot": str(texture_root.resolve()),
+                "requestedAssets": [normalize_asset_id(name) for name in names],
+                "exportCount": len(summaries),
+                "missingSourceCount": len(missing_sources),
+                "missingSources": missing_sources,
+                "warnings": manifest_warnings,
                 "exports": summaries,
             },
             indent=2,

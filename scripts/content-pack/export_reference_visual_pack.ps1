@@ -61,6 +61,22 @@ function Get-ReferenceShapeName {
     return $shapeName
 }
 
+function Expand-ReferenceShapeNames {
+    param([string[]]$RawNames)
+
+    $expanded = New-Object System.Collections.Generic.List[string]
+    foreach ($rawName in $RawNames) {
+        foreach ($part in ($rawName -split ",")) {
+            $shapeName = Get-ReferenceShapeName -Name $part
+            if (-not [string]::IsNullOrWhiteSpace($shapeName)) {
+                $expanded.Add($shapeName)
+            }
+        }
+    }
+
+    return $expanded.ToArray()
+}
+
 function Test-FirstSliceTerrainObject {
     param($TerrainObject)
 
@@ -81,6 +97,8 @@ function Test-FirstSliceTerrainObject {
         $TerrainObject.position.y -ge -1300 -and
         $TerrainObject.position.y -le 350
 }
+
+$Names = Expand-ReferenceShapeNames -RawNames $Names
 
 if ($IncludeMissionProps) {
     if (!(Test-Path -LiteralPath $MissionContractPath -PathType Leaf)) {
@@ -132,6 +150,24 @@ if ($LASTEXITCODE -ne 0) {
 
 if (!(Test-Path $ManifestPath)) {
     throw "Reference visual export did not create manifest: $ManifestPath"
+}
+
+$manifest = Get-Content -LiteralPath $ManifestPath -Raw | ConvertFrom-Json
+$exportCount = if ($null -ne $manifest.exports) { @($manifest.exports).Count } else { 0 }
+$missingSourceCount = if ($null -ne $manifest.missingSources) { @($manifest.missingSources).Count } else { 0 }
+Write-Host ("Reference visual exports: {0}; missing sources: {1}" -f $exportCount, $missingSourceCount)
+if ($missingSourceCount -gt 0) {
+    foreach ($missing in @($manifest.missingSources)) {
+        Write-Warning ("Missing private reference source for {0}: {1}" -f $missing.assetId, $missing.sourcePath)
+    }
+}
+
+if ($null -ne $manifest.warnings) {
+    foreach ($warning in @($manifest.warnings)) {
+        if (-not [string]::IsNullOrWhiteSpace([string]$warning)) {
+            Write-Warning ([string]$warning)
+        }
+    }
 }
 
 Write-Host "Reference visual manifest ready: $ManifestPath"

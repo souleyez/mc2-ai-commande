@@ -114,7 +114,7 @@
 | A4 | Done | `Improve structure and prop readability` | 建筑、树木、机场道具不再是灰色糊团 | build + `airfield,hangar-contact,north-patrol` captures |
 | A5 | Done | `Gate first map visual slice` | sidecar 检查第一图视觉、稀疏 UI、碰撞不回退 | build + five battle captures |
 | A6 | Done | `Refresh demo evidence after visual pass` | 更新证据页和审计文档 | six captures + docs |
-| B1 | In Progress | `Stabilize reference visual manifest export` | 私有参考单位/道具/地形资源导出 manifest | exporter dry run + missing-source probe |
+| B1 | Done | `Stabilize reference visual manifest export` | 私有参考单位/道具/地形资源导出 manifest | exporter dry run + missing-source probe |
 | B2 | Next | `Harden Unity reference visual loader` | Unity 优先读 manifest，缺失安全回退 | build + fallback capture |
 | B3 | Next | `Document replaceable visual ids` | 固化换包 id，方便以后整包替换 | docs + boundary check |
 | C1 | Later | `Seal visible playable walkthrough` | 启动、机库、战斗、损伤、结算、重开完整流程 | visible-flow smoke |
@@ -133,14 +133,14 @@
 | Step | Status | Action | Files | Gate |
 | --- | --- | --- | --- | --- |
 | P0 | Done by this doc | 更新当前主计划和细计划到 v3 | `docs-ai-rts-commander-current-master-plan-2026-06-07.md`; `docs-ai-rts-commander-current-detailed-plan-2026-06-07.md` | `git diff --check` |
-| B1.1 | In Progress | 完成参考视觉导出 manifest 字段：assetClass、provenance、generatedPaths、materialIds、textureRecords、nodeBuckets、missingSources、warnings | `scripts/content-pack/export_tgl_to_obj.py`; `scripts/content-pack/export_terrain_texture_audit.ps1` | `python -m py_compile` |
-| B1.2 | In Progress | 修正 `export_reference_visual_pack.ps1 -Names` 对逗号分隔名称的展开，并保持 `-IncludeMissionProps` 能同时导出单位和道具 | `scripts/content-pack/export_reference_visual_pack.ps1` | PowerShell syntax check |
-| B1.3 | Next | 跑七个首图单位导出验证 | exporter scripts | `export_reference_visual_pack.ps1 -Names werewolf,bushwacker,centipede,harasser,lrmc,urbanmech,starslayer` reports 7 exports and 0 missing sources |
-| B1.4 | Next | 跑缺失源 probe，确认 warning 清晰、manifest 不破 | exporter scripts | missing probe reports 0 exports, 1 missing source, generated manifest |
-| B1.5 | Next | 跑地形纹理 audit/export，确认 terrain texture manifest 也带 provenance/assetClass | `scripts/content-pack/export_terrain_texture_audit.ps1` | `export_terrain_texture_audit.ps1 -ExportReferenceTextures` reports expected texture manifest |
-| B1.6 | Next | 恢复本地完整 unit+prop ignored manifest，避免后续 Unity capture 只剩道具或只剩单位 | exporter scripts | `export_reference_visual_pack.ps1 -Names ... -IncludeMissionProps` contains units and mission props |
-| B1.7 | Next | 更新参考视觉恢复计划，记录 B1 manifest v2 字段、验证命令和 private-development-only 边界 | `docs-reference-visual-restoration-plan.md` | `git diff --check` |
-| B1.8 | Next | 检查 generated private derivatives 未进入 git，提交 B1 | scripts + docs only | `git status --short --branch --untracked-files=all`; commit `Stabilize reference visual manifest export` |
+| B1.1 | Done | 完成参考视觉导出 manifest 字段：assetClass、provenance、generatedPaths、materialIds、textureRecords、nodeBuckets、missingSources、warnings | `scripts/content-pack/export_tgl_to_obj.py`; `scripts/content-pack/export_terrain_texture_audit.ps1` | `python -m py_compile` |
+| B1.2 | Done | 修正 `export_reference_visual_pack.ps1 -Names` 对逗号分隔名称的展开，并保持 `-IncludeMissionProps` 能同时导出单位和道具 | `scripts/content-pack/export_reference_visual_pack.ps1` | PowerShell syntax check |
+| B1.3 | Done | 跑七个首图单位导出验证 | exporter scripts | `export_reference_visual_pack.ps1 -Names werewolf,bushwacker,centipede,harasser,lrmc,urbanmech,starslayer` reports 7 exports and 0 missing sources |
+| B1.4 | Done | 跑缺失源 probe，确认 warning 清晰、manifest 不破 | exporter scripts | missing probe reports 0 exports, 1 missing source, generated manifest |
+| B1.5 | Done | 跑地形纹理 audit/export，确认 terrain texture manifest 也带 provenance/assetClass | `scripts/content-pack/export_terrain_texture_audit.ps1` | `export_terrain_texture_audit.ps1 -ExportReferenceTextures` reports expected texture manifest |
+| B1.6 | Done | 恢复本地完整 unit+prop ignored manifest，避免后续 Unity capture 只剩道具或只剩单位 | exporter scripts | `export_reference_visual_pack.ps1 -Names ... -IncludeMissionProps` contains units and mission props |
+| B1.7 | Done | 更新参考视觉恢复计划，记录 B1 manifest v2 字段、验证命令和 private-development-only 边界 | `docs-reference-visual-restoration-plan.md` | `git diff --check` |
+| B1.8 | Done | 检查 generated private derivatives 未进入 git，提交 B1 | scripts + docs only | `git status --short --branch --untracked-files=all`; commit `Stabilize reference visual manifest export` |
 | B2.1 | Next | 审计 Unity 三个 reference loader 读 manifest 的字段和 fallback 逻辑 | `ReferenceObjMeshLibrary.cs`; `ReferencePropLibrary.cs`; `ReferenceTerrainTextureLibrary.cs` | docs note or code diff identifies exact fallback path |
 | B2.2 | Next | Loader 优先使用 manifest，并把缺失 manifest、缺失 OBJ、缺失 texture 的日志分清楚 | Unity reference loader files | Unity build |
 | B2.3 | Next | 做 manifest-missing fallback capture，证明没私有包也不会崩 | Unity build + capture scripts | `spawn,airfield` capture passes with fallback |
@@ -457,7 +457,7 @@ docs-reference-visual-audit-2026-06-07.md records the A6 evidence refresh and ke
 
 **Goal:** 把本地参考模型、贴图、道具、地形纹理的导出结果整理成可审计 manifest，未来整包替换更容易。
 
-**Status:** In Progress on 2026-06-07. Script work exists locally and should be finished before any new Unity visual polish. This task is exporter-side only; Unity loader behavior is B2.
+**Status:** Completed 2026-06-07. Exporter-side manifest work is done; Unity loader behavior remains B2.
 
 **Files:**
 
@@ -534,6 +534,19 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\content-pack\export_
 - Terrain texture manifest records private-development-only provenance.
 - No generated private derivatives are staged.
 - Missing source material yields clear warnings, not broken docs.
+
+**Completed Evidence:**
+
+```text
+git diff --check -- scripts/content-pack/export_tgl_to_obj.py scripts/content-pack/export_reference_visual_pack.ps1 scripts/content-pack/export_terrain_texture_audit.ps1: passed, with only LF/CRLF warnings.
+$env:PYTHONDONTWRITEBYTECODE='1'; python -m py_compile scripts/content-pack/export_tgl_to_obj.py: passed.
+PowerShell syntax check for export_reference_visual_pack.ps1 and export_terrain_texture_audit.ps1: passed.
+Seven-unit export: Reference visual exports: 7; missing sources: 0.
+Missing-source probe: Reference visual exports: 0; missing sources: 1.
+Terrain texture audit/export: Terrain reference textures exported: 103.
+Final unit+prop export: Reference visual exports: 47; missing sources: 0; manifest has 7 unit entries and 40 prop entries.
+Manifest v2 provenance: private-development-only.
+```
 
 **Commit:** `Stabilize reference visual manifest export`
 

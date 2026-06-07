@@ -120,6 +120,8 @@ Internal screenshot:
 
 ## Task 1: Replace Runtime OBJ Parsing With A Stable Reference Visual Manifest
 
+**Status:** Exporter-side manifest stabilization completed 2026-06-07. Unity manifest-first loader hardening remains the next B2 task in `docs-ai-rts-commander-current-detailed-plan-2026-06-07.md`.
+
 **Files:**
 
 - Modify: `scripts/content-pack/export_tgl_to_obj.py`
@@ -140,11 +142,34 @@ Internal screenshot:
 3. Update Unity loader to read manifest first and log exactly which manifest asset was chosen for each `unitType`.
 4. Keep direct folder probing only as a fallback.
 
+**Exporter Manifest v2 Fields:**
+
+- Top level keeps `schema = mc2-reference-visual-manifest-v1` for Unity compatibility and adds `manifestVersion = 2`.
+- Top level records `provenance`, `inputRoot`, `outputRoot`, `textureRoot`, `requestedAssets`, `exportCount`, `missingSourceCount`, `missingSources`, `warnings`, and `exports`.
+- Each exported TGL visual records `assetId`, `assetClass`, `provenance`, `sourcePath`, `generatedPaths`, `ignoredOutputRoot`, geometry counts, `materialIds`, `textureIds`, `textureRecords`, `nodeBuckets`, and existing Unity-compatible node lists.
+- Missing TGL sources now produce `missingSources` entries and warnings while still writing a manifest.
+- Missing texture sources now remain warnings attached to the exported asset and texture record.
+- Terrain reference texture manifests now record `assetClass = terrain-texture-pack`, private-development-only provenance, and per-texture `assetClass = texture`.
+
+**Validation Evidence:**
+
+```text
+git diff --check -- scripts/content-pack/export_tgl_to_obj.py scripts/content-pack/export_reference_visual_pack.ps1 scripts/content-pack/export_terrain_texture_audit.ps1: passed, with only LF/CRLF warnings.
+$env:PYTHONDONTWRITEBYTECODE='1'; python -m py_compile scripts/content-pack/export_tgl_to_obj.py: passed.
+PowerShell syntax check for export_reference_visual_pack.ps1 and export_terrain_texture_audit.ps1: passed.
+export_reference_visual_pack.ps1 -Names werewolf,bushwacker,centipede,harasser,lrmc,urbanmech,starslayer: Reference visual exports: 7; missing sources: 0.
+Missing-source probe for __missing_reference_probe__: Reference visual exports: 0; missing sources: 1, manifest written.
+export_terrain_texture_audit.ps1 -ExportReferenceTextures: Terrain reference textures exported: 103.
+export_reference_visual_pack.ps1 -Names werewolf,bushwacker,centipede,harasser,lrmc,urbanmech,starslayer -IncludeMissionProps: Reference visual exports: 47; missing sources: 0.
+Final local ignored manifest sample: 7 unit entries, 40 prop entries, 19 texture warnings, private-development-only provenance.
+```
+
 **Acceptance:**
 
-- `manifest.json` lists the seven first-slice unit visuals.
-- Unity log maps every first-slice `unitType` to a manifest entry.
-- Missing manifest still falls back cleanly to primitive dev visuals.
+- Exporter manifest lists the seven first-slice unit visuals.
+- Exporter manifest can also hold the seven unit visuals plus 40 first-slice mission prop visuals.
+- Missing private source files produce manifest warnings instead of broken docs or Python tracebacks.
+- Unity log mapping and missing-manifest primitive fallback remain B2 acceptance items.
 
 ## Task 2: Restore Mech Facing, Scale, And Node Hierarchy
 

@@ -273,6 +273,7 @@ function Export-ReferenceTerrainTextures {
         }
 
         $entries += [ordered]@{
+            assetClass = "texture"
             textureId = $textureId
             sampleCount = [int]$TextureIdSampleCounts[[string]$textureId]
             sourceName = $entry.name
@@ -290,6 +291,13 @@ function Export-ReferenceTerrainTextures {
 
     $manifest = [ordered]@{
         schema = "mc2-terrain-reference-textures-v1"
+        provenance = [ordered]@{
+            status = "private-development-only"
+            redistribution = "not-public-safe"
+            replacementPolicy = "replace-with-project-owned-or-licensed-pack-before-public-release"
+            note = "Generated from local private reference terrain textures for scale, pacing, and readability validation only."
+        }
+        assetClass = "terrain-texture-pack"
         missionId = $Contract.source.missionId
         sourceFst = (Resolve-Path -LiteralPath $textureFstPath).Path
         sourceIndex = (Resolve-Path -LiteralPath $IndexPath).Path
