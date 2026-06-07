@@ -1992,3 +1992,64 @@ Remaining issues:
 Next priority:
 
 1. H1 write playable demo walkthrough.
+
+## H3 Playable Demo Evidence Package Result
+
+Implemented on 2026-06-07:
+
+- Refreshed the six current evidence presets: `mechlab`, `spawn`, `airfield`, `hangar-contact`, `damage-demo`, and `north-patrol`.
+- Added `docs-playable-demo-investor-evidence-2026-06-07.md` as a small handoff/evidence page that points to ignored local screenshots and sidecars instead of committing generated binaries.
+- Added README navigation for the evidence page.
+- Kept the evidence language scoped to an AI-assisted tactical RTS commander prototype with replaceable content packs.
+- Explicitly marked private reference visuals as development evidence only, not public release content.
+
+Capture command:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_reference_visuals.ps1 -Presets mechlab,spawn,airfield,hangar-contact,damage-demo,north-patrol
+```
+
+Refreshed evidence:
+
+```text
+analysis-output/reference-visual-captures/mechlab.png
+analysis-output/reference-visual-captures/mechlab.json
+analysis-output/reference-visual-captures/spawn.png
+analysis-output/reference-visual-captures/spawn.json
+analysis-output/reference-visual-captures/airfield.png
+analysis-output/reference-visual-captures/airfield.json
+analysis-output/reference-visual-captures/hangar-contact.png
+analysis-output/reference-visual-captures/hangar-contact.json
+analysis-output/reference-visual-captures/damage-demo.png
+analysis-output/reference-visual-captures/damage-demo.json
+analysis-output/reference-visual-captures/north-patrol.png
+analysis-output/reference-visual-captures/north-patrol.json
+```
+
+Evidence summary:
+
+| Preset | Current Use | Key Sidecar Evidence | Readability Note |
+| --- | --- | --- | --- |
+| `mechlab` | Preparation and fitting pillar | `weaponBlock`, `fillers=A+/C+`, `Fit OK`, H/W/G pressure, `noToggle=yes` | Strong handoff image for the MechLab loop. |
+| `spawn` | Sparse battle UI baseline | `BattleHud=active`, `combatLogVisible=no`, `saveUi=disabled` | Good image for explaining simple squad-first command. |
+| `airfield` | First combat contact | 12 active / 8 visible hostiles, objective `Destroy Hangar` | Good terrain/contact image. |
+| `hangar-contact` | Pressure-test fight | 20 active / 16 visible hostiles, 80 hard props, 16 landing blocked markers | Useful to show system pressure; still the busiest readability case. |
+| `damage-demo` | Section damage selling moment | `left-arm-lost`, `legs-lost`, `cockpit-lost`, `pilotRisk=1`, `destroyedUnits=1` | Best image for current combat drama, still prototype-dense. |
+| `north-patrol` | Wider triggered encounter | 24 active / 10 visible hostiles, north encounter trigger completed | Good proof that broader encounter beats exist. |
+
+Validation result:
+
+```text
+Capture command exited with code 0.
+All six target PNG/JSON/log evidence files were refreshed under analysis-output/reference-visual-captures/.
+git diff --check: clean, with Windows line-ending warnings only.
+```
+
+Remaining issues:
+
+1. `hangar-contact` remains the main visual density stress case; later polish should improve encounter readability rather than adding more HUD.
+2. The evidence page should be treated as a local development handoff. Public builds still need the P1/P2 content-boundary work before wider distribution.
+
+Next priority:
+
+1. P1 document reference content boundary.

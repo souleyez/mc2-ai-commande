@@ -36,7 +36,7 @@
 - Occupancy placeholder review layer 已提交：`1bd22e2 Lock occupancy placeholder review layer`.
 - MechLab block fitting 已提交：`74e24bf Polish MechLab block fitting`.
 - MechLab fitting evidence capture 已提交：`6ffa2ea Capture MechLab fitting evidence`.
-- 下一步是 `H3 Package playable demo evidence`.
+- 下一步是 `P1 Document reference content boundary`.
 
 ## 1. First Demo Product Scope
 
@@ -93,7 +93,7 @@
 | Gap | Why It Matters | Next Task |
 | --- | --- | --- |
 | MechLab 后续只需回归 | 整块占格和截图证据已完成，后续 UI 改动需要保持这个体验不退化 | G3 regression |
-| Demo 还缺证据页 | H2 已补可重复 Windows 构建说明并验证 build/smoke；后续融资/协作需要一页截图证据包 | H3 |
+| Demo 公开边界还需要收口 | H3 已补证据页；后续融资/协作需要清楚说明私有参考内容和公开替换包边界 | P1/P2 |
 | 公开内容安全还需要脚本 guard | 本地参考包和公开包要分清 | P1/P2 |
 
 ## 3. Architecture Contracts
@@ -255,8 +255,8 @@ Do not stage generated PNG/JSON/log evidence unless explicitly requested.
 | 9 | Done | `Keep battle UI sparse` | G1/G2 UI readability |
 | 10 | Done | `Write playable demo walkthrough` | G8 handoff |
 | 11 | Done | `Prepare repeatable Windows demo build` | G8 handoff |
-| 12 | Next | `Package playable demo evidence` | G8 handoff |
-| 13 | Pending | `Document reference content boundary` | G6 public boundary |
+| 12 | Done | `Package playable demo evidence` | G8 handoff |
+| 13 | Next | `Document reference content boundary` | G6 public boundary |
 | 14 | Pending | `Add public content boundary check` | G6 public boundary |
 
 ## 6. Detailed Tasks
@@ -721,7 +721,9 @@ git diff --check
 
 ### H3: Package Demo Evidence
 
-**Status:** Next.
+**Status:** Completed 2026-06-07.
+
+**Result:** Added `docs-playable-demo-investor-evidence-2026-06-07.md`, listing the six refreshed local evidence beats, sidecar highlights, suggested three-minute use order and honest limits. Refreshed `mechlab`, `spawn`, `airfield`, `hangar-contact`, `damage-demo`, and `north-patrol` captures under ignored `analysis-output/reference-visual-captures/`. Updated `docs-reference-visual-audit-2026-06-07.md` and README navigation.
 
 **Goal:** 收一组可以用来讲故事的截图和简短 caption。
 
@@ -758,7 +760,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_refere
 
 ### P1: Document Reference Content Boundary
 
-**Status:** Pending.
+**Status:** Next.
 
 **Goal:** 让仓库和 README 说清楚：开发可以用私有参考包验证，本项目价值在 AI RTS 指挥和可替换内容包，不在搬运旧素材。
 

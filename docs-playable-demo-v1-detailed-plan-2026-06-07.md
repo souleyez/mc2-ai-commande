@@ -30,7 +30,7 @@ Current branch snapshot when this plan was written:
   - `1bd22e2 Lock occupancy placeholder review layer`
   - `74e24bf Polish MechLab block fitting`
   - `6ffa2ea Capture MechLab fitting evidence`
-- Current next gameplay task: `H3 Package playable demo evidence`.
+- Current next gameplay task: `P1 Document reference content boundary`.
 
 ## 1. Product Definition
 
@@ -231,8 +231,8 @@ The authoritative queue is still in `docs-playable-demo-current-execution-plan-2
 | C2 | Done | `Keep battle UI sparse` | Ensure battle UI stays clean while preserving command/damage state |
 | H1 | Done | `Write playable demo walkthrough` | Create a three-minute demonstration script |
 | H2 | Done | `Prepare repeatable Windows demo build` | Document and verify repeatable build/smoke/capture commands |
-| H3 | Next | `Package playable demo evidence` | Build an evidence page with screenshot beats and captions |
-| P1 | Pending | `Document reference content boundary` | Make private reference vs public content boundary explicit |
+| H3 | Done | `Package playable demo evidence` | Build an evidence page with screenshot beats and captions |
+| P1 | Next | `Document reference content boundary` | Make private reference vs public content boundary explicit |
 | P2 | Pending | `Add public content boundary check` | Add a safe check for public packaging |
 
 ## 6. Detailed Execution Tasks
@@ -384,7 +384,9 @@ git diff --check
 
 ### Task H3: Package Playable Demo Evidence
 
-**Status:** Next.
+**Status:** Completed 2026-06-07.
+
+**Result:** Added `docs-playable-demo-investor-evidence-2026-06-07.md`, refreshed the six local evidence captures under ignored `analysis-output/reference-visual-captures/`, and updated the visual audit plus README key-document navigation. The page points to local PNG/JSON sidecars, gives a short presentation order, and states that private reference visuals are development evidence only.
 
 **Goal:** Create a small evidence page that tells the Demo story without checking in generated screenshots.
 
@@ -415,6 +417,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_refere
 **Commit:** `Package playable demo evidence`
 
 ### Task P1: Document Reference Content Boundary
+
+**Status:** Next.
 
 **Goal:** Make the repo safe to show: the project is AI RTS commander exploration with replaceable content packs, not a public asset clone.
 
