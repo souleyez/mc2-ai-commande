@@ -193,6 +193,7 @@ namespace MC2Demo.Presentation
             public string occupancyPlaceholders;
             public string mechLab;
             public string damageStory;
+            public string battleHud;
             public VisualCaptureCameraState camera;
             public VisualCaptureReferenceState referenceAssets;
         }
@@ -5746,6 +5747,7 @@ namespace MC2Demo.Presentation
                 occupancyPlaceholders = lastOccupancyPlaceholderSummary,
                 mechLab = BuildCaptureMechLabSummary(),
                 damageStory = BuildCaptureDamageStorySummary(),
+                battleHud = BuildCaptureBattleHudSummary(),
                 camera = BuildCaptureCameraState(),
                 referenceAssets = new VisualCaptureReferenceState
                 {
@@ -5962,6 +5964,32 @@ namespace MC2Demo.Presentation
                 + pressure
                 + " "
                 + alwaysMounted;
+        }
+
+        private string BuildCaptureBattleHudSummary()
+        {
+            if (demoFlowScreen != DemoFlowScreen.Battle)
+            {
+                return "BattleHud=inactive flow=" + DemoFlowScreenName(demoFlowScreen);
+            }
+
+            Rect combatPanel = CombatPanelRect();
+            Rect objectivePanel = MissionBriefPanelRect();
+            string objectiveMode = ShouldDrawMissionBriefPanel()
+                ? (ShouldUseCompactMissionBriefPanel() ? "compactObjective" : "fullObjective")
+                : "hiddenObjective";
+            return "BattleHud=active controls=statusRows+jet+map+bay+system"
+                + " combatPanel=h"
+                + combatPanel.height.ToString("0.#", CultureInfo.InvariantCulture)
+                + " combatLogVisible=no"
+                + " objectivePanel="
+                + objectiveMode
+                + " objectiveH="
+                + objectivePanel.height.ToString("0.#", CultureInfo.InvariantCulture)
+                + " missionMap="
+                + (showMissionMap ? "open" : "closed")
+                + " saveUi="
+                + (SaveGameUiEnabled ? "enabled" : "disabled");
         }
 
         private static string LoadoutCaptureFillerSummary(CombatLoadoutPreview preview)
@@ -12556,21 +12584,9 @@ namespace MC2Demo.Presentation
         {
             Rect panel = CombatPanelRect();
             float x = panel.x;
-            DrawDesignPanelFrame(panel, "Combat / 战况", UiCyanColor);
-            GUI.Label(new Rect(x + 12f, panel.y + 36f, panel.width - 24f, 18f), CombatSituationText());
-            DrawCombatTacticalPulseLine(x + 12f, panel.y + 58f, panel.width - 24f);
-            float y = panel.y + 84f;
-            foreach (string line in combatLog)
-            {
-                if (y > panel.yMax - 22f)
-                {
-                    GUI.Label(new Rect(x + 12f, y, 320f, 20f), "...");
-                    break;
-                }
-
-                GUI.Label(new Rect(x + 12f, y, 320f, 20f), TruncateText(line, 58));
-                y += 20f;
-            }
+            DrawDesignPanelFrame(panel, "Battle / 战斗", UiCyanColor);
+            GUI.Label(new Rect(x + 12f, panel.y + 33f, panel.width - 24f, 18f), CombatSituationText());
+            DrawCombatTacticalPulseLine(x + 12f, panel.y + 54f, panel.width - 24f);
         }
 
         private void DrawCombatTacticalPulseLine(float x, float y, float width)
@@ -19285,7 +19301,7 @@ namespace MC2Demo.Presentation
         private Rect CombatPanelRect()
         {
             float width = 320f;
-            return new Rect(Screen.width - width - 16f, 12f, width, 112f);
+            return new Rect(Screen.width - width - 16f, 12f, width, 78f);
         }
 
         private Rect MissionBriefPanelRect()

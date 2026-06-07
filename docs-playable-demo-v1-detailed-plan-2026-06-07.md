@@ -30,7 +30,7 @@ Current branch snapshot when this plan was written:
   - `1bd22e2 Lock occupancy placeholder review layer`
   - `74e24bf Polish MechLab block fitting`
   - `6ffa2ea Capture MechLab fitting evidence`
-- Current next gameplay task: `C2 Keep battle UI sparse`.
+- Current next gameplay task: `H1 Write playable demo walkthrough`.
 
 ## 1. Product Definition
 
@@ -228,8 +228,8 @@ The authoritative queue is still in `docs-playable-demo-current-execution-plan-2
 | Order | Status | Commit | Purpose |
 | --- | --- | --- | --- |
 | C1 | Done | `Strengthen damage demo readability` | Make limb/cockpit/ejection damage readable at screenshot scale |
-| C2 | Next | `Keep battle UI sparse` | Ensure battle UI stays clean while preserving command/damage state |
-| H1 | Pending | `Write playable demo walkthrough` | Create a three-minute demonstration script |
+| C2 | Done | `Keep battle UI sparse` | Ensure battle UI stays clean while preserving command/damage state |
+| H1 | Next | `Write playable demo walkthrough` | Create a three-minute demonstration script |
 | H2 | Pending | `Prepare repeatable Windows demo build` | Document and verify repeatable build/smoke/capture commands |
 | H3 | Pending | `Package playable demo evidence` | Build an evidence page with screenshot beats and captions |
 | P1 | Pending | `Document reference content boundary` | Make private reference vs public content boundary explicit |
@@ -277,6 +277,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_refere
 **Commit:** `Strengthen damage demo readability`
 
 ### Task C2: Keep Battle UI Sparse
+
+**Status:** Completed 2026-06-07.
 
 **Goal:** Battle screen should not show too much information. It should support command clarity, not become a dashboard.
 

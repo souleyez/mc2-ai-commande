@@ -174,6 +174,10 @@ function Test-CaptureSidecar {
         Test-DamageDemoCaptureSidecar -Sidecar $sidecar -Path $Path
     }
 
+    if ($sidecar.flowScreen -eq "Battle") {
+        Test-BattleHudCaptureSidecar -Sidecar $sidecar -Path $Path
+    }
+
     $placeholderSummary = [string]$sidecar.occupancyPlaceholders
     if ($ExpectOccupancyPlaceholders) {
         foreach ($fragment in @(
@@ -194,6 +198,35 @@ function Test-CaptureSidecar {
     }
 
     return $sidecar
+}
+
+function Test-BattleHudCaptureSidecar {
+    param(
+        [object]$Sidecar,
+        [string]$Path
+    )
+
+    $summary = [string]$Sidecar.battleHud
+    foreach ($fragment in @(
+        "BattleHud=active",
+        "controls=statusRows+jet+map+bay+system",
+        "combatLogVisible=no",
+        "objectivePanel=compactObjective",
+        "saveUi=disabled"
+    )) {
+        if ($summary -notlike "*$fragment*") {
+            throw "Battle HUD sidecar summary missing '$fragment': $Path -> $summary"
+        }
+    }
+
+    if ($summary -notmatch "combatPanel=h([0-9.]+)") {
+        throw "Battle HUD sidecar summary missing combat panel height: $Path -> $summary"
+    }
+
+    $height = [double]$Matches[1]
+    if ($height -gt 84.0) {
+        throw "Battle HUD combat panel is too tall for sparse mode: $Path -> $summary"
+    }
 }
 
 function Test-DamageDemoCaptureSidecar {

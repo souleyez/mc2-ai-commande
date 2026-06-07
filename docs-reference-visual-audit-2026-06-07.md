@@ -1920,3 +1920,75 @@ Remaining issues:
 Next priority:
 
 1. C2 keep battle UI sparse.
+
+## C2 Battle UI Sparse Result
+
+Implemented on 2026-06-07:
+
+- Replaced the right-side `Combat / 战况` panel with a smaller `Battle / 战斗` state card.
+- Removed the always-visible rolling combat log from the normal battle HUD while keeping the underlying combat log data for smoke/debug use.
+- Kept the useful combat surface: squad readiness, solo count, active hostiles, target count, and one tactical pulse line.
+- Kept the compact objective card directly under the battle card.
+- Added `battleHud` to capture sidecars so screenshots can prove the sparse HUD state.
+- Updated `scripts/unity/capture_reference_visuals.ps1` so battle captures fail if combat log display returns, save UI appears, or the combat panel grows past sparse-mode height.
+- Restored Unity scene fileID churn after the build; no intentional scene changes were kept.
+
+Modified files:
+
+```text
+scripts/unity/capture_reference_visuals.ps1
+unity-mc2-demo/Assets/Scripts/Presentation/Mc2DemoBootstrap.cs
+docs-reference-visual-audit-2026-06-07.md
+docs-playable-demo-current-execution-plan-2026-06-07.md
+docs-playable-demo-overall-detailed-plan-2026-06-07.md
+docs-playable-demo-v1-detailed-plan-2026-06-07.md
+```
+
+Validation commands:
+
+```powershell
+git diff --check
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoValidator.ValidateMissionContract -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-validate-battle-ui-sparse.log"
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoBuilder.BuildWindows64 -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-build-battle-ui-sparse.log"
+& "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo\Builds\Windows\MC2UnityDemo.exe" -batchmode -nographics -mc2SmokeTest -mc2CommandFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo\Assets\StreamingAssets\CommanderScripts\mc2_01-visible-flow-audit.txt" -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-player-battle-ui-sparse.log"
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_reference_visuals.ps1 -Presets spawn,damage-demo
+```
+
+Validation evidence:
+
+```text
+analysis-output/unity-validate-battle-ui-sparse.log
+analysis-output/unity-build-battle-ui-sparse.log
+analysis-output/unity-player-battle-ui-sparse.log
+analysis-output/reference-visual-captures/spawn.png
+analysis-output/reference-visual-captures/spawn.json
+analysis-output/reference-visual-captures/damage-demo.png
+analysis-output/reference-visual-captures/damage-demo.json
+```
+
+Validation results:
+
+```text
+git diff --check: clean, with Windows line-ending warnings only.
+Validator: MC2 demo contract validation OK.
+Build: Build Finished, Result: Success; MC2 Unity demo Windows build OK.
+Player smoke: MC2 demo smoke test exiting with code 0.
+Capture: spawn and damage-demo passed sidecar validation.
+```
+
+Observed effect:
+
+- Battle sidecars now report `BattleHud=active controls=statusRows+jet+map+bay+system combatPanel=h78 combatLogVisible=no objectivePanel=compactObjective objectiveH=74 missionMap=closed saveUi=disabled`.
+- `spawn` no longer shows the `CLI advance: 0.25s` combat-log line in the right panel.
+- `damage-demo` no longer shows the long `Capture damage demo...` log line in the right panel.
+- The status rows still show health, section damage, heat, target state, and destroyed-unit state.
+- The compact objective card remains visible, so the player still has target context without a large mission list.
+
+Remaining issues:
+
+1. The next handoff task should turn the current playable flow into a short three-minute walkthrough.
+2. Later UI polish can still refine typography and spacing, but C2 has locked the first-demo information budget.
+
+Next priority:
+
+1. H1 write playable demo walkthrough.

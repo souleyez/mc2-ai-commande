@@ -36,7 +36,7 @@
 - Occupancy placeholder review layer 已提交：`1bd22e2 Lock occupancy placeholder review layer`.
 - MechLab block fitting 已提交：`74e24bf Polish MechLab block fitting`.
 - MechLab fitting evidence capture 已提交：`6ffa2ea Capture MechLab fitting evidence`.
-- 下一步是 `C2 Keep battle UI sparse`.
+- 下一步是 `H1 Write playable demo walkthrough`.
 
 ## 1. First Demo Product Scope
 
@@ -93,8 +93,7 @@
 | Gap | Why It Matters | Next Task |
 | --- | --- | --- |
 | MechLab 后续只需回归 | 整块占格和截图证据已完成，后续 UI 改动需要保持这个体验不退化 | G3 regression |
-| 战斗 UI 仍需最后收紧 | C1 已把 `damage-demo` 损伤故事推进到截图级；下一步要防止战斗画面继续堆文字和面板 | C2 |
-| Demo 还缺三分钟演示话术和证据页 | 后续融资/协作需要可展示包 | H1-H3 |
+| Demo 还缺三分钟演示话术和证据页 | C2 已收紧战斗 UI；后续融资/协作需要可展示包 | H1-H3 |
 | 公开内容安全还需要脚本 guard | 本地参考包和公开包要分清 | P1/P2 |
 
 ## 3. Architecture Contracts
@@ -253,8 +252,8 @@ Do not stage generated PNG/JSON/log evidence unless explicitly requested.
 | 6 | Done | `Polish MechLab block fitting` | G3 MechLab feel |
 | 7 | Done | `Capture MechLab fitting evidence` | G3 MechLab evidence |
 | 8 | Done | `Strengthen damage demo readability` | G1 combat feel |
-| 9 | Next | `Keep battle UI sparse` | G1/G2 UI readability |
-| 10 | Pending | `Write playable demo walkthrough` | G8 handoff |
+| 9 | Done | `Keep battle UI sparse` | G1/G2 UI readability |
+| 10 | Next | `Write playable demo walkthrough` | G8 handoff |
 | 11 | Pending | `Prepare repeatable Windows demo build` | G8 handoff |
 | 12 | Pending | `Package playable demo evidence` | G8 handoff |
 | 13 | Pending | `Document reference content boundary` | G6 public boundary |
@@ -610,7 +609,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_refere
 
 ### C2: Keep Battle UI Sparse
 
-**Status:** Next.
+**Status:** Completed 2026-06-07.
+
+**Result:** The right-side battle panel is now a compact `Battle / 战斗` state card with squad/hostile counts and one tactical pulse line. The normal battle view no longer draws the rolling combat log, while the underlying log remains available for smoke/debug output. Capture sidecars now include `battleHud`, and the capture script rejects battle screenshots that re-enable visible combat logs, save UI, or an oversized combat panel. Evidence: `analysis-output/unity-validate-battle-ui-sparse.log`, `analysis-output/unity-build-battle-ui-sparse.log`, `analysis-output/unity-player-battle-ui-sparse.log`, `analysis-output/reference-visual-captures/spawn.png`, `analysis-output/reference-visual-captures/spawn.json`, `analysis-output/reference-visual-captures/damage-demo.png`, and `analysis-output/reference-visual-captures/damage-demo.json`.
 
 **Goal:** 战斗中不用显示太多信息，但状态栏必须承担控制和损伤概览。
 
@@ -644,7 +645,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_refere
 
 ### H1: Write Playable Demo Walkthrough
 
-**Status:** Pending.
+**Status:** Next.
 
 **Goal:** 给协作者或投资人一个三分钟脚本，照着走就能理解当前 Demo 价值。
 
