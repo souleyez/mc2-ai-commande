@@ -36,7 +36,7 @@
 - Occupancy placeholder review layer 已提交：`1bd22e2 Lock occupancy placeholder review layer`.
 - MechLab block fitting 已提交：`74e24bf Polish MechLab block fitting`.
 - MechLab fitting evidence capture 已提交：`6ffa2ea Capture MechLab fitting evidence`.
-- 下一步是 `H1 Write playable demo walkthrough`.
+- 下一步是 `H2 Prepare repeatable Windows demo build`.
 
 ## 1. First Demo Product Scope
 
@@ -93,7 +93,7 @@
 | Gap | Why It Matters | Next Task |
 | --- | --- | --- |
 | MechLab 后续只需回归 | 整块占格和截图证据已完成，后续 UI 改动需要保持这个体验不退化 | G3 regression |
-| Demo 还缺三分钟演示话术和证据页 | C2 已收紧战斗 UI；后续融资/协作需要可展示包 | H1-H3 |
+| Demo 还缺可重复构建和证据页 | H1 已补三分钟 walkthrough；后续融资/协作需要可重复构建命令和证据包 | H2-H3 |
 | 公开内容安全还需要脚本 guard | 本地参考包和公开包要分清 | P1/P2 |
 
 ## 3. Architecture Contracts
@@ -253,8 +253,8 @@ Do not stage generated PNG/JSON/log evidence unless explicitly requested.
 | 7 | Done | `Capture MechLab fitting evidence` | G3 MechLab evidence |
 | 8 | Done | `Strengthen damage demo readability` | G1 combat feel |
 | 9 | Done | `Keep battle UI sparse` | G1/G2 UI readability |
-| 10 | Next | `Write playable demo walkthrough` | G8 handoff |
-| 11 | Pending | `Prepare repeatable Windows demo build` | G8 handoff |
+| 10 | Done | `Write playable demo walkthrough` | G8 handoff |
+| 11 | Next | `Prepare repeatable Windows demo build` | G8 handoff |
 | 12 | Pending | `Package playable demo evidence` | G8 handoff |
 | 13 | Pending | `Document reference content boundary` | G6 public boundary |
 | 14 | Pending | `Add public content boundary check` | G6 public boundary |
@@ -645,7 +645,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_refere
 
 ### H1: Write Playable Demo Walkthrough
 
-**Status:** Next.
+**Status:** Completed 2026-06-07.
+
+**Result:** Added `docs-playable-demo-walkthrough-2026-06-07.md`, a three-minute talk track and operator checklist for showing MechLab fitting, sparse battle command, all-squad orders, status-row solo orders, Jet, section damage, debrief, repair and relaunch. README now lists the walkthrough as a key document. The wording stays on project-owned positioning: AI-assisted tactical RTS, deterministic BattleCore, optional AI deputy and replaceable content packs.
 
 **Goal:** 给协作者或投资人一个三分钟脚本，照着走就能理解当前 Demo 价值。
 
@@ -680,7 +682,7 @@ git diff --check
 
 ### H2: Prepare Repeatable Windows Demo Build
 
-**Status:** Pending.
+**Status:** Next.
 
 **Goal:** 形成可重复构建、可 smoke、可发截图证据的本地 Windows Demo 包。
 

@@ -30,7 +30,7 @@ Current branch snapshot when this plan was written:
   - `1bd22e2 Lock occupancy placeholder review layer`
   - `74e24bf Polish MechLab block fitting`
   - `6ffa2ea Capture MechLab fitting evidence`
-- Current next gameplay task: `H1 Write playable demo walkthrough`.
+- Current next gameplay task: `H2 Prepare repeatable Windows Demo build`.
 
 ## 1. Product Definition
 
@@ -229,8 +229,8 @@ The authoritative queue is still in `docs-playable-demo-current-execution-plan-2
 | --- | --- | --- | --- |
 | C1 | Done | `Strengthen damage demo readability` | Make limb/cockpit/ejection damage readable at screenshot scale |
 | C2 | Done | `Keep battle UI sparse` | Ensure battle UI stays clean while preserving command/damage state |
-| H1 | Next | `Write playable demo walkthrough` | Create a three-minute demonstration script |
-| H2 | Pending | `Prepare repeatable Windows demo build` | Document and verify repeatable build/smoke/capture commands |
+| H1 | Done | `Write playable demo walkthrough` | Create a three-minute demonstration script |
+| H2 | Next | `Prepare repeatable Windows demo build` | Document and verify repeatable build/smoke/capture commands |
 | H3 | Pending | `Package playable demo evidence` | Build an evidence page with screenshot beats and captions |
 | P1 | Pending | `Document reference content boundary` | Make private reference vs public content boundary explicit |
 | P2 | Pending | `Add public content boundary check` | Add a safe check for public packaging |
@@ -315,6 +315,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_refere
 
 ### Task H1: Write Playable Demo Walkthrough
 
+**Status:** Completed 2026-06-07.
+
 **Goal:** A collaborator or investor can follow a three-minute script and understand the Demo value.
 
 **Files:**
@@ -343,6 +345,8 @@ git diff --check
 **Commit:** `Write playable demo walkthrough`
 
 ### Task H2: Prepare Repeatable Windows Demo Build
+
+**Status:** Next.
 
 **Goal:** Make local build, smoke and capture reproducible without relying on memory.
 

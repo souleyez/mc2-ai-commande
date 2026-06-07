@@ -100,7 +100,7 @@ AI 副官的定位：
 
 - Branch: `master...ai-origin/master` with local demo commits ahead of remote.
 - 当前日常执行入口：`docs-playable-demo-current-execution-plan-2026-06-07.md`.
-- 当前下一步：`H1 Write playable demo walkthrough`.
+- 当前下一步：`H2 Prepare repeatable Windows demo build`.
 
 已收口的事实：
 
@@ -126,7 +126,7 @@ AI 副官的定位：
 
 | Gap | Why It Matters | Current Plan |
 | --- | --- | --- |
-| Demo 还缺完整演示话术和证据页 | C2 已收紧战斗 UI；后续融资或协作需要三分钟可讲清楚 | H1-H3 handoff |
+| Demo 还缺可重复构建和证据页 | H1 已补三分钟 walkthrough；后续融资或协作需要可重复构建命令和证据页 | H2-H3 handoff |
 | 碰撞占位后续只需回归 | V3 已提供单位、结构、hardProp 和 landing blocked 审计层；后续发现具体碰撞 bug 再加 close-up preset | V3 regression |
 | 公开内容安全还要脚本 guard | 本地参考包可以开发验证，公开包不能混入旧素材 | P1/P2 content boundary |
 
@@ -685,8 +685,8 @@ Current recommended order:
 | 4 | Done | `Capture MechLab fitting evidence` | Prove loadout UI and smoke flow |
 | 5 | Done | `Strengthen damage demo readability` | Push limb/cockpit/ejection story into screenshot-grade clarity |
 | 6 | Done | `Keep battle UI sparse` | Final pass against too much battle information |
-| 7 | Next | `Write playable demo walkthrough` | Create three-minute demo narrative |
-| 8 | Pending | `Prepare repeatable Windows demo build` | Make local build/running repeatable |
+| 7 | Done | `Write playable demo walkthrough` | Create three-minute demo narrative |
+| 8 | Next | `Prepare repeatable Windows demo build` | Make local build/running repeatable |
 | 9 | Pending | `Package playable demo evidence` | Collect proof paths, not generated artifacts |
 | 10 | Pending | `Document reference content boundary` | Make private/public content split explicit |
 | 11 | Pending | `Add public content boundary check` | Prevent private reference content from leaking into public build |
