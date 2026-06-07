@@ -27,7 +27,7 @@
 
 当前真实起点：
 
-- Branch: `master...ai-origin/master [ahead 65]`.
+- Branch: `master...ai-origin/master` with local demo commits ahead of remote.
 - AI compact observation 已提交：`af7dbe9 Freeze AI observation contract`.
 - AI directive adapter 已提交：`9bf26bd Guard AI directive adapter`.
 - AI advice window 已提交：`b40372d Show optional AI advice window`.
@@ -42,7 +42,7 @@
 - Repeatable Windows build 已提交：`3753857 Prepare repeatable Windows demo build`.
 - Demo evidence package 已提交：`0bb822b Package playable demo evidence`.
 - Content boundary documentation 已提交：`4819657 Document reference content boundary`.
-- 下一步是 `P2 Add public content boundary check`.
+- Public content boundary check 已完成，下一步是 `H4 Run demo handoff gate audit`.
 
 ## 1. First Demo Product Scope
 
@@ -99,8 +99,8 @@
 | Gap | Why It Matters | Next Task |
 | --- | --- | --- |
 | MechLab 后续只需回归 | 整块占格和截图证据已完成，后续 UI 改动需要保持这个体验不退化 | G3 regression |
-| Demo 公开边界说明已收口 | P1 已补 README、内容包合同和替换计划；后续需要脚本化检查防止打包混入私有参考内容 | P2 |
-| 公开内容安全还需要脚本 guard | 本地参考包和公开包已文档化，但还缺打包前自动检查 | P2 |
+| Demo 公开边界说明已收口 | P1 已补 README、内容包合同和替换计划；P2 已补打包路径检查脚本 | H4 handoff audit |
+| 公开内容安全还需要干净替换包 | 当前开发 build 会被边界检查正确标为不适合公开发布 | H4 audit, then R1 replacement slice |
 
 ## 3. Architecture Contracts
 
@@ -263,7 +263,8 @@ Do not stage generated PNG/JSON/log evidence unless explicitly requested.
 | 11 | Done | `Prepare repeatable Windows demo build` | G8 handoff |
 | 12 | Done | `Package playable demo evidence` | G8 handoff |
 | 13 | Done | `Document reference content boundary` | G6 public boundary |
-| 14 | Next | `Add public content boundary check` | G6 public boundary |
+| 14 | Done | `Add public content boundary check` | G6 public boundary |
+| 15 | Next | `Run demo handoff gate audit` | G8 handoff |
 
 ## 6. Detailed Tasks
 
@@ -810,7 +811,9 @@ git diff --check
 
 ### P2: Add Public Content Boundary Check
 
-**Status:** Next.
+**Status:** Completed 2026-06-07.
+
+**Result:** Added `scripts/content-pack/check_public_content_boundary.ps1`, a read-only scanner for public package/build paths. It checks file and directory names plus text-like file contents for private reference pack paths, local extraction folders, reference-linked manifest markers, legacy/proprietary names, development-only notes and known public-forbidden markers. It returns `0` on clean input and `1` when forbidden markers are found. The current development build correctly fails because it still contains local absolute paths, reference-linked package traces, `mc2_01` task ids, `Starslayer` markers and `MC2UnityDemo` build identity.
 
 **Goal:** 发布或对外演示前能检查 build path 没混入私有参考素材。
 
@@ -844,6 +847,47 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\content-pack\check_p
 - Public build boundary can be explained to collaborators.
 
 **Commit:** `Add public content boundary check`
+
+### H4: Run Demo Handoff Gate Audit
+
+**Status:** Next.
+
+**Goal:** 把“能跑、能看、能讲、能解释边界”一次性验证出来。
+
+**Files:**
+
+- Modify: `docs-playable-demo-investor-evidence-2026-06-07.md`
+- Modify: `docs-reference-visual-audit-2026-06-07.md`
+- Modify if needed: `unity-mc2-demo/README.md`
+
+**Steps:**
+
+1. Run `git diff --check`.
+2. Run Unity mission validator.
+3. Build Windows demo.
+4. Run visible-flow smoke.
+5. Capture `spawn,airfield,hangar-contact,damage-demo,north-patrol,mechlab`.
+6. Run the public content boundary check and record whether the current build is development-only or public-safe.
+7. Update evidence docs with exact status.
+8. Do not stage generated screenshot/log/build files unless requested.
+
+**Validation:**
+
+```powershell
+git diff --check
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoValidator.ValidateMissionContract -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-validate-handoff.log"
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoBuilder.BuildWindows64 -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-build-handoff.log"
+& "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo\Builds\Windows\MC2UnityDemo.exe" -batchmode -nographics -mc2SmokeTest -mc2CommandFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo\Assets\StreamingAssets\CommanderScripts\mc2_01-visible-flow-audit.txt" -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-player-handoff-visible-flow.log"
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_reference_visuals.ps1 -Presets spawn,airfield,hangar-contact,damage-demo,north-patrol,mechlab
+```
+
+**Acceptance:**
+
+- Handoff evidence docs state which gates pass.
+- Public boundary status is explicit: clean public build passes, current dev build may fail as development-only.
+- Generated artifacts remain ignored unless the user asks to package them.
+
+**Commit:** `Audit playable demo handoff gate`
 
 ## 7. Milestone Gates
 

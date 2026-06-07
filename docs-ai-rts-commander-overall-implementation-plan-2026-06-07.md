@@ -87,7 +87,7 @@ Playable Demo Handoff: 把已能跑的 Windows 本地 Demo 收成可重复构建
 
 | Gap | Why It Matters | Next Move |
 | --- | --- | --- |
-| 公开内容边界还缺自动检查 | 开发期可用私有参考内容，公开打包不能混入 | P2 public content boundary check |
+| 公开内容边界检查已补齐 | 开发期可用私有参考内容，公开打包不能混入；当前 dev build 会被正确标记为 development-only | H4 handoff gate audit |
 | 视觉还需要稳定回归 | 当前已有样子，但机甲、道具、遮挡、占位仍要避免退化成堆叠 | 每次视觉改动跑 capture + sidecar |
 | Demo handoff 还差最终门检 | 构建、smoke、截图、walkthrough、内容边界要能一口气解释 | Handoff gate audit |
 | 公开替换包还没进入生产 | 投资/公开演示需要至少 text-safe，最好 art-safe | 开 P3 content replacement slice |
@@ -253,10 +253,10 @@ AI must not:
 | Art-safe slice | 文本和视觉都已自有或授权 | Yes |
 | Clean public pack | 完整公开包 | Yes |
 
-当前下一步是把文档规则变成脚本 guard：
+文档规则已经变成脚本 guard：
 
 ```text
-P2 Add public content boundary check
+scripts/content-pack/check_public_content_boundary.ps1
 ```
 
 ## 7. Milestone Roadmap
@@ -272,7 +272,7 @@ P2 Add public content boundary check
 1. Keep this plan as the overall detailed plan.
 2. Keep `docs-playable-demo-current-execution-plan-2026-06-07.md` as the daily queue.
 3. Keep old `docs-playable-demo-*.md` files as history/evidence unless explicitly consolidated later.
-4. Finish P2 public content boundary check.
+4. Keep P2 public content boundary check documented and in the validation bus.
 5. Run a full handoff audit.
 
 **Exit Gate:**
@@ -283,7 +283,7 @@ P2 Add public content boundary check
 
 ### Milestone 1: Demo Handoff Gate
 
-**Status:** Next after P2.
+**Status:** Next.
 
 **Goal:** 能把本地 Demo 给协作者或投资人看，并解释它的产品价值和开发边界。
 
@@ -511,7 +511,7 @@ Current recommended queue:
 | 4 | Done | `Prepare repeatable Windows demo build` | Make build/run repeatable |
 | 5 | Done | `Package playable demo evidence` | Gather evidence paths and captions |
 | 6 | Done | `Document reference content boundary` | Clarify private/public content split |
-| 7 | Next | `Add public content boundary check` | Add non-destructive build-path safety check |
+| 7 | Done | `Add public content boundary check` | Add non-destructive build-path safety check |
 | 8 | Next | `Run demo handoff gate audit` | Validate build, smoke, captures and content boundary together |
 | 9 | Next | `Polish crowded contact occupancy` | Fix any remaining model overlap with BattleCore evidence |
 | 10 | Next | `Open public replacement slice` | Start text-safe/art-safe content pack path |
@@ -520,7 +520,9 @@ Current recommended queue:
 
 ### Task P2: Add Public Content Boundary Check
 
-**Status:** Next.
+**Status:** Completed 2026-06-07.
+
+**Result:** Added `scripts/content-pack/check_public_content_boundary.ps1`. The check is read-only, scans names and text-like files, prints rule/path/line findings, returns `0` for clean input and returns `1` when private reference markers are found. `content-packs/project-owned-starter.example.json` returns OK. The current development build returns expected findings, including dev build identity, `mc2_01` command/mission ids, local absolute paths, extraction folders, reference-linked pack traces and legacy unit markers.
 
 **Goal:** 发布或对外演示前能检查 build path 没混入私有参考素材、参考路径、旧名称或本地提取痕迹。
 

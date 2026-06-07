@@ -121,7 +121,7 @@ AI 副官的定位：
 | W5 MechLab | 武器整块占格，装甲板/散热器补格，热量/重量/合法性清楚 | Loadout contract/validator/smoke/capture 一致 | 已完成首轮 | `mechlab` capture + loadout smoke |
 | W6 战后循环 | 战报、维修、回机库、再出战顺畅，不做保存槽 | repair/relaunch 状态在 BattleCore 可测 | 基础完成，需最终演示审计 | visible flow smoke |
 | W7 AI 副官 | 显示“它能帮你做大判断”，但不拖慢本地战斗 | observation/directive 合同稳定，离线 fallback | 基础完成，回归保持 | AI validator + advice window smoke |
-| W8 交付包 | 协作者能构建、运行、演示、解释内容边界 | BUILD/README/证据页/边界检查齐全 | H1-H3 and P1 done, P2 next | walkthrough + build docs + evidence page |
+| W8 交付包 | 协作者能构建、运行、演示、解释内容边界 | BUILD/README/证据页/边界检查齐全 | H1-H3, P1 and P2 done; H4 audit next | walkthrough + build docs + evidence page |
 
 这 8 个工作包都达到“能演示”后，才进入更多地图、公开替换包、服务器和经济系统。
 
@@ -133,7 +133,7 @@ AI 副官的定位：
 
 - Branch: `master...ai-origin/master` with local demo commits ahead of remote.
 - 当前日常执行入口：`docs-playable-demo-current-execution-plan-2026-06-07.md`.
-- 当前下一步：`P2 Add public content boundary check`.
+- 当前下一步：`H4 Run demo handoff gate audit`.
 
 已收口的事实：
 
@@ -159,9 +159,9 @@ AI 副官的定位：
 
 | Gap | Why It Matters | Current Plan |
 | --- | --- | --- |
-| Demo 公开边界说明已收口 | P1 已补 README、内容包合同和替换计划；后续需要脚本化检查防止打包混入私有参考内容 | P2 content boundary |
+| Demo 公开边界说明已收口 | P1 已补 README、内容包合同和替换计划；P2 已补脚本化检查防止打包混入私有参考内容 | H4 handoff audit |
 | 碰撞占位后续只需回归 | V3 已提供单位、结构、hardProp 和 landing blocked 审计层；后续发现具体碰撞 bug 再加 close-up preset | V3 regression |
-| 公开内容安全还要脚本 guard | 本地参考包可以开发验证，公开包不能混入旧素材；文档规则已有，脚本 guard 还缺 | P2 content boundary |
+| 公开内容安全还要干净替换包 | 本地参考包可以开发验证，当前开发 build 会被检查正确标为 development-only | H4 audit, then R1 replacement slice |
 
 ### 3.1 Current Phase Judgment
 
@@ -188,7 +188,7 @@ Playable Demo Handoff: 把已能跑的本地 Demo 收成可重复构建、可展
 - 大规模素材替换；
 - 复杂 AI 托管。
 
-这些都等 P2 收口后再开新阶段计划。
+这些都等 H4 handoff audit 收口后再开新阶段计划。
 
 ## 4. Architecture Rules
 
@@ -627,7 +627,7 @@ git diff --check
 
 ### Milestone 8: Demo Handoff And Public Boundary
 
-**Status:** Active. H1 walkthrough, H2 repeatable Windows build, H3 evidence packaging and P1 content-boundary documentation completed 2026-06-07; P2 public-boundary check is next.
+**Status:** Active. H1 walkthrough, H2 repeatable Windows build, H3 evidence packaging, P1 content-boundary documentation and P2 public-boundary check completed 2026-06-07; H4 handoff audit is next.
 
 **Goal:** 把本地 Demo 收成可演示包：能构建、能截图、能讲、能明确区分私有参考内容和公开内容。
 
@@ -646,7 +646,8 @@ git diff --check
 2. Done: prepare repeatable Windows demo build command.
 3. Done: package evidence list: logs, scripts, screenshot preset names, not generated binaries unless requested.
 4. Done: document private reference pack versus public replacement pack.
-5. Next: add a public content boundary check that fails if forbidden reference paths/names are packaged.
+5. Done: add a public content boundary check that fails if forbidden reference paths/names are packaged.
+6. Next: run a full handoff audit across build, smoke, captures and boundary status.
 6. Update GitHub README only with project-owned pitch and AI RTS commander exploration language.
 
 **Validation:**
@@ -749,7 +750,8 @@ Current recommended order:
 | 8 | Done | `Prepare repeatable Windows demo build` | Make local build/running repeatable |
 | 9 | Done | `Package playable demo evidence` | Collect proof paths, not generated artifacts |
 | 10 | Done | `Document reference content boundary` | Make private/public content split explicit |
-| 11 | Next | `Add public content boundary check` | Prevent private reference content from leaking into public build |
+| 11 | Done | `Add public content boundary check` | Prevent private reference content from leaking into public build |
+| 12 | Next | `Run demo handoff gate audit` | Validate build, smoke, captures and public boundary status together |
 
 ## 9. Stop Rules
 

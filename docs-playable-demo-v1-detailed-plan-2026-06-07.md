@@ -24,7 +24,7 @@ When the user says `按计划继续`, use this order:
 
 Current branch snapshot after the latest plan refresh:
 
-- Branch: `master...ai-origin/master [ahead 65]`.
+- Branch: `master...ai-origin/master` with local demo commits ahead of remote.
 - Latest completed commits include:
   - `295268f Strengthen damage demo readability`
   - `a0d8750 Keep battle UI sparse`
@@ -32,7 +32,7 @@ Current branch snapshot after the latest plan refresh:
   - `3753857 Prepare repeatable Windows demo build`
   - `0bb822b Package playable demo evidence`
   - `4819657 Document reference content boundary`
-- Current next gameplay task: `P2 Add public content boundary check`.
+- Current next gameplay task: `H4 Run demo handoff gate audit`.
 
 ## 1. Product Definition
 
@@ -235,7 +235,8 @@ The authoritative queue is still in `docs-playable-demo-current-execution-plan-2
 | H2 | Done | `Prepare repeatable Windows demo build` | Document and verify repeatable build/smoke/capture commands |
 | H3 | Done | `Package playable demo evidence` | Build an evidence page with screenshot beats and captions |
 | P1 | Done | `Document reference content boundary` | Make private reference vs public content boundary explicit |
-| P2 | Next | `Add public content boundary check` | Add a safe check for public packaging |
+| P2 | Done | `Add public content boundary check` | Add a safe check for public packaging |
+| H4 | Next | `Run demo handoff gate audit` | Validate build, smoke, captures and content boundary together |
 
 ## 6. Detailed Execution Tasks
 
@@ -456,7 +457,9 @@ rg -n "MechCommander|MechWarrior|原版|旧作|clone|复刻|private|reference" R
 
 ### Task P2: Add Public Content Boundary Check
 
-**Status:** Next.
+**Status:** Completed 2026-06-07.
+
+**Result:** Added `scripts/content-pack/check_public_content_boundary.ps1`, documented its README/content-plan usage, and verified both clean and development-only paths. The starter replacement manifest returns `Result: OK`. The current local development build returns expected findings because it still carries private reference traces, legacy mission ids and development build identity.
 
 **Goal:** Before public packaging, have a safe non-destructive check that warns if private/reference content leaks into a build path.
 

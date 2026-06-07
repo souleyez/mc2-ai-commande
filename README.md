@@ -148,6 +148,17 @@ Preview a new replacement pack scaffold:
 & .\scripts\content-pack\new_content_pack.ps1 -PackId project-owned-dev -Title "Project Owned Dev" -DryRun
 ```
 
+Check a build or package path before public packaging:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\content-pack\check_public_content_boundary.ps1 -Path ".\unity-mc2-demo\Builds\Windows" -DryRun
+```
+
+The current local development build is expected to fail this check until a clean
+public pack and public build name are in place. A clean public build should
+return `Result: OK`; a development build with private reference markers returns
+`Result: FAILED` and lists the matching paths or lines.
+
 ## 关键文档
 
 - `docs-ai-rts-commander-overall-implementation-plan-2026-06-07.md`: 当前定格版整体计划书，覆盖产品方向、当前阶段、架构边界、里程碑、近端任务和后续平台路线。

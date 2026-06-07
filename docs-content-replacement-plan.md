@@ -101,6 +101,20 @@ Generate and inspect the content index:
 
 See `docs-content-index-notes.md` for the current index summary.
 
+Check a build path before any public package, upload or investor-safe export:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\content-pack\check_public_content_boundary.ps1 `
+  -Path ".\unity-mc2-demo\Builds\Windows" `
+  -DryRun
+```
+
+This check is read-only. It returns `0` only when no forbidden markers are
+found. It returns `1` when the scanned path still contains local reference pack
+paths, extraction folders, reference-linked manifest markers, legacy names or
+development-only notes. The current local development build is expected to fail
+until the public replacement pack and public build identity are ready.
+
 ## Rule
 
 The engine can use reference-linked packs during private development. Public
@@ -118,4 +132,4 @@ Before a build is treated as public-safe, verify:
 4. Visible names and UI copy are project-owned or cleared.
 5. Asset provenance exists for models, textures, audio, video, icons, portraits
    and effects.
-6. The P2 public content boundary check passes on the build path.
+6. The public content boundary check passes on the build path.
