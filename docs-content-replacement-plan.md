@@ -51,6 +51,16 @@ Milestone 2: text-safe vertical slice
 - Do not call this public-ready while any visible art, audio, icon, portrait,
   video, mission text, or trademark is still reference-linked.
 
+Current starter artifact:
+
+- `content-packs/project-owned-text-safe-slice.example.json` defines a
+  metadata-only text-safe slice with project-owned product, mission, unit,
+  weapon, pilot, faction, objective and UI text.
+- It intentionally contains no runtime links or cleared art assets yet, so it is
+  not mountable.
+- It passes `check_public_content_boundary.ps1` and should be used as the first
+  clean naming/provenance target when replacing runtime mission data.
+
 Milestone 3: art-safe vertical slice
 
 - Replace one small mission's map textures, mech visuals, UI icons, weapon
@@ -114,6 +124,14 @@ found. It returns `1` when the scanned path still contains local reference pack
 paths, extraction folders, reference-linked manifest markers, legacy names or
 development-only notes. The current local development build is expected to fail
 until the public replacement pack and public build identity are ready.
+
+Check the current text-safe metadata slice:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\content-pack\check_public_content_boundary.ps1 `
+  -Path ".\content-packs\project-owned-text-safe-slice.example.json" `
+  -DryRun
+```
 
 ## Rule
 

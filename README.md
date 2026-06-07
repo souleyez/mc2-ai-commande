@@ -159,6 +159,11 @@ public pack and public build name are in place. A clean public build should
 return `Result: OK`; a development build with private reference markers returns
 `Result: FAILED` and lists the matching paths or lines.
 
+The first clean text metadata target is
+`content-packs/project-owned-text-safe-slice.example.json`. It contains
+project-owned product, mission, unit, weapon, pilot, objective and UI names and
+passes the public boundary check, but it is not a mountable runtime pack yet.
+
 ## 关键文档
 
 - `docs-ai-rts-commander-detailed-roadmap-2026-06-07.md`: 当前细化路线图，覆盖真实进度、V4 进行中工作、提交级任务、验收命令、停止条件和后续平台路线。

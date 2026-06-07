@@ -1,0 +1,104 @@
+{
+  "id": "project-owned-text-safe-slice",
+  "title": "Project Owned Text Safe Slice",
+  "kind": "replacement",
+  "license": "project-owned-or-cleared",
+  "version": "0.1.0",
+  "engineContract": "mc2-content-pack-v1",
+  "replacementStatus": "text-safe-metadata",
+  "runtimeStatus": "metadata-only-not-mountable",
+  "product": {
+    "id": "ai-tactical-command",
+    "title": "AI Tactical Command",
+    "titleZh": "AI 战术指挥",
+    "language": "zh-CN",
+    "audience": "controlled-demo"
+  },
+  "slice": {
+    "missionId": "island-airfield-contract",
+    "missionTitle": "孤岛机场合约",
+    "missionBrief": "侦察一处失联机场，确认守备火力，摧毁主机库并带队撤离。",
+    "playerCompany": "北湾雇佣连",
+    "opposingForce": "灰港守备队",
+    "objectives": [
+      "侦察失联机场",
+      "摧毁主机库",
+      "压制守备火力",
+      "保护指挥官机甲",
+      "带队撤离"
+    ],
+    "mechs": [
+      {
+        "id": "frost-wolf",
+        "displayName": "霜狼",
+        "role": "指挥突击"
+      },
+      {
+        "id": "iron-wood",
+        "displayName": "铁木",
+        "role": "火力支援"
+      },
+      {
+        "id": "black-ridge",
+        "displayName": "黑岭",
+        "role": "近距压制"
+      }
+    ],
+    "weapons": [
+      {
+        "id": "longbeam-laser",
+        "displayName": "长束激光",
+        "type": "energy"
+      },
+      {
+        "id": "storm-autocannon",
+        "displayName": "风暴自动炮",
+        "type": "ballistic"
+      },
+      {
+        "id": "needle-missiles",
+        "displayName": "针雨导弹",
+        "type": "missile"
+      }
+    ],
+    "pilots": [
+      {
+        "id": "commander-river",
+        "displayName": "河川",
+        "role": "指挥官"
+      },
+      {
+        "id": "pilot-lantern",
+        "displayName": "灯塔",
+        "role": "突击手"
+      },
+      {
+        "id": "pilot-anvil",
+        "displayName": "砧台",
+        "role": "火力手"
+      }
+    ],
+    "uiText": {
+      "launch": "出战",
+      "mechBay": "机库",
+      "repairAll": "一键维修",
+      "missionMap": "任务地图",
+      "jet": "喷射",
+      "system": "系统",
+      "aiDeputy": "AI 副官",
+      "debrief": "战报"
+    }
+  },
+  "provenance": {
+    "text": "Project-owned placeholder copy drafted for this repository on 2026-06-07.",
+    "art": "No public art is included in this metadata slice.",
+    "audio": "No public audio is included in this metadata slice.",
+    "models": "No public models are included in this metadata slice.",
+    "review": "Boundary-clean metadata only; a mountable pack still needs cleared runtime assets."
+  },
+  "notes": [
+    "This file opens the text-safe replacement path without linking to local runtime assets.",
+    "It must pass the public content boundary check.",
+    "It is not a complete runtime pack until the required engine files are supplied from cleared assets."
+  ]
+}

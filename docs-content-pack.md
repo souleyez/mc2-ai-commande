@@ -113,8 +113,14 @@ names, art, text, missions, and legal provenance.
 The repository may still contain a legacy local-reference example manifest for
 tool fallback. Treat it as a private development locator, not as a publishable
 pack template. New public-facing scaffolds should start from
-`content-packs/project-owned-starter.example.json` or a clean pack generated with
-`new_content_pack.ps1 -SeedMode Empty`.
+`content-packs/project-owned-starter.example.json`,
+`content-packs/project-owned-text-safe-slice.example.json`, or a clean pack
+generated with `new_content_pack.ps1 -SeedMode Empty`.
+
+`project-owned-text-safe-slice.example.json` is metadata-only. It proves the
+first project-owned naming, mission copy, pilot, unit, weapon, objective, UI text
+and provenance shape can pass the public boundary check. It is not mountable
+until the required runtime files are supplied from cleared assets.
 
 ## Development Flow
 

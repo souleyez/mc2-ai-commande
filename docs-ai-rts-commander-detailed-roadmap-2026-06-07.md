@@ -19,7 +19,7 @@
 1. 先看 `docs-playable-demo-current-execution-plan-2026-06-07.md` 的 `Current Commit Queue`。
 2. 如果队列不明确，就回到本文件的 `## 8. Current Execution Queue`。
 3. 每次只做一个小提交，提交必须能用 validator、build、smoke、capture 或 docs check 说明。
-4. 当前队列从 `Open public replacement content slice` 继续；如果之后又出现未提交 source WIP，先验收它再开新功能。
+4. 当前队列从 `Polish MechLab grid feel` 继续；如果之后又出现未提交 source WIP，先验收它再开新功能。
 5. 不提交 `analysis-output/` 下的截图、sidecar JSON、构建日志或 player build，除非用户明确要求打包。
 6. Unity 运行后如果只有 scene fileID churn，先手动审查，不随手提交。
 
@@ -49,7 +49,7 @@ V4 crowded contact occupancy 已完成：
 | `hangar-contact` sidecar | `unitRadii infantry=24 vehicle=54 mech=64`, `ContactSpread=players 3 hostiles 20 nearestPH=272.8 nearestHH=48` |
 | `damage-demo` sidecar | `unitRadii infantry=24 vehicle=54 mech=64`, `ContactSpread=players 2 hostiles 20 nearestPH=118 nearestHH=78`, damage story intact |
 
-下一步开公开替换包，不再继续堆战斗视觉小修。
+下一步回到 MechLab 装配手感，不再继续堆战斗视觉小修。
 
 ## 2. Product Direction
 
@@ -200,7 +200,7 @@ Known good strings:
 | M0 Handoff hygiene | Done | 构建、smoke、walkthrough、证据、内容边界能解释 | H4 gate passed |
 | M1 Visual occupancy | Done | 战场不再像模型堆叠，sidecar 有物理证据 | `hangar-contact` readable, V4 passed |
 | M2 First controlled demo | Done | 本地 development Demo 可用于小范围展示 | build + smoke + evidence page updated |
-| M3 Public replacement slice | Next | 开始把 development-only 证据转向 text-safe/public-safe 内容包 | clean pack boundary check |
+| M3 Public replacement slice | Done | 开始把 development-only 证据转向 text-safe/public-safe 内容包 | clean pack boundary check |
 | M4 MechLab fun | Next | 装配格子更接近整块占格乐趣 | `mechlab` screenshot and loadout validator |
 | M5 Combat damage sell | Next | 武器类型、断臂、腿瘫、弹射更清楚 | `damage-demo` screenshot tells the story |
 | M6 AI deputy V1 | Foundation Done | AI 做高层建议，不拖慢本地战斗 | no-key/offline smoke passes |
@@ -329,7 +329,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_refere
 
 ### C1: Start Public Replacement Content Slice
 
-**Status:** Next after B1.
+**Status:** Completed 2026-06-07.
+
+**Result:** Added `content-packs/project-owned-text-safe-slice.example.json`, a metadata-only text-safe slice with project-owned product, mission, unit, weapon, pilot, faction, objective and UI text plus provenance notes. The slice passes `check_public_content_boundary.ps1`; it is not a mountable runtime pack until cleared assets supply the full engine contract.
 
 **Goal:** 从“本地参考验证”进入“可公开替换包”的第一步，先保证文本和可见名字安全。
 
@@ -561,7 +563,7 @@ The first controlled demo is ready when:
 | --- | --- | --- | --- |
 | 1 | Done | `Polish crowded contact occupancy` | Finish V4, validate BattleCore spacing and sidecar `ContactSpread` |
 | 2 | Done | `Refresh playable demo evidence` | Re-run validator, build, smoke and capture after V4 |
-| 3 | Next | `Open public replacement content slice` | Start text-safe and provenance-clean public content path |
+| 3 | Done | `Open public replacement content slice` | Start text-safe and provenance-clean public content path |
 | 4 | Next | `Polish MechLab grid feel` | Make equipment grid more physical and original-like without toggles |
 | 5 | Next | `Prove loadout battle effects` | Prove fitted weapons, armor and cooling affect BattleCore |
 | 6 | Next | `Polish weapon and damage readability` | Strengthen weapon families and section damage story |
@@ -584,4 +586,4 @@ Stop and reassess if:
 
 ## 10. One-Line Direction
 
-先开公开替换包；随后继续打磨 MechLab 装配乐趣、部位损伤卖点和可选 AI 副官，平台化和地图服务器等到本地战斗真正好看、好玩、好讲以后再动。
+继续打磨 MechLab 装配乐趣；随后强化部位损伤卖点和可选 AI 副官，平台化和地图服务器等到本地战斗真正好看、好玩、好讲以后再动。
