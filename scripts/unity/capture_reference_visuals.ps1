@@ -4,7 +4,7 @@ param(
     [string[]]$Presets = @("spawn", "airfield", "hangar-contact", "north-patrol", "damage-demo"),
     [int]$Width = 1280,
     [int]$Height = 720,
-    [int]$CaptureTimeoutSeconds = 45,
+    [int]$CaptureTimeoutSeconds = 75,
     [switch]$NoOccupancyPlaceholders,
     [switch]$SkipRun
 )
@@ -207,6 +207,7 @@ function Test-CaptureSidecar {
 
     if ($sidecar.flowScreen -eq "Battle") {
         Test-BattleHudCaptureSidecar -Sidecar $sidecar -Path $Path
+        Test-TerrainReadabilityCaptureSidecar -Sidecar $sidecar -Path $Path
     }
 
     $placeholderSummary = [string]$sidecar.occupancyPlaceholders
@@ -292,6 +293,37 @@ function Test-BattleHudCaptureSidecar {
     $height = [double]$Matches[1]
     if ($height -gt 84.0) {
         throw "Battle HUD combat panel is too tall for sparse mode: $Path -> $summary"
+    }
+}
+
+function Test-TerrainReadabilityCaptureSidecar {
+    param(
+        [object]$Sidecar,
+        [string]$Path
+    )
+
+    $summary = [string]$Sidecar.terrainReadability
+    foreach ($fragment in @(
+        "TerrainReadability=samples",
+        "texture=",
+        "textureStrength=",
+        "waterSurface=readable-overlay",
+        "water=",
+        "shore=",
+        "runway=",
+        "style=raised-shore+runway-contrast+water-muted",
+        "pathing=unchanged"
+    )) {
+        if ($summary -notlike "*$fragment*") {
+            throw "Terrain readability sidecar summary missing '$fragment': $Path -> $summary"
+        }
+    }
+
+    $water = Read-SummaryNumber -Summary $summary -Pattern "water=([0-9]+)" -Context $Path
+    $shore = Read-SummaryNumber -Summary $summary -Pattern "shore=([0-9]+)" -Context $Path
+    $runway = Read-SummaryNumber -Summary $summary -Pattern "runway=([0-9]+)" -Context $Path
+    if ($water -le 0 -or $shore -le 0 -or $runway -le 0) {
+        throw "Terrain readability sidecar did not prove water, shore and runway coverage: $Path -> $summary"
     }
 }
 

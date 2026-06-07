@@ -55,11 +55,12 @@ Shader "MC2Demo/Source Terrain Vertex Color"
                 float3 normal = normalize(i.normal);
                 float light = saturate(dot(normal, normalize(float3(-0.35, 0.78, 0.52)))) * 0.18 + 0.92;
                 fixed4 terrain = tex2D(_MainTex, i.uv);
-                float3 lifted = saturate(pow(max(terrain.rgb, float3(0.001, 0.001, 0.001)), 0.82) * 1.10);
-                float3 detail = lerp(float3(1, 1, 1), lerp(float3(0.90, 0.90, 0.90), float3(1.18, 1.18, 1.18), lifted), saturate(_TextureStrength));
-                float3 textureTint = saturate(lifted * 0.42 + i.color.rgb * 0.58);
+                float strength = saturate(_TextureStrength);
+                float3 lifted = saturate(pow(max(terrain.rgb, float3(0.001, 0.001, 0.001)), 0.80) * 1.10);
+                float3 detail = lerp(float3(1, 1, 1), lerp(float3(0.88, 0.88, 0.88), float3(1.18, 1.18, 1.18), lifted), strength);
+                float3 textureTint = saturate(lifted * 0.46 + i.color.rgb * 0.54);
                 float3 color = saturate(i.color.rgb * detail);
-                color = lerp(color, textureTint, saturate(_TextureStrength) * 0.14);
+                color = lerp(color, textureTint, strength * 0.18);
                 return fixed4(color * _Tint.rgb * light, i.color.a * _Tint.a);
             }
             ENDCG

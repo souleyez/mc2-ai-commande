@@ -2349,6 +2349,57 @@ Next visual work should proceed in this order:
 3. A4 improve structure and prop readability.
 4. A5 add a first-map visual sidecar gate so future captures cannot regress quietly.
 
+## Terrain And Water Readability Refresh
+
+Implemented on 2026-06-07 after the detailed plan A2 task.
+
+Changed evidence:
+
+- Raised terrain composite participation from the old very conservative blend to `textureStrength=0.42`.
+- Tuned the source terrain shader so the private composite texture contributes visible tile detail without fully replacing source-driven vertex colors.
+- Raised shoreline and runway/road vertex-color contrast while keeping mission coordinates, water landing rules, BattleCore occupancy and camera rotation unchanged.
+- Changed the water surface into a stronger readable overlay, `alpha=0.62`, so water still reads as water while muting excessive underwater tile noise.
+- Added capture sidecar `terrainReadability`.
+- Updated `capture_reference_visuals.ps1` so battle captures fail when `TerrainReadability`, water, shore or runway evidence is missing.
+- Increased the capture script default timeout from 45 seconds to 75 seconds, because long-advance presets such as `north-patrol` can occasionally reach the capture point slowly on this machine; timeout cleanup still kills leftover player processes.
+
+Validation commands:
+
+```powershell
+git diff --check
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoBuilder.BuildWindows64 -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-build-terrain-readability.log"
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_reference_visuals.ps1 -Presets spawn,airfield,north-patrol
+```
+
+Validation evidence:
+
+```text
+analysis-output/unity-build-terrain-readability.log: Build Finished, Result: Success; MC2 Unity demo Windows build OK.
+capture_reference_visuals.ps1 -Presets spawn,airfield,north-patrol: MC2 reference visual captures passed: 3 preset(s).
+```
+
+Observed sidecar evidence:
+
+```text
+spawn: TerrainReadability=samples 10000 texture=composite textureStrength=0.42 waterSurface=readable-overlay alpha=0.62 water=9392 shore=92 runway=110 dirt=11 textured=188 style=raised-shore+runway-contrast+water-muted pathing=unchanged; PNG bytes 315176.
+airfield: TerrainReadability=samples 10000 texture=composite textureStrength=0.42 waterSurface=readable-overlay alpha=0.62 water=9392 shore=92 runway=110 dirt=11 textured=188 style=raised-shore+runway-contrast+water-muted pathing=unchanged; active hostiles 12 visible 8; PNG bytes 307764.
+north-patrol: TerrainReadability=samples 10000 texture=composite textureStrength=0.42 waterSurface=readable-overlay alpha=0.62 water=9392 shore=92 runway=110 dirt=11 textured=188 style=raised-shore+runway-contrast+water-muted pathing=unchanged; active hostiles 24 visible 9; PNG bytes 398175.
+```
+
+Visual judgment:
+
+- `spawn` now shows stronger land/water separation and more visible ground texture around the commander squad and airfield.
+- `airfield` now makes the runway/road region and objective approach easier to read from the fixed camera.
+- `north-patrol` now reads less like one flat blue/green field; islands, shallows and terrain patches have clearer separation.
+- The palette is still prototype-grade and slightly busy in shallow-water areas, but it is a better base for A3/A4 than the previous broad soft color fields.
+- Battle UI remained sparse in all three sidecars, and pathing/landing evidence still reports `pathing=unchanged`.
+
+Remaining issues:
+
+1. Unit silhouettes still need a persistent ground/readability layer.
+2. Structures, trees and props still need contrast and base-shadow work.
+3. Dense combat effects can still steal focus in the hangar and damage presets, which should be handled after unit silhouettes.
+
 Next priority:
 
-1. Improve terrain and water readability.
+1. Improve unit silhouette readability.

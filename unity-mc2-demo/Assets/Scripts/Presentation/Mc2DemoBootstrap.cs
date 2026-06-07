@@ -168,6 +168,12 @@ namespace MC2Demo.Presentation
         private static readonly Color LoadoutWeaponBlockFrameColor = new(0.015f, 0.02f, 0.025f, 0.98f);
         private static readonly Color LoadoutComponentBlockFrameColor = new(0.42f, 0.30f, 0.05f, 0.96f);
         private static readonly Color LoadoutBlockDividerColor = new(0.015f, 0.025f, 0.028f, 0.50f);
+        private const float TerrainCompositeTextureStrength = 0.42f;
+        private static readonly Color TerrainDeepWaterColor = new(0.08f, 0.32f, 0.42f, 1f);
+        private static readonly Color TerrainShoreColor = new(0.45f, 0.53f, 0.33f, 1f);
+        private static readonly Color TerrainRunwayColor = new(0.64f, 0.62f, 0.53f, 1f);
+        private static readonly Color TerrainRoadColor = new(0.56f, 0.56f, 0.48f, 1f);
+        private static readonly Color TerrainWaterSurfaceColor = new(0.07f, 0.33f, 0.44f, 0.62f);
 
         [Serializable]
         private sealed class VisualCaptureSidecar
@@ -191,6 +197,7 @@ namespace MC2Demo.Presentation
             public string[] currentObjectives;
             public string occupancy;
             public string occupancyPlaceholders;
+            public string terrainReadability;
             public string contactSpread;
             public string contactClearance;
             public string mechLab;
@@ -5812,6 +5819,7 @@ namespace MC2Demo.Presentation
                 currentObjectives = ObjectiveLabels(observation?.currentObjectives),
                 occupancy = BuildCaptureOccupancySummary(),
                 occupancyPlaceholders = lastOccupancyPlaceholderSummary,
+                terrainReadability = BuildCaptureTerrainReadabilitySummary(),
                 contactSpread = BuildCaptureContactSpreadSummary(),
                 contactClearance = BuildCaptureContactClearanceSummary(),
                 mechLab = BuildCaptureMechLabSummary(),
@@ -5834,6 +5842,77 @@ namespace MC2Demo.Presentation
         {
             string battleSummary = mission == null ? "BattleOccupancy=mission unavailable" : mission.OccupancySummary();
             return battleSummary + "; " + DemoTerrainView.CurrentLandingAuditSummary();
+        }
+
+        private string BuildCaptureTerrainReadabilitySummary()
+        {
+            TerrainMeshDefinition terrain = mission?.Contract?.terrainMesh;
+            if (terrain?.samples == null || terrain.samples.Length == 0)
+            {
+                return "TerrainReadability=unavailable";
+            }
+
+            float waterLevel = mission.Contract.mission?.terrain == null ? 350f : mission.Contract.mission.terrain.waterElevation;
+            int waterSamples = 0;
+            int shoreSamples = 0;
+            int runwaySamples = 0;
+            int dirtSamples = 0;
+            int texturedSamples = 0;
+            for (int index = 0; index < terrain.samples.Length; index++)
+            {
+                TerrainMeshSample sample = terrain.samples[index];
+                if (sample == null)
+                {
+                    continue;
+                }
+
+                if (IsWaterTerrainSample(sample, waterLevel))
+                {
+                    waterSamples++;
+                }
+                else if (IsShoreTerrainSample(sample, waterLevel))
+                {
+                    shoreSamples++;
+                }
+
+                if (IsRunwayOrRoadTerrain(sample))
+                {
+                    runwaySamples++;
+                }
+
+                if (sample.terrainType == 20)
+                {
+                    dirtSamples++;
+                }
+
+                if (SourceTextureId(sample) > 2)
+                {
+                    texturedSamples++;
+                }
+            }
+
+            string textureMode = lastTerrainTextureSummary.IndexOf("terrain texture composite", StringComparison.OrdinalIgnoreCase) >= 0
+                ? "composite"
+                : "vertex-color";
+            return "TerrainReadability=samples "
+                + terrain.samples.Length.ToString(CultureInfo.InvariantCulture)
+                + " texture="
+                + textureMode
+                + " textureStrength="
+                + TerrainCompositeTextureStrength.ToString("0.##", CultureInfo.InvariantCulture)
+                + " waterSurface=readable-overlay alpha="
+                + TerrainWaterSurfaceColor.a.ToString("0.##", CultureInfo.InvariantCulture)
+                + " water="
+                + waterSamples.ToString(CultureInfo.InvariantCulture)
+                + " shore="
+                + shoreSamples.ToString(CultureInfo.InvariantCulture)
+                + " runway="
+                + runwaySamples.ToString(CultureInfo.InvariantCulture)
+                + " dirt="
+                + dirtSamples.ToString(CultureInfo.InvariantCulture)
+                + " textured="
+                + texturedSamples.ToString(CultureInfo.InvariantCulture)
+                + " style=raised-shore+runway-contrast+water-muted pathing=unchanged";
         }
 
         private string BuildCaptureContactSpreadSummary()
@@ -8651,38 +8730,57 @@ namespace MC2Demo.Presentation
         {
             float waterLevel = mission.Contract.mission.terrain.waterElevation;
             float light = TerrainLightMultiplier(sample);
-            if (sample.elevation <= waterLevel + 4f)
+            if (IsWaterTerrainSample(sample, waterLevel))
             {
-                return ApplyTerrainLight(new Color(0.10f, 0.36f, 0.46f), light);
+                return ApplyTerrainLight(TerrainTileVariation(TerrainDeepWaterColor, SourceTextureId(sample), 0.08f), light);
             }
 
-            if (sample.elevation <= waterLevel + 24f)
+            if (IsShoreTerrainSample(sample, waterLevel))
             {
-                return ApplyTerrainLight(new Color(0.39f, 0.49f, 0.31f), light);
+                return ApplyTerrainLight(TerrainTileVariation(TerrainShoreColor, SourceTextureId(sample), 0.14f), light);
             }
 
             int textureId = SourceTextureId(sample);
-            if (sample.terrainType == 13 || sample.terrainType == 14 || sample.terrainType == 15 || sample.terrainType == 16)
+            if (IsRunwayOrRoadTerrain(sample))
             {
                 Color runway = sample.terrainType == 14
-                    ? new Color(0.60f, 0.59f, 0.51f)
-                    : new Color(0.52f, 0.53f, 0.46f);
-                return ApplyTerrainLight(TerrainTileVariation(runway, textureId, 0.12f), light);
+                    ? TerrainRunwayColor
+                    : TerrainRoadColor;
+                return ApplyTerrainLight(TerrainTileVariation(runway, textureId, 0.16f), light);
             }
 
             if (sample.terrainType == 20)
             {
-                return ApplyTerrainLight(TerrainTileVariation(new Color(0.54f, 0.42f, 0.27f), textureId, 0.12f), light);
+                return ApplyTerrainLight(TerrainTileVariation(new Color(0.60f, 0.46f, 0.29f), textureId, 0.16f), light);
             }
 
             if (textureId > 2)
             {
-                return ApplyTerrainLight(TerrainTileVariation(new Color(0.43f, 0.47f, 0.30f), textureId, 0.18f), light);
+                return ApplyTerrainLight(TerrainTileVariation(new Color(0.44f, 0.50f, 0.30f), textureId, 0.22f), light);
             }
 
             float heightT = Mathf.InverseLerp(mission.Contract.terrainMesh.elevationMin, mission.Contract.terrainMesh.elevationMax, sample.elevation);
-            Color baseColor = Color.Lerp(new Color(0.27f, 0.42f, 0.21f), new Color(0.55f, 0.50f, 0.32f), heightT);
-            return ApplyTerrainLight(TerrainTileVariation(baseColor, textureId, 0.07f), light);
+            Color baseColor = Color.Lerp(new Color(0.30f, 0.44f, 0.22f), new Color(0.58f, 0.52f, 0.33f), heightT);
+            return ApplyTerrainLight(TerrainTileVariation(baseColor, textureId, 0.11f), light);
+        }
+
+        private static bool IsWaterTerrainSample(TerrainMeshSample sample, float waterLevel)
+        {
+            return sample != null && (sample.water != 0 || sample.elevation <= waterLevel + 4f);
+        }
+
+        private static bool IsShoreTerrainSample(TerrainMeshSample sample, float waterLevel)
+        {
+            return sample != null && sample.elevation > waterLevel + 4f && sample.elevation <= waterLevel + 28f;
+        }
+
+        private static bool IsRunwayOrRoadTerrain(TerrainMeshSample sample)
+        {
+            return sample != null
+                && (sample.terrainType == 13
+                    || sample.terrainType == 14
+                    || sample.terrainType == 15
+                    || sample.terrainType == 16);
         }
 
         private static int SourceTextureId(TerrainMeshSample sample)
@@ -8783,7 +8881,7 @@ namespace MC2Demo.Presentation
 
             if (material.HasProperty("_TextureStrength"))
             {
-                material.SetFloat("_TextureStrength", terrainTexture == null ? 0f : 0.34f);
+                material.SetFloat("_TextureStrength", terrainTexture == null ? 0f : TerrainCompositeTextureStrength);
             }
         }
 
@@ -8809,7 +8907,7 @@ namespace MC2Demo.Presentation
             Material material = new(shader)
             {
                 name = "ReadableWaterSurface",
-                color = new Color(0.10f, 0.42f, 0.56f, 0.58f)
+                color = TerrainWaterSurfaceColor
             };
             if (material.HasProperty("_Color"))
             {
