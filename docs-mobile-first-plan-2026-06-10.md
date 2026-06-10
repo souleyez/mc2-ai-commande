@@ -59,6 +59,65 @@ failing, unless the later work is explicitly diagnostic.
 
 ## Executable Requirement Matrix
 
+### How To Treat An Executable Target
+
+每个目标必须能被下一位开发者直接执行，不依赖口头记忆。目标写法固定为：
+
+- **Precondition:** 开始前必须满足的环境、分支、模块和干净工作区条件。
+- **Action:** 要改的文件或要运行的命令。
+- **Output:** 期望生成的文件、日志、截图、sidecar 或文档。
+- **Verification:** 用哪条命令确认通过，日志里必须出现什么稳定字符串。
+- **Failure Handling:** 失败时先看什么、停在哪里、哪些输出不能提交。
+- **Commit Scope:** 允许进入提交的文件范围；生成物、日志和私有素材默认不提交。
+
+当前执行目标只允许有一个 `In Progress`。如果前置条件失败，先把失败写成明确 blocker 或安装步骤，不跳到后续玩法任务。
+
+### Current Executable Target: G2 Android Build Smoke
+
+**Precondition:**
+
+- `git status --short --branch --untracked-files=all` 干净。
+- Unity editor exists at `$HOME\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe`.
+- `Test-Path "$HOME\Unity\Hub\Editor\6000.4.7f1\Editor\Data\PlaybackEngines\AndroidPlayer"` returns `True`.
+- Windows validator still passes before Android build work.
+
+**Action:**
+
+1. If AndroidPlayer is missing, install Unity `6000.4.7f1` Android Build Support, Android SDK & NDK Tools, and OpenJDK from Unity Hub.
+2. Run the baseline validator.
+3. Run `MC2Demo.EditorTools.Mc2DemoBuilder.BuildAndroid`.
+4. Inspect `git status` after Unity exits; discard only confirmed scene fileID churn by manual patch, never by broad reset.
+5. Confirm APK output and success strings.
+
+**Output:**
+
+- `analysis-output/unity-validate-mobile-baseline.log` ignored.
+- `analysis-output/unity-build-android.log` ignored.
+- `unity-mc2-demo/Builds/Android/MC2UnityDemo.apk` ignored.
+- Optional docs update only if commands, paths or blockers changed.
+
+**Verification:**
+
+```powershell
+git diff --check
+git status --short --branch --untracked-files=all
+Select-String -Path .\analysis-output\unity-validate-mobile-baseline.log -Pattern "MC2 demo contract validation OK"
+Select-String -Path .\analysis-output\unity-build-android.log -Pattern "Build Finished, Result: Success","MC2 Unity demo Android build OK"
+Test-Path .\unity-mc2-demo\Builds\Android\MC2UnityDemo.apk
+```
+
+**Failure Handling:**
+
+- `AndroidPlayer -> False`: stop G2 implementation and install the module; do not edit gameplay code to work around it.
+- Unity project/settings churn: inspect diff; commit only intentional build helper or documentation changes.
+- Build fails after AndroidPlayer is present: inspect `unity-build-android.log`, fix the smallest build blocker, then rerun validator and Android build.
+- APK exists but is staged: unstage/leave ignored; never commit generated APK/AAB or Unity build folders.
+
+**Commit Scope:**
+
+- Allowed: `unity-mc2-demo/Assets/Editor/Mc2DemoBuilder.cs`, `BUILD-MOBILE.md`, `unity-mc2-demo/README.md`, plan docs.
+- Not allowed: `analysis-output/`, `unity-mc2-demo/Builds/`, generated screenshots, JSON sidecars, private reference exports.
+
 ### H2: New-Machine Baseline
 
 | ID | Requirement | Output | Verification |
@@ -77,12 +136,15 @@ environment or Windows baseline first; do not start Android changes.
 
 | ID | Requirement | Output | Verification |
 | --- | --- | --- | --- |
+| G2-R0 | Worktree and Windows baseline are clean before Android work | clean status and validator log | `git status --short --branch --untracked-files=all`; log contains `MC2 demo contract validation OK` |
 | G2-R1 | Unity Android Build Support is installed with SDK, NDK and OpenJDK | Unity module exists on the machine | Unity Hub module list or successful Android build |
 | G2-R2 | Android build target can be selected without changing tracked project files unexpectedly | no unrelated project settings churn | `git status --short --branch --untracked-files=all` before staging |
 | G2-R3 | Add or document repeatable Android build path | `BuildAndroid` editor method or exact manual Editor steps | `unity-mc2-demo/README.md` or build helper documents the path |
 | G2-R4 | Android artifact is generated into ignored output | APK or AAB under ignored build folder | file exists, not staged |
 | G2-R5 | Android build log has a stable success string | ignored log under `analysis-output/` | log contains the exact string chosen for future regression checks |
 | G2-R6 | Windows validator still passes after Android build setup | validator log | `MC2 demo contract validation OK` |
+| G2-R7 | Generated Android output remains outside git | no staged APK/AAB/build/log files | `git status --short --branch --untracked-files=all` shows only intentional source/doc changes or clean status |
+| G2-R8 | G3 can start without rediscovering build path | `BUILD-MOBILE.md` has artifact path and adb install command | next task can run `adb install -r .\unity-mc2-demo\Builds\Android\MC2UnityDemo.apk` |
 
 Initial preferred command, once `BuildAndroid` exists:
 

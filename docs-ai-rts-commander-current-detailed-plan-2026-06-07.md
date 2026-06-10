@@ -8,7 +8,7 @@
 
 **Tech Stack:** Unity 6, C#, Android/iOS mobile-first after current Windows handoff validation, deterministic BattleCore, PowerShell build/smoke/capture scripts, replaceable content packs, optional high-level AI deputy, later main server/map server/Web ranking contracts.
 
-**Revision:** 2026-06-10 v10. This file is the fine-grained execution plan paired with `docs-ai-rts-commander-current-master-plan-2026-06-07.md`. The private reference visual bridge, local investor evidence package, art-safe metadata contract, AI deputy offline guard, reward authority contract, machine handoff plan, and mobile-first priority reset are now sealed for the current Demo. H2 validator/build/smoke is now green; the current focus is `G2 Add Android Build Smoke Path`, with Unity Android Build Support still required before APK output can be produced.
+**Revision:** 2026-06-10 v11. This file is the fine-grained execution plan paired with `docs-ai-rts-commander-current-master-plan-2026-06-07.md`. The private reference visual bridge, local investor evidence package, art-safe metadata contract, AI deputy offline guard, reward authority contract, machine handoff plan, and mobile-first priority reset are now sealed for the current Demo. H2 validator/build/smoke is now green; the current focus is `G2 Add Android Build Smoke Path`, now split into executable subtargets from Android module install through APK artifact verification.
 
 ---
 
@@ -177,7 +177,13 @@
 | H1.1 | Done | 写换机交接计划，明确旧机推送、新机克隆、Unity 版本、fallback 验证、私有参考视觉和 AI key 边界 | handoff docs | `git diff --check` |
 | H2.1 | Done | 代码已推 `ai-origin master`；validator/build/visible-flow smoke 已过 | git + Unity | clean status + expected success strings |
 | G1.1 | Done | 更新计划为移动端第一优先，新增 mobile-first plan，地图/平台契约后移 | docs | `git diff --check` |
-| G2.1 | In Progress | 补 Android build smoke 路径；下一步安装/确认 Android Build Support 并产出 APK | Unity editor/build docs | Android build succeeds |
+| G2.1 | Done | 补 `BuildAndroid` editor entry 和 `BUILD-MOBILE.md`，缺模块时给明确错误 | `Mc2DemoBuilder.cs`; mobile docs | preflight reports Android Build Support blocker clearly |
+| G2.2 | In Progress | 安装/确认 Unity `6000.4.7f1` Android Build Support、Android SDK & NDK Tools、OpenJDK | local Unity Hub module | `Test-Path ...\PlaybackEngines\AndroidPlayer` returns `True` |
+| G2.3 | Later | 重新跑 Windows/BattleCore validator，确认移动构建前规则基线没变 | ignored validator log | `MC2 demo contract validation OK` |
+| G2.4 | Later | 执行 Android batch build，产出 ignored APK | `unity-mc2-demo/Builds/Android/MC2UnityDemo.apk` | log contains `Build Finished, Result: Success` and `MC2 Unity demo Android build OK` |
+| G2.5 | Later | 检查 Unity import/build 后的 git diff，只保留真实源码或文档变化 | source/docs only | no APK/AAB/log/sidecar/build output staged |
+| G2.6 | Later | 如 Android build 暴露真实 project setting 需求，用最小提交固化 | Unity project/editor files if needed | Windows validator and Android build both pass |
+| G2.7 | Later | 更新计划状态：G2 Done，G3 Next | plan docs | `git diff --check` |
 | G3.1 | Later | 真机启动 Android Demo，记录命令流、UI、日志和设备表现 | device + ignored logs | smoke path reaches battle/debrief |
 | G4.1 | Later | 调整触控命令 UI，保持无框选、稀疏 HUD、状态栏单选 | Unity presentation | mobile smoke |
 | G5.1 | Later | 定义移动端性能预算并记录首轮基线 | docs + ignored evidence | budget doc |
@@ -1039,30 +1045,134 @@ git diff --check
 
 - Modify if needed: `unity-mc2-demo/Assets/Editor/Mc2DemoBuilder.cs`
 - Modify if needed: `unity-mc2-demo/README.md`
-- Modify if needed: `BUILD-WIN.md`
+- Modify if needed: `BUILD-MOBILE.md`
+- Modify if needed: `docs-mobile-first-plan-2026-06-10.md`
+- Modify if needed: `docs-ai-rts-commander-current-master-plan-2026-06-07.md`
+- Modify if needed: `docs-ai-rts-commander-current-detailed-plan-2026-06-07.md`
 - Read: `docs-mobile-first-plan-2026-06-10.md`
 
-**Steps:**
+**Preconditions:**
 
-1. Install Unity Android Build Support with SDK, NDK and OpenJDK.
-2. Confirm Android target can import without staging generated files.
-3. Add or document Android build path.
-4. Build APK/AAB into ignored output.
-5. Record exact success string and artifact location in ignored logs or docs.
+1. Worktree is clean or contains only this G2 documentation/source change:
+
+```powershell
+git status --short --branch --untracked-files=all
+```
+
+2. Unity editor exists:
+
+```powershell
+Test-Path "$HOME\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe"
+```
+
+Expected:
+
+```text
+True
+```
+
+3. Android module exists:
+
+```powershell
+Test-Path "$HOME\Unity\Hub\Editor\6000.4.7f1\Editor\Data\PlaybackEngines\AndroidPlayer"
+```
+
+Expected before continuing:
+
+```text
+True
+```
+
+If this returns `False`, stop G2 code work and install Android Build Support, Android SDK & NDK Tools, and OpenJDK from Unity Hub for Unity `6000.4.7f1`.
+
+**Executable Steps:**
+
+1. Confirm the module folder is present.
+2. Run the Windows/BattleCore validator:
+
+```powershell
+$Repo = (Get-Location).Path
+$Unity = "$HOME\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe"
+& $Unity `
+  -batchmode -quit `
+  -projectPath "$Repo\unity-mc2-demo" `
+  -executeMethod MC2Demo.EditorTools.Mc2DemoValidator.ValidateMissionContract `
+  -logFile "$Repo\analysis-output\unity-validate-mobile-baseline.log"
+```
+
+Expected:
+
+```text
+MC2 demo contract validation OK
+```
+
+3. Run Android build:
+
+```powershell
+$Repo = (Get-Location).Path
+$Unity = "$HOME\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe"
+& $Unity `
+  -batchmode -quit `
+  -projectPath "$Repo\unity-mc2-demo" `
+  -executeMethod MC2Demo.EditorTools.Mc2DemoBuilder.BuildAndroid `
+  -logFile "$Repo\analysis-output\unity-build-android.log"
+```
+
+Expected:
+
+```text
+Build Finished, Result: Success
+MC2 Unity demo Android build OK
+```
+
+4. Confirm artifact:
+
+```powershell
+Test-Path .\unity-mc2-demo\Builds\Android\MC2UnityDemo.apk
+```
+
+Expected:
+
+```text
+True
+```
+
+5. Inspect git status and diff after Unity exits:
+
+```powershell
+git status --short --branch --untracked-files=all
+git diff -- .\unity-mc2-demo\ProjectSettings .\unity-mc2-demo\Assets\Scenes .\unity-mc2-demo\Assets\Editor
+```
+
+6. If Unity changed scene fileIDs only, restore that churn by manual `apply_patch`.
+7. If Unity changed real Android project settings, keep only the minimal tracked settings required for repeatable Android build and rerun validator/build.
+8. Update `docs-mobile-first-plan-2026-06-10.md` and this file only if the actual command, output path, success string, or blocker changed.
 
 **Validation:**
 
 ```powershell
 git diff --check
 git status --short --branch --untracked-files=all
+Select-String -Path .\analysis-output\unity-validate-mobile-baseline.log -Pattern "MC2 demo contract validation OK"
+Select-String -Path .\analysis-output\unity-build-android.log -Pattern "Build Finished, Result: Success","MC2 Unity demo Android build OK"
+Test-Path .\unity-mc2-demo\Builds\Android\MC2UnityDemo.apk
 ```
 
-Expected:
+**Acceptance:**
 
-```text
-Android build succeeds.
-No APK/AAB, Unity build output, generated logs, screenshots or sidecars are staged.
-```
+- Android module prerequisite is explicit.
+- Android APK is generated under ignored build output.
+- Validator still passes before/after Android build setup.
+- `BUILD-MOBILE.md` is enough for G3 to install the artifact.
+- `git status` is clean after commit, or only contains intentionally unstaged ignored outputs.
+- No APK/AAB, Unity build output, generated logs, screenshots, JSON sidecars, or private reference exports are staged.
+
+**Failure Handling:**
+
+- Missing Android module: stop and install module; do not change gameplay or UI.
+- Android build fails with SDK/NDK/JDK error: fix Unity module/toolchain path first.
+- Android build fails with project setting error: make the smallest project/editor change and rerun validator/build.
+- Any unexpected source diff: inspect before staging; do not use broad reset.
 
 **Commit:** `Add Android build smoke path`
 
