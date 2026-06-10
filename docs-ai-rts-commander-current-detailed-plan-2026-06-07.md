@@ -184,7 +184,7 @@
 | G2.5 | Done | 检查 Unity import/build 后的 git diff，只保留真实源码或文档变化 | source/docs only | no APK/AAB/log/sidecar/build output staged |
 | G2.6 | Done | 如 Android build 暴露真实 project setting 需求，用最小提交固化 | `Mc2DemoBuilder.cs`; `ProjectSettings.asset` | Android build passes |
 | G2.7 | Done | 更新计划状态：G2 Done，G3 Next | plan docs | `git diff --check` |
-| G3.1 | In Progress | 真机启动 Android Demo，记录命令流、UI、日志和设备表现 | device + ignored logs | smoke path reaches battle/debrief |
+| G3.1 | In Progress | 真机启动 Android Demo，记录命令流、UI、日志和设备表现 | `scripts/unity/android_device_smoke.ps1`; device + ignored logs | smoke path reaches battle/debrief |
 | G4.1 | Later | 调整触控命令 UI，保持无框选、稀疏 HUD、状态栏单选 | Unity presentation | mobile smoke |
 | G5.1 | Later | 定义移动端性能预算并记录首轮基线 | docs + ignored evidence | budget doc |
 | F2.1 | Later | 写地图包/编辑器契约，定义地图元数据、触发图、敌人、奖励引用和验证器边界 | platform docs | `git diff --check` |
@@ -1194,15 +1194,25 @@ unity-mc2-demo\Builds\Android\MC2UnityDemo.apk exists, 20,666,724 bytes, ignored
 
 **Files:**
 
-- Modify if needed: `scripts/unity/`
+- Modify if needed: `scripts/unity/android_device_smoke.ps1`
 - Modify if needed: `unity-mc2-demo/Assets/Scripts/Presentation/StartupCommanderScript.cs`
 - Generate ignored output only: `analysis-output/`
 
 **Validation:**
 
 ```powershell
-adb devices
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\android_device_smoke.ps1
 git diff --check
+```
+
+**Current Evidence:**
+
+```text
+scripts\unity\android_device_smoke.ps1 added.
+The helper discovers package/activity through aapt, checks adb authorization,
+installs the APK, launches it, waits briefly, captures logcat, and fails if the
+package does not stay running.
+Current adb state on 2026-06-11: no device rows; physical phone still required.
 ```
 
 **Commit:** `Document Android device smoke results`

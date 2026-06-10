@@ -83,12 +83,10 @@ failing, unless the later work is explicitly diagnostic.
 
 **Action:**
 
-1. Run `adb devices`.
+1. Run `scripts\unity\android_device_smoke.ps1`.
 2. If no device row is shown, stop at G3 and connect/authorize a phone; do not start touch UI work yet.
-3. Install the APK with `adb install -r`.
-4. Launch the app or use Unity/adb launch evidence.
-5. Capture ignored `analysis-output/android-device-smoke.log`.
-6. Record whether the app reaches battle/debrief manually or by command-file smoke.
+3. If a device is present, the helper installs the APK, launches it, waits briefly and captures ignored `analysis-output/android-device-smoke.log`.
+4. Record whether the app reaches battle/debrief manually or by command-file smoke.
 
 **Output:**
 
@@ -101,9 +99,7 @@ failing, unless the later work is explicitly diagnostic.
 ```powershell
 git diff --check
 git status --short --branch --untracked-files=all
-& "$HOME\Unity\Hub\Editor\6000.4.7f1\Editor\Data\PlaybackEngines\AndroidPlayer\SDK\platform-tools\adb.exe" devices
-& "$HOME\Unity\Hub\Editor\6000.4.7f1\Editor\Data\PlaybackEngines\AndroidPlayer\SDK\platform-tools\adb.exe" install -r .\unity-mc2-demo\Builds\Android\MC2UnityDemo.apk
-& "$HOME\Unity\Hub\Editor\6000.4.7f1\Editor\Data\PlaybackEngines\AndroidPlayer\SDK\platform-tools\adb.exe" logcat -d > .\analysis-output\android-device-smoke.log
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\android_device_smoke.ps1
 ```
 
 **Failure Handling:**
@@ -112,6 +108,14 @@ git status --short --branch --untracked-files=all
 - install failure: inspect adb output and Android package signing/SDK compatibility before changing gameplay;
 - launch crash: inspect `android-device-smoke.log`, fix the smallest runtime blocker, rebuild APK, reinstall;
 - generated logs/screenshots/APK appear in git: leave ignored or unstage, never commit them.
+
+**Current G3 Evidence 2026-06-11:**
+
+```text
+scripts\unity\android_device_smoke.ps1 exists and fails clearly when no device is connected.
+adb devices -> no device rows.
+G3 still requires a physical Android phone with USB debugging enabled and authorized.
+```
 
 **Commit Scope:**
 
@@ -199,10 +203,7 @@ Minimum device target for the first pass:
 Recommended commands:
 
 ```powershell
-adb devices
-adb install -r .\unity-mc2-demo\Builds\Android\MC2UnityDemo.apk
-adb logcat -c
-adb logcat -d > .\analysis-output\android-device-smoke.log
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\android_device_smoke.ps1
 git status --short --branch --untracked-files=all
 ```
 

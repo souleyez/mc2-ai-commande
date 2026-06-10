@@ -92,10 +92,23 @@ Device smoke
 After the APK exists, install and collect logs from a real Android device:
 
 ```powershell
-adb devices
-adb install -r .\unity-mc2-demo\Builds\Android\MC2UnityDemo.apk
-adb logcat -c
-adb logcat -d > .\analysis-output\android-device-smoke.log
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\android_device_smoke.ps1
+```
+
+The helper discovers the APK package name through `aapt`, checks that exactly
+one authorized Android device is connected, installs the APK, launches it, waits
+briefly, captures logcat, and fails if the package does not stay running.
+
+Manual equivalent:
+
+```powershell
+$Adb = "$HOME\Unity\Hub\Editor\6000.4.7f1\Editor\Data\PlaybackEngines\AndroidPlayer\SDK\platform-tools\adb.exe"
+& $Adb devices
+& $Adb install -r .\unity-mc2-demo\Builds\Android\MC2UnityDemo.apk
+& $Adb logcat -c
+& $Adb shell am start -n com.DefaultCompany.unitymc2demo/com.unity3d.player.UnityPlayerGameActivity
+Start-Sleep -Seconds 12
+& $Adb logcat -d > .\analysis-output\android-device-smoke.log
 ```
 
 The first manual pass must confirm:
@@ -141,3 +154,5 @@ unity-mc2-demo\Builds\Android\MC2UnityDemo.apk -> exists, 20,666,724 bytes
 
 The APK, SDK logs, Unity build folder, Gradle cache, and device logs remain
 ignored local outputs. The next gate is a real Android device smoke.
+At the time this note was updated, `adb devices` returned no device rows, so G3
+is waiting for a USB-debugging-enabled phone authorized on this PC.
