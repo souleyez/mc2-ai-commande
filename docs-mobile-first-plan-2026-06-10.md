@@ -51,8 +51,8 @@ failing, unless the later work is explicitly diagnostic.
 | Gate | Status | Purpose | Required Before Next Gate |
 | --- | --- | --- | --- |
 | H2 | Done | New-machine baseline | Clone repo, run Windows validator/build/smoke on new machine |
-| G2 | In Progress | Android build path | Produce Android artifact from Unity 6 without staging generated output |
-| G3 | Later | Android device smoke | Launch on real Android device and reach battle/debrief path |
+| G2 | Done | Android build path | Produce Android artifact from Unity 6 without staging generated output |
+| G3 | In Progress | Android device smoke | Launch on real Android device and reach battle/debrief path |
 | G4 | Later | Touch UI pass | Core command model usable on phone aspect ratios |
 | G5 | Later | Mobile performance budget | Baseline FPS, memory, package size, load time and thermal notes recorded |
 | G6 | Later | iOS feasibility | Document macOS/Xcode/signing requirements after Android proof |
@@ -72,50 +72,50 @@ failing, unless the later work is explicitly diagnostic.
 
 当前执行目标只允许有一个 `In Progress`。如果前置条件失败，先把失败写成明确 blocker 或安装步骤，不跳到后续玩法任务。
 
-### Current Executable Target: G2 Android Build Smoke
+### Current Executable Target: G3 Android Device Smoke
 
 **Precondition:**
 
 - `git status --short --branch --untracked-files=all` 干净。
-- Unity editor exists at `$HOME\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe`.
-- `Test-Path "$HOME\Unity\Hub\Editor\6000.4.7f1\Editor\Data\PlaybackEngines\AndroidPlayer"` returns `True`.
-- Windows validator still passes before Android build work.
+- Android APK exists at `unity-mc2-demo\Builds\Android\MC2UnityDemo.apk`.
+- `adb` exists at `$HOME\Unity\Hub\Editor\6000.4.7f1\Editor\Data\PlaybackEngines\AndroidPlayer\SDK\platform-tools\adb.exe`.
+- One physical Android device has USB debugging enabled and is trusted by this PC.
 
 **Action:**
 
-1. If AndroidPlayer is missing, install Unity `6000.4.7f1` Android Build Support, Android SDK & NDK Tools, and OpenJDK from Unity Hub.
-2. Run the baseline validator.
-3. Run `MC2Demo.EditorTools.Mc2DemoBuilder.BuildAndroid`.
-4. Inspect `git status` after Unity exits; discard only confirmed scene fileID churn by manual patch, never by broad reset.
-5. Confirm APK output and success strings.
+1. Run `adb devices`.
+2. If no device row is shown, stop at G3 and connect/authorize a phone; do not start touch UI work yet.
+3. Install the APK with `adb install -r`.
+4. Launch the app or use Unity/adb launch evidence.
+5. Capture ignored `analysis-output/android-device-smoke.log`.
+6. Record whether the app reaches battle/debrief manually or by command-file smoke.
 
 **Output:**
 
-- `analysis-output/unity-validate-mobile-baseline.log` ignored.
-- `analysis-output/unity-build-android.log` ignored.
-- `unity-mc2-demo/Builds/Android/MC2UnityDemo.apk` ignored.
-- Optional docs update only if commands, paths or blockers changed.
+- ignored device log under `analysis-output/`;
+- optional short docs note with device model, Android version, install result and smoke result;
+- no APK/log/screenshot sidecar staged.
 
 **Verification:**
 
 ```powershell
 git diff --check
 git status --short --branch --untracked-files=all
-Select-String -Path .\analysis-output\unity-validate-mobile-baseline.log -Pattern "MC2 demo contract validation OK"
-Select-String -Path .\analysis-output\unity-build-android.log -Pattern "Build Finished, Result: Success","MC2 Unity demo Android build OK"
-Test-Path .\unity-mc2-demo\Builds\Android\MC2UnityDemo.apk
+& "$HOME\Unity\Hub\Editor\6000.4.7f1\Editor\Data\PlaybackEngines\AndroidPlayer\SDK\platform-tools\adb.exe" devices
+& "$HOME\Unity\Hub\Editor\6000.4.7f1\Editor\Data\PlaybackEngines\AndroidPlayer\SDK\platform-tools\adb.exe" install -r .\unity-mc2-demo\Builds\Android\MC2UnityDemo.apk
+& "$HOME\Unity\Hub\Editor\6000.4.7f1\Editor\Data\PlaybackEngines\AndroidPlayer\SDK\platform-tools\adb.exe" logcat -d > .\analysis-output\android-device-smoke.log
 ```
 
 **Failure Handling:**
 
-- `AndroidPlayer -> False`: stop G2 implementation and install the module; do not edit gameplay code to work around it.
-- Unity project/settings churn: inspect diff; commit only intentional build helper or documentation changes.
-- Build fails after AndroidPlayer is present: inspect `unity-build-android.log`, fix the smallest build blocker, then rerun validator and Android build.
-- APK exists but is staged: unstage/leave ignored; never commit generated APK/AAB or Unity build folders.
+- no device row: stop and connect/authorize a physical phone;
+- install failure: inspect adb output and Android package signing/SDK compatibility before changing gameplay;
+- launch crash: inspect `android-device-smoke.log`, fix the smallest runtime blocker, rebuild APK, reinstall;
+- generated logs/screenshots/APK appear in git: leave ignored or unstage, never commit them.
 
 **Commit Scope:**
 
-- Allowed: `unity-mc2-demo/Assets/Editor/Mc2DemoBuilder.cs`, `BUILD-MOBILE.md`, `unity-mc2-demo/README.md`, plan docs.
+- Allowed: docs, smoke helper source if needed, minimal Unity source if Android runtime exposes a real blocker.
 - Not allowed: `analysis-output/`, `unity-mc2-demo/Builds/`, generated screenshots, JSON sidecars, private reference exports.
 
 ### H2: New-Machine Baseline
@@ -166,6 +166,15 @@ MC2 Unity demo Android build OK
 
 G2 is complete only when an Android artifact is produced and no generated build
 output is staged.
+
+**Completed Evidence 2026-06-11:**
+
+```text
+analysis-output/unity-validate-mobile-baseline.log: MC2 demo contract validation OK
+analysis-output/unity-build-android.log: Build Finished, Result: Success.
+analysis-output/unity-build-android.log: MC2 Unity demo Android build OK: ...\unity-mc2-demo\Builds\Android\MC2UnityDemo.apk
+unity-mc2-demo\Builds\Android\MC2UnityDemo.apk exists, 20,666,724 bytes, ignored output.
+```
 
 ### G3: Android Device Smoke
 

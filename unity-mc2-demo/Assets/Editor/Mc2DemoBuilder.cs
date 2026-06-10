@@ -1,4 +1,5 @@
 using System.IO;
+using System.Linq;
 using UnityEditor;
 using UnityEditor.Build.Reporting;
 using UnityEngine;
@@ -40,6 +41,7 @@ namespace MC2Demo.EditorTools
             {
                 throw new System.InvalidOperationException("Android Build Support is not installed. Expected Unity module folder: " + androidPlayerPath);
             }
+            ConfigureAndroidTools(androidPlayerPath);
 
             Mc2DemoSceneBuilder.RebuildDemoScene();
             Mc2DemoValidator.ValidateMissionContractWithoutExit();
@@ -63,6 +65,54 @@ namespace MC2Demo.EditorTools
 
             Debug.Log("MC2 Unity demo Android build OK: " + options.locationPathName);
             EditorApplication.Exit(0);
+        }
+
+        private static void ConfigureAndroidTools(string androidPlayerPath)
+        {
+            string sdkPath = Path.Combine(androidPlayerPath, "SDK");
+            string ndkPath = Path.Combine(androidPlayerPath, "NDK");
+            string jdkPath = Path.Combine(androidPlayerPath, "OpenJDK");
+            string gradlePath = Path.Combine(androidPlayerPath, "Tools", "gradle");
+
+            RequireDirectory(sdkPath, "Android SDK");
+            RequireDirectory(ndkPath, "Android NDK");
+            RequireDirectory(jdkPath, "Android OpenJDK");
+            RequireDirectory(gradlePath, "Android Gradle");
+
+            System.Type settingsType = System.AppDomain.CurrentDomain
+                .GetAssemblies()
+                .Select(assembly => assembly.GetType("UnityEditor.Android.AndroidExternalToolsSettings", false))
+                .FirstOrDefault(type => type != null);
+            if (settingsType == null)
+            {
+                throw new System.InvalidOperationException("UnityEditor.Android.AndroidExternalToolsSettings is unavailable. Reinstall Android Build Support for this Unity editor.");
+            }
+
+            SetAndroidToolPath(settingsType, "sdkRootPath", sdkPath);
+            SetAndroidToolPath(settingsType, "ndkRootPath", ndkPath);
+            SetAndroidToolPath(settingsType, "jdkRootPath", jdkPath);
+            SetAndroidToolPath(settingsType, "gradlePath", gradlePath);
+
+            Debug.Log("MC2 Android tools configured: SDK=" + sdkPath + " NDK=" + ndkPath + " JDK=" + jdkPath + " Gradle=" + gradlePath);
+        }
+
+        private static void RequireDirectory(string path, string label)
+        {
+            if (!Directory.Exists(path))
+            {
+                throw new System.InvalidOperationException(label + " is not installed. Expected folder: " + path);
+            }
+        }
+
+        private static void SetAndroidToolPath(System.Type settingsType, string propertyName, string path)
+        {
+            System.Reflection.PropertyInfo property = settingsType.GetProperty(propertyName, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+            if (property == null || !property.CanWrite)
+            {
+                throw new System.InvalidOperationException("Android external tools property is unavailable: " + propertyName);
+            }
+
+            property.SetValue(null, path);
         }
     }
 }

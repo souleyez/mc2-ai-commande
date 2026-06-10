@@ -88,6 +88,7 @@ unity-mc2-demo/UserSettings/
 unity-mc2-demo/obj/
 unity-mc2-demo/Build/
 unity-mc2-demo/Builds/
+unity-mc2-demo/.utmp/
 unity-mc2-demo/MemoryCaptures/
 !unity-mc2-demo/Assets/
 !unity-mc2-demo/Assets/**

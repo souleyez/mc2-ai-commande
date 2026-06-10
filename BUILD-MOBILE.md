@@ -109,12 +109,35 @@ The first manual pass must confirm:
 Current local status
 --------------------
 
-On this machine, the Windows baseline passes. At the time this file was added,
-Android Build Support was not installed:
+On this machine, the Windows baseline passes and Android build smoke now passes.
+The local Unity editor was present on disk but was not fully registered in Unity
+Hub, so `install-modules` could not add Android modules directly. The local G2
+recovery path used official component/tool downloads:
 
 ```text
-Test-Path ...\PlaybackEngines\AndroidPlayer -> False
+Unity Android Build Support installer:
+  UnitySetup-Android-Support-for-Editor-6000.4.7f1.exe
+Android command-line tools:
+  commandlinetools-win-14742923_latest.zip
+OpenJDK:
+  Microsoft.OpenJDK.17, linked at AndroidPlayer\OpenJDK
+SDK packages:
+  build-tools;36.0.0
+  platforms;android-36
+  platform-tools
+  cmake;3.22.1
+NDK:
+  ndk;27.2.12479018, linked at AndroidPlayer\NDK
 ```
 
-That means `BuildAndroid` is now defined, but the actual Android artifact still
-requires installing the Unity Android module.
+Current verified output:
+
+```text
+analysis-output\unity-validate-mobile-baseline.log -> MC2 demo contract validation OK
+analysis-output\unity-build-android.log -> Build Finished, Result: Success.
+analysis-output\unity-build-android.log -> MC2 Unity demo Android build OK
+unity-mc2-demo\Builds\Android\MC2UnityDemo.apk -> exists, 20,666,724 bytes
+```
+
+The APK, SDK logs, Unity build folder, Gradle cache, and device logs remain
+ignored local outputs. The next gate is a real Android device smoke.

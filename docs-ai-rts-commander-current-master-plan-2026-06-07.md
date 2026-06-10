@@ -88,8 +88,8 @@ Machine Handoff Checkpoint -> Mobile Feasibility Spike
 
 | Gap | Why It Matters | First Fix |
 | --- | --- | --- |
-| Android Build Support 未安装 | `BuildAndroid` 入口需要 Unity AndroidPlayer 模块才能产出 APK | 先安装 Unity 6000.4.7f1 Android Build Support，再跑 G2 build smoke |
-| 移动端可行性未验证 | 移动端是第一优先项，必须先证明 Android/iOS 路线可行 | G2-G4 先做 Android build、真机 smoke、触控 UI 和性能预算 |
+| Android 真机 smoke 未跑 | APK 已能构建，但还没证明真实手机可启动并进入战斗/战报 | G3 连接 Android 手机，安装 APK，抓取 logcat 并记录启动结果 |
+| 移动端交互和性能未验证 | 移动端是第一优先项，构建通过后还要证明手机触控和性能可接受 | G3-G5 继续做真机 smoke、触控 UI 和性能预算 |
 | 清权资产还未真正接入运行包 | D1 已有 metadata 合同，但不是最终美术包 | D2 以后再做 mountable clean content pack |
 | 平台化仍停在契约层 | 奖励权威已写清楚，地图包、排行和创作者边界还要补 | F2-F4 排到移动端 gate 之后 |
 
@@ -312,8 +312,8 @@ Known good strings:
 | 15 | Done | `Prepare machine handoff plan` | 旧机推送、新机克隆、Unity 校验、smoke 和私有本地资料边界 | docs check |
 | 16 | Done | `Push machine handoff checkpoint` | 代码已推到 `ai-origin`，当前机器 validator/build/smoke 基线通过 | git + Unity smoke |
 | 17 | Done | `Reframe plan around mobile first` | 明确移动端第一优先，Unreal MCP 不进主线，地图/平台契约后移 | docs check |
-| 18 | In Progress | `Add Android build smoke path` | `BuildAndroid` 入口和文档已补；当前机器缺 Android Build Support，APK 尚未产出 | Android build |
-| 19 | Later | `Run Android device smoke` | 真机启动并跑最小 visible-flow/command smoke | device smoke |
+| 18 | Done | `Add Android build smoke path` | Android Build Support、SDK/NDK/JDK/CMake、BuildAndroid 路径和 APK artifact 已验证 | Android build |
+| 19 | In Progress | `Run Android device smoke` | 真机启动并跑最小 visible-flow/command smoke | device smoke |
 | 20 | Later | `Adapt command UI for mobile touch` | 状态行、Jet、地图、系统和 MechLab 在手机触控可用 | device smoke |
 | 21 | Later | `Define mobile performance budget` | 记录 FPS、内存、包体、加载、热量/电量基线 | docs + device evidence |
 | 22 | Later | `Document iOS feasibility gate` | 记录 macOS/Xcode/签名/Metal/真机要求 | docs check |
@@ -851,7 +851,7 @@ git diff --check
 | M10 AI deputy V1 | Done | offline/no-key and high-level directive guarded |
 | M11 Platform contracts | In Progress | main server reward authority done; map authoring, ranking and creator boundaries remain |
 | M12 Machine handoff | Done | current machine is clean and validator/build/smoke passed |
-| M13 Mobile-first viability | In Progress | Android build path added; Android Build Support install and APK smoke remain |
+| M13 Mobile-first viability | In Progress | Android APK build smoke passed; real-device smoke, touch UI and performance budget remain |
 
 ## 8. First Controlled Demo Definition Of Done
 
@@ -890,4 +890,4 @@ Stop and reassess if:
 
 ## 10. One-Line Direction
 
-Windows 本地 Demo 的画面、碰撞、稀疏 UI、MechLab、损伤故事、演示证据、公开 art-safe 元数据合同、AI 副官离线边界和主服务器奖励权威契约已经收稳；H2 validator/build/smoke 基线已过；现在主线是移动端优先，已补 Android build 入口和说明，下一步安装 Unity Android Build Support 并跑 APK build smoke。
+Windows 本地 Demo 的画面、碰撞、稀疏 UI、MechLab、损伤故事、演示证据、公开 art-safe 元数据合同、AI 副官离线边界和主服务器奖励权威契约已经收稳；H2 validator/build/smoke 基线已过；G2 Android APK build smoke 已过；现在主线是 G3 真机安装启动 smoke，然后做触控 UI 和移动端性能预算。
