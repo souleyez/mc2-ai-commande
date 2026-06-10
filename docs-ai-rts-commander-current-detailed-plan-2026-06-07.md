@@ -8,7 +8,7 @@
 
 **Tech Stack:** Unity 6, C#, Android/iOS mobile-first after current Windows handoff validation, deterministic BattleCore, PowerShell build/smoke/capture scripts, replaceable content packs, optional high-level AI deputy, later main server/map server/Web ranking contracts.
 
-**Revision:** 2026-06-10 v9. This file is the fine-grained execution plan paired with `docs-ai-rts-commander-current-master-plan-2026-06-07.md`. The private reference visual bridge, local investor evidence package, art-safe metadata contract, AI deputy offline guard, reward authority contract, machine handoff plan, and mobile-first priority reset are now sealed for the current Demo. The current focus is `H2 Push Machine Handoff Checkpoint` on the new machine, followed by `G2 Add Android Build Smoke Path` before map authoring contracts.
+**Revision:** 2026-06-10 v10. This file is the fine-grained execution plan paired with `docs-ai-rts-commander-current-master-plan-2026-06-07.md`. The private reference visual bridge, local investor evidence package, art-safe metadata contract, AI deputy offline guard, reward authority contract, machine handoff plan, and mobile-first priority reset are now sealed for the current Demo. H2 validator/build/smoke is now green; the current focus is `G2 Add Android Build Smoke Path`, with Unity Android Build Support still required before APK output can be produced.
 
 ---
 
@@ -30,13 +30,13 @@
 | 内容边界 | README 已改成 AI RTS Commander Lab 叙事；text-safe、visual-id、art-safe metadata 均通过 boundary check | public boundary docs and checker |
 | 演示证据 | 六截图、visible-flow、walkthrough 和 investor evidence 已刷新 | C1/C2 docs and ignored capture sidecars |
 | 公开替换合同 | `project-owned-art-safe-slice.example.json` 已定义一张图的 clean art target | metadata-only, not runtime pack |
-| 换机交接 | `docs-machine-handoff-plan-2026-06-07.md` 已写清旧机推送、新机克隆、Unity 校验和本地私有资料边界 | push done; new-machine validator/build/smoke pending |
-| 移动端优先 | `docs-mobile-first-plan-2026-06-10.md` 已把 Android build、真机 smoke、触控 UI、性能预算和 iOS gate 提到平台工作之前 | Android tooling/build pending |
+| 换机交接 | `docs-machine-handoff-plan-2026-06-07.md` 已写清旧机推送、新机克隆、Unity 校验和本地私有资料边界 | H2 validator/build/smoke passed |
+| 移动端优先 | `docs-mobile-first-plan-2026-06-10.md` 已把 Android build、真机 smoke、触控 UI、性能预算和 iOS gate 提到平台工作之前 | BuildAndroid entry added; AndroidPlayer module missing |
 
 当前最重要的问题：
 
-1. `H2` 的旧机 push 已完成；如果已经切到新机器，必须先跑 Unity validator、Windows build 和 visible-flow smoke。
-2. `G2` 是换机后的第一个产品任务：证明 Android build 路线可用。
+1. `H2` validator、Windows build 和 visible-flow smoke 已通过；Unity scene fileID churn 已恢复，工作区保持干净。
+2. `G2` 是当前产品任务：证明 Android build 路线可用。
 3. 移动端是第一优先项；地图编辑器、Web 排行、创作者生态全部后移到 mobile gate 之后。
 4. D1 只是 art-safe metadata 合同，不是可挂载 runtime pack；后续 D2 才能进入清权资产生产和 mountable pack。
 5. 私有参考素材可以继续用于本机开发验证，但公开材料不能把它描述成最终产品内容。
@@ -46,7 +46,7 @@
 
 - 若当前 `git status` 只剩移动优先计划文档改动，先完成校验并提交，再进入 H2/G2。
 - D1 新增的是 metadata 示例文件；不允许把私有 OBJ/TGA/PNG/JSON、截图、log 或 Unity build 输出加入 git。
-- H2 只做同步/验证，不做功能；G2-G5 先做移动端可行性；F2-F4 后移，不先写服务器实现。
+- G2-G5 先做移动端可行性；F2-F4 后移，不先写服务器实现。
 - 如果 Unity batch 运行后只造成 `unity-mc2-demo/Assets/Scenes/Mc2Demo.unity` fileID churn，不要纳入提交。
 
 ## 1. Execution Rules
@@ -107,8 +107,8 @@
 | M9 | Public art-safe slice | Done for metadata | 替换包 provenance 和 boundary check |
 | M10 | AI 副官守护 | Done | no-token smoke, high-level directive only |
 | M11 | 平台契约 | In Progress | 奖励认证契约完成；地图包、排行、创作者边界待写 |
-| M12 | 换机开发交接 | In Progress | 交接计划完成；推送/克隆/validator/build/smoke 待执行 |
-| M13 | 移动端优先可行性 | Next | Android build/device smoke、触控 UI、性能预算通过后再扩平台 |
+| M12 | 换机开发交接 | Done | H2 validator/build/smoke 已通过 |
+| M13 | 移动端优先可行性 | In Progress | Android build 入口已补；Android Build Support 安装和 APK smoke 待完成 |
 
 ## 4. Fine-Grained Commit Queue
 
@@ -130,9 +130,9 @@
 | E1 | Done | `Guard AI deputy offline behavior` | AI 高层、可离线、不逐帧、不花 smoke token | validator |
 | F1 | Done | `Document reward authority contract` | 主服务器认证奖励，地图服务器只提交 claim | docs |
 | H1 | Done | `Prepare machine handoff plan` | 换机前后如何推送、克隆、验证、恢复本地私有资料和 AI key | docs |
-| H2 | In Progress | `Push machine handoff checkpoint` | 代码已推送；新机器还要跑最小验证 | git + Unity smoke |
+| H2 | Done | `Push machine handoff checkpoint` | 代码已推送，validator/build/smoke 基线通过 | git + Unity smoke |
 | G1 | Done | `Reframe plan around mobile first` | 移动端第一优先，Unreal MCP 不进主线，平台契约后移 | docs |
-| G2 | Next | `Add Android build smoke path` | 安装/确认 Android Build Support，补 Android batch build 或明确 Editor build 路径 | Android build |
+| G2 | In Progress | `Add Android build smoke path` | `BuildAndroid` 入口和文档已补；当前机器缺 Android Build Support，APK 尚未产出 | Android build |
 | G3 | Later | `Run Android device smoke` | 真机启动并跑最小 visible-flow/command smoke | device smoke |
 | G4 | Later | `Adapt command UI for mobile touch` | 状态行、Jet、地图、系统和 MechLab 手机触控可用 | device smoke |
 | G5 | Later | `Define mobile performance budget` | FPS、内存、包体、加载、热量/电量基线 | docs + device evidence |
@@ -175,9 +175,9 @@
 | E1.1 | Done | 守住 AI 副官慢频高层决策，不花 smoke token | AI contract docs/code if needed | validator/no-key path |
 | F1.1 | Done | 写主服务器奖励权威契约，定义 claim/grant、签名、重放校验、ledger 边界 | platform docs | `git diff --check` |
 | H1.1 | Done | 写换机交接计划，明确旧机推送、新机克隆、Unity 版本、fallback 验证、私有参考视觉和 AI key 边界 | handoff docs | `git diff --check` |
-| H2.1 | In Progress | 代码已推 `ai-origin master`；新机器 clone 后跑 validator/build/visible-flow smoke | git + Unity | clean status + expected success strings |
+| H2.1 | Done | 代码已推 `ai-origin master`；validator/build/visible-flow smoke 已过 | git + Unity | clean status + expected success strings |
 | G1.1 | Done | 更新计划为移动端第一优先，新增 mobile-first plan，地图/平台契约后移 | docs | `git diff --check` |
-| G2.1 | Next | 安装/确认 Android Build Support，补 Android build smoke 路径 | Unity editor/build docs | Android build succeeds |
+| G2.1 | In Progress | 补 Android build smoke 路径；下一步安装/确认 Android Build Support 并产出 APK | Unity editor/build docs | Android build succeeds |
 | G3.1 | Later | 真机启动 Android Demo，记录命令流、UI、日志和设备表现 | device + ignored logs | smoke path reaches battle/debrief |
 | G4.1 | Later | 调整触控命令 UI，保持无框选、稀疏 HUD、状态栏单选 | Unity presentation | mobile smoke |
 | G5.1 | Later | 定义移动端性能预算并记录首轮基线 | docs + ignored evidence | budget doc |
@@ -1031,7 +1031,7 @@ git diff --check
 
 ### G2: Add Android Build Smoke Path
 
-**Status:** Next after H2 new-machine validator/build/smoke.
+**Status:** In Progress. `BuildAndroid` entry and documentation are added; Unity Android Build Support is still required before APK output can be produced.
 
 **Goal:** 证明当前 Unity 6 Demo 能构建 Android 包，先拿到移动端构建链路，再谈触控优化和性能。
 

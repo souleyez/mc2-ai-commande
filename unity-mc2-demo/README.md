@@ -296,6 +296,25 @@ Rebuild the demo scene and Windows player:
   -executeMethod MC2Demo.EditorTools.Mc2DemoBuilder.BuildWindows64
 ```
 
+Mobile-first Android build smoke:
+
+The repository root `BUILD-MOBILE.md` is the canonical checklist for the
+Android gate. Android Build Support for Unity `6000.4.7f1` must be installed
+first. The repeatable build entry is:
+
+```powershell
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" `
+  -batchmode -quit `
+  -projectPath "$PWD" `
+  -executeMethod MC2Demo.EditorTools.Mc2DemoBuilder.BuildAndroid
+```
+
+Expected output:
+
+```text
+Builds\Android\MC2UnityDemo.apk
+```
+
 Run the player smoke test:
 
 ```powershell

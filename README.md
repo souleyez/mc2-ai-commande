@@ -202,6 +202,7 @@ one mission slice. It is still metadata-only, not a mountable runtime pack.
 - `docs-platform-reward-contract-2026-06-07.md`: 主服务器奖励权威契约，说明地图服务器和客户端只提交 claim，最终 grant、库存、token ledger 和排行由主服务器认证。
 - `docs-content-pack.md`: 可替换内容包边界。
 - `unity-mc2-demo/README.md`: Unity 原型行为、构建和 smoke 命令。
+- `BUILD-MOBILE.md`: Android build smoke、Android 真机 smoke 和 iOS 后置原则。
 
 ## 许可与发布提醒
 

@@ -50,8 +50,8 @@ failing, unless the later work is explicitly diagnostic.
 
 | Gate | Status | Purpose | Required Before Next Gate |
 | --- | --- | --- | --- |
-| H2 | In Progress | New-machine baseline | Clone repo, run Windows validator/build/smoke on new machine |
-| G2 | Next | Android build path | Produce Android artifact from Unity 6 without staging generated output |
+| H2 | Done | New-machine baseline | Clone repo, run Windows validator/build/smoke on new machine |
+| G2 | In Progress | Android build path | Produce Android artifact from Unity 6 without staging generated output |
 | G3 | Later | Android device smoke | Launch on real Android device and reach battle/debrief path |
 | G4 | Later | Touch UI pass | Core command model usable on phone aspect ratios |
 | G5 | Later | Mobile performance budget | Baseline FPS, memory, package size, load time and thermal notes recorded |
