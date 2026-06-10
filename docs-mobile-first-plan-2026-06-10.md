@@ -43,6 +43,174 @@ iOS is planned after Android proves the Unity mobile path. It requires a macOS
 machine with Xcode and Apple signing. Do not block Android feasibility on iOS
 signing work.
 
+## Execution Gate Order
+
+Run these gates in order. Do not start a later gate while an earlier gate is
+failing, unless the later work is explicitly diagnostic.
+
+| Gate | Status | Purpose | Required Before Next Gate |
+| --- | --- | --- | --- |
+| H2 | In Progress | New-machine baseline | Clone repo, run Windows validator/build/smoke on new machine |
+| G2 | Next | Android build path | Produce Android artifact from Unity 6 without staging generated output |
+| G3 | Later | Android device smoke | Launch on real Android device and reach battle/debrief path |
+| G4 | Later | Touch UI pass | Core command model usable on phone aspect ratios |
+| G5 | Later | Mobile performance budget | Baseline FPS, memory, package size, load time and thermal notes recorded |
+| G6 | Later | iOS feasibility | Document macOS/Xcode/signing requirements after Android proof |
+
+## Executable Requirement Matrix
+
+### H2: New-Machine Baseline
+
+| ID | Requirement | Output | Verification |
+| --- | --- | --- | --- |
+| H2-R1 | New machine can clone the project-owned GitHub repository | Clean worktree on `master` | `git status --short --branch --untracked-files=all` shows `## master...origin/master` or equivalent clean upstream |
+| H2-R2 | Latest mobile-first commit is visible | `3114d93 Reframe plan around mobile first` appears in log or newer commit includes it | `git log --oneline -5` |
+| H2-R3 | Unity project opens with editor version `6000.4.7f1` or accepted compatible Unity 6 version | Unity import completes without source changes | `Get-Content .\unity-mc2-demo\ProjectSettings\ProjectVersion.txt` and `git status` |
+| H2-R4 | Windows validator still passes before mobile work begins | `analysis-output/unity-validate-machine-handoff.log` | log contains `MC2 demo contract validation OK` |
+| H2-R5 | Windows player still builds before mobile work begins | `unity-mc2-demo/Builds/Windows/MC2UnityDemo.exe` ignored output | log contains `Build Finished, Result: Success` and `MC2 Unity demo Windows build OK` |
+| H2-R6 | Visible-flow smoke still passes no-key | ignored player log | log contains `MC2 demo smoke test exiting with code 0` |
+
+H2 is complete only when all H2 requirements pass. If H2 fails, fix the
+environment or Windows baseline first; do not start Android changes.
+
+### G2: Android Build Smoke
+
+| ID | Requirement | Output | Verification |
+| --- | --- | --- | --- |
+| G2-R1 | Unity Android Build Support is installed with SDK, NDK and OpenJDK | Unity module exists on the machine | Unity Hub module list or successful Android build |
+| G2-R2 | Android build target can be selected without changing tracked project files unexpectedly | no unrelated project settings churn | `git status --short --branch --untracked-files=all` before staging |
+| G2-R3 | Add or document repeatable Android build path | `BuildAndroid` editor method or exact manual Editor steps | `unity-mc2-demo/README.md` or build helper documents the path |
+| G2-R4 | Android artifact is generated into ignored output | APK or AAB under ignored build folder | file exists, not staged |
+| G2-R5 | Android build log has a stable success string | ignored log under `analysis-output/` | log contains the exact string chosen for future regression checks |
+| G2-R6 | Windows validator still passes after Android build setup | validator log | `MC2 demo contract validation OK` |
+
+Initial preferred command, once `BuildAndroid` exists:
+
+```powershell
+$Repo = (Get-Location).Path
+$Unity = "$HOME\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe"
+& $Unity `
+  -batchmode -quit `
+  -projectPath "$Repo\unity-mc2-demo" `
+  -executeMethod MC2Demo.EditorTools.Mc2DemoBuilder.BuildAndroid `
+  -logFile "$Repo\analysis-output\unity-build-android.log"
+```
+
+Expected stable success string to add when implemented:
+
+```text
+MC2 Unity demo Android build OK
+```
+
+G2 is complete only when an Android artifact is produced and no generated build
+output is staged.
+
+### G3: Android Device Smoke
+
+Minimum device target for the first pass:
+
+- one physical Android phone;
+- Android 10 or newer preferred;
+- 4 GB RAM minimum, 6 GB RAM preferred;
+- USB debugging enabled;
+- enough free storage for APK install and logs.
+
+| ID | Requirement | Output | Verification |
+| --- | --- | --- | --- |
+| G3-R1 | Device is visible through adb | device id | `adb devices` shows one `device` row |
+| G3-R2 | APK installs cleanly | installed package | `adb install -r <apk>` returns success |
+| G3-R3 | App launches without immediate crash | app process/log | `adb logcat` has no fatal crash during launch |
+| G3-R4 | Battle scene is reachable | manual note or smoke log | launch reaches battle mode |
+| G3-R5 | Core visible-flow path is reachable | ignored smoke note/log | battle -> debrief -> repair/MechLab -> relaunch path observed or command-file smoke passes |
+| G3-R6 | No AI key is required for mobile smoke | no key in environment or app config | no MiniMax API call required for pass |
+| G3-R7 | Device logs remain ignored | logs under `analysis-output/` | `git status` does not show logs unless intentionally summarized in docs |
+
+Recommended commands:
+
+```powershell
+adb devices
+adb install -r .\unity-mc2-demo\Builds\Android\MC2UnityDemo.apk
+adb logcat -c
+adb logcat -d > .\analysis-output\android-device-smoke.log
+git status --short --branch --untracked-files=all
+```
+
+G3 is complete when a real phone can launch and reach the core battle/debrief
+path. If command-file automation is not available on Android yet, a manual smoke
+note is acceptable for this gate, but the next iteration should automate it.
+
+### G4: Touch Command UI
+
+The mobile command model must stay simple. Do not introduce drag-box selection.
+Do not add a dense battle log.
+
+| ID | Requirement | Pass Standard |
+| --- | --- | --- |
+| G4-R1 | Default state controls the full squad | tapping ground issues squad move |
+| G4-R2 | Tapping a hostile target issues squad attack/focus | squad target changes and target cue is visible |
+| G4-R3 | Tapping a mech status row selects one mech for detached order | selected mech enters single-order state |
+| G4-R4 | Detached mech ignores later squad order until its solo order completes | solo isolation still matches current design |
+| G4-R5 | Detached mech auto-rejoins after order completion | status row returns to squad state |
+| G4-R6 | Jet button is usable on phone | valid Jet moves; illegal landing keeps blocked mech still |
+| G4-R7 | Mission map/objective control is usable and closable | map does not cover core command flow permanently |
+| G4-R8 | System/pause panel is usable | restart/end/AI takeover shell remains accessible |
+| G4-R9 | MechLab grid remains usable on touch | select mounted weapon, choose target cell, place/reset/apply, cycle armor/sink/clear |
+| G4-R10 | Text does not overlap at common phone aspect ratios | check at 16:9, 19.5:9 and 20:9 layouts |
+| G4-R11 | Battle HUD remains sparse | no large combat log, save-slot UI, account UI or debug overlay in active battle |
+
+Initial UI target:
+
+- status row touch target: at least 44 logical pixels high where practical;
+- primary action buttons: at least 44 logical pixels high where practical;
+- no text should be required to read below normal phone legibility at 1080p;
+- if a text label cannot fit, shorten the label before adding another panel.
+
+G4 is complete when the command loop can be performed by touch without relying
+on keyboard, mouse hover, or drag selection.
+
+### G5: Mobile Performance Budget
+
+First budget is a decision gate, not a final optimization target. Record facts
+before optimizing.
+
+| Metric | Prototype Proceed Target | Investigate If Worse Than |
+| --- | --- | --- |
+| Battle FPS | playable and mostly stable at 30 FPS target | sustained under 25 FPS in first mission |
+| App launch time | record baseline | over 45 seconds |
+| Battle load time | record baseline | over 15 seconds after app is open |
+| Memory | record baseline | over 1.5 GB on first mission |
+| APK/AAB size | record baseline | over 500 MB before real final art/audio |
+| Thermal | no obvious runaway heat in short smoke | device throttles or becomes uncomfortable in under 10 minutes |
+| Battery | record manual note | severe drain visible in short smoke |
+
+Recommended evidence:
+
+```powershell
+adb shell dumpsys meminfo <package-name> > .\analysis-output\android-meminfo.txt
+adb shell dumpsys gfxinfo <package-name> > .\analysis-output\android-gfxinfo.txt
+adb logcat -d > .\analysis-output\android-performance-logcat.txt
+Get-Item .\unity-mc2-demo\Builds\Android\*.apk
+```
+
+G5 is complete when `docs-mobile-performance-budget-2026-06-10.md` records the
+device model, Android version, artifact size, launch/load notes, FPS/gfxinfo,
+memory, and thermal/battery observation.
+
+### G6: iOS Feasibility Gate
+
+Do not start iOS before Android artifact and device smoke pass.
+
+| ID | Requirement | Output |
+| --- | --- | --- |
+| G6-R1 | Identify macOS build machine | note machine and macOS version |
+| G6-R2 | Identify Xcode requirement | note installed/required Xcode version |
+| G6-R3 | Identify Apple developer/signing state | note whether account and profiles exist |
+| G6-R4 | Confirm Unity iOS module availability | note Unity Hub module status |
+| G6-R5 | Define first iOS smoke | build Xcode project, install to device, launch battle |
+
+G6 is complete when iOS blockers are explicit enough that we can schedule them
+instead of discovering them during core gameplay work.
+
 ## Task 1: Reframe Current Plans Around Mobile Priority
 
 **Files:**
