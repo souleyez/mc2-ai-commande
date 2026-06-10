@@ -2,13 +2,13 @@
 
 > **For Codex:** REQUIRED SUB-SKILL: Use executing-plans to implement this plan task-by-task.
 
-**Goal:** 把当前 Unity 6 Windows 本地原型收成一版能稳定展示的 AI 副官机甲战术 RTS Demo：机库装配有乐趣，第一张固定视角 3D 任务图可读，机甲和建筑有 BattleCore 物理占位证据，部位损伤有卖点，AI 只做高层副官建议，后续能平滑进入公开替换包、地图服务器、Web 排行和创作者生态。
+**Goal:** 把当前 Unity 6 原型推进成移动端优先的 AI 副官机甲战术 RTS Demo：Windows 继续作为开发验证环境，Android/iOS 可行性成为第一优先级；机库装配有乐趣，第一张固定视角 3D 任务图可读，机甲和建筑有 BattleCore 物理占位证据，部位损伤有卖点，AI 只做高层副官建议，后续再进入公开替换包、地图服务器、Web 排行和创作者生态。
 
 **Architecture:** `BattleCore` 是确定性规则层，负责移动、喷射、占位、命中、武器、热量、装甲硬度、部位损伤、任务触发、战报、维修、奖励草案和 AI observation/directive。Unity 6 只负责固定镜头、输入、稀疏 HUD、MechLab、模型、材质、特效、截图、构建和本地 smoke。开发期可以使用本机私有参考内容验证比例、节奏和视觉可读性，公开演示或商业版本必须切到项目自有或合规授权内容包。
 
-**Tech Stack:** Unity 6, C#, Windows Standalone first, deterministic BattleCore, PowerShell validator/build/smoke/capture scripts, replaceable content packs, optional high-level AI deputy adapter, later main server/map server/Web ranking contracts.
+**Tech Stack:** Unity 6, C#, Android/iOS mobile-first after current Windows handoff validation, deterministic BattleCore, PowerShell validator/build/smoke/capture scripts, replaceable content packs, optional high-level AI deputy adapter, later main server/map server/Web ranking contracts.
 
-**Revision:** 2026-06-07 v7. This is the current master plan after the private reference visual bridge, visible-flow seal, investor evidence package, art-safe metadata target, AI deputy offline guard, platform reward authority contract, and machine handoff plan were refreshed. Older plan files remain evidence/history; this file is the first place to read when the user says "按计划继续". The finer task breakdown now lives in `docs-ai-rts-commander-current-detailed-plan-2026-06-07.md`.
+**Revision:** 2026-06-10 v8. This is the current master plan after the private reference visual bridge, visible-flow seal, investor evidence package, art-safe metadata target, AI deputy offline guard, platform reward authority contract, machine handoff plan, and mobile-first priority reset were refreshed. Older plan files remain evidence/history; this file is the first place to read when the user says "按计划继续". The finer task breakdown now lives in `docs-ai-rts-commander-current-detailed-plan-2026-06-07.md`.
 
 ---
 
@@ -35,6 +35,7 @@
 | `docs-ai-rts-commander-current-master-plan-2026-06-07.md` | 当前主计划和提交级队列 |
 | `docs-ai-rts-commander-current-detailed-plan-2026-06-07.md` | 当前阶段的细颗粒执行计划、提交批次和验收门槛 |
 | `docs-machine-handoff-plan-2026-06-07.md` | 换机开发交接计划：推送、克隆、Unity 校验、smoke、私有参考视觉和 AI key 边界 |
+| `docs-mobile-first-plan-2026-06-10.md` | 移动端优先计划：Android build smoke、真机验证、触控 UI、性能预算和 iOS 可行性 |
 | `docs-ai-rts-commander-overall-implementation-plan-2026-06-07.md` | 产品方向、架构边界和长期里程碑 |
 | `docs-ai-rts-commander-v1-detailed-execution-plan-2026-06-07.md` | 上一版细计划，保留已完成任务细节 |
 | `docs-ai-rts-commander-detailed-roadmap-2026-06-07.md` | 路线图和历史工作包 |
@@ -49,7 +50,7 @@
 当前阶段是：
 
 ```text
-Machine Handoff Checkpoint -> F2 Map Authoring Contract
+Machine Handoff Checkpoint -> Mobile Feasibility Spike
 ```
 
 不是从零开发，也不是马上做平台。现在要把本地 Demo 收成：
@@ -62,7 +63,8 @@ Machine Handoff Checkpoint -> F2 Map Authoring Contract
 - 战斗 UI 不遮挡战场；
 - 部位损伤有记忆点；
 - AI 副官是可选能力，不拖慢本地战斗；
-- 公开替换包路线讲得清楚。
+- 公开替换包路线讲得清楚；
+- Android/iOS 移动端可行性成为换机后的第一产品验证。
 
 已完成的关键基础：
 
@@ -86,9 +88,10 @@ Machine Handoff Checkpoint -> F2 Map Authoring Contract
 
 | Gap | Why It Matters | First Fix |
 | --- | --- | --- |
-| 换机交接还没完成 | 本机 `master` 已领先 `ai-origin/master` 多个提交，新机器 clone 前必须同步 | H1 写交接计划，H2 推送或整仓迁移并在新机器跑 validator/build/smoke |
+| 换机交接未完全验证 | 代码已推送，但新机器还需要 clone 后跑 validator/build/smoke | H2 在新机器完成 Unity 验证 |
+| 移动端可行性未验证 | 移动端是第一优先项，必须先证明 Android/iOS 路线可行 | G1-G4 先做 Android build、真机 smoke、触控 UI 和性能预算 |
 | 清权资产还未真正接入运行包 | D1 已有 metadata 合同，但不是最终美术包 | D2 以后再做 mountable clean content pack |
-| 平台化仍停在契约层 | 奖励权威已写清楚，地图包、排行和创作者边界还要补 | F2-F4 先写契约，不先写服务器 |
+| 平台化仍停在契约层 | 奖励权威已写清楚，地图包、排行和创作者边界还要补 | F2-F4 排到移动端 gate 之后 |
 
 ## 2. Product Scope Lock
 
@@ -115,7 +118,7 @@ Machine Handoff Checkpoint -> F2 Map Authoring Contract
 ### First Demo Must Not Have
 
 - 实时 PVP。
-- 移动端适配。
+- 完整商店级移动端上线；但 Android/iOS 可行性、触控 UI 和性能预算现在是下一阶段必做。
 - 地图服务器、地图编辑器、Web 排行。
 - 账号、充值、提现、链上资产。
 - 复杂保存槽或保存游戏 UI。
@@ -307,10 +310,16 @@ Known good strings:
 | 13 | Done | `Guard AI deputy regression` | AI 保持高层、可离线、无 token smoke | validator/smoke |
 | 14 | Done | `Document platform reward contracts` | 主服务器、地图服务器、奖励认证契约 | docs check |
 | 15 | Done | `Prepare machine handoff plan` | 旧机推送、新机克隆、Unity 校验、smoke 和私有本地资料边界 | docs check |
-| 16 | Next | `Push machine handoff checkpoint` | 把本机 ahead 提交推到 `ai-origin`，或确认整仓迁移路径 | git status |
-| 17 | Later | `Plan map authoring prototype` | 地图包、触发、奖励引用和验证器规划 | docs check |
-| 18 | Later | `Plan web ranking prototype` | 排行、战绩、地图页和公开资料规划 | docs check |
-| 19 | Later | `Plan creator economy boundary` | 创作者分成、皮肤、自定义、链上边界 | docs check |
+| 16 | In Progress | `Push machine handoff checkpoint` | 代码已推到 `ai-origin`；新机器还要 clone 并跑 validator/build/smoke | git + Unity smoke |
+| 17 | Done | `Reframe plan around mobile first` | 明确移动端第一优先，Unreal MCP 不进主线，地图/平台契约后移 | docs check |
+| 18 | Next | `Add Android build smoke path` | 安装/确认 Android Build Support，补 Android batch build 或明确 Editor build 路径 | Android build |
+| 19 | Later | `Run Android device smoke` | 真机启动并跑最小 visible-flow/command smoke | device smoke |
+| 20 | Later | `Adapt command UI for mobile touch` | 状态行、Jet、地图、系统和 MechLab 在手机触控可用 | device smoke |
+| 21 | Later | `Define mobile performance budget` | 记录 FPS、内存、包体、加载、热量/电量基线 | docs + device evidence |
+| 22 | Later | `Document iOS feasibility gate` | 记录 macOS/Xcode/签名/Metal/真机要求 | docs check |
+| 23 | Later | `Plan map authoring prototype` | 地图包、触发、奖励引用和验证器规划 | docs check |
+| 24 | Later | `Plan web ranking prototype` | 排行、战绩、地图页和公开资料规划 | docs check |
+| 25 | Later | `Plan creator economy boundary` | 创作者分成、皮肤、自定义、链上边界 | docs check |
 
 ## 6. Detailed Tasks
 
@@ -842,6 +851,7 @@ git diff --check
 | M10 AI deputy V1 | Done | offline/no-key and high-level directive guarded |
 | M11 Platform contracts | In Progress | main server reward authority done; map authoring, ranking and creator boundaries remain |
 | M12 Machine handoff | In Progress | handoff plan done; push/clone/validator/build/smoke still pending before switching machines |
+| M13 Mobile-first viability | Next | Android build/device smoke, touch UI and performance budget must pass before platform expansion |
 
 ## 8. First Controlled Demo Definition Of Done
 
@@ -880,4 +890,4 @@ Stop and reassess if:
 
 ## 10. One-Line Direction
 
-Windows 本地 Demo 的画面、碰撞、稀疏 UI、MechLab、损伤故事、演示证据、公开 art-safe 元数据合同、AI 副官离线边界和主服务器奖励权威契约已经收稳；换机交接计划已经写好，下一步先推送 `ai-origin` 或整仓迁移并在新机器跑 validator/build/smoke；之后恢复 F2 地图包/编辑器契约。
+Windows 本地 Demo 的画面、碰撞、稀疏 UI、MechLab、损伤故事、演示证据、公开 art-safe 元数据合同、AI 副官离线边界和主服务器奖励权威契约已经收稳；代码已推到 GitHub，换机后先跑 validator/build/smoke；随后主线改为移动端优先，先做 Android build、真机 smoke、触控 UI 和性能预算，再恢复地图包、Web 排行和创作者生态。

@@ -2,13 +2,13 @@
 
 > **For Codex:** REQUIRED SUB-SKILL: Use executing-plans to implement this plan task-by-task.
 
-**Goal:** 把当前 Unity 6 Windows 本地原型推进到一版能稳定演示、能截图说明、能继续融资沟通的 AI 副官机甲战术 RTS Demo。
+**Goal:** 把当前 Unity 6 原型推进到移动端优先的一版 AI 副官机甲战术 RTS Demo：Windows 继续作为开发验证环境，Android/iOS 可行性、触控 UI 和移动端性能成为第一优先级。
 
 **Architecture:** `BattleCore` 继续做确定性规则核心，负责移动、喷射、占位、武器、热量、装甲、部位损伤、任务触发、结算和 AI observation/directive。Unity 6 只负责固定镜头、输入、稀疏 HUD、MechLab、模型材质、特效、截图和 smoke 证据。开发期可以使用本机私有参考素材验证比例和节奏，但公开版本必须切换到项目自有或合规授权内容包。
 
-**Tech Stack:** Unity 6, C#, Windows Standalone first, deterministic BattleCore, PowerShell build/smoke/capture scripts, replaceable content packs, optional high-level AI deputy, later main server/map server/Web ranking contracts.
+**Tech Stack:** Unity 6, C#, Android/iOS mobile-first after current Windows handoff validation, deterministic BattleCore, PowerShell build/smoke/capture scripts, replaceable content packs, optional high-level AI deputy, later main server/map server/Web ranking contracts.
 
-**Revision:** 2026-06-07 v8. This file is the fine-grained execution plan paired with `docs-ai-rts-commander-current-master-plan-2026-06-07.md`. The private reference visual bridge, local investor evidence package, art-safe metadata contract, AI deputy offline guard, reward authority contract, and machine handoff plan are now sealed for the current Windows Demo. The current focus is `H2 Push Machine Handoff Checkpoint`: sync this local branch before switching machines, then prove validator/build/smoke on the new machine before resuming F2 map authoring contracts.
+**Revision:** 2026-06-10 v9. This file is the fine-grained execution plan paired with `docs-ai-rts-commander-current-master-plan-2026-06-07.md`. The private reference visual bridge, local investor evidence package, art-safe metadata contract, AI deputy offline guard, reward authority contract, machine handoff plan, and mobile-first priority reset are now sealed for the current Demo. The current focus is `H2 Push Machine Handoff Checkpoint` on the new machine, followed by `G2 Add Android Build Smoke Path` before map authoring contracts.
 
 ---
 
@@ -30,22 +30,23 @@
 | 内容边界 | README 已改成 AI RTS Commander Lab 叙事；text-safe、visual-id、art-safe metadata 均通过 boundary check | public boundary docs and checker |
 | 演示证据 | 六截图、visible-flow、walkthrough 和 investor evidence 已刷新 | C1/C2 docs and ignored capture sidecars |
 | 公开替换合同 | `project-owned-art-safe-slice.example.json` 已定义一张图的 clean art target | metadata-only, not runtime pack |
-| 换机交接 | `docs-machine-handoff-plan-2026-06-07.md` 已写清旧机推送、新机克隆、Unity 校验和本地私有资料边界 | push/clone/validator/build/smoke pending |
+| 换机交接 | `docs-machine-handoff-plan-2026-06-07.md` 已写清旧机推送、新机克隆、Unity 校验和本地私有资料边界 | push done; new-machine validator/build/smoke pending |
+| 移动端优先 | `docs-mobile-first-plan-2026-06-10.md` 已把 Android build、真机 smoke、触控 UI、性能预算和 iOS gate 提到平台工作之前 | Android tooling/build pending |
 
 当前最重要的问题：
 
-1. `H2` 需要先把当前本机提交同步到新机器可见的地方：首选 `git push ai-origin master`，否则整仓迁移。
-2. 新机器必须先跑 Unity validator、Windows build 和 visible-flow smoke，再恢复产品开发。
-3. `F2` 仍是换机后的第一个产品任务：写开源地图编辑器和地图包契约，地图可自建、可验证、可引用奖励表，但不能直接发放可携带奖励。
+1. `H2` 的旧机 push 已完成；如果已经切到新机器，必须先跑 Unity validator、Windows build 和 visible-flow smoke。
+2. `G2` 是换机后的第一个产品任务：证明 Android build 路线可用。
+3. 移动端是第一优先项；地图编辑器、Web 排行、创作者生态全部后移到 mobile gate 之后。
 4. D1 只是 art-safe metadata 合同，不是可挂载 runtime pack；后续 D2 才能进入清权资产生产和 mountable pack。
 5. 私有参考素材可以继续用于本机开发验证，但公开材料不能把它描述成最终产品内容。
-6. `F3-F4` 平台化方向很清楚，但现在先写地图包、排行、创作者边界契约，不先写服务器。
+6. `F2-F4` 平台化方向仍保留，但现在只在移动端可行性通过后继续。
 
 当前工作区注意事项：
 
-- 若当前 `git status` 只剩 H1 换机计划文档改动，先完成校验并提交，再进入 H2。
+- 若当前 `git status` 只剩移动优先计划文档改动，先完成校验并提交，再进入 H2/G2。
 - D1 新增的是 metadata 示例文件；不允许把私有 OBJ/TGA/PNG/JSON、截图、log 或 Unity build 输出加入 git。
-- 后续 H2 只做同步/验证，不做功能；F2-F4 先写平台契约，不先写服务器实现。
+- H2 只做同步/验证，不做功能；G2-G5 先做移动端可行性；F2-F4 后移，不先写服务器实现。
 - 如果 Unity batch 运行后只造成 `unity-mc2-demo/Assets/Scenes/Mc2Demo.unity` fileID churn，不要纳入提交。
 
 ## 1. Execution Rules
@@ -59,7 +60,7 @@
 5. 视觉变化必须配截图或 sidecar 证据。
 6. 不提交 `analysis-output/`、PNG、JSON、log、Unity build output、私有参考导出。
 7. Unity batch 运行后检查 `unity-mc2-demo/Assets/Scenes/Mc2Demo.unity`，仅 fileID churn 不入库。
-8. 不扩大第一版范围，不做实时 PVP、移动端、账号、充值、链上、地图服务器实装。
+8. 不扩大第一版范围，不做实时 PVP、账号、充值、链上、地图服务器实装；但移动端 build、触控 UI 和性能验证现在是第一优先项。
 9. 公共文案只讲本项目自己的 AI 副官战术 RTS 探索。
 10. 原始或原始派生素材只能当本机开发验证材料，不进入公开发布路径。
 
@@ -82,7 +83,7 @@
 ### 2.2 First Demo Must Not Show
 
 - 实时 PVP。
-- 移动端适配。
+- 完整商店级移动端上线；但 Android/iOS 可行性、触控 UI 和性能预算现在是下一阶段必做。
 - 地图服务器、地图编辑器、Web 排行的实装。
 - 账号、充值、提现、链上资产。
 - 复杂保存槽或保存游戏 UI。
@@ -107,6 +108,7 @@
 | M10 | AI 副官守护 | Done | no-token smoke, high-level directive only |
 | M11 | 平台契约 | In Progress | 奖励认证契约完成；地图包、排行、创作者边界待写 |
 | M12 | 换机开发交接 | In Progress | 交接计划完成；推送/克隆/validator/build/smoke 待执行 |
+| M13 | 移动端优先可行性 | Next | Android build/device smoke、触控 UI、性能预算通过后再扩平台 |
 
 ## 4. Fine-Grained Commit Queue
 
@@ -128,8 +130,14 @@
 | E1 | Done | `Guard AI deputy offline behavior` | AI 高层、可离线、不逐帧、不花 smoke token | validator |
 | F1 | Done | `Document reward authority contract` | 主服务器认证奖励，地图服务器只提交 claim | docs |
 | H1 | Done | `Prepare machine handoff plan` | 换机前后如何推送、克隆、验证、恢复本地私有资料和 AI key | docs |
-| H2 | Next | `Push machine handoff checkpoint` | 推送 `ai-origin master` 或确认整仓迁移，并在新机器跑最小验证 | git + Unity smoke |
-| F2 | Later | `Document map authoring contract` | 开源地图编辑器和地图包最小契约 | docs |
+| H2 | In Progress | `Push machine handoff checkpoint` | 代码已推送；新机器还要跑最小验证 | git + Unity smoke |
+| G1 | Done | `Reframe plan around mobile first` | 移动端第一优先，Unreal MCP 不进主线，平台契约后移 | docs |
+| G2 | Next | `Add Android build smoke path` | 安装/确认 Android Build Support，补 Android batch build 或明确 Editor build 路径 | Android build |
+| G3 | Later | `Run Android device smoke` | 真机启动并跑最小 visible-flow/command smoke | device smoke |
+| G4 | Later | `Adapt command UI for mobile touch` | 状态行、Jet、地图、系统和 MechLab 手机触控可用 | device smoke |
+| G5 | Later | `Define mobile performance budget` | FPS、内存、包体、加载、热量/电量基线 | docs + device evidence |
+| G6 | Later | `Document iOS feasibility gate` | macOS/Xcode/签名/Metal/真机要求 | docs |
+| F2 | Later | `Document map authoring contract` | 开源地图编辑器和地图包最小契约，移动 gate 后恢复 | docs |
 | F3 | Later | `Document web ranking contract` | Web 排行、战绩、地图页和隐私边界 | docs |
 | F4 | Later | `Document creator economy boundary` | 皮肤、地图、分成、可选链上边界 | docs |
 
@@ -167,7 +175,12 @@
 | E1.1 | Done | 守住 AI 副官慢频高层决策，不花 smoke token | AI contract docs/code if needed | validator/no-key path |
 | F1.1 | Done | 写主服务器奖励权威契约，定义 claim/grant、签名、重放校验、ledger 边界 | platform docs | `git diff --check` |
 | H1.1 | Done | 写换机交接计划，明确旧机推送、新机克隆、Unity 版本、fallback 验证、私有参考视觉和 AI key 边界 | handoff docs | `git diff --check` |
-| H2.1 | Next | 推送 `ai-origin master`，或确认整仓迁移；新机器 clone 后跑 validator/build/visible-flow smoke | git + Unity | clean status + expected success strings |
+| H2.1 | In Progress | 代码已推 `ai-origin master`；新机器 clone 后跑 validator/build/visible-flow smoke | git + Unity | clean status + expected success strings |
+| G1.1 | Done | 更新计划为移动端第一优先，新增 mobile-first plan，地图/平台契约后移 | docs | `git diff --check` |
+| G2.1 | Next | 安装/确认 Android Build Support，补 Android build smoke 路径 | Unity editor/build docs | Android build succeeds |
+| G3.1 | Later | 真机启动 Android Demo，记录命令流、UI、日志和设备表现 | device + ignored logs | smoke path reaches battle/debrief |
+| G4.1 | Later | 调整触控命令 UI，保持无框选、稀疏 HUD、状态栏单选 | Unity presentation | mobile smoke |
+| G5.1 | Later | 定义移动端性能预算并记录首轮基线 | docs + ignored evidence | budget doc |
 | F2.1 | Later | 写地图包/编辑器契约，定义地图元数据、触发图、敌人、奖励引用和验证器边界 | platform docs | `git diff --check` |
 | F3-F4 | Later | 只写排行和创作者契约，不先写服务器 | platform docs | `git diff --check` |
 
@@ -912,7 +925,7 @@ README.md lists the reward authority contract under key docs.
 ```text
 docs-machine-handoff-plan-2026-06-07.md defines source push/copy, Unity 6000.4.7f1 setup, clone/import, clean fallback validator/build/smoke, optional private reference visual transfer, optional MiniMax environment variables, and stop conditions.
 README.md lists the machine handoff plan under key docs.
-Current master and detailed plans put H2 before F2.
+Current master and detailed plans put H2 and the mobile-first gate before F2.
 ```
 
 **Validation:**
@@ -986,9 +999,151 @@ MC2 demo smoke test exiting with code 0
 
 **Commit:** none expected after the push unless the new machine reveals a real doc/setup correction.
 
+### G1: Reframe Plan Around Mobile First
+
+**Status:** Completed 2026-06-10.
+
+**Goal:** 把移动端支持提到第一产品优先级，明确 Unreal MCP 不进入主线，地图包、Web 排行和创作者生态后移到移动端可行性通过之后。
+
+**Files:**
+
+- Create: `docs-mobile-first-plan-2026-06-10.md`
+- Modify: `README.md`
+- Modify: `docs-ai-rts-commander-current-master-plan-2026-06-07.md`
+- Modify: `docs-ai-rts-commander-current-detailed-plan-2026-06-07.md`
+- Modify: `docs-machine-handoff-plan-2026-06-07.md`
+
+**Completed Evidence:**
+
+```text
+docs-mobile-first-plan-2026-06-10.md defines Android build smoke, Android device smoke, touch command UI, mobile performance budget, iOS feasibility and deferred platform/server work.
+README.md states Unity remains the main engine and mobile comes before map editor/ranking/creator ecosystem.
+Current master and detailed plans move G2-G6 before F2-F4.
+```
+
+**Validation:**
+
+```powershell
+git diff --check
+```
+
+**Commit:** `Reframe plan around mobile first`
+
+### G2: Add Android Build Smoke Path
+
+**Status:** Next after H2 new-machine validator/build/smoke.
+
+**Goal:** 证明当前 Unity 6 Demo 能构建 Android 包，先拿到移动端构建链路，再谈触控优化和性能。
+
+**Files:**
+
+- Modify if needed: `unity-mc2-demo/Assets/Editor/Mc2DemoBuilder.cs`
+- Modify if needed: `unity-mc2-demo/README.md`
+- Modify if needed: `BUILD-WIN.md`
+- Read: `docs-mobile-first-plan-2026-06-10.md`
+
+**Steps:**
+
+1. Install Unity Android Build Support with SDK, NDK and OpenJDK.
+2. Confirm Android target can import without staging generated files.
+3. Add or document Android build path.
+4. Build APK/AAB into ignored output.
+5. Record exact success string and artifact location in ignored logs or docs.
+
+**Validation:**
+
+```powershell
+git diff --check
+git status --short --branch --untracked-files=all
+```
+
+Expected:
+
+```text
+Android build succeeds.
+No APK/AAB, Unity build output, generated logs, screenshots or sidecars are staged.
+```
+
+**Commit:** `Add Android build smoke path`
+
+### G3: Run Android Device Smoke
+
+**Status:** Later.
+
+**Goal:** 在真 Android 设备上确认 Demo 可以启动并跑到战斗/战报核心路径。
+
+**Files:**
+
+- Modify if needed: `scripts/unity/`
+- Modify if needed: `unity-mc2-demo/Assets/Scripts/Presentation/StartupCommanderScript.cs`
+- Generate ignored output only: `analysis-output/`
+
+**Validation:**
+
+```powershell
+adb devices
+git diff --check
+```
+
+**Commit:** `Document Android device smoke results`
+
+### G4: Adapt Command UI For Mobile Touch
+
+**Status:** Later.
+
+**Goal:** 保持现有“默认全队、状态栏单选、点地/点目标、Jet、任务地图、系统”的低复杂度操作，同时让它在手机触控和窄屏比例下可用。
+
+**Files:**
+
+- Modify: `unity-mc2-demo/Assets/Scripts/Presentation/Mc2DemoBootstrap.cs`
+- Modify if needed: `unity-mc2-demo/Assets/Scripts/Presentation/DemoUnitView.cs`
+- Modify if needed: command-file smoke scripts
+
+**Acceptance:**
+
+- No drag-box selection.
+- No dense battle log.
+- Touch targets are readable.
+- MechLab grid remains usable enough for first mobile pass.
+
+**Commit:** `Adapt command UI for mobile touch`
+
+### G5: Define Mobile Performance Budget
+
+**Status:** Later.
+
+**Goal:** 用第一轮真机数据决定后续视觉、材质、特效、单位规模和资源包约束。
+
+**Files:**
+
+- Create: `docs-mobile-performance-budget-2026-06-10.md`
+
+**Metrics:**
+
+- FPS.
+- Memory.
+- Package size.
+- First-load time.
+- Battle-load time.
+- Short-session thermal/battery notes.
+
+**Commit:** `Define mobile performance budget`
+
+### G6: Document iOS Feasibility Gate
+
+**Status:** Later.
+
+**Goal:** 记录 iOS 所需 macOS、Xcode、签名、Metal、真机测试要求；不让 iOS 签名阻塞 Android 先行验证。
+
+**Files:**
+
+- Create: `docs-ios-feasibility-2026-06-10.md`
+
+**Commit:** `Document iOS feasibility gate`
+
 ### F2: Document Map Authoring Contract
 
-**Status:** Later, resume after H2 machine handoff verification.
+**Status:** Later, resume after H2 and the mobile-first gate.
 
 **Goal:** 为未来开源地图编辑器和社区地图包定义最小可验证格式。
 
@@ -1154,4 +1309,4 @@ Stop and reassess before committing if:
 
 ## 9. One-Line Direction
 
-Windows 本地 Demo 的画面、碰撞、稀疏 UI、MechLab、损伤故事、演示证据、公开 art-safe 元数据合同、AI 副官离线边界和主服务器奖励权威契约已经收稳；换机交接计划已经写好，下一步先推送 `ai-origin` 或整仓迁移并在新机器跑 validator/build/smoke；之后恢复 F2 地图包/编辑器契约。
+Windows 本地 Demo 的画面、碰撞、稀疏 UI、MechLab、损伤故事、演示证据、公开 art-safe 元数据合同、AI 副官离线边界和主服务器奖励权威契约已经收稳；代码已推到 GitHub，换机后先跑 validator/build/smoke；随后主线改为移动端优先，先做 Android build、真机 smoke、触控 UI 和性能预算，再恢复地图包、Web 排行和创作者生态。

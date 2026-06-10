@@ -25,7 +25,7 @@ As of this handoff plan:
 - Upstream source remote kept for history: `origin https://github.com/alariq/mc2.git`
 - Local branch state before this plan commit: `master...ai-origin/master [ahead 95]`
 - Last completed product commit: `1044ef1 Document reward authority contract`
-- Current formal next development task after handoff: `F2 Document map authoring contract`
+- Current formal next development task after handoff: `G2 Add Android build smoke path`
 
 Important: the new machine will not see the last 95 local commits unless the old
 machine first pushes to `ai-origin`, or the full repository is migrated by a
@@ -337,7 +337,8 @@ documentation.
 
 - Read: `docs-ai-rts-commander-current-master-plan-2026-06-07.md`
 - Read: `docs-ai-rts-commander-current-detailed-plan-2026-06-07.md`
-- Next planned create: `docs-map-authoring-contract-2026-06-07.md`
+- Read: `docs-mobile-first-plan-2026-06-10.md`
+- Next planned work: Android build smoke path
 
 **Step 1: Confirm current next task**
 
@@ -345,30 +346,29 @@ Read the current commit queue. After this handoff, the product work should
 resume at:
 
 ```text
-F2 Document map authoring contract
+G2 Add Android build smoke path
 ```
 
-**Step 2: Do not start with server implementation**
+**Step 2: Do not start with server or map-editor implementation**
 
-F2 should only define map package and editor contracts:
+Mobile support is the first priority. The next product work should prove:
 
-- map metadata;
-- terrain/nav data;
-- structures, props, turrets, water, cover;
-- objectives and trigger graph;
-- enemy waves and patrols;
-- allowed squad size;
-- difficulty estimate;
-- reward table reference only;
-- validator requirements.
+- Android Build Support is installed and usable;
+- the Unity project can produce an Android artifact;
+- a real Android device can launch the demo;
+- touch command UI is viable for squad command, single-unit command, Jet, mission map, system panel and MechLab;
+- FPS, memory, package size, load time and thermal observations are recorded.
+
+Map package/editor contracts, Web ranking and creator economy remain deferred
+until the mobile gate passes.
 
 **Step 3: Commit next product work in one small commit**
 
 Expected future commit:
 
 ```powershell
-git add docs-platform-ecosystem-plan.md docs-map-authoring-contract-2026-06-07.md docs-ai-rts-commander-current-master-plan-2026-06-07.md docs-ai-rts-commander-current-detailed-plan-2026-06-07.md README.md
-git commit -m "Document map authoring contract"
+git add unity-mc2-demo/Assets/Editor/Mc2DemoBuilder.cs unity-mc2-demo/README.md BUILD-WIN.md docs-ai-rts-commander-current-master-plan-2026-06-07.md docs-ai-rts-commander-current-detailed-plan-2026-06-07.md
+git commit -m "Add Android build smoke path"
 ```
 
 ## Stop Conditions
