@@ -111,6 +111,7 @@ $androidApkCompatibilityScript = Resolve-RepoPath -RelativePath "scripts\unity\c
 $androidApkSigningScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_apk_signing.ps1"
 $androidApkManifestScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_apk_manifest.ps1"
 $androidApkPayloadScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_apk_payload.ps1"
+$androidApkSizeBudgetScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_apk_size_budget.ps1"
 $androidPreflightScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_device_preflight.ps1"
 $androidSmokeScript = Resolve-RepoPath -RelativePath "scripts\unity\android_device_smoke.ps1"
 $androidLogScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_smoke_log.ps1"
@@ -190,6 +191,12 @@ Invoke-GateStep `
     -ScriptPath $androidApkPayloadScript `
     -Arguments @("-RepoRoot", $RepoRoot) `
     -RequiredMarkers @("Android APK payload check OK.")
+
+Invoke-GateStep `
+    -Name "Android APK size budget gate" `
+    -ScriptPath $androidApkSizeBudgetScript `
+    -Arguments @("-RepoRoot", $RepoRoot) `
+    -RequiredMarkers @("Android APK size budget check OK.")
 
 Invoke-GateStep `
     -Name "Android device gate" `

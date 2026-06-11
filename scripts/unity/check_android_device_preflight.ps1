@@ -353,6 +353,32 @@ else {
     }
 }
 
+$apkSizeBudgetScript = Join-Path $PSScriptRoot "check_android_apk_size_budget.ps1"
+if (-not (Test-Path -LiteralPath $apkSizeBudgetScript)) {
+    Add-Failure "Missing Android APK size budget checker: $apkSizeBudgetScript"
+}
+else {
+    $sizeBudgetResult = Invoke-NativeCommand -FilePath "powershell" -Arguments @(
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        $apkSizeBudgetScript,
+        "-RepoRoot",
+        $RepoRoot,
+        "-ApkPath",
+        $ApkPath
+    )
+
+    $sizeBudgetOutput = $sizeBudgetResult.Output -join " "
+    if ($sizeBudgetResult.ExitCode -ne 0 -or $sizeBudgetOutput -notlike "*Android APK size budget check OK.*") {
+        Add-Failure "Android APK size budget preflight failed: $sizeBudgetOutput"
+    }
+    else {
+        Add-Row -Check "APK size budget" -Status "OK" -Detail "Android APK size budget check OK."
+    }
+}
+
 if (Test-Path -LiteralPath $AdbPath) {
     $devices = @(Get-AdbDevices -Adb $AdbPath)
     if ($devices.Count -eq 0) {

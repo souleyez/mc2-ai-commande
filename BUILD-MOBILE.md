@@ -180,6 +180,23 @@ This checks the required native libraries, Unity `assets/bin/Data` files,
 single expected ABI folder, and enough data/native entries to catch truncated
 or mispackaged APK output before install.
 
+Check that the Android APK remains within the current early mobile demo size
+budget:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_apk_size_budget.ps1
+```
+
+Expected:
+
+```text
+Android APK size budget check OK
+```
+
+The current budget rejects implausibly small APKs and APKs over 100 MiB. This is
+an install-readiness guard for accidental asset bloat, not the full G5 runtime
+performance budget.
+
 Device smoke
 ------------
 
@@ -198,8 +215,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_androi
 The strict form requires one authorized Android device. The waiting-state form
 still checks the APK, Android APK freshness, Android APK identity, Android APK
 compatibility, Android APK signing, Android APK manifest, Android APK payload,
-adb, aapt, apksigner, package name and launchable activity, then reports that
-G3 is waiting on a device.
+Android APK size budget, adb, aapt, apksigner, package name and launchable
+activity, then reports that G3 is waiting on a device.
 
 After preflight passes with a real device, install and collect logs:
 
@@ -219,11 +236,11 @@ Expected:
 Android device smoke plan OK
 ```
 
-The helper verifies APK freshness, identity, compatibility, signing, manifest
-and payload, discovers the APK package name through `aapt`, checks that exactly one
-authorized Android device is connected, installs the APK, launches it, waits
-briefly, captures logcat, scans the log for strong crash markers, and fails if
-the package does not stay running.
+The helper verifies APK freshness, identity, compatibility, signing, manifest,
+payload and size budget, discovers the APK package name through `aapt`, checks
+that exactly one authorized Android device is connected, installs the APK,
+launches it, waits briefly, captures logcat, scans the log for strong crash
+markers, and fails if the package does not stay running.
 
 Self-test the log scanner without a device:
 
@@ -290,6 +307,7 @@ scripts\unity\check_android_apk_compatibility.ps1 -> Android APK compatibility c
 scripts\unity\check_android_apk_signing.ps1 -> Android APK signing check OK
 scripts\unity\check_android_apk_manifest.ps1 -> Android APK manifest check OK
 scripts\unity\check_android_apk_payload.ps1 -> Android APK payload check OK
+scripts\unity\check_android_apk_size_budget.ps1 -> Android APK size budget check OK
 scripts\unity\check_android_device_preflight.ps1 -AllowNoDevice -> Android device smoke preflight waiting on device
 ```
 

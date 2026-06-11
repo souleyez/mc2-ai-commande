@@ -135,6 +135,20 @@ if ($LASTEXITCODE -ne 0) {
     throw "Android APK payload check failed with exit code $LASTEXITCODE"
 }
 
+$apkSizeBudgetScript = Join-Path $PSScriptRoot "check_android_apk_size_budget.ps1"
+if (-not (Test-Path -LiteralPath $apkSizeBudgetScript)) {
+    throw "Missing Android APK size budget checker: $apkSizeBudgetScript"
+}
+
+$sizeBudgetOutput = & powershell -NoProfile -ExecutionPolicy Bypass -File $apkSizeBudgetScript -RepoRoot $RepoRoot -ApkPath $ApkPath 2>&1
+if ($LASTEXITCODE -ne 0) {
+    foreach ($line in @($sizeBudgetOutput | ForEach-Object { $_.ToString() })) {
+        Write-Host $line
+    }
+
+    throw "Android APK size budget check failed with exit code $LASTEXITCODE"
+}
+
 function Get-ApkMetadata {
     param(
         [string]$Apk,
