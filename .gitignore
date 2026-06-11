@@ -78,6 +78,7 @@ analysis-output/unity-demo-contract/
 analysis-output/unity-combat-data/
 analysis-output/tgl-obj/
 analysis-output/unity-reference-art/
+analysis-output/pc-visual-sanity-selftest/
 analysis-output/*saved-account*.json
 analysis-output/*validator*.json
 analysis-output/android-device-smoke*.json

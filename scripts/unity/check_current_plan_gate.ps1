@@ -176,6 +176,12 @@ Invoke-GateStep `
     -RequiredMarkers @("PC visual capture sanity check OK.")
 
 Invoke-GateStep `
+    -Name "PC visual capture sanity self-test gate" `
+    -ScriptPath $pcVisualCaptureSanityScript `
+    -Arguments @("-RepoRoot", $RepoRoot, "-SelfTest") `
+    -RequiredMarkers @("PC visual capture sanity self-test OK.")
+
+Invoke-GateStep `
     -Name "Android SDK tooling gate" `
     -ScriptPath $androidSdkToolingScript `
     -Arguments @("-RepoRoot", $RepoRoot) `

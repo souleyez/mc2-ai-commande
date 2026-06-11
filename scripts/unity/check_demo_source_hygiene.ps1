@@ -132,6 +132,7 @@ else {
     Assert-GitignoreContains -Text $gitignore -Markers @(
         "analysis-output/reference-visual-captures/",
         "analysis-output/unity-reference-art/",
+        "analysis-output/pc-visual-sanity-selftest/",
         "analysis-output/*.png",
         "unity-mc2-demo/Builds/",
         "unity-mc2-demo/Assets/PrivateReferenceArt/",

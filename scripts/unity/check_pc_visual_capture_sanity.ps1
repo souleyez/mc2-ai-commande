@@ -10,7 +10,8 @@ param(
     [double]$MinimumCenterLitRatio = 0.15,
     [double]$MinimumLumaStdDev = 12.0,
     [double]$MaximumMagentaRatio = 0.03,
-    [double]$MaximumMonochromeRatio = 0.90
+    [double]$MaximumMonochromeRatio = 0.90,
+    [switch]$SelfTest
 )
 
 Set-StrictMode -Version Latest
@@ -111,6 +112,101 @@ function Measure-CaptureImage {
     finally {
         $bitmap.Dispose()
     }
+}
+
+function New-SanityTestImage {
+    param(
+        [string]$Path,
+        [string]$Mode
+    )
+
+    $bitmap = [System.Drawing.Bitmap]::new($ExpectedWidth, $ExpectedHeight)
+    try {
+        $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
+        try {
+            if ($Mode -eq "valid") {
+                $columns = 40
+                $rows = 20
+                $cellWidth = [Math]::Ceiling($ExpectedWidth / [double]$columns)
+                $cellHeight = [Math]::Ceiling($ExpectedHeight / [double]$rows)
+                for ($row = 0; $row -lt $rows; $row++) {
+                    for ($column = 0; $column -lt $columns; $column++) {
+                        $red = 20 + ((30 + ($column * 5) + ($row * 7)) % 170)
+                        $green = 120 + ((50 + ($column * 11) + ($row * 3)) % 100)
+                        $blue = 20 + ((70 + ($column * 2) + ($row * 13)) % 170)
+                        $brush = [System.Drawing.SolidBrush]::new([System.Drawing.Color]::FromArgb(255, $red, $green, $blue))
+                        try {
+                            $graphics.FillRectangle($brush, $column * $cellWidth, $row * $cellHeight, $cellWidth, $cellHeight)
+                        }
+                        finally {
+                            $brush.Dispose()
+                        }
+                    }
+                }
+            }
+            elseif ($Mode -eq "flat") {
+                $graphics.Clear([System.Drawing.Color]::FromArgb(255, 80, 80, 80))
+            }
+            elseif ($Mode -eq "magenta") {
+                $graphics.Clear([System.Drawing.Color]::FromArgb(255, 255, 0, 255))
+            }
+            else {
+                throw "Unknown sanity test image mode: $Mode"
+            }
+        }
+        finally {
+            $graphics.Dispose()
+        }
+
+        $bitmap.Save($Path, [System.Drawing.Imaging.ImageFormat]::Png)
+    }
+    finally {
+        $bitmap.Dispose()
+    }
+}
+
+function Assert-SelfTestMetric {
+    param(
+        [bool]$Condition,
+        [string]$Message
+    )
+
+    if (-not $Condition) {
+        throw $Message
+    }
+}
+
+if ($SelfTest) {
+    $selfTestDir = Join-Path $RepoRoot "analysis-output\pc-visual-sanity-selftest"
+    New-Item -ItemType Directory -Force -Path $selfTestDir | Out-Null
+
+    $validPath = Join-Path $selfTestDir "valid.png"
+    $flatPath = Join-Path $selfTestDir "flat.png"
+    $magentaPath = Join-Path $selfTestDir "magenta.png"
+    New-SanityTestImage -Path $validPath -Mode "valid"
+    New-SanityTestImage -Path $flatPath -Mode "flat"
+    New-SanityTestImage -Path $magentaPath -Mode "magenta"
+
+    $valid = Measure-CaptureImage -Path $validPath
+    Assert-SelfTestMetric -Condition ($valid.UniqueColors -ge $MinimumUniqueColors) -Message "Self-test valid image did not produce enough colors: $($valid.UniqueColors)."
+    Assert-SelfTestMetric -Condition ($valid.CenterUniqueColors -ge $MinimumCenterUniqueColors) -Message "Self-test valid image center did not produce enough colors: $($valid.CenterUniqueColors)."
+    Assert-SelfTestMetric -Condition ($valid.CenterLitRatio -ge $MinimumCenterLitRatio) -Message "Self-test valid image center lit ratio too low: $($valid.CenterLitRatio)."
+    Assert-SelfTestMetric -Condition ($valid.LumaStdDev -ge $MinimumLumaStdDev) -Message "Self-test valid image luminance contrast too low: $($valid.LumaStdDev)."
+    Assert-SelfTestMetric -Condition ($valid.MagentaRatio -le $MaximumMagentaRatio) -Message "Self-test valid image magenta ratio too high: $($valid.MagentaRatio)."
+    Assert-SelfTestMetric -Condition ($valid.MonochromeRatio -le $MaximumMonochromeRatio) -Message "Self-test valid image monochrome ratio too high: $($valid.MonochromeRatio)."
+
+    $flat = Measure-CaptureImage -Path $flatPath
+    Assert-SelfTestMetric -Condition ($flat.UniqueColors -lt $MinimumUniqueColors) -Message "Self-test flat image was not detected by color-count threshold."
+    Assert-SelfTestMetric -Condition ($flat.LumaStdDev -lt $MinimumLumaStdDev) -Message "Self-test flat image was not detected by luminance threshold."
+    Assert-SelfTestMetric -Condition ($flat.MonochromeRatio -gt $MaximumMonochromeRatio) -Message "Self-test flat image was not detected by monochrome threshold."
+
+    $magenta = Measure-CaptureImage -Path $magentaPath
+    Assert-SelfTestMetric -Condition ($magenta.MagentaRatio -gt $MaximumMagentaRatio) -Message "Self-test magenta image was not detected by magenta threshold."
+
+    Write-Host "PC visual capture sanity self-test OK."
+    Write-Host "Repo: $RepoRoot"
+    Write-Host "SelfTestDir: $selfTestDir"
+    return
 }
 
 foreach ($preset in $Presets) {
