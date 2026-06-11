@@ -107,6 +107,7 @@ $aiDeputyScript = Resolve-RepoPath -RelativePath "scripts\unity\check_ai_deputy_
 $mobileCommandScript = Resolve-RepoPath -RelativePath "scripts\unity\check_mobile_command_model_preflight.ps1"
 $battleHudScript = Resolve-RepoPath -RelativePath "scripts\unity\check_battle_hud_sparse_contract.ps1"
 $pcVisualCaptureSanityScript = Resolve-RepoPath -RelativePath "scripts\unity\check_pc_visual_capture_sanity.ps1"
+$pcCaptureSidecarSchemaScript = Resolve-RepoPath -RelativePath "scripts\unity\check_pc_capture_sidecar_schema.ps1"
 $androidSdkToolingScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_sdk_tooling.ps1"
 $androidApkFreshnessScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_apk_freshness.ps1"
 $androidApkIdentityScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_apk_identity.ps1"
@@ -180,6 +181,12 @@ Invoke-GateStep `
     -ScriptPath $pcVisualCaptureSanityScript `
     -Arguments @("-RepoRoot", $RepoRoot, "-SelfTest") `
     -RequiredMarkers @("PC visual capture sanity self-test OK.")
+
+Invoke-GateStep `
+    -Name "PC capture sidecar schema gate" `
+    -ScriptPath $pcCaptureSidecarSchemaScript `
+    -Arguments @("-RepoRoot", $RepoRoot) `
+    -RequiredMarkers @("PC capture sidecar schema check OK.")
 
 Invoke-GateStep `
     -Name "Android SDK tooling gate" `

@@ -21,12 +21,13 @@ uses the repository's existing root-level `docs-*.md` convention.
 As of this handoff plan:
 
 - Branch: `master`
-- Primary project remote: `ai-origin git@github.com:souleyez/mc2-ai-commander-demo.git`
-- Remote warning: GitHub currently reports the repository moved to `git@github.com:souleyez/mc2-ai-commande.git`; pushes to the configured `ai-origin` have still succeeded.
+- Primary project remote: `ai-origin git@github.com:souleyez/mc2-ai-commande.git`
+- Previous project remote: `git@github.com:souleyez/mc2-ai-commander-demo.git` now redirects to the current repository.
 - Upstream source remote kept for history: `origin https://github.com/alariq/mc2.git`
 - Current branch state after the latest controlled demo checkpoint: `master...ai-origin/master`
-- Latest sealed PC/mobile wait-state checkpoint: `PC1-PC39`
-- Last completed PC checkpoint: `Add PC visual capture sanity self-test`
+- Latest sealed PC/mobile wait-state checkpoint: `PC1-PC40`
+- Last completed PC checkpoint: `Add PC capture sidecar schema check`
+- Previous PC checkpoint retained in the gate chain: `Add PC visual capture sanity self-test`
 - Previous PC checkpoint retained in the gate chain: `Add PC visual capture sanity check`
 - Previous PC checkpoint retained in the gate chain: `Add Android G3 device requirement check`
 - Previous PC checkpoint retained in the gate chain: `Add Android G3 readiness check`
@@ -84,6 +85,7 @@ The machine switch is safe only when all of these are true:
 - `scripts/unity/check_battle_hud_sparse_contract.ps1` prints `Battle HUD sparse contract check OK`.
 - `scripts/unity/check_pc_visual_capture_sanity.ps1` prints `PC visual capture sanity check OK`.
 - `scripts/unity/check_pc_visual_capture_sanity.ps1 -SelfTest` prints `PC visual capture sanity self-test OK`.
+- `scripts/unity/check_pc_capture_sidecar_schema.ps1` prints `PC capture sidecar schema check OK`.
 - `scripts/unity/check_current_plan_gate.ps1` prints `Current plan gate check OK`.
 - `scripts/unity/check_android_smoke_log.ps1 -SelfTest` prints `Android smoke log check self-test OK`.
 - `scripts/unity/check_android_smoke_summary.ps1 -SelfTest` prints `Android smoke summary check self-test OK`.
@@ -422,7 +424,23 @@ PC visual capture sanity self-test OK
 This verifies the screenshot sanity gate catches flat and magenta fallback
 sample images before accepting current evidence.
 
-**Step 11: Run current plan gate check**
+**Step 11: Run PC capture sidecar schema check**
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_pc_capture_sidecar_schema.ps1
+```
+
+Expected:
+
+```text
+PC capture sidecar schema check OK
+```
+
+This verifies the six controlled-demo JSON sidecars still point to the matching
+screenshots and contain expected flow, camera, summary and reference-asset
+metadata.
+
+**Step 12: Run current plan gate check**
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_current_plan_gate.ps1
@@ -435,12 +453,12 @@ Current plan gate check OK
 ```
 
 This wraps handoff/readiness, Windows build freshness, demo source hygiene, AI
-deputy contract, mobile command model, battle HUD sparse contract, PC visual capture sanity, PC visual capture sanity self-test and Android
+deputy contract, mobile command model, battle HUD sparse contract, PC visual capture sanity, PC visual capture sanity self-test, PC capture sidecar schema and Android
 preflight checks. With no authorized phone connected, Android should be
 reported as waiting on device; with one authorized phone, Android should report
 OK.
 
-**Step 12: Self-test Android smoke log scanning**
+**Step 13: Self-test Android smoke log scanning**
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_smoke_log.ps1 -SelfTest
@@ -456,7 +474,7 @@ The real device smoke helper calls this scanner after logcat capture, so a
 device launch with fatal exception, fatal signal, ANR, package process death or
 forced activity finish is not accepted as a pass.
 
-**Step 13: Self-test Android smoke summary schema**
+**Step 14: Self-test Android smoke summary schema**
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_smoke_summary.ps1 -SelfTest

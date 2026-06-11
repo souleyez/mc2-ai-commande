@@ -134,6 +134,7 @@ Assert-ScriptExists -RelativePath "scripts\unity\check_pc_core_playable_contract
 Assert-ScriptExists -RelativePath "scripts\unity\check_mobile_command_model_preflight.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_battle_hud_sparse_contract.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_pc_visual_capture_sanity.ps1"
+Assert-ScriptExists -RelativePath "scripts\unity\check_pc_capture_sidecar_schema.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_current_plan_gate.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_android_smoke_log.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_android_smoke_summary.ps1"
@@ -141,7 +142,7 @@ Assert-ScriptExists -RelativePath "scripts\content-pack\check_controlled_demo_pu
 
 Assert-FileContains -RelativePath "README.md" -Markers @(
     "AI RTS Commander Lab",
-    "PC1-PC39",
+    "PC1-PC40",
     "check_controlled_demo_handoff.ps1",
     "check_windows_demo_build_freshness.ps1",
     "check_demo_source_hygiene.ps1",
@@ -164,6 +165,8 @@ Assert-FileContains -RelativePath "README.md" -Markers @(
     "check_pc_visual_capture_sanity.ps1",
     "PC visual capture sanity check",
     "PC visual capture sanity self-test OK",
+    "check_pc_capture_sidecar_schema.ps1",
+    "PC capture sidecar schema check OK",
     "check_current_plan_gate.ps1",
     "check_android_smoke_log.ps1",
     "check_android_smoke_summary.ps1",
@@ -190,6 +193,8 @@ Assert-FileContains -RelativePath "BUILD-WIN.md" -Markers @(
     "check_pc_visual_capture_sanity.ps1",
     "PC visual capture sanity check OK",
     "PC visual capture sanity self-test OK",
+    "check_pc_capture_sidecar_schema.ps1",
+    "PC capture sidecar schema check OK",
     "check_current_plan_gate.ps1",
     "Current plan gate check OK",
     "check_android_smoke_log.ps1",
@@ -268,7 +273,7 @@ Assert-FileContains -RelativePath "BUILD-MOBILE.md" -Markers @(
 )
 
 Assert-FileContains -RelativePath "docs-ai-rts-commander-current-master-plan-2026-06-07.md" -Markers @(
-    "PC1-PC39",
+    "PC1-PC40",
     "Add controlled demo handoff consistency check",
     "Add demo source hygiene check",
     "Add AI deputy contract check",
@@ -294,6 +299,7 @@ Assert-FileContains -RelativePath "docs-ai-rts-commander-current-master-plan-202
     "Add battle HUD sparse contract check",
     "Add PC visual capture sanity check",
     "Add PC visual capture sanity self-test",
+    "Add PC capture sidecar schema check",
     "Add current plan gate check",
     "Add Android smoke log crash scan",
     "Add Android smoke plan mode",
@@ -308,6 +314,7 @@ Assert-FileContains -RelativePath "docs-ai-rts-commander-current-master-plan-202
     "check_mobile_command_model_preflight.ps1",
     "check_battle_hud_sparse_contract.ps1",
     "check_pc_visual_capture_sanity.ps1",
+    "check_pc_capture_sidecar_schema.ps1",
     "check_current_plan_gate.ps1",
     "check_android_apk_freshness.ps1",
     "check_android_apk_identity.ps1",
@@ -331,7 +338,7 @@ Assert-FileContains -RelativePath "docs-ai-rts-commander-current-master-plan-202
 )
 
 Assert-FileContains -RelativePath "docs-ai-rts-commander-current-detailed-plan-2026-06-07.md" -Markers @(
-    "PC1-PC39",
+    "PC1-PC40",
     "Add controlled demo handoff consistency check",
     "Add demo source hygiene check",
     "Add AI deputy contract check",
@@ -357,6 +364,7 @@ Assert-FileContains -RelativePath "docs-ai-rts-commander-current-detailed-plan-2
     "Add battle HUD sparse contract check",
     "Add PC visual capture sanity check",
     "Add PC visual capture sanity self-test",
+    "Add PC capture sidecar schema check",
     "Add current plan gate check",
     "Add Android smoke log crash scan",
     "Add Android smoke plan mode",
@@ -371,6 +379,7 @@ Assert-FileContains -RelativePath "docs-ai-rts-commander-current-detailed-plan-2
     "check_mobile_command_model_preflight.ps1",
     "check_battle_hud_sparse_contract.ps1",
     "check_pc_visual_capture_sanity.ps1",
+    "check_pc_capture_sidecar_schema.ps1",
     "check_current_plan_gate.ps1",
     "check_android_apk_freshness.ps1",
     "check_android_apk_identity.ps1",
@@ -394,7 +403,7 @@ Assert-FileContains -RelativePath "docs-ai-rts-commander-current-detailed-plan-2
 )
 
 Assert-FileContains -RelativePath "docs-pc-optimization-plan-2026-06-11.md" -Markers @(
-    "sealed through PC39",
+    "sealed through PC40",
     "Add controlled demo handoff consistency check",
     "Add demo source hygiene check",
     "Add AI deputy contract check",
@@ -420,6 +429,7 @@ Assert-FileContains -RelativePath "docs-pc-optimization-plan-2026-06-11.md" -Mar
     "Add battle HUD sparse contract check",
     "Add PC visual capture sanity check",
     "Add PC visual capture sanity self-test",
+    "Add PC capture sidecar schema check",
     "Add current plan gate check",
     "Add Android smoke log crash scan",
     "Add Android smoke plan mode",
@@ -431,6 +441,7 @@ Assert-FileContains -RelativePath "docs-pc-optimization-plan-2026-06-11.md" -Mar
     "check_demo_source_hygiene.ps1",
     "check_ai_deputy_contract.ps1",
     "check_pc_visual_capture_sanity.ps1",
+    "check_pc_capture_sidecar_schema.ps1",
     "check_android_apk_freshness.ps1",
     "check_android_apk_identity.ps1",
     "check_android_apk_compatibility.ps1",
@@ -475,6 +486,7 @@ Assert-FileContains -RelativePath "docs-playable-demo-investor-evidence-2026-06-
     "Battle HUD sparse contract",
     "PC visual capture sanity",
     "PC visual capture sanity self-test",
+    "PC capture sidecar schema",
     "Current plan gate",
     "Android smoke log check",
     "Android smoke plan",
@@ -490,6 +502,7 @@ Assert-FileContains -RelativePath "docs-playable-demo-investor-evidence-2026-06-
     "check_mobile_command_model_preflight.ps1",
     "check_battle_hud_sparse_contract.ps1",
     "check_pc_visual_capture_sanity.ps1",
+    "check_pc_capture_sidecar_schema.ps1",
     "check_current_plan_gate.ps1",
     "check_android_smoke_log.ps1",
     "check_android_smoke_summary.ps1",
@@ -514,9 +527,10 @@ Assert-FileContains -RelativePath "docs-playable-demo-investor-evidence-2026-06-
 )
 
 Assert-FileContains -RelativePath "docs-machine-handoff-plan-2026-06-07.md" -Markers @(
-    "PC1-PC39",
+    "PC1-PC40",
     "Add PC visual capture sanity check",
     "Add PC visual capture sanity self-test",
+    "Add PC capture sidecar schema check",
     "Add Android smoke summary evidence output",
     "Add Android smoke summary schema check",
     "Add Android smoke summary preflight check",
@@ -542,6 +556,7 @@ Assert-FileContains -RelativePath "docs-machine-handoff-plan-2026-06-07.md" -Mar
     "check_mobile_command_model_preflight.ps1",
     "check_battle_hud_sparse_contract.ps1",
     "check_pc_visual_capture_sanity.ps1",
+    "check_pc_capture_sidecar_schema.ps1",
     "check_current_plan_gate.ps1",
     "check_android_smoke_log.ps1",
     "check_android_smoke_summary.ps1",
