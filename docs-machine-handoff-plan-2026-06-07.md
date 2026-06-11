@@ -25,8 +25,9 @@ As of this handoff plan:
 - Remote warning: GitHub currently reports the repository moved to `git@github.com:souleyez/mc2-ai-commande.git`; pushes to the configured `ai-origin` have still succeeded.
 - Upstream source remote kept for history: `origin https://github.com/alariq/mc2.git`
 - Current branch state after the latest controlled demo checkpoint: `master...ai-origin/master`
-- Latest sealed PC/mobile wait-state checkpoint: `PC1-PC36`
-- Last completed PC checkpoint: `Add Android G3 readiness check`
+- Latest sealed PC/mobile wait-state checkpoint: `PC1-PC37`
+- Last completed PC checkpoint: `Add Android G3 device requirement check`
+- Previous PC checkpoint retained in the gate chain: `Add Android G3 readiness check`
 - Previous PC checkpoint retained in the gate chain: `Add Android smoke plan/preflight consistency check`
 - Previous PC checkpoint retained in the gate chain: `Add Android smoke summary preflight check`
 - Previous PC checkpoint retained in the gate chain: `Add Android smoke summary schema check`
@@ -87,6 +88,7 @@ The machine switch is safe only when all of these are true:
 - `scripts/unity/android_device_smoke.ps1 -PlanOnly` prints `SummaryWrite: True` and `analysis-output\android-device-smoke-summary.json`.
 - `scripts/unity/check_android_smoke_plan_consistency.ps1` prints `Android smoke plan/preflight consistency check OK`.
 - `scripts/unity/check_android_g3_readiness.ps1` prints `Android G3 readiness check waiting on device` if no phone is connected.
+- `scripts/unity/check_android_g3_device_requirement.ps1` prints `Android G3 device requirement check waiting on device` if no phone is connected.
 - Any AI API key is configured through environment variables, not committed.
 - Optional private reference visuals remain ignored and local-only.
 
@@ -483,7 +485,22 @@ Android G3 readiness check waiting on device
 This wraps device preflight, plan/preflight consistency, plan mode, log scanner
 self-test and summary schema self-test. It does not install or launch the app.
 
-**Step 15: Run Android device-smoke preflight directly if needed**
+**Step 15: Confirm strict G3 device requirement**
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_g3_device_requirement.ps1
+```
+
+Expected with no connected phone:
+
+```text
+Android G3 device requirement check waiting on device
+```
+
+This proves strict G3 readiness cannot be accepted without an authorized
+Android phone.
+
+**Step 16: Run Android device-smoke preflight directly if needed**
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_device_preflight.ps1 -AllowNoDevice
@@ -506,7 +523,7 @@ Android device smoke preflight OK
 This checks the APK, adb, aapt, package name and launchable activity without
 installing or launching the app.
 
-**Step 16: Set paths for rebuilding evidence if needed**
+**Step 17: Set paths for rebuilding evidence if needed**
 
 ```powershell
 $Repo = (Get-Location).Path
@@ -515,7 +532,7 @@ $Unity = "$HOME\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe"
 
 If `$Unity` does not exist, point it to the installed Unity editor path.
 
-**Step 17: Run validator when rebuilding or auditing from scratch**
+**Step 18: Run validator when rebuilding or auditing from scratch**
 
 ```powershell
 & $Unity `
@@ -531,7 +548,7 @@ Expected log string:
 MC2 demo contract validation OK
 ```
 
-**Step 18: Build Windows player when rebuilding or auditing from scratch**
+**Step 19: Build Windows player when rebuilding or auditing from scratch**
 
 ```powershell
 & $Unity `
@@ -548,7 +565,7 @@ Build Finished, Result: Success
 MC2 Unity demo Windows build OK
 ```
 
-**Step 19: Run visible-flow smoke without AI key when rebuilding or auditing from scratch**
+**Step 20: Run visible-flow smoke without AI key when rebuilding or auditing from scratch**
 
 ```powershell
 $env:MINIMAX_API_KEY = ""

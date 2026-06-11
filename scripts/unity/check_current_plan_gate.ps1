@@ -118,6 +118,7 @@ $androidPreflightScript = Resolve-RepoPath -RelativePath "scripts\unity\check_an
 $androidSmokeScript = Resolve-RepoPath -RelativePath "scripts\unity\android_device_smoke.ps1"
 $androidSmokePlanConsistencyScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_smoke_plan_consistency.ps1"
 $androidG3ReadinessScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_g3_readiness.ps1"
+$androidG3DeviceRequirementScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_g3_device_requirement.ps1"
 $androidLogScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_smoke_log.ps1"
 $androidSummaryScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_smoke_summary.ps1"
 
@@ -271,6 +272,15 @@ Invoke-GateStep `
     -AnySuccessMarkers @(
         "Android G3 readiness check OK.",
         "Android G3 readiness check waiting on device."
+    )
+
+Invoke-GateStep `
+    -Name "Android G3 device requirement gate" `
+    -ScriptPath $androidG3DeviceRequirementScript `
+    -Arguments @("-RepoRoot", $RepoRoot) `
+    -AnySuccessMarkers @(
+        "Android G3 device requirement check OK.",
+        "Android G3 device requirement check waiting on device."
     )
 
 if ($failures.Count -gt 0) {

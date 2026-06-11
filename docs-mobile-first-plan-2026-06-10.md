@@ -35,20 +35,20 @@ signing and manifest install-target metadata, Unity/IL2CPP runtime payload,
 APK size budget, Android smoke artifact hygiene, Android smoke screenshot
 evidence capture, Android smoke summary evidence output, Android smoke
 summary schema check, Android smoke summary preflight check and Android smoke
-plan/preflight consistency check and Android G3 readiness check. The real G3 device smoke is still waiting on a physical Android
+plan/preflight consistency check, Android G3 readiness check and Android G3 device requirement check. The real G3 device smoke is still waiting on a physical Android
 phone that is visible through `adb devices` and authorized for USB debugging.
 
 While G3 is waiting, the active project work may continue on PC demo
 optimization as defined in `docs-pc-optimization-plan-2026-06-11.md`. This does
 not advance G4/G5 ahead of G3; it only keeps Windows demo quality moving while
 the required phone is unavailable. The current PC/mobile waiting-state work is
-sealed through PC36, including the PC core playable contract check, mobile
+sealed through PC37, including the PC core playable contract check, mobile
 command model preflight, battle HUD sparse contract check, demo source hygiene
 check, AI deputy contract check, Windows demo build freshness check, controlled
 demo evidence freshness check, controlled demo capture log freshness check,
 Android SDK tooling check, Android APK freshness check, Android APK identity check, Android APK
 compatibility check, Android APK signing check, Android APK manifest check,
-Android APK payload check, Android APK size budget check, Android smoke artifact hygiene check, Android smoke screenshot evidence capture, Android smoke summary evidence output, Android smoke summary schema check, Android smoke summary preflight check, Android smoke plan/preflight consistency check, Android G3 readiness check, current plan gate
+Android APK payload check, Android APK size budget check, Android smoke artifact hygiene check, Android smoke screenshot evidence capture, Android smoke summary evidence output, Android smoke summary schema check, Android smoke summary preflight check, Android smoke plan/preflight consistency check, Android G3 readiness check, Android G3 device requirement check, current plan gate
 check, Android smoke log crash scan and Android smoke plan mode.
 
 ## Definition Of Done
@@ -102,14 +102,14 @@ failing, unless the later work is explicitly diagnostic.
 **Precondition:**
 
 - `git status --short --branch --untracked-files=all` 干净。
-- Android APK exists at `unity-mc2-demo\Builds\Android\MC2UnityDemo.apk` and passes `check_android_sdk_tooling.ps1`, `check_android_apk_freshness.ps1`, `check_android_apk_identity.ps1`, `check_android_apk_compatibility.ps1`, `check_android_apk_signing.ps1`, `check_android_apk_manifest.ps1`, `check_android_apk_payload.ps1`, `check_android_apk_size_budget.ps1`, `check_android_smoke_artifact_hygiene.ps1`, the summary schema check inside `check_android_device_preflight.ps1`, `check_android_smoke_plan_consistency.ps1`, and `check_android_g3_readiness.ps1`.
+- Android APK exists at `unity-mc2-demo\Builds\Android\MC2UnityDemo.apk` and passes `check_android_sdk_tooling.ps1`, `check_android_apk_freshness.ps1`, `check_android_apk_identity.ps1`, `check_android_apk_compatibility.ps1`, `check_android_apk_signing.ps1`, `check_android_apk_manifest.ps1`, `check_android_apk_payload.ps1`, `check_android_apk_size_budget.ps1`, `check_android_smoke_artifact_hygiene.ps1`, the summary schema check inside `check_android_device_preflight.ps1`, `check_android_smoke_plan_consistency.ps1`, `check_android_g3_readiness.ps1`, and `check_android_g3_device_requirement.ps1`.
 - `adb` exists at `$HOME\Unity\Hub\Editor\6000.4.7f1\Editor\Data\PlaybackEngines\AndroidPlayer\SDK\platform-tools\adb.exe`.
 - One physical Android device has USB debugging enabled and is trusted by this PC.
 
 **Action:**
 
 1. Run `scripts\unity\check_android_device_preflight.ps1`.
-2. If no device row is shown, `check_android_device_preflight.ps1 -AllowNoDevice` should still prove the APK/tooling/package/summary-schema path and then stop at waiting-on-device; `check_android_smoke_plan_consistency.ps1` and `check_android_g3_readiness.ps1` should also prove the no-install G3 readiness bundle; connect/authorize a phone before real G3.
+2. If no device row is shown, `check_android_device_preflight.ps1 -AllowNoDevice` should still prove the APK/tooling/package/summary-schema path and then stop at waiting-on-device; `check_android_smoke_plan_consistency.ps1` and `check_android_g3_readiness.ps1` should also prove the no-install G3 readiness bundle; `check_android_g3_device_requirement.ps1` should prove strict readiness still requires a phone; connect/authorize a phone before real G3.
 3. If a device is present, run `scripts\unity\android_device_smoke.ps1`; it installs the APK, launches it, waits briefly and captures ignored `analysis-output/android-device-smoke.log`.
 4. Record whether the app reaches battle/debrief manually or by command-file smoke.
 
@@ -127,6 +127,7 @@ git status --short --branch --untracked-files=all
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_device_preflight.ps1 -AllowNoDevice
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_smoke_plan_consistency.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_g3_readiness.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_g3_device_requirement.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\android_device_smoke.ps1
 ```
 
@@ -157,6 +158,7 @@ scripts\unity\android_device_smoke.ps1 -PlanOnly -> ScreenshotCapture: True, Scr
 scripts\unity\android_device_smoke.ps1 -PlanOnly -> SummaryWrite: True, Summary -> analysis-output\android-device-smoke-summary.json.
 scripts\unity\check_android_smoke_plan_consistency.ps1 -> Android smoke plan/preflight consistency check OK.
 scripts\unity\check_android_g3_readiness.ps1 -> Android G3 readiness check waiting on device.
+scripts\unity\check_android_g3_device_requirement.ps1 -> Android G3 device requirement check waiting on device.
 scripts\unity\check_android_device_preflight.ps1 -AllowNoDevice -> Android device smoke preflight waiting on device.
 APK package -> com.DefaultCompany.unitymc2demo.
 APK activity -> com.unity3d.player.UnityPlayerGameActivity.
@@ -173,6 +175,7 @@ Android smoke summary schema -> SelfTest reports Android smoke summary check sel
 Android smoke summary preflight -> device preflight reports smoke summary schema OK before waiting on device.
 Android smoke plan/preflight consistency -> plan mode and preflight agree on package, activity, evidence paths, execution flags and summary schema readiness.
 Android G3 readiness -> direct readiness gate reports waiting on device after passing preflight, plan consistency, plan mode, log scanner and summary schema checks.
+Android G3 device requirement -> strict readiness is not accepted without an authorized Android phone.
 adb devices -> no device rows.
 G3 still requires a physical Android phone with USB debugging enabled and authorized.
 ```
@@ -269,6 +272,7 @@ Minimum device target for the first pass:
 | G3-R1o | Device-smoke preflight includes summary schema | preflight output | `check_android_device_preflight.ps1 -AllowNoDevice` reports `smoke summary schema` and `Android smoke summary check self-test OK` before waiting on device |
 | G3-R1p | Device-smoke plan and preflight agree before install | consistency output | `check_android_smoke_plan_consistency.ps1` reports `Android smoke plan/preflight consistency check OK` for package, activity, evidence paths, execution flags and summary schema readiness |
 | G3-R1q | Direct G3 readiness bundle passes before install | readiness output | `check_android_g3_readiness.ps1` reports `Android G3 readiness check waiting on device` when no authorized phone is connected, after preflight, plan consistency, plan mode, log scanner and summary schema checks pass |
+| G3-R1r | Strict G3 readiness requires a real device | device requirement output | `check_android_g3_device_requirement.ps1` reports `Android G3 device requirement check waiting on device` when no authorized phone is connected and OK only after strict readiness sees a phone |
 | G3-R1b | Device-smoke helper can preview planned actions without a device | plan output | `android_device_smoke.ps1 -PlanOnly` reports package, activity, log path and install/launch/log-check actions |
 | G3-R2 | APK installs cleanly | installed package | `adb install -r <apk>` returns success |
 | G3-R3 | App launches without immediate crash | app process/log | `adb logcat` has no fatal crash during launch |
@@ -294,6 +298,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_androi
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_smoke_summary.ps1 -SelfTest
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_smoke_plan_consistency.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_g3_readiness.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_g3_device_requirement.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\android_device_smoke.ps1 -PlanOnly
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\android_device_smoke.ps1
 git status --short --branch --untracked-files=all

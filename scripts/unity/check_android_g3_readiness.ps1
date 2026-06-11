@@ -58,8 +58,15 @@ function Invoke-ChildScript {
         $ScriptPath
     ) + $Arguments
 
-    $output = & powershell @processArgs 2>&1
-    $exitCode = $LASTEXITCODE
+    $previousErrorActionPreference = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+    try {
+        $output = & powershell @processArgs 2>&1
+        $exitCode = $LASTEXITCODE
+    }
+    finally {
+        $ErrorActionPreference = $previousErrorActionPreference
+    }
     $lines = @($output | ForEach-Object { $_.ToString() })
 
     return [pscustomobject]@{
@@ -105,14 +112,26 @@ if (-not $RequireDevice) {
 }
 
 $preflightResult = Invoke-ChildScript -ScriptPath $androidPreflightScript -Arguments $preflightArgs
-if ($preflightResult.ExitCode -ne 0) {
+$preflightNoDevice = $preflightResult.Text -like "*No Android device rows.*" -or $preflightResult.Text -like "*No Android device found.*" -or $preflightResult.Text -like "*No authorized Android device found.*"
+$strictDeviceMissing = $preflightResult.ExitCode -ne 0 -and $RequireDevice -and $preflightNoDevice
+if ($strictDeviceMissing) {
+    $waitingOnDevice = $true
+    Add-Row -Check "device preflight" -Status "WAITING" -Detail "strict readiness requires an authorized Android phone"
+    Add-Failure "Android G3 readiness requires a connected and authorized Android phone."
+}
+elseif ($preflightResult.ExitCode -ne 0) {
     Add-ChildFailures -Label "Android device preflight" -Result $preflightResult
 }
 
-Assert-TextContains -Text $preflightResult.Text -Needle "smoke summary schema" -Label "Android device preflight"
-Assert-TextContains -Text $preflightResult.Text -Needle "Android smoke summary check self-test OK." -Label "Android device preflight"
+if (-not $strictDeviceMissing) {
+    Assert-TextContains -Text $preflightResult.Text -Needle "smoke summary schema" -Label "Android device preflight"
+    Assert-TextContains -Text $preflightResult.Text -Needle "Android smoke summary check self-test OK." -Label "Android device preflight"
+}
 
-if ($preflightResult.Text -like "*Android device smoke preflight waiting on device.*") {
+if ($waitingOnDevice) {
+    # Already recorded above through the strict device requirement path.
+}
+elseif ($preflightResult.Text -like "*Android device smoke preflight waiting on device.*") {
     $waitingOnDevice = $true
     Add-Row -Check "device preflight" -Status "WAITING" -Detail "authorized Android phone not connected"
 }
@@ -162,10 +181,6 @@ if ($summaryResult.ExitCode -ne 0) {
 
 Assert-TextContains -Text $summaryResult.Text -Needle "Android smoke summary check self-test OK." -Label "Android smoke summary schema"
 Add-Row -Check "summary schema" -Status "OK" -Detail "self-test"
-
-if ($RequireDevice -and $waitingOnDevice) {
-    Add-Failure "Android G3 readiness requires a connected and authorized Android phone."
-}
 
 if ($failures.Count -gt 0) {
     Write-Host "Android G3 readiness check failed."

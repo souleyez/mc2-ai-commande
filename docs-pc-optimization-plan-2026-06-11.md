@@ -14,7 +14,7 @@
 
 Mobile support remains the product priority, but `G3 Android Device Smoke` is waiting on a physical Android phone with USB debugging authorized. While that device blocker existed, this plan used PC demo optimization to keep the Windows demo moving.
 
-The current PC/mobile wait-state optimization pass is now sealed through PC36. This does not move G4/G5 mobile touch and performance ahead of G3; the next mobile gate still requires the physical authorized phone.
+The current PC/mobile wait-state optimization pass is now sealed through PC37. This does not move G4/G5 mobile touch and performance ahead of G3; the next mobile gate still requires the physical authorized phone.
 
 ## Definition Of Done
 
@@ -56,6 +56,7 @@ The current PC optimization pass is complete when:
 - Android smoke summary schema is checked inside the direct G3 device-smoke preflight before it reports waiting-on-device or OK.
 - Android smoke plan/preflight consistency can be checked before G3, proving plan mode and direct preflight agree on package, activity, evidence paths, execution flags and summary schema readiness.
 - Android G3 readiness can be checked before install, bundling device preflight, plan/preflight consistency, smoke plan, log scanner self-test and summary schema self-test in one direct mobile gate.
+- Android G3 device requirement can be checked before install, proving strict readiness cannot pass without an authorized Android phone.
 - Sparse battle HUD can be checked without launching Unity through `check_battle_hud_sparse_contract.ps1`.
 - Demo source hygiene can be checked without launching Unity through `check_demo_source_hygiene.ps1`.
 - AI deputy contract can be checked without launching Unity or calling the model through `check_ai_deputy_contract.ps1`.
@@ -74,6 +75,7 @@ The current PC optimization pass is complete when:
 - Android device-smoke preflight can self-test the summary schema without a device through `check_android_device_preflight.ps1 -AllowNoDevice`.
 - Android smoke plan/preflight consistency can be checked without a device through `check_android_smoke_plan_consistency.ps1`.
 - Android G3 readiness can be checked without installing through `check_android_g3_readiness.ps1`, reporting waiting-on-device when no authorized phone is connected.
+- Android G3 device requirement can be checked without installing through `check_android_g3_device_requirement.ps1`, reporting waiting-on-device when strict readiness only lacks a phone.
 - No generated screenshot, JSON sidecar, log, Windows build output, APK/AAB, or private reference export is staged.
 
 ## Execution Gate Order
@@ -117,6 +119,7 @@ The current PC optimization pass is complete when:
 | PC34 | Done | Add Android smoke summary preflight check | Direct G3 device-smoke preflight runs the summary schema self-test before reporting waiting-on-device or OK |
 | PC35 | Done | Add Android smoke plan/preflight consistency check | Plan mode and direct G3 preflight agree on package, activity, evidence paths, execution flags and summary readiness |
 | PC36 | Done | Add Android G3 readiness check | Bundle direct G3 no-install readiness checks before real-device smoke |
+| PC37 | Done | Add Android G3 device requirement check | Strict G3 readiness cannot pass without an authorized Android phone |
 
 Do not open another PC polish gate from visual inspection alone. If the issue is collision, damage, command state or objective logic, first prove it in `BattleCore`.
 
@@ -1386,7 +1389,7 @@ git status --short --branch --untracked-files=all
 - Run `check_android_smoke_summary.ps1 -SelfTest`.
 - Report waiting-on-device when the only missing piece is an authorized Android phone.
 - Wire readiness checking into `check_current_plan_gate.ps1`.
-- Update handoff, mobile and evidence docs to keep the current PC/mobile wait-state status sealed through PC36.
+- Update handoff, mobile and evidence docs to keep the then-current PC/mobile wait-state status sealed through the PC36 checkpoint.
 
 **Acceptance:**
 
@@ -1407,6 +1410,41 @@ git status --short --branch --untracked-files=all
 ```
 
 **Commit:** `Add Android G3 readiness check`
+
+## Completed Target: PC37 Add Android G3 Device Requirement Check
+
+**Goal:** 在 G3 真机仍不可用时，不提前做 G4/G5；明确区分“前置环境已准备好但等待设备”和“真实 G3 已完成”。严格 G3 readiness 必须要求授权 Android 手机，不能被无设备 readiness bundle 误判通过。
+
+**Scope:**
+
+- Add `scripts/unity/check_android_g3_device_requirement.ps1`.
+- Run `check_android_g3_readiness.ps1 -RequireDevice`.
+- Accept the current no-phone machine only as `waiting on device`.
+- Accept OK only when strict readiness passes with an authorized phone.
+- Fail for non-device readiness failures.
+- Wire device requirement checking into `check_current_plan_gate.ps1`.
+- Update handoff, mobile and evidence docs to keep the current PC/mobile wait-state status sealed through PC37.
+
+**Acceptance:**
+
+- `check_android_g3_device_requirement.ps1` prints `Android G3 device requirement check waiting on device` on the current no-device machine.
+- It prints `Android G3 device requirement check OK` only when strict readiness sees an authorized phone.
+- `check_current_plan_gate.ps1` includes an explicit Android G3 device requirement gate.
+- No APK, log, screenshot, summary or generated output is staged.
+
+**Validation:**
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_g3_device_requirement.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_g3_readiness.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_current_plan_gate.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_controlled_demo_handoff.ps1 -RunReadiness
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_mobile_command_model_preflight.ps1
+git diff --check
+git status --short --branch --untracked-files=all
+```
+
+**Commit:** `Add Android G3 device requirement check`
 
 ## Stop Conditions
 
