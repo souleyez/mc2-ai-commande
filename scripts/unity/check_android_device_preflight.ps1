@@ -172,6 +172,32 @@ else {
     Add-Row -Check "apksigner" -Status "OK" -Detail $ApksignerPath
 }
 
+$sdkToolingScript = Join-Path $PSScriptRoot "check_android_sdk_tooling.ps1"
+if (-not (Test-Path -LiteralPath $sdkToolingScript)) {
+    Add-Failure "Missing Android SDK tooling checker: $sdkToolingScript"
+}
+else {
+    $toolingResult = Invoke-NativeCommand -FilePath "powershell" -Arguments @(
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        $sdkToolingScript,
+        "-RepoRoot",
+        $RepoRoot,
+        "-AndroidPlayerPath",
+        $androidPlayer
+    )
+
+    $toolingOutput = $toolingResult.Output -join " "
+    if ($toolingResult.ExitCode -ne 0 -or $toolingOutput -notlike "*Android SDK tooling check OK.*") {
+        Add-Failure "Android SDK tooling preflight failed: $toolingOutput"
+    }
+    else {
+        Add-Row -Check "SDK tooling" -Status "OK" -Detail "Android SDK tooling check OK."
+    }
+}
+
 if ((Test-Path -LiteralPath $ApkPath) -and (Test-Path -LiteralPath $AaptPath)) {
     $metadata = Get-ApkMetadata -Apk $ApkPath -Aapt $AaptPath
     if ([string]::IsNullOrWhiteSpace($metadata.PackageName)) {

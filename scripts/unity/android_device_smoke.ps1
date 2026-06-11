@@ -51,6 +51,20 @@ if (-not (Test-Path -LiteralPath $AdbPath)) {
     throw "Missing adb: $AdbPath"
 }
 
+$sdkToolingScript = Join-Path $PSScriptRoot "check_android_sdk_tooling.ps1"
+if (-not (Test-Path -LiteralPath $sdkToolingScript)) {
+    throw "Missing Android SDK tooling checker: $sdkToolingScript"
+}
+
+$toolingOutput = & powershell -NoProfile -ExecutionPolicy Bypass -File $sdkToolingScript -RepoRoot $RepoRoot -AndroidPlayerPath $androidPlayer 2>&1
+if ($LASTEXITCODE -ne 0) {
+    foreach ($line in @($toolingOutput | ForEach-Object { $_.ToString() })) {
+        Write-Host $line
+    }
+
+    throw "Android SDK tooling check failed with exit code $LASTEXITCODE"
+}
+
 $apkFreshnessScript = Join-Path $PSScriptRoot "check_android_apk_freshness.ps1"
 if (-not (Test-Path -LiteralPath $apkFreshnessScript)) {
     throw "Missing Android APK freshness checker: $apkFreshnessScript"

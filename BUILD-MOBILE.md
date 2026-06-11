@@ -100,6 +100,22 @@ Android APK freshness check OK
 
 If this reports a stale APK, rebuild Android before running any G3 device smoke.
 
+Check that the Android SDK tooling installed under Unity is still the expected
+toolchain for this APK:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_sdk_tooling.ps1
+```
+
+Expected:
+
+```text
+Android SDK tooling check OK
+```
+
+This checks Unity's AndroidPlayer SDK, NDK, OpenJDK, `build-tools;36.0.0`,
+`platforms;android-36`, adb, aapt and apksigner before install.
+
 Check that the Android APK identity matches the expected package and launch
 activity:
 
@@ -213,7 +229,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_androi
 ```
 
 The strict form requires one authorized Android device. The waiting-state form
-still checks the APK, Android APK freshness, Android APK identity, Android APK
+still checks the APK, Android SDK tooling, Android APK freshness, Android APK identity, Android APK
 compatibility, Android APK signing, Android APK manifest, Android APK payload,
 Android APK size budget, adb, aapt, apksigner, package name and launchable
 activity, then reports that G3 is waiting on a device.
@@ -236,11 +252,11 @@ Expected:
 Android device smoke plan OK
 ```
 
-The helper verifies APK freshness, identity, compatibility, signing, manifest,
-payload and size budget, discovers the APK package name through `aapt`, checks
-that exactly one authorized Android device is connected, installs the APK,
-launches it, waits briefly, captures logcat, scans the log for strong crash
-markers, and fails if the package does not stay running.
+The helper verifies SDK tooling plus APK freshness, identity, compatibility,
+signing, manifest, payload and size budget, discovers the APK package name
+through `aapt`, checks that exactly one authorized Android device is connected,
+installs the APK, launches it, waits briefly, captures logcat, scans the log for
+strong crash markers, and fails if the package does not stay running.
 
 Self-test the log scanner without a device:
 
@@ -301,6 +317,7 @@ analysis-output\unity-validate-mobile-baseline.log -> MC2 demo contract validati
 analysis-output\unity-build-android.log -> Build Finished, Result: Success.
 analysis-output\unity-build-android-pc22-freshness.log -> MC2 Unity demo Android build OK
 unity-mc2-demo\Builds\Android\MC2UnityDemo.apk -> exists, 20,667,008 bytes
+scripts\unity\check_android_sdk_tooling.ps1 -> Android SDK tooling check OK
 scripts\unity\check_android_apk_freshness.ps1 -> Android APK freshness check OK
 scripts\unity\check_android_apk_identity.ps1 -> Android APK identity check OK
 scripts\unity\check_android_apk_compatibility.ps1 -> Android APK compatibility check OK

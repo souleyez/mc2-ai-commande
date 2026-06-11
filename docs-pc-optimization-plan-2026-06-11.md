@@ -14,7 +14,7 @@
 
 Mobile support remains the product priority, but `G3 Android Device Smoke` is waiting on a physical Android phone with USB debugging authorized. While that device blocker existed, this plan used PC demo optimization to keep the Windows demo moving.
 
-The current PC/mobile wait-state optimization pass is now sealed through PC28. This does not move G4/G5 mobile touch and performance ahead of G3; the next mobile gate still requires the physical authorized phone.
+The current PC/mobile wait-state optimization pass is now sealed through PC29. This does not move G4/G5 mobile touch and performance ahead of G3; the next mobile gate still requires the physical authorized phone.
 
 ## Definition Of Done
 
@@ -41,6 +41,7 @@ The current PC optimization pass is complete when:
 - Current plan gate can be checked by one script that wraps handoff/readiness, Windows build freshness, demo source hygiene, AI deputy contract, mobile command model, battle HUD sparse contract and Android device-smoke preflight state.
 - Android device smoke scans captured logcat for strong crash markers before accepting a real-device launch.
 - Android device smoke can be previewed with `-PlanOnly` without a connected phone.
+- Android SDK tooling can be checked before G3, proving Unity's AndroidPlayer SDK, NDK, OpenJDK, build tools, platform and command-line tools are present.
 - Android APK freshness can be checked before G3, proving the ignored APK is newer than tracked Unity build inputs.
 - Android APK identity can be checked before G3, proving the package name and launch activity match the install/launch commands.
 - Android APK compatibility can be checked before G3, proving min SDK, target SDK and native ABI metadata match the intended Android smoke target.
@@ -51,6 +52,7 @@ The current PC optimization pass is complete when:
 - Sparse battle HUD can be checked without launching Unity through `check_battle_hud_sparse_contract.ps1`.
 - Demo source hygiene can be checked without launching Unity through `check_demo_source_hygiene.ps1`.
 - AI deputy contract can be checked without launching Unity or calling the model through `check_ai_deputy_contract.ps1`.
+- Android SDK tooling can be checked without launching Unity through `check_android_sdk_tooling.ps1`.
 - Android APK freshness can be checked without launching Unity through `check_android_apk_freshness.ps1`.
 - Android APK identity can be checked without launching Unity through `check_android_apk_identity.ps1`.
 - Android APK compatibility can be checked without launching Unity through `check_android_apk_compatibility.ps1`.
@@ -93,6 +95,7 @@ The current PC optimization pass is complete when:
 | PC26 | Done | Add Android APK manifest check | Check permission allowlist, required hardware features and supported screens before G3 install/launch |
 | PC27 | Done | Add Android APK payload check | Check Unity/IL2CPP runtime payload and ABI folders before G3 install/launch |
 | PC28 | Done | Add Android APK size budget check | Check current APK package size stays within the early mobile demo install-readiness budget |
+| PC29 | Done | Add Android SDK tooling check | Check Unity AndroidPlayer SDK, NDK, OpenJDK, build-tools, platform, adb, aapt and apksigner before G3 install/launch |
 
 Do not open another PC polish gate from visual inspection alone. If the issue is collision, damage, command state or objective logic, first prove it in `BattleCore`.
 
@@ -1077,7 +1080,7 @@ git status --short --branch --untracked-files=all
 - Require the APK to be at least 1 MiB, catching implausibly truncated output.
 - Require the APK to stay at or below 100 MiB for the current early mobile demo.
 - Wire size-budget checking into `check_android_device_preflight.ps1`, `android_device_smoke.ps1`, and `check_current_plan_gate.ps1`.
-- Update handoff, mobile and evidence docs to keep the current PC/mobile wait-state status sealed through PC28.
+- Update handoff, mobile and evidence docs to keep the then-current PC/mobile wait-state status aligned with the size-budget checkpoint.
 
 **Acceptance:**
 
@@ -1103,6 +1106,44 @@ git status --short --branch --untracked-files=all
 ```
 
 **Commit:** `Add Android APK size budget check`
+
+## Completed Target: PC29 Add Android SDK Tooling Check
+
+**Goal:** 在 G3 真机仍不可用时，不提前做 G4/G5；把 Android SDK 工具链做成机器检查，避免设备到位后才发现 adb、aapt、apksigner、build-tools、platform、NDK 或 OpenJDK 环境漂移。
+
+**Scope:**
+
+- Add `scripts/unity/check_android_sdk_tooling.ps1`.
+- Require Unity AndroidPlayer SDK, NDK and OpenJDK paths to exist.
+- Require `build-tools;36.0.0`, `platforms;android-36`, `android.jar`, adb, aapt and apksigner.
+- Check stable version output for adb, aapt and apksigner.
+- Wire SDK tooling checking into `check_android_device_preflight.ps1`, `android_device_smoke.ps1`, and `check_current_plan_gate.ps1`.
+- Update handoff, mobile and evidence docs to keep the current PC/mobile wait-state status sealed through PC29.
+
+**Acceptance:**
+
+- The Android SDK tooling checker fails if AndroidPlayer, SDK, NDK or OpenJDK is missing.
+- It fails if build-tools 36.0.0 or android-36 platform is missing.
+- It fails if adb, aapt or apksigner is missing or cannot report a version.
+- `check_android_device_preflight.ps1 -AllowNoDevice` checks SDK tooling before reporting the expected waiting-on-device state.
+- `android_device_smoke.ps1 -PlanOnly` and real device smoke reject SDK tooling drift before install/launch.
+- `check_current_plan_gate.ps1` includes an explicit Android SDK tooling gate.
+- No APK, log or generated output is staged.
+
+**Validation:**
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_sdk_tooling.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_device_preflight.ps1 -AllowNoDevice
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\android_device_smoke.ps1 -PlanOnly
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_current_plan_gate.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_controlled_demo_handoff.ps1 -RunReadiness
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_mobile_command_model_preflight.ps1
+git diff --check
+git status --short --branch --untracked-files=all
+```
+
+**Commit:** `Add Android SDK tooling check`
 
 ## Stop Conditions
 
