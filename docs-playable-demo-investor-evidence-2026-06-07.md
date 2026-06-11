@@ -19,6 +19,7 @@ Refreshed on 2026-06-12 after `Package PC controlled demo evidence`.
 | Contact and collision | Pass | Current battle sidecars report `ContactClearance ... overlaps=0 ... status=separated`, including dense objective and north patrol presets; the sidecar tolerance treats sub-1-unit clearance jitter as touching, not a gameplay overlap. |
 | Damage story | Pass | `damage-demo` reports `left-arm-lost`, `legs-lost`, `cockpit-lost`, `pilotRisk=1`, `destroyedUnits=1`, and weapon families `energy+missile+ballistic+explosive`. |
 | Replacement boundary | Pass | `content-packs/project-owned-starter.example.json`, `content-packs/project-owned-visual-slice.example.json`, and `content-packs/project-owned-art-safe-slice.example.json` pass the public content boundary check; current local screenshots remain development evidence, not public final art. |
+| Public boundary preflight | Pass | `scripts/content-pack/check_controlled_demo_public_boundary.ps1` reports `Controlled demo public boundary preflight OK` for project-owned metadata examples; with `-CheckDevBuild`, the current Windows development build remains expected `Result: FAILED`. |
 
 Evidence-package judgment: the current local Windows Demo evidence set now combines the PC4 Windows build, visible-flow smoke, six fresh screenshots/sidecars, manifest-driven local visuals, a clean replacement id path, and a metadata-only art-safe mission-slice target. It is suitable for controlled external demonstration, not public release.
 

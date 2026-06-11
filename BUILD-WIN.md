@@ -77,6 +77,24 @@ captures, MechLab no-toggle fitting, terrain readability, sparse battle HUD,
 contact separation, and damage-demo story. It reads ignored local evidence and
 does not create new artifacts.
 
+Check the public boundary for the controlled-demo metadata package:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\content-pack\check_controlled_demo_public_boundary.ps1
+```
+
+Optionally confirm the current local Windows development build is still blocked
+from public packaging:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\content-pack\check_controlled_demo_public_boundary.ps1 -CheckDevBuild
+```
+
+The public boundary preflight validates only project-owned metadata examples by
+default. With `-CheckDevBuild`, the current development build is expected to
+return `Result: FAILED`; that confirms the dev build has not accidentally been
+treated as a public-safe package.
+
 Expected success strings:
 
 - `MC2 demo contract validation OK`
@@ -84,6 +102,7 @@ Expected success strings:
 - `MC2 Unity demo Windows build OK`
 - `Windows demo launch preflight OK`
 - `Controlled demo evidence check OK`
+- `Controlled demo public boundary preflight OK`
 - `MC2 demo smoke test exiting with code 0`
 - `MC2 reference visual captures passed`
 

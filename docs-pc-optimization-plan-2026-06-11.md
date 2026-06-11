@@ -14,7 +14,7 @@
 
 Mobile support remains the product priority, but `G3 Android Device Smoke` is waiting on a physical Android phone with USB debugging authorized. While that device blocker existed, this plan used PC demo optimization to keep the Windows demo moving.
 
-The current PC optimization pass is now sealed through PC6. This does not move G4/G5 mobile touch and performance ahead of G3; the next mobile gate still requires the physical authorized phone.
+The current PC optimization pass is now sealed through PC7. This does not move G4/G5 mobile touch and performance ahead of G3; the next mobile gate still requires the physical authorized phone.
 
 ## Definition Of Done
 
@@ -30,6 +30,7 @@ The current PC optimization pass is complete when:
 - MechLab PC flow is easy to read: mounted weapon blocks are whole-grid objects, all installed weapons are active, heat/weight/slot legality is visible, no enable/disable toggle returns.
 - Controlled Windows demo launch has a preflight helper and defaults to a stable 1280x720 windowed launch.
 - Controlled Windows demo evidence can be checked by script without rerunning Unity.
+- Controlled Windows demo public boundary metadata can be checked by script without packaging or creating artifacts.
 - No generated screenshot, JSON sidecar, log, Windows build output, APK/AAB, or private reference export is staged.
 
 ## Execution Gate Order
@@ -43,6 +44,7 @@ The current PC optimization pass is complete when:
 | PC4 | Done | Package controlled PC demo evidence | Refresh walkthrough/evidence and keep generated artifacts ignored |
 | PC5 | Done | Add PC demo launch preflight | Check Windows build presence and launch with stable window args |
 | PC6 | Done | Add controlled demo evidence check | Check build, visible-flow log and six capture sidecars |
+| PC7 | Done | Add controlled demo public boundary preflight | Check clean project-owned metadata examples and optionally confirm the dev build remains blocked for public packaging |
 
 Do not open another PC polish gate from visual inspection alone. If the issue is collision, damage, command state or objective logic, first prove it in `BattleCore`.
 
@@ -314,6 +316,36 @@ git status --short --branch --untracked-files=all
 - Does not change gameplay, BattleCore, HUD, MechLab, content packs or generated evidence behavior.
 
 **Commit:** `Add controlled demo evidence check`
+
+## Completed Target: PC7 Add Controlled Demo Public Boundary Preflight
+
+**Goal:** 在 G3 真机仍不可用时，只把当前受控演示的公开内容边界做成可机器检查状态，不改玩法、不生成素材、不把开发构建误标成 public-safe。
+
+**Files:**
+
+- Create: `scripts/content-pack/check_controlled_demo_public_boundary.ps1`
+- Modify: `BUILD-WIN.md`
+- Modify: `README.md`
+- Modify: current plan docs and evidence page
+
+**Validation:**
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\content-pack\check_controlled_demo_public_boundary.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\content-pack\check_controlled_demo_public_boundary.ps1 -CheckDevBuild
+git diff --check
+git status --short --branch --untracked-files=all
+```
+
+**Acceptance:**
+
+- Checks `project-owned-starter`, `project-owned-text-safe-slice`, `project-owned-visual-slice`, and `project-owned-art-safe-slice`.
+- Requires each clean metadata target to return `Result: OK`.
+- With `-CheckDevBuild`, confirms the current Windows development build returns expected `Result: FAILED`.
+- Reads existing files only and does not create artifacts.
+- Does not change gameplay, BattleCore, HUD, MechLab, content packs or generated evidence behavior.
+
+**Commit:** `Add controlled demo public boundary preflight`
 
 ## Stop Conditions
 
