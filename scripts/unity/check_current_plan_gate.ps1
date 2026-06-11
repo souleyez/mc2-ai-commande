@@ -106,6 +106,7 @@ $androidSmokeArtifactHygieneScript = Resolve-RepoPath -RelativePath "scripts\uni
 $aiDeputyScript = Resolve-RepoPath -RelativePath "scripts\unity\check_ai_deputy_contract.ps1"
 $mobileCommandScript = Resolve-RepoPath -RelativePath "scripts\unity\check_mobile_command_model_preflight.ps1"
 $battleHudScript = Resolve-RepoPath -RelativePath "scripts\unity\check_battle_hud_sparse_contract.ps1"
+$pcVisualCaptureSanityScript = Resolve-RepoPath -RelativePath "scripts\unity\check_pc_visual_capture_sanity.ps1"
 $androidSdkToolingScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_sdk_tooling.ps1"
 $androidApkFreshnessScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_apk_freshness.ps1"
 $androidApkIdentityScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_apk_identity.ps1"
@@ -167,6 +168,12 @@ Invoke-GateStep `
     -ScriptPath $battleHudScript `
     -Arguments @("-RepoRoot", $RepoRoot) `
     -RequiredMarkers @("Battle HUD sparse contract check OK.")
+
+Invoke-GateStep `
+    -Name "PC visual capture sanity gate" `
+    -ScriptPath $pcVisualCaptureSanityScript `
+    -Arguments @("-RepoRoot", $RepoRoot) `
+    -RequiredMarkers @("PC visual capture sanity check OK.")
 
 Invoke-GateStep `
     -Name "Android SDK tooling gate" `

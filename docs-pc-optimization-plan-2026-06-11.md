@@ -14,7 +14,7 @@
 
 Mobile support remains the product priority, but `G3 Android Device Smoke` is waiting on a physical Android phone with USB debugging authorized. While that device blocker existed, this plan used PC demo optimization to keep the Windows demo moving.
 
-The current PC/mobile wait-state optimization pass is now sealed through PC37. This does not move G4/G5 mobile touch and performance ahead of G3; the next mobile gate still requires the physical authorized phone.
+The current PC/mobile wait-state optimization pass is now sealed through PC38. This does not move G4/G5 mobile touch and performance ahead of G3; the next mobile gate still requires the physical authorized phone.
 
 ## Definition Of Done
 
@@ -38,7 +38,7 @@ The current PC optimization pass is complete when:
 - Android device-smoke readiness can be checked without installing or launching the app, and can explicitly stop at waiting-on-device when no phone is connected.
 - PC core playable contract can be checked by one script that runs the Unity/BattleCore validator and requires command-state, solo-return, Jet, occupancy, damage/ejection and debrief/relaunch coverage.
 - Mobile command model preflight can be checked without launching Unity, proving the current PC command surface still maps to status rows, Jet, map/bay/system, compact objective, sparse HUD and MechLab no-toggle fitting.
-- Current plan gate can be checked by one script that wraps handoff/readiness, Windows build freshness, demo source hygiene, AI deputy contract, mobile command model, battle HUD sparse contract and Android device-smoke preflight state.
+- Current plan gate can be checked by one script that wraps handoff/readiness, Windows build freshness, demo source hygiene, AI deputy contract, mobile command model, battle HUD sparse contract, PC visual capture sanity and Android device-smoke preflight state.
 - Android device smoke scans captured logcat for strong crash markers before accepting a real-device launch.
 - Android device smoke can be previewed with `-PlanOnly` without a connected phone.
 - Android SDK tooling can be checked before G3, proving Unity's AndroidPlayer SDK, NDK, OpenJDK, build tools, platform and command-line tools are present.
@@ -57,6 +57,7 @@ The current PC optimization pass is complete when:
 - Android smoke plan/preflight consistency can be checked before G3, proving plan mode and direct preflight agree on package, activity, evidence paths, execution flags and summary schema readiness.
 - Android G3 readiness can be checked before install, bundling device preflight, plan/preflight consistency, smoke plan, log scanner self-test and summary schema self-test in one direct mobile gate.
 - Android G3 device requirement can be checked before install, proving strict readiness cannot pass without an authorized Android phone.
+- PC visual capture sanity can be checked without launching Unity, proving the six controlled-demo PNG captures have expected dimensions, size, color variety, center visibility, contrast, low magenta fallback color and non-monochrome content.
 - Sparse battle HUD can be checked without launching Unity through `check_battle_hud_sparse_contract.ps1`.
 - Demo source hygiene can be checked without launching Unity through `check_demo_source_hygiene.ps1`.
 - AI deputy contract can be checked without launching Unity or calling the model through `check_ai_deputy_contract.ps1`.
@@ -76,6 +77,7 @@ The current PC optimization pass is complete when:
 - Android smoke plan/preflight consistency can be checked without a device through `check_android_smoke_plan_consistency.ps1`.
 - Android G3 readiness can be checked without installing through `check_android_g3_readiness.ps1`, reporting waiting-on-device when no authorized phone is connected.
 - Android G3 device requirement can be checked without installing through `check_android_g3_device_requirement.ps1`, reporting waiting-on-device when strict readiness only lacks a phone.
+- PC visual capture sanity can be checked without launching Unity through `check_pc_visual_capture_sanity.ps1`, reporting `PC visual capture sanity check OK`.
 - No generated screenshot, JSON sidecar, log, Windows build output, APK/AAB, or private reference export is staged.
 
 ## Execution Gate Order
@@ -120,6 +122,7 @@ The current PC optimization pass is complete when:
 | PC35 | Done | Add Android smoke plan/preflight consistency check | Plan mode and direct G3 preflight agree on package, activity, evidence paths, execution flags and summary readiness |
 | PC36 | Done | Add Android G3 readiness check | Bundle direct G3 no-install readiness checks before real-device smoke |
 | PC37 | Done | Add Android G3 device requirement check | Strict G3 readiness cannot pass without an authorized Android phone |
+| PC38 | Done | Add PC visual capture sanity check | Six controlled-demo PNG captures cannot regress to blank, flat, pink-box or low-information images |
 
 Do not open another PC polish gate from visual inspection alone. If the issue is collision, damage, command state or objective logic, first prove it in `BattleCore`.
 
@@ -1423,7 +1426,7 @@ git status --short --branch --untracked-files=all
 - Accept OK only when strict readiness passes with an authorized phone.
 - Fail for non-device readiness failures.
 - Wire device requirement checking into `check_current_plan_gate.ps1`.
-- Update handoff, mobile and evidence docs to keep the current PC/mobile wait-state status sealed through PC37.
+- Update handoff, mobile and evidence docs to keep the then-current PC/mobile wait-state status sealed through the PC37 checkpoint.
 
 **Acceptance:**
 
@@ -1445,6 +1448,38 @@ git status --short --branch --untracked-files=all
 ```
 
 **Commit:** `Add Android G3 device requirement check`
+
+## Completed Target: PC38 Add PC Visual Capture Sanity Check
+
+**Goal:** 在 G3 真机仍不可用时，不提前做 G4/G5；把当前受控演示六张 PNG 截图的基本图像质量做成轻量门禁，避免空白、纯色、粉框或低信息量色块被误当成可展示证据。
+
+**Scope:**
+
+- Add `scripts/unity/check_pc_visual_capture_sanity.ps1`.
+- Read `mechlab`, `spawn`, `airfield`, `hangar-contact`, `damage-demo` and `north-patrol` PNGs from `analysis-output\reference-visual-captures`.
+- Check resolution, PNG size, sampled unique colors, center unique colors, center lit ratio, luminance standard deviation, magenta fallback ratio and near-monochrome ratio.
+- Wire visual capture sanity checking into `check_current_plan_gate.ps1`.
+- Update handoff, mobile and evidence docs to keep the current PC/mobile wait-state status sealed through PC38.
+
+**Acceptance:**
+
+- `check_pc_visual_capture_sanity.ps1` prints `PC visual capture sanity check OK` on the current six captures.
+- `check_current_plan_gate.ps1` includes an explicit PC visual capture sanity gate.
+- `check_controlled_demo_handoff.ps1 -RunReadiness` includes the script and docs markers.
+- No screenshot, sidecar, log, APK or build output is staged.
+
+**Validation:**
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_pc_visual_capture_sanity.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_current_plan_gate.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_controlled_demo_handoff.ps1 -RunReadiness
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_demo_source_hygiene.ps1
+git diff --check
+git status --short --branch --untracked-files=all
+```
+
+**Commit:** `Add PC visual capture sanity check`
 
 ## Stop Conditions
 

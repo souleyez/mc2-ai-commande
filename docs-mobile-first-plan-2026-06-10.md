@@ -35,20 +35,20 @@ signing and manifest install-target metadata, Unity/IL2CPP runtime payload,
 APK size budget, Android smoke artifact hygiene, Android smoke screenshot
 evidence capture, Android smoke summary evidence output, Android smoke
 summary schema check, Android smoke summary preflight check and Android smoke
-plan/preflight consistency check, Android G3 readiness check and Android G3 device requirement check. The real G3 device smoke is still waiting on a physical Android
+plan/preflight consistency check, Android G3 readiness check and Android G3 device requirement check. PC wait-state capture evidence is additionally guarded by `check_pc_visual_capture_sanity.ps1`. The real G3 device smoke is still waiting on a physical Android
 phone that is visible through `adb devices` and authorized for USB debugging.
 
 While G3 is waiting, the active project work may continue on PC demo
 optimization as defined in `docs-pc-optimization-plan-2026-06-11.md`. This does
 not advance G4/G5 ahead of G3; it only keeps Windows demo quality moving while
 the required phone is unavailable. The current PC/mobile waiting-state work is
-sealed through PC37, including the PC core playable contract check, mobile
+sealed through PC38, including the PC core playable contract check, mobile
 command model preflight, battle HUD sparse contract check, demo source hygiene
 check, AI deputy contract check, Windows demo build freshness check, controlled
 demo evidence freshness check, controlled demo capture log freshness check,
 Android SDK tooling check, Android APK freshness check, Android APK identity check, Android APK
 compatibility check, Android APK signing check, Android APK manifest check,
-Android APK payload check, Android APK size budget check, Android smoke artifact hygiene check, Android smoke screenshot evidence capture, Android smoke summary evidence output, Android smoke summary schema check, Android smoke summary preflight check, Android smoke plan/preflight consistency check, Android G3 readiness check, Android G3 device requirement check, current plan gate
+Android APK payload check, Android APK size budget check, Android smoke artifact hygiene check, Android smoke screenshot evidence capture, Android smoke summary evidence output, Android smoke summary schema check, Android smoke summary preflight check, Android smoke plan/preflight consistency check, Android G3 readiness check, Android G3 device requirement check, PC visual capture sanity check, current plan gate
 check, Android smoke log crash scan and Android smoke plan mode.
 
 ## Definition Of Done
@@ -159,6 +159,7 @@ scripts\unity\android_device_smoke.ps1 -PlanOnly -> SummaryWrite: True, Summary 
 scripts\unity\check_android_smoke_plan_consistency.ps1 -> Android smoke plan/preflight consistency check OK.
 scripts\unity\check_android_g3_readiness.ps1 -> Android G3 readiness check waiting on device.
 scripts\unity\check_android_g3_device_requirement.ps1 -> Android G3 device requirement check waiting on device.
+scripts\unity\check_pc_visual_capture_sanity.ps1 -> PC visual capture sanity check OK.
 scripts\unity\check_android_device_preflight.ps1 -AllowNoDevice -> Android device smoke preflight waiting on device.
 APK package -> com.DefaultCompany.unitymc2demo.
 APK activity -> com.unity3d.player.UnityPlayerGameActivity.
