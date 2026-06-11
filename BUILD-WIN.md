@@ -107,6 +107,16 @@ This checks tracked and staged paths plus `.gitignore` markers so generated
 evidence, Unity builds, APK/AAB outputs and private reference art stay out of
 source commits.
 
+Check the AI deputy contract without launching Unity or calling the model:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_ai_deputy_contract.ps1
+```
+
+This checks source and command-script markers proving MiniMax remains optional,
+slow, high-level and rule-fallback guarded, while normal visible-flow smoke does
+not request MiniMax commander steps.
+
 Check the PC core playable BattleCore contract:
 
 ```powershell
@@ -147,10 +157,10 @@ Check the current plan gate without launching Unity:
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_current_plan_gate.ps1
 ```
 
-The current plan gate wraps handoff/readiness, demo source hygiene, mobile
-command model, battle HUD sparse contract and Android device-smoke preflight
-checks. With no authorized phone connected it should still pass while reporting
-Android as waiting on device.
+The current plan gate wraps handoff/readiness, demo source hygiene, AI deputy
+contract, mobile command model, battle HUD sparse contract and Android
+device-smoke preflight checks. With no authorized phone connected it should
+still pass while reporting Android as waiting on device.
 
 Self-test the Android smoke log scanner:
 
@@ -201,6 +211,7 @@ Expected success strings:
 - `Controlled demo readiness preflight OK`
 - `Controlled demo handoff consistency check OK`
 - `Demo source hygiene check OK`
+- `AI deputy contract check OK`
 - `PC core playable contract check OK`
 - `Mobile command model preflight OK`
 - `Battle HUD sparse contract check OK`

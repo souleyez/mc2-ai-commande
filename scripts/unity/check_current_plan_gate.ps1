@@ -102,6 +102,7 @@ function Invoke-GateStep {
 $handoffScript = Resolve-RepoPath -RelativePath "scripts\unity\check_controlled_demo_handoff.ps1"
 $readinessScript = Resolve-RepoPath -RelativePath "scripts\unity\check_controlled_demo_readiness.ps1"
 $sourceHygieneScript = Resolve-RepoPath -RelativePath "scripts\unity\check_demo_source_hygiene.ps1"
+$aiDeputyScript = Resolve-RepoPath -RelativePath "scripts\unity\check_ai_deputy_contract.ps1"
 $mobileCommandScript = Resolve-RepoPath -RelativePath "scripts\unity\check_mobile_command_model_preflight.ps1"
 $battleHudScript = Resolve-RepoPath -RelativePath "scripts\unity\check_battle_hud_sparse_contract.ps1"
 $androidPreflightScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_device_preflight.ps1"
@@ -129,6 +130,12 @@ Invoke-GateStep `
     -ScriptPath $sourceHygieneScript `
     -Arguments @("-RepoRoot", $RepoRoot) `
     -RequiredMarkers @("Demo source hygiene check OK.")
+
+Invoke-GateStep `
+    -Name "AI deputy contract gate" `
+    -ScriptPath $aiDeputyScript `
+    -Arguments @("-RepoRoot", $RepoRoot) `
+    -RequiredMarkers @("AI deputy contract check OK.")
 
 Invoke-GateStep `
     -Name "Mobile command model gate" `

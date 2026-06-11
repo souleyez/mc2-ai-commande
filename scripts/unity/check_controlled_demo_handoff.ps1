@@ -114,6 +114,7 @@ Assert-ScriptExists -RelativePath "scripts\unity\check_controlled_demo_evidence.
 Assert-ScriptExists -RelativePath "scripts\unity\check_controlled_demo_readiness.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_controlled_demo_handoff.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_demo_source_hygiene.ps1"
+Assert-ScriptExists -RelativePath "scripts\unity\check_ai_deputy_contract.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_android_device_preflight.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\android_device_smoke.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_pc_core_playable_contract.ps1"
@@ -125,9 +126,10 @@ Assert-ScriptExists -RelativePath "scripts\content-pack\check_controlled_demo_pu
 
 Assert-FileContains -RelativePath "README.md" -Markers @(
     "AI RTS Commander Lab",
-    "PC1-PC17",
+    "PC1-PC18",
     "check_controlled_demo_handoff.ps1",
     "check_demo_source_hygiene.ps1",
+    "check_ai_deputy_contract.ps1",
     "check_android_device_preflight.ps1",
     "android_device_smoke.ps1",
     "check_pc_core_playable_contract.ps1",
@@ -156,6 +158,8 @@ Assert-FileContains -RelativePath "BUILD-WIN.md" -Markers @(
     "Controlled demo handoff consistency check OK",
     "check_demo_source_hygiene.ps1",
     "Demo source hygiene check OK",
+    "check_ai_deputy_contract.ps1",
+    "AI deputy contract check OK",
     "Controlled demo readiness preflight OK"
 )
 
@@ -166,9 +170,10 @@ Assert-FileContains -RelativePath "BUILD-MOBILE.md" -Markers @(
 )
 
 Assert-FileContains -RelativePath "docs-ai-rts-commander-current-master-plan-2026-06-07.md" -Markers @(
-    "PC1-PC17",
+    "PC1-PC18",
     "Add controlled demo handoff consistency check",
     "Add demo source hygiene check",
+    "Add AI deputy contract check",
     "Add Android device smoke preflight",
     "Add PC core playable contract check",
     "Add mobile command model preflight",
@@ -178,6 +183,7 @@ Assert-FileContains -RelativePath "docs-ai-rts-commander-current-master-plan-202
     "Add Android smoke plan mode",
     "check_controlled_demo_handoff.ps1",
     "check_demo_source_hygiene.ps1",
+    "check_ai_deputy_contract.ps1",
     "check_pc_core_playable_contract.ps1",
     "check_mobile_command_model_preflight.ps1",
     "check_battle_hud_sparse_contract.ps1",
@@ -187,9 +193,10 @@ Assert-FileContains -RelativePath "docs-ai-rts-commander-current-master-plan-202
 )
 
 Assert-FileContains -RelativePath "docs-ai-rts-commander-current-detailed-plan-2026-06-07.md" -Markers @(
-    "PC1-PC17",
+    "PC1-PC18",
     "Add controlled demo handoff consistency check",
     "Add demo source hygiene check",
+    "Add AI deputy contract check",
     "Add Android device smoke preflight",
     "Add PC core playable contract check",
     "Add mobile command model preflight",
@@ -199,6 +206,7 @@ Assert-FileContains -RelativePath "docs-ai-rts-commander-current-detailed-plan-2
     "Add Android smoke plan mode",
     "check_controlled_demo_handoff.ps1",
     "check_demo_source_hygiene.ps1",
+    "check_ai_deputy_contract.ps1",
     "check_pc_core_playable_contract.ps1",
     "check_mobile_command_model_preflight.ps1",
     "check_battle_hud_sparse_contract.ps1",
@@ -208,9 +216,10 @@ Assert-FileContains -RelativePath "docs-ai-rts-commander-current-detailed-plan-2
 )
 
 Assert-FileContains -RelativePath "docs-pc-optimization-plan-2026-06-11.md" -Markers @(
-    "sealed through PC17",
+    "sealed through PC18",
     "Add controlled demo handoff consistency check",
     "Add demo source hygiene check",
+    "Add AI deputy contract check",
     "Add Android device smoke preflight",
     "Add PC core playable contract check",
     "Add mobile command model preflight",
@@ -220,11 +229,13 @@ Assert-FileContains -RelativePath "docs-pc-optimization-plan-2026-06-11.md" -Mar
     "Add Android smoke plan mode",
     "check_controlled_demo_handoff.ps1",
     "check_demo_source_hygiene.ps1",
+    "check_ai_deputy_contract.ps1",
     "check_battle_hud_sparse_contract.ps1"
 )
 
 Assert-FileContains -RelativePath "docs-playable-demo-investor-evidence-2026-06-07.md" -Markers @(
     "Demo source hygiene",
+    "AI deputy contract",
     "PC core playable contract",
     "Mobile command model preflight",
     "Battle HUD sparse contract",
@@ -234,6 +245,7 @@ Assert-FileContains -RelativePath "docs-playable-demo-investor-evidence-2026-06-
     "Readiness preflight",
     "Handoff consistency",
     "check_demo_source_hygiene.ps1",
+    "check_ai_deputy_contract.ps1",
     "check_pc_core_playable_contract.ps1",
     "check_mobile_command_model_preflight.ps1",
     "check_battle_hud_sparse_contract.ps1",
@@ -244,9 +256,10 @@ Assert-FileContains -RelativePath "docs-playable-demo-investor-evidence-2026-06-
 )
 
 Assert-FileContains -RelativePath "docs-machine-handoff-plan-2026-06-07.md" -Markers @(
-    "PC1-PC17",
+    "PC1-PC18",
     "G3 Run Android device smoke",
     "check_demo_source_hygiene.ps1",
+    "check_ai_deputy_contract.ps1",
     "check_pc_core_playable_contract.ps1",
     "check_mobile_command_model_preflight.ps1",
     "check_battle_hud_sparse_contract.ps1",

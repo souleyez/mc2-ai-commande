@@ -14,7 +14,7 @@
 
 Mobile support remains the product priority, but `G3 Android Device Smoke` is waiting on a physical Android phone with USB debugging authorized. While that device blocker existed, this plan used PC demo optimization to keep the Windows demo moving.
 
-The current PC/mobile wait-state optimization pass is now sealed through PC17. This does not move G4/G5 mobile touch and performance ahead of G3; the next mobile gate still requires the physical authorized phone.
+The current PC/mobile wait-state optimization pass is now sealed through PC18. This does not move G4/G5 mobile touch and performance ahead of G3; the next mobile gate still requires the physical authorized phone.
 
 ## Definition Of Done
 
@@ -36,11 +36,12 @@ The current PC optimization pass is complete when:
 - Android device-smoke readiness can be checked without installing or launching the app, and can explicitly stop at waiting-on-device when no phone is connected.
 - PC core playable contract can be checked by one script that runs the Unity/BattleCore validator and requires command-state, solo-return, Jet, occupancy, damage/ejection and debrief/relaunch coverage.
 - Mobile command model preflight can be checked without launching Unity, proving the current PC command surface still maps to status rows, Jet, map/bay/system, compact objective, sparse HUD and MechLab no-toggle fitting.
-- Current plan gate can be checked by one script that wraps handoff/readiness, mobile command model and Android device-smoke preflight state.
+- Current plan gate can be checked by one script that wraps handoff/readiness, demo source hygiene, AI deputy contract, mobile command model, battle HUD sparse contract and Android device-smoke preflight state.
 - Android device smoke scans captured logcat for strong crash markers before accepting a real-device launch.
 - Android device smoke can be previewed with `-PlanOnly` without a connected phone.
 - Sparse battle HUD can be checked without launching Unity through `check_battle_hud_sparse_contract.ps1`.
 - Demo source hygiene can be checked without launching Unity through `check_demo_source_hygiene.ps1`.
+- AI deputy contract can be checked without launching Unity or calling the model through `check_ai_deputy_contract.ps1`.
 - No generated screenshot, JSON sidecar, log, Windows build output, APK/AAB, or private reference export is staged.
 
 ## Execution Gate Order
@@ -65,6 +66,7 @@ The current PC optimization pass is complete when:
 | PC15 | Done | Add Android smoke plan mode | Preview the Android device smoke helper's resolved paths and actions without selecting a device |
 | PC16 | Done | Add battle HUD sparse contract check | Check source, capture gate and mobile command preflight agree on sparse active-battle HUD without launching Unity |
 | PC17 | Done | Add demo source hygiene check | Check tracked/staged paths and ignore markers keep generated evidence, Unity builds and private reference art out of source commits |
+| PC18 | Done | Add AI deputy contract check | Check MiniMax stays optional, slow, high-level, rule-fallback guarded, absent from frame loops and not invoked by default smoke |
 
 Do not open another PC polish gate from visual inspection alone. If the issue is collision, damage, command state or objective logic, first prove it in `BattleCore`.
 
@@ -673,6 +675,39 @@ git status --short --branch --untracked-files=all
 - Current plan gate includes the demo source hygiene check.
 
 **Commit:** `Add demo source hygiene check`
+
+## Completed Target: PC18 Add AI Deputy Contract Check
+
+**Goal:** 在 G3 真机仍不可用时，不扩大玩法、不消耗模型 token；把 AI 副官只做慢频高层决策、本地规则继续负责具体战斗的边界做成轻量机器检查。
+
+**Files:**
+
+- Create: `scripts/unity/check_ai_deputy_contract.ps1`
+- Modify: `scripts/unity/check_current_plan_gate.ps1`
+- Modify: `scripts/unity/check_controlled_demo_handoff.ps1`
+- Modify: README/BUILD-WIN/current plans/evidence/handoff docs
+
+**Validation:**
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_ai_deputy_contract.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_current_plan_gate.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_controlled_demo_handoff.ps1 -RunReadiness
+git diff --check
+git status --short --branch --untracked-files=all
+```
+
+**Acceptance:**
+
+- The script reads source, command files and docs without launching Unity.
+- The check performs no MiniMax/API request and requires no key.
+- MiniMax prompt remains directive-only, slow and high-level; no coordinates, unit ids, JSON, markdown or tactical micro output.
+- Startup MiniMax use remains opt-in through `-mc2MinimaxCommanderSteps`, clamped to a small count, and falls back to local rules when unavailable.
+- Normal visible-flow/demo scripts do not request MiniMax steps by default.
+- Unity frame loops do not instantiate or call MiniMax commander logic.
+- Current plan gate includes the AI deputy contract check.
+
+**Commit:** `Add AI deputy contract check`
 
 ## Stop Conditions
 
