@@ -116,6 +116,7 @@ $androidApkPayloadScript = Resolve-RepoPath -RelativePath "scripts\unity\check_a
 $androidApkSizeBudgetScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_apk_size_budget.ps1"
 $androidPreflightScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_device_preflight.ps1"
 $androidSmokeScript = Resolve-RepoPath -RelativePath "scripts\unity\android_device_smoke.ps1"
+$androidSmokePlanConsistencyScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_smoke_plan_consistency.ps1"
 $androidLogScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_smoke_log.ps1"
 $androidSummaryScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_smoke_summary.ps1"
 
@@ -249,6 +250,12 @@ Invoke-GateStep `
         "Summary:",
         "SummaryWrite: True"
     )
+
+Invoke-GateStep `
+    -Name "Android smoke plan consistency gate" `
+    -ScriptPath $androidSmokePlanConsistencyScript `
+    -Arguments @("-RepoRoot", $RepoRoot) `
+    -RequiredMarkers @("Android smoke plan/preflight consistency check OK.")
 
 if ($failures.Count -gt 0) {
     Write-Host "Current plan gate check failed."

@@ -25,8 +25,9 @@ As of this handoff plan:
 - Remote warning: GitHub currently reports the repository moved to `git@github.com:souleyez/mc2-ai-commande.git`; pushes to the configured `ai-origin` have still succeeded.
 - Upstream source remote kept for history: `origin https://github.com/alariq/mc2.git`
 - Current branch state after the latest controlled demo checkpoint: `master...ai-origin/master`
-- Latest sealed PC/mobile wait-state checkpoint: `PC1-PC34`
-- Last completed PC checkpoint: `Add Android smoke summary preflight check`
+- Latest sealed PC/mobile wait-state checkpoint: `PC1-PC35`
+- Last completed PC checkpoint: `Add Android smoke plan/preflight consistency check`
+- Previous PC checkpoint retained in the gate chain: `Add Android smoke summary preflight check`
 - Previous PC checkpoint retained in the gate chain: `Add Android smoke summary schema check`
 - Previous PC checkpoint retained in the gate chain: `Add Android smoke summary evidence output`
 - Previous PC checkpoint retained in the gate chain: `Add Android smoke screenshot evidence capture`
@@ -83,6 +84,7 @@ The machine switch is safe only when all of these are true:
 - `scripts/unity/android_device_smoke.ps1 -PlanOnly` prints `Android device smoke plan OK`.
 - `scripts/unity/android_device_smoke.ps1 -PlanOnly` prints `ScreenshotCapture: True` and `analysis-output\android-device-smoke.png`.
 - `scripts/unity/android_device_smoke.ps1 -PlanOnly` prints `SummaryWrite: True` and `analysis-output\android-device-smoke-summary.json`.
+- `scripts/unity/check_android_smoke_plan_consistency.ps1` prints `Android smoke plan/preflight consistency check OK`.
 - Any AI API key is configured through environment variables, not committed.
 - Optional private reference visuals remain ignored and local-only.
 
@@ -448,7 +450,23 @@ This proves the real device-smoke helper can resolve the APK, adb, aapt,
 package, activity, log path and planned install/launch/log-check actions before
 a phone is connected.
 
-**Step 13: Run Android device-smoke preflight directly if needed**
+**Step 13: Check Android smoke plan/preflight consistency**
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_smoke_plan_consistency.ps1
+```
+
+Expected:
+
+```text
+Android smoke plan/preflight consistency check OK
+```
+
+This proves plan mode and direct G3 preflight agree on package, activity,
+ignored evidence paths, execution flags and summary schema readiness before a
+phone is connected.
+
+**Step 14: Run Android device-smoke preflight directly if needed**
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_device_preflight.ps1 -AllowNoDevice
@@ -471,7 +489,7 @@ Android device smoke preflight OK
 This checks the APK, adb, aapt, package name and launchable activity without
 installing or launching the app.
 
-**Step 13: Set paths for rebuilding evidence if needed**
+**Step 15: Set paths for rebuilding evidence if needed**
 
 ```powershell
 $Repo = (Get-Location).Path
@@ -480,7 +498,7 @@ $Unity = "$HOME\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe"
 
 If `$Unity` does not exist, point it to the installed Unity editor path.
 
-**Step 14: Run validator when rebuilding or auditing from scratch**
+**Step 16: Run validator when rebuilding or auditing from scratch**
 
 ```powershell
 & $Unity `
@@ -496,7 +514,7 @@ Expected log string:
 MC2 demo contract validation OK
 ```
 
-**Step 15: Build Windows player when rebuilding or auditing from scratch**
+**Step 17: Build Windows player when rebuilding or auditing from scratch**
 
 ```powershell
 & $Unity `
@@ -513,7 +531,7 @@ Build Finished, Result: Success
 MC2 Unity demo Windows build OK
 ```
 
-**Step 16: Run visible-flow smoke without AI key when rebuilding or auditing from scratch**
+**Step 18: Run visible-flow smoke without AI key when rebuilding or auditing from scratch**
 
 ```powershell
 $env:MINIMAX_API_KEY = ""

@@ -127,6 +127,7 @@ Assert-ScriptExists -RelativePath "scripts\unity\check_android_apk_manifest.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_android_apk_payload.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_android_apk_size_budget.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\android_device_smoke.ps1"
+Assert-ScriptExists -RelativePath "scripts\unity\check_android_smoke_plan_consistency.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_pc_core_playable_contract.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_mobile_command_model_preflight.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_battle_hud_sparse_contract.ps1"
@@ -137,7 +138,7 @@ Assert-ScriptExists -RelativePath "scripts\content-pack\check_controlled_demo_pu
 
 Assert-FileContains -RelativePath "README.md" -Markers @(
     "AI RTS Commander Lab",
-    "PC1-PC34",
+    "PC1-PC35",
     "check_controlled_demo_handoff.ps1",
     "check_windows_demo_build_freshness.ps1",
     "check_demo_source_hygiene.ps1",
@@ -160,7 +161,9 @@ Assert-FileContains -RelativePath "README.md" -Markers @(
     "check_current_plan_gate.ps1",
     "check_android_smoke_log.ps1",
     "check_android_smoke_summary.ps1",
+    "check_android_smoke_plan_consistency.ps1",
     "Android smoke summary check self-test OK",
+    "Android smoke plan/preflight consistency check OK",
     "check_controlled_demo_readiness.ps1"
 )
 
@@ -180,6 +183,8 @@ Assert-FileContains -RelativePath "BUILD-WIN.md" -Markers @(
     "Android smoke log check self-test OK",
     "check_android_smoke_summary.ps1",
     "Android smoke summary check self-test OK",
+    "check_android_smoke_plan_consistency.ps1",
+    "Android smoke plan/preflight consistency check OK",
     "smoke summary schema",
     "android_device_smoke.ps1",
     "Android device smoke plan OK",
@@ -236,11 +241,13 @@ Assert-FileContains -RelativePath "BUILD-MOBILE.md" -Markers @(
     "android-device-smoke-summary.json",
     "SummaryWrite: True",
     "Android device smoke preflight waiting on device",
+    "check_android_smoke_plan_consistency.ps1",
+    "Android smoke plan/preflight consistency check OK",
     "android_device_smoke.ps1"
 )
 
 Assert-FileContains -RelativePath "docs-ai-rts-commander-current-master-plan-2026-06-07.md" -Markers @(
-    "PC1-PC34",
+    "PC1-PC35",
     "Add controlled demo handoff consistency check",
     "Add demo source hygiene check",
     "Add AI deputy contract check",
@@ -267,6 +274,7 @@ Assert-FileContains -RelativePath "docs-ai-rts-commander-current-master-plan-202
     "Add current plan gate check",
     "Add Android smoke log crash scan",
     "Add Android smoke plan mode",
+    "Add Android smoke plan/preflight consistency check",
     "check_controlled_demo_handoff.ps1",
     "check_windows_demo_build_freshness.ps1",
     "check_demo_source_hygiene.ps1",
@@ -290,11 +298,12 @@ Assert-FileContains -RelativePath "docs-ai-rts-commander-current-master-plan-202
     "SummaryWrite: True",
     "check_android_smoke_log.ps1",
     "check_android_smoke_summary.ps1",
-    "android_device_smoke.ps1"
+    "android_device_smoke.ps1",
+    "check_android_smoke_plan_consistency.ps1"
 )
 
 Assert-FileContains -RelativePath "docs-ai-rts-commander-current-detailed-plan-2026-06-07.md" -Markers @(
-    "PC1-PC34",
+    "PC1-PC35",
     "Add controlled demo handoff consistency check",
     "Add demo source hygiene check",
     "Add AI deputy contract check",
@@ -321,6 +330,7 @@ Assert-FileContains -RelativePath "docs-ai-rts-commander-current-detailed-plan-2
     "Add current plan gate check",
     "Add Android smoke log crash scan",
     "Add Android smoke plan mode",
+    "Add Android smoke plan/preflight consistency check",
     "check_controlled_demo_handoff.ps1",
     "check_windows_demo_build_freshness.ps1",
     "check_demo_source_hygiene.ps1",
@@ -344,11 +354,12 @@ Assert-FileContains -RelativePath "docs-ai-rts-commander-current-detailed-plan-2
     "SummaryWrite: True",
     "check_android_smoke_log.ps1",
     "check_android_smoke_summary.ps1",
-    "android_device_smoke.ps1"
+    "android_device_smoke.ps1",
+    "check_android_smoke_plan_consistency.ps1"
 )
 
 Assert-FileContains -RelativePath "docs-pc-optimization-plan-2026-06-11.md" -Markers @(
-    "sealed through PC34",
+    "sealed through PC35",
     "Add controlled demo handoff consistency check",
     "Add demo source hygiene check",
     "Add AI deputy contract check",
@@ -375,6 +386,7 @@ Assert-FileContains -RelativePath "docs-pc-optimization-plan-2026-06-11.md" -Mar
     "Add current plan gate check",
     "Add Android smoke log crash scan",
     "Add Android smoke plan mode",
+    "Add Android smoke plan/preflight consistency check",
     "check_controlled_demo_handoff.ps1",
     "check_windows_demo_build_freshness.ps1",
     "check_demo_source_hygiene.ps1",
@@ -393,7 +405,8 @@ Assert-FileContains -RelativePath "docs-pc-optimization-plan-2026-06-11.md" -Mar
     "android-device-smoke-summary.json",
     "SummaryWrite: True",
     "check_android_smoke_summary.ps1",
-    "check_battle_hud_sparse_contract.ps1"
+    "check_battle_hud_sparse_contract.ps1",
+    "check_android_smoke_plan_consistency.ps1"
 )
 
 Assert-FileContains -RelativePath "docs-playable-demo-investor-evidence-2026-06-07.md" -Markers @(
@@ -421,6 +434,7 @@ Assert-FileContains -RelativePath "docs-playable-demo-investor-evidence-2026-06-
     "Current plan gate",
     "Android smoke log check",
     "Android smoke plan",
+    "Android smoke plan/preflight consistency",
     "Readiness preflight",
     "Handoff consistency",
     "check_demo_source_hygiene.ps1",
@@ -433,6 +447,7 @@ Assert-FileContains -RelativePath "docs-playable-demo-investor-evidence-2026-06-
     "check_android_smoke_log.ps1",
     "check_android_smoke_summary.ps1",
     "android_device_smoke.ps1",
+    "check_android_smoke_plan_consistency.ps1",
     "android-device-smoke.png",
     "ScreenshotCapture: True",
     "android-device-smoke-summary.json",
@@ -450,10 +465,11 @@ Assert-FileContains -RelativePath "docs-playable-demo-investor-evidence-2026-06-
 )
 
 Assert-FileContains -RelativePath "docs-machine-handoff-plan-2026-06-07.md" -Markers @(
-    "PC1-PC34",
+    "PC1-PC35",
     "Add Android smoke summary evidence output",
     "Add Android smoke summary schema check",
     "Add Android smoke summary preflight check",
+    "Add Android smoke plan/preflight consistency check",
     "Add Android smoke screenshot evidence capture",
     "Add Android smoke artifact hygiene check",
     "Add Android SDK tooling check",
@@ -476,6 +492,7 @@ Assert-FileContains -RelativePath "docs-machine-handoff-plan-2026-06-07.md" -Mar
     "check_android_smoke_log.ps1",
     "check_android_smoke_summary.ps1",
     "android_device_smoke.ps1",
+    "check_android_smoke_plan_consistency.ps1",
     "android-device-smoke.png",
     "ScreenshotCapture: True",
     "android-device-smoke-summary.json",

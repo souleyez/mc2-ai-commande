@@ -250,6 +250,19 @@ compatibility, Android APK signing, Android APK manifest, Android APK payload,
 Android APK size budget, Android smoke artifact hygiene, Android smoke summary schema, adb, aapt, apksigner, package name and launchable
 activity, then reports that G3 is waiting on a device.
 
+Check that the device-smoke plan and preflight stay aligned before a phone is
+connected:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_smoke_plan_consistency.ps1
+```
+
+Expected:
+
+```text
+Android smoke plan/preflight consistency check OK
+```
+
 After preflight passes with a real device, install and collect logs:
 
 ```powershell
@@ -366,6 +379,7 @@ scripts\unity\check_android_smoke_summary.ps1 -SelfTest -> Android smoke summary
 scripts\unity\check_android_device_preflight.ps1 -AllowNoDevice -> smoke summary schema OK
 scripts\unity\android_device_smoke.ps1 -PlanOnly -> ScreenshotCapture: True, Screenshot -> analysis-output\android-device-smoke.png
 scripts\unity\android_device_smoke.ps1 -PlanOnly -> SummaryWrite: True, Summary -> analysis-output\android-device-smoke-summary.json
+scripts\unity\check_android_smoke_plan_consistency.ps1 -> Android smoke plan/preflight consistency check OK
 scripts\unity\check_android_device_preflight.ps1 -AllowNoDevice -> Android device smoke preflight waiting on device
 ```
 

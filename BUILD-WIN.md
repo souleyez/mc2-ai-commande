@@ -185,7 +185,7 @@ The current plan gate wraps handoff/readiness, Windows build freshness, demo
 source hygiene, Android smoke artifact hygiene, AI deputy contract, mobile command model, battle HUD sparse
 contract, Android SDK tooling, Android APK freshness, Android APK identity, Android APK
 compatibility, Android APK signing, Android APK manifest, Android APK payload,
-Android APK size budget, Android smoke summary schema and Android device-smoke preflight checks. The device preflight also runs the summary schema self-test. With no
+Android APK size budget, Android smoke summary schema, Android device-smoke preflight and Android smoke plan/preflight consistency checks. The device preflight also runs the summary schema self-test. With no
 authorized phone connected it should still pass while reporting Android as
 waiting on device.
 
@@ -278,6 +278,17 @@ ignored `analysis-output\android-device-smoke-summary.json` summary path, and
 enabled install/launch/log-check/screenshot/summary steps without requiring a
 connected phone.
 
+Check that Android smoke plan mode and device-smoke preflight agree:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_smoke_plan_consistency.ps1
+```
+
+This compares `android_device_smoke.ps1 -PlanOnly` with
+`check_android_device_preflight.ps1 -AllowNoDevice` for package, launch
+activity, ignored log/screenshot/summary outputs, execution flags and summary
+schema readiness.
+
 Check the public boundary for the controlled-demo metadata package:
 
 ```powershell
@@ -321,6 +332,7 @@ Expected success strings:
 - `Android APK payload check OK`
 - `Android APK size budget check OK`
 - `Android smoke log check self-test OK`
+- `Android smoke plan/preflight consistency check OK`
 - `Android device smoke plan OK`
 - `ScreenshotCapture: True`
 - `SummaryWrite: True`
