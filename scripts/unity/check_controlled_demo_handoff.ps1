@@ -127,7 +127,7 @@ Assert-ScriptExists -RelativePath "scripts\content-pack\check_controlled_demo_pu
 
 Assert-FileContains -RelativePath "README.md" -Markers @(
     "AI RTS Commander Lab",
-    "PC1-PC20",
+    "PC1-PC21",
     "check_controlled_demo_handoff.ps1",
     "check_windows_demo_build_freshness.ps1",
     "check_demo_source_hygiene.ps1",
@@ -174,12 +174,13 @@ Assert-FileContains -RelativePath "BUILD-MOBILE.md" -Markers @(
 )
 
 Assert-FileContains -RelativePath "docs-ai-rts-commander-current-master-plan-2026-06-07.md" -Markers @(
-    "PC1-PC20",
+    "PC1-PC21",
     "Add controlled demo handoff consistency check",
     "Add demo source hygiene check",
     "Add AI deputy contract check",
     "Add Windows demo build freshness check",
     "Add controlled demo evidence freshness check",
+    "Add controlled demo capture log freshness check",
     "Add Android device smoke preflight",
     "Add PC core playable contract check",
     "Add mobile command model preflight",
@@ -200,12 +201,13 @@ Assert-FileContains -RelativePath "docs-ai-rts-commander-current-master-plan-202
 )
 
 Assert-FileContains -RelativePath "docs-ai-rts-commander-current-detailed-plan-2026-06-07.md" -Markers @(
-    "PC1-PC20",
+    "PC1-PC21",
     "Add controlled demo handoff consistency check",
     "Add demo source hygiene check",
     "Add AI deputy contract check",
     "Add Windows demo build freshness check",
     "Add controlled demo evidence freshness check",
+    "Add controlled demo capture log freshness check",
     "Add Android device smoke preflight",
     "Add PC core playable contract check",
     "Add mobile command model preflight",
@@ -226,12 +228,13 @@ Assert-FileContains -RelativePath "docs-ai-rts-commander-current-detailed-plan-2
 )
 
 Assert-FileContains -RelativePath "docs-pc-optimization-plan-2026-06-11.md" -Markers @(
-    "sealed through PC20",
+    "sealed through PC21",
     "Add controlled demo handoff consistency check",
     "Add demo source hygiene check",
     "Add AI deputy contract check",
     "Add Windows demo build freshness check",
     "Add controlled demo evidence freshness check",
+    "Add controlled demo capture log freshness check",
     "Add Android device smoke preflight",
     "Add PC core playable contract check",
     "Add mobile command model preflight",
@@ -250,6 +253,7 @@ Assert-FileContains -RelativePath "docs-playable-demo-investor-evidence-2026-06-
     "Demo source hygiene",
     "Windows build freshness",
     "Evidence freshness",
+    "Capture log freshness",
     "AI deputy contract",
     "PC core playable contract",
     "Mobile command model preflight",
@@ -272,7 +276,8 @@ Assert-FileContains -RelativePath "docs-playable-demo-investor-evidence-2026-06-
 )
 
 Assert-FileContains -RelativePath "docs-machine-handoff-plan-2026-06-07.md" -Markers @(
-    "PC1-PC20",
+    "PC1-PC21",
+    "Add controlled demo capture log freshness check",
     "G3 Run Android device smoke",
     "check_windows_demo_build_freshness.ps1",
     "check_demo_source_hygiene.ps1",

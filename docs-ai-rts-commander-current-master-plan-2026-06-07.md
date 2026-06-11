@@ -8,7 +8,7 @@
 
 **Tech Stack:** Unity 6, C#, Windows PC build/smoke/capture as active demo loop, Android/iOS mobile-first after device blocker clears, deterministic BattleCore, PowerShell validator/build/smoke/capture scripts, replaceable content packs, optional high-level AI deputy adapter, later main server/map server/Web ranking contracts.
 
-**Revision:** 2026-06-12 v29. This is the current master plan after the private reference visual bridge, visible-flow seal, investor evidence package, art-safe metadata target, AI deputy offline guard, platform reward authority contract, machine handoff plan, mobile-first priority reset, Android build smoke, PC optimization resumption, PC1 baseline audit, PC2 battle readability pass, PC3 MechLab PC flow polish, PC4 controlled demo evidence package, PC5 Windows demo launcher preflight, PC6 controlled demo evidence health check, PC7 controlled demo public boundary preflight, PC8 controlled demo readiness preflight, PC9 controlled demo handoff consistency check, PC10 Android device-smoke preflight, PC11 PC core playable contract check, PC12 mobile command model preflight, PC13 current plan gate check, PC14 Android smoke log crash scan, PC15 Android smoke plan mode, PC16 battle HUD sparse contract check, PC17 demo source hygiene check, PC18 AI deputy contract check, PC19 Windows demo build freshness check, and PC20 controlled demo evidence freshness check were refreshed. Older plan files remain evidence/history; this file is the first place to read when the user says "按计划继续". The finer task breakdown now lives in `docs-ai-rts-commander-current-detailed-plan-2026-06-07.md`.
+**Revision:** 2026-06-12 v30. This is the current master plan after the private reference visual bridge, visible-flow seal, investor evidence package, art-safe metadata target, AI deputy offline guard, platform reward authority contract, machine handoff plan, mobile-first priority reset, Android build smoke, PC optimization resumption, PC1 baseline audit, PC2 battle readability pass, PC3 MechLab PC flow polish, PC4 controlled demo evidence package, PC5 Windows demo launcher preflight, PC6 controlled demo evidence health check, PC7 controlled demo public boundary preflight, PC8 controlled demo readiness preflight, PC9 controlled demo handoff consistency check, PC10 Android device-smoke preflight, PC11 PC core playable contract check, PC12 mobile command model preflight, PC13 current plan gate check, PC14 Android smoke log crash scan, PC15 Android smoke plan mode, PC16 battle HUD sparse contract check, PC17 demo source hygiene check, PC18 AI deputy contract check, PC19 Windows demo build freshness check, PC20 controlled demo evidence freshness check, and PC21 controlled demo capture log freshness check were refreshed. Older plan files remain evidence/history; this file is the first place to read when the user says "按计划继续". The finer task breakdown now lives in `docs-ai-rts-commander-current-detailed-plan-2026-06-07.md`.
 
 ---
 
@@ -51,7 +51,7 @@
 当前阶段是：
 
 ```text
-Mobile G3 Waiting On Device -> Controlled Evidence Freshness Ready
+Mobile G3 Waiting On Device -> Capture Log Freshness Ready
 ```
 
 不是从零开发，也不是马上做平台。现在要把本地 Demo 收成：
@@ -90,7 +90,7 @@ Mobile G3 Waiting On Device -> Controlled Evidence Freshness Ready
 | Gap | Why It Matters | First Fix |
 | --- | --- | --- |
 | Android 真机 smoke 等待设备 | APK 已能构建，但当前没有授权 Android 手机证明真实设备可启动并进入战斗/战报 | G3 等待连接 Android 手机，安装 APK，抓取 logcat 并记录启动结果 |
-| PC/移动前置质量本轮已收口 | Windows 构建、visible-flow、六截图、战场可读性、MechLab、演示文档、受控启动预检、构建新鲜度检查、证据健康检查、证据新鲜度检查、公开边界预检、总预检、交接一致性检查、Android 真机 smoke 前置检查、PC 核心玩法合约检查、移动指挥模型预检、战斗 HUD 稀疏合约检查、源码/生成物卫生检查、AI 副官边界检查、当前计划 gate 总预检、Android smoke 日志崩溃扫描和 Android smoke 预演模式已经形成当前展示包 | 后续 PC 优化需要先定义新的 PC21 目标；移动端仍回到 G3 真机 smoke |
+| PC/移动前置质量本轮已收口 | Windows 构建、visible-flow、六截图、战场可读性、MechLab、演示文档、受控启动预检、构建新鲜度检查、证据健康检查、证据新鲜度检查、capture 日志新鲜度检查、公开边界预检、总预检、交接一致性检查、Android 真机 smoke 前置检查、PC 核心玩法合约检查、移动指挥模型预检、战斗 HUD 稀疏合约检查、源码/生成物卫生检查、AI 副官边界检查、当前计划 gate 总预检、Android smoke 日志崩溃扫描和 Android smoke 预演模式已经形成当前展示包 | 后续 PC 优化需要先定义新的 PC22 目标；移动端仍回到 G3 真机 smoke |
 | 移动端交互和性能未验证 | 移动端是产品优先项，拿到设备后还要证明手机触控和性能可接受 | G3-G5 在设备可用后继续做真机 smoke、触控 UI 和性能预算 |
 | 清权资产还未真正接入运行包 | D1 已有 metadata 合同，但不是最终美术包 | D2 以后再做 mountable clean content pack |
 | 平台化仍停在契约层 | 奖励权威已写清楚，地图包、排行和创作者边界还要补 | F2-F4 排到移动端 gate 之后 |
@@ -364,12 +364,13 @@ Known good strings:
 | 37 | Done | `Add AI deputy contract check` | 不启动 Unity、不调用模型，检查 MiniMax 仍是可选慢频高层 directive、无 key fallback、默认 smoke 不请求模型步数、frame loop 不调用模型 | `check_ai_deputy_contract.ps1` |
 | 38 | Done | `Add Windows demo build freshness check` | 不启动 Unity，检查 ignored Windows player 输出晚于 tracked Unity build 输入，并接入 readiness preflight | `check_windows_demo_build_freshness.ps1` |
 | 39 | Done | `Add controlled demo evidence freshness check` | 受控演示 evidence check 拒绝早于当前 build/证据输入的 visible-flow 日志和六截图 sidecar | `check_controlled_demo_evidence.ps1` |
-| 40 | Later | `Adapt command UI for mobile touch` | 状态行、Jet、地图、系统和 MechLab 在手机触控可用 | device smoke |
-| 41 | Later | `Define mobile performance budget` | 记录 FPS、内存、包体、加载、热量/电量基线 | docs + device evidence |
-| 42 | Later | `Document iOS feasibility gate` | 记录 macOS/Xcode/签名/Metal/真机要求 | docs check |
-| 43 | Later | `Plan map authoring prototype` | 地图包、触发、奖励引用和验证器规划 | docs check |
-| 44 | Later | `Plan web ranking prototype` | 排行、战绩、地图页和公开资料规划 | docs check |
-| 45 | Later | `Plan creator economy boundary` | 创作者分成、皮肤、自定义、链上边界 | docs check |
+| 40 | Done | `Add controlled demo capture log freshness check` | 受控演示 evidence check 要求六个 capture 日志存在、足够新且含 preset/截图/sidecar 标记 | `check_controlled_demo_evidence.ps1` |
+| 41 | Later | `Adapt command UI for mobile touch` | 状态行、Jet、地图、系统和 MechLab 在手机触控可用 | device smoke |
+| 42 | Later | `Define mobile performance budget` | 记录 FPS、内存、包体、加载、热量/电量基线 | docs + device evidence |
+| 43 | Later | `Document iOS feasibility gate` | 记录 macOS/Xcode/签名/Metal/真机要求 | docs check |
+| 44 | Later | `Plan map authoring prototype` | 地图包、触发、奖励引用和验证器规划 | docs check |
+| 45 | Later | `Plan web ranking prototype` | 排行、战绩、地图页和公开资料规划 | docs check |
+| 46 | Later | `Plan creator economy boundary` | 创作者分成、皮肤、自定义、链上边界 | docs check |
 
 ## 6. Detailed Tasks
 
@@ -902,7 +903,7 @@ git diff --check
 | M11 Platform contracts | In Progress | main server reward authority done; map authoring, ranking and creator boundaries remain |
 | M12 Machine handoff | Done | current machine is clean and validator/build/smoke passed |
 | M13 Mobile-first viability | Waiting on Device | Android APK build smoke passed; real-device smoke waits for an authorized phone, then touch UI and performance budget remain |
-| M14 PC/mobile wait-state optimization | Done for current pass | PC1-PC20 passed: PC1 baseline, PC2 battle readability, PC3 MechLab polish, PC4 controlled demo evidence package, PC5 launch preflight, PC6 evidence health check, PC7 public boundary preflight, PC8 readiness preflight, PC9 handoff consistency check, PC10 Android device-smoke preflight, PC11 PC core playable contract check, PC12 mobile command model preflight, PC13 current plan gate check, PC14 Android smoke log crash scan, PC15 Android smoke plan mode, PC16 battle HUD sparse contract check, PC17 demo source hygiene check, PC18 AI deputy contract check, PC19 Windows demo build freshness check and PC20 controlled demo evidence freshness check |
+| M14 PC/mobile wait-state optimization | Done for current pass | PC1-PC21 passed: PC1 baseline, PC2 battle readability, PC3 MechLab polish, PC4 controlled demo evidence package, PC5 launch preflight, PC6 evidence health check, PC7 public boundary preflight, PC8 readiness preflight, PC9 handoff consistency check, PC10 Android device-smoke preflight, PC11 PC core playable contract check, PC12 mobile command model preflight, PC13 current plan gate check, PC14 Android smoke log crash scan, PC15 Android smoke plan mode, PC16 battle HUD sparse contract check, PC17 demo source hygiene check, PC18 AI deputy contract check, PC19 Windows demo build freshness check, PC20 controlled demo evidence freshness check and PC21 controlled demo capture log freshness check |
 
 ## 8. First Controlled Demo Definition Of Done
 
@@ -937,6 +938,7 @@ The Demo is ready for controlled external showing when:
 27. AI deputy contract check proves MiniMax remains optional, slow, high-level, rule-fallback guarded, absent from frame loops, and not invoked by default visible-flow smoke.
 28. Windows demo build freshness check proves the ignored Windows player output is newer than tracked Unity build inputs before controlled demo readiness is accepted.
 29. Controlled demo evidence freshness check proves visible-flow log and six capture PNG/JSON sidecars are newer than the current Windows build and evidence inputs.
+30. Controlled demo capture log freshness check proves six capture logs exist, are current, and contain preset, screenshot request and sidecar write markers.
 
 ## 9. Stop Conditions
 
@@ -955,4 +957,4 @@ Stop and reassess if:
 
 ## 10. One-Line Direction
 
-Windows 本地 Demo 的画面、碰撞、稀疏 UI、MechLab、损伤故事、受控演示证据、启动预检、构建新鲜度检查、证据健康检查、证据新鲜度检查、公开边界预检、演示总预检、交接一致性检查、Android 真机 smoke 前置检查、PC 核心玩法合约检查、移动指挥模型预检、战斗 HUD 稀疏合约检查、源码/生成物卫生检查、AI 副官边界检查、当前计划 gate 总预检、Android smoke 日志崩溃扫描、Android smoke 预演模式、公开 art-safe 元数据合同、AI 副官离线边界和主服务器奖励权威契约已经收稳；H2 validator/build/smoke 基线已过；G2 Android APK build smoke 已过；PC1-PC20 PC/移动等待态优化包已封口；G3 真机 smoke 仍等待授权 Android 手机，设备到位后继续 G3-G5，设备不到位时如继续 PC 端必须先写清新的 PC21 目标。
+Windows 本地 Demo 的画面、碰撞、稀疏 UI、MechLab、损伤故事、受控演示证据、启动预检、构建新鲜度检查、证据健康检查、证据新鲜度检查、capture 日志新鲜度检查、公开边界预检、演示总预检、交接一致性检查、Android 真机 smoke 前置检查、PC 核心玩法合约检查、移动指挥模型预检、战斗 HUD 稀疏合约检查、源码/生成物卫生检查、AI 副官边界检查、当前计划 gate 总预检、Android smoke 日志崩溃扫描、Android smoke 预演模式、公开 art-safe 元数据合同、AI 副官离线边界和主服务器奖励权威契约已经收稳；H2 validator/build/smoke 基线已过；G2 Android APK build smoke 已过；PC1-PC21 PC/移动等待态优化包已封口；G3 真机 smoke 仍等待授权 Android 手机，设备到位后继续 G3-G5，设备不到位时如继续 PC 端必须先写清新的 PC22 目标。

@@ -111,6 +111,7 @@ function Read-CaptureSidecar {
 
     $jsonPath = Join-Path $CaptureDir "$Preset.json"
     $pngPath = Join-Path $CaptureDir "$Preset.png"
+    $logPath = Join-Path $CaptureDir "$Preset.log"
 
     if (-not (Assert-FileExists -Path $jsonPath -Label "$Preset sidecar")) {
         return $null
@@ -118,6 +119,14 @@ function Read-CaptureSidecar {
 
     if (-not (Assert-FileExists -Path $pngPath -Label "$Preset screenshot")) {
         return $null
+    }
+
+    if (Assert-FileExists -Path $logPath -Label "$Preset capture log") {
+        Assert-FreshFile -Path $logPath -Anchor $captureAnchor -Label "$Preset capture log"
+        $captureLog = Get-Content -LiteralPath $logPath -Raw
+        Assert-Contains -Text $captureLog -Needle "MC2 capture preset: $Preset" -Label "$Preset capture log"
+        Assert-Contains -Text $captureLog -Needle "MC2 screenshot capture requested:" -Label "$Preset capture log"
+        Assert-Contains -Text $captureLog -Needle "MC2 capture sidecar written:" -Label "$Preset capture log"
     }
 
     Assert-FreshFile -Path $jsonPath -Anchor $captureAnchor -Label "$Preset sidecar"

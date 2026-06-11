@@ -25,8 +25,8 @@ As of this handoff plan:
 - Remote warning: GitHub currently reports the repository moved to `git@github.com:souleyez/mc2-ai-commande.git`; pushes to the configured `ai-origin` have still succeeded.
 - Upstream source remote kept for history: `origin https://github.com/alariq/mc2.git`
 - Current branch state after the latest controlled demo checkpoint: `master...ai-origin/master`
-- Latest sealed PC/mobile wait-state checkpoint: `PC1-PC20`
-- Last completed PC checkpoint: `Add controlled demo evidence freshness check`
+- Latest sealed PC/mobile wait-state checkpoint: `PC1-PC21`
+- Last completed PC checkpoint: `Add controlled demo capture log freshness check`
 - Current formal next development task after handoff: `G3 Run Android device smoke`
 
 Important: the new machine will not see local commits unless the old machine
@@ -47,7 +47,7 @@ The machine switch is safe only when all of these are true:
 - `scripts/unity/check_controlled_demo_handoff.ps1` prints `Controlled demo handoff consistency check OK`.
 - `scripts/unity/check_controlled_demo_readiness.ps1` prints `Controlled demo readiness preflight OK`.
 - `scripts/unity/check_windows_demo_build_freshness.ps1` prints `Windows demo build freshness check OK`.
-- `scripts/unity/check_controlled_demo_evidence.ps1` prints `Controlled demo evidence check OK` and rejects stale visible-flow/capture evidence.
+- `scripts/unity/check_controlled_demo_evidence.ps1` prints `Controlled demo evidence check OK` and rejects stale visible-flow/capture PNG/JSON/log evidence.
 - `scripts/unity/check_demo_source_hygiene.ps1` prints `Demo source hygiene check OK`.
 - `scripts/unity/check_ai_deputy_contract.ps1` prints `AI deputy contract check OK`.
 - `scripts/unity/check_android_device_preflight.ps1 -AllowNoDevice` prints `Android device smoke preflight waiting on device` if no phone is connected.
