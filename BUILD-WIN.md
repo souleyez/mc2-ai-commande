@@ -120,15 +120,27 @@ planned phone command loop: status rows, Jet, map, bay/system, compact
 objectives, hidden combat log/save/account/debug overlays, and MechLab fitting
 without weapon enable/disable toggles.
 
+Check the sparse battle HUD contract without launching Unity:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_battle_hud_sparse_contract.ps1
+```
+
+This checks the current Unity presentation source, capture gate, and mobile
+command model preflight all require the same sparse battle HUD: status rows,
+compact objective, closed mission map, hidden combat log, hidden overlays,
+disabled save UI, and sidecar-only debug occupancy.
+
 Check the current plan gate without launching Unity:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_current_plan_gate.ps1
 ```
 
-The current plan gate wraps handoff/readiness, mobile command model and Android
-device-smoke preflight checks. With no authorized phone connected it should
-still pass while reporting Android as waiting on device.
+The current plan gate wraps handoff/readiness, mobile command model, battle HUD
+sparse contract and Android device-smoke preflight checks. With no authorized
+phone connected it should still pass while reporting Android as waiting on
+device.
 
 Self-test the Android smoke log scanner:
 
@@ -180,6 +192,7 @@ Expected success strings:
 - `Controlled demo handoff consistency check OK`
 - `PC core playable contract check OK`
 - `Mobile command model preflight OK`
+- `Battle HUD sparse contract check OK`
 - `Current plan gate check OK`
 - `Android smoke log check self-test OK`
 - `Android device smoke plan OK`

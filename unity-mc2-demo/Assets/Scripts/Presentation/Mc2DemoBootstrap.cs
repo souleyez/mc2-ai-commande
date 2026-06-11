@@ -6717,6 +6717,7 @@ namespace MC2Demo.Presentation
                 && summary.IndexOf("controls=all+jet+map+bay+system", StringComparison.Ordinal) >= 0
                 && summary.IndexOf("combatLog=hidden", StringComparison.Ordinal) >= 0
                 && summary.IndexOf("objective=compactObjective", StringComparison.Ordinal) >= 0
+                && summary.IndexOf("missionMap=available-closed", StringComparison.Ordinal) >= 0
                 && summary.IndexOf("accountUi=hidden", StringComparison.Ordinal) >= 0
                 && summary.IndexOf("economyUi=funds-only", StringComparison.Ordinal) >= 0
                 && summary.IndexOf("saveUi=disabled", StringComparison.Ordinal) >= 0

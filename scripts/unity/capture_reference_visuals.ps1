@@ -264,6 +264,7 @@ function Test-BattleHudCaptureSidecar {
         "controls=all+jet+map+bay+system",
         "combatLog=hidden",
         "objective=compactObjective",
+        "missionMap=available-closed",
         "accountUi=hidden",
         "economyUi=funds-only",
         "debugOccupancy=sidecar-only",

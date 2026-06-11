@@ -25,8 +25,8 @@ As of this handoff plan:
 - Remote warning: GitHub currently reports the repository moved to `git@github.com:souleyez/mc2-ai-commande.git`; pushes to the configured `ai-origin` have still succeeded.
 - Upstream source remote kept for history: `origin https://github.com/alariq/mc2.git`
 - Current branch state after the latest controlled demo checkpoint: `master...ai-origin/master`
-- Latest sealed PC/mobile wait-state checkpoint: `PC1-PC15`
-- Last completed PC checkpoint: `Add Android smoke plan mode`
+- Latest sealed PC/mobile wait-state checkpoint: `PC1-PC16`
+- Last completed PC checkpoint: `Add battle HUD sparse contract check`
 - Current formal next development task after handoff: `G3 Run Android device smoke`
 
 Important: the new machine will not see local commits unless the old machine
@@ -49,6 +49,7 @@ The machine switch is safe only when all of these are true:
 - `scripts/unity/check_android_device_preflight.ps1 -AllowNoDevice` prints `Android device smoke preflight waiting on device` if no phone is connected.
 - `scripts/unity/check_pc_core_playable_contract.ps1` prints `PC core playable contract check OK`.
 - `scripts/unity/check_mobile_command_model_preflight.ps1` prints `Mobile command model preflight OK`.
+- `scripts/unity/check_battle_hud_sparse_contract.ps1` prints `Battle HUD sparse contract check OK`.
 - `scripts/unity/check_current_plan_gate.ps1` prints `Current plan gate check OK`.
 - `scripts/unity/check_android_smoke_log.ps1 -SelfTest` prints `Android smoke log check self-test OK`.
 - `scripts/unity/android_device_smoke.ps1 -PlanOnly` prints `Android device smoke plan OK`.
@@ -283,7 +284,24 @@ still maps to the mobile command model: sparse battle HUD, status rows, Jet,
 map/bay/system, compact objective, hidden dense overlays and MechLab no-toggle
 fitting.
 
-**Step 5: Run current plan gate check**
+**Step 5: Run battle HUD sparse contract check**
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_battle_hud_sparse_contract.ps1
+```
+
+Expected:
+
+```text
+Battle HUD sparse contract check OK
+```
+
+This reads current source and gate scripts without launching Unity, proving
+normal battle still keeps status rows, compact objective, closed mission map,
+hidden combat log, disabled save UI, hidden account UI, sidecar-only debug
+occupancy and hidden overlays.
+
+**Step 6: Run current plan gate check**
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_current_plan_gate.ps1
@@ -295,11 +313,12 @@ Expected:
 Current plan gate check OK
 ```
 
-This wraps handoff/readiness, mobile command model and Android preflight checks.
-With no authorized phone connected, Android should be reported as waiting on
-device; with one authorized phone, Android should report OK.
+This wraps handoff/readiness, mobile command model, battle HUD sparse contract
+and Android preflight checks. With no authorized phone connected, Android should
+be reported as waiting on device; with one authorized phone, Android should
+report OK.
 
-**Step 6: Self-test Android smoke log scanning**
+**Step 7: Self-test Android smoke log scanning**
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_smoke_log.ps1 -SelfTest
@@ -315,7 +334,7 @@ The real device smoke helper calls this scanner after logcat capture, so a
 device launch with fatal exception, fatal signal, ANR, package process death or
 forced activity finish is not accepted as a pass.
 
-**Step 7: Preview Android device smoke plan**
+**Step 8: Preview Android device smoke plan**
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\android_device_smoke.ps1 -PlanOnly
@@ -331,7 +350,7 @@ This proves the real device-smoke helper can resolve the APK, adb, aapt,
 package, activity, log path and planned install/launch/log-check actions before
 a phone is connected.
 
-**Step 8: Run Android device-smoke preflight directly if needed**
+**Step 9: Run Android device-smoke preflight directly if needed**
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_device_preflight.ps1 -AllowNoDevice

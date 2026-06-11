@@ -102,6 +102,7 @@ function Invoke-GateStep {
 $handoffScript = Resolve-RepoPath -RelativePath "scripts\unity\check_controlled_demo_handoff.ps1"
 $readinessScript = Resolve-RepoPath -RelativePath "scripts\unity\check_controlled_demo_readiness.ps1"
 $mobileCommandScript = Resolve-RepoPath -RelativePath "scripts\unity\check_mobile_command_model_preflight.ps1"
+$battleHudScript = Resolve-RepoPath -RelativePath "scripts\unity\check_battle_hud_sparse_contract.ps1"
 $androidPreflightScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_device_preflight.ps1"
 $androidSmokeScript = Resolve-RepoPath -RelativePath "scripts\unity\android_device_smoke.ps1"
 $androidLogScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_smoke_log.ps1"
@@ -127,6 +128,12 @@ Invoke-GateStep `
     -ScriptPath $mobileCommandScript `
     -Arguments @("-RepoRoot", $RepoRoot) `
     -RequiredMarkers @("Mobile command model preflight OK.")
+
+Invoke-GateStep `
+    -Name "Battle HUD sparse contract gate" `
+    -ScriptPath $battleHudScript `
+    -Arguments @("-RepoRoot", $RepoRoot) `
+    -RequiredMarkers @("Battle HUD sparse contract check OK.")
 
 Invoke-GateStep `
     -Name "Android device gate" `

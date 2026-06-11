@@ -14,7 +14,7 @@
 
 Mobile support remains the product priority, but `G3 Android Device Smoke` is waiting on a physical Android phone with USB debugging authorized. While that device blocker existed, this plan used PC demo optimization to keep the Windows demo moving.
 
-The current PC/mobile wait-state optimization pass is now sealed through PC15. This does not move G4/G5 mobile touch and performance ahead of G3; the next mobile gate still requires the physical authorized phone.
+The current PC/mobile wait-state optimization pass is now sealed through PC16. This does not move G4/G5 mobile touch and performance ahead of G3; the next mobile gate still requires the physical authorized phone.
 
 ## Definition Of Done
 
@@ -39,6 +39,7 @@ The current PC optimization pass is complete when:
 - Current plan gate can be checked by one script that wraps handoff/readiness, mobile command model and Android device-smoke preflight state.
 - Android device smoke scans captured logcat for strong crash markers before accepting a real-device launch.
 - Android device smoke can be previewed with `-PlanOnly` without a connected phone.
+- Sparse battle HUD can be checked without launching Unity through `check_battle_hud_sparse_contract.ps1`.
 - No generated screenshot, JSON sidecar, log, Windows build output, APK/AAB, or private reference export is staged.
 
 ## Execution Gate Order
@@ -61,6 +62,7 @@ The current PC optimization pass is complete when:
 | PC13 | Done | Add current plan gate check | Run one current-state command for handoff/readiness, mobile command model and Android waiting/ready state |
 | PC14 | Done | Add Android smoke log crash scan | Scan logcat for strong crash markers after real-device smoke launch |
 | PC15 | Done | Add Android smoke plan mode | Preview the Android device smoke helper's resolved paths and actions without selecting a device |
+| PC16 | Done | Add battle HUD sparse contract check | Check source, capture gate and mobile command preflight agree on sparse active-battle HUD without launching Unity |
 
 Do not open another PC polish gate from visual inspection alone. If the issue is collision, damage, command state or objective logic, first prove it in `BattleCore`.
 
@@ -608,6 +610,37 @@ git status --short --branch --untracked-files=all
 - Current plan gate includes the plan mode.
 
 **Commit:** `Add Android smoke plan mode`
+
+## Completed Target: PC16 Add Battle HUD Sparse Contract Check
+
+**Goal:** 在 G3 真机仍不可用时，不扩大玩法；把“战斗中不用显示太多信息”做成源码级和 capture gate 级合约，避免普通战斗 HUD 重新长出大日志、存档、账号或调试覆盖层。
+
+**Files:**
+
+- Create: `scripts/unity/check_battle_hud_sparse_contract.ps1`
+- Modify: `unity-mc2-demo/Assets/Scripts/Presentation/Mc2DemoBootstrap.cs`
+- Modify: `scripts/unity/capture_reference_visuals.ps1`
+- Modify: `scripts/unity/check_current_plan_gate.ps1`
+- Modify: README/BUILD-WIN/current plans/evidence/handoff docs
+
+**Validation:**
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_battle_hud_sparse_contract.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_current_plan_gate.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_controlled_demo_handoff.ps1 -RunReadiness
+git diff --check
+git status --short --branch --untracked-files=all
+```
+
+**Acceptance:**
+
+- The script reads current Unity presentation source, capture gate and mobile command model preflight without launching Unity.
+- `SparseBattleUiRegressionSummaryOk` requires `missionMap=available-closed`.
+- `capture_reference_visuals.ps1` fails battle HUD sidecars that do not report `missionMap=available-closed`.
+- Current plan gate includes the sparse HUD contract check.
+
+**Commit:** `Add battle HUD sparse contract check`
 
 ## Stop Conditions
 
