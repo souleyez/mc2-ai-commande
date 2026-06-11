@@ -89,7 +89,23 @@ art.
 Device smoke
 ------------
 
-After the APK exists, install and collect logs from a real Android device:
+After the APK exists, first run the device-smoke preflight:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_device_preflight.ps1
+```
+
+If the phone is not connected yet, use the waiting-state form:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_device_preflight.ps1 -AllowNoDevice
+```
+
+The strict form requires one authorized Android device. The waiting-state form
+still checks the APK, adb, aapt, package name and launchable activity, then
+reports that G3 is waiting on a device.
+
+After preflight passes with a real device, install and collect logs:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\android_device_smoke.ps1
@@ -150,6 +166,7 @@ analysis-output\unity-validate-mobile-baseline.log -> MC2 demo contract validati
 analysis-output\unity-build-android.log -> Build Finished, Result: Success.
 analysis-output\unity-build-android.log -> MC2 Unity demo Android build OK
 unity-mc2-demo\Builds\Android\MC2UnityDemo.apk -> exists, 20,666,724 bytes
+scripts\unity\check_android_device_preflight.ps1 -AllowNoDevice -> Android device smoke preflight waiting on device
 ```
 
 The APK, SDK logs, Unity build folder, Gradle cache, and device logs remain

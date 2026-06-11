@@ -113,12 +113,14 @@ Assert-ScriptExists -RelativePath "scripts\unity\run_windows_demo.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_controlled_demo_evidence.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_controlled_demo_readiness.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_controlled_demo_handoff.ps1"
+Assert-ScriptExists -RelativePath "scripts\unity\check_android_device_preflight.ps1"
 Assert-ScriptExists -RelativePath "scripts\content-pack\check_controlled_demo_public_boundary.ps1"
 
 Assert-FileContains -RelativePath "README.md" -Markers @(
     "AI RTS Commander Lab",
-    "PC1-PC9",
+    "PC1-PC10",
     "check_controlled_demo_handoff.ps1",
+    "check_android_device_preflight.ps1",
     "check_controlled_demo_readiness.ps1"
 )
 
@@ -129,23 +131,32 @@ Assert-FileContains -RelativePath "BUILD-WIN.md" -Markers @(
     "Controlled demo readiness preflight OK"
 )
 
+Assert-FileContains -RelativePath "BUILD-MOBILE.md" -Markers @(
+    "check_android_device_preflight.ps1",
+    "Android device smoke preflight waiting on device",
+    "android_device_smoke.ps1"
+)
+
 Assert-FileContains -RelativePath "docs-ai-rts-commander-current-master-plan-2026-06-07.md" -Markers @(
-    "PC1-PC9",
+    "PC1-PC10",
     "Add controlled demo handoff consistency check",
+    "Add Android device smoke preflight",
     "check_controlled_demo_handoff.ps1",
-    "PC10"
+    "PC11"
 )
 
 Assert-FileContains -RelativePath "docs-ai-rts-commander-current-detailed-plan-2026-06-07.md" -Markers @(
-    "PC1-PC9",
+    "PC1-PC10",
     "Add controlled demo handoff consistency check",
+    "Add Android device smoke preflight",
     "check_controlled_demo_handoff.ps1",
-    "PC10"
+    "PC11"
 )
 
 Assert-FileContains -RelativePath "docs-pc-optimization-plan-2026-06-11.md" -Markers @(
-    "sealed through PC9",
+    "sealed through PC10",
     "Add controlled demo handoff consistency check",
+    "Add Android device smoke preflight",
     "check_controlled_demo_handoff.ps1"
 )
 
@@ -156,8 +167,9 @@ Assert-FileContains -RelativePath "docs-playable-demo-investor-evidence-2026-06-
 )
 
 Assert-FileContains -RelativePath "docs-machine-handoff-plan-2026-06-07.md" -Markers @(
-    "PC1-PC9",
+    "PC1-PC10",
     "G3 Run Android device smoke",
+    "check_android_device_preflight.ps1",
     "check_controlled_demo_handoff.ps1",
     "check_controlled_demo_readiness.ps1"
 )

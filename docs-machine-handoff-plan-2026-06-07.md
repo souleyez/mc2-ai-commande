@@ -25,7 +25,7 @@ As of this handoff plan:
 - Remote warning: GitHub currently reports the repository moved to `git@github.com:souleyez/mc2-ai-commande.git`; pushes to the configured `ai-origin` have still succeeded.
 - Upstream source remote kept for history: `origin https://github.com/alariq/mc2.git`
 - Current branch state after the latest controlled demo checkpoint: `master...ai-origin/master`
-- Latest sealed PC checkpoint: `PC1-PC9`
+- Latest sealed PC/mobile wait-state checkpoint: `PC1-PC10`
 - Last completed PC checkpoint: `Add controlled demo handoff consistency check`
 - Current formal next development task after handoff: `G3 Run Android device smoke`
 
@@ -46,6 +46,7 @@ The machine switch is safe only when all of these are true:
 - Visible-flow smoke exits with `MC2 demo smoke test exiting with code 0`.
 - `scripts/unity/check_controlled_demo_handoff.ps1` prints `Controlled demo handoff consistency check OK`.
 - `scripts/unity/check_controlled_demo_readiness.ps1` prints `Controlled demo readiness preflight OK`.
+- `scripts/unity/check_android_device_preflight.ps1 -AllowNoDevice` prints `Android device smoke preflight waiting on device` if no phone is connected.
 - Any AI API key is configured through environment variables, not committed.
 - Optional private reference visuals remain ignored and local-only.
 
@@ -244,7 +245,28 @@ Controlled demo readiness preflight OK
 This wraps launch preflight, evidence health and public boundary gates. It reads
 existing build/evidence outputs and does not regenerate screenshots.
 
-**Step 3: Set paths for rebuilding evidence if needed**
+**Step 3: Run Android device-smoke preflight**
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_device_preflight.ps1 -AllowNoDevice
+```
+
+Expected with no connected phone:
+
+```text
+Android device smoke preflight waiting on device
+```
+
+Expected with one authorized phone:
+
+```text
+Android device smoke preflight OK
+```
+
+This checks the APK, adb, aapt, package name and launchable activity without
+installing or launching the app.
+
+**Step 4: Set paths for rebuilding evidence if needed**
 
 ```powershell
 $Repo = (Get-Location).Path
@@ -253,7 +275,7 @@ $Unity = "$HOME\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe"
 
 If `$Unity` does not exist, point it to the installed Unity editor path.
 
-**Step 4: Run validator when rebuilding or auditing from scratch**
+**Step 5: Run validator when rebuilding or auditing from scratch**
 
 ```powershell
 & $Unity `
@@ -269,7 +291,7 @@ Expected log string:
 MC2 demo contract validation OK
 ```
 
-**Step 5: Build Windows player when rebuilding or auditing from scratch**
+**Step 6: Build Windows player when rebuilding or auditing from scratch**
 
 ```powershell
 & $Unity `
@@ -286,7 +308,7 @@ Build Finished, Result: Success
 MC2 Unity demo Windows build OK
 ```
 
-**Step 6: Run visible-flow smoke without AI key when rebuilding or auditing from scratch**
+**Step 7: Run visible-flow smoke without AI key when rebuilding or auditing from scratch**
 
 ```powershell
 $env:MINIMAX_API_KEY = ""

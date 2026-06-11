@@ -29,8 +29,10 @@ behind this mobile gate.
 ## Current Waiting State
 
 G2 Android build smoke is complete and the APK exists in ignored build output.
-G3 Android device smoke is waiting on a physical Android phone that is visible
-through `adb devices` and authorized for USB debugging.
+G3 Android device-smoke preflight now verifies the APK, adb, aapt, package name
+and launchable activity. The real G3 device smoke is still waiting on a physical
+Android phone that is visible through `adb devices` and authorized for USB
+debugging.
 
 While G3 is waiting, the active project work may continue on PC demo
 optimization as defined in `docs-pc-optimization-plan-2026-06-11.md`. This does
@@ -94,9 +96,9 @@ failing, unless the later work is explicitly diagnostic.
 
 **Action:**
 
-1. Run `scripts\unity\android_device_smoke.ps1`.
-2. If no device row is shown, stop at G3 and connect/authorize a phone; do not start touch UI work yet.
-3. If a device is present, the helper installs the APK, launches it, waits briefly and captures ignored `analysis-output/android-device-smoke.log`.
+1. Run `scripts\unity\check_android_device_preflight.ps1`.
+2. If no device row is shown, `check_android_device_preflight.ps1 -AllowNoDevice` should still prove the APK/tooling/package path and then stop at waiting-on-device; connect/authorize a phone before real G3.
+3. If a device is present, run `scripts\unity\android_device_smoke.ps1`; it installs the APK, launches it, waits briefly and captures ignored `analysis-output/android-device-smoke.log`.
 4. Record whether the app reaches battle/debrief manually or by command-file smoke.
 
 **Output:**
@@ -110,6 +112,7 @@ failing, unless the later work is explicitly diagnostic.
 ```powershell
 git diff --check
 git status --short --branch --untracked-files=all
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_device_preflight.ps1 -AllowNoDevice
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\android_device_smoke.ps1
 ```
 
@@ -125,6 +128,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\android_devi
 ```text
 unity-mc2-demo\Builds\Android\MC2UnityDemo.apk exists.
 scripts\unity\android_device_smoke.ps1 exists and fails clearly when no device is connected.
+scripts\unity\check_android_device_preflight.ps1 -AllowNoDevice -> Android device smoke preflight waiting on device.
+APK package -> com.DefaultCompany.unitymc2demo.
+APK activity -> com.unity3d.player.UnityPlayerGameActivity.
 adb devices -> no device rows.
 G3 still requires a physical Android phone with USB debugging enabled and authorized.
 ```
@@ -205,6 +211,7 @@ Minimum device target for the first pass:
 | ID | Requirement | Output | Verification |
 | --- | --- | --- | --- |
 | G3-R1 | Device is visible through adb | device id | `adb devices` shows one `device` row |
+| G3-R1a | Device-smoke preflight can prove APK/tooling/package readiness before install | preflight rows | `check_android_device_preflight.ps1 -AllowNoDevice` reports waiting on device, with APK, adb, aapt, package and activity OK |
 | G3-R2 | APK installs cleanly | installed package | `adb install -r <apk>` returns success |
 | G3-R3 | App launches without immediate crash | app process/log | `adb logcat` has no fatal crash during launch |
 | G3-R4 | Battle scene is reachable | manual note or smoke log | launch reaches battle mode |
@@ -215,6 +222,7 @@ Minimum device target for the first pass:
 Recommended commands:
 
 ```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_device_preflight.ps1 -AllowNoDevice
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\android_device_smoke.ps1
 git status --short --branch --untracked-files=all
 ```

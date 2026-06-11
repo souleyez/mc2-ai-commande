@@ -15,6 +15,7 @@ Refreshed on 2026-06-12 after `Package PC controlled demo evidence`.
 | Evidence health check | Pass | `scripts/unity/check_controlled_demo_evidence.ps1` reports `Controlled demo evidence check OK` by reading the Windows build, visible-flow log and six capture sidecars. |
 | Readiness preflight | Pass | `scripts/unity/check_controlled_demo_readiness.ps1` reports `Controlled demo readiness preflight OK` by wrapping launch preflight, evidence health and public boundary gates. |
 | Handoff consistency | Pass | `scripts/unity/check_controlled_demo_handoff.ps1` reports `Controlled demo handoff consistency check OK` by checking the main scripts and handoff docs agree on the current PC gate set. |
+| Android device preflight | Waiting on Device | `scripts/unity/check_android_device_preflight.ps1 -AllowNoDevice` reports APK, adb, aapt, package and launch activity are ready, then stops at waiting on an authorized Android phone. |
 | Six capture presets | Pass | `capture_reference_visuals.ps1` reports `MC2 reference visual captures passed: 6 preset(s)` for `mechlab`, `spawn`, `airfield`, `hangar-contact`, `damage-demo`, and `north-patrol`. |
 | MechLab fitting | Pass | `mechlab` capture remains the fitting proof: whole weapon block, armor/cooling filler, H/W/G pressure, `Fit OK`, `CellState=OK OPEN4 OCC12 OCC!0 OOB0`, and `noToggle=yes`. |
 | First-map visual gate | Pass | `spawn`, `airfield`, `hangar-contact`, `damage-demo`, and `north-patrol` sidecars report `FirstMapVisual ... status=ready`, readable terrain, sparse HUD, occupancy, and separated contact. |
