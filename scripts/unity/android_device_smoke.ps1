@@ -10,7 +10,8 @@ param(
     [int]$LaunchWaitSeconds = 12,
     [switch]$NoInstall,
     [switch]$NoLaunch,
-    [switch]$SkipLogCheck
+    [switch]$SkipLogCheck,
+    [switch]$PlanOnly
 )
 
 Set-StrictMode -Version Latest
@@ -133,6 +134,25 @@ if ([string]::IsNullOrWhiteSpace($ActivityName)) {
 
 if ([string]::IsNullOrWhiteSpace($PackageName)) {
     throw "PackageName is unknown. Pass -PackageName or ensure aapt can read the APK."
+}
+
+if ($PlanOnly) {
+    Write-Host "Android device smoke plan OK."
+    Write-Host "APK: $ApkPath"
+    Write-Host "adb: $AdbPath"
+    Write-Host "aapt: $AaptPath"
+    Write-Host "Package: $PackageName"
+    if (-not [string]::IsNullOrWhiteSpace($ActivityName)) {
+        Write-Host "Activity: $ActivityName"
+    }
+    else {
+        Write-Host "Activity: fallback monkey launch"
+    }
+    Write-Host "Log: $LogPath"
+    Write-Host "Install: $(-not $NoInstall)"
+    Write-Host "Launch: $(-not $NoLaunch)"
+    Write-Host "LogCheck: $(-not $SkipLogCheck)"
+    return
 }
 
 $device = Get-AdbDevice -Adb $AdbPath -RequestedDeviceId $DeviceId

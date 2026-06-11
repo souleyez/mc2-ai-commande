@@ -38,9 +38,9 @@ While G3 is waiting, the active project work may continue on PC demo
 optimization as defined in `docs-pc-optimization-plan-2026-06-11.md`. This does
 not advance G4/G5 ahead of G3; it only keeps Windows demo quality moving while
 the required phone is unavailable. The current PC/mobile waiting-state work is
-sealed through PC14, including the PC core playable contract check, mobile
-command model preflight, current plan gate check and Android smoke log crash
-scan.
+sealed through PC15, including the PC core playable contract check, mobile
+command model preflight, current plan gate check, Android smoke log crash scan
+and Android smoke plan mode.
 
 ## Definition Of Done
 
@@ -215,6 +215,7 @@ Minimum device target for the first pass:
 | --- | --- | --- | --- |
 | G3-R1 | Device is visible through adb | device id | `adb devices` shows one `device` row |
 | G3-R1a | Device-smoke preflight can prove APK/tooling/package readiness before install | preflight rows | `check_android_device_preflight.ps1 -AllowNoDevice` reports waiting on device, with APK, adb, aapt, package and activity OK |
+| G3-R1b | Device-smoke helper can preview planned actions without a device | plan output | `android_device_smoke.ps1 -PlanOnly` reports package, activity, log path and install/launch/log-check actions |
 | G3-R2 | APK installs cleanly | installed package | `adb install -r <apk>` returns success |
 | G3-R3 | App launches without immediate crash | app process/log | `adb logcat` has no fatal crash during launch |
 | G3-R3a | Device smoke log is scanned for strong crash markers | scanner output | `check_android_smoke_log.ps1` reports OK after logcat capture |
@@ -227,6 +228,7 @@ Recommended commands:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_device_preflight.ps1 -AllowNoDevice
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\android_device_smoke.ps1 -PlanOnly
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\android_device_smoke.ps1
 git status --short --branch --untracked-files=all
 ```

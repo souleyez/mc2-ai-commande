@@ -140,6 +140,16 @@ The log scanner is used by the Android device smoke helper after logcat capture
 to fail on strong crash markers such as fatal exceptions, fatal signals, ANRs
 for the package, process death and forced activity finish.
 
+Preview the Android device smoke plan without installing or launching:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\android_device_smoke.ps1 -PlanOnly
+```
+
+The plan mode resolves the APK, adb, aapt, package name, launch activity, log
+path and enabled install/launch/log-check steps without requiring a connected
+phone.
+
 Check the public boundary for the controlled-demo metadata package:
 
 ```powershell
@@ -172,6 +182,7 @@ Expected success strings:
 - `Mobile command model preflight OK`
 - `Current plan gate check OK`
 - `Android smoke log check self-test OK`
+- `Android device smoke plan OK`
 - `Controlled demo public boundary preflight OK`
 - `MC2 demo smoke test exiting with code 0`
 - `MC2 reference visual captures passed`

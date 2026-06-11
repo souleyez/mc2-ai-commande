@@ -111,6 +111,18 @@ After preflight passes with a real device, install and collect logs:
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\android_device_smoke.ps1
 ```
 
+Preview the same helper without a connected phone:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\android_device_smoke.ps1 -PlanOnly
+```
+
+Expected:
+
+```text
+Android device smoke plan OK
+```
+
 The helper discovers the APK package name through `aapt`, checks that exactly
 one authorized Android device is connected, installs the APK, launches it, waits
 briefly, captures logcat, scans the log for strong crash markers, and fails if
