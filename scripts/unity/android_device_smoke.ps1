@@ -9,7 +9,8 @@ param(
     [string]$LogPath = "",
     [int]$LaunchWaitSeconds = 12,
     [switch]$NoInstall,
-    [switch]$NoLaunch
+    [switch]$NoLaunch,
+    [switch]$SkipLogCheck
 )
 
 Set-StrictMode -Version Latest
@@ -167,6 +168,14 @@ if (-not $NoLaunch) {
 
 & $AdbPath @adbArgs logcat -d > $LogPath
 $pidOutput = (& $AdbPath @adbArgs shell pidof $PackageName) -join " "
+
+if (-not $SkipLogCheck) {
+    $logCheckScript = Join-Path $PSScriptRoot "check_android_smoke_log.ps1"
+    & powershell -NoProfile -ExecutionPolicy Bypass -File $logCheckScript -LogPath $LogPath -PackageName $PackageName
+    if ($LASTEXITCODE -ne 0) {
+        throw "Android smoke log check failed with exit code $LASTEXITCODE"
+    }
+}
 
 Write-Host "Android device smoke complete."
 Write-Host "Device: $device"

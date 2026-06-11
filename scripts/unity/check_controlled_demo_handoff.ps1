@@ -117,16 +117,18 @@ Assert-ScriptExists -RelativePath "scripts\unity\check_android_device_preflight.
 Assert-ScriptExists -RelativePath "scripts\unity\check_pc_core_playable_contract.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_mobile_command_model_preflight.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_current_plan_gate.ps1"
+Assert-ScriptExists -RelativePath "scripts\unity\check_android_smoke_log.ps1"
 Assert-ScriptExists -RelativePath "scripts\content-pack\check_controlled_demo_public_boundary.ps1"
 
 Assert-FileContains -RelativePath "README.md" -Markers @(
     "AI RTS Commander Lab",
-    "PC1-PC13",
+    "PC1-PC14",
     "check_controlled_demo_handoff.ps1",
     "check_android_device_preflight.ps1",
     "check_pc_core_playable_contract.ps1",
     "check_mobile_command_model_preflight.ps1",
     "check_current_plan_gate.ps1",
+    "check_android_smoke_log.ps1",
     "check_controlled_demo_readiness.ps1"
 )
 
@@ -138,6 +140,8 @@ Assert-FileContains -RelativePath "BUILD-WIN.md" -Markers @(
     "Mobile command model preflight OK",
     "check_current_plan_gate.ps1",
     "Current plan gate check OK",
+    "check_android_smoke_log.ps1",
+    "Android smoke log check self-test OK",
     "check_controlled_demo_handoff.ps1",
     "Controlled demo handoff consistency check OK",
     "Controlled demo readiness preflight OK"
@@ -150,38 +154,43 @@ Assert-FileContains -RelativePath "BUILD-MOBILE.md" -Markers @(
 )
 
 Assert-FileContains -RelativePath "docs-ai-rts-commander-current-master-plan-2026-06-07.md" -Markers @(
-    "PC1-PC13",
+    "PC1-PC14",
     "Add controlled demo handoff consistency check",
     "Add Android device smoke preflight",
     "Add PC core playable contract check",
     "Add mobile command model preflight",
     "Add current plan gate check",
+    "Add Android smoke log crash scan",
     "check_controlled_demo_handoff.ps1",
     "check_pc_core_playable_contract.ps1",
     "check_mobile_command_model_preflight.ps1",
-    "check_current_plan_gate.ps1"
+    "check_current_plan_gate.ps1",
+    "check_android_smoke_log.ps1"
 )
 
 Assert-FileContains -RelativePath "docs-ai-rts-commander-current-detailed-plan-2026-06-07.md" -Markers @(
-    "PC1-PC13",
+    "PC1-PC14",
     "Add controlled demo handoff consistency check",
     "Add Android device smoke preflight",
     "Add PC core playable contract check",
     "Add mobile command model preflight",
     "Add current plan gate check",
+    "Add Android smoke log crash scan",
     "check_controlled_demo_handoff.ps1",
     "check_pc_core_playable_contract.ps1",
     "check_mobile_command_model_preflight.ps1",
-    "check_current_plan_gate.ps1"
+    "check_current_plan_gate.ps1",
+    "check_android_smoke_log.ps1"
 )
 
 Assert-FileContains -RelativePath "docs-pc-optimization-plan-2026-06-11.md" -Markers @(
-    "sealed through PC13",
+    "sealed through PC14",
     "Add controlled demo handoff consistency check",
     "Add Android device smoke preflight",
     "Add PC core playable contract check",
     "Add mobile command model preflight",
     "Add current plan gate check",
+    "Add Android smoke log crash scan",
     "check_controlled_demo_handoff.ps1"
 )
 
@@ -189,20 +198,23 @@ Assert-FileContains -RelativePath "docs-playable-demo-investor-evidence-2026-06-
     "PC core playable contract",
     "Mobile command model preflight",
     "Current plan gate",
+    "Android smoke log check",
     "Readiness preflight",
     "Handoff consistency",
     "check_pc_core_playable_contract.ps1",
     "check_mobile_command_model_preflight.ps1",
     "check_current_plan_gate.ps1",
+    "check_android_smoke_log.ps1",
     "check_controlled_demo_handoff.ps1"
 )
 
 Assert-FileContains -RelativePath "docs-machine-handoff-plan-2026-06-07.md" -Markers @(
-    "PC1-PC13",
+    "PC1-PC14",
     "G3 Run Android device smoke",
     "check_pc_core_playable_contract.ps1",
     "check_mobile_command_model_preflight.ps1",
     "check_current_plan_gate.ps1",
+    "check_android_smoke_log.ps1",
     "check_android_device_preflight.ps1",
     "check_controlled_demo_handoff.ps1",
     "check_controlled_demo_readiness.ps1"

@@ -103,6 +103,7 @@ $handoffScript = Resolve-RepoPath -RelativePath "scripts\unity\check_controlled_
 $readinessScript = Resolve-RepoPath -RelativePath "scripts\unity\check_controlled_demo_readiness.ps1"
 $mobileCommandScript = Resolve-RepoPath -RelativePath "scripts\unity\check_mobile_command_model_preflight.ps1"
 $androidPreflightScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_device_preflight.ps1"
+$androidLogScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_smoke_log.ps1"
 
 $handoffArgs = @("-RepoRoot", $RepoRoot)
 
@@ -134,6 +135,12 @@ Invoke-GateStep `
         "Android device smoke preflight OK.",
         "Android device smoke preflight waiting on device."
     )
+
+Invoke-GateStep `
+    -Name "Android smoke log parser gate" `
+    -ScriptPath $androidLogScript `
+    -Arguments @("-SelfTest") `
+    -RequiredMarkers @("Android smoke log check self-test OK.")
 
 if ($failures.Count -gt 0) {
     Write-Host "Current plan gate check failed."

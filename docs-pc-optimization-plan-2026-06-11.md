@@ -14,7 +14,7 @@
 
 Mobile support remains the product priority, but `G3 Android Device Smoke` is waiting on a physical Android phone with USB debugging authorized. While that device blocker existed, this plan used PC demo optimization to keep the Windows demo moving.
 
-The current PC/mobile wait-state optimization pass is now sealed through PC13. This does not move G4/G5 mobile touch and performance ahead of G3; the next mobile gate still requires the physical authorized phone.
+The current PC/mobile wait-state optimization pass is now sealed through PC14. This does not move G4/G5 mobile touch and performance ahead of G3; the next mobile gate still requires the physical authorized phone.
 
 ## Definition Of Done
 
@@ -37,6 +37,7 @@ The current PC optimization pass is complete when:
 - PC core playable contract can be checked by one script that runs the Unity/BattleCore validator and requires command-state, solo-return, Jet, occupancy, damage/ejection and debrief/relaunch coverage.
 - Mobile command model preflight can be checked without launching Unity, proving the current PC command surface still maps to status rows, Jet, map/bay/system, compact objective, sparse HUD and MechLab no-toggle fitting.
 - Current plan gate can be checked by one script that wraps handoff/readiness, mobile command model and Android device-smoke preflight state.
+- Android device smoke scans captured logcat for strong crash markers before accepting a real-device launch.
 - No generated screenshot, JSON sidecar, log, Windows build output, APK/AAB, or private reference export is staged.
 
 ## Execution Gate Order
@@ -57,6 +58,7 @@ The current PC optimization pass is complete when:
 | PC11 | Done | Add PC core playable contract check | Run Unity/BattleCore validator through a script and require the PC core playable marker |
 | PC12 | Done | Add mobile command model preflight | Check sidecar/source/doc markers for the mobile-low-complexity command model without launching Unity |
 | PC13 | Done | Add current plan gate check | Run one current-state command for handoff/readiness, mobile command model and Android waiting/ready state |
+| PC14 | Done | Add Android smoke log crash scan | Scan logcat for strong crash markers after real-device smoke launch |
 
 Do not open another PC polish gate from visual inspection alone. If the issue is collision, damage, command state or objective logic, first prove it in `BattleCore`.
 
@@ -541,6 +543,38 @@ git status --short --branch --untracked-files=all
 - Does not launch Unity, rebuild, regenerate screenshots, install Android packages, alter gameplay or stage generated artifacts.
 
 **Commit:** `Add current plan gate check`
+
+## Completed Target: PC14 Add Android Smoke Log Crash Scan
+
+**Goal:** 在 G3 真机仍不可用时，不越过 G3；先增强真机 smoke 的失败判定，让设备到位后能自动识别 logcat 里的强崩溃信号。
+
+**Files:**
+
+- Create: `scripts/unity/check_android_smoke_log.ps1`
+- Modify: `scripts/unity/android_device_smoke.ps1`
+- Modify: `scripts/unity/check_current_plan_gate.ps1`
+- Modify: `scripts/unity/check_controlled_demo_handoff.ps1`
+- Modify: `BUILD-MOBILE.md`
+- Modify: README/plans/evidence/handoff docs
+
+**Validation:**
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_smoke_log.ps1 -SelfTest
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_current_plan_gate.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_controlled_demo_handoff.ps1 -RunReadiness
+git diff --check
+git status --short --branch --untracked-files=all
+```
+
+**Acceptance:**
+
+- `android_device_smoke.ps1` scans logcat after capture unless `-SkipLogCheck` is used.
+- Scanner catches fatal exception, fatal signal, `SIGSEGV`, `SIGABRT`, ANR for the package, package process death, forced activity finish and Unity crash marker.
+- `-SelfTest` proves both clean and crash samples without requiring a device.
+- Current plan gate includes the scanner self-test.
+
+**Commit:** `Add Android smoke log crash scan`
 
 ## Stop Conditions
 

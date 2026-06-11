@@ -130,6 +130,16 @@ The current plan gate wraps handoff/readiness, mobile command model and Android
 device-smoke preflight checks. With no authorized phone connected it should
 still pass while reporting Android as waiting on device.
 
+Self-test the Android smoke log scanner:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_smoke_log.ps1 -SelfTest
+```
+
+The log scanner is used by the Android device smoke helper after logcat capture
+to fail on strong crash markers such as fatal exceptions, fatal signals, ANRs
+for the package, process death and forced activity finish.
+
 Check the public boundary for the controlled-demo metadata package:
 
 ```powershell
@@ -161,6 +171,7 @@ Expected success strings:
 - `PC core playable contract check OK`
 - `Mobile command model preflight OK`
 - `Current plan gate check OK`
+- `Android smoke log check self-test OK`
 - `Controlled demo public boundary preflight OK`
 - `MC2 demo smoke test exiting with code 0`
 - `MC2 reference visual captures passed`

@@ -25,8 +25,8 @@ As of this handoff plan:
 - Remote warning: GitHub currently reports the repository moved to `git@github.com:souleyez/mc2-ai-commande.git`; pushes to the configured `ai-origin` have still succeeded.
 - Upstream source remote kept for history: `origin https://github.com/alariq/mc2.git`
 - Current branch state after the latest controlled demo checkpoint: `master...ai-origin/master`
-- Latest sealed PC/mobile wait-state checkpoint: `PC1-PC13`
-- Last completed PC checkpoint: `Add current plan gate check`
+- Latest sealed PC/mobile wait-state checkpoint: `PC1-PC14`
+- Last completed PC checkpoint: `Add Android smoke log crash scan`
 - Current formal next development task after handoff: `G3 Run Android device smoke`
 
 Important: the new machine will not see local commits unless the old machine
@@ -50,6 +50,7 @@ The machine switch is safe only when all of these are true:
 - `scripts/unity/check_pc_core_playable_contract.ps1` prints `PC core playable contract check OK`.
 - `scripts/unity/check_mobile_command_model_preflight.ps1` prints `Mobile command model preflight OK`.
 - `scripts/unity/check_current_plan_gate.ps1` prints `Current plan gate check OK`.
+- `scripts/unity/check_android_smoke_log.ps1 -SelfTest` prints `Android smoke log check self-test OK`.
 - Any AI API key is configured through environment variables, not committed.
 - Optional private reference visuals remain ignored and local-only.
 
@@ -297,7 +298,23 @@ This wraps handoff/readiness, mobile command model and Android preflight checks.
 With no authorized phone connected, Android should be reported as waiting on
 device; with one authorized phone, Android should report OK.
 
-**Step 6: Run Android device-smoke preflight directly if needed**
+**Step 6: Self-test Android smoke log scanning**
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_smoke_log.ps1 -SelfTest
+```
+
+Expected:
+
+```text
+Android smoke log check self-test OK
+```
+
+The real device smoke helper calls this scanner after logcat capture, so a
+device launch with fatal exception, fatal signal, ANR, package process death or
+forced activity finish is not accepted as a pass.
+
+**Step 7: Run Android device-smoke preflight directly if needed**
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_device_preflight.ps1 -AllowNoDevice
@@ -318,7 +335,7 @@ Android device smoke preflight OK
 This checks the APK, adb, aapt, package name and launchable activity without
 installing or launching the app.
 
-**Step 7: Set paths for rebuilding evidence if needed**
+**Step 8: Set paths for rebuilding evidence if needed**
 
 ```powershell
 $Repo = (Get-Location).Path

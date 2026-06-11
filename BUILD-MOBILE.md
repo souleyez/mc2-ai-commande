@@ -113,7 +113,14 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\android_devi
 
 The helper discovers the APK package name through `aapt`, checks that exactly
 one authorized Android device is connected, installs the APK, launches it, waits
-briefly, captures logcat, and fails if the package does not stay running.
+briefly, captures logcat, scans the log for strong crash markers, and fails if
+the package does not stay running.
+
+Self-test the log scanner without a device:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_smoke_log.ps1 -SelfTest
+```
 
 Manual equivalent:
 
@@ -130,6 +137,8 @@ Start-Sleep -Seconds 12
 The first manual pass must confirm:
 
 - app launches without immediate crash;
+- `check_android_smoke_log.ps1` reports no fatal exception, fatal signal, ANR,
+  process death or forced activity finish for the package;
 - battle scene is reachable;
 - visible-flow path can reach battle, debrief, repair or MechLab, and relaunch;
 - no `MINIMAX_API_KEY` is required;
