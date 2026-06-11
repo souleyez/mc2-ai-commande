@@ -35,14 +35,14 @@ The current PC optimization pass is complete when:
 | Gate | Status | Purpose | Required Before Next Gate |
 | --- | --- | --- | --- |
 | PC0 | Done | Existing Windows baseline | Prior validator/build/smoke and visual captures have passed |
-| PC1 | Next | Audit current PC baseline | Re-run validator, Windows build, visible-flow smoke and six captures; record exact current weakness |
-| PC2 | Later | Polish battle readability | Fix only the highest-impact visible issue from PC1 |
+| PC1 | Done | Audit current PC baseline | Re-run validator, Windows build, visible-flow smoke and six captures; record exact current weakness |
+| PC2 | Next | Polish battle readability | Fix only the highest-impact visible issue from PC1 |
 | PC3 | Later | Polish MechLab PC flow | Improve grid/loadout readability without adding weapon toggles |
 | PC4 | Later | Package controlled PC demo evidence | Refresh walkthrough/evidence and keep generated artifacts ignored |
 
 Do not start PC2 until PC1 produces fresh evidence. Do not change gameplay rules from visual inspection alone; if the issue is collision, damage, command state or objective logic, first prove it in `BattleCore`.
 
-## Current Executable Target: PC1 Audit Current PC Baseline
+## Completed Target: PC1 Audit Current PC Baseline
 
 **Precondition:**
 
@@ -123,11 +123,21 @@ MC2 reference visual captures passed
 - Allowed: plan docs, evidence docs, minimal script fix if PC smoke/capture command is broken.
 - Not allowed: `analysis-output/`, `unity-mc2-demo/Builds/`, generated screenshots, JSON sidecars, logs, private reference exports.
 
+**Completed Evidence 2026-06-11:**
+
+```text
+analysis-output/unity-validate-pc-baseline.log: MC2 demo contract validation OK.
+analysis-output/unity-build-pc-baseline.log: Build Finished, Result: Success; MC2 Unity demo Windows build OK.
+analysis-output/unity-player-pc-visible-flow-baseline.log: MC2 demo smoke test exiting with code 0.
+capture_reference_visuals.ps1 -Presets mechlab,spawn,airfield,hangar-contact,damage-demo,north-patrol: MC2 reference visual captures passed: 6 preset(s).
+docs-reference-visual-audit-2026-06-07.md records the PC1 baseline and selects PC2 terrain/water/land readability as the next highest-impact polish target.
+```
+
 **Commit:** `Audit PC demo baseline`
 
-## PC2: Polish Battle Readability
+## Current Executable Target: PC2 Polish Battle Readability
 
-**Goal:** 根据 PC1 证据，只修一个最高影响的战场可读性问题。
+**Goal:** 根据 PC1 证据，只修一个最高影响的战场可读性问题：地形、水域、岸线、道路/跑道和可战斗陆地区域在默认 PC 镜头下必须更清楚。
 
 **Likely Files:**
 
@@ -142,7 +152,7 @@ MC2 reference visual captures passed
 
 | ID | Requirement | Pass Standard |
 | --- | --- | --- |
-| PC2-R1 | Terrain and water are distinct | `spawn` or `airfield` does not read as one flat color mass |
+| PC2-R1 | Terrain and water are distinct | `spawn`, `airfield` and `north-patrol` do not read as one broad blue field with yellow-green noise |
 | PC2-R2 | Units have readable silhouettes | player squad and first enemies are distinguishable at default camera |
 | PC2-R3 | Contact is not a visual pile | `hangar-contact` sidecar still reports no true overlaps |
 | PC2-R4 | Damage story remains visible | `damage-demo` still shows section damage/ejection/wreck cues |

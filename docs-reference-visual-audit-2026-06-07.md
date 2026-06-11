@@ -2610,3 +2610,49 @@ Remaining issues:
 Next priority:
 
 1. Stabilize reference visual manifest export.
+
+## PC1 Baseline Audit 2026-06-11
+
+Refreshed the PC baseline after the plan was refocused on Windows demo optimization while Android G3 waits for an authorized physical device.
+
+Validation commands:
+
+```powershell
+& "$HOME\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "$PWD\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoValidator.ValidateMissionContract -logFile "$PWD\analysis-output\unity-validate-pc-baseline.log"
+& "$HOME\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "$PWD\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoBuilder.BuildWindows64 -logFile "$PWD\analysis-output\unity-build-pc-baseline.log"
+& "$PWD\unity-mc2-demo\Builds\Windows\MC2UnityDemo.exe" -batchmode -nographics -mc2SmokeTest -mc2CommandFile "$PWD\unity-mc2-demo\Assets\StreamingAssets\CommanderScripts\mc2_01-visible-flow-audit.txt" -logFile "$PWD\analysis-output\unity-player-pc-visible-flow-baseline.log"
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_reference_visuals.ps1 -Presets mechlab,spawn,airfield,hangar-contact,damage-demo,north-patrol
+```
+
+Validation evidence:
+
+```text
+analysis-output/unity-validate-pc-baseline.log: MC2 demo contract validation OK.
+analysis-output/unity-build-pc-baseline.log: Build Finished, Result: Success; MC2 Unity demo Windows build OK.
+analysis-output/unity-player-pc-visible-flow-baseline.log: MC2 demo smoke test exiting with code 0.
+capture_reference_visuals.ps1 -Presets mechlab,spawn,airfield,hangar-contact,damage-demo,north-patrol: MC2 reference visual captures passed: 6 preset(s).
+```
+
+Current PC capture matrix:
+
+| Preset | PNG Bytes | Mission Time | Active Hostiles | Visible Hostiles | Key Gate |
+| --- | ---: | ---: | ---: | ---: | --- |
+| `mechlab` | 192921 | 0.25s | 0 | 0 | `MechLabCapture=open`, `Fit OK`, `alwaysMounted=weapons 6/6`, `noToggle=yes` |
+| `spawn` | 312445 | 1.41s | 0 | 0 | `FirstMapVisual status=ready`, sparse HUD, `ContactClearance overlaps=0 status=separated` |
+| `airfield` | 305094 | 13.01s | 12 | 8 | first contact path still passes `FirstMapVisual`, `TerrainReadability` and contact-clearance gates |
+| `hangar-contact` | 306354 | 21.16s | 20 | 16 | `BattleOccupancy=units 23/29`, hard props `80`, `ContactClearance overlaps=0 status=separated` |
+| `damage-demo` | 337223 | 39.12s | 20 | 16 | section damage story and sparse HUD remain visible; contact-clearance gate still passes |
+| `north-patrol` | 395399 | 55.12s | 24 | 9 | best current open combat composition; proves units and pressure read better away from the hangar cluster |
+
+PC1 visual judgment:
+
+- The PC baseline is technically healthy: validator, Windows build, visible-flow smoke and all six captures pass.
+- The densest `hangar-contact` frame is still crowded but not a physical collision failure. Sidecar evidence reports `overlaps=0 status=separated` and active unit, hard prop, structure and landing-blocked evidence remains present.
+- MechLab is functional and correctly keeps all mounted weapons active. It still has PC layout polish debt, especially left-panel density and small grid/action controls, but it is not the first blocker.
+- The highest-impact PC2 target is terrain and map readability. At 1280x720, the battle view still reads too much like a broad blue water field with yellow-green texture patches; land, shore, roads/runway and usable combat space need stronger separation before adding more unit or weapon effects.
+
+Next priority:
+
+1. PC2 should tune terrain/water/shore/road presentation in `DemoTerrainView` and related capture gates.
+2. Keep BattleCore movement, water/jet legality, occupancy, contact-clearance and mission rules unchanged unless evidence proves a rule bug.
+3. Re-capture `spawn`, `airfield`, `hangar-contact`, `damage-demo` and `north-patrol` after the terrain pass.
