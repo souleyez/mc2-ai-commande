@@ -46,6 +46,20 @@ if (-not (Test-Path -LiteralPath $AdbPath)) {
     throw "Missing adb: $AdbPath"
 }
 
+$apkFreshnessScript = Join-Path $PSScriptRoot "check_android_apk_freshness.ps1"
+if (-not (Test-Path -LiteralPath $apkFreshnessScript)) {
+    throw "Missing Android APK freshness checker: $apkFreshnessScript"
+}
+
+$freshnessOutput = & powershell -NoProfile -ExecutionPolicy Bypass -File $apkFreshnessScript -RepoRoot $RepoRoot -ApkPath $ApkPath 2>&1
+if ($LASTEXITCODE -ne 0) {
+    foreach ($line in @($freshnessOutput | ForEach-Object { $_.ToString() })) {
+        Write-Host $line
+    }
+
+    throw "Android APK freshness check failed with exit code $LASTEXITCODE"
+}
+
 function Get-ApkMetadata {
     param(
         [string]$Apk,

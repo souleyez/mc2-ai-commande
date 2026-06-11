@@ -14,7 +14,7 @@
 
 Mobile support remains the product priority, but `G3 Android Device Smoke` is waiting on a physical Android phone with USB debugging authorized. While that device blocker existed, this plan used PC demo optimization to keep the Windows demo moving.
 
-The current PC/mobile wait-state optimization pass is now sealed through PC21. This does not move G4/G5 mobile touch and performance ahead of G3; the next mobile gate still requires the physical authorized phone.
+The current PC/mobile wait-state optimization pass is now sealed through PC22. This does not move G4/G5 mobile touch and performance ahead of G3; the next mobile gate still requires the physical authorized phone.
 
 ## Definition Of Done
 
@@ -41,9 +41,11 @@ The current PC optimization pass is complete when:
 - Current plan gate can be checked by one script that wraps handoff/readiness, Windows build freshness, demo source hygiene, AI deputy contract, mobile command model, battle HUD sparse contract and Android device-smoke preflight state.
 - Android device smoke scans captured logcat for strong crash markers before accepting a real-device launch.
 - Android device smoke can be previewed with `-PlanOnly` without a connected phone.
+- Android APK freshness can be checked before G3, proving the ignored APK is newer than tracked Unity build inputs.
 - Sparse battle HUD can be checked without launching Unity through `check_battle_hud_sparse_contract.ps1`.
 - Demo source hygiene can be checked without launching Unity through `check_demo_source_hygiene.ps1`.
 - AI deputy contract can be checked without launching Unity or calling the model through `check_ai_deputy_contract.ps1`.
+- Android APK freshness can be checked without launching Unity through `check_android_apk_freshness.ps1`.
 - No generated screenshot, JSON sidecar, log, Windows build output, APK/AAB, or private reference export is staged.
 
 ## Execution Gate Order
@@ -72,6 +74,7 @@ The current PC optimization pass is complete when:
 | PC19 | Done | Add Windows demo build freshness check | Check ignored Windows player output is newer than tracked Unity build inputs and wire it into readiness preflight |
 | PC20 | Done | Add controlled demo evidence freshness check | Check visible-flow log and six capture PNG/JSON sidecars are newer than the current Windows build/evidence inputs |
 | PC21 | Done | Add controlled demo capture log freshness check | Check six capture logs exist, are fresh, and prove preset, screenshot request and sidecar write markers |
+| PC22 | Done | Add Android APK freshness check | Check ignored Android APK is newer than tracked Unity build inputs and wire it into G3 preflight/smoke helpers |
 
 Do not open another PC polish gate from visual inspection alone. If the issue is collision, damage, command state or objective logic, first prove it in `BattleCore`.
 
@@ -809,6 +812,41 @@ git status --short --branch --untracked-files=all
 - Generated evidence remains ignored and unstaged.
 
 **Commit:** `Add controlled demo capture log freshness check`
+
+## Completed Target: PC22 Add Android APK Freshness Check
+
+**Goal:** 在 G3 真机仍不可用时，不提前做 G4/G5；把 G3 依赖的 ignored Android APK 是否落后于当前 Unity 输入做成机器检查，避免设备到位后安装旧包。
+
+**Files:**
+
+- Create: `scripts/unity/check_android_apk_freshness.ps1`
+- Modify: `scripts/unity/check_android_device_preflight.ps1`
+- Modify: `scripts/unity/android_device_smoke.ps1`
+- Modify: `scripts/unity/check_current_plan_gate.ps1`
+- Modify: README/BUILD-MOBILE/BUILD-WIN/current plans/evidence/handoff docs
+- Refresh ignored local output: `unity-mc2-demo/Builds/Android/MC2UnityDemo.apk`
+
+**Validation:**
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_apk_freshness.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_device_preflight.ps1 -AllowNoDevice
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\android_device_smoke.ps1 -PlanOnly
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_current_plan_gate.ps1
+git diff --check
+git status --short --branch --untracked-files=all
+```
+
+**Acceptance:**
+
+- The freshness checker fails if `MC2UnityDemo.apk` is missing, empty or older than tracked Unity `Assets`, `ProjectSettings` or `Packages` inputs.
+- Generated scene fileID churn is excluded from the timestamp anchor, matching the Windows freshness policy.
+- `check_android_device_preflight.ps1 -AllowNoDevice` reports APK freshness OK before stopping at waiting-on-device.
+- `android_device_smoke.ps1 -PlanOnly` and real device smoke both reject stale APK before install/launch.
+- `check_current_plan_gate.ps1` includes an explicit Android APK freshness gate.
+- Refreshed APK remains ignored and unstaged.
+
+**Commit:** `Add Android APK freshness check`
 
 ## Stop Conditions
 

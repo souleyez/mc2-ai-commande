@@ -86,6 +86,20 @@ The APK and all Unity build output stay under ignored folders. Do not stage
 `unity-mc2-demo/Builds/`, logs, screenshots, JSON sidecars, or private reference
 art.
 
+Check that the ignored Android APK is newer than tracked Unity build inputs:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_apk_freshness.ps1
+```
+
+Expected:
+
+```text
+Android APK freshness check OK
+```
+
+If this reports a stale APK, rebuild Android before running any G3 device smoke.
+
 Device smoke
 ------------
 
@@ -102,8 +116,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_androi
 ```
 
 The strict form requires one authorized Android device. The waiting-state form
-still checks the APK, adb, aapt, package name and launchable activity, then
-reports that G3 is waiting on a device.
+still checks the APK, Android APK freshness, adb, aapt, package name and
+launchable activity, then reports that G3 is waiting on a device.
 
 After preflight passes with a real device, install and collect logs:
 

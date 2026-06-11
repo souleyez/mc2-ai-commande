@@ -177,6 +177,32 @@ if ((Test-Path -LiteralPath $ApkPath) -and (Test-Path -LiteralPath $AaptPath)) {
     }
 }
 
+$apkFreshnessScript = Join-Path $PSScriptRoot "check_android_apk_freshness.ps1"
+if (-not (Test-Path -LiteralPath $apkFreshnessScript)) {
+    Add-Failure "Missing Android APK freshness checker: $apkFreshnessScript"
+}
+else {
+    $freshnessResult = Invoke-NativeCommand -FilePath "powershell" -Arguments @(
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        $apkFreshnessScript,
+        "-RepoRoot",
+        $RepoRoot,
+        "-ApkPath",
+        $ApkPath
+    )
+
+    $freshnessOutput = $freshnessResult.Output -join " "
+    if ($freshnessResult.ExitCode -ne 0 -or $freshnessOutput -notlike "*Android APK freshness check OK.*") {
+        Add-Failure "Android APK freshness preflight failed: $freshnessOutput"
+    }
+    else {
+        Add-Row -Check "APK freshness" -Status "OK" -Detail "Android APK freshness check OK."
+    }
+}
+
 if (Test-Path -LiteralPath $AdbPath) {
     $devices = @(Get-AdbDevices -Adb $AdbPath)
     if ($devices.Count -eq 0) {
