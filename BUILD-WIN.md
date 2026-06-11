@@ -185,7 +185,7 @@ The current plan gate wraps handoff/readiness, Windows build freshness, demo
 source hygiene, Android smoke artifact hygiene, AI deputy contract, mobile command model, battle HUD sparse
 contract, Android SDK tooling, Android APK freshness, Android APK identity, Android APK
 compatibility, Android APK signing, Android APK manifest, Android APK payload,
-Android APK size budget, Android smoke summary schema, Android device-smoke preflight and Android smoke plan/preflight consistency checks. The device preflight also runs the summary schema self-test. With no
+Android APK size budget, Android smoke summary schema, Android device-smoke preflight, Android smoke plan/preflight consistency and Android G3 readiness checks. The device preflight also runs the summary schema self-test. With no
 authorized phone connected it should still pass while reporting Android as
 waiting on device.
 
@@ -289,6 +289,16 @@ This compares `android_device_smoke.ps1 -PlanOnly` with
 activity, ignored log/screenshot/summary outputs, execution flags and summary
 schema readiness.
 
+Check Android G3 readiness directly:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_g3_readiness.ps1
+```
+
+This wraps Android device preflight, plan/preflight consistency, smoke plan,
+log scanner self-test and summary schema self-test. Without an authorized
+phone, it should report waiting on device.
+
 Check the public boundary for the controlled-demo metadata package:
 
 ```powershell
@@ -333,6 +343,7 @@ Expected success strings:
 - `Android APK size budget check OK`
 - `Android smoke log check self-test OK`
 - `Android smoke plan/preflight consistency check OK`
+- `Android G3 readiness check waiting on device`
 - `Android device smoke plan OK`
 - `ScreenshotCapture: True`
 - `SummaryWrite: True`

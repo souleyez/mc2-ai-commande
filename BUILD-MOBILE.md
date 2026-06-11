@@ -263,6 +263,18 @@ Expected:
 Android smoke plan/preflight consistency check OK
 ```
 
+Check the full G3 readiness bundle before installing:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_g3_readiness.ps1
+```
+
+Expected without a phone:
+
+```text
+Android G3 readiness check waiting on device
+```
+
 After preflight passes with a real device, install and collect logs:
 
 ```powershell
@@ -380,6 +392,7 @@ scripts\unity\check_android_device_preflight.ps1 -AllowNoDevice -> smoke summary
 scripts\unity\android_device_smoke.ps1 -PlanOnly -> ScreenshotCapture: True, Screenshot -> analysis-output\android-device-smoke.png
 scripts\unity\android_device_smoke.ps1 -PlanOnly -> SummaryWrite: True, Summary -> analysis-output\android-device-smoke-summary.json
 scripts\unity\check_android_smoke_plan_consistency.ps1 -> Android smoke plan/preflight consistency check OK
+scripts\unity\check_android_g3_readiness.ps1 -> Android G3 readiness check waiting on device
 scripts\unity\check_android_device_preflight.ps1 -AllowNoDevice -> Android device smoke preflight waiting on device
 ```
 

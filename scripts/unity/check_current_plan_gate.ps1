@@ -117,6 +117,7 @@ $androidApkSizeBudgetScript = Resolve-RepoPath -RelativePath "scripts\unity\chec
 $androidPreflightScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_device_preflight.ps1"
 $androidSmokeScript = Resolve-RepoPath -RelativePath "scripts\unity\android_device_smoke.ps1"
 $androidSmokePlanConsistencyScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_smoke_plan_consistency.ps1"
+$androidG3ReadinessScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_g3_readiness.ps1"
 $androidLogScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_smoke_log.ps1"
 $androidSummaryScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_smoke_summary.ps1"
 
@@ -256,6 +257,21 @@ Invoke-GateStep `
     -ScriptPath $androidSmokePlanConsistencyScript `
     -Arguments @("-RepoRoot", $RepoRoot) `
     -RequiredMarkers @("Android smoke plan/preflight consistency check OK.")
+
+Invoke-GateStep `
+    -Name "Android G3 readiness gate" `
+    -ScriptPath $androidG3ReadinessScript `
+    -Arguments @("-RepoRoot", $RepoRoot) `
+    -RequiredMarkers @(
+        "Android smoke plan/preflight consistency check OK.",
+        "Android device smoke plan OK.",
+        "Android smoke log check self-test OK.",
+        "Android smoke summary check self-test OK."
+    ) `
+    -AnySuccessMarkers @(
+        "Android G3 readiness check OK.",
+        "Android G3 readiness check waiting on device."
+    )
 
 if ($failures.Count -gt 0) {
     Write-Host "Current plan gate check failed."
