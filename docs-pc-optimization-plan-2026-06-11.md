@@ -14,7 +14,7 @@
 
 Mobile support remains the product priority, but `G3 Android Device Smoke` is waiting on a physical Android phone with USB debugging authorized. While that device blocker existed, this plan used PC demo optimization to keep the Windows demo moving.
 
-The current PC/mobile wait-state optimization pass is now sealed through PC12. This does not move G4/G5 mobile touch and performance ahead of G3; the next mobile gate still requires the physical authorized phone.
+The current PC/mobile wait-state optimization pass is now sealed through PC13. This does not move G4/G5 mobile touch and performance ahead of G3; the next mobile gate still requires the physical authorized phone.
 
 ## Definition Of Done
 
@@ -36,6 +36,7 @@ The current PC optimization pass is complete when:
 - Android device-smoke readiness can be checked without installing or launching the app, and can explicitly stop at waiting-on-device when no phone is connected.
 - PC core playable contract can be checked by one script that runs the Unity/BattleCore validator and requires command-state, solo-return, Jet, occupancy, damage/ejection and debrief/relaunch coverage.
 - Mobile command model preflight can be checked without launching Unity, proving the current PC command surface still maps to status rows, Jet, map/bay/system, compact objective, sparse HUD and MechLab no-toggle fitting.
+- Current plan gate can be checked by one script that wraps handoff/readiness, mobile command model and Android device-smoke preflight state.
 - No generated screenshot, JSON sidecar, log, Windows build output, APK/AAB, or private reference export is staged.
 
 ## Execution Gate Order
@@ -55,6 +56,7 @@ The current PC optimization pass is complete when:
 | PC10 | Done | Add Android device smoke preflight | Check APK/tooling/package/device state before the real G3 install/launch smoke |
 | PC11 | Done | Add PC core playable contract check | Run Unity/BattleCore validator through a script and require the PC core playable marker |
 | PC12 | Done | Add mobile command model preflight | Check sidecar/source/doc markers for the mobile-low-complexity command model without launching Unity |
+| PC13 | Done | Add current plan gate check | Run one current-state command for handoff/readiness, mobile command model and Android waiting/ready state |
 
 Do not open another PC polish gate from visual inspection alone. If the issue is collision, damage, command state or objective logic, first prove it in `BattleCore`.
 
@@ -510,6 +512,35 @@ git status --short --branch --untracked-files=all
 - Keeps generated artifacts untouched and does not launch Unity, rebuild, install Android packages or alter gameplay.
 
 **Commit:** `Add mobile command model preflight`
+
+## Completed Target: PC13 Add Current Plan Gate Check
+
+**Goal:** 在 G3 真机仍不可用时，不继续扩大 PC 玩法；把当前计划状态收成一条可重复命令，便于每次继续前确认可交接、可演示、移动指挥模型未回退，且 Android 只差授权设备。
+
+**Files:**
+
+- Create: `scripts/unity/check_current_plan_gate.ps1`
+- Modify: `scripts/unity/check_controlled_demo_handoff.ps1`
+- Modify: `BUILD-WIN.md`
+- Modify: `README.md`
+- Modify: current plan docs, evidence page and handoff plan
+
+**Validation:**
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_current_plan_gate.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_controlled_demo_handoff.ps1 -RunReadiness
+git diff --check
+git status --short --branch --untracked-files=all
+```
+
+**Acceptance:**
+
+- Runs handoff/readiness, mobile command model and Android device-smoke preflight checks.
+- Accepts either a ready Android device or the explicit waiting-on-device state.
+- Does not launch Unity, rebuild, regenerate screenshots, install Android packages, alter gameplay or stage generated artifacts.
+
+**Commit:** `Add current plan gate check`
 
 ## Stop Conditions
 

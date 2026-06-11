@@ -38,8 +38,8 @@ While G3 is waiting, the active project work may continue on PC demo
 optimization as defined in `docs-pc-optimization-plan-2026-06-11.md`. This does
 not advance G4/G5 ahead of G3; it only keeps Windows demo quality moving while
 the required phone is unavailable. The current PC/mobile waiting-state work is
-sealed through PC12, including the PC core playable contract check and mobile
-command model preflight.
+sealed through PC13, including the PC core playable contract check, mobile
+command model preflight and current plan gate check.
 
 ## Definition Of Done
 

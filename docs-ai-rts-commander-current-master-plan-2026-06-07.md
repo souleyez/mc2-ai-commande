@@ -8,7 +8,7 @@
 
 **Tech Stack:** Unity 6, C#, Windows PC build/smoke/capture as active demo loop, Android/iOS mobile-first after device blocker clears, deterministic BattleCore, PowerShell validator/build/smoke/capture scripts, replaceable content packs, optional high-level AI deputy adapter, later main server/map server/Web ranking contracts.
 
-**Revision:** 2026-06-12 v21. This is the current master plan after the private reference visual bridge, visible-flow seal, investor evidence package, art-safe metadata target, AI deputy offline guard, platform reward authority contract, machine handoff plan, mobile-first priority reset, Android build smoke, PC optimization resumption, PC1 baseline audit, PC2 battle readability pass, PC3 MechLab PC flow polish, PC4 controlled demo evidence package, PC5 Windows demo launcher preflight, PC6 controlled demo evidence health check, PC7 controlled demo public boundary preflight, PC8 controlled demo readiness preflight, PC9 controlled demo handoff consistency check, PC10 Android device-smoke preflight, PC11 PC core playable contract check, and PC12 mobile command model preflight were refreshed. Older plan files remain evidence/history; this file is the first place to read when the user says "按计划继续". The finer task breakdown now lives in `docs-ai-rts-commander-current-detailed-plan-2026-06-07.md`.
+**Revision:** 2026-06-12 v22. This is the current master plan after the private reference visual bridge, visible-flow seal, investor evidence package, art-safe metadata target, AI deputy offline guard, platform reward authority contract, machine handoff plan, mobile-first priority reset, Android build smoke, PC optimization resumption, PC1 baseline audit, PC2 battle readability pass, PC3 MechLab PC flow polish, PC4 controlled demo evidence package, PC5 Windows demo launcher preflight, PC6 controlled demo evidence health check, PC7 controlled demo public boundary preflight, PC8 controlled demo readiness preflight, PC9 controlled demo handoff consistency check, PC10 Android device-smoke preflight, PC11 PC core playable contract check, PC12 mobile command model preflight, and PC13 current plan gate check were refreshed. Older plan files remain evidence/history; this file is the first place to read when the user says "按计划继续". The finer task breakdown now lives in `docs-ai-rts-commander-current-detailed-plan-2026-06-07.md`.
 
 ---
 
@@ -51,7 +51,7 @@
 当前阶段是：
 
 ```text
-Mobile G3 Waiting On Device -> Mobile Command Model Preflight Ready
+Mobile G3 Waiting On Device -> Current Plan Gate Ready
 ```
 
 不是从零开发，也不是马上做平台。现在要把本地 Demo 收成：
@@ -90,7 +90,7 @@ Mobile G3 Waiting On Device -> Mobile Command Model Preflight Ready
 | Gap | Why It Matters | First Fix |
 | --- | --- | --- |
 | Android 真机 smoke 等待设备 | APK 已能构建，但当前没有授权 Android 手机证明真实设备可启动并进入战斗/战报 | G3 等待连接 Android 手机，安装 APK，抓取 logcat 并记录启动结果 |
-| PC/移动前置质量本轮已收口 | Windows 构建、visible-flow、六截图、战场可读性、MechLab、演示文档、受控启动预检、证据健康检查、公开边界预检、总预检、交接一致性检查、Android 真机 smoke 前置检查、PC 核心玩法合约检查和移动指挥模型预检已经形成当前展示包 | 后续 PC 优化需要先定义新的 PC13 目标；移动端仍回到 G3 真机 smoke |
+| PC/移动前置质量本轮已收口 | Windows 构建、visible-flow、六截图、战场可读性、MechLab、演示文档、受控启动预检、证据健康检查、公开边界预检、总预检、交接一致性检查、Android 真机 smoke 前置检查、PC 核心玩法合约检查、移动指挥模型预检和当前计划 gate 总预检已经形成当前展示包 | 后续 PC 优化需要先定义新的 PC14 目标；移动端仍回到 G3 真机 smoke |
 | 移动端交互和性能未验证 | 移动端是产品优先项，拿到设备后还要证明手机触控和性能可接受 | G3-G5 在设备可用后继续做真机 smoke、触控 UI 和性能预算 |
 | 清权资产还未真正接入运行包 | D1 已有 metadata 合同，但不是最终美术包 | D2 以后再做 mountable clean content pack |
 | 平台化仍停在契约层 | 奖励权威已写清楚，地图包、排行和创作者边界还要补 | F2-F4 排到移动端 gate 之后 |
@@ -356,12 +356,13 @@ Known good strings:
 | 29 | Done | `Add Android device smoke preflight` | 检查 APK、adb、aapt、包名、Activity 和设备状态，当前允许明确停在 Waiting on Device | Android preflight |
 | 30 | Done | `Add PC core playable contract check` | 单独验证指挥状态、独立命令归队、Jet 合法性、占位、损伤/弹射、战报/重开这些 PC 演示核心规则仍被 BattleCore 守住 | `check_pc_core_playable_contract.ps1` |
 | 31 | Done | `Add mobile command model preflight` | 不启动 Unity，读取现有 sidecar 和源码/文档标记，证明 PC 演示仍符合默认全队、状态栏、Jet、地图/系统、稀疏 HUD 和无武器开关的移动端低复杂度模型 | `check_mobile_command_model_preflight.ps1` |
-| 32 | Later | `Adapt command UI for mobile touch` | 状态行、Jet、地图、系统和 MechLab 在手机触控可用 | device smoke |
-| 33 | Later | `Define mobile performance budget` | 记录 FPS、内存、包体、加载、热量/电量基线 | docs + device evidence |
-| 34 | Later | `Document iOS feasibility gate` | 记录 macOS/Xcode/签名/Metal/真机要求 | docs check |
-| 35 | Later | `Plan map authoring prototype` | 地图包、触发、奖励引用和验证器规划 | docs check |
-| 36 | Later | `Plan web ranking prototype` | 排行、战绩、地图页和公开资料规划 | docs check |
-| 37 | Later | `Plan creator economy boundary` | 创作者分成、皮肤、自定义、链上边界 | docs check |
+| 32 | Done | `Add current plan gate check` | 串联交接/readiness、移动指挥模型预检和 Android 等设备预检，一条命令证明当前计划状态仍可交接且 G3 只差授权真机 | `check_current_plan_gate.ps1` |
+| 33 | Later | `Adapt command UI for mobile touch` | 状态行、Jet、地图、系统和 MechLab 在手机触控可用 | device smoke |
+| 34 | Later | `Define mobile performance budget` | 记录 FPS、内存、包体、加载、热量/电量基线 | docs + device evidence |
+| 35 | Later | `Document iOS feasibility gate` | 记录 macOS/Xcode/签名/Metal/真机要求 | docs check |
+| 36 | Later | `Plan map authoring prototype` | 地图包、触发、奖励引用和验证器规划 | docs check |
+| 37 | Later | `Plan web ranking prototype` | 排行、战绩、地图页和公开资料规划 | docs check |
+| 38 | Later | `Plan creator economy boundary` | 创作者分成、皮肤、自定义、链上边界 | docs check |
 
 ## 6. Detailed Tasks
 
@@ -894,7 +895,7 @@ git diff --check
 | M11 Platform contracts | In Progress | main server reward authority done; map authoring, ranking and creator boundaries remain |
 | M12 Machine handoff | Done | current machine is clean and validator/build/smoke passed |
 | M13 Mobile-first viability | Waiting on Device | Android APK build smoke passed; real-device smoke waits for an authorized phone, then touch UI and performance budget remain |
-| M14 PC/mobile wait-state optimization | Done for current pass | PC1-PC12 passed: PC1 baseline, PC2 battle readability, PC3 MechLab polish, PC4 controlled demo evidence package, PC5 launch preflight, PC6 evidence health check, PC7 public boundary preflight, PC8 readiness preflight, PC9 handoff consistency check, PC10 Android device-smoke preflight, PC11 PC core playable contract check and PC12 mobile command model preflight |
+| M14 PC/mobile wait-state optimization | Done for current pass | PC1-PC13 passed: PC1 baseline, PC2 battle readability, PC3 MechLab polish, PC4 controlled demo evidence package, PC5 launch preflight, PC6 evidence health check, PC7 public boundary preflight, PC8 readiness preflight, PC9 handoff consistency check, PC10 Android device-smoke preflight, PC11 PC core playable contract check, PC12 mobile command model preflight and PC13 current plan gate check |
 
 ## 8. First Controlled Demo Definition Of Done
 
@@ -921,6 +922,7 @@ The Demo is ready for controlled external showing when:
 19. Android device-smoke preflight proves APK, adb, aapt, package and launch activity are ready, with device absence reported as the only remaining G3 blocker when `-AllowNoDevice` is used.
 20. PC core playable contract check proves command state, solo return, Jet legality, occupancy, damage/ejection and debrief/relaunch remain covered by the Unity/BattleCore validator.
 21. Mobile command model preflight proves the current PC command surface still matches the planned mobile low-complexity model: status rows, Jet, map/bay/system, compact objectives, hidden dense overlays and no MechLab weapon toggles.
+22. Current plan gate check proves handoff/readiness, mobile command model and Android device-smoke preflight status from one command, while reporting no-device as the expected G3 waiting state.
 
 ## 9. Stop Conditions
 
@@ -939,4 +941,4 @@ Stop and reassess if:
 
 ## 10. One-Line Direction
 
-Windows 本地 Demo 的画面、碰撞、稀疏 UI、MechLab、损伤故事、受控演示证据、启动预检、证据健康检查、公开边界预检、演示总预检、交接一致性检查、Android 真机 smoke 前置检查、PC 核心玩法合约检查、移动指挥模型预检、公开 art-safe 元数据合同、AI 副官离线边界和主服务器奖励权威契约已经收稳；H2 validator/build/smoke 基线已过；G2 Android APK build smoke 已过；PC1-PC12 PC/移动等待态优化包已封口；G3 真机 smoke 仍等待授权 Android 手机，设备到位后继续 G3-G5，设备不到位时如继续 PC 端必须先写清新的 PC13 目标。
+Windows 本地 Demo 的画面、碰撞、稀疏 UI、MechLab、损伤故事、受控演示证据、启动预检、证据健康检查、公开边界预检、演示总预检、交接一致性检查、Android 真机 smoke 前置检查、PC 核心玩法合约检查、移动指挥模型预检、当前计划 gate 总预检、公开 art-safe 元数据合同、AI 副官离线边界和主服务器奖励权威契约已经收稳；H2 validator/build/smoke 基线已过；G2 Android APK build smoke 已过；PC1-PC13 PC/移动等待态优化包已封口；G3 真机 smoke 仍等待授权 Android 手机，设备到位后继续 G3-G5，设备不到位时如继续 PC 端必须先写清新的 PC14 目标。

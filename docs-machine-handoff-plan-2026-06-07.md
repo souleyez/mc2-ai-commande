@@ -25,8 +25,8 @@ As of this handoff plan:
 - Remote warning: GitHub currently reports the repository moved to `git@github.com:souleyez/mc2-ai-commande.git`; pushes to the configured `ai-origin` have still succeeded.
 - Upstream source remote kept for history: `origin https://github.com/alariq/mc2.git`
 - Current branch state after the latest controlled demo checkpoint: `master...ai-origin/master`
-- Latest sealed PC/mobile wait-state checkpoint: `PC1-PC12`
-- Last completed PC checkpoint: `Add mobile command model preflight`
+- Latest sealed PC/mobile wait-state checkpoint: `PC1-PC13`
+- Last completed PC checkpoint: `Add current plan gate check`
 - Current formal next development task after handoff: `G3 Run Android device smoke`
 
 Important: the new machine will not see local commits unless the old machine
@@ -49,6 +49,7 @@ The machine switch is safe only when all of these are true:
 - `scripts/unity/check_android_device_preflight.ps1 -AllowNoDevice` prints `Android device smoke preflight waiting on device` if no phone is connected.
 - `scripts/unity/check_pc_core_playable_contract.ps1` prints `PC core playable contract check OK`.
 - `scripts/unity/check_mobile_command_model_preflight.ps1` prints `Mobile command model preflight OK`.
+- `scripts/unity/check_current_plan_gate.ps1` prints `Current plan gate check OK`.
 - Any AI API key is configured through environment variables, not committed.
 - Optional private reference visuals remain ignored and local-only.
 
@@ -280,7 +281,23 @@ still maps to the mobile command model: sparse battle HUD, status rows, Jet,
 map/bay/system, compact objective, hidden dense overlays and MechLab no-toggle
 fitting.
 
-**Step 5: Run Android device-smoke preflight**
+**Step 5: Run current plan gate check**
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_current_plan_gate.ps1
+```
+
+Expected:
+
+```text
+Current plan gate check OK
+```
+
+This wraps handoff/readiness, mobile command model and Android preflight checks.
+With no authorized phone connected, Android should be reported as waiting on
+device; with one authorized phone, Android should report OK.
+
+**Step 6: Run Android device-smoke preflight directly if needed**
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_device_preflight.ps1 -AllowNoDevice
@@ -301,7 +318,7 @@ Android device smoke preflight OK
 This checks the APK, adb, aapt, package name and launchable activity without
 installing or launching the app.
 
-**Step 6: Set paths for rebuilding evidence if needed**
+**Step 7: Set paths for rebuilding evidence if needed**
 
 ```powershell
 $Repo = (Get-Location).Path
