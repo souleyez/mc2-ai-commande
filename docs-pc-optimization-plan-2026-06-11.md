@@ -14,7 +14,7 @@
 
 Mobile support remains the product priority, but `G3 Android Device Smoke` is waiting on a physical Android phone with USB debugging authorized. While that device blocker existed, this plan used PC demo optimization to keep the Windows demo moving.
 
-The current PC optimization pass is now sealed through PC7. This does not move G4/G5 mobile touch and performance ahead of G3; the next mobile gate still requires the physical authorized phone.
+The current PC optimization pass is now sealed through PC8. This does not move G4/G5 mobile touch and performance ahead of G3; the next mobile gate still requires the physical authorized phone.
 
 ## Definition Of Done
 
@@ -31,6 +31,7 @@ The current PC optimization pass is complete when:
 - Controlled Windows demo launch has a preflight helper and defaults to a stable 1280x720 windowed launch.
 - Controlled Windows demo evidence can be checked by script without rerunning Unity.
 - Controlled Windows demo public boundary metadata can be checked by script without packaging or creating artifacts.
+- Controlled Windows demo readiness can be checked by one script that wraps launch, evidence and public boundary gates.
 - No generated screenshot, JSON sidecar, log, Windows build output, APK/AAB, or private reference export is staged.
 
 ## Execution Gate Order
@@ -45,6 +46,7 @@ The current PC optimization pass is complete when:
 | PC5 | Done | Add PC demo launch preflight | Check Windows build presence and launch with stable window args |
 | PC6 | Done | Add controlled demo evidence check | Check build, visible-flow log and six capture sidecars |
 | PC7 | Done | Add controlled demo public boundary preflight | Check clean project-owned metadata examples and optionally confirm the dev build remains blocked for public packaging |
+| PC8 | Done | Add controlled demo readiness preflight | Wrap launch, evidence and public boundary gates into one command |
 
 Do not open another PC polish gate from visual inspection alone. If the issue is collision, damage, command state or objective logic, first prove it in `BattleCore`.
 
@@ -346,6 +348,35 @@ git status --short --branch --untracked-files=all
 - Does not change gameplay, BattleCore, HUD, MechLab, content packs or generated evidence behavior.
 
 **Commit:** `Add controlled demo public boundary preflight`
+
+## Completed Target: PC8 Add Controlled Demo Readiness Preflight
+
+**Goal:** 在 G3 真机仍不可用时，只把 PC 受控演示前的检查入口收成一条命令，不改玩法、不启动 Unity、不重跑截图。
+
+**Files:**
+
+- Create: `scripts/unity/check_controlled_demo_readiness.ps1`
+- Modify: `BUILD-WIN.md`
+- Modify: `README.md`
+- Modify: current plan docs and evidence page
+
+**Validation:**
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_controlled_demo_readiness.ps1
+git diff --check
+git status --short --branch --untracked-files=all
+```
+
+**Acceptance:**
+
+- Runs Windows launch preflight in `-CheckOnly` mode.
+- Runs controlled demo evidence health check.
+- Runs controlled demo public boundary preflight with expected dev-build failure check.
+- Reports one top-level readiness result and per-step OK rows.
+- Does not start Unity, rebuild, regenerate screenshots, alter BattleCore, change HUD/MechLab behavior, or stage generated artifacts.
+
+**Commit:** `Add controlled demo readiness preflight`
 
 ## Stop Conditions
 

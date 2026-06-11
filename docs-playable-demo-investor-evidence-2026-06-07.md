@@ -13,6 +13,7 @@ Refreshed on 2026-06-12 after `Package PC controlled demo evidence`.
 | Windows build | Pass | `analysis-output/unity-build-pc-evidence-package.log` reports `Build Finished, Result: Success` and `MC2 Unity demo Windows build OK`. |
 | Visible-flow smoke | Pass | `analysis-output/unity-player-pc-evidence-visible-flow.log` exits with code `0` and proves debrief, repair/Mech Lab, relaunch identity and compact loadout review. |
 | Evidence health check | Pass | `scripts/unity/check_controlled_demo_evidence.ps1` reports `Controlled demo evidence check OK` by reading the Windows build, visible-flow log and six capture sidecars. |
+| Readiness preflight | Pass | `scripts/unity/check_controlled_demo_readiness.ps1` reports `Controlled demo readiness preflight OK` by wrapping launch preflight, evidence health and public boundary gates. |
 | Six capture presets | Pass | `capture_reference_visuals.ps1` reports `MC2 reference visual captures passed: 6 preset(s)` for `mechlab`, `spawn`, `airfield`, `hangar-contact`, `damage-demo`, and `north-patrol`. |
 | MechLab fitting | Pass | `mechlab` capture remains the fitting proof: whole weapon block, armor/cooling filler, H/W/G pressure, `Fit OK`, `CellState=OK OPEN4 OCC12 OCC!0 OOB0`, and `noToggle=yes`. |
 | First-map visual gate | Pass | `spawn`, `airfield`, `hangar-contact`, `damage-demo`, and `north-patrol` sidecars report `FirstMapVisual ... status=ready`, readable terrain, sparse HUD, occupancy, and separated contact. |

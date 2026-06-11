@@ -77,6 +77,16 @@ captures, MechLab no-toggle fitting, terrain readability, sparse battle HUD,
 contact separation, and damage-demo story. It reads ignored local evidence and
 does not create new artifacts.
 
+Run the full controlled-demo readiness preflight:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_controlled_demo_readiness.ps1
+```
+
+The readiness preflight wraps the launch preflight, evidence health check, and
+public boundary preflight. It does not start the Unity player or regenerate
+captures.
+
 Check the public boundary for the controlled-demo metadata package:
 
 ```powershell
@@ -102,6 +112,7 @@ Expected success strings:
 - `MC2 Unity demo Windows build OK`
 - `Windows demo launch preflight OK`
 - `Controlled demo evidence check OK`
+- `Controlled demo readiness preflight OK`
 - `Controlled demo public boundary preflight OK`
 - `MC2 demo smoke test exiting with code 0`
 - `MC2 reference visual captures passed`
