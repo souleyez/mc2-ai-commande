@@ -120,9 +120,10 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\android_devi
 - launch crash: inspect `android-device-smoke.log`, fix the smallest runtime blocker, rebuild APK, reinstall;
 - generated logs/screenshots/APK appear in git: leave ignored or unstage, never commit them.
 
-**Current G3 Evidence 2026-06-11:**
+**Current G3 Evidence 2026-06-12:**
 
 ```text
+unity-mc2-demo\Builds\Android\MC2UnityDemo.apk exists.
 scripts\unity\android_device_smoke.ps1 exists and fails clearly when no device is connected.
 adb devices -> no device rows.
 G3 still requires a physical Android phone with USB debugging enabled and authorized.

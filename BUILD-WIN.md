@@ -32,6 +32,23 @@ Build the Windows player:
   -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-build-demo-package.log"
 ```
 
+Preflight or launch the controlled Windows demo:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\run_windows_demo.ps1 -CheckOnly
+```
+
+To open the visible demo window with controlled 1280x720 windowed parameters:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\run_windows_demo.ps1
+```
+
+The launcher checks that `MC2UnityDemo.exe` and `MC2UnityDemo_Data` are both
+present, writes the runtime log to `analysis-output/windows-demo-run.log`, and
+passes Unity window arguments so the demo does not depend on stale player
+window state from a previous run.
+
 Smoke the visible playable loop:
 
 ```powershell
@@ -54,6 +71,7 @@ Expected success strings:
 - `MC2 demo contract validation OK`
 - `Build Finished, Result: Success`
 - `MC2 Unity demo Windows build OK`
+- `Windows demo launch preflight OK`
 - `MC2 demo smoke test exiting with code 0`
 - `MC2 reference visual captures passed`
 
