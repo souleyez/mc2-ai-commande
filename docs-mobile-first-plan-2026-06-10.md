@@ -26,6 +26,17 @@ Mobile viability spike -> Android build smoke -> touch command UI -> mobile perf
 Map authoring, Web ranking, creator economy, and server implementation move
 behind this mobile gate.
 
+## Current Waiting State
+
+G2 Android build smoke is complete and the APK exists in ignored build output.
+G3 Android device smoke is waiting on a physical Android phone that is visible
+through `adb devices` and authorized for USB debugging.
+
+While G3 is waiting, the active project work may continue on PC demo
+optimization as defined in `docs-pc-optimization-plan-2026-06-11.md`. This does
+not advance G4/G5 ahead of G3; it only keeps Windows demo quality moving while
+the required phone is unavailable.
+
 ## Definition Of Done
 
 The mobile-first gate is passed only when:
@@ -52,7 +63,7 @@ failing, unless the later work is explicitly diagnostic.
 | --- | --- | --- | --- |
 | H2 | Done | New-machine baseline | Clone repo, run Windows validator/build/smoke on new machine |
 | G2 | Done | Android build path | Produce Android artifact from Unity 6 without staging generated output |
-| G3 | In Progress | Android device smoke | Launch on real Android device and reach battle/debrief path |
+| G3 | Waiting on Device | Android device smoke | Launch on real Android device and reach battle/debrief path |
 | G4 | Later | Touch UI pass | Core command model usable on phone aspect ratios |
 | G5 | Later | Mobile performance budget | Baseline FPS, memory, package size, load time and thermal notes recorded |
 | G6 | Later | iOS feasibility | Document macOS/Xcode/signing requirements after Android proof |
@@ -70,9 +81,9 @@ failing, unless the later work is explicitly diagnostic.
 - **Failure Handling:** 失败时先看什么、停在哪里、哪些输出不能提交。
 - **Commit Scope:** 允许进入提交的文件范围；生成物、日志和私有素材默认不提交。
 
-当前执行目标只允许有一个 `In Progress`。如果前置条件失败，先把失败写成明确 blocker 或安装步骤，不跳到后续玩法任务。
+当前移动执行目标只允许有一个 `In Progress` 或 `Waiting on Device`。如果前置条件失败，先把失败写成明确 blocker 或安装步骤，不跳到后续移动玩法任务。项目总执行线在 G3 等设备期间可转到 `docs-pc-optimization-plan-2026-06-11.md`。
 
-### Current Executable Target: G3 Android Device Smoke
+### Current Mobile Target: G3 Android Device Smoke
 
 **Precondition:**
 

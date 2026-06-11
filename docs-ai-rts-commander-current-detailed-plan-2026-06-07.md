@@ -2,13 +2,13 @@
 
 > **For Codex:** REQUIRED SUB-SKILL: Use executing-plans to implement this plan task-by-task.
 
-**Goal:** 把当前 Unity 6 原型推进到移动端优先的一版 AI 副官机甲战术 RTS Demo：Windows 继续作为开发验证环境，Android/iOS 可行性、触控 UI 和移动端性能成为第一优先级。
+**Goal:** 把当前 Unity 6 原型推进到 PC 可展示、移动端可迁移的一版 AI 副官机甲战术 RTS Demo：Windows 继续作为开发验证和投资演示环境；Android/iOS 可行性、触控 UI 和移动端性能仍是产品优先级，但 G3 真机验证等待设备期间先执行 PC 端优化。
 
 **Architecture:** `BattleCore` 继续做确定性规则核心，负责移动、喷射、占位、武器、热量、装甲、部位损伤、任务触发、结算和 AI observation/directive。Unity 6 只负责固定镜头、输入、稀疏 HUD、MechLab、模型材质、特效、截图和 smoke 证据。开发期可以使用本机私有参考素材验证比例和节奏，但公开版本必须切换到项目自有或合规授权内容包。
 
-**Tech Stack:** Unity 6, C#, Android/iOS mobile-first after current Windows handoff validation, deterministic BattleCore, PowerShell build/smoke/capture scripts, replaceable content packs, optional high-level AI deputy, later main server/map server/Web ranking contracts.
+**Tech Stack:** Unity 6, C#, Windows PC build/smoke/capture as active demo loop, Android/iOS mobile-first after device blocker clears, deterministic BattleCore, PowerShell build/smoke/capture scripts, replaceable content packs, optional high-level AI deputy, later main server/map server/Web ranking contracts.
 
-**Revision:** 2026-06-11 v12. This file is the fine-grained execution plan paired with `docs-ai-rts-commander-current-master-plan-2026-06-07.md`. The private reference visual bridge, local investor evidence package, art-safe metadata contract, AI deputy offline guard, reward authority contract, machine handoff plan, and mobile-first priority reset are now sealed for the current Demo. H2 validator/build/smoke is green; G2 Android build smoke is now green with a generated APK; the current focus is `G3 Run Android Device Smoke`.
+**Revision:** 2026-06-11 v13. This file is the fine-grained execution plan paired with `docs-ai-rts-commander-current-master-plan-2026-06-07.md`. The private reference visual bridge, local investor evidence package, art-safe metadata contract, AI deputy offline guard, reward authority contract, machine handoff plan, mobile-first priority reset, Android build smoke, and PC optimization resumption are now sealed for the current Demo. H2 validator/build/smoke is green; G2 Android build smoke is green with a generated APK; `G3 Run Android Device Smoke` is waiting on a physical authorized phone, so the current executable focus is `PC1 Audit Current PC Baseline`.
 
 ---
 
@@ -36,15 +36,16 @@
 当前最重要的问题：
 
 1. `H2` validator、Windows build 和 visible-flow smoke 已通过；Unity scene fileID churn 已恢复，工作区保持干净。
-2. `G3` 是当前产品任务：在真 Android 设备上安装并启动 APK，证明移动端运行链路可用。
-3. 移动端是第一优先项；地图编辑器、Web 排行、创作者生态全部后移到 mobile gate 之后。
-4. D1 只是 art-safe metadata 合同，不是可挂载 runtime pack；后续 D2 才能进入清权资产生产和 mountable pack。
-5. 私有参考素材可以继续用于本机开发验证，但公开材料不能把它描述成最终产品内容。
-6. `F2-F4` 平台化方向仍保留，但现在只在移动端可行性通过后继续。
+2. `G3` 仍是当前移动端 gate：在真 Android 设备上安装并启动 APK，证明移动端运行链路可用。
+3. 当前机器没有授权 Android 设备；G3 进入 Waiting on Device 状态，不推进 G4/G5。
+4. Android 设备等待期间，当前可执行工作切到 `PC1`：重跑 Windows validator/build/visible-flow/six captures，继续优化 PC 可展示质量。
+5. D1 只是 art-safe metadata 合同，不是可挂载 runtime pack；后续 D2 才能进入清权资产生产和 mountable pack。
+6. 私有参考素材可以继续用于本机开发验证，但公开材料不能把它描述成最终产品内容。
+7. `F2-F4` 平台化方向仍保留，但现在只在移动端可行性通过后继续。
 
 当前工作区注意事项：
 
-- 若当前 `git status` 只剩移动优先计划文档改动，先完成校验并提交，再进入 H2/G2。
+- 若当前 `git status` 只剩计划文档改动，先完成校验并提交，再进入 PC1 或等待 G3 设备。
 - D1 新增的是 metadata 示例文件；不允许把私有 OBJ/TGA/PNG/JSON、截图、log 或 Unity build 输出加入 git。
 - G2-G5 先做移动端可行性；F2-F4 后移，不先写服务器实现。
 - 如果 Unity batch 运行后只造成 `unity-mc2-demo/Assets/Scenes/Mc2Demo.unity` fileID churn，不要纳入提交。
@@ -108,7 +109,8 @@
 | M10 | AI 副官守护 | Done | no-token smoke, high-level directive only |
 | M11 | 平台契约 | In Progress | 奖励认证契约完成；地图包、排行、创作者边界待写 |
 | M12 | 换机开发交接 | Done | H2 validator/build/smoke 已通过 |
-| M13 | 移动端优先可行性 | In Progress | Android APK build smoke 已通过；真机 smoke、触控 UI 和性能预算待完成 |
+| M13 | 移动端优先可行性 | Waiting on Device | Android APK build smoke 已通过；真机 smoke 等授权手机，之后再做触控 UI 和性能预算 |
+| M14 | PC 可展示质量优化 | Next | G3 等设备期间，先做 PC validator/build/visible-flow/six captures 基线审计，再按证据打磨 |
 
 ## 4. Fine-Grained Commit Queue
 
@@ -133,7 +135,11 @@
 | H2 | Done | `Push machine handoff checkpoint` | 代码已推送，validator/build/smoke 基线通过 | git + Unity smoke |
 | G1 | Done | `Reframe plan around mobile first` | 移动端第一优先，Unreal MCP 不进主线，平台契约后移 | docs |
 | G2 | Done | `Add Android build smoke path` | Android Build Support、SDK/NDK/JDK/CMake 已补齐；APK 已产出 | Android build |
-| G3 | In Progress | `Run Android device smoke` | 真机启动并跑最小 visible-flow/command smoke | device smoke |
+| G3 | Waiting on Device | `Run Android device smoke` | 真机启动并跑最小 visible-flow/command smoke；当前 adb 无授权设备 | device smoke |
+| PC1 | Next | `Audit PC demo baseline` | Android G3 等设备期间，重跑 PC validator/build/visible-flow/six captures 并锁定下一处问题 | PC evidence |
+| PC2 | Later | `Polish PC battle readability` | 根据 PC1 证据修一处最高影响的战场可读性问题 | Windows build + captures |
+| PC3 | Later | `Polish PC MechLab flow` | 装配格子、整块武器、热量/重量/合法性更直观，不恢复武器开关 | Windows build + `mechlab` capture |
+| PC4 | Later | `Package PC controlled demo evidence` | 刷新 walkthrough/evidence，形成 PC 可展示包说明 | docs |
 | G4 | Later | `Adapt command UI for mobile touch` | 状态行、Jet、地图、系统和 MechLab 手机触控可用 | device smoke |
 | G5 | Later | `Define mobile performance budget` | FPS、内存、包体、加载、热量/电量基线 | docs + device evidence |
 | G6 | Later | `Document iOS feasibility gate` | macOS/Xcode/签名/Metal/真机要求 | docs |
@@ -184,7 +190,11 @@
 | G2.5 | Done | 检查 Unity import/build 后的 git diff，只保留真实源码或文档变化 | source/docs only | no APK/AAB/log/sidecar/build output staged |
 | G2.6 | Done | 如 Android build 暴露真实 project setting 需求，用最小提交固化 | `Mc2DemoBuilder.cs`; `ProjectSettings.asset` | Android build passes |
 | G2.7 | Done | 更新计划状态：G2 Done，G3 Next | plan docs | `git diff --check` |
-| G3.1 | In Progress | 真机启动 Android Demo，记录命令流、UI、日志和设备表现 | `scripts/unity/android_device_smoke.ps1`; device + ignored logs | smoke path reaches battle/debrief |
+| G3.1 | Waiting on Device | 真机启动 Android Demo，记录命令流、UI、日志和设备表现 | `scripts/unity/android_device_smoke.ps1`; device + ignored logs | smoke path reaches battle/debrief |
+| PC1.1 | Next | 重跑 PC validator、Windows build、visible-flow smoke 和六截图，锁定下一处 PC 可见问题 | validator/build/capture scripts; optional evidence docs | `PC1` commands pass |
+| PC2.1 | Later | 根据 PC1 证据只修一处最高影响的战场可读性问题 | Unity presentation + capture scripts | Windows build + selected captures |
+| PC3.1 | Later | 打磨 PC MechLab 整块格子和合法性表现，不恢复武器开关 | `Mc2DemoBootstrap.cs`; loadout files if needed | `mechlab` capture |
+| PC4.1 | Later | 刷新 PC controlled demo walkthrough/evidence，不提交生成物 | walkthrough/evidence docs | `git diff --check` |
 | G4.1 | Later | 调整触控命令 UI，保持无框选、稀疏 HUD、状态栏单选 | Unity presentation | mobile smoke |
 | G5.1 | Later | 定义移动端性能预算并记录首轮基线 | docs + ignored evidence | budget doc |
 | F2.1 | Later | 写地图包/编辑器契约，定义地图元数据、触发图、敌人、奖励引用和验证器边界 | platform docs | `git diff --check` |
@@ -1188,7 +1198,7 @@ unity-mc2-demo\Builds\Android\MC2UnityDemo.apk exists, 20,666,724 bytes, ignored
 
 ### G3: Run Android Device Smoke
 
-**Status:** In Progress.
+**Status:** Waiting on Device.
 
 **Goal:** 在真 Android 设备上确认 Demo 可以启动并跑到战斗/战报核心路径。
 
@@ -1216,6 +1226,148 @@ Current adb state on 2026-06-11: no device rows; physical phone still required.
 ```
 
 **Commit:** `Document Android device smoke results`
+
+### PC1: Audit Current PC Baseline
+
+**Status:** Next.
+
+**Goal:** 在 G3 等待 Android 真机期间，重跑 PC 端完整基线，确认当前 Windows Demo 的真实状态，并只选择一个下一步最高影响优化点。
+
+**Files:**
+
+- Read: `docs-pc-optimization-plan-2026-06-11.md`
+- Modify if needed: `docs-reference-visual-audit-2026-06-07.md`
+- Modify if needed: `docs-playable-demo-investor-evidence-2026-06-07.md`
+- Modify if needed: `scripts/unity/capture_reference_visuals.ps1`
+- Generate ignored output only: `analysis-output/`
+
+**Preconditions:**
+
+```powershell
+git status --short --branch --untracked-files=all
+Test-Path "$HOME\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe"
+```
+
+Expected:
+
+```text
+## master...ai-origin/master
+True
+```
+
+**Executable Steps:**
+
+1. Run the mission validator.
+2. Run the Windows player build.
+3. Run visible-flow smoke.
+4. Run standard captures: `mechlab,spawn,airfield,hangar-contact,damage-demo,north-patrol`.
+5. Inspect ignored sidecars enough to classify the next PC polish target:
+   - battle readability;
+   - contact/collision presentation;
+   - sparse HUD regression;
+   - MechLab readability;
+   - startup/walkthrough evidence.
+6. Update evidence docs only if current screenshots or sidecars change the written judgment.
+
+**Validation:**
+
+```powershell
+git diff --check
+$Repo = (Get-Location).Path
+$Unity = "$HOME\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe"
+& $Unity -batchmode -quit -projectPath "$Repo\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoValidator.ValidateMissionContract -logFile "$Repo\analysis-output\unity-validate-pc-baseline.log"
+& $Unity -batchmode -quit -projectPath "$Repo\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoBuilder.BuildWindows64 -logFile "$Repo\analysis-output\unity-build-pc-baseline.log"
+& "$Repo\unity-mc2-demo\Builds\Windows\MC2UnityDemo.exe" -batchmode -nographics -mc2SmokeTest -mc2CommandFile "$Repo\unity-mc2-demo\Assets\StreamingAssets\CommanderScripts\mc2_01-visible-flow-audit.txt" -logFile "$Repo\analysis-output\unity-player-pc-visible-flow-baseline.log"
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\capture_reference_visuals.ps1 -Presets mechlab,spawn,airfield,hangar-contact,damage-demo,north-patrol
+git status --short --branch --untracked-files=all
+```
+
+**Expected Strings:**
+
+```text
+MC2 demo contract validation OK
+Build Finished, Result: Success
+MC2 Unity demo Windows build OK
+MC2 demo smoke test exiting with code 0
+MC2 reference visual captures passed
+```
+
+**Acceptance:**
+
+- PC baseline has fresh validator/build/smoke/capture evidence.
+- Generated logs, screenshots, sidecars and builds remain ignored.
+- The next PC optimization target is written down before changing visuals.
+- No mobile G4/G5 work starts before G3 has a real device.
+
+**Commit:** `Audit PC demo baseline`
+
+### PC2: Polish PC Battle Readability
+
+**Status:** Later.
+
+**Goal:** 根据 PC1 证据只修一处最高影响的战场可读性问题，避免无边界地改 UI 或美术。
+
+**Files:**
+
+- Modify if needed: `unity-mc2-demo/Assets/Scripts/Presentation/DemoTerrainView.cs`
+- Modify if needed: `unity-mc2-demo/Assets/Scripts/Presentation/DemoUnitView.cs`
+- Modify if needed: `unity-mc2-demo/Assets/Scripts/Presentation/DemoStructureView.cs`
+- Modify if needed: `unity-mc2-demo/Assets/Scripts/Presentation/Mc2DemoBootstrap.cs`
+- Modify if needed: `scripts/unity/capture_reference_visuals.ps1`
+- Modify if needed: `docs-reference-visual-audit-2026-06-07.md`
+
+**Acceptance:**
+
+- Terrain/water/roads/buildings/units are more readable in the selected capture.
+- `hangar-contact` does not regress into true overlap or visual pile.
+- Battle UI remains sparse.
+- The fix is presentation-level unless evidence proves a BattleCore rule bug.
+
+**Commit:** `Polish PC battle readability`
+
+### PC3: Polish PC MechLab Flow
+
+**Status:** Later.
+
+**Goal:** 让 PC 装配界面更直观地表达整块武器、热量、重量、装甲板和散热器；武器装上即启用，不做启用/关闭。
+
+**Files:**
+
+- Modify: `unity-mc2-demo/Assets/Scripts/Presentation/Mc2DemoBootstrap.cs`
+- Modify if needed: `unity-mc2-demo/Assets/Scripts/BattleCore/LoadoutContract.cs`
+- Modify if needed: `unity-mc2-demo/Assets/Scripts/BattleCore/LoadoutValidator.cs`
+- Modify if needed: `scripts/unity/capture_reference_visuals.ps1`
+
+**Acceptance:**
+
+- Whole weapon block shapes are obvious.
+- Heat/weight/slot legality can be judged from the panel.
+- Armor/sink fillers remain simple one-cell decisions.
+- No weapon enable/disable toggle returns.
+- `mechlab` capture has no text overlap at 1280x720.
+
+**Commit:** `Polish PC MechLab flow`
+
+### PC4: Package PC Controlled Demo Evidence
+
+**Status:** Later.
+
+**Goal:** PC 可展示质量收稳后，刷新外部演示脚本和证据页。
+
+**Files:**
+
+- Modify: `docs-playable-demo-walkthrough-2026-06-07.md`
+- Modify: `docs-playable-demo-investor-evidence-2026-06-07.md`
+- Modify if needed: `README.md`
+
+**Validation:**
+
+```powershell
+git diff --check
+git status --short --branch --untracked-files=all
+```
+
+**Commit:** `Package PC controlled demo evidence`
 
 ### G4: Adapt Command UI For Mobile Touch
 
@@ -1439,4 +1591,4 @@ Stop and reassess before committing if:
 
 ## 9. One-Line Direction
 
-Windows 本地 Demo 的画面、碰撞、稀疏 UI、MechLab、损伤故事、演示证据、公开 art-safe 元数据合同、AI 副官离线边界和主服务器奖励权威契约已经收稳；代码已推到 GitHub，H2 validator/build/smoke 已过，G2 Android APK build smoke 已过；现在继续 G3 真机安装启动 smoke，然后做触控 UI 和性能预算，再恢复地图包、Web 排行和创作者生态。
+Windows 本地 Demo 的画面、碰撞、稀疏 UI、MechLab、损伤故事、演示证据、公开 art-safe 元数据合同、AI 副官离线边界和主服务器奖励权威契约已经收稳；代码已推到 GitHub，H2 validator/build/smoke 已过，G2 Android APK build smoke 已过；G3 真机 smoke 等待授权 Android 手机；当前继续 PC1 基线审计和 Windows 可展示质量优化，设备到位后再回 G3-G5。
