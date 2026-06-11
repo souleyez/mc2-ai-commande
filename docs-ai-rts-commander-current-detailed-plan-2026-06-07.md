@@ -8,7 +8,7 @@
 
 **Tech Stack:** Unity 6, C#, Windows PC build/smoke/capture as active demo loop, Android/iOS mobile-first after device blocker clears, deterministic BattleCore, PowerShell build/smoke/capture scripts, replaceable content packs, optional high-level AI deputy, later main server/map server/Web ranking contracts.
 
-**Revision:** 2026-06-12 v37. This file is the fine-grained execution plan paired with `docs-ai-rts-commander-current-master-plan-2026-06-07.md`. The private reference visual bridge, local investor evidence package, art-safe metadata contract, AI deputy offline guard, reward authority contract, machine handoff plan, mobile-first priority reset, Android build smoke, PC optimization resumption, PC1 baseline audit, PC2 battle readability pass, PC3 MechLab PC flow polish, PC4 controlled demo evidence package, PC5 Windows demo launcher preflight, PC6 controlled demo evidence health check, PC7 controlled demo public boundary preflight, PC8 controlled demo readiness preflight, PC9 controlled demo handoff consistency check, PC10 Android device-smoke preflight, PC11 PC core playable contract check, PC12 mobile command model preflight, PC13 current plan gate check, PC14 Android smoke log crash scan, PC15 Android smoke plan mode, PC16 battle HUD sparse contract check, PC17 demo source hygiene check, PC18 AI deputy contract check, PC19 Windows demo build freshness check, PC20 controlled demo evidence freshness check, PC21 controlled demo capture log freshness check, PC22 Android APK freshness check, PC23 Android APK identity check, and PC24 Android APK compatibility check are now sealed for the current Demo. H2 validator/build/smoke is green; G2 Android build smoke is green with a generated APK; `G3 Run Android Device Smoke` is waiting on a physical authorized phone. Further PC wait-state work should define PC25 before implementation.
+**Revision:** 2026-06-12 v38. This file is the fine-grained execution plan paired with `docs-ai-rts-commander-current-master-plan-2026-06-07.md`. The private reference visual bridge, local investor evidence package, art-safe metadata contract, AI deputy offline guard, reward authority contract, machine handoff plan, mobile-first priority reset, Android build smoke, PC optimization resumption, PC1 baseline audit, PC2 battle readability pass, PC3 MechLab PC flow polish, PC4 controlled demo evidence package, PC5 Windows demo launcher preflight, PC6 controlled demo evidence health check, PC7 controlled demo public boundary preflight, PC8 controlled demo readiness preflight, PC9 controlled demo handoff consistency check, PC10 Android device-smoke preflight, PC11 PC core playable contract check, PC12 mobile command model preflight, PC13 current plan gate check, PC14 Android smoke log crash scan, PC15 Android smoke plan mode, PC16 battle HUD sparse contract check, PC17 demo source hygiene check, PC18 AI deputy contract check, PC19 Windows demo build freshness check, PC20 controlled demo evidence freshness check, PC21 controlled demo capture log freshness check, PC22 Android APK freshness check, PC23 Android APK identity check, PC24 Android APK compatibility check, and PC25 Android APK signing check are now sealed for the current Demo. H2 validator/build/smoke is green; G2 Android build smoke is green with a generated APK; `G3 Run Android Device Smoke` is waiting on a physical authorized phone. Further PC wait-state work should define PC26 before implementation.
 
 ---
 
@@ -38,14 +38,14 @@
 1. `H2` validator、Windows build 和 visible-flow smoke 已通过；Unity scene fileID churn 已恢复，工作区保持干净。
 2. `G3` 仍是当前移动端 gate：在真 Android 设备上安装并启动 APK，证明移动端运行链路可用。
 3. 当前机器没有授权 Android 设备；G3 进入 Waiting on Device 状态，不推进 G4/G5。
-4. Android 设备等待期间，PC1 基线审计、PC2 战场可读性优化、PC3 MechLab 打磨、PC4 受控演示证据包、PC5 Windows 启动预检、PC6 证据健康检查、PC7 公开边界预检、PC8 演示总预检、PC9 交接一致性检查、PC10 Android 真机 smoke 前置检查、PC11 PC 核心玩法合约检查、PC12 移动指挥模型预检、PC13 当前计划 gate 总预检、PC14 Android smoke 日志崩溃扫描、PC15 Android smoke 预演模式、PC16 战斗 HUD 稀疏合约检查、PC17 源码/生成物卫生检查、PC18 AI 副官边界检查、PC19 Windows 演示构建新鲜度检查、PC20 受控演示证据新鲜度检查、PC21 capture 日志新鲜度检查、PC22 Android APK 新鲜度检查、PC23 Android APK 身份检查和 PC24 Android APK 兼容性检查已通过；下一步回到 `G3` 真机 smoke，或先定义 PC25 再继续 PC/等待态工作。
+4. Android 设备等待期间，PC1 基线审计、PC2 战场可读性优化、PC3 MechLab 打磨、PC4 受控演示证据包、PC5 Windows 启动预检、PC6 证据健康检查、PC7 公开边界预检、PC8 演示总预检、PC9 交接一致性检查、PC10 Android 真机 smoke 前置检查、PC11 PC 核心玩法合约检查、PC12 移动指挥模型预检、PC13 当前计划 gate 总预检、PC14 Android smoke 日志崩溃扫描、PC15 Android smoke 预演模式、PC16 战斗 HUD 稀疏合约检查、PC17 源码/生成物卫生检查、PC18 AI 副官边界检查、PC19 Windows 演示构建新鲜度检查、PC20 受控演示证据新鲜度检查、PC21 capture 日志新鲜度检查、PC22 Android APK 新鲜度检查、PC23 Android APK 身份检查、PC24 Android APK 兼容性检查和 PC25 Android APK 签名检查已通过；下一步回到 `G3` 真机 smoke，或先定义 PC26 再继续 PC/等待态工作。
 5. D1 只是 art-safe metadata 合同，不是可挂载 runtime pack；后续 D2 才能进入清权资产生产和 mountable pack。
 6. 私有参考素材可以继续用于本机开发验证，但公开材料不能把它描述成最终产品内容。
 7. `F2-F4` 平台化方向仍保留，但现在只在移动端可行性通过后继续。
 
 当前工作区注意事项：
 
-- 若当前 `git status` 只剩计划文档改动，先完成校验并提交；之后等待 G3 设备，或先写清 PC25 目标。
+- 若当前 `git status` 只剩计划文档改动，先完成校验并提交；之后等待 G3 设备，或先写清 PC26 目标。
 - D1 新增的是 metadata 示例文件；不允许把私有 OBJ/TGA/PNG/JSON、截图、log 或 Unity build 输出加入 git。
 - G2-G5 先做移动端可行性；F2-F4 后移，不先写服务器实现。
 - 如果 Unity batch 运行后只造成 `unity-mc2-demo/Assets/Scenes/Mc2Demo.unity` fileID churn，不要纳入提交。
@@ -110,7 +110,7 @@
 | M11 | 平台契约 | In Progress | 奖励认证契约完成；地图包、排行、创作者边界待写 |
 | M12 | 换机开发交接 | Done | H2 validator/build/smoke 已通过 |
 | M13 | 移动端优先可行性 | Waiting on Device | Android APK build smoke 已通过；真机 smoke 等授权手机，之后再做触控 UI 和性能预算 |
-| M14 | PC/移动等待态优化 | Done for current pass | PC1-PC24 passed: PC1 baseline, PC2 battle readability, PC3 MechLab polish, PC4 controlled demo evidence package, PC5 launch preflight, PC6 evidence health check, PC7 public boundary preflight, PC8 readiness preflight, PC9 handoff consistency check, PC10 Android device-smoke preflight, PC11 PC core playable contract check, PC12 mobile command model preflight, PC13 current plan gate check, PC14 Android smoke log crash scan, PC15 Android smoke plan mode, PC16 battle HUD sparse contract check, PC17 demo source hygiene check, PC18 AI deputy contract check, PC19 Windows demo build freshness check, PC20 controlled demo evidence freshness check, PC21 controlled demo capture log freshness check, PC22 Android APK freshness check, PC23 Android APK identity check and PC24 Android APK compatibility check |
+| M14 | PC/移动等待态优化 | Done for current pass | PC1-PC25 passed: PC1 baseline, PC2 battle readability, PC3 MechLab polish, PC4 controlled demo evidence package, PC5 launch preflight, PC6 evidence health check, PC7 public boundary preflight, PC8 readiness preflight, PC9 handoff consistency check, PC10 Android device-smoke preflight, PC11 PC core playable contract check, PC12 mobile command model preflight, PC13 current plan gate check, PC14 Android smoke log crash scan, PC15 Android smoke plan mode, PC16 battle HUD sparse contract check, PC17 demo source hygiene check, PC18 AI deputy contract check, PC19 Windows demo build freshness check, PC20 controlled demo evidence freshness check, PC21 controlled demo capture log freshness check, PC22 Android APK freshness check, PC23 Android APK identity check, PC24 Android APK compatibility check and PC25 Android APK signing check |
 
 ## 4. Fine-Grained Commit Queue
 
@@ -160,6 +160,7 @@
 | PC22 | Done | `Add Android APK freshness check` | Android 真机 smoke 前确认 ignored APK 晚于 tracked Unity build 输入，并接入 G3 preflight/smoke/current gate | `check_android_apk_freshness.ps1` |
 | PC23 | Done | `Add Android APK identity check` | Android 真机 smoke 前确认 package/activity 与预期 install/launch 身份一致 | `check_android_apk_identity.ps1` |
 | PC24 | Done | `Add Android APK compatibility check` | Android 真机 smoke 前确认 minSdk、targetSdk 和 native ABI 与预期设备兼容性一致 | `check_android_apk_compatibility.ps1` |
+| PC25 | Done | `Add Android APK signing check` | Android 真机 smoke 前确认 apksigner verify、v2 签名和 debug signer DN 均通过 | `check_android_apk_signing.ps1` |
 | G4 | Later | `Adapt command UI for mobile touch` | 状态行、Jet、地图、系统和 MechLab 手机触控可用 | device smoke |
 | G5 | Later | `Define mobile performance budget` | FPS、内存、包体、加载、热量/电量基线 | docs + device evidence |
 | G6 | Later | `Document iOS feasibility gate` | macOS/Xcode/签名/Metal/真机要求 | docs |
@@ -235,6 +236,7 @@
 | PC22.1 | Done | 增加 Android APK 新鲜度检查，确认 ignored APK 晚于 tracked Unity build 输入，并接入 Android preflight、device smoke 和 current plan gate | `scripts/unity/check_android_apk_freshness.ps1`; Android smoke scripts; docs; ignored APK output | `check_android_apk_freshness.ps1` |
 | PC23.1 | Done | 增加 Android APK 身份检查，确认 package/activity 与 G3 预期安装启动入口一致，并接入 Android preflight、device smoke 和 current plan gate | `scripts/unity/check_android_apk_identity.ps1`; Android smoke scripts; docs | `check_android_apk_identity.ps1` |
 | PC24.1 | Done | 增加 Android APK 兼容性检查，确认 minSdk、targetSdk 与 native ABI 符合 G3 目标，并接入 Android preflight、device smoke 和 current plan gate | `scripts/unity/check_android_apk_compatibility.ps1`; Android smoke scripts; docs | `check_android_apk_compatibility.ps1` |
+| PC25.1 | Done | 增加 Android APK 签名检查，确认 apksigner verify、v2 签名和 debug signer DN 符合 G3 安装前置条件，并接入 Android preflight、device smoke 和 current plan gate | `scripts/unity/check_android_apk_signing.ps1`; Android smoke scripts; docs | `check_android_apk_signing.ps1` |
 | G4.1 | Later | 调整触控命令 UI，保持无框选、稀疏 HUD、状态栏单选 | Unity presentation | mobile smoke |
 | G5.1 | Later | 定义移动端性能预算并记录首轮基线 | docs + ignored evidence | budget doc |
 | F2.1 | Later | 写地图包/编辑器契约，定义地图元数据、触发图、敌人、奖励引用和验证器边界 | platform docs | `git diff --check` |
@@ -2128,6 +2130,50 @@ git status --short --branch --untracked-files=all
 
 **Commit:** `Add Android APK compatibility check`
 
+### PC25: Add Android APK Signing Check
+
+**Status:** Completed 2026-06-12.
+
+**Goal:** Keep G3 waiting on an authorized phone without leaving APK signing as a late install failure. Before install/launch, prove the ignored APK verifies through the Unity Android SDK signing tool.
+
+**Implementation:**
+
+- Added `scripts/unity/check_android_apk_signing.ps1`.
+- Runs `apksigner verify --verbose --print-certs`.
+- Requires the APK to verify.
+- Requires APK Signature Scheme v2 verification.
+- Requires signer DN `C=US, O=Android, CN=Android Debug`.
+- Reports signer SHA-256 digest for diagnosis.
+- Wires the signing check into `check_android_device_preflight.ps1`, `android_device_smoke.ps1`, and `check_current_plan_gate.ps1`.
+- Updates handoff, mobile and evidence docs to keep the sealed PC/mobile waiting-state package aligned.
+
+**Acceptance:**
+
+- The Android APK signing checker fails if `apksigner` cannot verify the APK.
+- It fails unless the APK verifies.
+- It fails unless APK Signature Scheme v2 is verified.
+- It fails unless signer DN is `C=US, O=Android, CN=Android Debug`.
+- It prints the signer SHA-256 digest for diagnosis.
+- `check_android_device_preflight.ps1 -AllowNoDevice` checks APK signing before reporting the expected waiting-on-device state.
+- `android_device_smoke.ps1 -PlanOnly` and real device smoke reject unsigned or wrongly signed APK metadata before install/launch.
+- `check_current_plan_gate.ps1` includes a visible Android APK signing gate.
+- No APK, log or generated output is staged.
+
+**Validation:**
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_apk_signing.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_device_preflight.ps1 -AllowNoDevice
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\android_device_smoke.ps1 -PlanOnly
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_current_plan_gate.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_controlled_demo_handoff.ps1 -RunReadiness
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_mobile_command_model_preflight.ps1
+git diff --check
+git status --short --branch --untracked-files=all
+```
+
+**Commit:** `Add Android APK signing check`
+
 ### G4: Adapt Command UI For Mobile Touch
 
 **Status:** Later.
@@ -2348,6 +2394,7 @@ Demo 可以给少量外部人看时，必须满足：
 27. Android APK freshness check proves the ignored APK is current before G3 preflight or device smoke can install it.
 28. Android APK identity check proves package name and launch activity match the expected G3 install/launch identity.
 29. Android APK compatibility check proves min SDK, target SDK and native ABI metadata match the expected Android smoke target.
+30. Android APK signing check proves `apksigner verify`, APK Signature Scheme v2 and the expected debug signer DN pass before G3 install/launch.
 
 ## 8. Stop Conditions
 
@@ -2365,4 +2412,4 @@ Stop and reassess before committing if:
 
 ## 9. One-Line Direction
 
-Windows 本地 Demo 的画面、碰撞、稀疏 UI、MechLab、损伤故事、受控演示证据、启动预检、构建新鲜度检查、证据健康检查、证据新鲜度检查、capture 日志新鲜度检查、Android APK 新鲜度检查、Android APK 身份检查、Android APK 兼容性检查、公开边界预检、演示总预检、交接一致性检查、Android 真机 smoke 前置检查、PC 核心玩法合约检查、移动指挥模型预检、战斗 HUD 稀疏合约检查、源码/生成物卫生检查、AI 副官边界检查、当前计划 gate 总预检、Android smoke 日志崩溃扫描、Android smoke 预演模式、公开 art-safe 元数据合同、AI 副官离线边界和主服务器奖励权威契约已经收稳；代码已推到 GitHub，H2 validator/build/smoke 已过，G2 Android APK build smoke 已过；PC1-PC24 PC/移动等待态优化包已封口；G3 真机 smoke 等待授权 Android 手机，设备到位后继续 G3-G5，设备不到位时如继续 PC 端必须先定义 PC25 目标。
+Windows 本地 Demo 的画面、碰撞、稀疏 UI、MechLab、损伤故事、受控演示证据、启动预检、构建新鲜度检查、证据健康检查、证据新鲜度检查、capture 日志新鲜度检查、Android APK 新鲜度检查、Android APK 身份检查、Android APK 兼容性检查、Android APK 签名检查、公开边界预检、演示总预检、交接一致性检查、Android 真机 smoke 前置检查、PC 核心玩法合约检查、移动指挥模型预检、战斗 HUD 稀疏合约检查、源码/生成物卫生检查、AI 副官边界检查、当前计划 gate 总预检、Android smoke 日志崩溃扫描、Android smoke 预演模式、公开 art-safe 元数据合同、AI 副官离线边界和主服务器奖励权威契约已经收稳；代码已推到 GitHub，H2 validator/build/smoke 已过，G2 Android APK build smoke 已过；PC1-PC25 PC/移动等待态优化包已封口；G3 真机 smoke 等待授权 Android 手机，设备到位后继续 G3-G5，设备不到位时如继续 PC 端必须先定义 PC26 目标。

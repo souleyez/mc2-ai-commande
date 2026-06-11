@@ -3,6 +3,7 @@ param(
     [string]$ApkPath = "",
     [string]$AdbPath = "",
     [string]$AaptPath = "",
+    [string]$ApksignerPath = "",
     [string]$DeviceId = "",
     [switch]$AllowNoDevice
 )
@@ -28,6 +29,10 @@ if ([string]::IsNullOrWhiteSpace($AdbPath)) {
 
 if ([string]::IsNullOrWhiteSpace($AaptPath)) {
     $AaptPath = Join-Path $androidPlayer "SDK\build-tools\36.0.0\aapt.exe"
+}
+
+if ([string]::IsNullOrWhiteSpace($ApksignerPath)) {
+    $ApksignerPath = Join-Path $androidPlayer "SDK\build-tools\36.0.0\apksigner.bat"
 }
 
 $failures = New-Object System.Collections.Generic.List[string]
@@ -160,6 +165,13 @@ else {
     Add-Row -Check "aapt" -Status "OK" -Detail $aaptVersion
 }
 
+if (-not (Test-Path -LiteralPath $ApksignerPath)) {
+    Add-Failure "Missing apksigner: $ApksignerPath"
+}
+else {
+    Add-Row -Check "apksigner" -Status "OK" -Detail $ApksignerPath
+}
+
 if ((Test-Path -LiteralPath $ApkPath) -and (Test-Path -LiteralPath $AaptPath)) {
     $metadata = Get-ApkMetadata -Apk $ApkPath -Aapt $AaptPath
     if ([string]::IsNullOrWhiteSpace($metadata.PackageName)) {
@@ -256,6 +268,34 @@ else {
     }
     else {
         Add-Row -Check "APK compatibility" -Status "OK" -Detail "Android APK compatibility check OK."
+    }
+}
+
+$apkSigningScript = Join-Path $PSScriptRoot "check_android_apk_signing.ps1"
+if (-not (Test-Path -LiteralPath $apkSigningScript)) {
+    Add-Failure "Missing Android APK signing checker: $apkSigningScript"
+}
+else {
+    $signingResult = Invoke-NativeCommand -FilePath "powershell" -Arguments @(
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        $apkSigningScript,
+        "-RepoRoot",
+        $RepoRoot,
+        "-ApkPath",
+        $ApkPath,
+        "-ApksignerPath",
+        $ApksignerPath
+    )
+
+    $signingOutput = $signingResult.Output -join " "
+    if ($signingResult.ExitCode -ne 0 -or $signingOutput -notlike "*Android APK signing check OK.*") {
+        Add-Failure "Android APK signing preflight failed: $signingOutput"
+    }
+    else {
+        Add-Row -Check "APK signing" -Status "OK" -Detail "Android APK signing check OK."
     }
 }
 

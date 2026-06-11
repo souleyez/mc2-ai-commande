@@ -3,6 +3,7 @@ param(
     [string]$ApkPath = "",
     [string]$AdbPath = "",
     [string]$AaptPath = "",
+    [string]$ApksignerPath = "",
     [string]$PackageName = "",
     [string]$ActivityName = "",
     [string]$DeviceId = "",
@@ -32,6 +33,10 @@ if ([string]::IsNullOrWhiteSpace($AdbPath)) {
 
 if ([string]::IsNullOrWhiteSpace($AaptPath)) {
     $AaptPath = Join-Path $androidPlayer "SDK\build-tools\36.0.0\aapt.exe"
+}
+
+if ([string]::IsNullOrWhiteSpace($ApksignerPath)) {
+    $ApksignerPath = Join-Path $androidPlayer "SDK\build-tools\36.0.0\apksigner.bat"
 }
 
 if ([string]::IsNullOrWhiteSpace($LogPath)) {
@@ -86,6 +91,20 @@ if ($LASTEXITCODE -ne 0) {
     }
 
     throw "Android APK compatibility check failed with exit code $LASTEXITCODE"
+}
+
+$apkSigningScript = Join-Path $PSScriptRoot "check_android_apk_signing.ps1"
+if (-not (Test-Path -LiteralPath $apkSigningScript)) {
+    throw "Missing Android APK signing checker: $apkSigningScript"
+}
+
+$signingOutput = & powershell -NoProfile -ExecutionPolicy Bypass -File $apkSigningScript -RepoRoot $RepoRoot -ApkPath $ApkPath -ApksignerPath $ApksignerPath 2>&1
+if ($LASTEXITCODE -ne 0) {
+    foreach ($line in @($signingOutput | ForEach-Object { $_.ToString() })) {
+        Write-Host $line
+    }
+
+    throw "Android APK signing check failed with exit code $LASTEXITCODE"
 }
 
 function Get-ApkMetadata {
@@ -183,6 +202,7 @@ if ($PlanOnly) {
     Write-Host "APK: $ApkPath"
     Write-Host "adb: $AdbPath"
     Write-Host "aapt: $AaptPath"
+    Write-Host "apksigner: $ApksignerPath"
     Write-Host "Package: $PackageName"
     if (-not [string]::IsNullOrWhiteSpace($ActivityName)) {
         Write-Host "Activity: $ActivityName"

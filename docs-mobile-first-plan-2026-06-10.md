@@ -29,22 +29,22 @@ behind this mobile gate.
 ## Current Waiting State
 
 G2 Android build smoke is complete and the APK exists in ignored build output.
-G3 Android device-smoke preflight now verifies the APK, adb, aapt, package name
-and launchable activity. The real G3 device smoke is still waiting on a physical
-Android phone that is visible through `adb devices` and authorized for USB
-debugging.
+G3 Android device-smoke preflight now verifies the APK, adb, aapt, apksigner,
+package name, launchable activity, compatibility metadata and signing. The real
+G3 device smoke is still waiting on a physical Android phone that is visible
+through `adb devices` and authorized for USB debugging.
 
 While G3 is waiting, the active project work may continue on PC demo
 optimization as defined in `docs-pc-optimization-plan-2026-06-11.md`. This does
 not advance G4/G5 ahead of G3; it only keeps Windows demo quality moving while
 the required phone is unavailable. The current PC/mobile waiting-state work is
-sealed through PC24, including the PC core playable contract check, mobile
+sealed through PC25, including the PC core playable contract check, mobile
 command model preflight, battle HUD sparse contract check, demo source hygiene
 check, AI deputy contract check, Windows demo build freshness check, controlled
 demo evidence freshness check, controlled demo capture log freshness check,
 Android APK freshness check, Android APK identity check, Android APK
-compatibility check, current plan gate check, Android smoke log crash scan and
-Android smoke plan mode.
+compatibility check, Android APK signing check, current plan gate check, Android
+smoke log crash scan and Android smoke plan mode.
 
 ## Definition Of Done
 
@@ -97,7 +97,7 @@ failing, unless the later work is explicitly diagnostic.
 **Precondition:**
 
 - `git status --short --branch --untracked-files=all` 干净。
-- Android APK exists at `unity-mc2-demo\Builds\Android\MC2UnityDemo.apk` and passes `check_android_apk_freshness.ps1`, `check_android_apk_identity.ps1` and `check_android_apk_compatibility.ps1`.
+- Android APK exists at `unity-mc2-demo\Builds\Android\MC2UnityDemo.apk` and passes `check_android_apk_freshness.ps1`, `check_android_apk_identity.ps1`, `check_android_apk_compatibility.ps1` and `check_android_apk_signing.ps1`.
 - `adb` exists at `$HOME\Unity\Hub\Editor\6000.4.7f1\Editor\Data\PlaybackEngines\AndroidPlayer\SDK\platform-tools\adb.exe`.
 - One physical Android device has USB debugging enabled and is trusted by this PC.
 
@@ -138,10 +138,12 @@ scripts\unity\android_device_smoke.ps1 exists and fails clearly when no device i
 scripts\unity\check_android_apk_freshness.ps1 -> Android APK freshness check OK.
 scripts\unity\check_android_apk_identity.ps1 -> Android APK identity check OK.
 scripts\unity\check_android_apk_compatibility.ps1 -> Android APK compatibility check OK.
+scripts\unity\check_android_apk_signing.ps1 -> Android APK signing check OK.
 scripts\unity\check_android_device_preflight.ps1 -AllowNoDevice -> Android device smoke preflight waiting on device.
 APK package -> com.DefaultCompany.unitymc2demo.
 APK activity -> com.unity3d.player.UnityPlayerGameActivity.
 APK compatibility -> minSdkVersion 25, targetSdkVersion 36, native-code arm64-v8a.
+APK signing -> apksigner verify OK, v2 scheme true, signer DN C=US, O=Android, CN=Android Debug.
 adb devices -> no device rows.
 G3 still requires a physical Android phone with USB debugging enabled and authorized.
 ```
@@ -222,10 +224,11 @@ Minimum device target for the first pass:
 | ID | Requirement | Output | Verification |
 | --- | --- | --- | --- |
 | G3-R1 | Device is visible through adb | device id | `adb devices` shows one `device` row |
-| G3-R1a | Device-smoke preflight can prove APK/tooling/package readiness before install | preflight rows | `check_android_device_preflight.ps1 -AllowNoDevice` reports waiting on device, with APK, APK freshness, APK identity, APK compatibility, adb, aapt, package and activity OK |
+| G3-R1a | Device-smoke preflight can prove APK/tooling/package readiness before install | preflight rows | `check_android_device_preflight.ps1 -AllowNoDevice` reports waiting on device, with APK, APK freshness, APK identity, APK compatibility, APK signing, adb, aapt, apksigner, package and activity OK |
 | G3-R1c | Android APK is not stale before install | freshness output | `check_android_apk_freshness.ps1` reports `Android APK freshness check OK` |
 | G3-R1d | Android APK identity matches the expected launch path | identity output | `check_android_apk_identity.ps1` reports `Android APK identity check OK` for package `com.DefaultCompany.unitymc2demo` and activity `com.unity3d.player.UnityPlayerGameActivity` |
 | G3-R1e | Android APK compatibility matches the expected device target | compatibility output | `check_android_apk_compatibility.ps1` reports `Android APK compatibility check OK` for min SDK 25, target SDK 36 and native-code `arm64-v8a` |
+| G3-R1f | Android APK signing verifies before install | signing output | `check_android_apk_signing.ps1` reports `Android APK signing check OK` with APK Signature Scheme v2 and debug signer DN |
 | G3-R1b | Device-smoke helper can preview planned actions without a device | plan output | `android_device_smoke.ps1 -PlanOnly` reports package, activity, log path and install/launch/log-check actions |
 | G3-R2 | APK installs cleanly | installed package | `adb install -r <apk>` returns success |
 | G3-R3 | App launches without immediate crash | app process/log | `adb logcat` has no fatal crash during launch |
@@ -242,6 +245,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_androi
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_apk_freshness.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_apk_identity.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_apk_compatibility.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_apk_signing.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\android_device_smoke.ps1 -PlanOnly
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\android_device_smoke.ps1
 git status --short --branch --untracked-files=all
