@@ -266,13 +266,16 @@ Expected:
 
 ```text
 Android device smoke plan OK
+Screenshot: C:\...\analysis-output\android-device-smoke.png
+ScreenshotCapture: True
 ```
 
 The helper verifies SDK tooling plus APK freshness, identity, compatibility,
 signing, manifest, payload and size budget, discovers the APK package name
 through `aapt`, checks that exactly one authorized Android device is connected,
-installs the APK, launches it, waits briefly, captures logcat, scans the log for
-strong crash markers, and fails if the package does not stay running.
+installs the APK, launches it, waits briefly, captures logcat and an ignored
+`analysis-output\android-device-smoke.png` screenshot, scans the log for strong
+crash markers, and fails if the package does not stay running.
 
 Self-test the log scanner without a device:
 
@@ -290,6 +293,7 @@ $Adb = "$HOME\Unity\Hub\Editor\6000.4.7f1\Editor\Data\PlaybackEngines\AndroidPla
 & $Adb shell am start -n com.DefaultCompany.unitymc2demo/com.unity3d.player.UnityPlayerGameActivity
 Start-Sleep -Seconds 12
 & $Adb logcat -d > .\analysis-output\android-device-smoke.log
+& $Adb exec-out screencap -p > .\analysis-output\android-device-smoke.png
 ```
 
 The first manual pass must confirm:
@@ -300,7 +304,7 @@ The first manual pass must confirm:
 - battle scene is reachable;
 - visible-flow path can reach battle, debrief, repair or MechLab, and relaunch;
 - no `MINIMAX_API_KEY` is required;
-- generated device logs remain ignored.
+- generated device logs and screenshots remain ignored.
 
 Current local status
 --------------------
@@ -342,6 +346,7 @@ scripts\unity\check_android_apk_manifest.ps1 -> Android APK manifest check OK
 scripts\unity\check_android_apk_payload.ps1 -> Android APK payload check OK
 scripts\unity\check_android_apk_size_budget.ps1 -> Android APK size budget check OK
 scripts\unity\check_android_smoke_artifact_hygiene.ps1 -> Android smoke artifact hygiene check OK
+scripts\unity\android_device_smoke.ps1 -PlanOnly -> ScreenshotCapture: True, Screenshot -> analysis-output\android-device-smoke.png
 scripts\unity\check_android_device_preflight.ps1 -AllowNoDevice -> Android device smoke preflight waiting on device
 ```
 

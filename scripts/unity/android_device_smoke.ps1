@@ -8,10 +8,12 @@ param(
     [string]$ActivityName = "",
     [string]$DeviceId = "",
     [string]$LogPath = "",
+    [string]$ScreenshotPath = "",
     [int]$LaunchWaitSeconds = 12,
     [switch]$NoInstall,
     [switch]$NoLaunch,
     [switch]$SkipLogCheck,
+    [switch]$SkipScreenshot,
     [switch]$PlanOnly
 )
 
@@ -41,6 +43,10 @@ if ([string]::IsNullOrWhiteSpace($ApksignerPath)) {
 
 if ([string]::IsNullOrWhiteSpace($LogPath)) {
     $LogPath = Join-Path $RepoRoot "analysis-output\android-device-smoke.log"
+}
+
+if ([string]::IsNullOrWhiteSpace($ScreenshotPath)) {
+    $ScreenshotPath = Join-Path $RepoRoot "analysis-output\android-device-smoke.png"
 }
 
 if (-not (Test-Path -LiteralPath $ApkPath)) {
@@ -240,6 +246,59 @@ function Get-AdbDevice {
     return $ready[0].Id
 }
 
+function Join-ProcessArguments {
+    param([string[]]$Arguments)
+
+    $quoted = foreach ($argument in $Arguments) {
+        if ($argument -match '[\s"]') {
+            '"' + ($argument -replace '"', '\"') + '"'
+        }
+        else {
+            $argument
+        }
+    }
+
+    return ($quoted -join " ")
+}
+
+function Invoke-BinaryCommandToFile {
+    param(
+        [string]$FilePath,
+        [string[]]$Arguments,
+        [string]$OutputPath
+    )
+
+    New-Item -ItemType Directory -Force -Path (Split-Path -Parent $OutputPath) | Out-Null
+
+    $processInfo = New-Object System.Diagnostics.ProcessStartInfo
+    $processInfo.FileName = $FilePath
+    $processInfo.Arguments = Join-ProcessArguments -Arguments $Arguments
+    $processInfo.RedirectStandardOutput = $true
+    $processInfo.RedirectStandardError = $true
+    $processInfo.UseShellExecute = $false
+    $processInfo.CreateNoWindow = $true
+
+    $process = New-Object System.Diagnostics.Process
+    $process.StartInfo = $processInfo
+
+    $fileStream = [System.IO.File]::Open($OutputPath, [System.IO.FileMode]::Create, [System.IO.FileAccess]::Write)
+    try {
+        [void]$process.Start()
+        $process.StandardOutput.BaseStream.CopyTo($fileStream)
+        $stderr = $process.StandardError.ReadToEnd()
+        $process.WaitForExit()
+        $exitCode = $process.ExitCode
+    }
+    finally {
+        $fileStream.Dispose()
+        $process.Dispose()
+    }
+
+    if ($exitCode -ne 0) {
+        throw "Binary command failed with exit code $($exitCode): $stderr"
+    }
+}
+
 $metadata = Get-ApkMetadata -Apk $ApkPath -Aapt $AaptPath
 if ([string]::IsNullOrWhiteSpace($PackageName)) {
     $PackageName = $metadata.PackageName
@@ -267,9 +326,11 @@ if ($PlanOnly) {
         Write-Host "Activity: fallback monkey launch"
     }
     Write-Host "Log: $LogPath"
+    Write-Host "Screenshot: $ScreenshotPath"
     Write-Host "Install: $(-not $NoInstall)"
     Write-Host "Launch: $(-not $NoLaunch)"
     Write-Host "LogCheck: $(-not $SkipLogCheck)"
+    Write-Host "ScreenshotCapture: $(-not $SkipScreenshot)"
     return
 }
 
@@ -305,6 +366,15 @@ if (-not $NoLaunch) {
 }
 
 & $AdbPath @adbArgs logcat -d > $LogPath
+
+if (-not $SkipScreenshot) {
+    Invoke-BinaryCommandToFile -FilePath $AdbPath -Arguments ($adbArgs + @("exec-out", "screencap", "-p")) -OutputPath $ScreenshotPath
+    $screenshot = Get-Item -LiteralPath $ScreenshotPath
+    if ($screenshot.Length -lt 1024) {
+        throw "Android smoke screenshot is too small to be useful: $ScreenshotPath ($($screenshot.Length) bytes)"
+    }
+}
+
 $pidOutput = (& $AdbPath @adbArgs shell pidof $PackageName) -join " "
 
 if (-not $SkipLogCheck) {
@@ -325,6 +395,9 @@ if (-not [string]::IsNullOrWhiteSpace($ActivityName)) {
 }
 Write-Host "Process: $pidOutput"
 Write-Host "Log: $LogPath"
+if (-not $SkipScreenshot) {
+    Write-Host "Screenshot: $ScreenshotPath"
+}
 
 if ([string]::IsNullOrWhiteSpace($pidOutput)) {
     throw "Package did not remain running after launch: $PackageName"

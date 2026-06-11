@@ -261,7 +261,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\android_devi
 ```
 
 The plan mode resolves the APK, adb, aapt, package name, launch activity, log
-path and enabled install/launch/log-check steps without requiring a connected
+path, ignored `analysis-output\android-device-smoke.png` screenshot path and
+enabled install/launch/log-check/screenshot steps without requiring a connected
 phone.
 
 Check the public boundary for the controlled-demo metadata package:
@@ -308,6 +309,7 @@ Expected success strings:
 - `Android APK size budget check OK`
 - `Android smoke log check self-test OK`
 - `Android device smoke plan OK`
+- `ScreenshotCapture: True`
 - `Controlled demo public boundary preflight OK`
 - `MC2 demo smoke test exiting with code 0`
 - `MC2 reference visual captures passed`

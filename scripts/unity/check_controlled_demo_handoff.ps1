@@ -136,7 +136,7 @@ Assert-ScriptExists -RelativePath "scripts\content-pack\check_controlled_demo_pu
 
 Assert-FileContains -RelativePath "README.md" -Markers @(
     "AI RTS Commander Lab",
-    "PC1-PC30",
+    "PC1-PC31",
     "check_controlled_demo_handoff.ps1",
     "check_windows_demo_build_freshness.ps1",
     "check_demo_source_hygiene.ps1",
@@ -151,6 +151,7 @@ Assert-FileContains -RelativePath "README.md" -Markers @(
     "check_android_apk_size_budget.ps1",
     "check_android_smoke_artifact_hygiene.ps1",
     "android_device_smoke.ps1",
+    "android-device-smoke.png",
     "check_pc_core_playable_contract.ps1",
     "check_mobile_command_model_preflight.ps1",
     "check_battle_hud_sparse_contract.ps1",
@@ -175,6 +176,8 @@ Assert-FileContains -RelativePath "BUILD-WIN.md" -Markers @(
     "Android smoke log check self-test OK",
     "android_device_smoke.ps1",
     "Android device smoke plan OK",
+    "android-device-smoke.png",
+    "ScreenshotCapture: True",
     "Android SDK tooling",
     "Android APK freshness",
     "Android APK identity",
@@ -216,12 +219,14 @@ Assert-FileContains -RelativePath "BUILD-MOBILE.md" -Markers @(
     "Android APK size budget check OK",
     "Android SDK tooling check OK",
     "Android smoke artifact hygiene check OK",
+    "android-device-smoke.png",
+    "ScreenshotCapture: True",
     "Android device smoke preflight waiting on device",
     "android_device_smoke.ps1"
 )
 
 Assert-FileContains -RelativePath "docs-ai-rts-commander-current-master-plan-2026-06-07.md" -Markers @(
-    "PC1-PC30",
+    "PC1-PC31",
     "Add controlled demo handoff consistency check",
     "Add demo source hygiene check",
     "Add AI deputy contract check",
@@ -237,6 +242,7 @@ Assert-FileContains -RelativePath "docs-ai-rts-commander-current-master-plan-202
     "Add Android APK size budget check",
     "Add Android SDK tooling check",
     "Add Android smoke artifact hygiene check",
+    "Add Android smoke screenshot evidence capture",
     "Add Android device smoke preflight",
     "Add PC core playable contract check",
     "Add mobile command model preflight",
@@ -261,12 +267,14 @@ Assert-FileContains -RelativePath "docs-ai-rts-commander-current-master-plan-202
     "check_android_apk_size_budget.ps1",
     "check_android_sdk_tooling.ps1",
     "check_android_smoke_artifact_hygiene.ps1",
+    "android-device-smoke.png",
+    "ScreenshotCapture: True",
     "check_android_smoke_log.ps1",
     "android_device_smoke.ps1"
 )
 
 Assert-FileContains -RelativePath "docs-ai-rts-commander-current-detailed-plan-2026-06-07.md" -Markers @(
-    "PC1-PC30",
+    "PC1-PC31",
     "Add controlled demo handoff consistency check",
     "Add demo source hygiene check",
     "Add AI deputy contract check",
@@ -282,6 +290,7 @@ Assert-FileContains -RelativePath "docs-ai-rts-commander-current-detailed-plan-2
     "Add Android APK size budget check",
     "Add Android SDK tooling check",
     "Add Android smoke artifact hygiene check",
+    "Add Android smoke screenshot evidence capture",
     "Add Android device smoke preflight",
     "Add PC core playable contract check",
     "Add mobile command model preflight",
@@ -306,12 +315,14 @@ Assert-FileContains -RelativePath "docs-ai-rts-commander-current-detailed-plan-2
     "check_android_apk_size_budget.ps1",
     "check_android_sdk_tooling.ps1",
     "check_android_smoke_artifact_hygiene.ps1",
+    "android-device-smoke.png",
+    "ScreenshotCapture: True",
     "check_android_smoke_log.ps1",
     "android_device_smoke.ps1"
 )
 
 Assert-FileContains -RelativePath "docs-pc-optimization-plan-2026-06-11.md" -Markers @(
-    "sealed through PC30",
+    "sealed through PC31",
     "Add controlled demo handoff consistency check",
     "Add demo source hygiene check",
     "Add AI deputy contract check",
@@ -327,6 +338,7 @@ Assert-FileContains -RelativePath "docs-pc-optimization-plan-2026-06-11.md" -Mar
     "Add Android APK size budget check",
     "Add Android SDK tooling check",
     "Add Android smoke artifact hygiene check",
+    "Add Android smoke screenshot evidence capture",
     "Add Android device smoke preflight",
     "Add PC core playable contract check",
     "Add mobile command model preflight",
@@ -347,6 +359,8 @@ Assert-FileContains -RelativePath "docs-pc-optimization-plan-2026-06-11.md" -Mar
     "check_android_apk_size_budget.ps1",
     "check_android_sdk_tooling.ps1",
     "check_android_smoke_artifact_hygiene.ps1",
+    "android-device-smoke.png",
+    "ScreenshotCapture: True",
     "check_battle_hud_sparse_contract.ps1"
 )
 
@@ -364,6 +378,7 @@ Assert-FileContains -RelativePath "docs-playable-demo-investor-evidence-2026-06-
     "Android APK size budget",
     "Android SDK tooling",
     "Android smoke artifact hygiene",
+    "Android smoke screenshot evidence",
     "AI deputy contract",
     "PC core playable contract",
     "Mobile command model preflight",
@@ -382,6 +397,8 @@ Assert-FileContains -RelativePath "docs-playable-demo-investor-evidence-2026-06-
     "check_current_plan_gate.ps1",
     "check_android_smoke_log.ps1",
     "android_device_smoke.ps1",
+    "android-device-smoke.png",
+    "ScreenshotCapture: True",
     "check_android_apk_freshness.ps1",
     "check_android_apk_identity.ps1",
     "check_android_apk_compatibility.ps1",
@@ -395,7 +412,8 @@ Assert-FileContains -RelativePath "docs-playable-demo-investor-evidence-2026-06-
 )
 
 Assert-FileContains -RelativePath "docs-machine-handoff-plan-2026-06-07.md" -Markers @(
-    "PC1-PC30",
+    "PC1-PC31",
+    "Add Android smoke screenshot evidence capture",
     "Add Android smoke artifact hygiene check",
     "Add Android SDK tooling check",
     "Add Android APK size budget check",
@@ -416,6 +434,8 @@ Assert-FileContains -RelativePath "docs-machine-handoff-plan-2026-06-07.md" -Mar
     "check_current_plan_gate.ps1",
     "check_android_smoke_log.ps1",
     "android_device_smoke.ps1",
+    "android-device-smoke.png",
+    "ScreenshotCapture: True",
     "check_android_apk_freshness.ps1",
     "check_android_apk_identity.ps1",
     "check_android_apk_compatibility.ps1",

@@ -231,7 +231,11 @@ Invoke-GateStep `
     -Name "Android smoke plan gate" `
     -ScriptPath $androidSmokeScript `
     -Arguments @("-RepoRoot", $RepoRoot, "-PlanOnly") `
-    -RequiredMarkers @("Android device smoke plan OK.")
+    -RequiredMarkers @(
+        "Android device smoke plan OK.",
+        "Screenshot:",
+        "ScreenshotCapture: True"
+    )
 
 if ($failures.Count -gt 0) {
     Write-Host "Current plan gate check failed."
