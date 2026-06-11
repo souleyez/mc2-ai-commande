@@ -141,6 +141,7 @@ namespace MC2Demo.EditorTools
             ValidateCombatSimulation(mission);
             ValidateStructureObjective(new BattleMission(MakeStructureObjectiveContract(), CombatProfileCatalog.Empty));
 
+            Debug.Log("MC2 PC core playable contract OK: command-state, solo-return, jet-legality, occupancy, damage-ejection, debrief-relaunch.");
             Debug.Log("MC2 demo contract validation OK: 29 units, 3 player units, 9 objectives, 1 structure, 10000 terrain samples, 1000 terrain objects, combat simulation passed.");
         }
 

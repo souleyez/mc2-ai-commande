@@ -58,6 +58,28 @@ function Add-Row {
     })
 }
 
+function Invoke-NativeCommand {
+    param(
+        [string]$FilePath,
+        [string[]]$Arguments
+    )
+
+    $previousErrorActionPreference = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+    try {
+        $output = & $FilePath @Arguments 2>&1
+        $exitCode = $LASTEXITCODE
+    }
+    finally {
+        $ErrorActionPreference = $previousErrorActionPreference
+    }
+
+    return [pscustomobject]@{
+        ExitCode = $exitCode
+        Output = @($output | ForEach-Object { $_.ToString() })
+    }
+}
+
 function Get-ApkMetadata {
     param(
         [string]$Apk,
@@ -69,8 +91,9 @@ function Get-ApkMetadata {
         ActivityName = ""
     }
 
-    $badging = & $Aapt dump badging $Apk 2>&1
-    if ($LASTEXITCODE -ne 0) {
+    $badgingResult = Invoke-NativeCommand -FilePath $Aapt -Arguments @("dump", "badging", $Apk)
+    $badging = $badgingResult.Output
+    if ($badgingResult.ExitCode -ne 0) {
         Add-Failure "aapt could not read APK badging: $($badging -join ' ')"
         return $metadata
     }
@@ -91,8 +114,9 @@ function Get-ApkMetadata {
 function Get-AdbDevices {
     param([string]$Adb)
 
-    $deviceLines = & $Adb devices 2>&1
-    if ($LASTEXITCODE -ne 0) {
+    $deviceResult = Invoke-NativeCommand -FilePath $Adb -Arguments @("devices")
+    $deviceLines = $deviceResult.Output
+    if ($deviceResult.ExitCode -ne 0) {
         Add-Failure "adb devices failed: $($deviceLines -join ' ')"
         return @()
     }
@@ -122,7 +146,8 @@ if (-not (Test-Path -LiteralPath $AdbPath)) {
     Add-Failure "Missing adb: $AdbPath"
 }
 else {
-    $adbVersion = (& $AdbPath version 2>&1 | Select-Object -First 2) -join "; "
+    $adbVersionResult = Invoke-NativeCommand -FilePath $AdbPath -Arguments @("version")
+    $adbVersion = ($adbVersionResult.Output | Select-Object -First 2) -join "; "
     Add-Row -Check "adb" -Status "OK" -Detail $adbVersion
 }
 
@@ -130,7 +155,8 @@ if (-not (Test-Path -LiteralPath $AaptPath)) {
     Add-Failure "Missing aapt: $AaptPath"
 }
 else {
-    $aaptVersion = (& $AaptPath version 2>&1 | Select-Object -First 1) -join " "
+    $aaptVersionResult = Invoke-NativeCommand -FilePath $AaptPath -Arguments @("version")
+    $aaptVersion = ($aaptVersionResult.Output | Select-Object -First 1) -join " "
     Add-Row -Check "aapt" -Status "OK" -Detail $aaptVersion
 }
 

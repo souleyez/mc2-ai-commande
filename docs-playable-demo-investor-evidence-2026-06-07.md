@@ -15,6 +15,7 @@ Refreshed on 2026-06-12 after `Package PC controlled demo evidence`.
 | Evidence health check | Pass | `scripts/unity/check_controlled_demo_evidence.ps1` reports `Controlled demo evidence check OK` by reading the Windows build, visible-flow log and six capture sidecars. |
 | Readiness preflight | Pass | `scripts/unity/check_controlled_demo_readiness.ps1` reports `Controlled demo readiness preflight OK` by wrapping launch preflight, evidence health and public boundary gates. |
 | Handoff consistency | Pass | `scripts/unity/check_controlled_demo_handoff.ps1` reports `Controlled demo handoff consistency check OK` by checking the main scripts and handoff docs agree on the current PC gate set. |
+| PC core playable contract | Pass | `scripts/unity/check_pc_core_playable_contract.ps1` reports `PC core playable contract check OK` and requires the Unity validator marker for command state, solo return, Jet legality, occupancy, damage/ejection and debrief/relaunch. |
 | Android device preflight | Waiting on Device | `scripts/unity/check_android_device_preflight.ps1 -AllowNoDevice` reports APK, adb, aapt, package and launch activity are ready, then stops at waiting on an authorized Android phone. |
 | Six capture presets | Pass | `capture_reference_visuals.ps1` reports `MC2 reference visual captures passed: 6 preset(s)` for `mechlab`, `spawn`, `airfield`, `hangar-contact`, `damage-demo`, and `north-patrol`. |
 | MechLab fitting | Pass | `mechlab` capture remains the fitting proof: whole weapon block, armor/cooling filler, H/W/G pressure, `Fit OK`, `CellState=OK OPEN4 OCC12 OCC!0 OOB0`, and `noToggle=yes`. |
@@ -24,7 +25,7 @@ Refreshed on 2026-06-12 after `Package PC controlled demo evidence`.
 | Replacement boundary | Pass | `content-packs/project-owned-starter.example.json`, `content-packs/project-owned-visual-slice.example.json`, and `content-packs/project-owned-art-safe-slice.example.json` pass the public content boundary check; current local screenshots remain development evidence, not public final art. |
 | Public boundary preflight | Pass | `scripts/content-pack/check_controlled_demo_public_boundary.ps1` reports `Controlled demo public boundary preflight OK` for project-owned metadata examples; with `-CheckDevBuild`, the current Windows development build remains expected `Result: FAILED`. |
 
-Evidence-package judgment: the current local Windows Demo evidence set now combines the PC4 Windows build, visible-flow smoke, six fresh screenshots/sidecars, manifest-driven local visuals, a clean replacement id path, and a metadata-only art-safe mission-slice target. It is suitable for controlled external demonstration, not public release.
+Evidence-package judgment: the current local Windows Demo evidence set now combines the PC4 Windows build, visible-flow smoke, six fresh screenshots/sidecars, PC11 core playable contract check, manifest-driven local visuals, a clean replacement id path, and a metadata-only art-safe mission-slice target. It is suitable for controlled external demonstration, not public release.
 
 ## Visible Flow Seal Refresh
 

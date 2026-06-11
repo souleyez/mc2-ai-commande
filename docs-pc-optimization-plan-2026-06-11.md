@@ -14,7 +14,7 @@
 
 Mobile support remains the product priority, but `G3 Android Device Smoke` is waiting on a physical Android phone with USB debugging authorized. While that device blocker existed, this plan used PC demo optimization to keep the Windows demo moving.
 
-The current PC/mobile wait-state optimization pass is now sealed through PC10. This does not move G4/G5 mobile touch and performance ahead of G3; the next mobile gate still requires the physical authorized phone.
+The current PC/mobile wait-state optimization pass is now sealed through PC11. This does not move G4/G5 mobile touch and performance ahead of G3; the next mobile gate still requires the physical authorized phone.
 
 ## Definition Of Done
 
@@ -34,6 +34,7 @@ The current PC optimization pass is complete when:
 - Controlled Windows demo readiness can be checked by one script that wraps launch, evidence and public boundary gates.
 - Controlled Windows demo handoff consistency can be checked by one script that validates docs and helper scripts agree on the current gate set.
 - Android device-smoke readiness can be checked without installing or launching the app, and can explicitly stop at waiting-on-device when no phone is connected.
+- PC core playable contract can be checked by one script that runs the Unity/BattleCore validator and requires command-state, solo-return, Jet, occupancy, damage/ejection and debrief/relaunch coverage.
 - No generated screenshot, JSON sidecar, log, Windows build output, APK/AAB, or private reference export is staged.
 
 ## Execution Gate Order
@@ -51,6 +52,7 @@ The current PC optimization pass is complete when:
 | PC8 | Done | Add controlled demo readiness preflight | Wrap launch, evidence and public boundary gates into one command |
 | PC9 | Done | Add controlled demo handoff consistency check | Check scripts and docs agree on the current controlled demo gate set |
 | PC10 | Done | Add Android device smoke preflight | Check APK/tooling/package/device state before the real G3 install/launch smoke |
+| PC11 | Done | Add PC core playable contract check | Run Unity/BattleCore validator through a script and require the PC core playable marker |
 
 Do not open another PC polish gate from visual inspection alone. If the issue is collision, damage, command state or objective logic, first prove it in `BattleCore`.
 
@@ -444,6 +446,38 @@ git status --short --branch --untracked-files=all
 - Does not install, launch, rebuild, capture logs, alter BattleCore, change HUD/MechLab behavior, or stage generated artifacts.
 
 **Commit:** `Add Android device smoke preflight`
+
+## Completed Target: PC11 Add PC Core Playable Contract Check
+
+**Goal:** 在 G3 真机仍不可用时，不继续扩大 PC 玩法，只把受控演示最核心的规则状态做成单独可运行的机器检查。
+
+**Files:**
+
+- Create: `scripts/unity/check_pc_core_playable_contract.ps1`
+- Modify: `unity-mc2-demo/Assets/Editor/Mc2DemoValidator.cs`
+- Modify: `scripts/unity/check_controlled_demo_handoff.ps1`
+- Modify: `BUILD-WIN.md`
+- Modify: `README.md`
+- Modify: current plan docs, evidence page and handoff plan
+
+**Validation:**
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_pc_core_playable_contract.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_controlled_demo_handoff.ps1
+git diff --check
+git status --short --branch --untracked-files=all
+```
+
+**Acceptance:**
+
+- Runs the Unity editor validator from a single command.
+- Requires `MC2 PC core playable contract OK`.
+- Requires `MC2 demo contract validation OK`.
+- Keeps generated validator logs under ignored `analysis-output/`.
+- Does not launch the player, rebuild, regenerate screenshots, alter HUD/MechLab behavior, install Android packages, or stage generated artifacts.
+
+**Commit:** `Add PC core playable contract check`
 
 ## Stop Conditions
 

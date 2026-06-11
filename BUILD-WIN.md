@@ -97,6 +97,17 @@ The handoff consistency check verifies that the key scripts, README, Windows
 build handoff, plan docs, evidence page, and machine handoff plan still point to
 the same controlled demo commands and current PC gate status.
 
+Check the PC core playable BattleCore contract:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_pc_core_playable_contract.ps1
+```
+
+This runs the Unity editor validator and requires the explicit PC core marker
+for command state, solo return, Jet legality, occupancy, damage/ejection, and
+debrief/relaunch. It writes only an ignored validator log under
+`analysis-output/`.
+
 Check the public boundary for the controlled-demo metadata package:
 
 ```powershell
@@ -118,12 +129,14 @@ treated as a public-safe package.
 Expected success strings:
 
 - `MC2 demo contract validation OK`
+- `MC2 PC core playable contract OK`
 - `Build Finished, Result: Success`
 - `MC2 Unity demo Windows build OK`
 - `Windows demo launch preflight OK`
 - `Controlled demo evidence check OK`
 - `Controlled demo readiness preflight OK`
 - `Controlled demo handoff consistency check OK`
+- `PC core playable contract check OK`
 - `Controlled demo public boundary preflight OK`
 - `MC2 demo smoke test exiting with code 0`
 - `MC2 reference visual captures passed`
