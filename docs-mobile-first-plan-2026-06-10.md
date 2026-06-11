@@ -38,10 +38,10 @@ While G3 is waiting, the active project work may continue on PC demo
 optimization as defined in `docs-pc-optimization-plan-2026-06-11.md`. This does
 not advance G4/G5 ahead of G3; it only keeps Windows demo quality moving while
 the required phone is unavailable. The current PC/mobile waiting-state work is
-sealed through PC18, including the PC core playable contract check, mobile
+sealed through PC19, including the PC core playable contract check, mobile
 command model preflight, battle HUD sparse contract check, demo source hygiene
-check, AI deputy contract check, current plan gate check, Android smoke log
-crash scan and Android smoke plan mode.
+check, AI deputy contract check, Windows demo build freshness check, current
+plan gate check, Android smoke log crash scan and Android smoke plan mode.
 
 ## Definition Of Done
 

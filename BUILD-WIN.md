@@ -49,6 +49,17 @@ present, writes the runtime log to `analysis-output/windows-demo-run.log`, and
 passes Unity window arguments so the demo does not depend on stale player
 window state from a previous run.
 
+Check that the ignored Windows player output is newer than the tracked Unity
+build inputs:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_windows_demo_build_freshness.ps1
+```
+
+The freshness check reads tracked Unity `Assets`, `ProjectSettings` and
+`Packages` timestamps plus the ignored Windows player output. It does not start
+Unity; rebuild the Windows player if it reports stale output.
+
 Smoke the visible playable loop:
 
 ```powershell
@@ -83,9 +94,9 @@ Run the full controlled-demo readiness preflight:
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_controlled_demo_readiness.ps1
 ```
 
-The readiness preflight wraps the launch preflight, evidence health check, and
-public boundary preflight. It does not start the Unity player or regenerate
-captures.
+The readiness preflight wraps the launch preflight, build freshness, evidence
+health check, and public boundary preflight. It does not start the Unity player
+or regenerate captures.
 
 Check the controlled-demo handoff consistency:
 
@@ -157,10 +168,10 @@ Check the current plan gate without launching Unity:
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_current_plan_gate.ps1
 ```
 
-The current plan gate wraps handoff/readiness, demo source hygiene, AI deputy
-contract, mobile command model, battle HUD sparse contract and Android
-device-smoke preflight checks. With no authorized phone connected it should
-still pass while reporting Android as waiting on device.
+The current plan gate wraps handoff/readiness, Windows build freshness, demo
+source hygiene, AI deputy contract, mobile command model, battle HUD sparse
+contract and Android device-smoke preflight checks. With no authorized phone
+connected it should still pass while reporting Android as waiting on device.
 
 Self-test the Android smoke log scanner:
 
@@ -207,6 +218,7 @@ Expected success strings:
 - `Build Finished, Result: Success`
 - `MC2 Unity demo Windows build OK`
 - `Windows demo launch preflight OK`
+- `Windows demo build freshness check OK`
 - `Controlled demo evidence check OK`
 - `Controlled demo readiness preflight OK`
 - `Controlled demo handoff consistency check OK`

@@ -81,6 +81,7 @@ function Invoke-ReadinessStep {
 }
 
 $launchScript = Join-Path $RepoRoot "scripts\unity\run_windows_demo.ps1"
+$buildFreshnessScript = Join-Path $RepoRoot "scripts\unity\check_windows_demo_build_freshness.ps1"
 $evidenceScript = Join-Path $RepoRoot "scripts\unity\check_controlled_demo_evidence.ps1"
 $publicBoundaryScript = Join-Path $RepoRoot "scripts\content-pack\check_controlled_demo_public_boundary.ps1"
 
@@ -89,6 +90,12 @@ Invoke-ReadinessStep `
     -ScriptPath $launchScript `
     -Arguments @("-RepoRoot", $RepoRoot, "-CheckOnly") `
     -RequiredMarkers @("Windows demo launch preflight OK.")
+
+Invoke-ReadinessStep `
+    -Name "Windows build freshness" `
+    -ScriptPath $buildFreshnessScript `
+    -Arguments @("-RepoRoot", $RepoRoot) `
+    -RequiredMarkers @("Windows demo build freshness check OK.")
 
 if (-not $SkipEvidence) {
     Invoke-ReadinessStep `

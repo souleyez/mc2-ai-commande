@@ -25,8 +25,8 @@ As of this handoff plan:
 - Remote warning: GitHub currently reports the repository moved to `git@github.com:souleyez/mc2-ai-commande.git`; pushes to the configured `ai-origin` have still succeeded.
 - Upstream source remote kept for history: `origin https://github.com/alariq/mc2.git`
 - Current branch state after the latest controlled demo checkpoint: `master...ai-origin/master`
-- Latest sealed PC/mobile wait-state checkpoint: `PC1-PC18`
-- Last completed PC checkpoint: `Add AI deputy contract check`
+- Latest sealed PC/mobile wait-state checkpoint: `PC1-PC19`
+- Last completed PC checkpoint: `Add Windows demo build freshness check`
 - Current formal next development task after handoff: `G3 Run Android device smoke`
 
 Important: the new machine will not see local commits unless the old machine
@@ -46,6 +46,7 @@ The machine switch is safe only when all of these are true:
 - Visible-flow smoke exits with `MC2 demo smoke test exiting with code 0`.
 - `scripts/unity/check_controlled_demo_handoff.ps1` prints `Controlled demo handoff consistency check OK`.
 - `scripts/unity/check_controlled_demo_readiness.ps1` prints `Controlled demo readiness preflight OK`.
+- `scripts/unity/check_windows_demo_build_freshness.ps1` prints `Windows demo build freshness check OK`.
 - `scripts/unity/check_demo_source_hygiene.ps1` prints `Demo source hygiene check OK`.
 - `scripts/unity/check_ai_deputy_contract.ps1` prints `AI deputy contract check OK`.
 - `scripts/unity/check_android_device_preflight.ps1 -AllowNoDevice` prints `Android device smoke preflight waiting on device` if no phone is connected.
@@ -250,10 +251,27 @@ Expected:
 Controlled demo readiness preflight OK
 ```
 
-This wraps launch preflight, evidence health and public boundary gates. It reads
-existing build/evidence outputs and does not regenerate screenshots.
+This wraps launch preflight, build freshness, evidence health and public
+boundary gates. It reads existing build/evidence outputs and does not
+regenerate screenshots.
 
-**Step 3: Run demo source hygiene check**
+**Step 3: Run Windows demo build freshness check**
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_windows_demo_build_freshness.ps1
+```
+
+Expected:
+
+```text
+Windows demo build freshness check OK
+```
+
+This verifies the ignored Windows player output is newer than tracked Unity
+build inputs. If it fails on a new machine, rebuild the Windows player before
+using the controlled demo.
+
+**Step 4: Run demo source hygiene check**
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_demo_source_hygiene.ps1
@@ -269,7 +287,7 @@ This checks tracked and staged paths plus `.gitignore` markers so generated
 evidence, Unity builds, APK/AAB outputs and private reference art stay out of
 source commits.
 
-**Step 4: Run AI deputy contract check**
+**Step 5: Run AI deputy contract check**
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_ai_deputy_contract.ps1
@@ -286,7 +304,7 @@ MiniMax. It proves the AI deputy path is opt-in, slow, high-level, guarded by
 local-rule fallback, absent from frame loops, and not used by normal visible-flow
 smoke.
 
-**Step 5: Run PC core playable contract check**
+**Step 6: Run PC core playable contract check**
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_pc_core_playable_contract.ps1
@@ -302,7 +320,7 @@ This runs the Unity/BattleCore validator and proves command-state, solo-return,
 Jet legality, occupancy, damage/ejection and debrief/relaunch coverage without
 launching the player or regenerating screenshots.
 
-**Step 6: Run mobile command model preflight**
+**Step 7: Run mobile command model preflight**
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_mobile_command_model_preflight.ps1
@@ -319,7 +337,7 @@ still maps to the mobile command model: sparse battle HUD, status rows, Jet,
 map/bay/system, compact objective, hidden dense overlays and MechLab no-toggle
 fitting.
 
-**Step 7: Run battle HUD sparse contract check**
+**Step 8: Run battle HUD sparse contract check**
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_battle_hud_sparse_contract.ps1
@@ -336,7 +354,7 @@ normal battle still keeps status rows, compact objective, closed mission map,
 hidden combat log, disabled save UI, hidden account UI, sidecar-only debug
 occupancy and hidden overlays.
 
-**Step 8: Run current plan gate check**
+**Step 9: Run current plan gate check**
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_current_plan_gate.ps1
@@ -348,12 +366,13 @@ Expected:
 Current plan gate check OK
 ```
 
-This wraps handoff/readiness, demo source hygiene, AI deputy contract, mobile
-command model, battle HUD sparse contract and Android preflight checks. With no
-authorized phone connected, Android should be reported as waiting on device;
-with one authorized phone, Android should report OK.
+This wraps handoff/readiness, Windows build freshness, demo source hygiene, AI
+deputy contract, mobile command model, battle HUD sparse contract and Android
+preflight checks. With no authorized phone connected, Android should be
+reported as waiting on device; with one authorized phone, Android should report
+OK.
 
-**Step 9: Self-test Android smoke log scanning**
+**Step 10: Self-test Android smoke log scanning**
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_smoke_log.ps1 -SelfTest
@@ -369,7 +388,7 @@ The real device smoke helper calls this scanner after logcat capture, so a
 device launch with fatal exception, fatal signal, ANR, package process death or
 forced activity finish is not accepted as a pass.
 
-**Step 10: Preview Android device smoke plan**
+**Step 11: Preview Android device smoke plan**
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\android_device_smoke.ps1 -PlanOnly
@@ -385,7 +404,7 @@ This proves the real device-smoke helper can resolve the APK, adb, aapt,
 package, activity, log path and planned install/launch/log-check actions before
 a phone is connected.
 
-**Step 11: Run Android device-smoke preflight directly if needed**
+**Step 12: Run Android device-smoke preflight directly if needed**
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_device_preflight.ps1 -AllowNoDevice
@@ -406,7 +425,7 @@ Android device smoke preflight OK
 This checks the APK, adb, aapt, package name and launchable activity without
 installing or launching the app.
 
-**Step 12: Set paths for rebuilding evidence if needed**
+**Step 13: Set paths for rebuilding evidence if needed**
 
 ```powershell
 $Repo = (Get-Location).Path
@@ -415,7 +434,7 @@ $Unity = "$HOME\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe"
 
 If `$Unity` does not exist, point it to the installed Unity editor path.
 
-**Step 13: Run validator when rebuilding or auditing from scratch**
+**Step 14: Run validator when rebuilding or auditing from scratch**
 
 ```powershell
 & $Unity `
@@ -431,7 +450,7 @@ Expected log string:
 MC2 demo contract validation OK
 ```
 
-**Step 14: Build Windows player when rebuilding or auditing from scratch**
+**Step 15: Build Windows player when rebuilding or auditing from scratch**
 
 ```powershell
 & $Unity `
@@ -448,7 +467,7 @@ Build Finished, Result: Success
 MC2 Unity demo Windows build OK
 ```
 
-**Step 15: Run visible-flow smoke without AI key when rebuilding or auditing from scratch**
+**Step 16: Run visible-flow smoke without AI key when rebuilding or auditing from scratch**
 
 ```powershell
 $env:MINIMAX_API_KEY = ""

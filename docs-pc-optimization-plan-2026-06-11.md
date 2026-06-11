@@ -14,7 +14,7 @@
 
 Mobile support remains the product priority, but `G3 Android Device Smoke` is waiting on a physical Android phone with USB debugging authorized. While that device blocker existed, this plan used PC demo optimization to keep the Windows demo moving.
 
-The current PC/mobile wait-state optimization pass is now sealed through PC18. This does not move G4/G5 mobile touch and performance ahead of G3; the next mobile gate still requires the physical authorized phone.
+The current PC/mobile wait-state optimization pass is now sealed through PC19. This does not move G4/G5 mobile touch and performance ahead of G3; the next mobile gate still requires the physical authorized phone.
 
 ## Definition Of Done
 
@@ -29,6 +29,7 @@ The current PC optimization pass is complete when:
 - Battle UI remains sparse: status rows, Jet, objective/map, system/pause; no large logs, save slots, account UI or debug overlays in normal battle.
 - MechLab PC flow is easy to read: mounted weapon blocks are whole-grid objects, all installed weapons are active, heat/weight/slot legality is visible, no enable/disable toggle returns.
 - Controlled Windows demo launch has a preflight helper and defaults to a stable 1280x720 windowed launch.
+- Controlled Windows demo build freshness can be checked without launching Unity, proving the ignored player output is newer than tracked Unity build inputs.
 - Controlled Windows demo evidence can be checked by script without rerunning Unity.
 - Controlled Windows demo public boundary metadata can be checked by script without packaging or creating artifacts.
 - Controlled Windows demo readiness can be checked by one script that wraps launch, evidence and public boundary gates.
@@ -36,7 +37,7 @@ The current PC optimization pass is complete when:
 - Android device-smoke readiness can be checked without installing or launching the app, and can explicitly stop at waiting-on-device when no phone is connected.
 - PC core playable contract can be checked by one script that runs the Unity/BattleCore validator and requires command-state, solo-return, Jet, occupancy, damage/ejection and debrief/relaunch coverage.
 - Mobile command model preflight can be checked without launching Unity, proving the current PC command surface still maps to status rows, Jet, map/bay/system, compact objective, sparse HUD and MechLab no-toggle fitting.
-- Current plan gate can be checked by one script that wraps handoff/readiness, demo source hygiene, AI deputy contract, mobile command model, battle HUD sparse contract and Android device-smoke preflight state.
+- Current plan gate can be checked by one script that wraps handoff/readiness, Windows build freshness, demo source hygiene, AI deputy contract, mobile command model, battle HUD sparse contract and Android device-smoke preflight state.
 - Android device smoke scans captured logcat for strong crash markers before accepting a real-device launch.
 - Android device smoke can be previewed with `-PlanOnly` without a connected phone.
 - Sparse battle HUD can be checked without launching Unity through `check_battle_hud_sparse_contract.ps1`.
@@ -67,6 +68,7 @@ The current PC optimization pass is complete when:
 | PC16 | Done | Add battle HUD sparse contract check | Check source, capture gate and mobile command preflight agree on sparse active-battle HUD without launching Unity |
 | PC17 | Done | Add demo source hygiene check | Check tracked/staged paths and ignore markers keep generated evidence, Unity builds and private reference art out of source commits |
 | PC18 | Done | Add AI deputy contract check | Check MiniMax stays optional, slow, high-level, rule-fallback guarded, absent from frame loops and not invoked by default smoke |
+| PC19 | Done | Add Windows demo build freshness check | Check ignored Windows player output is newer than tracked Unity build inputs and wire it into readiness preflight |
 
 Do not open another PC polish gate from visual inspection alone. If the issue is collision, damage, command state or objective logic, first prove it in `BattleCore`.
 
@@ -708,6 +710,39 @@ git status --short --branch --untracked-files=all
 - Current plan gate includes the AI deputy contract check.
 
 **Commit:** `Add AI deputy contract check`
+
+## Completed Target: PC19 Add Windows Demo Build Freshness Check
+
+**Goal:** 在 G3 真机仍不可用时，不扩大玩法；把“可展示 Windows player 是否对应当前 Unity 输入”做成轻量检查，避免拿旧构建做受控演示。
+
+**Files:**
+
+- Create: `scripts/unity/check_windows_demo_build_freshness.ps1`
+- Modify: `scripts/unity/check_controlled_demo_readiness.ps1`
+- Modify: `scripts/unity/check_controlled_demo_handoff.ps1`
+- Modify: README/BUILD-WIN/current plans/evidence/handoff docs
+
+**Validation:**
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_windows_demo_build_freshness.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_controlled_demo_readiness.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_current_plan_gate.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_controlled_demo_handoff.ps1 -RunReadiness
+git diff --check
+git status --short --branch --untracked-files=all
+```
+
+**Acceptance:**
+
+- The script reads tracked Unity `Assets`, `ProjectSettings` and `Packages` inputs plus ignored Windows player outputs.
+- It fails if the Windows player output is missing or older than tracked Unity build inputs.
+- It excludes the generated scene file from timestamp freshness because the builder can rewrite scene fileIDs after build.
+- It does not launch Unity or create artifacts.
+- `check_controlled_demo_readiness.ps1` includes the build freshness gate.
+- Generated Windows build output remains ignored and unstaged.
+
+**Commit:** `Add Windows demo build freshness check`
 
 ## Stop Conditions
 
