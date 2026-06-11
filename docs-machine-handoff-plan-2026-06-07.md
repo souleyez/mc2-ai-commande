@@ -25,8 +25,8 @@ As of this handoff plan:
 - Remote warning: GitHub currently reports the repository moved to `git@github.com:souleyez/mc2-ai-commande.git`; pushes to the configured `ai-origin` have still succeeded.
 - Upstream source remote kept for history: `origin https://github.com/alariq/mc2.git`
 - Current branch state after the latest controlled demo checkpoint: `master...ai-origin/master`
-- Latest sealed PC/mobile wait-state checkpoint: `PC1-PC11`
-- Last completed PC checkpoint: `Add PC core playable contract check`
+- Latest sealed PC/mobile wait-state checkpoint: `PC1-PC12`
+- Last completed PC checkpoint: `Add mobile command model preflight`
 - Current formal next development task after handoff: `G3 Run Android device smoke`
 
 Important: the new machine will not see local commits unless the old machine
@@ -48,6 +48,7 @@ The machine switch is safe only when all of these are true:
 - `scripts/unity/check_controlled_demo_readiness.ps1` prints `Controlled demo readiness preflight OK`.
 - `scripts/unity/check_android_device_preflight.ps1 -AllowNoDevice` prints `Android device smoke preflight waiting on device` if no phone is connected.
 - `scripts/unity/check_pc_core_playable_contract.ps1` prints `PC core playable contract check OK`.
+- `scripts/unity/check_mobile_command_model_preflight.ps1` prints `Mobile command model preflight OK`.
 - Any AI API key is configured through environment variables, not committed.
 - Optional private reference visuals remain ignored and local-only.
 
@@ -262,7 +263,24 @@ This runs the Unity/BattleCore validator and proves command-state, solo-return,
 Jet legality, occupancy, damage/ejection and debrief/relaunch coverage without
 launching the player or regenerating screenshots.
 
-**Step 4: Run Android device-smoke preflight**
+**Step 4: Run mobile command model preflight**
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_mobile_command_model_preflight.ps1
+```
+
+Expected:
+
+```text
+Mobile command model preflight OK
+```
+
+This reads the current sidecars and source/doc markers to prove the PC demo
+still maps to the mobile command model: sparse battle HUD, status rows, Jet,
+map/bay/system, compact objective, hidden dense overlays and MechLab no-toggle
+fitting.
+
+**Step 5: Run Android device-smoke preflight**
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_device_preflight.ps1 -AllowNoDevice
@@ -283,7 +301,7 @@ Android device smoke preflight OK
 This checks the APK, adb, aapt, package name and launchable activity without
 installing or launching the app.
 
-**Step 5: Set paths for rebuilding evidence if needed**
+**Step 6: Set paths for rebuilding evidence if needed**
 
 ```powershell
 $Repo = (Get-Location).Path

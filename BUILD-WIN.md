@@ -108,6 +108,18 @@ for command state, solo return, Jet legality, occupancy, damage/ejection, and
 debrief/relaunch. It writes only an ignored validator log under
 `analysis-output/`.
 
+Check the mobile command model preflight without rerunning Unity:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_mobile_command_model_preflight.ps1
+```
+
+The mobile command model preflight reads the current ignored reference sidecars
+and source/doc markers to verify that active battle remains translatable to the
+planned phone command loop: status rows, Jet, map, bay/system, compact
+objectives, hidden combat log/save/account/debug overlays, and MechLab fitting
+without weapon enable/disable toggles.
+
 Check the public boundary for the controlled-demo metadata package:
 
 ```powershell
@@ -137,6 +149,7 @@ Expected success strings:
 - `Controlled demo readiness preflight OK`
 - `Controlled demo handoff consistency check OK`
 - `PC core playable contract check OK`
+- `Mobile command model preflight OK`
 - `Controlled demo public boundary preflight OK`
 - `MC2 demo smoke test exiting with code 0`
 - `MC2 reference visual captures passed`
