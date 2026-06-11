@@ -137,7 +137,7 @@ Assert-ScriptExists -RelativePath "scripts\content-pack\check_controlled_demo_pu
 
 Assert-FileContains -RelativePath "README.md" -Markers @(
     "AI RTS Commander Lab",
-    "PC1-PC33",
+    "PC1-PC34",
     "check_controlled_demo_handoff.ps1",
     "check_windows_demo_build_freshness.ps1",
     "check_demo_source_hygiene.ps1",
@@ -180,6 +180,7 @@ Assert-FileContains -RelativePath "BUILD-WIN.md" -Markers @(
     "Android smoke log check self-test OK",
     "check_android_smoke_summary.ps1",
     "Android smoke summary check self-test OK",
+    "smoke summary schema",
     "android_device_smoke.ps1",
     "Android device smoke plan OK",
     "android-device-smoke.png",
@@ -220,6 +221,7 @@ Assert-FileContains -RelativePath "BUILD-MOBILE.md" -Markers @(
     "Android smoke artifact hygiene check OK",
     "check_android_smoke_summary.ps1",
     "Android smoke summary check self-test OK",
+    "summary schema",
     "Android APK freshness check OK",
     "Android APK identity check OK",
     "Android APK compatibility check OK",
@@ -238,7 +240,7 @@ Assert-FileContains -RelativePath "BUILD-MOBILE.md" -Markers @(
 )
 
 Assert-FileContains -RelativePath "docs-ai-rts-commander-current-master-plan-2026-06-07.md" -Markers @(
-    "PC1-PC33",
+    "PC1-PC34",
     "Add controlled demo handoff consistency check",
     "Add demo source hygiene check",
     "Add AI deputy contract check",
@@ -257,6 +259,7 @@ Assert-FileContains -RelativePath "docs-ai-rts-commander-current-master-plan-202
     "Add Android smoke screenshot evidence capture",
     "Add Android smoke summary evidence output",
     "Add Android smoke summary schema check",
+    "Add Android smoke summary preflight check",
     "Add Android device smoke preflight",
     "Add PC core playable contract check",
     "Add mobile command model preflight",
@@ -291,7 +294,7 @@ Assert-FileContains -RelativePath "docs-ai-rts-commander-current-master-plan-202
 )
 
 Assert-FileContains -RelativePath "docs-ai-rts-commander-current-detailed-plan-2026-06-07.md" -Markers @(
-    "PC1-PC33",
+    "PC1-PC34",
     "Add controlled demo handoff consistency check",
     "Add demo source hygiene check",
     "Add AI deputy contract check",
@@ -310,6 +313,7 @@ Assert-FileContains -RelativePath "docs-ai-rts-commander-current-detailed-plan-2
     "Add Android smoke screenshot evidence capture",
     "Add Android smoke summary evidence output",
     "Add Android smoke summary schema check",
+    "Add Android smoke summary preflight check",
     "Add Android device smoke preflight",
     "Add PC core playable contract check",
     "Add mobile command model preflight",
@@ -344,7 +348,7 @@ Assert-FileContains -RelativePath "docs-ai-rts-commander-current-detailed-plan-2
 )
 
 Assert-FileContains -RelativePath "docs-pc-optimization-plan-2026-06-11.md" -Markers @(
-    "sealed through PC33",
+    "sealed through PC34",
     "Add controlled demo handoff consistency check",
     "Add demo source hygiene check",
     "Add AI deputy contract check",
@@ -363,6 +367,7 @@ Assert-FileContains -RelativePath "docs-pc-optimization-plan-2026-06-11.md" -Mar
     "Add Android smoke screenshot evidence capture",
     "Add Android smoke summary evidence output",
     "Add Android smoke summary schema check",
+    "Add Android smoke summary preflight check",
     "Add Android device smoke preflight",
     "Add PC core playable contract check",
     "Add mobile command model preflight",
@@ -408,6 +413,7 @@ Assert-FileContains -RelativePath "docs-playable-demo-investor-evidence-2026-06-
     "Android smoke screenshot evidence",
     "Android smoke summary evidence",
     "Android smoke summary schema",
+    "Android smoke summary preflight",
     "AI deputy contract",
     "PC core playable contract",
     "Mobile command model preflight",
@@ -444,9 +450,10 @@ Assert-FileContains -RelativePath "docs-playable-demo-investor-evidence-2026-06-
 )
 
 Assert-FileContains -RelativePath "docs-machine-handoff-plan-2026-06-07.md" -Markers @(
-    "PC1-PC33",
+    "PC1-PC34",
     "Add Android smoke summary evidence output",
     "Add Android smoke summary schema check",
+    "Add Android smoke summary preflight check",
     "Add Android smoke screenshot evidence capture",
     "Add Android smoke artifact hygiene check",
     "Add Android SDK tooling check",

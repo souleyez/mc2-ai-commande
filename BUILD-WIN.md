@@ -185,7 +185,7 @@ The current plan gate wraps handoff/readiness, Windows build freshness, demo
 source hygiene, Android smoke artifact hygiene, AI deputy contract, mobile command model, battle HUD sparse
 contract, Android SDK tooling, Android APK freshness, Android APK identity, Android APK
 compatibility, Android APK signing, Android APK manifest, Android APK payload,
-Android APK size budget, Android smoke summary schema and Android device-smoke preflight checks. With no
+Android APK size budget, Android smoke summary schema and Android device-smoke preflight checks. The device preflight also runs the summary schema self-test. With no
 authorized phone connected it should still pass while reporting Android as
 waiting on device.
 

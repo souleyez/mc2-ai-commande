@@ -222,6 +222,31 @@ else {
     }
 }
 
+$smokeSummaryScript = Join-Path $PSScriptRoot "check_android_smoke_summary.ps1"
+if (-not (Test-Path -LiteralPath $smokeSummaryScript)) {
+    Add-Failure "Missing Android smoke summary checker: $smokeSummaryScript"
+}
+else {
+    $summaryResult = Invoke-NativeCommand -FilePath "powershell" -Arguments @(
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        $smokeSummaryScript,
+        "-RepoRoot",
+        $RepoRoot,
+        "-SelfTest"
+    )
+
+    $summaryOutput = $summaryResult.Output -join " "
+    if ($summaryResult.ExitCode -ne 0 -or $summaryOutput -notlike "*Android smoke summary check self-test OK.*") {
+        Add-Failure "Android smoke summary schema preflight failed: $summaryOutput"
+    }
+    else {
+        Add-Row -Check "smoke summary schema" -Status "OK" -Detail "Android smoke summary check self-test OK."
+    }
+}
+
 if ((Test-Path -LiteralPath $ApkPath) -and (Test-Path -LiteralPath $AaptPath)) {
     $metadata = Get-ApkMetadata -Apk $ApkPath -Aapt $AaptPath
     if ([string]::IsNullOrWhiteSpace($metadata.PackageName)) {

@@ -33,21 +33,21 @@ G3 Android device-smoke preflight now verifies the APK, Android SDK tooling,
 adb, aapt, apksigner, package name, launchable activity, compatibility metadata,
 signing and manifest install-target metadata, Unity/IL2CPP runtime payload,
 APK size budget, Android smoke artifact hygiene, Android smoke screenshot
-evidence capture, Android smoke summary evidence output and Android smoke
-summary schema check. The real G3 device smoke is still waiting on a physical Android
+evidence capture, Android smoke summary evidence output, Android smoke
+summary schema check and Android smoke summary preflight check. The real G3 device smoke is still waiting on a physical Android
 phone that is visible through `adb devices` and authorized for USB debugging.
 
 While G3 is waiting, the active project work may continue on PC demo
 optimization as defined in `docs-pc-optimization-plan-2026-06-11.md`. This does
 not advance G4/G5 ahead of G3; it only keeps Windows demo quality moving while
 the required phone is unavailable. The current PC/mobile waiting-state work is
-sealed through PC33, including the PC core playable contract check, mobile
+sealed through PC34, including the PC core playable contract check, mobile
 command model preflight, battle HUD sparse contract check, demo source hygiene
 check, AI deputy contract check, Windows demo build freshness check, controlled
 demo evidence freshness check, controlled demo capture log freshness check,
 Android SDK tooling check, Android APK freshness check, Android APK identity check, Android APK
 compatibility check, Android APK signing check, Android APK manifest check,
-Android APK payload check, Android APK size budget check, Android smoke artifact hygiene check, Android smoke screenshot evidence capture, Android smoke summary evidence output, Android smoke summary schema check, current plan gate
+Android APK payload check, Android APK size budget check, Android smoke artifact hygiene check, Android smoke screenshot evidence capture, Android smoke summary evidence output, Android smoke summary schema check, Android smoke summary preflight check, current plan gate
 check, Android smoke log crash scan and Android smoke plan mode.
 
 ## Definition Of Done
@@ -101,14 +101,14 @@ failing, unless the later work is explicitly diagnostic.
 **Precondition:**
 
 - `git status --short --branch --untracked-files=all` 干净。
-- Android APK exists at `unity-mc2-demo\Builds\Android\MC2UnityDemo.apk` and passes `check_android_sdk_tooling.ps1`, `check_android_apk_freshness.ps1`, `check_android_apk_identity.ps1`, `check_android_apk_compatibility.ps1`, `check_android_apk_signing.ps1`, `check_android_apk_manifest.ps1`, `check_android_apk_payload.ps1`, `check_android_apk_size_budget.ps1` and `check_android_smoke_artifact_hygiene.ps1`.
+- Android APK exists at `unity-mc2-demo\Builds\Android\MC2UnityDemo.apk` and passes `check_android_sdk_tooling.ps1`, `check_android_apk_freshness.ps1`, `check_android_apk_identity.ps1`, `check_android_apk_compatibility.ps1`, `check_android_apk_signing.ps1`, `check_android_apk_manifest.ps1`, `check_android_apk_payload.ps1`, `check_android_apk_size_budget.ps1`, `check_android_smoke_artifact_hygiene.ps1` and the summary schema check inside `check_android_device_preflight.ps1`.
 - `adb` exists at `$HOME\Unity\Hub\Editor\6000.4.7f1\Editor\Data\PlaybackEngines\AndroidPlayer\SDK\platform-tools\adb.exe`.
 - One physical Android device has USB debugging enabled and is trusted by this PC.
 
 **Action:**
 
 1. Run `scripts\unity\check_android_device_preflight.ps1`.
-2. If no device row is shown, `check_android_device_preflight.ps1 -AllowNoDevice` should still prove the APK/tooling/package path and then stop at waiting-on-device; connect/authorize a phone before real G3.
+2. If no device row is shown, `check_android_device_preflight.ps1 -AllowNoDevice` should still prove the APK/tooling/package/summary-schema path and then stop at waiting-on-device; connect/authorize a phone before real G3.
 3. If a device is present, run `scripts\unity\android_device_smoke.ps1`; it installs the APK, launches it, waits briefly and captures ignored `analysis-output/android-device-smoke.log`.
 4. Record whether the app reaches battle/debrief manually or by command-file smoke.
 
@@ -149,6 +149,7 @@ scripts\unity\check_android_apk_payload.ps1 -> Android APK payload check OK.
 scripts\unity\check_android_apk_size_budget.ps1 -> Android APK size budget check OK.
 scripts\unity\check_android_smoke_artifact_hygiene.ps1 -> Android smoke artifact hygiene check OK.
 scripts\unity\check_android_smoke_summary.ps1 -SelfTest -> Android smoke summary check self-test OK.
+scripts\unity\check_android_device_preflight.ps1 -AllowNoDevice -> smoke summary schema OK.
 scripts\unity\android_device_smoke.ps1 -PlanOnly -> ScreenshotCapture: True, Screenshot -> analysis-output\android-device-smoke.png.
 scripts\unity\android_device_smoke.ps1 -PlanOnly -> SummaryWrite: True, Summary -> analysis-output\android-device-smoke-summary.json.
 scripts\unity\check_android_device_preflight.ps1 -AllowNoDevice -> Android device smoke preflight waiting on device.
@@ -164,6 +165,7 @@ Android smoke artifact hygiene -> APK/AAB outputs, Android smoke logs/screenshot
 Android smoke screenshot evidence -> PlanOnly reports ScreenshotCapture: True and the ignored target analysis-output\android-device-smoke.png.
 Android smoke summary evidence -> PlanOnly reports SummaryWrite: True and the ignored target analysis-output\android-device-smoke-summary.json.
 Android smoke summary schema -> SelfTest reports Android smoke summary check self-test OK.
+Android smoke summary preflight -> device preflight reports smoke summary schema OK before waiting on device.
 adb devices -> no device rows.
 G3 still requires a physical Android phone with USB debugging enabled and authorized.
 ```
@@ -244,7 +246,7 @@ Minimum device target for the first pass:
 | ID | Requirement | Output | Verification |
 | --- | --- | --- | --- |
 | G3-R1 | Device is visible through adb | device id | `adb devices` shows one `device` row |
-| G3-R1a | Device-smoke preflight can prove APK/tooling/package readiness before install | preflight rows | `check_android_device_preflight.ps1 -AllowNoDevice` reports waiting on device, with APK, Android SDK tooling, APK freshness, APK identity, APK compatibility, APK signing, APK manifest, APK payload, APK size budget, Android smoke artifact hygiene, adb, aapt, apksigner, package and activity OK |
+| G3-R1a | Device-smoke preflight can prove APK/tooling/package readiness before install | preflight rows | `check_android_device_preflight.ps1 -AllowNoDevice` reports waiting on device, with APK, Android SDK tooling, APK freshness, APK identity, APK compatibility, APK signing, APK manifest, APK payload, APK size budget, Android smoke artifact hygiene, Android smoke summary schema, adb, aapt, apksigner, package and activity OK |
 | G3-R1j | Android SDK tooling is present before install | tooling output | `check_android_sdk_tooling.ps1` reports `Android SDK tooling check OK` for Unity AndroidPlayer SDK, NDK, OpenJDK, build-tools, platform, adb, aapt and apksigner |
 | G3-R1c | Android APK is not stale before install | freshness output | `check_android_apk_freshness.ps1` reports `Android APK freshness check OK` |
 | G3-R1d | Android APK identity matches the expected launch path | identity output | `check_android_apk_identity.ps1` reports `Android APK identity check OK` for package `com.DefaultCompany.unitymc2demo` and activity `com.unity3d.player.UnityPlayerGameActivity` |
@@ -257,6 +259,7 @@ Minimum device target for the first pass:
 | G3-R1l | Android smoke can capture startup screenshot evidence | plan/screenshot output | `android_device_smoke.ps1 -PlanOnly` reports `ScreenshotCapture: True`; real device smoke writes ignored `analysis-output\android-device-smoke.png` |
 | G3-R1m | Android smoke can write run summary evidence | plan/summary output | `android_device_smoke.ps1 -PlanOnly` reports `SummaryWrite: True`; real device smoke writes ignored `analysis-output\android-device-smoke-summary.json` |
 | G3-R1n | Android smoke summary schema is checked | summary self-test/real smoke output | `check_android_smoke_summary.ps1 -SelfTest` reports `Android smoke summary check self-test OK`; real device smoke validates the summary after writing it |
+| G3-R1o | Device-smoke preflight includes summary schema | preflight output | `check_android_device_preflight.ps1 -AllowNoDevice` reports `smoke summary schema` and `Android smoke summary check self-test OK` before waiting on device |
 | G3-R1b | Device-smoke helper can preview planned actions without a device | plan output | `android_device_smoke.ps1 -PlanOnly` reports package, activity, log path and install/launch/log-check actions |
 | G3-R2 | APK installs cleanly | installed package | `adb install -r <apk>` returns success |
 | G3-R3 | App launches without immediate crash | app process/log | `adb logcat` has no fatal crash during launch |

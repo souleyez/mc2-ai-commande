@@ -25,8 +25,9 @@ As of this handoff plan:
 - Remote warning: GitHub currently reports the repository moved to `git@github.com:souleyez/mc2-ai-commande.git`; pushes to the configured `ai-origin` have still succeeded.
 - Upstream source remote kept for history: `origin https://github.com/alariq/mc2.git`
 - Current branch state after the latest controlled demo checkpoint: `master...ai-origin/master`
-- Latest sealed PC/mobile wait-state checkpoint: `PC1-PC33`
-- Last completed PC checkpoint: `Add Android smoke summary schema check`
+- Latest sealed PC/mobile wait-state checkpoint: `PC1-PC34`
+- Last completed PC checkpoint: `Add Android smoke summary preflight check`
+- Previous PC checkpoint retained in the gate chain: `Add Android smoke summary schema check`
 - Previous PC checkpoint retained in the gate chain: `Add Android smoke summary evidence output`
 - Previous PC checkpoint retained in the gate chain: `Add Android smoke screenshot evidence capture`
 - Previous PC checkpoint retained in the gate chain: `Add Android smoke artifact hygiene check`
@@ -63,6 +64,7 @@ The machine switch is safe only when all of these are true:
 - `scripts/unity/check_demo_source_hygiene.ps1` prints `Demo source hygiene check OK`.
 - `scripts/unity/check_ai_deputy_contract.ps1` prints `AI deputy contract check OK`.
 - `scripts/unity/check_android_device_preflight.ps1 -AllowNoDevice` prints `Android device smoke preflight waiting on device` if no phone is connected.
+- `scripts/unity/check_android_device_preflight.ps1 -AllowNoDevice` prints `smoke summary schema` and `Android smoke summary check self-test OK`.
 - `scripts/unity/check_android_sdk_tooling.ps1` prints `Android SDK tooling check OK`.
 - `scripts/unity/check_android_apk_freshness.ps1` prints `Android APK freshness check OK`.
 - `scripts/unity/check_android_apk_identity.ps1` prints `Android APK identity check OK`.
@@ -456,6 +458,8 @@ Expected with no connected phone:
 
 ```text
 Android device smoke preflight waiting on device
+smoke summary schema
+Android smoke summary check self-test OK
 ```
 
 Expected with one authorized phone:

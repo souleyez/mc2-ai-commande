@@ -217,6 +217,10 @@ Invoke-GateStep `
     -Name "Android device gate" `
     -ScriptPath $androidPreflightScript `
     -Arguments @("-RepoRoot", $RepoRoot, "-AllowNoDevice") `
+    -RequiredMarkers @(
+        "smoke summary schema",
+        "Android smoke summary check self-test OK."
+    ) `
     -AnySuccessMarkers @(
         "Android device smoke preflight OK.",
         "Android device smoke preflight waiting on device."

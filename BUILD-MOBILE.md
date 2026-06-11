@@ -247,7 +247,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_androi
 The strict form requires one authorized Android device. The waiting-state form
 still checks the APK, Android SDK tooling, Android APK freshness, Android APK identity, Android APK
 compatibility, Android APK signing, Android APK manifest, Android APK payload,
-Android APK size budget, Android smoke artifact hygiene, adb, aapt, apksigner, package name and launchable
+Android APK size budget, Android smoke artifact hygiene, Android smoke summary schema, adb, aapt, apksigner, package name and launchable
 activity, then reports that G3 is waiting on a device.
 
 After preflight passes with a real device, install and collect logs:
@@ -363,6 +363,7 @@ scripts\unity\check_android_apk_payload.ps1 -> Android APK payload check OK
 scripts\unity\check_android_apk_size_budget.ps1 -> Android APK size budget check OK
 scripts\unity\check_android_smoke_artifact_hygiene.ps1 -> Android smoke artifact hygiene check OK
 scripts\unity\check_android_smoke_summary.ps1 -SelfTest -> Android smoke summary check self-test OK
+scripts\unity\check_android_device_preflight.ps1 -AllowNoDevice -> smoke summary schema OK
 scripts\unity\android_device_smoke.ps1 -PlanOnly -> ScreenshotCapture: True, Screenshot -> analysis-output\android-device-smoke.png
 scripts\unity\android_device_smoke.ps1 -PlanOnly -> SummaryWrite: True, Summary -> analysis-output\android-device-smoke-summary.json
 scripts\unity\check_android_device_preflight.ps1 -AllowNoDevice -> Android device smoke preflight waiting on device
