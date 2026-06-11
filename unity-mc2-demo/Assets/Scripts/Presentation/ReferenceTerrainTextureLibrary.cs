@@ -181,22 +181,22 @@ namespace MC2Demo.Presentation
             graded.r = Mathf.Pow(Mathf.Clamp01(graded.r), 0.82f);
             graded.g = Mathf.Pow(Mathf.Clamp01(graded.g), 0.82f);
             graded.b = Mathf.Pow(Mathf.Clamp01(graded.b), 0.82f);
-            graded = AdjustContrast(graded, IsRunwayOrRoad(sample) ? 1.16f : 1.08f);
+            graded = AdjustContrast(graded, IsRunwayOrRoad(sample) ? 1.14f : 1.02f);
             Color semantic = SemanticTerrainColor(sample, waterElevation);
 
             if (sample.elevation <= waterElevation + 4f)
             {
-                graded = Color.Lerp(graded, new Color(0.12f, 0.42f, 0.54f), 0.30f);
+                graded = Color.Lerp(graded, new Color(0.06f, 0.30f, 0.39f), 0.36f);
             }
             else if (sample.elevation <= waterElevation + 24f)
             {
-                graded = Color.Lerp(graded, new Color(0.44f, 0.53f, 0.34f), 0.24f);
+                graded = Color.Lerp(graded, new Color(0.47f, 0.53f, 0.32f), 0.24f);
             }
 
-            float textureBlend = IsRunwayOrRoad(sample) ? 0.34f : 0.20f;
+            float textureBlend = IsRunwayOrRoad(sample) ? 0.24f : 0.10f;
             if (sample.elevation <= waterElevation + 24f)
             {
-                textureBlend = 0.16f;
+                textureBlend = 0.06f;
             }
 
             graded = Color.Lerp(semantic, graded, textureBlend);
@@ -213,33 +213,33 @@ namespace MC2Demo.Presentation
         {
             if (sample.elevation <= waterElevation + 4f)
             {
-                return new Color(0.10f, 0.39f, 0.50f);
+                return new Color(0.055f, 0.28f, 0.36f);
             }
 
             if (sample.elevation <= waterElevation + 24f)
             {
-                return new Color(0.40f, 0.50f, 0.32f);
+                return new Color(0.47f, 0.53f, 0.32f);
             }
 
             if (IsRunwayOrRoad(sample))
             {
                 return sample.terrainType == 14
-                    ? new Color(0.61f, 0.60f, 0.52f)
-                    : new Color(0.53f, 0.54f, 0.47f);
+                    ? new Color(0.66f, 0.64f, 0.55f)
+                    : new Color(0.57f, 0.56f, 0.48f);
             }
 
             if (sample.terrainType == 20)
             {
-                return new Color(0.55f, 0.42f, 0.27f);
+                return new Color(0.54f, 0.40f, 0.26f);
             }
 
             int textureId = SourceTextureId(sample);
             if (textureId > 2)
             {
-                return new Color(0.44f, 0.48f, 0.31f);
+                return new Color(0.39f, 0.47f, 0.28f);
             }
 
-            return new Color(0.34f, 0.47f, 0.24f);
+            return new Color(0.31f, 0.45f, 0.24f);
         }
 
         private static bool IsRunwayOrRoad(TerrainMeshSample sample)
@@ -252,7 +252,7 @@ namespace MC2Demo.Presentation
 
         private static Color ClampTerrainMinimum(Color graded, Color semantic)
         {
-            float minimum = Mathf.Clamp01(Mathf.Max(0.16f, Mathf.Min(semantic.r, Mathf.Min(semantic.g, semantic.b)) * 0.72f));
+            float minimum = Mathf.Clamp01(Mathf.Max(0.08f, Mathf.Min(semantic.r, Mathf.Min(semantic.g, semantic.b)) * 0.62f));
             return new Color(
                 Mathf.Max(graded.r, minimum),
                 Mathf.Max(graded.g, minimum),

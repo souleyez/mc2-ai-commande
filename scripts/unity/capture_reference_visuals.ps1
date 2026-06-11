@@ -312,7 +312,7 @@ function Test-TerrainReadabilityCaptureSidecar {
         "water=",
         "shore=",
         "runway=",
-        "style=raised-shore+runway-contrast+water-muted",
+        "style=land-outline+runway-contrast+water-muted",
         "pathing=unchanged"
     )) {
         if ($summary -notlike "*$fragment*") {

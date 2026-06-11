@@ -2651,8 +2651,67 @@ PC1 visual judgment:
 - MechLab is functional and correctly keeps all mounted weapons active. It still has PC layout polish debt, especially left-panel density and small grid/action controls, but it is not the first blocker.
 - The highest-impact PC2 target is terrain and map readability. At 1280x720, the battle view still reads too much like a broad blue water field with yellow-green texture patches; land, shore, roads/runway and usable combat space need stronger separation before adding more unit or weapon effects.
 
+Superseded next priority:
+
+1. PC2 terrain/water/shore/road presentation tuning was completed in the next section.
+2. BattleCore movement, water/jet legality, occupancy, contact-clearance and mission rules remained unchanged.
+3. `spawn`, `airfield`, `hangar-contact`, `damage-demo` and `north-patrol` were re-captured after the terrain pass.
+
+## PC2 Battle Readability Refresh 2026-06-11
+
+Implemented the first PC optimization pass selected by the PC1 baseline audit.
+
+Changed evidence:
+
+- Lowered readable composite terrain texture strength from `0.42` to `0.28`.
+- Muted deep water and water overlay alpha so water no longer dominates every battle frame.
+- Tuned shore, runway and road semantic colors to make usable land, shorelines and airport surfaces easier to separate.
+- Reduced terrain tile variation and narrowed the terrain light multiplier, avoiding the previous high-contrast yellow-green noise patches.
+- Updated the terrain readability sidecar style to `land-outline+runway-contrast+water-muted`.
+- Kept BattleCore pathing, water legality, jet legality, occupancy, contact clearance, unit collision and mission rules unchanged.
+
+Validation commands:
+
+```powershell
+& "$HOME\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "$PWD\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoBuilder.BuildWindows64 -logFile "$PWD\analysis-output\unity-build-pc-terrain-readability.log"
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_reference_visuals.ps1 -Presets spawn,airfield,hangar-contact,damage-demo,north-patrol
+```
+
+Validation evidence:
+
+```text
+analysis-output/unity-build-pc-terrain-readability.log: Build Finished, Result: Success; MC2 Unity demo Windows build OK.
+capture_reference_visuals.ps1 -Presets spawn,airfield,hangar-contact,damage-demo,north-patrol: MC2 reference visual captures passed: 5 preset(s).
+```
+
+Current PC2 capture matrix:
+
+| Preset | PNG Bytes | Mission Time | Active Hostiles | Visible Hostiles | Key Gate |
+| --- | ---: | ---: | ---: | ---: | --- |
+| `spawn` | 313182 | 1.36s | 0 | 0 | `TerrainReadability textureStrength=0.28 alpha=0.48`, sparse HUD, `ContactClearance overlaps=0 status=separated` |
+| `airfield` | 306692 | 13.14s | 12 | 8 | first contact path still passes `FirstMapVisual`, muted water and runway/road contrast |
+| `hangar-contact` | 308323 | 21.12s | 20 | 16 | dense hangar fight remains separated by sidecar, no true unit overlap |
+| `damage-demo` | 336482 | 39.12s | 20 | 16 | damage story remains visible with the terrain pass applied |
+| `north-patrol` | 387298 | 55.11s | 24 | 9 | larger map view keeps water, shore, trees and active contacts distinguishable |
+
+Observed sidecar evidence:
+
+```text
+TerrainReadability=samples 10000 texture=composite textureStrength=0.28 waterSurface=readable-overlay alpha=0.48 water=9392 shore=92 runway=110 dirt=11 textured=188 style=land-outline+runway-contrast+water-muted pathing=unchanged.
+FirstMapVisual status=ready terrain=ready unit=ready structure=ready sparseHud=ready occupancy=ready contact=separated damageStory=ready.
+ContactClearance overlaps=0 status=separated in all five PC2 captures.
+```
+
+PC2 visual judgment:
+
+- The battle view still uses prototype/reference development art, but it no longer reads as aggressively as a flat blue field with bright yellow-green texture noise.
+- `spawn` and `airfield` now separate water, shore, runway/road, hangar mass, props and player units more cleanly at 1280x720.
+- `hangar-contact` remains the densest stress frame. It is still visually busy, but the sidecar confirms this is not a physical collision regression.
+- `damage-demo` keeps the section-damage story visible after the terrain color pass.
+- This pass is intentionally presentation-only; it does not solve final public art quality or clean-room replacement content.
+
 Next priority:
 
-1. PC2 should tune terrain/water/shore/road presentation in `DemoTerrainView` and related capture gates.
-2. Keep BattleCore movement, water/jet legality, occupancy, contact-clearance and mission rules unchanged unless evidence proves a rule bug.
-3. Re-capture `spawn`, `airfield`, `hangar-contact`, `damage-demo` and `north-patrol` after the terrain pass.
+1. PC3 should polish the PC MechLab flow: whole weapon blocks, heat/weight pressure, legal state and simple armor/sink fillers.
+2. Do not reintroduce weapon enable/disable toggles; installed weapons remain active.
+3. Keep generated screenshots, sidecars, logs, Windows builds and private reference exports ignored.

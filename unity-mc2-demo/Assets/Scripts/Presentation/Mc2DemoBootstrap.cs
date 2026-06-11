@@ -168,12 +168,12 @@ namespace MC2Demo.Presentation
         private static readonly Color LoadoutWeaponBlockFrameColor = new(0.015f, 0.02f, 0.025f, 0.98f);
         private static readonly Color LoadoutComponentBlockFrameColor = new(0.42f, 0.30f, 0.05f, 0.96f);
         private static readonly Color LoadoutBlockDividerColor = new(0.015f, 0.025f, 0.028f, 0.50f);
-        private const float TerrainCompositeTextureStrength = 0.42f;
-        private static readonly Color TerrainDeepWaterColor = new(0.08f, 0.32f, 0.42f, 1f);
-        private static readonly Color TerrainShoreColor = new(0.45f, 0.53f, 0.33f, 1f);
-        private static readonly Color TerrainRunwayColor = new(0.64f, 0.62f, 0.53f, 1f);
-        private static readonly Color TerrainRoadColor = new(0.56f, 0.56f, 0.48f, 1f);
-        private static readonly Color TerrainWaterSurfaceColor = new(0.07f, 0.33f, 0.44f, 0.62f);
+        private const float TerrainCompositeTextureStrength = 0.28f;
+        private static readonly Color TerrainDeepWaterColor = new(0.045f, 0.24f, 0.32f, 1f);
+        private static readonly Color TerrainShoreColor = new(0.47f, 0.53f, 0.32f, 1f);
+        private static readonly Color TerrainRunwayColor = new(0.70f, 0.68f, 0.58f, 1f);
+        private static readonly Color TerrainRoadColor = new(0.59f, 0.58f, 0.50f, 1f);
+        private static readonly Color TerrainWaterSurfaceColor = new(0.045f, 0.25f, 0.34f, 0.48f);
 
         [Serializable]
         private sealed class VisualCaptureSidecar
@@ -6026,7 +6026,7 @@ namespace MC2Demo.Presentation
                 + dirtSamples.ToString(CultureInfo.InvariantCulture)
                 + " textured="
                 + texturedSamples.ToString(CultureInfo.InvariantCulture)
-                + " style=raised-shore+runway-contrast+water-muted pathing=unchanged";
+                + " style=land-outline+runway-contrast+water-muted pathing=unchanged";
         }
 
         private string BuildCaptureUnitReadabilitySummary()
@@ -9095,12 +9095,12 @@ namespace MC2Demo.Presentation
             float light = TerrainLightMultiplier(sample);
             if (IsWaterTerrainSample(sample, waterLevel))
             {
-                return ApplyTerrainLight(TerrainTileVariation(TerrainDeepWaterColor, SourceTextureId(sample), 0.08f), light);
+                return ApplyTerrainLight(TerrainTileVariation(TerrainDeepWaterColor, SourceTextureId(sample), 0.04f), light);
             }
 
             if (IsShoreTerrainSample(sample, waterLevel))
             {
-                return ApplyTerrainLight(TerrainTileVariation(TerrainShoreColor, SourceTextureId(sample), 0.14f), light);
+                return ApplyTerrainLight(TerrainTileVariation(TerrainShoreColor, SourceTextureId(sample), 0.06f), light);
             }
 
             int textureId = SourceTextureId(sample);
@@ -9109,22 +9109,22 @@ namespace MC2Demo.Presentation
                 Color runway = sample.terrainType == 14
                     ? TerrainRunwayColor
                     : TerrainRoadColor;
-                return ApplyTerrainLight(TerrainTileVariation(runway, textureId, 0.16f), light);
+                return ApplyTerrainLight(TerrainTileVariation(runway, textureId, 0.07f), light);
             }
 
             if (sample.terrainType == 20)
             {
-                return ApplyTerrainLight(TerrainTileVariation(new Color(0.60f, 0.46f, 0.29f), textureId, 0.16f), light);
+                return ApplyTerrainLight(TerrainTileVariation(new Color(0.56f, 0.42f, 0.27f), textureId, 0.07f), light);
             }
 
             if (textureId > 2)
             {
-                return ApplyTerrainLight(TerrainTileVariation(new Color(0.44f, 0.50f, 0.30f), textureId, 0.22f), light);
+                return ApplyTerrainLight(TerrainTileVariation(new Color(0.39f, 0.48f, 0.27f), textureId, 0.08f), light);
             }
 
             float heightT = Mathf.InverseLerp(mission.Contract.terrainMesh.elevationMin, mission.Contract.terrainMesh.elevationMax, sample.elevation);
-            Color baseColor = Color.Lerp(new Color(0.30f, 0.44f, 0.22f), new Color(0.58f, 0.52f, 0.33f), heightT);
-            return ApplyTerrainLight(TerrainTileVariation(baseColor, textureId, 0.11f), light);
+            Color baseColor = Color.Lerp(new Color(0.28f, 0.43f, 0.22f), new Color(0.56f, 0.54f, 0.34f), heightT);
+            return ApplyTerrainLight(TerrainTileVariation(baseColor, textureId, 0.06f), light);
         }
 
         private static bool IsWaterTerrainSample(TerrainMeshSample sample, float waterLevel)
@@ -9176,7 +9176,7 @@ namespace MC2Demo.Presentation
             }
 
             int lowByte = (int)(sample.light & 0xffL);
-            return Mathf.Lerp(0.88f, 1.24f, lowByte / 255f);
+            return Mathf.Lerp(0.94f, 1.12f, lowByte / 255f);
         }
 
         private static Color ApplyTerrainLight(Color color, float light)

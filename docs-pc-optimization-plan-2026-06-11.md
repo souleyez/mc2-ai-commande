@@ -36,11 +36,11 @@ The current PC optimization pass is complete when:
 | --- | --- | --- | --- |
 | PC0 | Done | Existing Windows baseline | Prior validator/build/smoke and visual captures have passed |
 | PC1 | Done | Audit current PC baseline | Re-run validator, Windows build, visible-flow smoke and six captures; record exact current weakness |
-| PC2 | Next | Polish battle readability | Fix only the highest-impact visible issue from PC1 |
-| PC3 | Later | Polish MechLab PC flow | Improve grid/loadout readability without adding weapon toggles |
+| PC2 | Done | Polish battle readability | Fix only the highest-impact visible issue from PC1 |
+| PC3 | Next | Polish MechLab PC flow | Improve grid/loadout readability without adding weapon toggles |
 | PC4 | Later | Package controlled PC demo evidence | Refresh walkthrough/evidence and keep generated artifacts ignored |
 
-Do not start PC2 until PC1 produces fresh evidence. Do not change gameplay rules from visual inspection alone; if the issue is collision, damage, command state or objective logic, first prove it in `BattleCore`.
+Do not start PC3 until PC2 produces fresh battle-readability evidence. Do not change gameplay rules from visual inspection alone; if the issue is collision, damage, command state or objective logic, first prove it in `BattleCore`.
 
 ## Completed Target: PC1 Audit Current PC Baseline
 
@@ -135,7 +135,7 @@ docs-reference-visual-audit-2026-06-07.md records the PC1 baseline and selects P
 
 **Commit:** `Audit PC demo baseline`
 
-## Current Executable Target: PC2 Polish Battle Readability
+## Completed Target: PC2 Polish Battle Readability
 
 **Goal:** 根据 PC1 证据，只修一个最高影响的战场可读性问题：地形、水域、岸线、道路/跑道和可战斗陆地区域在默认 PC 镜头下必须更清楚。
 
@@ -166,9 +166,18 @@ git diff --check
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\capture_reference_visuals.ps1 -Presets spawn,airfield,hangar-contact,damage-demo
 ```
 
+**Completed Evidence 2026-06-11:**
+
+```text
+analysis-output/unity-build-pc-terrain-readability.log: Build Finished, Result: Success; MC2 Unity demo Windows build OK.
+capture_reference_visuals.ps1 -Presets spawn,airfield,hangar-contact,damage-demo,north-patrol: MC2 reference visual captures passed: 5 preset(s).
+sidecar terrainReadability: texture=composite textureStrength=0.28 waterSurface=readable-overlay alpha=0.48 style=land-outline+runway-contrast+water-muted pathing=unchanged.
+sidecar contactClearance: all five PC2 battle captures still report overlaps=0 status=separated.
+```
+
 **Commit:** `Polish PC battle readability`
 
-## PC3: Polish MechLab PC Flow
+## Current Executable Target: PC3 Polish MechLab PC Flow
 
 **Goal:** 让 PC 端装配界面更接近“整块装备放入格子”的直观感觉，不回退到武器启用/关闭。
 
