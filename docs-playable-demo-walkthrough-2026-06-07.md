@@ -6,7 +6,13 @@ This is a local development walkthrough for an AI-assisted tactical RTS commande
 
 ## Before The Demo
 
-Use the current Windows build or the local development shortcut. The walkthrough assumes the Demo can reach these screens and labels:
+Use the current Windows build or the local development shortcut. The normal Windows build entry is:
+
+```text
+unity-mc2-demo\Builds\Windows\MC2UnityDemo.exe
+```
+
+The walkthrough assumes the Demo can reach these screens and labels:
 
 - `Mech Lab`
 - `Battle / 战斗`
@@ -25,10 +31,10 @@ If the build uses local private reference content, describe it only as developme
 Current seal evidence:
 
 ```text
-analysis-output/unity-player-visible-flow-seal.log
+analysis-output/unity-player-pc-evidence-visible-flow.log
 ```
 
-The current seal smoke exits with code `0` and proves the scripted live path reaches combat, Debrief, Debrief summary, repair/Mech Lab, squad relaunch identity and compact loadout review.
+The current PC4 seal smoke exits with code `0` and proves the scripted live path reaches combat, Debrief, Debrief summary, repair/Mech Lab, squad relaunch identity and compact loadout review. The matching Windows build evidence is `analysis-output/unity-build-pc-evidence-package.log`.
 
 ## Three-Minute Talk Track
 
@@ -53,7 +59,7 @@ Action:
 1. Open `Bay` or start from the current `Mech Lab`.
 2. Select the first mech.
 3. Point to the grid-fitting area.
-4. Point to weapon blocks, `A+` armor fillers, `C+` heat sink fillers, and the H/W/G pressure line.
+4. Point to whole weapon blocks, `A+` armor fillers, `C+` heat sink fillers, H/W/G pressure cards, and the cell-state summary.
 
 Say:
 
@@ -202,12 +208,20 @@ Local generated evidence remains ignored under `analysis-output`.
 Useful current evidence paths:
 
 ```text
+analysis-output/unity-build-pc-evidence-package.log
+analysis-output/unity-player-pc-evidence-visible-flow.log
 analysis-output/reference-visual-captures/mechlab.png
+analysis-output/reference-visual-captures/mechlab.json
 analysis-output/reference-visual-captures/spawn.png
+analysis-output/reference-visual-captures/spawn.json
+analysis-output/reference-visual-captures/airfield.png
+analysis-output/reference-visual-captures/airfield.json
+analysis-output/reference-visual-captures/hangar-contact.png
+analysis-output/reference-visual-captures/hangar-contact.json
 analysis-output/reference-visual-captures/damage-demo.png
 analysis-output/reference-visual-captures/damage-demo.json
-analysis-output/unity-player-visible-flow-seal.log
-analysis-output/unity-player-battle-ui-sparse.log
+analysis-output/reference-visual-captures/north-patrol.png
+analysis-output/reference-visual-captures/north-patrol.json
 ```
 
 Use the evidence to support the conversation, not as final public content if it depends on private reference assets.
@@ -217,7 +231,7 @@ Use the evidence to support the conversation, not as final public content if it 
 Do not present these as first-version features:
 
 - realtime PVP;
-- mobile build;
+- mobile release or validated Android true-device play;
 - map server;
 - account economy;
 - recharge/payment;

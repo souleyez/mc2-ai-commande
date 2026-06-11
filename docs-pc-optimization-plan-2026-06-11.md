@@ -12,9 +12,9 @@
 
 ## Product Decision
 
-Mobile support remains the product priority, but `G3 Android Device Smoke` is waiting on a physical Android phone with USB debugging authorized. While that device blocker exists, the active executable work is PC demo optimization.
+Mobile support remains the product priority, but `G3 Android Device Smoke` is waiting on a physical Android phone with USB debugging authorized. While that device blocker existed, this plan used PC demo optimization to keep the Windows demo moving.
 
-This does not move G4/G5 mobile touch and performance ahead of G3. It only prevents the project from idling while the required phone is unavailable.
+The current PC optimization pass is now sealed through PC4. This does not move G4/G5 mobile touch and performance ahead of G3; the next mobile gate still requires the physical authorized phone.
 
 ## Definition Of Done
 
@@ -38,9 +38,9 @@ The current PC optimization pass is complete when:
 | PC1 | Done | Audit current PC baseline | Re-run validator, Windows build, visible-flow smoke and six captures; record exact current weakness |
 | PC2 | Done | Polish battle readability | Fix only the highest-impact visible issue from PC1 |
 | PC3 | Done | Polish MechLab PC flow | Improve grid/loadout readability without adding weapon toggles |
-| PC4 | Next | Package controlled PC demo evidence | Refresh walkthrough/evidence and keep generated artifacts ignored |
+| PC4 | Done | Package controlled PC demo evidence | Refresh walkthrough/evidence and keep generated artifacts ignored |
 
-Do not start PC4 until PC3 produces fresh MechLab evidence. Do not change gameplay rules from visual inspection alone; if the issue is collision, damage, command state or objective logic, first prove it in `BattleCore`.
+Do not open another PC polish gate from visual inspection alone. If the issue is collision, damage, command state or objective logic, first prove it in `BattleCore`.
 
 ## Completed Target: PC1 Audit Current PC Baseline
 
@@ -216,7 +216,7 @@ sidecar mechLab: layout=pressure-cards+whole-blocks+single-fillers, alwaysMounte
 
 **Commit:** `Polish PC MechLab flow`
 
-## Current Executable Target: PC4 Package Controlled PC Demo Evidence
+## Completed Target: PC4 Package Controlled PC Demo Evidence
 
 **Goal:** 在 PC 可展示质量收稳后，刷新演示脚本和证据页，方便拿给外部人看。
 
@@ -239,6 +239,18 @@ git status --short --branch --untracked-files=all
 - Docs describe what the PC demo can actually show today.
 - Docs do not imply private reference assets are public-safe final art.
 - The demo can be run from the Windows build path without explaining internal scripts to the viewer.
+
+**Completed Evidence 2026-06-12:**
+
+```text
+analysis-output/unity-build-pc-evidence-package.log: Build Finished, Result: Success; MC2 Unity demo Windows build OK.
+analysis-output/unity-player-pc-evidence-visible-flow.log: MC2 demo smoke test exiting with code 0; debrief, repair/Mech Lab, relaunch identity and compact loadout checks passed.
+capture_reference_visuals.ps1 -Presets mechlab,spawn,airfield,hangar-contact,damage-demo,north-patrol: MC2 reference visual captures passed: 6 preset(s).
+sidecar terrainReadability: texture=composite textureStrength=0.28 waterSurface=readable-overlay alpha=0.48 style=land-outline+runway-contrast+water-muted pathing=unchanged.
+sidecar mechLab: layout=pressure-cards+whole-blocks+single-fillers, pressure=H 12/22 W 16/16 G 12/16, alwaysMounted=weapons 6/6 items 6/6 noToggle=yes.
+sidecar contactClearance: all five battle captures report overlaps=0 status=separated; evidence tolerance now treats sub-1-unit clearance jitter as touching, not gameplay overlap.
+docs-playable-demo-walkthrough-2026-06-07.md and docs-playable-demo-investor-evidence-2026-06-07.md describe the current PC demo without claiming private reference visuals are public-safe final art.
+```
 
 **Commit:** `Package PC controlled demo evidence`
 

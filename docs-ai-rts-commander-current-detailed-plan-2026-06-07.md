@@ -8,7 +8,7 @@
 
 **Tech Stack:** Unity 6, C#, Windows PC build/smoke/capture as active demo loop, Android/iOS mobile-first after device blocker clears, deterministic BattleCore, PowerShell build/smoke/capture scripts, replaceable content packs, optional high-level AI deputy, later main server/map server/Web ranking contracts.
 
-**Revision:** 2026-06-11 v16. This file is the fine-grained execution plan paired with `docs-ai-rts-commander-current-master-plan-2026-06-07.md`. The private reference visual bridge, local investor evidence package, art-safe metadata contract, AI deputy offline guard, reward authority contract, machine handoff plan, mobile-first priority reset, Android build smoke, PC optimization resumption, PC1 baseline audit, PC2 battle readability pass, and PC3 MechLab PC flow polish are now sealed for the current Demo. H2 validator/build/smoke is green; G2 Android build smoke is green with a generated APK; `G3 Run Android Device Smoke` is waiting on a physical authorized phone, so the current executable focus is `PC4 Package PC Controlled Demo Evidence`.
+**Revision:** 2026-06-12 v17. This file is the fine-grained execution plan paired with `docs-ai-rts-commander-current-master-plan-2026-06-07.md`. The private reference visual bridge, local investor evidence package, art-safe metadata contract, AI deputy offline guard, reward authority contract, machine handoff plan, mobile-first priority reset, Android build smoke, PC optimization resumption, PC1 baseline audit, PC2 battle readability pass, PC3 MechLab PC flow polish, and PC4 controlled demo evidence package are now sealed for the current Demo. H2 validator/build/smoke is green; G2 Android build smoke is green with a generated APK; `G3 Run Android Device Smoke` is waiting on a physical authorized phone. The current PC optimization batch is complete unless a new PC5 target is explicitly defined.
 
 ---
 
@@ -38,14 +38,14 @@
 1. `H2` validator、Windows build 和 visible-flow smoke 已通过；Unity scene fileID churn 已恢复，工作区保持干净。
 2. `G3` 仍是当前移动端 gate：在真 Android 设备上安装并启动 APK，证明移动端运行链路可用。
 3. 当前机器没有授权 Android 设备；G3 进入 Waiting on Device 状态，不推进 G4/G5。
-4. Android 设备等待期间，PC1 基线审计、PC2 战场可读性优化和 PC3 MechLab 打磨已通过；当前可执行工作切到 `PC4`：刷新受控 PC 演示 walkthrough/evidence。
+4. Android 设备等待期间，PC1 基线审计、PC2 战场可读性优化、PC3 MechLab 打磨和 PC4 受控演示证据包已通过；下一步回到 `G3` 真机 smoke，或先定义新的 PC5 再继续 PC 端。
 5. D1 只是 art-safe metadata 合同，不是可挂载 runtime pack；后续 D2 才能进入清权资产生产和 mountable pack。
 6. 私有参考素材可以继续用于本机开发验证，但公开材料不能把它描述成最终产品内容。
 7. `F2-F4` 平台化方向仍保留，但现在只在移动端可行性通过后继续。
 
 当前工作区注意事项：
 
-- 若当前 `git status` 只剩计划文档改动，先完成校验并提交，再进入 PC4 或等待 G3 设备。
+- 若当前 `git status` 只剩计划文档改动，先完成校验并提交；之后等待 G3 设备，或先写清新的 PC5 目标。
 - D1 新增的是 metadata 示例文件；不允许把私有 OBJ/TGA/PNG/JSON、截图、log 或 Unity build 输出加入 git。
 - G2-G5 先做移动端可行性；F2-F4 后移，不先写服务器实现。
 - 如果 Unity batch 运行后只造成 `unity-mc2-demo/Assets/Scenes/Mc2Demo.unity` fileID churn，不要纳入提交。
@@ -110,7 +110,7 @@
 | M11 | 平台契约 | In Progress | 奖励认证契约完成；地图包、排行、创作者边界待写 |
 | M12 | 换机开发交接 | Done | H2 validator/build/smoke 已通过 |
 | M13 | 移动端优先可行性 | Waiting on Device | Android APK build smoke 已通过；真机 smoke 等授权手机，之后再做触控 UI 和性能预算 |
-| M14 | PC 可展示质量优化 | In Progress | PC1 baseline, PC2 battle readability and PC3 MechLab polish passed; PC4 controlled demo evidence packaging is next |
+| M14 | PC 可展示质量优化 | Done for current pass | PC1 baseline, PC2 battle readability, PC3 MechLab polish and PC4 controlled demo evidence package passed |
 
 ## 4. Fine-Grained Commit Queue
 
@@ -139,7 +139,7 @@
 | PC1 | Done | `Audit PC demo baseline` | Android G3 等设备期间，重跑 PC validator/build/visible-flow/six captures 并锁定下一处问题 | PC evidence |
 | PC2 | Done | `Polish PC battle readability` | 根据 PC1 证据先修地形、水域、岸线、道路/跑道和可战斗陆地区域可读性 | Windows build + captures |
 | PC3 | Done | `Polish PC MechLab flow` | 装配格子、整块武器、热量/重量/合法性更直观，不恢复武器开关 | Windows build + `mechlab` capture |
-| PC4 | Next | `Package PC controlled demo evidence` | 刷新 walkthrough/evidence，形成 PC 可展示包说明 | docs |
+| PC4 | Done | `Package PC controlled demo evidence` | 刷新 walkthrough/evidence，形成 PC 可展示包说明 | docs |
 | G4 | Later | `Adapt command UI for mobile touch` | 状态行、Jet、地图、系统和 MechLab 手机触控可用 | device smoke |
 | G5 | Later | `Define mobile performance budget` | FPS、内存、包体、加载、热量/电量基线 | docs + device evidence |
 | G6 | Later | `Document iOS feasibility gate` | macOS/Xcode/签名/Metal/真机要求 | docs |
@@ -194,7 +194,7 @@
 | PC1.1 | Done | 重跑 PC validator、Windows build、visible-flow smoke 和六截图，锁定下一处 PC 可见问题 | validator/build/capture scripts; optional evidence docs | `PC1` commands pass |
 | PC2.1 | Done | 根据 PC1 证据先修地形、水域、岸线、道路/跑道和可战斗陆地区域可读性 | Unity presentation + capture scripts | Windows build + selected captures |
 | PC3.1 | Done | 打磨 PC MechLab 整块格子和合法性表现，不恢复武器开关 | `Mc2DemoBootstrap.cs`; loadout files if needed | `mechlab` capture |
-| PC4.1 | Next | 刷新 PC controlled demo walkthrough/evidence，不提交生成物 | walkthrough/evidence docs | `git diff --check` |
+| PC4.1 | Done | 刷新 PC controlled demo walkthrough/evidence，不提交生成物 | walkthrough/evidence docs | `git diff --check` |
 | G4.1 | Later | 调整触控命令 UI，保持无框选、稀疏 HUD、状态栏单选 | Unity presentation | mobile smoke |
 | G5.1 | Later | 定义移动端性能预算并记录首轮基线 | docs + ignored evidence | budget doc |
 | F2.1 | Later | 写地图包/编辑器契约，定义地图元数据、触发图、敌人、奖励引用和验证器边界 | platform docs | `git diff --check` |
@@ -1346,7 +1346,7 @@ ContactClearance: all five captures kept overlaps=0 status=separated.
 
 ### PC3: Polish PC MechLab Flow
 
-**Status:** Next.
+**Status:** Completed 2026-06-11.
 
 **Goal:** 让 PC 装配界面更直观地表达整块武器、热量、重量、装甲板和散热器；武器装上即启用，不做启用/关闭。
 
@@ -1377,7 +1377,7 @@ MechLabCapture: layout=pressure-cards+whole-blocks+single-fillers, pressure=H 12
 
 ### PC4: Package PC Controlled Demo Evidence
 
-**Status:** Next.
+**Status:** Completed 2026-06-12.
 
 **Goal:** PC 可展示质量收稳后，刷新外部演示脚本和证据页。
 
@@ -1392,6 +1392,17 @@ MechLabCapture: layout=pressure-cards+whole-blocks+single-fillers, pressure=H 12
 ```powershell
 git diff --check
 git status --short --branch --untracked-files=all
+```
+
+**Completed Evidence:**
+
+```text
+analysis-output/unity-build-pc-evidence-package.log: Build Finished, Result: Success; MC2 Unity demo Windows build OK.
+analysis-output/unity-player-pc-evidence-visible-flow.log: MC2 demo smoke test exiting with code 0; debrief and loadout compact assertions passed.
+capture_reference_visuals.ps1 -Presets mechlab,spawn,airfield,hangar-contact,damage-demo,north-patrol: MC2 reference visual captures passed: 6 preset(s).
+mechlab sidecar: layout=pressure-cards+whole-blocks+single-fillers, alwaysMounted=weapons 6/6 items 6/6 noToggle=yes.
+battle sidecars: terrainReadability textureStrength=0.28, FirstMapVisual status=ready, ContactClearance overlaps=0 status=separated, DamageStory includes left-arm-lost, legs-lost and cockpit-lost.
+generated screenshots, JSON sidecars, logs and Windows build outputs remain ignored and unstaged.
 ```
 
 **Commit:** `Package PC controlled demo evidence`
@@ -1618,4 +1629,4 @@ Stop and reassess before committing if:
 
 ## 9. One-Line Direction
 
-Windows 本地 Demo 的画面、碰撞、稀疏 UI、MechLab、损伤故事、演示证据、公开 art-safe 元数据合同、AI 副官离线边界和主服务器奖励权威契约已经收稳；代码已推到 GitHub，H2 validator/build/smoke 已过，G2 Android APK build smoke 已过；G3 真机 smoke 等待授权 Android 手机；PC1 基线审计、PC2 战场可读性优化和 PC3 MechLab 打磨已过，当前继续 PC4 刷新受控 PC 演示 walkthrough/evidence，设备到位后再回 G3-G5。
+Windows 本地 Demo 的画面、碰撞、稀疏 UI、MechLab、损伤故事、受控演示证据、公开 art-safe 元数据合同、AI 副官离线边界和主服务器奖励权威契约已经收稳；代码已推到 GitHub，H2 validator/build/smoke 已过，G2 Android APK build smoke 已过；PC1-PC4 PC 优化包已封口；G3 真机 smoke 等待授权 Android 手机，设备到位后继续 G3-G5，设备不到位时必须先定义新的 PC5 目标再继续 PC 端。

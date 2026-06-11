@@ -6,26 +6,28 @@ The current evidence proves a local playable loop: MechLab fitting, squad launch
 
 ## Current Evidence Package Refresh
 
-Refreshed on 2026-06-07 after `Refresh investor evidence package`.
+Refreshed on 2026-06-12 after `Package PC controlled demo evidence`.
 
 | Gate | Result | Evidence |
 | --- | --- | --- |
+| Windows build | Pass | `analysis-output/unity-build-pc-evidence-package.log` reports `Build Finished, Result: Success` and `MC2 Unity demo Windows build OK`. |
+| Visible-flow smoke | Pass | `analysis-output/unity-player-pc-evidence-visible-flow.log` exits with code `0` and proves debrief, repair/Mech Lab, relaunch identity and compact loadout review. |
 | Six capture presets | Pass | `capture_reference_visuals.ps1` reports `MC2 reference visual captures passed: 6 preset(s)` for `mechlab`, `spawn`, `airfield`, `hangar-contact`, `damage-demo`, and `north-patrol`. |
-| MechLab fitting | Pass | `mechlab` capture remains the fitting proof: whole weapon block, armor/cooling filler, H/W/G pressure, `Fit OK`, and `noToggle=yes`. |
-| First-map visual gate | Pass | `spawn`, `airfield`, `hangar-contact`, `damage-demo`, and `north-patrol` sidecars report `FirstMapVisual ... status=ready`, `sparseHud=ready`, `occupancy=ready`, and `contact=separated`. |
-| Contact and collision | Pass | Current battle sidecars report `ContactClearance ... overlaps=0 ... status=separated`, including dense objective and north patrol presets. |
+| MechLab fitting | Pass | `mechlab` capture remains the fitting proof: whole weapon block, armor/cooling filler, H/W/G pressure, `Fit OK`, `CellState=OK OPEN4 OCC12 OCC!0 OOB0`, and `noToggle=yes`. |
+| First-map visual gate | Pass | `spawn`, `airfield`, `hangar-contact`, `damage-demo`, and `north-patrol` sidecars report `FirstMapVisual ... status=ready`, readable terrain, sparse HUD, occupancy, and separated contact. |
+| Contact and collision | Pass | Current battle sidecars report `ContactClearance ... overlaps=0 ... status=separated`, including dense objective and north patrol presets; the sidecar tolerance treats sub-1-unit clearance jitter as touching, not a gameplay overlap. |
 | Damage story | Pass | `damage-demo` reports `left-arm-lost`, `legs-lost`, `cockpit-lost`, `pilotRisk=1`, `destroyedUnits=1`, and weapon families `energy+missile+ballistic+explosive`. |
 | Replacement boundary | Pass | `content-packs/project-owned-starter.example.json`, `content-packs/project-owned-visual-slice.example.json`, and `content-packs/project-owned-art-safe-slice.example.json` pass the public content boundary check; current local screenshots remain development evidence, not public final art. |
 
-Evidence-package judgment: the current local Windows Demo evidence set now combines the sealed visible-flow smoke, six fresh screenshots/sidecars, manifest-driven local visuals, a clean replacement id path, and a metadata-only art-safe mission-slice target.
+Evidence-package judgment: the current local Windows Demo evidence set now combines the PC4 Windows build, visible-flow smoke, six fresh screenshots/sidecars, manifest-driven local visuals, a clean replacement id path, and a metadata-only art-safe mission-slice target. It is suitable for controlled external demonstration, not public release.
 
 ## Visible Flow Seal Refresh
 
-Refreshed on 2026-06-07 after `Seal visible playable walkthrough`.
+Refreshed on 2026-06-12 after `Package PC controlled demo evidence`.
 
 | Gate | Result | Evidence |
 | --- | --- | --- |
-| Visible-flow smoke | Pass | `analysis-output/unity-player-visible-flow-seal.log` reports `MC2 demo smoke test exiting with code 0`. |
+| Visible-flow smoke | Pass | `analysis-output/unity-player-pc-evidence-visible-flow.log` reports `MC2 demo smoke test exiting with code 0`. |
 | Combat command loop | Pass | The same log reports quiet, tracking and fire combat assertions with sparse UI, status rows, solo order, squad command, Jet, contact pressure and hidden combat log. |
 | Debrief | Pass | The log reports `MC2 debrief resolve OK`, `MC2 debrief open OK`, and `MC2 debrief summary assertion OK` with `result=Victory`, objectives `6/6`, payout/salvage/bounty rows and clear overlays. |
 | Repair and return path | Pass | The log reports `actions=Repair & Mech Lab/Next Contract/Retry Battle/Close`, saved account delta, compact loadout review, repair copy and Mech Lab route. |
@@ -193,13 +195,14 @@ analysis-output/reference-visual-captures/
 Current refreshed sidecars report:
 
 ```text
-mechlab: MechLabCapture=open ... weaponBlock=1 Streak ... 1x2 fillers=A+/C+ fit=Fit OK pressure=H 12/22  W 16/16  G 12/16 CellState=OK OPEN4 OCC12 OCC!0 OOB0 alwaysMounted=weapons 6/6 items 6/6 noToggle=yes
-spawn: FirstMapVisual status=ready terrain=ready unit=ready structure=ready sparseHud=ready occupancy=ready contact=separated playerUnits=3 activeHostiles=0 visibleHostiles=0 targetableStructures=1
-airfield: FirstMapVisual status=ready activeHostiles=12 visibleHostiles=8 ContactSpread nearestPH=704.7 nearestHH=108 playerSpan=480 hostileSpan=4198.8 ContactClearance overlaps=0 status=separated
-hangar-contact: FirstMapVisual status=ready activeHostiles=20 visibleHostiles=16 BattleOccupancy=units 23/29 unitRadii infantry=24 vehicle=54 mech=64 hardProps 80 ContactSpread nearestPH=272.8 nearestHH=48 nearestPP=259.1 hostileSpan=4299.8 ContactClearance overlaps=0 worstClearance=0 status=separated
-damage-demo: FirstMapVisual status=ready activeHostiles=20 visibleHostiles=16 BattleOccupancy=units 22/29 unitRadii infantry=24 vehicle=54 mech=64 SparseBattleUi=statusRows+sections+solo ContactClearance overlaps=0 worstClearance=0 status=separated DamageStory=units 3/3 lostSections=3 arms=1 legs=1 cockpit=1 pilotRisk=1 destroyedUnits=1 story=unit-1:left-arm-lost,unit-2:legs-lost,unit-3:cockpit-lost
+mechlab: MechLabCapture=open flow=Mech Lab unit=Werewolf weaponBlock=1 Streak 1x2 fillers=A+/C+ fit=Fit OK pressure=H 12/22  W 16/16  G 12/16 CellState=OK OPEN4 OCC12 OCC!0 OOB0 layout=pressure-cards+whole-blocks+single-fillers alwaysMounted=weapons 6/6 items 6/6 noToggle=yes
+spawn: FirstMapVisual status=ready terrain=ready unit=ready structure=ready sparseHud=ready occupancy=ready contact=separated playerUnits=3 activeHostiles=0 visibleHostiles=0 targetableStructures=1 ContactClearance overlaps=0 status=separated
+airfield: FirstMapVisual status=ready activeHostiles=12 visibleHostiles=8 ContactClearance nearestPH=unit-1>unit-5 clearance=590.7 nearestHH=unit-5>unit-6 clearance=0 overlaps=0 status=separated
+hangar-contact: FirstMapVisual status=ready activeHostiles=20 visibleHostiles=16 ContactClearance nearestPH=unit-2>unit-5 clearance=154.8 nearestHH=unit-19>unit-21 clearance=0 nearestPP=unit-1>unit-3 clearance=131.1 overlaps=0 worstClearance=0 status=separated
+damage-demo: FirstMapVisual status=ready activeHostiles=20 visibleHostiles=16 SparseBattleUi=statusRows+sections+solo ContactClearance overlaps=0 status=separated DamageStory=units 3/3 lostSections=3 arms=1 legs=1 cockpit=1 pilotRisk=1 destroyedUnits=1 story=unit-1:left-arm-lost,unit-2:legs-lost,unit-3:cockpit-lost
 damageReadability: weaponFamilies energy+missile+ballistic+explosive; weaponShapes beam+arc+tracer+shock; sectionConsequences arms-firepower legs-mobility cockpit-ejection wreck-salvage; hud=section-bars+short-labels+sparse
-north-patrol: FirstMapVisual status=ready activeHostiles=24 visibleHostiles=9 units=27/29 ContactSpread nearestPH=118 nearestHH=70.1 hostileSpan=6608.3 ContactClearance overlaps=0 status=separated
+north-patrol: FirstMapVisual status=ready activeHostiles=24 visibleHostiles=9 units=27/29 ContactClearance overlaps=0 status=separated DamageStory=units 1/3 criticalSections=1 story=unit-1:right-arm-critical
+terrainReadability: samples 10000 texture=composite textureStrength=0.28 waterSurface=readable-overlay alpha=0.48 water=9392 shore=92 runway=110 dirt=11 textured=188 style=land-outline+runway-contrast+water-muted pathing=unchanged
 ```
 
 ## Suggested Three-Minute Use

@@ -26,7 +26,8 @@ namespace MC2Demo.BattleCore
         private const float UnitCollisionMechRadius = 64f;
         private const float UnitCollisionMaxPushPerPass = 42f;
         private const int UnitCollisionPasses = 4;
-        private const float ContactClearanceOverlapTolerance = 0.5f;
+        // Sidecar/reporting tolerance only; collision solving uses the radii and push constants above.
+        private const float ContactClearanceOverlapTolerance = 1.0f;
         private const float StructureCollisionPadding = 35f;
         private const float StructureCollisionMaxPushPerPass = 70f;
         private const float TerrainObjectCollisionMaxPushPerPass = 45f;

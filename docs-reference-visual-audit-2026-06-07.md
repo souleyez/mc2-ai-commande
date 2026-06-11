@@ -14,6 +14,37 @@ Capture outputs remain ignored under:
 analysis-output/reference-visual-captures/
 ```
 
+## PC4 Controlled Demo Evidence Refresh 2026-06-12
+
+PC4 refreshed the current controlled Windows demo evidence with:
+
+```powershell
+& "C:\Users\soulzyn\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoBuilder.BuildWindows64 -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-build-pc-evidence-package.log"
+& "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo\Builds\Windows\MC2UnityDemo.exe" -batchmode -nographics -mc2SmokeTest -mc2CommandFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\unity-mc2-demo\Assets\StreamingAssets\CommanderScripts\mc2_01-visible-flow-audit.txt" -logFile "C:\Users\soulzyn\Desktop\codex\mechcommander2-mc2\analysis-output\unity-player-pc-evidence-visible-flow.log"
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_reference_visuals.ps1 -Presets mechlab,spawn,airfield,hangar-contact,damage-demo,north-patrol
+```
+
+Validation status:
+
+- `analysis-output/unity-build-pc-evidence-package.log` reports `Build Finished, Result: Success` and `MC2 Unity demo Windows build OK`.
+- `analysis-output/unity-player-pc-evidence-visible-flow.log` reports `MC2 demo smoke test exiting with code 0`, debrief success, repair/Mech Lab actions and compact loadout review.
+- `capture_reference_visuals.ps1` reports `MC2 reference visual captures passed: 6 preset(s)`.
+- `ContactClearanceOverlapTolerance` is `1.0f` for sidecar reporting so sub-1-unit clearance jitter is treated as touching. This is evidence stabilization only; it does not change movement, collision solving, weapons or mission rules.
+- Unity scene fileID churn was restored before committing.
+
+Latest PC4 sidecar counts:
+
+| Preset | PNG Bytes | Mission Time | Active Hostiles | Visible Hostiles | Key Evidence |
+| --- | ---: | ---: | ---: | ---: | --- |
+| `mechlab` | 189706 | 0.25s | 0 | 0 | `layout=pressure-cards+whole-blocks+single-fillers`, `Fit OK`, H/W/G pressure, `CellState=OK OPEN4 OCC12 OCC!0 OOB0`, `noToggle=yes` |
+| `spawn` | 313106 | 1.24s | 0 | 0 | `FirstMapVisual status=ready`, 3 player units, targetable structure, separated contact |
+| `airfield` | 306827 | 13.12s | 12 | 8 | terrain/runway/water readable, `ContactClearance overlaps=0 status=separated` |
+| `hangar-contact` | 320171 | 21.12s | 20 | 16 | dense objective contact, `nearestHH ... clearance=0`, `overlaps=0`, `worstClearance=0`, `status=separated` |
+| `damage-demo` | 336712 | 39.09s | 20 | 16 | `left-arm-lost`, `legs-lost`, `cockpit-lost`, `pilotRisk=1`, `destroyedUnits=1` |
+| `north-patrol` | 387065 | 55.12s | 24 | 9 | wider patrol slice, `right-arm-critical`, `ContactClearance overlaps=0 status=separated` |
+
+PC4 visual judgment: the current Windows demo is ready as a controlled development demonstration. It proves readable terrain, sparse command UI, MechLab block fitting, dense contact without true overlap, section damage and relaunch flow. The screenshots may still use local private reference visuals and remain development evidence, not public-safe final art.
+
 ## Handoff Refresh 2026-06-07
 
 H4 refreshed the full evidence set with:
