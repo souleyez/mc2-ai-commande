@@ -226,8 +226,8 @@ Expected:
 Android smoke artifact hygiene check OK
 ```
 
-This guards ignored APK/AAB output and Android smoke logs/screenshots before
-real G3 device runs.
+This guards ignored APK/AAB output and Android smoke logs, screenshots and
+summary JSON before real G3 device runs.
 
 Device smoke
 ------------
@@ -278,12 +278,25 @@ through `aapt`, checks that exactly one authorized Android device is connected,
 installs the APK, launches it, waits briefly, captures logcat, an ignored
 `analysis-output\android-device-smoke.png` screenshot and an ignored
 `analysis-output\android-device-smoke-summary.json` summary, scans the log for
-strong crash markers, and fails if the package does not stay running.
+strong crash markers, validates the summary schema, and fails if the package
+does not stay running.
 
 Self-test the log scanner without a device:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_smoke_log.ps1 -SelfTest
+```
+
+Self-test the summary schema checker without a device:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_smoke_summary.ps1 -SelfTest
+```
+
+Expected:
+
+```text
+Android smoke summary check self-test OK
 ```
 
 Manual equivalent:
@@ -349,6 +362,7 @@ scripts\unity\check_android_apk_manifest.ps1 -> Android APK manifest check OK
 scripts\unity\check_android_apk_payload.ps1 -> Android APK payload check OK
 scripts\unity\check_android_apk_size_budget.ps1 -> Android APK size budget check OK
 scripts\unity\check_android_smoke_artifact_hygiene.ps1 -> Android smoke artifact hygiene check OK
+scripts\unity\check_android_smoke_summary.ps1 -SelfTest -> Android smoke summary check self-test OK
 scripts\unity\android_device_smoke.ps1 -PlanOnly -> ScreenshotCapture: True, Screenshot -> analysis-output\android-device-smoke.png
 scripts\unity\android_device_smoke.ps1 -PlanOnly -> SummaryWrite: True, Summary -> analysis-output\android-device-smoke-summary.json
 scripts\unity\check_android_device_preflight.ps1 -AllowNoDevice -> Android device smoke preflight waiting on device

@@ -424,6 +424,16 @@ if (-not $SkipSummary) {
     }
 
     Write-SmokeSummary -Path $SummaryPath -Data $summary
+
+    $summaryCheckScript = Join-Path $PSScriptRoot "check_android_smoke_summary.ps1"
+    if (-not (Test-Path -LiteralPath $summaryCheckScript)) {
+        throw "Missing Android smoke summary checker: $summaryCheckScript"
+    }
+
+    & powershell -NoProfile -ExecutionPolicy Bypass -File $summaryCheckScript -RepoRoot $RepoRoot -SummaryPath $SummaryPath -ExpectedPackageName $PackageName
+    if ($LASTEXITCODE -ne 0) {
+        throw "Android smoke summary check failed with exit code $LASTEXITCODE"
+    }
 }
 
 Write-Host "Android device smoke complete."

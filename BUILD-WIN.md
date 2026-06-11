@@ -128,8 +128,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_androi
 ```
 
 This checks tracked and staged paths plus `.gitignore` markers so Android smoke
-logs, screenshots and APK/AAB build outputs stay ignored until a real evidence
-drop is explicitly requested.
+logs, screenshots, summary JSON files and APK/AAB build outputs stay ignored
+until a real evidence drop is explicitly requested.
 
 Check the AI deputy contract without launching Unity or calling the model:
 
@@ -185,7 +185,7 @@ The current plan gate wraps handoff/readiness, Windows build freshness, demo
 source hygiene, Android smoke artifact hygiene, AI deputy contract, mobile command model, battle HUD sparse
 contract, Android SDK tooling, Android APK freshness, Android APK identity, Android APK
 compatibility, Android APK signing, Android APK manifest, Android APK payload,
-Android APK size budget and Android device-smoke preflight checks. With no
+Android APK size budget, Android smoke summary schema and Android device-smoke preflight checks. With no
 authorized phone connected it should still pass while reporting Android as
 waiting on device.
 
@@ -253,6 +253,18 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_androi
 The log scanner is used by the Android device smoke helper after logcat capture
 to fail on strong crash markers such as fatal exceptions, fatal signals, ANRs
 for the package, process death and forced activity finish.
+
+Self-test the Android smoke summary schema checker:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_smoke_summary.ps1 -SelfTest
+```
+
+The summary checker validates the ignored JSON fields, package name, timestamp,
+device/process values, evidence paths and execution flags. The real smoke helper
+runs this check immediately after writing the summary.
+
+Expected success string: `Android smoke summary check self-test OK`.
 
 Preview the Android device smoke plan without installing or launching:
 

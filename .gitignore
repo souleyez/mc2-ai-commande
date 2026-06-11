@@ -80,6 +80,7 @@ analysis-output/tgl-obj/
 analysis-output/unity-reference-art/
 analysis-output/*saved-account*.json
 analysis-output/*validator*.json
+analysis-output/android-device-smoke*.json
 analysis-output/*.png
 
 # Unity demo generated state

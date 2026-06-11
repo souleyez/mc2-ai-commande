@@ -117,6 +117,7 @@ $androidApkSizeBudgetScript = Resolve-RepoPath -RelativePath "scripts\unity\chec
 $androidPreflightScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_device_preflight.ps1"
 $androidSmokeScript = Resolve-RepoPath -RelativePath "scripts\unity\android_device_smoke.ps1"
 $androidLogScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_smoke_log.ps1"
+$androidSummaryScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_smoke_summary.ps1"
 
 $handoffArgs = @("-RepoRoot", $RepoRoot)
 
@@ -226,6 +227,12 @@ Invoke-GateStep `
     -ScriptPath $androidLogScript `
     -Arguments @("-SelfTest") `
     -RequiredMarkers @("Android smoke log check self-test OK.")
+
+Invoke-GateStep `
+    -Name "Android smoke summary parser gate" `
+    -ScriptPath $androidSummaryScript `
+    -Arguments @("-SelfTest") `
+    -RequiredMarkers @("Android smoke summary check self-test OK.")
 
 Invoke-GateStep `
     -Name "Android smoke plan gate" `

@@ -45,8 +45,10 @@ function Test-AndroidSmokeArtifactPath {
     $patterns = @(
         "analysis-output/android-device-smoke.log",
         "analysis-output/android-device-smoke*.log",
+        "analysis-output/android-device-smoke*.json",
         "analysis-output/android-device-smoke*.png",
         "analysis-output/*android*smoke*.log",
+        "analysis-output/*android*smoke*.json",
         "analysis-output/*android*smoke*.png",
         "unity-mc2-demo/Builds/Android/*",
         "*.apk",
@@ -115,6 +117,7 @@ else {
     $gitignore = Get-Content -LiteralPath $gitignorePath -Raw
     Assert-GitignoreContains -Text $gitignore -Markers @(
         "analysis-output/*.png",
+        "analysis-output/android-device-smoke*.json",
         "*.log",
         "*.apk",
         "*.aab",
