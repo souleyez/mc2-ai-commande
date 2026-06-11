@@ -110,6 +110,7 @@ $androidApkIdentityScript = Resolve-RepoPath -RelativePath "scripts\unity\check_
 $androidApkCompatibilityScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_apk_compatibility.ps1"
 $androidApkSigningScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_apk_signing.ps1"
 $androidApkManifestScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_apk_manifest.ps1"
+$androidApkPayloadScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_apk_payload.ps1"
 $androidPreflightScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_device_preflight.ps1"
 $androidSmokeScript = Resolve-RepoPath -RelativePath "scripts\unity\android_device_smoke.ps1"
 $androidLogScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_smoke_log.ps1"
@@ -183,6 +184,12 @@ Invoke-GateStep `
     -ScriptPath $androidApkManifestScript `
     -Arguments @("-RepoRoot", $RepoRoot) `
     -RequiredMarkers @("Android APK manifest check OK.")
+
+Invoke-GateStep `
+    -Name "Android APK payload gate" `
+    -ScriptPath $androidApkPayloadScript `
+    -Arguments @("-RepoRoot", $RepoRoot) `
+    -RequiredMarkers @("Android APK payload check OK.")
 
 Invoke-GateStep `
     -Name "Android device gate" `

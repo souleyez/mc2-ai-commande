@@ -14,7 +14,7 @@
 
 Mobile support remains the product priority, but `G3 Android Device Smoke` is waiting on a physical Android phone with USB debugging authorized. While that device blocker existed, this plan used PC demo optimization to keep the Windows demo moving.
 
-The current PC/mobile wait-state optimization pass is now sealed through PC26. This does not move G4/G5 mobile touch and performance ahead of G3; the next mobile gate still requires the physical authorized phone.
+The current PC/mobile wait-state optimization pass is now sealed through PC27. This does not move G4/G5 mobile touch and performance ahead of G3; the next mobile gate still requires the physical authorized phone.
 
 ## Definition Of Done
 
@@ -46,6 +46,7 @@ The current PC optimization pass is complete when:
 - Android APK compatibility can be checked before G3, proving min SDK, target SDK and native ABI metadata match the intended Android smoke target.
 - Android APK signing can be checked before G3, proving `apksigner verify` and APK Signature Scheme v2 pass before any device install.
 - Android APK manifest install-target metadata can be checked before G3, proving permissions stay expected, no required hardware features narrow install targets, and supported screens remain broad.
+- Android APK payload can be checked before G3, proving required Unity/IL2CPP native libraries and `assets/bin/Data` runtime files are present.
 - Sparse battle HUD can be checked without launching Unity through `check_battle_hud_sparse_contract.ps1`.
 - Demo source hygiene can be checked without launching Unity through `check_demo_source_hygiene.ps1`.
 - AI deputy contract can be checked without launching Unity or calling the model through `check_ai_deputy_contract.ps1`.
@@ -54,6 +55,7 @@ The current PC optimization pass is complete when:
 - Android APK compatibility can be checked without launching Unity through `check_android_apk_compatibility.ps1`.
 - Android APK signing can be checked without launching Unity through `check_android_apk_signing.ps1`.
 - Android APK manifest can be checked without launching Unity through `check_android_apk_manifest.ps1`.
+- Android APK payload can be checked without launching Unity through `check_android_apk_payload.ps1`.
 - No generated screenshot, JSON sidecar, log, Windows build output, APK/AAB, or private reference export is staged.
 
 ## Execution Gate Order
@@ -87,6 +89,7 @@ The current PC optimization pass is complete when:
 | PC24 | Done | Add Android APK compatibility check | Check min SDK, target SDK and native ABI match expected Android smoke compatibility metadata and wire it into G3 preflight/smoke helpers |
 | PC25 | Done | Add Android APK signing check | Check apksigner verification, APK Signature Scheme v2 and signer DN before G3 install/launch |
 | PC26 | Done | Add Android APK manifest check | Check permission allowlist, required hardware features and supported screens before G3 install/launch |
+| PC27 | Done | Add Android APK payload check | Check Unity/IL2CPP runtime payload and ABI folders before G3 install/launch |
 
 Do not open another PC polish gate from visual inspection alone. If the issue is collision, damage, command state or objective logic, first prove it in `BattleCore`.
 
@@ -992,7 +995,7 @@ git status --short --branch --untracked-files=all
 - Require `android.hardware.touchscreen` and `android.hardware.vulkan.version` to remain not-required features.
 - Require screen support for `small`, `normal`, `large`, and `xlarge`.
 - Wire manifest checking into `check_android_device_preflight.ps1`, `android_device_smoke.ps1`, and `check_current_plan_gate.ps1`.
-- Update handoff, mobile and evidence docs to keep the current PC/mobile wait-state status sealed through PC26.
+- Update handoff, mobile and evidence docs to keep the then-current PC/mobile wait-state status aligned with the manifest checkpoint.
 
 **Acceptance:**
 
@@ -1020,6 +1023,46 @@ git status --short --branch --untracked-files=all
 ```
 
 **Commit:** `Add Android APK manifest check`
+
+## Completed Target: PC27 Add Android APK Payload Check
+
+**Goal:** 在 G3 真机仍不可用时，不提前做 G4/G5；把 Android APK 的 Unity/IL2CPP 运行载荷做成机器检查，避免设备到位后才发现 APK 缺 native library、`assets/bin/Data` 或 ABI 目录异常。
+
+**Scope:**
+
+- Add `scripts/unity/check_android_apk_payload.ps1`.
+- Read the APK as a zip without launching Unity.
+- Require one ABI folder: `arm64-v8a`.
+- Require the core APK entries, IL2CPP native libraries, Unity metadata and scene/runtime data entries.
+- Fail if `assets/bin/Data` or `lib` entries look truncated.
+- Wire payload checking into `check_android_device_preflight.ps1`, `android_device_smoke.ps1`, and `check_current_plan_gate.ps1`.
+- Update handoff, mobile and evidence docs to keep the current PC/mobile wait-state status sealed through PC27.
+
+**Acceptance:**
+
+- The Android APK payload checker fails if the APK is missing.
+- It fails if ABI folders drift from `arm64-v8a`.
+- It fails if required native libraries or Unity data files are missing.
+- It fails if data/native entry counts look too small for the Unity player output.
+- `check_android_device_preflight.ps1 -AllowNoDevice` checks APK payload before reporting the expected waiting-on-device state.
+- `android_device_smoke.ps1 -PlanOnly` and real device smoke reject payload drift before install/launch.
+- `check_current_plan_gate.ps1` includes an explicit Android APK payload gate.
+- No APK, log or generated output is staged.
+
+**Validation:**
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_apk_payload.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_device_preflight.ps1 -AllowNoDevice
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\android_device_smoke.ps1 -PlanOnly
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_current_plan_gate.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_controlled_demo_handoff.ps1 -RunReadiness
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_mobile_command_model_preflight.ps1
+git diff --check
+git status --short --branch --untracked-files=all
+```
+
+**Commit:** `Add Android APK payload check`
 
 ## Stop Conditions
 

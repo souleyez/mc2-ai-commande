@@ -121,6 +121,20 @@ if ($LASTEXITCODE -ne 0) {
     throw "Android APK manifest check failed with exit code $LASTEXITCODE"
 }
 
+$apkPayloadScript = Join-Path $PSScriptRoot "check_android_apk_payload.ps1"
+if (-not (Test-Path -LiteralPath $apkPayloadScript)) {
+    throw "Missing Android APK payload checker: $apkPayloadScript"
+}
+
+$payloadOutput = & powershell -NoProfile -ExecutionPolicy Bypass -File $apkPayloadScript -RepoRoot $RepoRoot -ApkPath $ApkPath 2>&1
+if ($LASTEXITCODE -ne 0) {
+    foreach ($line in @($payloadOutput | ForEach-Object { $_.ToString() })) {
+        Write-Host $line
+    }
+
+    throw "Android APK payload check failed with exit code $LASTEXITCODE"
+}
+
 function Get-ApkMetadata {
     param(
         [string]$Apk,

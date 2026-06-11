@@ -327,6 +327,32 @@ else {
     }
 }
 
+$apkPayloadScript = Join-Path $PSScriptRoot "check_android_apk_payload.ps1"
+if (-not (Test-Path -LiteralPath $apkPayloadScript)) {
+    Add-Failure "Missing Android APK payload checker: $apkPayloadScript"
+}
+else {
+    $payloadResult = Invoke-NativeCommand -FilePath "powershell" -Arguments @(
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        $apkPayloadScript,
+        "-RepoRoot",
+        $RepoRoot,
+        "-ApkPath",
+        $ApkPath
+    )
+
+    $payloadOutput = $payloadResult.Output -join " "
+    if ($payloadResult.ExitCode -ne 0 -or $payloadOutput -notlike "*Android APK payload check OK.*") {
+        Add-Failure "Android APK payload preflight failed: $payloadOutput"
+    }
+    else {
+        Add-Row -Check "APK payload" -Status "OK" -Detail "Android APK payload check OK."
+    }
+}
+
 if (Test-Path -LiteralPath $AdbPath) {
     $devices = @(Get-AdbDevices -Adb $AdbPath)
     if ($devices.Count -eq 0) {
