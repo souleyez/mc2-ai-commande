@@ -218,6 +218,18 @@ handoff docs.
 
 Expected success string: `PC capture preset contract check OK`.
 
+Check the PC capture artifact hygiene without launching Unity:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_pc_capture_artifact_hygiene.ps1
+```
+
+This checks that local reference screenshots, JSON sidecars, capture logs and
+visual sanity self-test images remain ignored generated evidence and are absent
+from tracked or staged source paths.
+
+Expected success string: `PC capture artifact hygiene check OK`.
+
 Check the current plan gate without launching Unity:
 
 ```powershell
@@ -226,7 +238,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_curren
 
 The current plan gate wraps handoff/readiness, Windows build freshness, demo
 source hygiene, Android smoke artifact hygiene, AI deputy contract, mobile command model, battle HUD sparse
-contract, PC visual capture sanity, PC visual capture sanity self-test, PC capture sidecar schema, PC capture preset contract, Android SDK tooling, Android APK freshness, Android APK identity, Android APK
+contract, PC visual capture sanity, PC visual capture sanity self-test, PC capture sidecar schema, PC capture preset contract, PC capture artifact hygiene, Android SDK tooling, Android APK freshness, Android APK identity, Android APK
 compatibility, Android APK signing, Android APK manifest, Android APK payload,
 Android APK size budget, Android smoke summary schema, Android device-smoke preflight, Android smoke plan/preflight consistency, Android G3 readiness and Android G3 device requirement checks. The device preflight also runs the summary schema self-test. With no
 authorized phone connected it should still pass while reporting Android as
@@ -390,6 +402,7 @@ Expected success strings:
 - `PC visual capture sanity self-test OK`
 - `PC capture sidecar schema check OK`
 - `PC capture preset contract check OK`
+- `PC capture artifact hygiene check OK`
 - `Current plan gate check OK`
 - `Android SDK tooling check OK`
 - `Android APK compatibility check OK`

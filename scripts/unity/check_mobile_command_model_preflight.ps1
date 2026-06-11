@@ -172,7 +172,7 @@ Assert-FileContains -RelativePath "unity-mc2-demo\Assets\Scripts\Presentation\Mc
 )
 
 Assert-FileContains -RelativePath "README.md" -Markers @(
-    "PC1-PC41",
+    "PC1-PC42",
     "check_mobile_command_model_preflight.ps1"
 )
 
@@ -182,13 +182,13 @@ Assert-FileContains -RelativePath "BUILD-WIN.md" -Markers @(
 )
 
 Assert-FileContains -RelativePath "docs-ai-rts-commander-current-master-plan-2026-06-07.md" -Markers @(
-    "PC1-PC41",
+    "PC1-PC42",
     "Add mobile command model preflight",
     "check_mobile_command_model_preflight.ps1"
 )
 
 Assert-FileContains -RelativePath "docs-ai-rts-commander-current-detailed-plan-2026-06-07.md" -Markers @(
-    "PC1-PC41",
+    "PC1-PC42",
     "PC12: Add Mobile Command Model Preflight",
     "No drag-box selection.",
     "check_mobile_command_model_preflight.ps1"

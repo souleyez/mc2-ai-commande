@@ -14,7 +14,7 @@
 
 Mobile support remains the product priority, but `G3 Android Device Smoke` is waiting on a physical Android phone with USB debugging authorized. While that device blocker existed, this plan used PC demo optimization to keep the Windows demo moving.
 
-The current PC/mobile wait-state optimization pass is now sealed through PC41. This does not move G4/G5 mobile touch and performance ahead of G3; the next mobile gate still requires the physical authorized phone.
+The current PC/mobile wait-state optimization pass is now sealed through PC42. This does not move G4/G5 mobile touch and performance ahead of G3; the next mobile gate still requires the physical authorized phone.
 
 ## Definition Of Done
 
@@ -38,7 +38,7 @@ The current PC optimization pass is complete when:
 - Android device-smoke readiness can be checked without installing or launching the app, and can explicitly stop at waiting-on-device when no phone is connected.
 - PC core playable contract can be checked by one script that runs the Unity/BattleCore validator and requires command-state, solo-return, Jet, occupancy, damage/ejection and debrief/relaunch coverage.
 - Mobile command model preflight can be checked without launching Unity, proving the current PC command surface still maps to status rows, Jet, map/bay/system, compact objective, sparse HUD and MechLab no-toggle fitting.
-- Current plan gate can be checked by one script that wraps handoff/readiness, Windows build freshness, demo source hygiene, AI deputy contract, mobile command model, battle HUD sparse contract, PC visual capture sanity, PC visual capture sanity self-test, PC capture sidecar schema, PC capture preset contract and Android device-smoke preflight state.
+- Current plan gate can be checked by one script that wraps handoff/readiness, Windows build freshness, demo source hygiene, AI deputy contract, mobile command model, battle HUD sparse contract, PC visual capture sanity, PC visual capture sanity self-test, PC capture sidecar schema, PC capture preset contract, PC capture artifact hygiene and Android device-smoke preflight state.
 - Android device smoke scans captured logcat for strong crash markers before accepting a real-device launch.
 - Android device smoke can be previewed with `-PlanOnly` without a connected phone.
 - Android SDK tooling can be checked before G3, proving Unity's AndroidPlayer SDK, NDK, OpenJDK, build tools, platform and command-line tools are present.
@@ -61,6 +61,7 @@ The current PC optimization pass is complete when:
 - PC visual capture sanity self-test can be checked without launching Unity, proving the gate distinguishes valid, flat and magenta fallback sample images.
 - PC capture sidecar schema can be checked without launching Unity, proving the six controlled-demo JSON sidecars keep matching screenshot paths, expected dimensions, flow state, camera state, summary fields and reference-asset metadata.
 - PC capture preset contract can be checked without launching Unity, proving the standard six controlled-demo presets remain `mechlab,spawn,airfield,hangar-contact,damage-demo,north-patrol` across capture generation, evidence, visual sanity, sidecar schema and handoff docs.
+- PC capture artifact hygiene can be checked without launching Unity, proving local reference screenshots, JSON sidecars, capture logs and visual sanity self-test images remain ignored generated evidence and are absent from tracked/staged source paths.
 - Sparse battle HUD can be checked without launching Unity through `check_battle_hud_sparse_contract.ps1`.
 - Demo source hygiene can be checked without launching Unity through `check_demo_source_hygiene.ps1`.
 - AI deputy contract can be checked without launching Unity or calling the model through `check_ai_deputy_contract.ps1`.
@@ -84,6 +85,7 @@ The current PC optimization pass is complete when:
 - PC visual capture sanity thresholds can be self-tested without launching Unity through `check_pc_visual_capture_sanity.ps1 -SelfTest`, reporting `PC visual capture sanity self-test OK`.
 - PC capture sidecar schema can be checked without launching Unity through `check_pc_capture_sidecar_schema.ps1`, reporting `PC capture sidecar schema check OK`.
 - PC capture preset contract can be checked without launching Unity through `check_pc_capture_preset_contract.ps1`, reporting `PC capture preset contract check OK`.
+- PC capture artifact hygiene can be checked without launching Unity through `check_pc_capture_artifact_hygiene.ps1`, reporting `PC capture artifact hygiene check OK`.
 - No generated screenshot, JSON sidecar, log, Windows build output, APK/AAB, or private reference export is staged.
 
 ## Execution Gate Order
@@ -132,6 +134,7 @@ The current PC optimization pass is complete when:
 | PC39 | Done | Add PC visual capture sanity self-test | The visual sanity gate proves it detects valid, flat and magenta fallback sample images |
 | PC40 | Done | Add PC capture sidecar schema check | Six controlled-demo JSON sidecars keep matching screenshot paths, flow, camera, summary fields and reference-asset metadata |
 | PC41 | Done | Add PC capture preset contract check | The standard six controlled-demo presets stay consistent across capture, evidence, sanity, schema and docs |
+| PC42 | Done | Add PC capture artifact hygiene check | Local reference screenshots, sidecars, logs and visual sanity self-test outputs remain ignored and absent from tracked/staged source paths |
 
 Do not open another PC polish gate from visual inspection alone. If the issue is collision, damage, command state or objective logic, first prove it in `BattleCore`.
 
@@ -1566,7 +1569,7 @@ git status --short --branch --untracked-files=all
 - Add `scripts/unity/check_pc_capture_preset_contract.ps1`.
 - Check the standard preset list across capture helper, evidence checker, visual sanity checker, sidecar schema checker, README, BUILD-WIN and this PC plan.
 - Wire the checker into `check_current_plan_gate.ps1`.
-- Update handoff, mobile and evidence docs to keep the current PC/mobile wait-state status sealed through PC41.
+- Update handoff, mobile and evidence docs to keep the then-current PC/mobile wait-state status sealed.
 
 **Acceptance:**
 
@@ -1588,6 +1591,40 @@ git status --short --branch --untracked-files=all
 ```
 
 **Commit:** `Add PC capture preset contract check`
+
+## Completed Target: PC42 Add PC Capture Artifact Hygiene Check
+
+**Goal:** 在 G3 真机仍不可用时，不提前做 G4/G5；把本地重采集截图带来的生成物边界做成独立门禁，避免 `analysis-output\reference-visual-captures`、no-placeholders 截图或 PC 视觉 sanity 自测图误进 tracked/staged 源码。
+
+**Scope:**
+
+- Add `scripts/unity/check_pc_capture_artifact_hygiene.ps1`.
+- Check tracked and staged git paths for PC capture artifact directories.
+- Check `.gitignore` contains the reference capture, no-placeholders capture, PC visual sanity self-test, PNG and log markers.
+- Check existing local PC capture artifacts are ignored by git.
+- Wire the checker into `check_current_plan_gate.ps1`.
+- Update handoff, mobile and evidence docs to keep the current PC/mobile wait-state status sealed through PC42.
+
+**Acceptance:**
+
+- `check_pc_capture_artifact_hygiene.ps1` prints `PC capture artifact hygiene check OK`.
+- `check_current_plan_gate.ps1` includes an explicit PC capture artifact hygiene gate.
+- `check_controlled_demo_handoff.ps1 -RunReadiness` includes the script and docs markers.
+- No screenshot, sidecar, log, APK or build output is staged.
+
+**Validation:**
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_pc_capture_artifact_hygiene.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_current_plan_gate.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_controlled_demo_handoff.ps1 -RunReadiness
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_mobile_command_model_preflight.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_demo_source_hygiene.ps1
+git diff --check
+git status --short --branch --untracked-files=all
+```
+
+**Commit:** `Add PC capture artifact hygiene check`
 
 ## Stop Conditions
 

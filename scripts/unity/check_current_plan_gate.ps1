@@ -109,6 +109,7 @@ $battleHudScript = Resolve-RepoPath -RelativePath "scripts\unity\check_battle_hu
 $pcVisualCaptureSanityScript = Resolve-RepoPath -RelativePath "scripts\unity\check_pc_visual_capture_sanity.ps1"
 $pcCaptureSidecarSchemaScript = Resolve-RepoPath -RelativePath "scripts\unity\check_pc_capture_sidecar_schema.ps1"
 $pcCapturePresetContractScript = Resolve-RepoPath -RelativePath "scripts\unity\check_pc_capture_preset_contract.ps1"
+$pcCaptureArtifactHygieneScript = Resolve-RepoPath -RelativePath "scripts\unity\check_pc_capture_artifact_hygiene.ps1"
 $androidSdkToolingScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_sdk_tooling.ps1"
 $androidApkFreshnessScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_apk_freshness.ps1"
 $androidApkIdentityScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_apk_identity.ps1"
@@ -194,6 +195,12 @@ Invoke-GateStep `
     -ScriptPath $pcCapturePresetContractScript `
     -Arguments @("-RepoRoot", $RepoRoot) `
     -RequiredMarkers @("PC capture preset contract check OK.")
+
+Invoke-GateStep `
+    -Name "PC capture artifact hygiene gate" `
+    -ScriptPath $pcCaptureArtifactHygieneScript `
+    -Arguments @("-RepoRoot", $RepoRoot) `
+    -RequiredMarkers @("PC capture artifact hygiene check OK.")
 
 Invoke-GateStep `
     -Name "Android SDK tooling gate" `
