@@ -119,6 +119,7 @@ Assert-ScriptExists -RelativePath "scripts\unity\check_ai_deputy_contract.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_android_device_preflight.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_android_apk_freshness.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_android_apk_identity.ps1"
+Assert-ScriptExists -RelativePath "scripts\unity\check_android_apk_compatibility.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\android_device_smoke.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_pc_core_playable_contract.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_mobile_command_model_preflight.ps1"
@@ -129,12 +130,13 @@ Assert-ScriptExists -RelativePath "scripts\content-pack\check_controlled_demo_pu
 
 Assert-FileContains -RelativePath "README.md" -Markers @(
     "AI RTS Commander Lab",
-    "PC1-PC23",
+    "PC1-PC24",
     "check_controlled_demo_handoff.ps1",
     "check_windows_demo_build_freshness.ps1",
     "check_demo_source_hygiene.ps1",
     "check_ai_deputy_contract.ps1",
     "check_android_device_preflight.ps1",
+    "check_android_apk_compatibility.ps1",
     "android_device_smoke.ps1",
     "check_pc_core_playable_contract.ps1",
     "check_mobile_command_model_preflight.ps1",
@@ -162,6 +164,7 @@ Assert-FileContains -RelativePath "BUILD-WIN.md" -Markers @(
     "Android device smoke plan OK",
     "Android APK freshness",
     "Android APK identity",
+    "Android APK compatibility",
     "check_controlled_demo_handoff.ps1",
     "Controlled demo handoff consistency check OK",
     "check_demo_source_hygiene.ps1",
@@ -175,14 +178,16 @@ Assert-FileContains -RelativePath "BUILD-MOBILE.md" -Markers @(
     "check_android_device_preflight.ps1",
     "check_android_apk_freshness.ps1",
     "check_android_apk_identity.ps1",
+    "check_android_apk_compatibility.ps1",
     "Android APK freshness check OK",
     "Android APK identity check OK",
+    "Android APK compatibility check OK",
     "Android device smoke preflight waiting on device",
     "android_device_smoke.ps1"
 )
 
 Assert-FileContains -RelativePath "docs-ai-rts-commander-current-master-plan-2026-06-07.md" -Markers @(
-    "PC1-PC23",
+    "PC1-PC24",
     "Add controlled demo handoff consistency check",
     "Add demo source hygiene check",
     "Add AI deputy contract check",
@@ -191,6 +196,7 @@ Assert-FileContains -RelativePath "docs-ai-rts-commander-current-master-plan-202
     "Add controlled demo capture log freshness check",
     "Add Android APK freshness check",
     "Add Android APK identity check",
+    "Add Android APK compatibility check",
     "Add Android device smoke preflight",
     "Add PC core playable contract check",
     "Add mobile command model preflight",
@@ -208,12 +214,13 @@ Assert-FileContains -RelativePath "docs-ai-rts-commander-current-master-plan-202
     "check_current_plan_gate.ps1",
     "check_android_apk_freshness.ps1",
     "check_android_apk_identity.ps1",
+    "check_android_apk_compatibility.ps1",
     "check_android_smoke_log.ps1",
     "android_device_smoke.ps1"
 )
 
 Assert-FileContains -RelativePath "docs-ai-rts-commander-current-detailed-plan-2026-06-07.md" -Markers @(
-    "PC1-PC23",
+    "PC1-PC24",
     "Add controlled demo handoff consistency check",
     "Add demo source hygiene check",
     "Add AI deputy contract check",
@@ -222,6 +229,7 @@ Assert-FileContains -RelativePath "docs-ai-rts-commander-current-detailed-plan-2
     "Add controlled demo capture log freshness check",
     "Add Android APK freshness check",
     "Add Android APK identity check",
+    "Add Android APK compatibility check",
     "Add Android device smoke preflight",
     "Add PC core playable contract check",
     "Add mobile command model preflight",
@@ -239,12 +247,13 @@ Assert-FileContains -RelativePath "docs-ai-rts-commander-current-detailed-plan-2
     "check_current_plan_gate.ps1",
     "check_android_apk_freshness.ps1",
     "check_android_apk_identity.ps1",
+    "check_android_apk_compatibility.ps1",
     "check_android_smoke_log.ps1",
     "android_device_smoke.ps1"
 )
 
 Assert-FileContains -RelativePath "docs-pc-optimization-plan-2026-06-11.md" -Markers @(
-    "sealed through PC23",
+    "sealed through PC24",
     "Add controlled demo handoff consistency check",
     "Add demo source hygiene check",
     "Add AI deputy contract check",
@@ -253,6 +262,7 @@ Assert-FileContains -RelativePath "docs-pc-optimization-plan-2026-06-11.md" -Mar
     "Add controlled demo capture log freshness check",
     "Add Android APK freshness check",
     "Add Android APK identity check",
+    "Add Android APK compatibility check",
     "Add Android device smoke preflight",
     "Add PC core playable contract check",
     "Add mobile command model preflight",
@@ -266,6 +276,7 @@ Assert-FileContains -RelativePath "docs-pc-optimization-plan-2026-06-11.md" -Mar
     "check_ai_deputy_contract.ps1",
     "check_android_apk_freshness.ps1",
     "check_android_apk_identity.ps1",
+    "check_android_apk_compatibility.ps1",
     "check_battle_hud_sparse_contract.ps1"
 )
 
@@ -276,6 +287,7 @@ Assert-FileContains -RelativePath "docs-playable-demo-investor-evidence-2026-06-
     "Capture log freshness",
     "Android APK freshness",
     "Android APK identity",
+    "Android APK compatibility",
     "AI deputy contract",
     "PC core playable contract",
     "Mobile command model preflight",
@@ -296,11 +308,13 @@ Assert-FileContains -RelativePath "docs-playable-demo-investor-evidence-2026-06-
     "android_device_smoke.ps1",
     "check_android_apk_freshness.ps1",
     "check_android_apk_identity.ps1",
+    "check_android_apk_compatibility.ps1",
     "check_controlled_demo_handoff.ps1"
 )
 
 Assert-FileContains -RelativePath "docs-machine-handoff-plan-2026-06-07.md" -Markers @(
-    "PC1-PC23",
+    "PC1-PC24",
+    "Add Android APK compatibility check",
     "Add Android APK identity check",
     "Add Android APK freshness check",
     "Add controlled demo capture log freshness check",
@@ -316,6 +330,7 @@ Assert-FileContains -RelativePath "docs-machine-handoff-plan-2026-06-07.md" -Mar
     "android_device_smoke.ps1",
     "check_android_apk_freshness.ps1",
     "check_android_apk_identity.ps1",
+    "check_android_apk_compatibility.ps1",
     "check_android_device_preflight.ps1",
     "check_controlled_demo_handoff.ps1",
     "check_controlled_demo_readiness.ps1"

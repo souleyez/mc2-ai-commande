@@ -74,6 +74,20 @@ if ($LASTEXITCODE -ne 0) {
     throw "Android APK identity check failed with exit code $LASTEXITCODE"
 }
 
+$apkCompatibilityScript = Join-Path $PSScriptRoot "check_android_apk_compatibility.ps1"
+if (-not (Test-Path -LiteralPath $apkCompatibilityScript)) {
+    throw "Missing Android APK compatibility checker: $apkCompatibilityScript"
+}
+
+$compatibilityOutput = & powershell -NoProfile -ExecutionPolicy Bypass -File $apkCompatibilityScript -RepoRoot $RepoRoot -ApkPath $ApkPath -AaptPath $AaptPath 2>&1
+if ($LASTEXITCODE -ne 0) {
+    foreach ($line in @($compatibilityOutput | ForEach-Object { $_.ToString() })) {
+        Write-Host $line
+    }
+
+    throw "Android APK compatibility check failed with exit code $LASTEXITCODE"
+}
+
 function Get-ApkMetadata {
     param(
         [string]$Apk,

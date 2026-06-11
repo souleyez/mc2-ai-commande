@@ -231,6 +231,34 @@ else {
     }
 }
 
+$apkCompatibilityScript = Join-Path $PSScriptRoot "check_android_apk_compatibility.ps1"
+if (-not (Test-Path -LiteralPath $apkCompatibilityScript)) {
+    Add-Failure "Missing Android APK compatibility checker: $apkCompatibilityScript"
+}
+else {
+    $compatibilityResult = Invoke-NativeCommand -FilePath "powershell" -Arguments @(
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        $apkCompatibilityScript,
+        "-RepoRoot",
+        $RepoRoot,
+        "-ApkPath",
+        $ApkPath,
+        "-AaptPath",
+        $AaptPath
+    )
+
+    $compatibilityOutput = $compatibilityResult.Output -join " "
+    if ($compatibilityResult.ExitCode -ne 0 -or $compatibilityOutput -notlike "*Android APK compatibility check OK.*") {
+        Add-Failure "Android APK compatibility preflight failed: $compatibilityOutput"
+    }
+    else {
+        Add-Row -Check "APK compatibility" -Status "OK" -Detail "Android APK compatibility check OK."
+    }
+}
+
 if (Test-Path -LiteralPath $AdbPath) {
     $devices = @(Get-AdbDevices -Adb $AdbPath)
     if ($devices.Count -eq 0) {
