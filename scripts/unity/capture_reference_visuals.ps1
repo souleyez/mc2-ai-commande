@@ -1,7 +1,7 @@
 param(
     [string]$RepoRoot = "",
     [string]$OutputDir = "",
-    [string[]]$Presets = @("spawn", "airfield", "hangar-contact", "north-patrol", "damage-demo"),
+    [string[]]$Presets = @("mechlab", "spawn", "airfield", "hangar-contact", "damage-demo", "north-patrol"),
     [int]$Width = 1280,
     [int]$Height = 720,
     [int]$CaptureTimeoutSeconds = 75,

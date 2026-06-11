@@ -205,6 +205,19 @@ fields, and reference-asset metadata.
 
 Expected success string: `PC capture sidecar schema check OK`.
 
+Check the PC capture preset contract without launching Unity:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_pc_capture_preset_contract.ps1
+```
+
+This checks that the standard controlled-demo preset list remains
+`mechlab,spawn,airfield,hangar-contact,damage-demo,north-patrol` across the
+capture helper, evidence checks, visual sanity checks, sidecar schema checks and
+handoff docs.
+
+Expected success string: `PC capture preset contract check OK`.
+
 Check the current plan gate without launching Unity:
 
 ```powershell
@@ -213,7 +226,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_curren
 
 The current plan gate wraps handoff/readiness, Windows build freshness, demo
 source hygiene, Android smoke artifact hygiene, AI deputy contract, mobile command model, battle HUD sparse
-contract, PC visual capture sanity, PC visual capture sanity self-test, PC capture sidecar schema, Android SDK tooling, Android APK freshness, Android APK identity, Android APK
+contract, PC visual capture sanity, PC visual capture sanity self-test, PC capture sidecar schema, PC capture preset contract, Android SDK tooling, Android APK freshness, Android APK identity, Android APK
 compatibility, Android APK signing, Android APK manifest, Android APK payload,
 Android APK size budget, Android smoke summary schema, Android device-smoke preflight, Android smoke plan/preflight consistency, Android G3 readiness and Android G3 device requirement checks. The device preflight also runs the summary schema self-test. With no
 authorized phone connected it should still pass while reporting Android as
@@ -376,6 +389,7 @@ Expected success strings:
 - `PC visual capture sanity check OK`
 - `PC visual capture sanity self-test OK`
 - `PC capture sidecar schema check OK`
+- `PC capture preset contract check OK`
 - `Current plan gate check OK`
 - `Android SDK tooling check OK`
 - `Android APK compatibility check OK`
