@@ -149,6 +149,21 @@ This uses `apksigner verify --verbose --print-certs`, requires APK Signature
 Scheme v2 verification, and confirms the current debug signer DN
 `C=US, O=Android, CN=Android Debug`.
 
+Check that the Android APK manifest keeps install targets broad enough for G3:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_apk_manifest.ps1
+```
+
+Expected:
+
+```text
+Android APK manifest check OK
+```
+
+This checks the current permission allowlist, rejects required hardware
+features, and confirms `small`, `normal`, `large`, and `xlarge` screen support.
+
 Device smoke
 ------------
 
@@ -167,7 +182,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_androi
 The strict form requires one authorized Android device. The waiting-state form
 still checks the APK, Android APK freshness, Android APK identity, Android APK
 compatibility, Android APK signing, adb, aapt, apksigner, package name and
-launchable activity, then reports that G3 is waiting on a device.
+launchable activity, APK manifest install-target metadata, then reports that G3
+is waiting on a device.
 
 After preflight passes with a real device, install and collect logs:
 
@@ -187,7 +203,7 @@ Expected:
 Android device smoke plan OK
 ```
 
-The helper verifies APK freshness, identity, compatibility and signing,
+The helper verifies APK freshness, identity, compatibility, signing and manifest,
 discovers the APK package name through `aapt`, checks that exactly one
 authorized Android device is connected, installs the APK, launches it, waits
 briefly, captures logcat, scans the log for strong crash markers, and fails if
@@ -256,6 +272,7 @@ scripts\unity\check_android_apk_freshness.ps1 -> Android APK freshness check OK
 scripts\unity\check_android_apk_identity.ps1 -> Android APK identity check OK
 scripts\unity\check_android_apk_compatibility.ps1 -> Android APK compatibility check OK
 scripts\unity\check_android_apk_signing.ps1 -> Android APK signing check OK
+scripts\unity\check_android_apk_manifest.ps1 -> Android APK manifest check OK
 scripts\unity\check_android_device_preflight.ps1 -AllowNoDevice -> Android device smoke preflight waiting on device
 ```
 

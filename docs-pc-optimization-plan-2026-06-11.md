@@ -14,7 +14,7 @@
 
 Mobile support remains the product priority, but `G3 Android Device Smoke` is waiting on a physical Android phone with USB debugging authorized. While that device blocker existed, this plan used PC demo optimization to keep the Windows demo moving.
 
-The current PC/mobile wait-state optimization pass is now sealed through PC25. This does not move G4/G5 mobile touch and performance ahead of G3; the next mobile gate still requires the physical authorized phone.
+The current PC/mobile wait-state optimization pass is now sealed through PC26. This does not move G4/G5 mobile touch and performance ahead of G3; the next mobile gate still requires the physical authorized phone.
 
 ## Definition Of Done
 
@@ -45,6 +45,7 @@ The current PC optimization pass is complete when:
 - Android APK identity can be checked before G3, proving the package name and launch activity match the install/launch commands.
 - Android APK compatibility can be checked before G3, proving min SDK, target SDK and native ABI metadata match the intended Android smoke target.
 - Android APK signing can be checked before G3, proving `apksigner verify` and APK Signature Scheme v2 pass before any device install.
+- Android APK manifest install-target metadata can be checked before G3, proving permissions stay expected, no required hardware features narrow install targets, and supported screens remain broad.
 - Sparse battle HUD can be checked without launching Unity through `check_battle_hud_sparse_contract.ps1`.
 - Demo source hygiene can be checked without launching Unity through `check_demo_source_hygiene.ps1`.
 - AI deputy contract can be checked without launching Unity or calling the model through `check_ai_deputy_contract.ps1`.
@@ -52,6 +53,7 @@ The current PC optimization pass is complete when:
 - Android APK identity can be checked without launching Unity through `check_android_apk_identity.ps1`.
 - Android APK compatibility can be checked without launching Unity through `check_android_apk_compatibility.ps1`.
 - Android APK signing can be checked without launching Unity through `check_android_apk_signing.ps1`.
+- Android APK manifest can be checked without launching Unity through `check_android_apk_manifest.ps1`.
 - No generated screenshot, JSON sidecar, log, Windows build output, APK/AAB, or private reference export is staged.
 
 ## Execution Gate Order
@@ -84,6 +86,7 @@ The current PC optimization pass is complete when:
 | PC23 | Done | Add Android APK identity check | Check package name and launch activity match expected G3 install/launch identity and wire it into G3 preflight/smoke helpers |
 | PC24 | Done | Add Android APK compatibility check | Check min SDK, target SDK and native ABI match expected Android smoke compatibility metadata and wire it into G3 preflight/smoke helpers |
 | PC25 | Done | Add Android APK signing check | Check apksigner verification, APK Signature Scheme v2 and signer DN before G3 install/launch |
+| PC26 | Done | Add Android APK manifest check | Check permission allowlist, required hardware features and supported screens before G3 install/launch |
 
 Do not open another PC polish gate from visual inspection alone. If the issue is collision, damage, command state or objective logic, first prove it in `BattleCore`.
 
@@ -904,7 +907,7 @@ git status --short --branch --untracked-files=all
 - Require `targetSdkVersion` 36.
 - Require native ABI `arm64-v8a`.
 - Wire compatibility into `check_android_device_preflight.ps1`, `android_device_smoke.ps1`, and `check_current_plan_gate.ps1`.
-- Update handoff, mobile and evidence docs to keep the current PC/mobile wait-state status sealed through PC25.
+- Update handoff, mobile and evidence docs to keep the compatibility pass aligned with the then-current PC/mobile wait-state status.
 
 **Acceptance:**
 
@@ -945,7 +948,7 @@ git status --short --branch --untracked-files=all
 - Require the current debug signer DN `C=US, O=Android, CN=Android Debug`.
 - Record the signer SHA-256 digest for visibility without locking it as a cross-machine requirement.
 - Wire signing into `check_android_device_preflight.ps1`, `android_device_smoke.ps1`, and `check_current_plan_gate.ps1`.
-- Update handoff, mobile and evidence docs to keep the current PC/mobile wait-state status sealed through PC25.
+- Update handoff, mobile and evidence docs to keep the signing pass aligned with the then-current PC/mobile wait-state status.
 
 **Acceptance:**
 
@@ -973,6 +976,50 @@ git status --short --branch --untracked-files=all
 ```
 
 **Commit:** `Add Android APK signing check`
+
+## Completed Target: PC26 Add Android APK Manifest Check
+
+**Goal:** 在 G3 真机仍不可用时，不提前做 G4/G5；把 Android 安装前的 APK manifest 安装范围做成机器检查，避免设备到位后才发现权限、硬件 feature 或屏幕支持配置漂移。
+
+**Scope:**
+
+- Add `scripts/unity/check_android_apk_manifest.ps1`.
+- Read APK badging through Unity Android SDK `aapt`.
+- Require permissions to stay within the current allowlist:
+  - `android.permission.INTERNET`
+  - `com.DefaultCompany.unitymc2demo.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`
+- Fail if any required hardware feature appears.
+- Require `android.hardware.touchscreen` and `android.hardware.vulkan.version` to remain not-required features.
+- Require screen support for `small`, `normal`, `large`, and `xlarge`.
+- Wire manifest checking into `check_android_device_preflight.ps1`, `android_device_smoke.ps1`, and `check_current_plan_gate.ps1`.
+- Update handoff, mobile and evidence docs to keep the current PC/mobile wait-state status sealed through PC26.
+
+**Acceptance:**
+
+- The Android APK manifest checker fails if `aapt` cannot read APK badging.
+- It fails if unexpected permissions appear or expected permissions disappear.
+- It fails if any required hardware feature appears.
+- It fails unless touchscreen and Vulkan are not-required features.
+- It fails unless all four screen classes are supported.
+- `check_android_device_preflight.ps1 -AllowNoDevice` checks APK manifest before reporting the expected waiting-on-device state.
+- `android_device_smoke.ps1 -PlanOnly` and real device smoke reject manifest drift before install/launch.
+- `check_current_plan_gate.ps1` includes an explicit Android APK manifest gate.
+- No APK, log or generated output is staged.
+
+**Validation:**
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_apk_manifest.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_device_preflight.ps1 -AllowNoDevice
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\android_device_smoke.ps1 -PlanOnly
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_current_plan_gate.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_controlled_demo_handoff.ps1 -RunReadiness
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_mobile_command_model_preflight.ps1
+git diff --check
+git status --short --branch --untracked-files=all
+```
+
+**Commit:** `Add Android APK manifest check`
 
 ## Stop Conditions
 

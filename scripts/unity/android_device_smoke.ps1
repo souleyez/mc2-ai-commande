@@ -107,6 +107,20 @@ if ($LASTEXITCODE -ne 0) {
     throw "Android APK signing check failed with exit code $LASTEXITCODE"
 }
 
+$apkManifestScript = Join-Path $PSScriptRoot "check_android_apk_manifest.ps1"
+if (-not (Test-Path -LiteralPath $apkManifestScript)) {
+    throw "Missing Android APK manifest checker: $apkManifestScript"
+}
+
+$manifestOutput = & powershell -NoProfile -ExecutionPolicy Bypass -File $apkManifestScript -RepoRoot $RepoRoot -ApkPath $ApkPath -AaptPath $AaptPath 2>&1
+if ($LASTEXITCODE -ne 0) {
+    foreach ($line in @($manifestOutput | ForEach-Object { $_.ToString() })) {
+        Write-Host $line
+    }
+
+    throw "Android APK manifest check failed with exit code $LASTEXITCODE"
+}
+
 function Get-ApkMetadata {
     param(
         [string]$Apk,

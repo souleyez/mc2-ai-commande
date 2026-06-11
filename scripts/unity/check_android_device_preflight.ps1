@@ -299,6 +299,34 @@ else {
     }
 }
 
+$apkManifestScript = Join-Path $PSScriptRoot "check_android_apk_manifest.ps1"
+if (-not (Test-Path -LiteralPath $apkManifestScript)) {
+    Add-Failure "Missing Android APK manifest checker: $apkManifestScript"
+}
+else {
+    $manifestResult = Invoke-NativeCommand -FilePath "powershell" -Arguments @(
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        $apkManifestScript,
+        "-RepoRoot",
+        $RepoRoot,
+        "-ApkPath",
+        $ApkPath,
+        "-AaptPath",
+        $AaptPath
+    )
+
+    $manifestOutput = $manifestResult.Output -join " "
+    if ($manifestResult.ExitCode -ne 0 -or $manifestOutput -notlike "*Android APK manifest check OK.*") {
+        Add-Failure "Android APK manifest preflight failed: $manifestOutput"
+    }
+    else {
+        Add-Row -Check "APK manifest" -Status "OK" -Detail "Android APK manifest check OK."
+    }
+}
+
 if (Test-Path -LiteralPath $AdbPath) {
     $devices = @(Get-AdbDevices -Adb $AdbPath)
     if ($devices.Count -eq 0) {

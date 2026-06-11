@@ -174,9 +174,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_curren
 The current plan gate wraps handoff/readiness, Windows build freshness, demo
 source hygiene, AI deputy contract, mobile command model, battle HUD sparse
 contract, Android APK freshness, Android APK identity, Android APK
-compatibility, Android APK signing and Android device-smoke preflight checks.
-With no authorized phone connected it should still pass while reporting Android
-as waiting on device.
+compatibility, Android APK signing, Android APK manifest and Android
+device-smoke preflight checks. With no authorized phone connected it should
+still pass while reporting Android as waiting on device.
 
 Check the Android APK compatibility directly:
 
@@ -195,6 +195,15 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_androi
 
 It validates `apksigner verify`, APK Signature Scheme v2, and the current debug
 signer DN before G3 install/launch.
+
+Check the Android APK manifest directly:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_apk_manifest.ps1
+```
+
+It validates permissions, required hardware features and supported screen
+classes before G3 install/launch.
 
 Self-test the Android smoke log scanner:
 
@@ -253,6 +262,7 @@ Expected success strings:
 - `Current plan gate check OK`
 - `Android APK compatibility check OK`
 - `Android APK signing check OK`
+- `Android APK manifest check OK`
 - `Android smoke log check self-test OK`
 - `Android device smoke plan OK`
 - `Controlled demo public boundary preflight OK`
