@@ -87,6 +87,16 @@ The readiness preflight wraps the launch preflight, evidence health check, and
 public boundary preflight. It does not start the Unity player or regenerate
 captures.
 
+Check the controlled-demo handoff consistency:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_controlled_demo_handoff.ps1
+```
+
+The handoff consistency check verifies that the key scripts, README, Windows
+build handoff, plan docs, evidence page, and machine handoff plan still point to
+the same controlled demo commands and current PC gate status.
+
 Check the public boundary for the controlled-demo metadata package:
 
 ```powershell
@@ -113,6 +123,7 @@ Expected success strings:
 - `Windows demo launch preflight OK`
 - `Controlled demo evidence check OK`
 - `Controlled demo readiness preflight OK`
+- `Controlled demo handoff consistency check OK`
 - `Controlled demo public boundary preflight OK`
 - `MC2 demo smoke test exiting with code 0`
 - `MC2 reference visual captures passed`

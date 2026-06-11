@@ -6,7 +6,7 @@
 
 **Architecture:** Git remains the source of truth for code and public-safe metadata. Ignored build products, screenshots, logs, sidecars, Unity cache, and private reference exports are recreated or copied only as local development evidence. The new machine must first prove the clean fallback path works, then optionally restore private reference visuals for local-only readability checks.
 
-**Tech Stack:** Windows, Git, PowerShell, Unity Hub, Unity 6000.4.7f1 with Windows Build Support, Unity batchmode validator/build/smoke commands, optional MiniMax environment variables.
+**Tech Stack:** Windows, Git, PowerShell, Unity Hub, Unity 6000.4.7f1 with Windows and Android Build Support, Unity batchmode validator/build/smoke commands, controlled demo preflight scripts, optional MiniMax environment variables.
 
 ---
 
@@ -22,13 +22,15 @@ As of this handoff plan:
 
 - Branch: `master`
 - Primary project remote: `ai-origin git@github.com:souleyez/mc2-ai-commander-demo.git`
+- Remote warning: GitHub currently reports the repository moved to `git@github.com:souleyez/mc2-ai-commande.git`; pushes to the configured `ai-origin` have still succeeded.
 - Upstream source remote kept for history: `origin https://github.com/alariq/mc2.git`
-- Local branch state before this plan commit: `master...ai-origin/master [ahead 95]`
-- Last completed product commit: `1044ef1 Document reward authority contract`
-- Current formal next development task after handoff: `G2 Add Android build smoke path`
+- Current branch state after the latest controlled demo checkpoint: `master...ai-origin/master`
+- Latest sealed PC checkpoint: `PC1-PC9`
+- Last completed PC checkpoint: `Add controlled demo handoff consistency check`
+- Current formal next development task after handoff: `G3 Run Android device smoke`
 
-Important: the new machine will not see the last 95 local commits unless the old
-machine first pushes to `ai-origin`, or the full repository is migrated by a
+Important: the new machine will not see local commits unless the old machine
+first pushes to `ai-origin`, or the full repository is migrated by a trusted
 local disk copy.
 
 ## Definition Of Done
@@ -42,6 +44,8 @@ The machine switch is safe only when all of these are true:
 - Unity validator prints `MC2 demo contract validation OK`.
 - Unity Windows build prints `Build Finished, Result: Success` and `MC2 Unity demo Windows build OK`.
 - Visible-flow smoke exits with `MC2 demo smoke test exiting with code 0`.
+- `scripts/unity/check_controlled_demo_handoff.ps1` prints `Controlled demo handoff consistency check OK`.
+- `scripts/unity/check_controlled_demo_readiness.ps1` prints `Controlled demo readiness preflight OK`.
 - Any AI API key is configured through environment variables, not committed.
 - Optional private reference visuals remain ignored and local-only.
 
@@ -64,7 +68,7 @@ git log --oneline -5
 Expected:
 
 ```text
-## master...ai-origin/master [ahead N]
+## master...ai-origin/master
 ```
 
 There should be no modified or untracked source files unless they are part of
@@ -107,11 +111,12 @@ Do not add ignored local evidence to git just to transfer it.
 
 **Step 4: Commit**
 
-No code commit is required for the push itself. The plan update commit is:
+No code commit is required for the push itself. If this plan changes, commit
+only the plan and directly related command-entry docs:
 
 ```powershell
-git add README.md docs-ai-rts-commander-current-master-plan-2026-06-07.md docs-ai-rts-commander-current-detailed-plan-2026-06-07.md docs-machine-handoff-plan-2026-06-07.md
-git commit -m "Prepare machine handoff plan"
+git add README.md BUILD-WIN.md docs-ai-rts-commander-current-master-plan-2026-06-07.md docs-ai-rts-commander-current-detailed-plan-2026-06-07.md docs-machine-handoff-plan-2026-06-07.md
+git commit -m "Refresh machine handoff checkpoint"
 ```
 
 ## Task 2: Install New Machine Tooling
@@ -189,7 +194,7 @@ Expected:
 
 - active branch is `master`;
 - worktree is clean;
-- latest commit includes this handoff plan commit.
+- latest commit includes the current controlled demo checkpoint.
 
 **Step 3: Create ignored output folders only when needed**
 
@@ -201,7 +206,7 @@ Unity will recreate `unity-mc2-demo\Library`, `Temp`, `Logs`, and build folders.
 Do not copy those cache folders from the old machine unless diagnosing a Unity
 import problem.
 
-## Task 4: Prove Clean Fallback Demo Works
+## Task 4: Prove Controlled Demo Handoff Works
 
 **Files:**
 
@@ -209,7 +214,37 @@ import problem.
 - Read: `unity-mc2-demo/README.md`
 - Generate ignored output only: `analysis-output/`, `unity-mc2-demo/Builds/`
 
-**Step 1: Set paths**
+**Step 1: Run handoff consistency check**
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_controlled_demo_handoff.ps1
+```
+
+Expected:
+
+```text
+Controlled demo handoff consistency check OK
+```
+
+This checks the current PC gate state, script inventory and handoff docs without
+starting Unity.
+
+**Step 2: Run full readiness preflight**
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_controlled_demo_readiness.ps1
+```
+
+Expected:
+
+```text
+Controlled demo readiness preflight OK
+```
+
+This wraps launch preflight, evidence health and public boundary gates. It reads
+existing build/evidence outputs and does not regenerate screenshots.
+
+**Step 3: Set paths for rebuilding evidence if needed**
 
 ```powershell
 $Repo = (Get-Location).Path
@@ -218,7 +253,7 @@ $Unity = "$HOME\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe"
 
 If `$Unity` does not exist, point it to the installed Unity editor path.
 
-**Step 2: Run validator**
+**Step 4: Run validator when rebuilding or auditing from scratch**
 
 ```powershell
 & $Unity `
@@ -234,7 +269,7 @@ Expected log string:
 MC2 demo contract validation OK
 ```
 
-**Step 3: Build Windows player**
+**Step 5: Build Windows player when rebuilding or auditing from scratch**
 
 ```powershell
 & $Unity `
@@ -251,7 +286,7 @@ Build Finished, Result: Success
 MC2 Unity demo Windows build OK
 ```
 
-**Step 4: Run visible-flow smoke without AI key**
+**Step 6: Run visible-flow smoke without AI key when rebuilding or auditing from scratch**
 
 ```powershell
 $env:MINIMAX_API_KEY = ""
@@ -338,7 +373,7 @@ documentation.
 - Read: `docs-ai-rts-commander-current-master-plan-2026-06-07.md`
 - Read: `docs-ai-rts-commander-current-detailed-plan-2026-06-07.md`
 - Read: `docs-mobile-first-plan-2026-06-10.md`
-- Next planned work: Android build smoke path
+- Next planned work: `G3 Run Android device smoke`
 
 **Step 1: Confirm current next task**
 
@@ -346,29 +381,32 @@ Read the current commit queue. After this handoff, the product work should
 resume at:
 
 ```text
-G2 Add Android build smoke path
+G3 Run Android device smoke
 ```
 
 **Step 2: Do not start with server or map-editor implementation**
 
 Mobile support is the first priority. The next product work should prove:
 
-- Android Build Support is installed and usable;
-- the Unity project can produce an Android artifact;
 - a real Android device can launch the demo;
 - touch command UI is viable for squad command, single-unit command, Jet, mission map, system panel and MechLab;
 - FPS, memory, package size, load time and thermal observations are recorded.
+
+Android Build Support and Android APK build smoke have already been handled on
+the old machine. If the new machine cannot produce the APK, fix the local Unity
+Android module/toolchain before changing gameplay.
 
 Map package/editor contracts, Web ranking and creator economy remain deferred
 until the mobile gate passes.
 
 **Step 3: Commit next product work in one small commit**
 
-Expected future commit:
+The next commit should be the smallest change that advances the current queue,
+for example a real-device smoke evidence/documentation checkpoint:
 
 ```powershell
-git add unity-mc2-demo/Assets/Editor/Mc2DemoBuilder.cs unity-mc2-demo/README.md BUILD-WIN.md docs-ai-rts-commander-current-master-plan-2026-06-07.md docs-ai-rts-commander-current-detailed-plan-2026-06-07.md
-git commit -m "Add Android build smoke path"
+git add BUILD-MOBILE.md docs-mobile-first-plan-2026-06-10.md docs-ai-rts-commander-current-master-plan-2026-06-07.md docs-ai-rts-commander-current-detailed-plan-2026-06-07.md
+git commit -m "Record Android device smoke"
 ```
 
 ## Stop Conditions

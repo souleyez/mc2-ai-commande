@@ -14,7 +14,7 @@
 
 Mobile support remains the product priority, but `G3 Android Device Smoke` is waiting on a physical Android phone with USB debugging authorized. While that device blocker existed, this plan used PC demo optimization to keep the Windows demo moving.
 
-The current PC optimization pass is now sealed through PC8. This does not move G4/G5 mobile touch and performance ahead of G3; the next mobile gate still requires the physical authorized phone.
+The current PC optimization pass is now sealed through PC9. This does not move G4/G5 mobile touch and performance ahead of G3; the next mobile gate still requires the physical authorized phone.
 
 ## Definition Of Done
 
@@ -32,6 +32,7 @@ The current PC optimization pass is complete when:
 - Controlled Windows demo evidence can be checked by script without rerunning Unity.
 - Controlled Windows demo public boundary metadata can be checked by script without packaging or creating artifacts.
 - Controlled Windows demo readiness can be checked by one script that wraps launch, evidence and public boundary gates.
+- Controlled Windows demo handoff consistency can be checked by one script that validates docs and helper scripts agree on the current gate set.
 - No generated screenshot, JSON sidecar, log, Windows build output, APK/AAB, or private reference export is staged.
 
 ## Execution Gate Order
@@ -47,6 +48,7 @@ The current PC optimization pass is complete when:
 | PC6 | Done | Add controlled demo evidence check | Check build, visible-flow log and six capture sidecars |
 | PC7 | Done | Add controlled demo public boundary preflight | Check clean project-owned metadata examples and optionally confirm the dev build remains blocked for public packaging |
 | PC8 | Done | Add controlled demo readiness preflight | Wrap launch, evidence and public boundary gates into one command |
+| PC9 | Done | Add controlled demo handoff consistency check | Check scripts and docs agree on the current controlled demo gate set |
 
 Do not open another PC polish gate from visual inspection alone. If the issue is collision, damage, command state or objective logic, first prove it in `BattleCore`.
 
@@ -377,6 +379,37 @@ git status --short --branch --untracked-files=all
 - Does not start Unity, rebuild, regenerate screenshots, alter BattleCore, change HUD/MechLab behavior, or stage generated artifacts.
 
 **Commit:** `Add controlled demo readiness preflight`
+
+## Completed Target: PC9 Add Controlled Demo Handoff Consistency Check
+
+**Goal:** 在 G3 真机仍不可用时，只把换机和演示前最容易漂移的文档/脚本入口做成可机器检查状态，不改玩法、不启动 Unity、不重跑截图。
+
+**Files:**
+
+- Create: `scripts/unity/check_controlled_demo_handoff.ps1`
+- Modify: `BUILD-WIN.md`
+- Modify: `README.md`
+- Modify: `docs-machine-handoff-plan-2026-06-07.md`
+- Modify: current plan docs and evidence page
+
+**Validation:**
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_controlled_demo_handoff.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_controlled_demo_handoff.ps1 -RunReadiness
+git diff --check
+git status --short --branch --untracked-files=all
+```
+
+**Acceptance:**
+
+- Checks key controlled demo scripts exist.
+- Checks README, BUILD-WIN, current master plan, current detailed plan, PC optimization plan, investor evidence and machine handoff plan all mention the current controlled demo gate set.
+- Rejects stale machine-handoff markers such as the old G2 next-task checkpoint, old ahead-count and old reward-contract commit.
+- `-RunReadiness` proves the handoff check can also call the full readiness preflight.
+- Does not start Unity, rebuild, regenerate screenshots, alter BattleCore, change HUD/MechLab behavior, or stage generated artifacts.
+
+**Commit:** `Add controlled demo handoff consistency check`
 
 ## Stop Conditions
 
