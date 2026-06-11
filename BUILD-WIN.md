@@ -173,9 +173,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_curren
 
 The current plan gate wraps handoff/readiness, Windows build freshness, demo
 source hygiene, AI deputy contract, mobile command model, battle HUD sparse
-contract, Android APK freshness and Android device-smoke preflight checks. With
-no authorized phone connected it should still pass while reporting Android as
-waiting on device.
+contract, Android APK freshness, Android APK identity and Android device-smoke
+preflight checks. With no authorized phone connected it should still pass while
+reporting Android as waiting on device.
 
 Self-test the Android smoke log scanner:
 

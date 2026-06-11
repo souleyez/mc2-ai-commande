@@ -25,8 +25,9 @@ As of this handoff plan:
 - Remote warning: GitHub currently reports the repository moved to `git@github.com:souleyez/mc2-ai-commande.git`; pushes to the configured `ai-origin` have still succeeded.
 - Upstream source remote kept for history: `origin https://github.com/alariq/mc2.git`
 - Current branch state after the latest controlled demo checkpoint: `master...ai-origin/master`
-- Latest sealed PC/mobile wait-state checkpoint: `PC1-PC22`
-- Last completed PC checkpoint: `Add Android APK freshness check`
+- Latest sealed PC/mobile wait-state checkpoint: `PC1-PC23`
+- Last completed PC checkpoint: `Add Android APK identity check`
+- Previous PC checkpoint retained in the gate chain: `Add Android APK freshness check`
 - Previous PC checkpoint retained in the gate chain: `Add controlled demo capture log freshness check`
 - Current formal next development task after handoff: `G3 Run Android device smoke`
 
@@ -53,6 +54,7 @@ The machine switch is safe only when all of these are true:
 - `scripts/unity/check_ai_deputy_contract.ps1` prints `AI deputy contract check OK`.
 - `scripts/unity/check_android_device_preflight.ps1 -AllowNoDevice` prints `Android device smoke preflight waiting on device` if no phone is connected.
 - `scripts/unity/check_android_apk_freshness.ps1` prints `Android APK freshness check OK`.
+- `scripts/unity/check_android_apk_identity.ps1` prints `Android APK identity check OK`.
 - `scripts/unity/check_pc_core_playable_contract.ps1` prints `PC core playable contract check OK`.
 - `scripts/unity/check_mobile_command_model_preflight.ps1` prints `Mobile command model preflight OK`.
 - `scripts/unity/check_battle_hud_sparse_contract.ps1` prints `Battle HUD sparse contract check OK`.

@@ -100,6 +100,23 @@ Android APK freshness check OK
 
 If this reports a stale APK, rebuild Android before running any G3 device smoke.
 
+Check that the Android APK identity matches the expected package and launch
+activity:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_apk_identity.ps1
+```
+
+Expected:
+
+```text
+Android APK identity check OK
+```
+
+This requires package `com.DefaultCompany.unitymc2demo` and launch activity
+`com.unity3d.player.UnityPlayerGameActivity`, matching the manual `adb shell am
+start` command below.
+
 Device smoke
 ------------
 
@@ -116,8 +133,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_androi
 ```
 
 The strict form requires one authorized Android device. The waiting-state form
-still checks the APK, Android APK freshness, adb, aapt, package name and
-launchable activity, then reports that G3 is waiting on a device.
+still checks the APK, Android APK freshness, Android APK identity, adb, aapt,
+package name and launchable activity, then reports that G3 is waiting on a
+device.
 
 After preflight passes with a real device, install and collect logs:
 
@@ -137,10 +155,10 @@ Expected:
 Android device smoke plan OK
 ```
 
-The helper discovers the APK package name through `aapt`, checks that exactly
-one authorized Android device is connected, installs the APK, launches it, waits
-briefly, captures logcat, scans the log for strong crash markers, and fails if
-the package does not stay running.
+The helper verifies APK freshness and identity, discovers the APK package name
+through `aapt`, checks that exactly one authorized Android device is connected,
+installs the APK, launches it, waits briefly, captures logcat, scans the log for
+strong crash markers, and fails if the package does not stay running.
 
 Self-test the log scanner without a device:
 
@@ -199,8 +217,10 @@ Current verified output:
 ```text
 analysis-output\unity-validate-mobile-baseline.log -> MC2 demo contract validation OK
 analysis-output\unity-build-android.log -> Build Finished, Result: Success.
-analysis-output\unity-build-android.log -> MC2 Unity demo Android build OK
-unity-mc2-demo\Builds\Android\MC2UnityDemo.apk -> exists, 20,666,724 bytes
+analysis-output\unity-build-android-pc22-freshness.log -> MC2 Unity demo Android build OK
+unity-mc2-demo\Builds\Android\MC2UnityDemo.apk -> exists, 20,667,008 bytes
+scripts\unity\check_android_apk_freshness.ps1 -> Android APK freshness check OK
+scripts\unity\check_android_apk_identity.ps1 -> Android APK identity check OK
 scripts\unity\check_android_device_preflight.ps1 -AllowNoDevice -> Android device smoke preflight waiting on device
 ```
 

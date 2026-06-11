@@ -106,6 +106,7 @@ $aiDeputyScript = Resolve-RepoPath -RelativePath "scripts\unity\check_ai_deputy_
 $mobileCommandScript = Resolve-RepoPath -RelativePath "scripts\unity\check_mobile_command_model_preflight.ps1"
 $battleHudScript = Resolve-RepoPath -RelativePath "scripts\unity\check_battle_hud_sparse_contract.ps1"
 $androidApkFreshnessScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_apk_freshness.ps1"
+$androidApkIdentityScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_apk_identity.ps1"
 $androidPreflightScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_device_preflight.ps1"
 $androidSmokeScript = Resolve-RepoPath -RelativePath "scripts\unity\android_device_smoke.ps1"
 $androidLogScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_smoke_log.ps1"
@@ -155,6 +156,12 @@ Invoke-GateStep `
     -ScriptPath $androidApkFreshnessScript `
     -Arguments @("-RepoRoot", $RepoRoot) `
     -RequiredMarkers @("Android APK freshness check OK.")
+
+Invoke-GateStep `
+    -Name "Android APK identity gate" `
+    -ScriptPath $androidApkIdentityScript `
+    -Arguments @("-RepoRoot", $RepoRoot) `
+    -RequiredMarkers @("Android APK identity check OK.")
 
 Invoke-GateStep `
     -Name "Android device gate" `

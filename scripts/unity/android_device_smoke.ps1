@@ -60,6 +60,20 @@ if ($LASTEXITCODE -ne 0) {
     throw "Android APK freshness check failed with exit code $LASTEXITCODE"
 }
 
+$apkIdentityScript = Join-Path $PSScriptRoot "check_android_apk_identity.ps1"
+if (-not (Test-Path -LiteralPath $apkIdentityScript)) {
+    throw "Missing Android APK identity checker: $apkIdentityScript"
+}
+
+$identityOutput = & powershell -NoProfile -ExecutionPolicy Bypass -File $apkIdentityScript -RepoRoot $RepoRoot -ApkPath $ApkPath -AaptPath $AaptPath 2>&1
+if ($LASTEXITCODE -ne 0) {
+    foreach ($line in @($identityOutput | ForEach-Object { $_.ToString() })) {
+        Write-Host $line
+    }
+
+    throw "Android APK identity check failed with exit code $LASTEXITCODE"
+}
+
 function Get-ApkMetadata {
     param(
         [string]$Apk,

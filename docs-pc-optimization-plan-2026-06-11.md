@@ -14,7 +14,7 @@
 
 Mobile support remains the product priority, but `G3 Android Device Smoke` is waiting on a physical Android phone with USB debugging authorized. While that device blocker existed, this plan used PC demo optimization to keep the Windows demo moving.
 
-The current PC/mobile wait-state optimization pass is now sealed through PC22. This does not move G4/G5 mobile touch and performance ahead of G3; the next mobile gate still requires the physical authorized phone.
+The current PC/mobile wait-state optimization pass is now sealed through PC23. This does not move G4/G5 mobile touch and performance ahead of G3; the next mobile gate still requires the physical authorized phone.
 
 ## Definition Of Done
 
@@ -42,10 +42,12 @@ The current PC optimization pass is complete when:
 - Android device smoke scans captured logcat for strong crash markers before accepting a real-device launch.
 - Android device smoke can be previewed with `-PlanOnly` without a connected phone.
 - Android APK freshness can be checked before G3, proving the ignored APK is newer than tracked Unity build inputs.
+- Android APK identity can be checked before G3, proving the package name and launch activity match the install/launch commands.
 - Sparse battle HUD can be checked without launching Unity through `check_battle_hud_sparse_contract.ps1`.
 - Demo source hygiene can be checked without launching Unity through `check_demo_source_hygiene.ps1`.
 - AI deputy contract can be checked without launching Unity or calling the model through `check_ai_deputy_contract.ps1`.
 - Android APK freshness can be checked without launching Unity through `check_android_apk_freshness.ps1`.
+- Android APK identity can be checked without launching Unity through `check_android_apk_identity.ps1`.
 - No generated screenshot, JSON sidecar, log, Windows build output, APK/AAB, or private reference export is staged.
 
 ## Execution Gate Order
@@ -75,6 +77,7 @@ The current PC optimization pass is complete when:
 | PC20 | Done | Add controlled demo evidence freshness check | Check visible-flow log and six capture PNG/JSON sidecars are newer than the current Windows build/evidence inputs |
 | PC21 | Done | Add controlled demo capture log freshness check | Check six capture logs exist, are fresh, and prove preset, screenshot request and sidecar write markers |
 | PC22 | Done | Add Android APK freshness check | Check ignored Android APK is newer than tracked Unity build inputs and wire it into G3 preflight/smoke helpers |
+| PC23 | Done | Add Android APK identity check | Check package name and launch activity match expected G3 install/launch identity and wire it into G3 preflight/smoke helpers |
 
 Do not open another PC polish gate from visual inspection alone. If the issue is collision, damage, command state or objective logic, first prove it in `BattleCore`.
 
@@ -847,6 +850,41 @@ git status --short --branch --untracked-files=all
 - Refreshed APK remains ignored and unstaged.
 
 **Commit:** `Add Android APK freshness check`
+
+## Completed Target: PC23 Add Android APK Identity Check
+
+**Goal:** 在 G3 真机仍不可用时，不提前做 G4/G5；把 G3 安装/启动依赖的 APK 包名和 launch activity 做成机器检查，避免设备到位后安装错包或启动错入口。
+
+**Files:**
+
+- Create: `scripts/unity/check_android_apk_identity.ps1`
+- Modify: `scripts/unity/check_android_device_preflight.ps1`
+- Modify: `scripts/unity/android_device_smoke.ps1`
+- Modify: `scripts/unity/check_current_plan_gate.ps1`
+- Modify: README/BUILD-MOBILE/BUILD-WIN/current plans/evidence/handoff/mobile docs
+
+**Validation:**
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_apk_identity.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_device_preflight.ps1 -AllowNoDevice
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\android_device_smoke.ps1 -PlanOnly
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_current_plan_gate.ps1
+git diff --check
+git status --short --branch --untracked-files=all
+```
+
+**Acceptance:**
+
+- The identity checker fails if `aapt` cannot read APK badging.
+- It fails unless package name is `com.DefaultCompany.unitymc2demo`.
+- It fails unless launch activity is `com.unity3d.player.UnityPlayerGameActivity`.
+- `check_android_device_preflight.ps1 -AllowNoDevice` reports APK identity OK before stopping at waiting-on-device.
+- `android_device_smoke.ps1 -PlanOnly` and real device smoke both reject wrong APK identity before install/launch.
+- `check_current_plan_gate.ps1` includes an explicit Android APK identity gate.
+- No APK, log or generated output is staged.
+
+**Commit:** `Add Android APK identity check`
 
 ## Stop Conditions
 

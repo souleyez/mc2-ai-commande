@@ -203,6 +203,34 @@ else {
     }
 }
 
+$apkIdentityScript = Join-Path $PSScriptRoot "check_android_apk_identity.ps1"
+if (-not (Test-Path -LiteralPath $apkIdentityScript)) {
+    Add-Failure "Missing Android APK identity checker: $apkIdentityScript"
+}
+else {
+    $identityResult = Invoke-NativeCommand -FilePath "powershell" -Arguments @(
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        $apkIdentityScript,
+        "-RepoRoot",
+        $RepoRoot,
+        "-ApkPath",
+        $ApkPath,
+        "-AaptPath",
+        $AaptPath
+    )
+
+    $identityOutput = $identityResult.Output -join " "
+    if ($identityResult.ExitCode -ne 0 -or $identityOutput -notlike "*Android APK identity check OK.*") {
+        Add-Failure "Android APK identity preflight failed: $identityOutput"
+    }
+    else {
+        Add-Row -Check "APK identity" -Status "OK" -Detail "Android APK identity check OK."
+    }
+}
+
 if (Test-Path -LiteralPath $AdbPath) {
     $devices = @(Get-AdbDevices -Adb $AdbPath)
     if ($devices.Count -eq 0) {
