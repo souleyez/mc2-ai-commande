@@ -198,6 +198,30 @@ else {
     }
 }
 
+$smokeArtifactHygieneScript = Join-Path $PSScriptRoot "check_android_smoke_artifact_hygiene.ps1"
+if (-not (Test-Path -LiteralPath $smokeArtifactHygieneScript)) {
+    Add-Failure "Missing Android smoke artifact hygiene checker: $smokeArtifactHygieneScript"
+}
+else {
+    $hygieneResult = Invoke-NativeCommand -FilePath "powershell" -Arguments @(
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        $smokeArtifactHygieneScript,
+        "-RepoRoot",
+        $RepoRoot
+    )
+
+    $hygieneOutput = $hygieneResult.Output -join " "
+    if ($hygieneResult.ExitCode -ne 0 -or $hygieneOutput -notlike "*Android smoke artifact hygiene check OK.*") {
+        Add-Failure "Android smoke artifact hygiene preflight failed: $hygieneOutput"
+    }
+    else {
+        Add-Row -Check "smoke artifact hygiene" -Status "OK" -Detail "Android smoke artifact hygiene check OK."
+    }
+}
+
 if ((Test-Path -LiteralPath $ApkPath) -and (Test-Path -LiteralPath $AaptPath)) {
     $metadata = Get-ApkMetadata -Apk $ApkPath -Aapt $AaptPath
     if ([string]::IsNullOrWhiteSpace($metadata.PackageName)) {

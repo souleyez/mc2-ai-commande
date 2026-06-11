@@ -32,20 +32,20 @@ G2 Android build smoke is complete and the APK exists in ignored build output.
 G3 Android device-smoke preflight now verifies the APK, Android SDK tooling,
 adb, aapt, apksigner, package name, launchable activity, compatibility metadata,
 signing and manifest install-target metadata, Unity/IL2CPP runtime payload and
-APK size budget. The real G3 device smoke is still waiting on a physical Android
+APK size budget, plus Android smoke artifact hygiene. The real G3 device smoke is still waiting on a physical Android
 phone that is visible through `adb devices` and authorized for USB debugging.
 
 While G3 is waiting, the active project work may continue on PC demo
 optimization as defined in `docs-pc-optimization-plan-2026-06-11.md`. This does
 not advance G4/G5 ahead of G3; it only keeps Windows demo quality moving while
 the required phone is unavailable. The current PC/mobile waiting-state work is
-sealed through PC29, including the PC core playable contract check, mobile
+sealed through PC30, including the PC core playable contract check, mobile
 command model preflight, battle HUD sparse contract check, demo source hygiene
 check, AI deputy contract check, Windows demo build freshness check, controlled
 demo evidence freshness check, controlled demo capture log freshness check,
 Android SDK tooling check, Android APK freshness check, Android APK identity check, Android APK
 compatibility check, Android APK signing check, Android APK manifest check,
-Android APK payload check, Android APK size budget check, current plan gate
+Android APK payload check, Android APK size budget check, Android smoke artifact hygiene check, current plan gate
 check, Android smoke log crash scan and Android smoke plan mode.
 
 ## Definition Of Done
@@ -99,7 +99,7 @@ failing, unless the later work is explicitly diagnostic.
 **Precondition:**
 
 - `git status --short --branch --untracked-files=all` 干净。
-- Android APK exists at `unity-mc2-demo\Builds\Android\MC2UnityDemo.apk` and passes `check_android_sdk_tooling.ps1`, `check_android_apk_freshness.ps1`, `check_android_apk_identity.ps1`, `check_android_apk_compatibility.ps1`, `check_android_apk_signing.ps1`, `check_android_apk_manifest.ps1`, `check_android_apk_payload.ps1` and `check_android_apk_size_budget.ps1`.
+- Android APK exists at `unity-mc2-demo\Builds\Android\MC2UnityDemo.apk` and passes `check_android_sdk_tooling.ps1`, `check_android_apk_freshness.ps1`, `check_android_apk_identity.ps1`, `check_android_apk_compatibility.ps1`, `check_android_apk_signing.ps1`, `check_android_apk_manifest.ps1`, `check_android_apk_payload.ps1`, `check_android_apk_size_budget.ps1` and `check_android_smoke_artifact_hygiene.ps1`.
 - `adb` exists at `$HOME\Unity\Hub\Editor\6000.4.7f1\Editor\Data\PlaybackEngines\AndroidPlayer\SDK\platform-tools\adb.exe`.
 - One physical Android device has USB debugging enabled and is trusted by this PC.
 
@@ -145,6 +145,7 @@ scripts\unity\check_android_apk_signing.ps1 -> Android APK signing check OK.
 scripts\unity\check_android_apk_manifest.ps1 -> Android APK manifest check OK.
 scripts\unity\check_android_apk_payload.ps1 -> Android APK payload check OK.
 scripts\unity\check_android_apk_size_budget.ps1 -> Android APK size budget check OK.
+scripts\unity\check_android_smoke_artifact_hygiene.ps1 -> Android smoke artifact hygiene check OK.
 scripts\unity\check_android_device_preflight.ps1 -AllowNoDevice -> Android device smoke preflight waiting on device.
 APK package -> com.DefaultCompany.unitymc2demo.
 APK activity -> com.unity3d.player.UnityPlayerGameActivity.
@@ -154,6 +155,7 @@ APK manifest -> allowed permissions, no required hardware features, touchscreen/
 APK payload -> required Unity/IL2CPP native libraries, assets/bin/Data runtime files and arm64-v8a ABI are present.
 APK size budget -> current APK is within the 1 MiB to 100 MiB early mobile demo budget.
 Android SDK tooling -> AndroidPlayer SDK, NDK, OpenJDK, build-tools 36.0.0, android-36, adb, aapt and apksigner are present.
+Android smoke artifact hygiene -> APK/AAB outputs, Android smoke logs/screenshots and Builds/Android outputs remain ignored and absent from tracked/staged paths.
 adb devices -> no device rows.
 G3 still requires a physical Android phone with USB debugging enabled and authorized.
 ```
@@ -234,7 +236,7 @@ Minimum device target for the first pass:
 | ID | Requirement | Output | Verification |
 | --- | --- | --- | --- |
 | G3-R1 | Device is visible through adb | device id | `adb devices` shows one `device` row |
-| G3-R1a | Device-smoke preflight can prove APK/tooling/package readiness before install | preflight rows | `check_android_device_preflight.ps1 -AllowNoDevice` reports waiting on device, with APK, Android SDK tooling, APK freshness, APK identity, APK compatibility, APK signing, APK manifest, APK payload, APK size budget, adb, aapt, apksigner, package and activity OK |
+| G3-R1a | Device-smoke preflight can prove APK/tooling/package readiness before install | preflight rows | `check_android_device_preflight.ps1 -AllowNoDevice` reports waiting on device, with APK, Android SDK tooling, APK freshness, APK identity, APK compatibility, APK signing, APK manifest, APK payload, APK size budget, Android smoke artifact hygiene, adb, aapt, apksigner, package and activity OK |
 | G3-R1j | Android SDK tooling is present before install | tooling output | `check_android_sdk_tooling.ps1` reports `Android SDK tooling check OK` for Unity AndroidPlayer SDK, NDK, OpenJDK, build-tools, platform, adb, aapt and apksigner |
 | G3-R1c | Android APK is not stale before install | freshness output | `check_android_apk_freshness.ps1` reports `Android APK freshness check OK` |
 | G3-R1d | Android APK identity matches the expected launch path | identity output | `check_android_apk_identity.ps1` reports `Android APK identity check OK` for package `com.DefaultCompany.unitymc2demo` and activity `com.unity3d.player.UnityPlayerGameActivity` |
@@ -243,6 +245,7 @@ Minimum device target for the first pass:
 | G3-R1g | Android APK manifest keeps install targets broad enough | manifest output | `check_android_apk_manifest.ps1` reports `Android APK manifest check OK` for permissions, no required features, not-required touchscreen/vulkan and screen support |
 | G3-R1h | Android APK runtime payload is present before install | payload output | `check_android_apk_payload.ps1` reports `Android APK payload check OK` for Unity/IL2CPP native libraries, `assets/bin/Data` files and `arm64-v8a` ABI |
 | G3-R1i | Android APK package size stays within the early mobile demo budget | size budget output | `check_android_apk_size_budget.ps1` reports `Android APK size budget check OK` for the 1 MiB to 100 MiB budget |
+| G3-R1k | Android smoke outputs stay out of source control | artifact hygiene output | `check_android_smoke_artifact_hygiene.ps1` reports `Android smoke artifact hygiene check OK` for ignored APK/AAB outputs, Android smoke logs/screenshots and `Builds/Android` paths |
 | G3-R1b | Device-smoke helper can preview planned actions without a device | plan output | `android_device_smoke.ps1 -PlanOnly` reports package, activity, log path and install/launch/log-check actions |
 | G3-R2 | APK installs cleanly | installed package | `adb install -r <apk>` returns success |
 | G3-R3 | App launches without immediate crash | app process/log | `adb logcat` has no fatal crash during launch |
@@ -264,6 +267,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_androi
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_apk_manifest.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_apk_payload.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_apk_size_budget.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_smoke_artifact_hygiene.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\android_device_smoke.ps1 -PlanOnly
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\android_device_smoke.ps1
 git status --short --branch --untracked-files=all

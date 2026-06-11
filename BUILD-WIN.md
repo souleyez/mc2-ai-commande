@@ -121,6 +121,16 @@ This checks tracked and staged paths plus `.gitignore` markers so generated
 evidence, Unity builds, APK/AAB outputs and private reference art stay out of
 source commits.
 
+Check Android smoke artifact hygiene without launching Unity:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_smoke_artifact_hygiene.ps1
+```
+
+This checks tracked and staged paths plus `.gitignore` markers so Android smoke
+logs, screenshots and APK/AAB build outputs stay ignored until a real evidence
+drop is explicitly requested.
+
 Check the AI deputy contract without launching Unity or calling the model:
 
 ```powershell
@@ -172,7 +182,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_curren
 ```
 
 The current plan gate wraps handoff/readiness, Windows build freshness, demo
-source hygiene, AI deputy contract, mobile command model, battle HUD sparse
+source hygiene, Android smoke artifact hygiene, AI deputy contract, mobile command model, battle HUD sparse
 contract, Android SDK tooling, Android APK freshness, Android APK identity, Android APK
 compatibility, Android APK signing, Android APK manifest, Android APK payload,
 Android APK size budget and Android device-smoke preflight checks. With no
@@ -284,6 +294,7 @@ Expected success strings:
 - `Controlled demo readiness preflight OK`
 - `Controlled demo handoff consistency check OK`
 - `Demo source hygiene check OK`
+- `Android smoke artifact hygiene check OK`
 - `AI deputy contract check OK`
 - `PC core playable contract check OK`
 - `Mobile command model preflight OK`

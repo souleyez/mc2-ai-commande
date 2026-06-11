@@ -28,6 +28,8 @@ Tools
 .codelite
 *.session
 *.log
+*.apk
+*.aab
 *.lib
 *.LIB
 *.so

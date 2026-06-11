@@ -213,6 +213,22 @@ The current budget rejects implausibly small APKs and APKs over 100 MiB. This is
 an install-readiness guard for accidental asset bloat, not the full G5 runtime
 performance budget.
 
+Check that Android smoke artifacts remain ignored and out of tracked/staged
+source:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_smoke_artifact_hygiene.ps1
+```
+
+Expected:
+
+```text
+Android smoke artifact hygiene check OK
+```
+
+This guards ignored APK/AAB output and Android smoke logs/screenshots before
+real G3 device runs.
+
 Device smoke
 ------------
 
@@ -231,7 +247,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_androi
 The strict form requires one authorized Android device. The waiting-state form
 still checks the APK, Android SDK tooling, Android APK freshness, Android APK identity, Android APK
 compatibility, Android APK signing, Android APK manifest, Android APK payload,
-Android APK size budget, adb, aapt, apksigner, package name and launchable
+Android APK size budget, Android smoke artifact hygiene, adb, aapt, apksigner, package name and launchable
 activity, then reports that G3 is waiting on a device.
 
 After preflight passes with a real device, install and collect logs:
@@ -325,6 +341,7 @@ scripts\unity\check_android_apk_signing.ps1 -> Android APK signing check OK
 scripts\unity\check_android_apk_manifest.ps1 -> Android APK manifest check OK
 scripts\unity\check_android_apk_payload.ps1 -> Android APK payload check OK
 scripts\unity\check_android_apk_size_budget.ps1 -> Android APK size budget check OK
+scripts\unity\check_android_smoke_artifact_hygiene.ps1 -> Android smoke artifact hygiene check OK
 scripts\unity\check_android_device_preflight.ps1 -AllowNoDevice -> Android device smoke preflight waiting on device
 ```
 

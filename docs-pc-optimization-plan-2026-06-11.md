@@ -14,7 +14,7 @@
 
 Mobile support remains the product priority, but `G3 Android Device Smoke` is waiting on a physical Android phone with USB debugging authorized. While that device blocker existed, this plan used PC demo optimization to keep the Windows demo moving.
 
-The current PC/mobile wait-state optimization pass is now sealed through PC29. This does not move G4/G5 mobile touch and performance ahead of G3; the next mobile gate still requires the physical authorized phone.
+The current PC/mobile wait-state optimization pass is now sealed through PC30. This does not move G4/G5 mobile touch and performance ahead of G3; the next mobile gate still requires the physical authorized phone.
 
 ## Definition Of Done
 
@@ -49,6 +49,7 @@ The current PC optimization pass is complete when:
 - Android APK manifest install-target metadata can be checked before G3, proving permissions stay expected, no required hardware features narrow install targets, and supported screens remain broad.
 - Android APK payload can be checked before G3, proving required Unity/IL2CPP native libraries and `assets/bin/Data` runtime files are present.
 - Android APK size budget can be checked before G3, proving the early mobile demo package has not accidentally bloated past the current install-readiness budget.
+- Android smoke artifact hygiene can be checked before G3, proving APK/AAB outputs, Android smoke logs/screenshots and `Builds/Android` outputs are ignored and absent from tracked/staged paths.
 - Sparse battle HUD can be checked without launching Unity through `check_battle_hud_sparse_contract.ps1`.
 - Demo source hygiene can be checked without launching Unity through `check_demo_source_hygiene.ps1`.
 - AI deputy contract can be checked without launching Unity or calling the model through `check_ai_deputy_contract.ps1`.
@@ -60,6 +61,7 @@ The current PC optimization pass is complete when:
 - Android APK manifest can be checked without launching Unity through `check_android_apk_manifest.ps1`.
 - Android APK payload can be checked without launching Unity through `check_android_apk_payload.ps1`.
 - Android APK size budget can be checked without launching Unity through `check_android_apk_size_budget.ps1`.
+- Android smoke artifact hygiene can be checked without launching Unity through `check_android_smoke_artifact_hygiene.ps1`.
 - No generated screenshot, JSON sidecar, log, Windows build output, APK/AAB, or private reference export is staged.
 
 ## Execution Gate Order
@@ -96,6 +98,7 @@ The current PC optimization pass is complete when:
 | PC27 | Done | Add Android APK payload check | Check Unity/IL2CPP runtime payload and ABI folders before G3 install/launch |
 | PC28 | Done | Add Android APK size budget check | Check current APK package size stays within the early mobile demo install-readiness budget |
 | PC29 | Done | Add Android SDK tooling check | Check Unity AndroidPlayer SDK, NDK, OpenJDK, build-tools, platform, adb, aapt and apksigner before G3 install/launch |
+| PC30 | Done | Add Android smoke artifact hygiene check | Check Android smoke logs/screenshots, APK/AAB outputs and `Builds/Android` paths stay ignored and out of tracked/staged source |
 
 Do not open another PC polish gate from visual inspection alone. If the issue is collision, damage, command state or objective logic, first prove it in `BattleCore`.
 
@@ -1118,7 +1121,7 @@ git status --short --branch --untracked-files=all
 - Require `build-tools;36.0.0`, `platforms;android-36`, `android.jar`, adb, aapt and apksigner.
 - Check stable version output for adb, aapt and apksigner.
 - Wire SDK tooling checking into `check_android_device_preflight.ps1`, `android_device_smoke.ps1`, and `check_current_plan_gate.ps1`.
-- Update handoff, mobile and evidence docs to keep the current PC/mobile wait-state status sealed through PC29.
+- Updated handoff, mobile and evidence docs for the PC29 checkpoint before the later PC30 hygiene gate superseded the current wait-state seal.
 
 **Acceptance:**
 
@@ -1144,6 +1147,40 @@ git status --short --branch --untracked-files=all
 ```
 
 **Commit:** `Add Android SDK tooling check`
+
+## Completed Target: PC30 Add Android Smoke Artifact Hygiene Check
+
+**Goal:** 在 G3 真机仍不可用时，不提前做 G4/G5；把 Android 真机 smoke 会产生的 log、截图、APK/AAB 和 `Builds/Android` 输出纳入机器检查，避免换机、演示或提交时把 ignored 生成物误带进源码。
+
+**Scope:**
+
+- Add `scripts/unity/check_android_smoke_artifact_hygiene.ps1`.
+- Require `.gitignore` markers for logs, PNG capture outputs, APK/AAB files and Unity `Builds/`.
+- Fail if tracked or staged paths contain Android smoke logs/screenshots, APK/AAB files or Android build outputs.
+- Wire artifact hygiene into `check_android_device_preflight.ps1`, `check_current_plan_gate.ps1`, and `check_controlled_demo_handoff.ps1`.
+- Update README, BUILD-WIN, BUILD-MOBILE, mobile, evidence and handoff docs to keep the current PC/mobile wait-state status sealed through PC30.
+
+**Acceptance:**
+
+- The Android smoke artifact hygiene checker fails if `.gitignore` no longer ignores logs, PNG outputs, APK/AAB files or Unity builds.
+- It fails if Android smoke logs/screenshots, APK/AAB files or Android build outputs are tracked or staged.
+- `check_android_device_preflight.ps1 -AllowNoDevice` checks artifact hygiene before reporting the expected waiting-on-device state.
+- `check_current_plan_gate.ps1` includes an explicit Android smoke artifact hygiene gate.
+- No APK, log, screenshot, sidecar or generated output is staged.
+
+**Validation:**
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_smoke_artifact_hygiene.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_device_preflight.ps1 -AllowNoDevice
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_current_plan_gate.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_controlled_demo_handoff.ps1 -RunReadiness
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_mobile_command_model_preflight.ps1
+git diff --check
+git status --short --branch --untracked-files=all
+```
+
+**Commit:** `Add Android smoke artifact hygiene check`
 
 ## Stop Conditions
 
