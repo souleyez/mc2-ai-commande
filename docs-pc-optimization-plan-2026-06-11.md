@@ -37,10 +37,10 @@ The current PC optimization pass is complete when:
 | PC0 | Done | Existing Windows baseline | Prior validator/build/smoke and visual captures have passed |
 | PC1 | Done | Audit current PC baseline | Re-run validator, Windows build, visible-flow smoke and six captures; record exact current weakness |
 | PC2 | Done | Polish battle readability | Fix only the highest-impact visible issue from PC1 |
-| PC3 | Next | Polish MechLab PC flow | Improve grid/loadout readability without adding weapon toggles |
-| PC4 | Later | Package controlled PC demo evidence | Refresh walkthrough/evidence and keep generated artifacts ignored |
+| PC3 | Done | Polish MechLab PC flow | Improve grid/loadout readability without adding weapon toggles |
+| PC4 | Next | Package controlled PC demo evidence | Refresh walkthrough/evidence and keep generated artifacts ignored |
 
-Do not start PC3 until PC2 produces fresh battle-readability evidence. Do not change gameplay rules from visual inspection alone; if the issue is collision, damage, command state or objective logic, first prove it in `BattleCore`.
+Do not start PC4 until PC3 produces fresh MechLab evidence. Do not change gameplay rules from visual inspection alone; if the issue is collision, damage, command state or objective logic, first prove it in `BattleCore`.
 
 ## Completed Target: PC1 Audit Current PC Baseline
 
@@ -177,7 +177,7 @@ sidecar contactClearance: all five PC2 battle captures still report overlaps=0 s
 
 **Commit:** `Polish PC battle readability`
 
-## Current Executable Target: PC3 Polish MechLab PC Flow
+## Completed Target: PC3 Polish MechLab PC Flow
 
 **Goal:** 让 PC 端装配界面更接近“整块装备放入格子”的直观感觉，不回退到武器启用/关闭。
 
@@ -206,9 +206,17 @@ git diff --check
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\capture_reference_visuals.ps1 -Presets mechlab
 ```
 
+**Completed Evidence 2026-06-11:**
+
+```text
+analysis-output/unity-build-pc-mechlab.log: Build Finished, Result: Success; MC2 Unity demo Windows build OK.
+capture_reference_visuals.ps1 -Presets mechlab: MC2 reference visual captures passed: 1 preset(s).
+sidecar mechLab: layout=pressure-cards+whole-blocks+single-fillers, alwaysMounted=weapons 6/6 items 6/6 noToggle=yes.
+```
+
 **Commit:** `Polish PC MechLab flow`
 
-## PC4: Package Controlled PC Demo Evidence
+## Current Executable Target: PC4 Package Controlled PC Demo Evidence
 
 **Goal:** 在 PC 可展示质量收稳后，刷新演示脚本和证据页，方便拿给外部人看。
 

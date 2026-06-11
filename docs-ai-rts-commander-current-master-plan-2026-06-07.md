@@ -8,7 +8,7 @@
 
 **Tech Stack:** Unity 6, C#, Windows PC build/smoke/capture as active demo loop, Android/iOS mobile-first after device blocker clears, deterministic BattleCore, PowerShell validator/build/smoke/capture scripts, replaceable content packs, optional high-level AI deputy adapter, later main server/map server/Web ranking contracts.
 
-**Revision:** 2026-06-11 v11. This is the current master plan after the private reference visual bridge, visible-flow seal, investor evidence package, art-safe metadata target, AI deputy offline guard, platform reward authority contract, machine handoff plan, mobile-first priority reset, Android build smoke, PC optimization resumption, PC1 baseline audit, and PC2 battle readability pass were refreshed. Older plan files remain evidence/history; this file is the first place to read when the user says "按计划继续". The finer task breakdown now lives in `docs-ai-rts-commander-current-detailed-plan-2026-06-07.md`.
+**Revision:** 2026-06-11 v12. This is the current master plan after the private reference visual bridge, visible-flow seal, investor evidence package, art-safe metadata target, AI deputy offline guard, platform reward authority contract, machine handoff plan, mobile-first priority reset, Android build smoke, PC optimization resumption, PC1 baseline audit, PC2 battle readability pass, and PC3 MechLab PC flow polish were refreshed. Older plan files remain evidence/history; this file is the first place to read when the user says "按计划继续". The finer task breakdown now lives in `docs-ai-rts-commander-current-detailed-plan-2026-06-07.md`.
 
 ---
 
@@ -90,7 +90,7 @@ Mobile G3 Waiting On Device -> PC Demo Optimization Pass
 | Gap | Why It Matters | First Fix |
 | --- | --- | --- |
 | Android 真机 smoke 等待设备 | APK 已能构建，但当前没有授权 Android 手机证明真实设备可启动并进入战斗/战报 | G3 等待连接 Android 手机，安装 APK，抓取 logcat 并记录启动结果 |
-| PC 可展示质量需要继续打磨 | 真机等待期间不能空转，PC 端仍是当前投资演示和开发验证入口 | PC3 继续打磨 MechLab 装配格子、整块武器和合法性表现 |
+| PC 可展示质量需要继续打磨 | 真机等待期间不能空转，PC 端仍是当前投资演示和开发验证入口 | PC4 刷新受控演示 walkthrough/evidence，形成当前 PC 可展示包说明 |
 | 移动端交互和性能未验证 | 移动端是产品优先项，拿到设备后还要证明手机触控和性能可接受 | G3-G5 在设备可用后继续做真机 smoke、触控 UI 和性能预算 |
 | 清权资产还未真正接入运行包 | D1 已有 metadata 合同，但不是最终美术包 | D2 以后再做 mountable clean content pack |
 | 平台化仍停在契约层 | 奖励权威已写清楚，地图包、排行和创作者边界还要补 | F2-F4 排到移动端 gate 之后 |
@@ -318,8 +318,8 @@ Known good strings:
 | 19 | Waiting on Device | `Run Android device smoke` | 真机启动并跑最小 visible-flow/command smoke；当前 adb 无授权设备 | device smoke |
 | 20 | Done | `Audit PC demo baseline` | Android G3 等设备期间，重跑 PC validator/build/visible-flow/six captures 并锁定下一处问题 | PC1 evidence |
 | 21 | Done | `Polish PC battle readability` | 根据 PC1 证据先修地形、水域、岸线、道路/跑道和可战斗陆地区域可读性 | Windows build + captures |
-| 22 | Next | `Polish PC MechLab flow` | 装配格子、整块武器、热量/重量/合法性更直观，不恢复武器开关 | Windows build + `mechlab` capture |
-| 23 | Later | `Package PC controlled demo evidence` | 刷新 walkthrough/evidence，形成 PC 可展示包说明 | docs check |
+| 22 | Done | `Polish PC MechLab flow` | 装配格子、整块武器、热量/重量/合法性更直观，不恢复武器开关 | Windows build + `mechlab` capture |
+| 23 | Next | `Package PC controlled demo evidence` | 刷新 walkthrough/evidence，形成 PC 可展示包说明 | docs check |
 | 24 | Later | `Adapt command UI for mobile touch` | 状态行、Jet、地图、系统和 MechLab 在手机触控可用 | device smoke |
 | 25 | Later | `Define mobile performance budget` | 记录 FPS、内存、包体、加载、热量/电量基线 | docs + device evidence |
 | 26 | Later | `Document iOS feasibility gate` | 记录 macOS/Xcode/签名/Metal/真机要求 | docs check |
@@ -858,7 +858,7 @@ git diff --check
 | M11 Platform contracts | In Progress | main server reward authority done; map authoring, ranking and creator boundaries remain |
 | M12 Machine handoff | Done | current machine is clean and validator/build/smoke passed |
 | M13 Mobile-first viability | Waiting on Device | Android APK build smoke passed; real-device smoke waits for an authorized phone, then touch UI and performance budget remain |
-| M14 PC demo optimization | In Progress | PC1 baseline and PC2 battle readability passed; PC3 MechLab PC flow polish is next |
+| M14 PC demo optimization | In Progress | PC1 baseline, PC2 battle readability and PC3 MechLab polish passed; PC4 controlled demo evidence packaging is next |
 
 ## 8. First Controlled Demo Definition Of Done
 
@@ -897,4 +897,4 @@ Stop and reassess if:
 
 ## 10. One-Line Direction
 
-Windows 本地 Demo 的画面、碰撞、稀疏 UI、MechLab、损伤故事、演示证据、公开 art-safe 元数据合同、AI 副官离线边界和主服务器奖励权威契约已经收稳；H2 validator/build/smoke 基线已过；G2 Android APK build smoke 已过；G3 真机 smoke 等待授权 Android 手机；PC1 基线审计和 PC2 战场可读性优化已过，当前可执行主线是 PC3：打磨 PC 端 MechLab 装配格子、整块武器和合法性表现。
+Windows 本地 Demo 的画面、碰撞、稀疏 UI、MechLab、损伤故事、演示证据、公开 art-safe 元数据合同、AI 副官离线边界和主服务器奖励权威契约已经收稳；H2 validator/build/smoke 基线已过；G2 Android APK build smoke 已过；G3 真机 smoke 等待授权 Android 手机；PC1 基线审计、PC2 战场可读性优化和 PC3 MechLab 打磨已过，当前可执行主线是 PC4：刷新受控 PC 演示 walkthrough/evidence，并保持生成截图、日志和私有参考包不入库。

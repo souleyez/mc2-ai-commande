@@ -43,9 +43,10 @@ namespace MC2Demo.Presentation
         private const int OccupancyLandingReviewMarkerCount = 16;
         private const float OcclusionFadeUpdateSpeed = 8f;
         private const float OcclusionBoundsRadiusPixelCap = 320f;
-        private const float LoadoutCardHeight = 456f;
-        private const float LoadoutCardStride = 468f;
+        private const float LoadoutCardHeight = 488f;
+        private const float LoadoutCardStride = 500f;
         private const float LoadoutGridSectionMinHeight = 224f;
+        private const float LoadoutStatusBandHeight = 32f;
         private const float MechLabDedicatedLayoutMinWidth = 900f;
         private const float MechLabDedicatedLayoutMinHeight = 560f;
         private const float MechLabDedicatedBaySummaryHeight = 520f;
@@ -153,6 +154,7 @@ namespace MC2Demo.Presentation
         private const string LoadoutHeatPressureLabel = "H ";
         private const string LoadoutWeightPressureLabel = "W ";
         private const string LoadoutGridPressureLabel = "G ";
+        private const string MechLabPcLayoutSummary = "layout=pressure-cards+whole-blocks+single-fillers";
         private static readonly Color UiPanelColor = new(0.035f, 0.045f, 0.055f, 0.92f);
         private static readonly Color UiButtonColor = new(0.075f, 0.105f, 0.125f, 0.96f);
         private static readonly Color UiTrackColor = new(0.015f, 0.02f, 0.025f, 0.9f);
@@ -6638,6 +6640,8 @@ namespace MC2Demo.Presentation
                 + pressure
                 + " "
                 + cellState
+                + " "
+                + MechLabPcLayoutSummary
                 + " "
                 + alwaysMounted;
         }
@@ -14609,7 +14613,7 @@ namespace MC2Demo.Presentation
             lineY += 20f;
             DrawProjectedLoadoutStatus(loadoutPreview, left, right, lineY, width);
 
-            lineY += 24f;
+            lineY += LoadoutStatusBandHeight + 10f;
             DrawLoadoutSectionLine(unit, left, lineY, width - 24f);
 
             lineY += 34f;
@@ -14669,34 +14673,54 @@ namespace MC2Demo.Presentation
         private void DrawProjectedLoadoutStatus(CombatLoadoutPreview preview, float left, float right, float y, float width)
         {
             LoadoutValidationResult result = preview.Validation;
+            float fullWidth = Mathf.Max(180f, width - 24f);
+            Rect band = new(left - 4f, y - 3f, fullWidth + 8f, LoadoutStatusBandHeight);
+            Color stateColor = result.IsValid ? new Color(0.50f, 1f, 0.62f, 1f) : new Color(1f, 0.78f, 0.28f, 1f);
+            DrawColorRect(band, new Color(0.012f, 0.022f, 0.026f, 0.86f));
+            DrawRectBorder(band, new Color(stateColor.r, stateColor.g, stateColor.b, 0.48f), 1f);
+
+            float stateWidth = Mathf.Clamp(fullWidth * 0.28f, 104f, 150f);
+            Rect stateRect = new(left, y + 2f, stateWidth, 24f);
+            DrawColorRect(stateRect, new Color(stateColor.r, stateColor.g, stateColor.b, 0.12f));
+            DrawRectBorder(stateRect, new Color(stateColor.r, stateColor.g, stateColor.b, 0.72f), 1f);
             Color previous = GUI.color;
-            GUI.color = result.IsValid ? new Color(0.50f, 1f, 0.62f, 1f) : new Color(1f, 0.78f, 0.28f, 1f);
-            GUI.Label(
-                new Rect(left, y, width * 0.46f, 18f),
-                ProjectedLoadoutStateText(preview));
+            GUI.color = stateColor;
+            GUI.Label(new Rect(stateRect.x + 7f, stateRect.y + 3f, stateRect.width - 14f, 18f), ProjectedLoadoutStateText(preview));
             GUI.color = previous;
 
-            GUI.Label(
-                new Rect(right, y, width * 0.46f, 18f),
-                ProjectedLoadoutPressureText(preview));
-            float meterWidth = width * 0.46f;
-            float meterGap = 6f;
-            float thirdMeter = Mathf.Max(26f, (meterWidth - meterGap * 2f) / 3f);
-            DrawLoadoutUsageBar(
-                new Rect(right, y + 17f, thirdMeter, 5f),
-                result.TotalHeat,
-                preview.HeatLimit,
-                UiCyanColor);
-            DrawLoadoutUsageBar(
-                new Rect(right + thirdMeter + meterGap, y + 17f, thirdMeter, 5f),
-                result.TotalWeight,
-                preview.WeightLimit,
-                UiAmberColor);
-            DrawLoadoutUsageBar(
-                new Rect(right + (thirdMeter + meterGap) * 2f, y + 17f, thirdMeter, 5f),
+            float cardGap = 7f;
+            float pressureX = stateRect.xMax + 8f;
+            float pressureWidth = Mathf.Max(90f, band.xMax - pressureX - 4f);
+            float cardWidth = Mathf.Max(50f, (pressureWidth - cardGap * 2f) / 3f);
+            DrawLoadoutPressureCard(pressureX, y, cardWidth, "H", result.TotalHeat, preview.HeatLimit, UiCyanColor);
+            DrawLoadoutPressureCard(pressureX + cardWidth + cardGap, y, cardWidth, "W", result.TotalWeight, preview.WeightLimit, UiAmberColor);
+            DrawLoadoutPressureCard(
+                pressureX + (cardWidth + cardGap) * 2f,
+                y,
+                cardWidth,
+                "G",
                 result.OccupiedGridCells,
                 preview.GridCapacity,
                 LoadoutComponentColor);
+        }
+
+        private void DrawLoadoutPressureCard(float x, float y, float width, string label, float value, float limit, Color color)
+        {
+            bool overLimit = limit > 0f && value > limit;
+            Color cue = overLimit ? new Color(1f, 0.22f, 0.12f, 0.96f) : color;
+            Rect rect = new(x, y + 1f, width, 26f);
+            DrawColorRect(rect, new Color(cue.r, cue.g, cue.b, overLimit ? 0.16f : 0.10f));
+            DrawRectBorder(rect, new Color(cue.r, cue.g, cue.b, overLimit ? 0.90f : 0.58f), 1f);
+            GUI.Label(new Rect(rect.x + 5f, rect.y + 2f, 16f, 16f), label);
+            GUIStyle valueStyle = new(uiLabelStyle)
+            {
+                alignment = TextAnchor.UpperRight,
+                clipping = TextClipping.Clip,
+                fontStyle = FontStyle.Bold
+            };
+            valueStyle.normal.textColor = overLimit ? new Color(1f, 0.45f, 0.32f, 1f) : UiTextColor;
+            GUI.Label(new Rect(rect.x + 20f, rect.y + 2f, rect.width - 25f, 16f), LoadoutPressureValueText(value, limit), valueStyle);
+            DrawLoadoutUsageBar(new Rect(rect.x + 5f, rect.yMax - 7f, rect.width - 10f, 4f), value, limit, color);
         }
 
         private static string ProjectedLoadoutStateText(CombatLoadoutPreview preview)
@@ -17635,6 +17659,10 @@ namespace MC2Demo.Presentation
             if (isWeapon)
             {
                 DrawLoadoutBlockCellDividers(occupiedCells, blockCell, gridOriginX, gridOriginY, cellSize, gap);
+                Rect outer = new(block.x - 1f, block.y - 1f, block.width + 2f, block.height + 2f);
+                DrawRectBorder(outer, new Color(UiCyanColor.r, UiCyanColor.g, UiCyanColor.b, isSelected ? 0.95f : 0.70f), isSelected ? 3f : 2f);
+                DrawColorRect(new Rect(block.x + 3f, block.y + 4f, 3f, Mathf.Max(1f, block.height - 8f)), new Color(UiCyanColor.r, UiCyanColor.g, UiCyanColor.b, 0.52f));
+                DrawColorRect(new Rect(block.xMax - 6f, block.y + 4f, 3f, Mathf.Max(1f, block.height - 8f)), new Color(UiCyanColor.r, UiCyanColor.g, UiCyanColor.b, 0.36f));
             }
             else if (isFiller)
             {

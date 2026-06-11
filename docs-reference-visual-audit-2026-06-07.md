@@ -2710,8 +2710,55 @@ PC2 visual judgment:
 - `damage-demo` keeps the section-damage story visible after the terrain color pass.
 - This pass is intentionally presentation-only; it does not solve final public art quality or clean-room replacement content.
 
+Superseded next priority:
+
+1. PC3 MechLab polish was completed in the next section.
+2. Weapon enable/disable toggles were not reintroduced; installed weapons remain active.
+3. Generated screenshots, sidecars, logs, Windows builds and private reference exports remained ignored.
+
+## PC3 MechLab Flow Polish 2026-06-11
+
+Implemented the PC MechLab readability pass selected by the PC optimization plan.
+
+Changed evidence:
+
+- Replaced the small H/W/G status line inside the loadout card with pressure cards for heat, weight and grid use.
+- Enlarged the loadout card content height so the pressure strip, grid, selected weapon row and Done/Clean controls remain visible at 1280x720.
+- Strengthened whole-weapon block framing with a stronger outer frame and side anchors while keeping per-cell dividers visible.
+- Added capture sidecar layout evidence: `layout=pressure-cards+whole-blocks+single-fillers`.
+- Updated `capture_reference_visuals.ps1` so `mechlab` capture fails if the new PC3 layout evidence is missing.
+- Kept BattleCore loadout validation, mounted weapon rules, heat/weight/grid limits and weapon activation rules unchanged.
+
+Validation commands:
+
+```powershell
+& "$HOME\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe" -batchmode -quit -projectPath "$PWD\unity-mc2-demo" -executeMethod MC2Demo.EditorTools.Mc2DemoBuilder.BuildWindows64 -logFile "$PWD\analysis-output\unity-build-pc-mechlab.log"
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\unity\capture_reference_visuals.ps1 -Presets mechlab
+```
+
+Validation evidence:
+
+```text
+analysis-output/unity-build-pc-mechlab.log: Build Finished, Result: Success; MC2 Unity demo Windows build OK.
+capture_reference_visuals.ps1 -Presets mechlab: MC2 reference visual captures passed: 1 preset(s).
+```
+
+Observed sidecar evidence:
+
+```text
+MechLabCapture=open flow=Mech Lab unit=Werewolf weaponBlock=1 Streak 1x2 fillers=A+/C+ fit=Fit OK pressure=H 12/22  W 16/16  G 12/16 CellState=OK OPEN4 OCC12 OCC!0 OOB0 layout=pressure-cards+whole-blocks+single-fillers alwaysMounted=weapons 6/6 items 6/6 noToggle=yes.
+```
+
+PC3 visual judgment:
+
+- The loadout card now makes legality and resource pressure easier to scan: Fit state is separated from heat, weight and grid pressure.
+- Weapon blocks read more like whole installed objects rather than unrelated green cells.
+- Single-cell armor and cooling fillers still remain simple filler choices, not a second complex subsystem.
+- The screenshot still fits the normal 1280x720 PC demo frame. The loadout area now has scroll affordance, but the selected mech, pressure strip, grid, selected weapon row and Done/Clean controls are visible in the capture.
+- This pass intentionally does not add weapon activation toggles; `alwaysMounted=weapons 6/6 items 6/6 noToggle=yes` remains the gate.
+
 Next priority:
 
-1. PC3 should polish the PC MechLab flow: whole weapon blocks, heat/weight pressure, legal state and simple armor/sink fillers.
-2. Do not reintroduce weapon enable/disable toggles; installed weapons remain active.
-3. Keep generated screenshots, sidecars, logs, Windows builds and private reference exports ignored.
+1. PC4 should refresh controlled PC demo walkthrough/evidence from the current state.
+2. Do not stage generated screenshots, JSON sidecars, logs, Windows builds or private reference exports.
+3. Android G3 still waits for an authorized physical Android device.

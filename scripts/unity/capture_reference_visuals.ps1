@@ -712,6 +712,7 @@ function Test-MechLabCaptureSidecar {
         "fit=",
         "pressure=H ",
         " W ",
+        "layout=pressure-cards+whole-blocks+single-fillers",
         "alwaysMounted=weapons",
         "noToggle=yes"
     )) {
