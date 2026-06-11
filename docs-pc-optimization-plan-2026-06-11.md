@@ -14,7 +14,7 @@
 
 Mobile support remains the product priority, but `G3 Android Device Smoke` is waiting on a physical Android phone with USB debugging authorized. While that device blocker existed, this plan used PC demo optimization to keep the Windows demo moving.
 
-The current PC/mobile wait-state optimization pass is now sealed through PC31. This does not move G4/G5 mobile touch and performance ahead of G3; the next mobile gate still requires the physical authorized phone.
+The current PC/mobile wait-state optimization pass is now sealed through PC32. This does not move G4/G5 mobile touch and performance ahead of G3; the next mobile gate still requires the physical authorized phone.
 
 ## Definition Of Done
 
@@ -51,6 +51,7 @@ The current PC optimization pass is complete when:
 - Android APK size budget can be checked before G3, proving the early mobile demo package has not accidentally bloated past the current install-readiness budget.
 - Android smoke artifact hygiene can be checked before G3, proving APK/AAB outputs, Android smoke logs/screenshots and `Builds/Android` outputs are ignored and absent from tracked/staged paths.
 - Android smoke screenshot evidence capture can be previewed before G3, proving the real-device smoke helper will write ignored `analysis-output\android-device-smoke.png` visual evidence.
+- Android smoke summary evidence output can be previewed before G3, proving the real-device smoke helper will write ignored `analysis-output\android-device-smoke-summary.json` run metadata.
 - Sparse battle HUD can be checked without launching Unity through `check_battle_hud_sparse_contract.ps1`.
 - Demo source hygiene can be checked without launching Unity through `check_demo_source_hygiene.ps1`.
 - AI deputy contract can be checked without launching Unity or calling the model through `check_ai_deputy_contract.ps1`.
@@ -64,6 +65,7 @@ The current PC optimization pass is complete when:
 - Android APK size budget can be checked without launching Unity through `check_android_apk_size_budget.ps1`.
 - Android smoke artifact hygiene can be checked without launching Unity through `check_android_smoke_artifact_hygiene.ps1`.
 - Android smoke screenshot evidence can be previewed without a device through `android_device_smoke.ps1 -PlanOnly`, which prints `ScreenshotCapture: True`.
+- Android smoke summary evidence can be previewed without a device through `android_device_smoke.ps1 -PlanOnly`, which prints `SummaryWrite: True`.
 - No generated screenshot, JSON sidecar, log, Windows build output, APK/AAB, or private reference export is staged.
 
 ## Execution Gate Order
@@ -102,6 +104,7 @@ The current PC optimization pass is complete when:
 | PC29 | Done | Add Android SDK tooling check | Check Unity AndroidPlayer SDK, NDK, OpenJDK, build-tools, platform, adb, aapt and apksigner before G3 install/launch |
 | PC30 | Done | Add Android smoke artifact hygiene check | Check Android smoke logs/screenshots, APK/AAB outputs and `Builds/Android` paths stay ignored and out of tracked/staged source |
 | PC31 | Done | Add Android smoke screenshot evidence capture | Preview and real-device smoke both include ignored screenshot evidence at `analysis-output\android-device-smoke.png` |
+| PC32 | Done | Add Android smoke summary evidence output | Preview and real-device smoke both include ignored JSON run metadata at `analysis-output\android-device-smoke-summary.json` |
 
 Do not open another PC polish gate from visual inspection alone. If the issue is collision, damage, command state or objective logic, first prove it in `BattleCore`.
 
@@ -1197,7 +1200,7 @@ git status --short --branch --untracked-files=all
 - Fail real-device smoke if the screenshot file is implausibly small.
 - Make `android_device_smoke.ps1 -PlanOnly` print `Screenshot:` and `ScreenshotCapture: True`.
 - Update `check_current_plan_gate.ps1` so Android smoke plan mode must include the screenshot markers.
-- Update README, BUILD-WIN, BUILD-MOBILE, mobile, evidence and handoff docs to keep the current PC/mobile wait-state status sealed through PC31.
+- Updated README, BUILD-WIN, BUILD-MOBILE, mobile, evidence and handoff docs for the PC31 checkpoint before the later PC32 summary evidence gate superseded the current wait-state seal.
 
 **Acceptance:**
 
@@ -1219,6 +1222,40 @@ git status --short --branch --untracked-files=all
 ```
 
 **Commit:** `Add Android smoke screenshot evidence capture`
+
+## Completed Target: PC32 Add Android Smoke Summary Evidence Output
+
+**Goal:** 在 G3 真机仍不可用时，不提前做 G4/G5；把 Android 真机 smoke 的结果摘要输出接好。设备到位后，helper 应在 ignored JSON 里记录设备、包、日志、截图、进程和时间戳，避免之后只能从控制台手工摘录。
+
+**Scope:**
+
+- Add `-SummaryPath` and `-SkipSummary` to `scripts/unity/android_device_smoke.ps1`.
+- Default summary output to ignored `analysis-output\android-device-smoke-summary.json`.
+- Write JSON with result, UTC timestamp, device id, model, Android version, package/activity, process, APK path, log path, screenshot path and execution flags.
+- Make `android_device_smoke.ps1 -PlanOnly` print `Summary:` and `SummaryWrite: True`.
+- Update `check_current_plan_gate.ps1` so Android smoke plan mode must include summary markers.
+- Update README, BUILD-WIN, BUILD-MOBILE, mobile, evidence and handoff docs to keep the current PC/mobile wait-state status sealed through PC32.
+
+**Acceptance:**
+
+- `android_device_smoke.ps1 -PlanOnly` prints `Android device smoke plan OK.`, `Summary:` and `SummaryWrite: True`.
+- Real device smoke writes ignored `analysis-output\android-device-smoke-summary.json` unless `-SkipSummary` is passed.
+- `check_current_plan_gate.ps1` fails if Android smoke plan mode no longer reports summary output.
+- No APK, log, screenshot, summary or generated output is staged.
+
+**Validation:**
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\android_device_smoke.ps1 -PlanOnly
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_smoke_artifact_hygiene.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_current_plan_gate.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_controlled_demo_handoff.ps1 -RunReadiness
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_mobile_command_model_preflight.ps1
+git diff --check
+git status --short --branch --untracked-files=all
+```
+
+**Commit:** `Add Android smoke summary evidence output`
 
 ## Stop Conditions
 

@@ -268,14 +268,17 @@ Expected:
 Android device smoke plan OK
 Screenshot: C:\...\analysis-output\android-device-smoke.png
 ScreenshotCapture: True
+Summary: C:\...\analysis-output\android-device-smoke-summary.json
+SummaryWrite: True
 ```
 
 The helper verifies SDK tooling plus APK freshness, identity, compatibility,
 signing, manifest, payload and size budget, discovers the APK package name
 through `aapt`, checks that exactly one authorized Android device is connected,
-installs the APK, launches it, waits briefly, captures logcat and an ignored
-`analysis-output\android-device-smoke.png` screenshot, scans the log for strong
-crash markers, and fails if the package does not stay running.
+installs the APK, launches it, waits briefly, captures logcat, an ignored
+`analysis-output\android-device-smoke.png` screenshot and an ignored
+`analysis-output\android-device-smoke-summary.json` summary, scans the log for
+strong crash markers, and fails if the package does not stay running.
 
 Self-test the log scanner without a device:
 
@@ -347,6 +350,7 @@ scripts\unity\check_android_apk_payload.ps1 -> Android APK payload check OK
 scripts\unity\check_android_apk_size_budget.ps1 -> Android APK size budget check OK
 scripts\unity\check_android_smoke_artifact_hygiene.ps1 -> Android smoke artifact hygiene check OK
 scripts\unity\android_device_smoke.ps1 -PlanOnly -> ScreenshotCapture: True, Screenshot -> analysis-output\android-device-smoke.png
+scripts\unity\android_device_smoke.ps1 -PlanOnly -> SummaryWrite: True, Summary -> analysis-output\android-device-smoke-summary.json
 scripts\unity\check_android_device_preflight.ps1 -AllowNoDevice -> Android device smoke preflight waiting on device
 ```
 

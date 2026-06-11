@@ -234,7 +234,9 @@ Invoke-GateStep `
     -RequiredMarkers @(
         "Android device smoke plan OK.",
         "Screenshot:",
-        "ScreenshotCapture: True"
+        "ScreenshotCapture: True",
+        "Summary:",
+        "SummaryWrite: True"
     )
 
 if ($failures.Count -gt 0) {

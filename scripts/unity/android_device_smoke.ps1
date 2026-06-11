@@ -9,11 +9,13 @@ param(
     [string]$DeviceId = "",
     [string]$LogPath = "",
     [string]$ScreenshotPath = "",
+    [string]$SummaryPath = "",
     [int]$LaunchWaitSeconds = 12,
     [switch]$NoInstall,
     [switch]$NoLaunch,
     [switch]$SkipLogCheck,
     [switch]$SkipScreenshot,
+    [switch]$SkipSummary,
     [switch]$PlanOnly
 )
 
@@ -47,6 +49,10 @@ if ([string]::IsNullOrWhiteSpace($LogPath)) {
 
 if ([string]::IsNullOrWhiteSpace($ScreenshotPath)) {
     $ScreenshotPath = Join-Path $RepoRoot "analysis-output\android-device-smoke.png"
+}
+
+if ([string]::IsNullOrWhiteSpace($SummaryPath)) {
+    $SummaryPath = Join-Path $RepoRoot "analysis-output\android-device-smoke-summary.json"
 }
 
 if (-not (Test-Path -LiteralPath $ApkPath)) {
@@ -299,6 +305,16 @@ function Invoke-BinaryCommandToFile {
     }
 }
 
+function Write-SmokeSummary {
+    param(
+        [string]$Path,
+        [object]$Data
+    )
+
+    New-Item -ItemType Directory -Force -Path (Split-Path -Parent $Path) | Out-Null
+    $Data | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $Path -Encoding UTF8
+}
+
 $metadata = Get-ApkMetadata -Apk $ApkPath -Aapt $AaptPath
 if ([string]::IsNullOrWhiteSpace($PackageName)) {
     $PackageName = $metadata.PackageName
@@ -327,10 +343,12 @@ if ($PlanOnly) {
     }
     Write-Host "Log: $LogPath"
     Write-Host "Screenshot: $ScreenshotPath"
+    Write-Host "Summary: $SummaryPath"
     Write-Host "Install: $(-not $NoInstall)"
     Write-Host "Launch: $(-not $NoLaunch)"
     Write-Host "LogCheck: $(-not $SkipLogCheck)"
     Write-Host "ScreenshotCapture: $(-not $SkipScreenshot)"
+    Write-Host "SummaryWrite: $(-not $SkipSummary)"
     return
 }
 
@@ -385,6 +403,29 @@ if (-not $SkipLogCheck) {
     }
 }
 
+if (-not $SkipSummary) {
+    $summary = [pscustomobject]@{
+        result = "completed"
+        timestampUtc = [DateTime]::UtcNow.ToString("o")
+        deviceId = $device
+        model = $model.Trim()
+        androidVersion = $androidVersion.Trim()
+        packageName = $PackageName
+        activityName = $ActivityName
+        process = $pidOutput.Trim()
+        apkPath = $ApkPath
+        logPath = $LogPath
+        screenshotPath = if ($SkipScreenshot) { "" } else { $ScreenshotPath }
+        launchWaitSeconds = $LaunchWaitSeconds
+        installed = -not $NoInstall
+        launched = -not $NoLaunch
+        logChecked = -not $SkipLogCheck
+        screenshotCaptured = -not $SkipScreenshot
+    }
+
+    Write-SmokeSummary -Path $SummaryPath -Data $summary
+}
+
 Write-Host "Android device smoke complete."
 Write-Host "Device: $device"
 Write-Host "Model: $model"
@@ -397,6 +438,9 @@ Write-Host "Process: $pidOutput"
 Write-Host "Log: $LogPath"
 if (-not $SkipScreenshot) {
     Write-Host "Screenshot: $ScreenshotPath"
+}
+if (-not $SkipSummary) {
+    Write-Host "Summary: $SummaryPath"
 }
 
 if ([string]::IsNullOrWhiteSpace($pidOutput)) {

@@ -25,8 +25,9 @@ As of this handoff plan:
 - Remote warning: GitHub currently reports the repository moved to `git@github.com:souleyez/mc2-ai-commande.git`; pushes to the configured `ai-origin` have still succeeded.
 - Upstream source remote kept for history: `origin https://github.com/alariq/mc2.git`
 - Current branch state after the latest controlled demo checkpoint: `master...ai-origin/master`
-- Latest sealed PC/mobile wait-state checkpoint: `PC1-PC31`
-- Last completed PC checkpoint: `Add Android smoke screenshot evidence capture`
+- Latest sealed PC/mobile wait-state checkpoint: `PC1-PC32`
+- Last completed PC checkpoint: `Add Android smoke summary evidence output`
+- Previous PC checkpoint retained in the gate chain: `Add Android smoke screenshot evidence capture`
 - Previous PC checkpoint retained in the gate chain: `Add Android smoke artifact hygiene check`
 - Previous PC checkpoint retained in the gate chain: `Add Android SDK tooling check`
 - Previous PC checkpoint retained in the gate chain: `Add Android APK size budget check`
@@ -77,6 +78,7 @@ The machine switch is safe only when all of these are true:
 - `scripts/unity/check_android_smoke_log.ps1 -SelfTest` prints `Android smoke log check self-test OK`.
 - `scripts/unity/android_device_smoke.ps1 -PlanOnly` prints `Android device smoke plan OK`.
 - `scripts/unity/android_device_smoke.ps1 -PlanOnly` prints `ScreenshotCapture: True` and `analysis-output\android-device-smoke.png`.
+- `scripts/unity/android_device_smoke.ps1 -PlanOnly` prints `SummaryWrite: True` and `analysis-output\android-device-smoke-summary.json`.
 - Any AI API key is configured through environment variables, not committed.
 - Optional private reference visuals remain ignored and local-only.
 
