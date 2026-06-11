@@ -8,7 +8,7 @@
 
 **Tech Stack:** Unity 6, C#, Windows PC build/smoke/capture as active demo loop, Android/iOS mobile-first after device blocker clears, deterministic BattleCore, PowerShell build/smoke/capture scripts, replaceable content packs, optional high-level AI deputy, later main server/map server/Web ranking contracts.
 
-**Revision:** 2026-06-12 v32. This file is the fine-grained execution plan paired with `docs-ai-rts-commander-current-master-plan-2026-06-07.md`. The private reference visual bridge, local investor evidence package, art-safe metadata contract, AI deputy offline guard, reward authority contract, machine handoff plan, mobile-first priority reset, Android build smoke, PC optimization resumption, PC1 baseline audit, PC2 battle readability pass, PC3 MechLab PC flow polish, PC4 controlled demo evidence package, PC5 Windows demo launcher preflight, PC6 controlled demo evidence health check, PC7 controlled demo public boundary preflight, PC8 controlled demo readiness preflight, PC9 controlled demo handoff consistency check, PC10 Android device-smoke preflight, PC11 PC core playable contract check, PC12 mobile command model preflight, PC13 current plan gate check, PC14 Android smoke log crash scan, PC15 Android smoke plan mode, PC16 battle HUD sparse contract check, PC17 demo source hygiene check, PC18 AI deputy contract check, and PC19 Windows demo build freshness check are now sealed for the current Demo. H2 validator/build/smoke is green; G2 Android build smoke is green with a generated APK; `G3 Run Android Device Smoke` is waiting on a physical authorized phone. The current PC optimization batch is complete unless a new PC20 target is explicitly defined.
+**Revision:** 2026-06-12 v33. This file is the fine-grained execution plan paired with `docs-ai-rts-commander-current-master-plan-2026-06-07.md`. The private reference visual bridge, local investor evidence package, art-safe metadata contract, AI deputy offline guard, reward authority contract, machine handoff plan, mobile-first priority reset, Android build smoke, PC optimization resumption, PC1 baseline audit, PC2 battle readability pass, PC3 MechLab PC flow polish, PC4 controlled demo evidence package, PC5 Windows demo launcher preflight, PC6 controlled demo evidence health check, PC7 controlled demo public boundary preflight, PC8 controlled demo readiness preflight, PC9 controlled demo handoff consistency check, PC10 Android device-smoke preflight, PC11 PC core playable contract check, PC12 mobile command model preflight, PC13 current plan gate check, PC14 Android smoke log crash scan, PC15 Android smoke plan mode, PC16 battle HUD sparse contract check, PC17 demo source hygiene check, PC18 AI deputy contract check, PC19 Windows demo build freshness check, and PC20 controlled demo evidence freshness check are now sealed for the current Demo. H2 validator/build/smoke is green; G2 Android build smoke is green with a generated APK; `G3 Run Android Device Smoke` is waiting on a physical authorized phone. The current PC optimization batch is complete unless a new PC21 target is explicitly defined.
 
 ---
 
@@ -38,14 +38,14 @@
 1. `H2` validator、Windows build 和 visible-flow smoke 已通过；Unity scene fileID churn 已恢复，工作区保持干净。
 2. `G3` 仍是当前移动端 gate：在真 Android 设备上安装并启动 APK，证明移动端运行链路可用。
 3. 当前机器没有授权 Android 设备；G3 进入 Waiting on Device 状态，不推进 G4/G5。
-4. Android 设备等待期间，PC1 基线审计、PC2 战场可读性优化、PC3 MechLab 打磨、PC4 受控演示证据包、PC5 Windows 启动预检、PC6 证据健康检查、PC7 公开边界预检、PC8 演示总预检、PC9 交接一致性检查、PC10 Android 真机 smoke 前置检查、PC11 PC 核心玩法合约检查、PC12 移动指挥模型预检、PC13 当前计划 gate 总预检、PC14 Android smoke 日志崩溃扫描、PC15 Android smoke 预演模式、PC16 战斗 HUD 稀疏合约检查、PC17 源码/生成物卫生检查、PC18 AI 副官边界检查和 PC19 Windows 演示构建新鲜度检查已通过；下一步回到 `G3` 真机 smoke，或先定义新的 PC20 再继续 PC/等待态工作。
+4. Android 设备等待期间，PC1 基线审计、PC2 战场可读性优化、PC3 MechLab 打磨、PC4 受控演示证据包、PC5 Windows 启动预检、PC6 证据健康检查、PC7 公开边界预检、PC8 演示总预检、PC9 交接一致性检查、PC10 Android 真机 smoke 前置检查、PC11 PC 核心玩法合约检查、PC12 移动指挥模型预检、PC13 当前计划 gate 总预检、PC14 Android smoke 日志崩溃扫描、PC15 Android smoke 预演模式、PC16 战斗 HUD 稀疏合约检查、PC17 源码/生成物卫生检查、PC18 AI 副官边界检查、PC19 Windows 演示构建新鲜度检查和 PC20 受控演示证据新鲜度检查已通过；下一步回到 `G3` 真机 smoke，或先定义新的 PC21 再继续 PC/等待态工作。
 5. D1 只是 art-safe metadata 合同，不是可挂载 runtime pack；后续 D2 才能进入清权资产生产和 mountable pack。
 6. 私有参考素材可以继续用于本机开发验证，但公开材料不能把它描述成最终产品内容。
 7. `F2-F4` 平台化方向仍保留，但现在只在移动端可行性通过后继续。
 
 当前工作区注意事项：
 
-- 若当前 `git status` 只剩计划文档改动，先完成校验并提交；之后等待 G3 设备，或先写清新的 PC20 目标。
+- 若当前 `git status` 只剩计划文档改动，先完成校验并提交；之后等待 G3 设备，或先写清新的 PC21 目标。
 - D1 新增的是 metadata 示例文件；不允许把私有 OBJ/TGA/PNG/JSON、截图、log 或 Unity build 输出加入 git。
 - G2-G5 先做移动端可行性；F2-F4 后移，不先写服务器实现。
 - 如果 Unity batch 运行后只造成 `unity-mc2-demo/Assets/Scenes/Mc2Demo.unity` fileID churn，不要纳入提交。
@@ -110,7 +110,7 @@
 | M11 | 平台契约 | In Progress | 奖励认证契约完成；地图包、排行、创作者边界待写 |
 | M12 | 换机开发交接 | Done | H2 validator/build/smoke 已通过 |
 | M13 | 移动端优先可行性 | Waiting on Device | Android APK build smoke 已通过；真机 smoke 等授权手机，之后再做触控 UI 和性能预算 |
-| M14 | PC/移动等待态优化 | Done for current pass | PC1-PC19 passed: PC1 baseline, PC2 battle readability, PC3 MechLab polish, PC4 controlled demo evidence package, PC5 launch preflight, PC6 evidence health check, PC7 public boundary preflight, PC8 readiness preflight, PC9 handoff consistency check, PC10 Android device-smoke preflight, PC11 PC core playable contract check, PC12 mobile command model preflight, PC13 current plan gate check, PC14 Android smoke log crash scan, PC15 Android smoke plan mode, PC16 battle HUD sparse contract check, PC17 demo source hygiene check, PC18 AI deputy contract check and PC19 Windows demo build freshness check |
+| M14 | PC/移动等待态优化 | Done for current pass | PC1-PC20 passed: PC1 baseline, PC2 battle readability, PC3 MechLab polish, PC4 controlled demo evidence package, PC5 launch preflight, PC6 evidence health check, PC7 public boundary preflight, PC8 readiness preflight, PC9 handoff consistency check, PC10 Android device-smoke preflight, PC11 PC core playable contract check, PC12 mobile command model preflight, PC13 current plan gate check, PC14 Android smoke log crash scan, PC15 Android smoke plan mode, PC16 battle HUD sparse contract check, PC17 demo source hygiene check, PC18 AI deputy contract check, PC19 Windows demo build freshness check and PC20 controlled demo evidence freshness check |
 
 ## 4. Fine-Grained Commit Queue
 
@@ -155,6 +155,7 @@
 | PC17 | Done | `Add demo source hygiene check` | 不启动 Unity，检查 tracked/staged 路径和 `.gitignore`，防止生成截图、日志、Unity build、APK/AAB 和私有参考导出误进入源码提交 | `check_demo_source_hygiene.ps1` |
 | PC18 | Done | `Add AI deputy contract check` | 不启动 Unity、不调用模型，检查 MiniMax 仍是可选慢频高层 directive、无 key fallback、默认 smoke 不请求模型步数、frame loop 不调用模型 | `check_ai_deputy_contract.ps1` |
 | PC19 | Done | `Add Windows demo build freshness check` | 不启动 Unity，检查 ignored Windows player 输出晚于 tracked Unity build 输入，并接入 readiness preflight | `check_windows_demo_build_freshness.ps1` |
+| PC20 | Done | `Add controlled demo evidence freshness check` | 受控演示 evidence check 拒绝早于当前 build/证据输入的 visible-flow 日志和六截图 sidecar | `check_controlled_demo_evidence.ps1` |
 | G4 | Later | `Adapt command UI for mobile touch` | 状态行、Jet、地图、系统和 MechLab 手机触控可用 | device smoke |
 | G5 | Later | `Define mobile performance budget` | FPS、内存、包体、加载、热量/电量基线 | docs + device evidence |
 | G6 | Later | `Document iOS feasibility gate` | macOS/Xcode/签名/Metal/真机要求 | docs |
@@ -225,6 +226,7 @@
 | PC17.1 | Done | 增加源码/生成物卫生检查并接入 current gate，确认 tracked/staged 路径和 `.gitignore` 不会放行本地证据、Unity build、APK/AAB 或私有参考导出 | `scripts/unity/check_demo_source_hygiene.ps1`; `scripts/unity/check_current_plan_gate.ps1`; docs | `check_demo_source_hygiene.ps1` |
 | PC18.1 | Done | 增加 AI 副官边界检查并接入 current gate，确认 MiniMax 只做慢频高层 directive、无 key fallback、默认 smoke 不花 token、frame loop 不调用模型 | `scripts/unity/check_ai_deputy_contract.ps1`; `scripts/unity/check_current_plan_gate.ps1`; docs | `check_ai_deputy_contract.ps1` |
 | PC19.1 | Done | 增加 Windows 演示构建新鲜度检查并接入 readiness，确认 ignored player 输出不落后于 tracked Unity build 输入 | `scripts/unity/check_windows_demo_build_freshness.ps1`; `scripts/unity/check_controlled_demo_readiness.ps1`; docs | `check_windows_demo_build_freshness.ps1` |
+| PC20.1 | Done | 增强受控演示 evidence check，确认 visible-flow 日志和六截图 PNG/JSON 晚于当前 build/证据输入，并刷新本地 ignored 证据 | `scripts/unity/check_controlled_demo_evidence.ps1`; ignored evidence outputs; docs | `check_controlled_demo_evidence.ps1` |
 | G4.1 | Later | 调整触控命令 UI，保持无框选、稀疏 HUD、状态栏单选 | Unity presentation | mobile smoke |
 | G5.1 | Later | 定义移动端性能预算并记录首轮基线 | docs + ignored evidence | budget doc |
 | F2.1 | Later | 写地图包/编辑器契约，定义地图元数据、触发图、敌人、奖励引用和验证器边界 | platform docs | `git diff --check` |
@@ -1936,6 +1938,40 @@ git status --short --branch --untracked-files=all
 
 **Commit:** `Add Windows demo build freshness check`
 
+### PC20: Add Controlled Demo Evidence Freshness Check
+
+**Status:** Completed 2026-06-12.
+
+**Goal:** G3 真机仍不可用时，不扩大玩法；让受控演示证据包拒绝旧 visible-flow 日志和旧截图 sidecar，确保当前 evidence 对应当前 Windows build。
+
+**Files:**
+
+- Modify: `scripts/unity/check_controlled_demo_evidence.ps1`
+- Modify: `scripts/unity/check_controlled_demo_handoff.ps1`
+- Modify: README/BUILD-WIN/current plans/evidence/handoff docs
+- Refresh ignored local evidence: `analysis-output/unity-player-pc-evidence-visible-flow.log` and `analysis-output/reference-visual-captures/*`
+
+**Acceptance:**
+
+- The evidence checker compares visible-flow log freshness against the current Windows build and visible-flow command file.
+- It compares six standard capture PNG/JSON sidecars against the current Windows build and capture helper.
+- It still checks smoke exit, debrief, compact loadout, MechLab no-toggle, terrain readability, sparse HUD, contact separation and damage story.
+- It does not launch Unity or create artifacts itself.
+- Fresh ignored visible-flow and six capture outputs exist locally and remain unstaged.
+
+**Validation:**
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_controlled_demo_evidence.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_controlled_demo_readiness.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_current_plan_gate.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_controlled_demo_handoff.ps1 -RunReadiness
+git diff --check
+git status --short --branch --untracked-files=all
+```
+
+**Commit:** `Add controlled demo evidence freshness check`
+
 ### G4: Adapt Command UI For Mobile Touch
 
 **Status:** Later.
@@ -2151,6 +2187,7 @@ Demo 可以给少量外部人看时，必须满足：
 22. Demo source hygiene check proves tracked/staged paths and `.gitignore` keep generated evidence, Unity builds, APK/AAB outputs and private reference art out of source commits.
 23. AI deputy contract check proves the optional model path stays high-level, fallback-safe, smoke-token-free by default and absent from frame loops.
 24. Windows demo build freshness check proves ignored player output is newer than tracked Unity build inputs before readiness is accepted.
+25. Controlled demo evidence freshness check proves visible-flow and six capture PNG/JSON sidecars are newer than current Windows build/evidence inputs.
 
 ## 8. Stop Conditions
 
@@ -2168,4 +2205,4 @@ Stop and reassess before committing if:
 
 ## 9. One-Line Direction
 
-Windows 本地 Demo 的画面、碰撞、稀疏 UI、MechLab、损伤故事、受控演示证据、启动预检、构建新鲜度检查、证据健康检查、公开边界预检、演示总预检、交接一致性检查、Android 真机 smoke 前置检查、PC 核心玩法合约检查、移动指挥模型预检、战斗 HUD 稀疏合约检查、源码/生成物卫生检查、AI 副官边界检查、当前计划 gate 总预检、Android smoke 日志崩溃扫描、Android smoke 预演模式、公开 art-safe 元数据合同、AI 副官离线边界和主服务器奖励权威契约已经收稳；代码已推到 GitHub，H2 validator/build/smoke 已过，G2 Android APK build smoke 已过；PC1-PC19 PC/移动等待态优化包已封口；G3 真机 smoke 等待授权 Android 手机，设备到位后继续 G3-G5，设备不到位时如继续 PC 端必须先定义新的 PC20 目标。
+Windows 本地 Demo 的画面、碰撞、稀疏 UI、MechLab、损伤故事、受控演示证据、启动预检、构建新鲜度检查、证据健康检查、证据新鲜度检查、公开边界预检、演示总预检、交接一致性检查、Android 真机 smoke 前置检查、PC 核心玩法合约检查、移动指挥模型预检、战斗 HUD 稀疏合约检查、源码/生成物卫生检查、AI 副官边界检查、当前计划 gate 总预检、Android smoke 日志崩溃扫描、Android smoke 预演模式、公开 art-safe 元数据合同、AI 副官离线边界和主服务器奖励权威契约已经收稳；代码已推到 GitHub，H2 validator/build/smoke 已过，G2 Android APK build smoke 已过；PC1-PC20 PC/移动等待态优化包已封口；G3 真机 smoke 等待授权 Android 手机，设备到位后继续 G3-G5，设备不到位时如继续 PC 端必须先定义新的 PC21 目标。

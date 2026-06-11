@@ -14,7 +14,7 @@
 
 Mobile support remains the product priority, but `G3 Android Device Smoke` is waiting on a physical Android phone with USB debugging authorized. While that device blocker existed, this plan used PC demo optimization to keep the Windows demo moving.
 
-The current PC/mobile wait-state optimization pass is now sealed through PC19. This does not move G4/G5 mobile touch and performance ahead of G3; the next mobile gate still requires the physical authorized phone.
+The current PC/mobile wait-state optimization pass is now sealed through PC20. This does not move G4/G5 mobile touch and performance ahead of G3; the next mobile gate still requires the physical authorized phone.
 
 ## Definition Of Done
 
@@ -31,6 +31,7 @@ The current PC optimization pass is complete when:
 - Controlled Windows demo launch has a preflight helper and defaults to a stable 1280x720 windowed launch.
 - Controlled Windows demo build freshness can be checked without launching Unity, proving the ignored player output is newer than tracked Unity build inputs.
 - Controlled Windows demo evidence can be checked by script without rerunning Unity.
+- Controlled Windows demo evidence freshness can be checked by script, proving visible-flow logs and six capture PNG/JSON sidecars are newer than the current Windows build and evidence inputs.
 - Controlled Windows demo public boundary metadata can be checked by script without packaging or creating artifacts.
 - Controlled Windows demo readiness can be checked by one script that wraps launch, evidence and public boundary gates.
 - Controlled Windows demo handoff consistency can be checked by one script that validates docs and helper scripts agree on the current gate set.
@@ -69,6 +70,7 @@ The current PC optimization pass is complete when:
 | PC17 | Done | Add demo source hygiene check | Check tracked/staged paths and ignore markers keep generated evidence, Unity builds and private reference art out of source commits |
 | PC18 | Done | Add AI deputy contract check | Check MiniMax stays optional, slow, high-level, rule-fallback guarded, absent from frame loops and not invoked by default smoke |
 | PC19 | Done | Add Windows demo build freshness check | Check ignored Windows player output is newer than tracked Unity build inputs and wire it into readiness preflight |
+| PC20 | Done | Add controlled demo evidence freshness check | Check visible-flow log and six capture PNG/JSON sidecars are newer than the current Windows build/evidence inputs |
 
 Do not open another PC polish gate from visual inspection alone. If the issue is collision, damage, command state or objective logic, first prove it in `BattleCore`.
 
@@ -743,6 +745,38 @@ git status --short --branch --untracked-files=all
 - Generated Windows build output remains ignored and unstaged.
 
 **Commit:** `Add Windows demo build freshness check`
+
+## Completed Target: PC20 Add Controlled Demo Evidence Freshness Check
+
+**Goal:** 在 G3 真机仍不可用时，不扩大玩法；把受控演示证据包从“文件存在且内容正确”加强为“文件存在、内容正确且晚于当前 Windows build/证据输入”，避免旧日志旧截图误判为当前可展示状态。
+
+**Files:**
+
+- Modify: `scripts/unity/check_controlled_demo_evidence.ps1`
+- Modify: `scripts/unity/check_controlled_demo_handoff.ps1`
+- Modify: README/BUILD-WIN/current plans/evidence/handoff docs
+
+**Validation:**
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_controlled_demo_evidence.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_controlled_demo_readiness.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_current_plan_gate.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_controlled_demo_handoff.ps1 -RunReadiness
+git diff --check
+git status --short --branch --untracked-files=all
+```
+
+**Acceptance:**
+
+- The evidence checker fails if `unity-player-pc-evidence-visible-flow.log` is older than the current Windows build or visible-flow command file.
+- It fails if any standard capture PNG/JSON sidecar is older than the current Windows build or `capture_reference_visuals.ps1`.
+- It still checks visible-flow success, debrief, loadout compact assertion, six capture sidecars, MechLab no-toggle, terrain readability, sparse HUD, contact separation and damage story.
+- It does not launch Unity or create artifacts.
+- Fresh ignored visible-flow and six capture outputs exist locally after validation.
+- Generated evidence remains ignored and unstaged.
+
+**Commit:** `Add controlled demo evidence freshness check`
 
 ## Stop Conditions
 

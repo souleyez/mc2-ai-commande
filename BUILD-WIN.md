@@ -85,8 +85,10 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_contro
 
 The evidence checker validates the Windows build, visible-flow log, six PNG/JSON
 captures, MechLab no-toggle fitting, terrain readability, sparse battle HUD,
-contact separation, and damage-demo story. It reads ignored local evidence and
-does not create new artifacts.
+contact separation, damage-demo story, and evidence freshness. The visible-flow
+log must be newer than the current Windows build and command script; capture
+PNG/JSON sidecars must be newer than the current Windows build and capture
+helper. It reads ignored local evidence and does not create new artifacts.
 
 Run the full controlled-demo readiness preflight:
 

@@ -25,6 +25,9 @@ if ([string]::IsNullOrWhiteSpace($VisibleFlowLog)) {
     $VisibleFlowLog = Join-Path $RepoRoot "analysis-output\unity-player-pc-evidence-visible-flow.log"
 }
 
+$visibleFlowCommand = Join-Path $RepoRoot "unity-mc2-demo\Assets\StreamingAssets\CommanderScripts\mc2_01-visible-flow-audit.txt"
+$captureScript = Join-Path $RepoRoot "scripts\unity\capture_reference_visuals.ps1"
+
 $failures = New-Object System.Collections.Generic.List[string]
 $rows = New-Object System.Collections.Generic.List[object]
 
@@ -59,6 +62,50 @@ function Assert-Contains {
     }
 }
 
+function Get-NewestExistingFile {
+    param(
+        [string[]]$Paths,
+        [string]$Label
+    )
+
+    $newest = $null
+    foreach ($path in $Paths) {
+        if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
+            Add-Failure "$Label input missing: $path"
+            continue
+        }
+
+        $item = Get-Item -LiteralPath $path
+        if ($null -eq $newest -or $item.LastWriteTimeUtc -gt $newest.LastWriteTimeUtc) {
+            $newest = $item
+        }
+    }
+
+    return $newest
+}
+
+function Format-UtcTime {
+    param([datetime]$Value)
+    return $Value.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ", [Globalization.CultureInfo]::InvariantCulture)
+}
+
+function Assert-FreshFile {
+    param(
+        [string]$Path,
+        [System.IO.FileInfo]$Anchor,
+        [string]$Label
+    )
+
+    if ($null -eq $Anchor -or -not (Test-Path -LiteralPath $Path -PathType Leaf)) {
+        return
+    }
+
+    $item = Get-Item -LiteralPath $Path
+    if ($item.LastWriteTimeUtc -lt $Anchor.LastWriteTimeUtc) {
+        Add-Failure ("$Label is stale: {0} older than {1}" -f (Format-UtcTime -Value $item.LastWriteTimeUtc), (Format-UtcTime -Value $Anchor.LastWriteTimeUtc))
+    }
+}
+
 function Read-CaptureSidecar {
     param([string]$Preset)
 
@@ -72,6 +119,9 @@ function Read-CaptureSidecar {
     if (-not (Assert-FileExists -Path $pngPath -Label "$Preset screenshot")) {
         return $null
     }
+
+    Assert-FreshFile -Path $jsonPath -Anchor $captureAnchor -Label "$Preset sidecar"
+    Assert-FreshFile -Path $pngPath -Anchor $captureAnchor -Label "$Preset screenshot"
 
     $png = Get-Item -LiteralPath $pngPath
     if ($png.Length -lt $MinimumPngBytes) {
@@ -111,7 +161,27 @@ if (Assert-FileExists -Path $BuildExe -Label "Windows demo executable") {
     [void](Assert-FileExists -Path $dataDir -Label "Windows demo data folder")
 }
 
+$buildDataDir = Join-Path (Split-Path -Parent $BuildExe) "MC2UnityDemo_Data"
+$buildAnchor = Get-NewestExistingFile -Paths @(
+    $BuildExe,
+    (Join-Path $buildDataDir "Managed\Assembly-CSharp.dll"),
+    (Join-Path $buildDataDir "globalgamemanagers"),
+    (Join-Path $buildDataDir "level0"),
+    (Join-Path $buildDataDir "sharedassets0.assets")
+) -Label "Windows build freshness"
+
+$visibleFlowAnchorPaths = @($visibleFlowCommand)
+$captureAnchorPaths = @($captureScript)
+if ($null -ne $buildAnchor) {
+    $visibleFlowAnchorPaths += $buildAnchor.FullName
+    $captureAnchorPaths += $buildAnchor.FullName
+}
+
+$visibleFlowAnchor = Get-NewestExistingFile -Paths $visibleFlowAnchorPaths -Label "visible-flow freshness"
+$captureAnchor = Get-NewestExistingFile -Paths $captureAnchorPaths -Label "capture freshness"
+
 if (Assert-FileExists -Path $VisibleFlowLog -Label "visible-flow smoke log") {
+    Assert-FreshFile -Path $VisibleFlowLog -Anchor $visibleFlowAnchor -Label "visible-flow smoke log"
     $visibleLog = Get-Content -LiteralPath $VisibleFlowLog -Raw
     Assert-Contains -Text $visibleLog -Needle "MC2 demo smoke test exiting with code 0" -Label "visible-flow smoke"
     Assert-Contains -Text $visibleLog -Needle "MC2 debrief summary assertion OK" -Label "visible-flow smoke"
@@ -169,4 +239,12 @@ if ($failures.Count -gt 0) {
 Write-Host "Controlled demo evidence check OK."
 Write-Host "Build: $BuildExe"
 Write-Host "VisibleFlow: $VisibleFlowLog"
+if ($null -ne $visibleFlowAnchor) {
+    Write-Host "VisibleFlowFreshnessAnchor: $($visibleFlowAnchor.FullName)"
+}
+
+if ($null -ne $captureAnchor) {
+    Write-Host "CaptureFreshnessAnchor: $($captureAnchor.FullName)"
+}
+
 $rows | Format-Table -AutoSize
