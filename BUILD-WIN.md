@@ -66,12 +66,24 @@ powershell -NoProfile -ExecutionPolicy Bypass `
   -Presets mechlab,spawn,airfield,hangar-contact,damage-demo,north-patrol
 ```
 
+Check the current controlled-demo evidence package without rerunning Unity:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_controlled_demo_evidence.ps1
+```
+
+The evidence checker validates the Windows build, visible-flow log, six PNG/JSON
+captures, MechLab no-toggle fitting, terrain readability, sparse battle HUD,
+contact separation, and damage-demo story. It reads ignored local evidence and
+does not create new artifacts.
+
 Expected success strings:
 
 - `MC2 demo contract validation OK`
 - `Build Finished, Result: Success`
 - `MC2 Unity demo Windows build OK`
 - `Windows demo launch preflight OK`
+- `Controlled demo evidence check OK`
 - `MC2 demo smoke test exiting with code 0`
 - `MC2 reference visual captures passed`
 

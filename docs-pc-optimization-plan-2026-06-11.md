@@ -14,7 +14,7 @@
 
 Mobile support remains the product priority, but `G3 Android Device Smoke` is waiting on a physical Android phone with USB debugging authorized. While that device blocker existed, this plan used PC demo optimization to keep the Windows demo moving.
 
-The current PC optimization pass is now sealed through PC5. This does not move G4/G5 mobile touch and performance ahead of G3; the next mobile gate still requires the physical authorized phone.
+The current PC optimization pass is now sealed through PC6. This does not move G4/G5 mobile touch and performance ahead of G3; the next mobile gate still requires the physical authorized phone.
 
 ## Definition Of Done
 
@@ -29,6 +29,7 @@ The current PC optimization pass is complete when:
 - Battle UI remains sparse: status rows, Jet, objective/map, system/pause; no large logs, save slots, account UI or debug overlays in normal battle.
 - MechLab PC flow is easy to read: mounted weapon blocks are whole-grid objects, all installed weapons are active, heat/weight/slot legality is visible, no enable/disable toggle returns.
 - Controlled Windows demo launch has a preflight helper and defaults to a stable 1280x720 windowed launch.
+- Controlled Windows demo evidence can be checked by script without rerunning Unity.
 - No generated screenshot, JSON sidecar, log, Windows build output, APK/AAB, or private reference export is staged.
 
 ## Execution Gate Order
@@ -41,6 +42,7 @@ The current PC optimization pass is complete when:
 | PC3 | Done | Polish MechLab PC flow | Improve grid/loadout readability without adding weapon toggles |
 | PC4 | Done | Package controlled PC demo evidence | Refresh walkthrough/evidence and keep generated artifacts ignored |
 | PC5 | Done | Add PC demo launch preflight | Check Windows build presence and launch with stable window args |
+| PC6 | Done | Add controlled demo evidence check | Check build, visible-flow log and six capture sidecars |
 
 Do not open another PC polish gate from visual inspection alone. If the issue is collision, damage, command state or objective logic, first prove it in `BattleCore`.
 
@@ -283,6 +285,35 @@ git status --short --branch --untracked-files=all
 - No gameplay, BattleCore, HUD, MechLab, content-pack or generated evidence behavior changes.
 
 **Commit:** `Add PC demo launch preflight`
+
+## Completed Target: PC6 Add Controlled Demo Evidence Check
+
+**Goal:** 在 G3 真机仍不可用时，只把当前 Windows 受控演示证据包变成可机器检查状态，不改玩法。
+
+**Files:**
+
+- Create: `scripts/unity/check_controlled_demo_evidence.ps1`
+- Modify: `BUILD-WIN.md`
+- Modify: `README.md`
+- Modify: current plan docs
+
+**Validation:**
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_controlled_demo_evidence.ps1
+git diff --check
+git status --short --branch --untracked-files=all
+```
+
+**Acceptance:**
+
+- Checks Windows build and Unity data folder.
+- Checks visible-flow log for smoke exit `0`, debrief summary and compact loadout assertions.
+- Checks six capture PNG/JSON pairs, MechLab no-toggle fitting, terrain readability, sparse HUD, contact separation and damage-demo section story.
+- Reads ignored local evidence only and does not create artifacts.
+- Does not change gameplay, BattleCore, HUD, MechLab, content packs or generated evidence behavior.
+
+**Commit:** `Add controlled demo evidence check`
 
 ## Stop Conditions
 
