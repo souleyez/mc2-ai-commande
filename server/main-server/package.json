@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "node main-server.mjs",
+    "receipt:evidence": "node receipt-evidence.mjs",
     "smoke": "node smoke.mjs"
   }
 }

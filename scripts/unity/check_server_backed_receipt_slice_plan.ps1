@@ -169,19 +169,24 @@ $docs = @(
 
 foreach ($doc in $docs) {
     Require-Text -Text $doc.Text -Needle "F15 plan server-backed receipt slice" -Label "$($doc.Name) F15 done marker"
-    Require-Text -Text $doc.Text -Needle "F16 implement server-backed receipt evidence gate" -Label "$($doc.Name) F16 next marker"
+    Require-Text -Text $doc.Text -Needle "F16 implement server-backed receipt evidence gate" -Label "$($doc.Name) F16 marker"
+    Require-Text -Text $doc.Text -Needle "F17 plan post-receipt inventory refresh boundary" -Label "$($doc.Name) F17 next marker"
 }
 
 Require-Text -Text $masterPlan -Needle '| 93 | Done | `Plan server-backed receipt slice` |' -Label "master F15 done"
-Require-Text -Text $masterPlan -Needle '| 94 | Next | `Implement server-backed receipt evidence gate` |' -Label "master F16 next"
+Require-Text -Text $masterPlan -Needle '| 94 | Done | `Implement server-backed receipt evidence gate` |' -Label "master F16 done"
+Require-Text -Text $masterPlan -Needle '| 95 | Next | `Plan post-receipt inventory refresh boundary` |' -Label "master F17 next"
 Require-Text -Text $detailedPlan -Needle '| F15 | Done | `Plan server-backed receipt slice` |' -Label "detailed F15 done"
-Require-Text -Text $detailedPlan -Needle '| F16 | Next | `Implement server-backed receipt evidence gate` |' -Label "detailed F16 next"
+Require-Text -Text $detailedPlan -Needle '| F16 | Done | `Implement server-backed receipt evidence gate` |' -Label "detailed F16 done"
+Require-Text -Text $detailedPlan -Needle '| F17 | Next | `Plan post-receipt inventory refresh boundary` |' -Label "detailed F17 next"
 Require-Text -Text $mobilePlan -Needle "first phone version is landscape-only" -Label "mobile landscape invariant"
 Require-Text -Text $mobilePlan -Needle "portrait is not a first-slice support target" -Label "mobile portrait exclusion"
-Require-Text -Text $handoff -Needle 'Current formal next development task after handoff: `F16 implement server-backed receipt evidence gate`' -Label "handoff next task"
-Require-Text -Text $handoff -Needle 'Next planned work: `F16 implement server-backed receipt evidence gate`' -Label "handoff next planned work"
+Require-Text -Text $handoff -Needle 'Current formal next development task after handoff: `F17 plan post-receipt inventory refresh boundary`' -Label "handoff next task"
+Require-Text -Text $handoff -Needle 'Next planned work: `F17 plan post-receipt inventory refresh boundary`' -Label "handoff next planned work"
 Require-Text -Text $currentGate -Needle 'check_server_backed_receipt_slice_plan.ps1' -Label "current gate receipt slice script"
 Require-Text -Text $currentGate -Needle 'Server-backed receipt slice plan check OK.' -Label "current gate receipt slice marker"
+Require-Text -Text $currentGate -Needle 'capture_server_backed_receipt_evidence.ps1' -Label "current gate receipt evidence script"
+Require-Text -Text $currentGate -Needle 'Server-backed receipt evidence capture OK.' -Label "current gate receipt evidence marker"
 
 if ($failures.Count -gt 0) {
     Write-Host "Server-backed receipt slice plan check failed."
