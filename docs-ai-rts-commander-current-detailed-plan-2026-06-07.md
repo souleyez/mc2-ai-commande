@@ -8,7 +8,7 @@
 
 **Tech Stack:** Unity 6, C#, Windows PC build/smoke/capture as active demo loop, Android/iOS mobile-first after device blocker clears, deterministic BattleCore, PowerShell build/smoke/capture scripts, replaceable content packs, optional high-level AI deputy, later main server/map server/Web ranking contracts.
 
-**Revision:** 2026-06-12 v74. This file is the fine-grained execution plan paired with `docs-ai-rts-commander-current-master-plan-2026-06-07.md`. The private reference visual bridge, local investor evidence package, art-safe metadata contract, AI deputy offline guard, reward authority contract, machine handoff plan, mobile-first priority reset, Android build smoke, PC optimization resumption, PC1 baseline audit, PC2 battle readability pass, PC3 MechLab PC flow polish, PC4 controlled demo evidence package, PC5 Windows demo launcher preflight, PC6 controlled demo evidence health check, PC7 controlled demo public boundary preflight, PC8 controlled demo readiness preflight, PC9 controlled demo handoff consistency check, PC10 Android device-smoke preflight, PC11 PC core playable contract check, PC12 mobile command model preflight, PC13 current plan gate check, PC14 Android smoke log crash scan, PC15 Android smoke plan mode, PC16 battle HUD sparse contract check, PC17 demo source hygiene check, PC18 AI deputy contract check, PC19 Windows demo build freshness check, PC20 controlled demo evidence freshness check, PC21 controlled demo capture log freshness check, PC22 Android APK freshness check, PC23 Android APK identity check, PC24 Android APK compatibility check, PC25 Android APK signing check, PC26 Android APK manifest check, PC27 Android APK payload check, PC28 Android APK size budget check, PC29 Android SDK tooling check, PC30 Android smoke artifact hygiene check, PC31 Android smoke screenshot evidence capture, PC32 Android smoke summary evidence output, PC33 Android smoke summary schema check, PC34 Android smoke summary preflight check, PC35 Android smoke plan/preflight consistency check, PC36 Android G3 readiness check, PC37 Android G3 device requirement check, PC38 PC visual capture sanity check, PC39 PC visual capture sanity self-test, PC40 PC capture sidecar schema check, PC41 PC capture preset contract check, PC42 PC capture artifact hygiene check, PC43 PC window contract check, PC44 PC launch log hygiene check, PC45 PC build artifact hygiene check, PC46 PC smoke artifact hygiene check, PC47 current plan queue consistency check, PC48 Android device connection check, PC49 Android smoke connection gate wiring, PC50 Android smoke connection gate check, PC51 Android visible-flow command-file smoke, PC52 Android WPD-only device diagnosis, PC53 Android ADB setup guidance, PC54 Android ADB readiness watch, PC55 Android G3 device status report, PC56 Android G3 when-ready runner, PC57 Android ADB driver package probe, `Pass Android G3 device smoke`, the landscape `G4 Touch UI pass`, `G5 Mobile performance budget`, and `G6 iOS feasibility gate` are now sealed for the current Demo. H2 validator/build/smoke is green; G2 Android build smoke is green with a generated APK; `F2 map authoring contract` is the next formal task.
+**Revision:** 2026-06-12 v75. This file is the fine-grained execution plan paired with `docs-ai-rts-commander-current-master-plan-2026-06-07.md`. The private reference visual bridge, local investor evidence package, art-safe metadata contract, AI deputy offline guard, reward authority contract, machine handoff plan, mobile-first priority reset, Android build smoke, PC optimization resumption, PC1 baseline audit, PC2 battle readability pass, PC3 MechLab PC flow polish, PC4 controlled demo evidence package, PC5 Windows demo launcher preflight, PC6 controlled demo evidence health check, PC7 controlled demo public boundary preflight, PC8 controlled demo readiness preflight, PC9 controlled demo handoff consistency check, PC10 Android device-smoke preflight, PC11 PC core playable contract check, PC12 mobile command model preflight, PC13 current plan gate check, PC14 Android smoke log crash scan, PC15 Android smoke plan mode, PC16 battle HUD sparse contract check, PC17 demo source hygiene check, PC18 AI deputy contract check, PC19 Windows demo build freshness check, PC20 controlled demo evidence freshness check, PC21 controlled demo capture log freshness check, PC22 Android APK freshness check, PC23 Android APK identity check, PC24 Android APK compatibility check, PC25 Android APK signing check, PC26 Android APK manifest check, PC27 Android APK payload check, PC28 Android APK size budget check, PC29 Android SDK tooling check, PC30 Android smoke artifact hygiene check, PC31 Android smoke screenshot evidence capture, PC32 Android smoke summary evidence output, PC33 Android smoke summary schema check, PC34 Android smoke summary preflight check, PC35 Android smoke plan/preflight consistency check, PC36 Android G3 readiness check, PC37 Android G3 device requirement check, PC38 PC visual capture sanity check, PC39 PC visual capture sanity self-test, PC40 PC capture sidecar schema check, PC41 PC capture preset contract check, PC42 PC capture artifact hygiene check, PC43 PC window contract check, PC44 PC launch log hygiene check, PC45 PC build artifact hygiene check, PC46 PC smoke artifact hygiene check, PC47 current plan queue consistency check, PC48 Android device connection check, PC49 Android smoke connection gate wiring, PC50 Android smoke connection gate check, PC51 Android visible-flow command-file smoke, PC52 Android WPD-only device diagnosis, PC53 Android ADB setup guidance, PC54 Android ADB readiness watch, PC55 Android G3 device status report, PC56 Android G3 when-ready runner, PC57 Android ADB driver package probe, `Pass Android G3 device smoke`, the landscape `G4 Touch UI pass`, `G5 Mobile performance budget`, `G6 iOS feasibility gate`, and `F2 map authoring contract` are now sealed for the current Demo. H2 validator/build/smoke is green; G2 Android build smoke is green with a generated APK; `F3 web ranking contract` is the next formal task.
 
 ---
 
@@ -38,7 +38,7 @@
 1. `H2` validator、Windows build 和 visible-flow smoke 已通过；Unity scene fileID churn 已恢复，工作区保持干净。
 2. `Pass Android G3 device smoke` 已完成：Mi 11 Lite 上真实安装、启动、推送 visible-flow command file，并通过 debrief/loadout compact logcat 成功标记。
 3. 当前移动端横屏 `G4 Touch UI pass` 已通过：APK manifest 横屏、运行时禁用竖屏自动旋转、真机 smoke 截图为 2400x1080 横屏。
-4. Android 等待期间完成的 PC1-PC57 前置包仍保留为证据；G5 性能预算已记录 Mi 11 Lite 基线，G6 已记录 iOS 的 Mac/Xcode/签名可行性边界，正式下一步推进 F2 地图包契约。
+4. Android 等待期间完成的 PC1-PC57 前置包仍保留为证据；G5 性能预算已记录 Mi 11 Lite 基线，G6 已记录 iOS 的 Mac/Xcode/签名可行性边界，F2 已记录地图包/编辑器契约，正式下一步推进 F3 Web 排行契约。
 5. D1 只是 art-safe metadata 合同，不是可挂载 runtime pack；后续 D2 才能进入清权资产生产和 mountable pack。
 6. 私有参考素材可以继续用于本机开发验证，但公开材料不能把它描述成最终产品内容。
 7. `F2-F4` 平台化方向仍保留，但现在只在移动端可行性通过后继续。
@@ -196,8 +196,8 @@
 | G4 | Done | `Adapt command UI for mobile touch` | 状态行、Jet、地图、系统和 MechLab 手机横屏触控可用 | device smoke |
 | G5 | Done | `Define mobile performance budget` | Mi 11 Lite 记录 FPS、内存、包体、加载、热量/电量基线 | `docs-mobile-performance-budget-2026-06-10.md`; `check_mobile_performance_budget.ps1` |
 | G6 | Done | `Document iOS feasibility gate` | macOS/Xcode/签名/Metal/真机要求 | `check_ios_feasibility_gate.ps1` |
-| F2 | Next | `Document map authoring contract` | 开源地图编辑器和地图包最小契约，移动 gate 后恢复 | docs |
-| F3 | Later | `Document web ranking contract` | Web 排行、战绩、地图页和隐私边界 | docs |
+| F2 | Done | `Document map authoring contract` | 开源地图编辑器和地图包最小契约，移动 gate 后恢复 | `check_map_authoring_contract.ps1` |
+| F3 | Next | `Document web ranking contract` | Web 排行、战绩、地图页和隐私边界 | docs |
 | F4 | Later | `Document creator economy boundary` | 皮肤、地图、分成、可选链上边界 | docs |
 
 ## 4.1 Immediate Micro-Queue
@@ -3356,7 +3356,7 @@ git status --short --branch --untracked-files=all
 - `run_android_g3_when_ready.ps1 -PlanOnly` 输出 `Android G3 when-ready plan OK.`、`G3WhenReady: True` 和 `NoInstallOrLaunchUntilDeviceReady: True`。
 - `run_android_g3_when_ready.ps1 -TimeoutSeconds 30 -AllowWaiting -LaunchWaitSeconds 75` 在当前 Mi 11 Lite 上安装、启动、推送 visible-flow command file，并输出 `G3WhenReady: True`、`SmokeTestPassed: True`、`status=smokePassed`。
 - 如果未来 ADB-ready 设备拒绝 ADB 安装并返回 `INSTALL_FAILED_USER_RESTRICTED`，`-AllowWaiting` 输出 `G3InstallPolicyBlocked: True`，保持 G3 等待手机侧 USB 安装权限。
-- 当前计划 gate、handoff 和移动指挥模型预检接受 PC1-PC57、`Pass Android G3 device smoke`、横屏 `G4 Touch UI pass`、`G5 Mobile performance budget` 和 `G6 iOS feasibility gate`，并把正式下一步推进到 `F2 map authoring contract`。
+- 当前计划 gate、handoff 和移动指挥模型预检接受 PC1-PC57、`Pass Android G3 device smoke`、横屏 `G4 Touch UI pass`、`G5 Mobile performance budget`、`G6 iOS feasibility gate` 和 `F2 map authoring contract`，并把正式下一步推进到 `F3 web ranking contract`。
 
 **Validation:**
 
@@ -3483,7 +3483,7 @@ git status --short --branch --untracked-files=all
 
 ### F2: Document Map Authoring Contract
 
-**Status:** Next, resume after H2 and the mobile-first gate.
+**Status:** Done.
 
 **Goal:** 为未来开源地图编辑器和社区地图包定义最小可验证格式。
 
@@ -3491,6 +3491,7 @@ git status --short --branch --untracked-files=all
 
 - Modify: `docs-platform-ecosystem-plan.md`
 - Create if needed: `docs-map-authoring-contract-2026-06-07.md`
+- Create: `scripts/unity/check_map_authoring_contract.ps1`
 
 **Map Package Should Include:**
 
@@ -3508,6 +3509,7 @@ git status --short --branch --untracked-files=all
 
 ```powershell
 git diff --check
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_map_authoring_contract.ps1 -RepoRoot .
 ```
 
 **Acceptance:**
@@ -3516,9 +3518,17 @@ git diff --check
 - Portable rewards remain certified by main server.
 - Validator requirements are clear enough to implement later.
 
+**Evidence 2026-06-12:**
+
+- `docs-map-authoring-contract-2026-06-07.md` defines required package fields, trigger graph kinds, rejected direct reward fields, validator failures and certification states.
+- `docs-platform-ecosystem-plan.md` links the detailed contract and preserves `Maps can be open; rewards must be certified.`
+- `check_map_authoring_contract.ps1` reports `Map authoring contract check OK.`
+
 **Commit:** `Document map authoring contract`
 
 ### F3: Document Web Ranking Contract
+
+**Status:** Next.
 
 **Goal:** 规划 Web 侧战绩、排行、地图页、队伍资料和公开展示边界。
 
@@ -3697,4 +3707,4 @@ Stop and reassess before committing if:
 
 ## 9. One-Line Direction
 
-Windows 本地 Demo 的画面、碰撞、稀疏 UI、MechLab、损伤故事、受控演示证据、PC 视觉截图 sanity 与自测、PC 截图 sidecar schema、PC 截图 preset 契约、PC 截图生成物卫生、PC 受控窗口尺寸契约、PC 启动日志卫生、PC 构建输出卫生、PC smoke 生成物卫生、当前计划队列一致性、Android 设备连接诊断、Android WPD-only device diagnosis、Android ADB setup guidance、Android ADB driver package probe、Android ADB readiness watch、Android G3 device status report、Android G3 when-ready runner、Android smoke 真实入口连接检查、Android smoke 连接 gate 自测、Android visible-flow command-file smoke、启动预检、构建新鲜度检查、证据健康检查、证据新鲜度检查、capture 日志新鲜度检查、Android SDK 工具链检查、Android APK 新鲜度检查、Android APK 身份检查、Android APK 兼容性检查、Android APK 签名检查、Android APK 清单检查、Android APK 载荷检查、Android APK 包体预算检查、Android smoke 生成物卫生检查、Android smoke 截图证据捕获、Android smoke 摘要证据输出、Android smoke 摘要 schema 检查、Android smoke 摘要 preflight 检查、Android smoke 预演/前置一致性检查、Android G3 readiness 检查、Android G3 真机要求检查、公开边界预检、演示总预检、交接一致性检查、Android 真机 smoke 前置检查、PC 核心玩法合约检查、移动指挥模型预检、战斗 HUD 稀疏合约检查、源码/生成物卫生检查、AI 副官边界检查、当前计划 gate 总预检、Android smoke 日志崩溃扫描、Android smoke 预演模式、Android performance baseline capture、mobile performance budget check、iOS feasibility gate check、公开 art-safe 元数据合同、AI 副官离线边界和主服务器奖励权威契约已经收稳；代码已推到 GitHub，H2 validator/build/smoke 已过，G2 Android APK build smoke 已过；PC1-PC57 PC/移动等待态优化包已封口；`Pass Android G3 device smoke`、横屏 `G4 Touch UI pass`、`G5 Mobile performance budget` 和 `G6 iOS feasibility gate` 已完成；正式下一步是 `F2 map authoring contract`。
+Windows 本地 Demo 的画面、碰撞、稀疏 UI、MechLab、损伤故事、受控演示证据、PC 视觉截图 sanity 与自测、PC 截图 sidecar schema、PC 截图 preset 契约、PC 截图生成物卫生、PC 受控窗口尺寸契约、PC 启动日志卫生、PC 构建输出卫生、PC smoke 生成物卫生、当前计划队列一致性、Android 设备连接诊断、Android WPD-only device diagnosis、Android ADB setup guidance、Android ADB driver package probe、Android ADB readiness watch、Android G3 device status report、Android G3 when-ready runner、Android smoke 真实入口连接检查、Android smoke 连接 gate 自测、Android visible-flow command-file smoke、启动预检、构建新鲜度检查、证据健康检查、证据新鲜度检查、capture 日志新鲜度检查、Android SDK 工具链检查、Android APK 新鲜度检查、Android APK 身份检查、Android APK 兼容性检查、Android APK 签名检查、Android APK 清单检查、Android APK 载荷检查、Android APK 包体预算检查、Android smoke 生成物卫生检查、Android smoke 截图证据捕获、Android smoke 摘要证据输出、Android smoke 摘要 schema 检查、Android smoke 摘要 preflight 检查、Android smoke 预演/前置一致性检查、Android G3 readiness 检查、Android G3 真机要求检查、公开边界预检、演示总预检、交接一致性检查、Android 真机 smoke 前置检查、PC 核心玩法合约检查、移动指挥模型预检、战斗 HUD 稀疏合约检查、源码/生成物卫生检查、AI 副官边界检查、当前计划 gate 总预检、Android smoke 日志崩溃扫描、Android smoke 预演模式、Android performance baseline capture、mobile performance budget check、iOS feasibility gate check、map authoring contract check、公开 art-safe 元数据合同、AI 副官离线边界和主服务器奖励权威契约已经收稳；代码已推到 GitHub，H2 validator/build/smoke 已过，G2 Android APK build smoke 已过；PC1-PC57 PC/移动等待态优化包已封口；`Pass Android G3 device smoke`、横屏 `G4 Touch UI pass`、`G5 Mobile performance budget`、`G6 iOS feasibility gate` 和 `F2 map authoring contract` 已完成；正式下一步是 `F3 web ranking contract`。

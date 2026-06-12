@@ -110,6 +110,16 @@ Map packages should be content packs or sub-packs with:
 - BattleCore compatibility version
 - optional visual/audio references
 
+Detailed map authoring contract:
+
+- `docs-map-authoring-contract-2026-06-07.md`
+
+That contract defines required package fields, trigger graph rules, rejected
+direct-reward fields, validator failures, certification states and the first
+local editor loop. It keeps the product rule explicit:
+
+**Maps can be open; rewards must be certified.**
+
 Certification states:
 
 - Draft: local editor and private testing only.

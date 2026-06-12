@@ -40,7 +40,7 @@ is complete for the first Android baseline: Mi 11 Lite reports 30.48 FPS after
 warmup, 273,342 KB PSS, 19.80 MiB APK size, activity launch at 260 ms, and
 `Thermal Status: 0`. G6 iOS feasibility is complete as a documented
 Mac/Xcode/signing handoff lane, not as iOS build proof. The next formal task is
-`F2 map authoring contract`.
+`F3 web ranking contract`.
 G3 Android device-smoke preflight now verifies the APK, Android SDK tooling,
 adb, aapt, apksigner, package name, launchable activity, compatibility metadata,
 signing and manifest install-target metadata, Unity/IL2CPP runtime payload,
@@ -61,7 +61,8 @@ Android APK payload check, Android APK size budget check, Android smoke artifact
 check, Android smoke log crash scan, Android smoke plan mode, landscape APK
 manifest checks, landscape screenshot summary checks, Android performance
 baseline capture, mobile performance budget check and iOS feasibility gate
-check. Formal next work is `F2 map authoring contract`.
+check. F2 map authoring contract is complete. Formal next work is
+`F3 web ranking contract`.
 
 ## Definition Of Done
 
@@ -107,7 +108,7 @@ failing, unless the later work is explicitly diagnostic.
 - **Failure Handling:** 失败时先看什么、停在哪里、哪些输出不能提交。
 - **Commit Scope:** 允许进入提交的文件范围；生成物、日志和私有素材默认不提交。
 
-当前移动执行目标只允许有一个 `In Progress` 或 `Waiting on Device`。如果前置条件失败，先把失败写成明确 blocker 或安装步骤，不跳到后续移动玩法任务。G3 真机 smoke、横屏 G4 Touch UI pass、G5 Mobile Performance Budget 和 G6 iOS feasibility gate 已通过；下一步回到主计划的 `F2 map authoring contract`。
+当前移动执行目标只允许有一个 `In Progress` 或 `Waiting on Device`。如果前置条件失败，先把失败写成明确 blocker 或安装步骤，不跳到后续移动玩法任务。G3 真机 smoke、横屏 G4 Touch UI pass、G5 Mobile Performance Budget、G6 iOS feasibility gate 和 F2 map authoring contract 已通过；下一步回到主计划的 `F3 web ranking contract`。
 
 ### Completed Mobile Target: G3 Android Device Smoke
 
@@ -252,7 +253,7 @@ scripts\unity\check_ios_feasibility_gate.ps1 -> iOS feasibility gate check OK.
 Local Windows iOS build -> unsupported; this is documented as a blocker, not a failure.
 Unity playback engines on this machine -> AndroidPlayer and windowsstandalonesupport; iOSSupport absent.
 FirstIOSSmoke -> Build Xcode project -> install on iOS device -> launch visible-flow battle.
-Next formal task -> F2 map authoring contract.
+Next formal task -> F3 web ranking contract.
 ```
 
 **Current G3 Evidence 2026-06-12:**
@@ -716,8 +717,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_ios_fe
 
 ## Unlocked After Mobile Gate
 
-- F2 map authoring contract. This is the next formal task.
-- F3 Web ranking contract.
+- F2 map authoring contract. Complete.
+- F3 Web ranking contract. This is the next formal task.
 - F4 creator economy boundary.
 - Server implementation.
 - Realtime PVP.

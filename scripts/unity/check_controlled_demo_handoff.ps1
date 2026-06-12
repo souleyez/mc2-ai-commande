@@ -128,6 +128,7 @@ Assert-ScriptExists -RelativePath "scripts\unity\check_android_apk_payload.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_android_apk_size_budget.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_mobile_performance_budget.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_ios_feasibility_gate.ps1"
+Assert-ScriptExists -RelativePath "scripts\unity\check_map_authoring_contract.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_android_device_connection.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_android_adb_driver_package.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\watch_android_device_connection.ps1"
@@ -216,6 +217,9 @@ Assert-FileContains -RelativePath "README.md" -Markers @(
     "check_ios_feasibility_gate.ps1",
     "iOS feasibility gate check OK",
     "F2 map authoring contract",
+    "check_map_authoring_contract.ps1",
+    "Map authoring contract check OK",
+    "F3 web ranking contract",
     "Add Android WPD-only device diagnosis",
     "Add Android ADB setup guidance",
     "Add Android ADB driver package probe",
@@ -381,6 +385,9 @@ Assert-FileContains -RelativePath "BUILD-MOBILE.md" -Markers @(
     "check_ios_feasibility_gate.ps1",
     "iOS feasibility gate check OK",
     "F2 map authoring contract",
+    "check_map_authoring_contract.ps1",
+    "Map authoring contract check OK",
+    "F3 web ranking contract",
     "check_android_smoke_plan_consistency.ps1",
     "Android smoke plan/preflight consistency check OK",
     "check_android_g3_readiness.ps1",
@@ -836,6 +843,7 @@ Assert-FileContains -RelativePath "docs-machine-handoff-plan-2026-06-07.md" -Mar
     "G4 Touch UI pass",
     "G5 Mobile performance budget",
     "G6 iOS feasibility gate",
+    "F2 map authoring contract",
     "check_windows_demo_build_freshness.ps1",
     "check_demo_source_hygiene.ps1",
     "check_ai_deputy_contract.ps1",
@@ -868,6 +876,9 @@ Assert-FileContains -RelativePath "docs-machine-handoff-plan-2026-06-07.md" -Mar
     "check_ios_feasibility_gate.ps1",
     "iOS feasibility gate check OK",
     "F2 map authoring contract",
+    "check_map_authoring_contract.ps1",
+    "Map authoring contract check OK",
+    "F3 web ranking contract",
     "android-device-smoke.png",
     "ScreenshotCapture: True",
     "android-device-smoke-summary.json",

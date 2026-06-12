@@ -44,8 +44,9 @@ visible-flow command file，并在 logcat 同时看到 debrief 与 loadout compa
 计划队列已记录 `Pass Android G3 device smoke`、横屏版 `G4 Touch UI pass`、
 `G5 Mobile performance budget` 和 `G6 iOS feasibility gate`；Android 真机
 截图已验证为 2400x1080 横屏，Mi 11 Lite 稳态性能基线为 30.48 FPS、
-273,342 KB PSS。iOS 已明确为 Mac/Xcode/签名交接链路，正式下一开发任务
-推进到 `F2 map authoring contract`。
+273,342 KB PSS。iOS 已明确为 Mac/Xcode/签名交接链路，F2 地图包契约已
+明确开放地图与主服务器认证奖励边界，正式下一开发任务推进到
+`F3 web ranking contract`。
 
 ## 产品愿景
 
@@ -312,9 +313,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_curren
 
 This confirms the docs and helper scripts agree that the current PC/mobile
 package is sealed through `PC1-PC57`, that `Pass Android G3 device smoke`, the
-landscape `G4 Touch UI pass`, `G5 Mobile performance budget`, and
-`G6 iOS feasibility gate` are recorded, and that `F2 map authoring contract`
-is the formal next task.
+landscape `G4 Touch UI pass`, `G5 Mobile performance budget`,
+`G6 iOS feasibility gate`, and `F2 map authoring contract` are recorded, and
+that `F3 web ranking contract` is the formal next task.
 
 Check the iOS feasibility gate:
 
@@ -326,6 +327,14 @@ This confirms iOS is a Mac/Xcode/signing handoff lane and not blocked on the
 current Windows machine.
 
 Expected success string: `iOS feasibility gate check OK`.
+
+Check the map authoring contract:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_map_authoring_contract.ps1 -RepoRoot .
+```
+
+Expected success string: `Map authoring contract check OK`.
 
 Checkpoint marker: `Add Android ADB driver package probe`.
 
