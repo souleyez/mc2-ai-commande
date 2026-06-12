@@ -139,6 +139,7 @@ Assert-ScriptExists -RelativePath "scripts\unity\check_pc_capture_preset_contrac
 Assert-ScriptExists -RelativePath "scripts\unity\check_pc_capture_artifact_hygiene.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_pc_window_contract.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_pc_launch_log_hygiene.ps1"
+Assert-ScriptExists -RelativePath "scripts\unity\check_pc_build_artifact_hygiene.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_current_plan_gate.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_android_smoke_log.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_android_smoke_summary.ps1"
@@ -146,7 +147,7 @@ Assert-ScriptExists -RelativePath "scripts\content-pack\check_controlled_demo_pu
 
 Assert-FileContains -RelativePath "README.md" -Markers @(
     "AI RTS Commander Lab",
-    "PC1-PC44",
+    "PC1-PC45",
     "check_controlled_demo_handoff.ps1",
     "check_windows_demo_build_freshness.ps1",
     "check_demo_source_hygiene.ps1",
@@ -179,6 +180,8 @@ Assert-FileContains -RelativePath "README.md" -Markers @(
     "PC window contract check OK",
     "check_pc_launch_log_hygiene.ps1",
     "PC launch log hygiene check OK",
+    "check_pc_build_artifact_hygiene.ps1",
+    "PC build artifact hygiene check OK",
     "check_current_plan_gate.ps1",
     "check_android_smoke_log.ps1",
     "check_android_smoke_summary.ps1",
@@ -215,6 +218,8 @@ Assert-FileContains -RelativePath "BUILD-WIN.md" -Markers @(
     "PC window contract check OK",
     "check_pc_launch_log_hygiene.ps1",
     "PC launch log hygiene check OK",
+    "check_pc_build_artifact_hygiene.ps1",
+    "PC build artifact hygiene check OK",
     "check_current_plan_gate.ps1",
     "Current plan gate check OK",
     "check_android_smoke_log.ps1",
@@ -293,7 +298,7 @@ Assert-FileContains -RelativePath "BUILD-MOBILE.md" -Markers @(
 )
 
 Assert-FileContains -RelativePath "docs-ai-rts-commander-current-master-plan-2026-06-07.md" -Markers @(
-    "PC1-PC44",
+    "PC1-PC45",
     "Add controlled demo handoff consistency check",
     "Add demo source hygiene check",
     "Add AI deputy contract check",
@@ -324,6 +329,7 @@ Assert-FileContains -RelativePath "docs-ai-rts-commander-current-master-plan-202
     "Add PC capture artifact hygiene check",
     "Add PC window contract check",
     "Add PC launch log hygiene check",
+    "Add PC build artifact hygiene check",
     "Add current plan gate check",
     "Add Android smoke log crash scan",
     "Add Android smoke plan mode",
@@ -343,6 +349,7 @@ Assert-FileContains -RelativePath "docs-ai-rts-commander-current-master-plan-202
     "check_pc_capture_artifact_hygiene.ps1",
     "check_pc_window_contract.ps1",
     "check_pc_launch_log_hygiene.ps1",
+    "check_pc_build_artifact_hygiene.ps1",
     "check_current_plan_gate.ps1",
     "check_android_apk_freshness.ps1",
     "check_android_apk_identity.ps1",
@@ -366,7 +373,7 @@ Assert-FileContains -RelativePath "docs-ai-rts-commander-current-master-plan-202
 )
 
 Assert-FileContains -RelativePath "docs-ai-rts-commander-current-detailed-plan-2026-06-07.md" -Markers @(
-    "PC1-PC44",
+    "PC1-PC45",
     "Add controlled demo handoff consistency check",
     "Add demo source hygiene check",
     "Add AI deputy contract check",
@@ -397,6 +404,7 @@ Assert-FileContains -RelativePath "docs-ai-rts-commander-current-detailed-plan-2
     "Add PC capture artifact hygiene check",
     "Add PC window contract check",
     "Add PC launch log hygiene check",
+    "Add PC build artifact hygiene check",
     "Add current plan gate check",
     "Add Android smoke log crash scan",
     "Add Android smoke plan mode",
@@ -416,6 +424,7 @@ Assert-FileContains -RelativePath "docs-ai-rts-commander-current-detailed-plan-2
     "check_pc_capture_artifact_hygiene.ps1",
     "check_pc_window_contract.ps1",
     "check_pc_launch_log_hygiene.ps1",
+    "check_pc_build_artifact_hygiene.ps1",
     "check_current_plan_gate.ps1",
     "check_android_apk_freshness.ps1",
     "check_android_apk_identity.ps1",
@@ -439,7 +448,7 @@ Assert-FileContains -RelativePath "docs-ai-rts-commander-current-detailed-plan-2
 )
 
 Assert-FileContains -RelativePath "docs-pc-optimization-plan-2026-06-11.md" -Markers @(
-    "sealed through PC44",
+    "sealed through PC45",
     "Add controlled demo handoff consistency check",
     "Add demo source hygiene check",
     "Add AI deputy contract check",
@@ -470,6 +479,7 @@ Assert-FileContains -RelativePath "docs-pc-optimization-plan-2026-06-11.md" -Mar
     "Add PC capture artifact hygiene check",
     "Add PC window contract check",
     "Add PC launch log hygiene check",
+    "Add PC build artifact hygiene check",
     "Add current plan gate check",
     "Add Android smoke log crash scan",
     "Add Android smoke plan mode",
@@ -486,6 +496,7 @@ Assert-FileContains -RelativePath "docs-pc-optimization-plan-2026-06-11.md" -Mar
     "check_pc_capture_artifact_hygiene.ps1",
     "check_pc_window_contract.ps1",
     "check_pc_launch_log_hygiene.ps1",
+    "check_pc_build_artifact_hygiene.ps1",
     "check_android_apk_freshness.ps1",
     "check_android_apk_identity.ps1",
     "check_android_apk_compatibility.ps1",
@@ -535,6 +546,7 @@ Assert-FileContains -RelativePath "docs-playable-demo-investor-evidence-2026-06-
     "PC capture artifact hygiene",
     "PC window contract",
     "PC launch log hygiene",
+    "PC build artifact hygiene",
     "Current plan gate",
     "Android smoke log check",
     "Android smoke plan",
@@ -555,6 +567,7 @@ Assert-FileContains -RelativePath "docs-playable-demo-investor-evidence-2026-06-
     "check_pc_capture_artifact_hygiene.ps1",
     "check_pc_window_contract.ps1",
     "check_pc_launch_log_hygiene.ps1",
+    "check_pc_build_artifact_hygiene.ps1",
     "check_current_plan_gate.ps1",
     "check_android_smoke_log.ps1",
     "check_android_smoke_summary.ps1",
@@ -579,7 +592,7 @@ Assert-FileContains -RelativePath "docs-playable-demo-investor-evidence-2026-06-
 )
 
 Assert-FileContains -RelativePath "docs-machine-handoff-plan-2026-06-07.md" -Markers @(
-    "PC1-PC44",
+    "PC1-PC45",
     "Add PC visual capture sanity check",
     "Add PC visual capture sanity self-test",
     "Add PC capture sidecar schema check",
@@ -587,6 +600,7 @@ Assert-FileContains -RelativePath "docs-machine-handoff-plan-2026-06-07.md" -Mar
     "Add PC capture artifact hygiene check",
     "Add PC window contract check",
     "Add PC launch log hygiene check",
+    "Add PC build artifact hygiene check",
     "Add Android smoke summary evidence output",
     "Add Android smoke summary schema check",
     "Add Android smoke summary preflight check",
@@ -617,6 +631,7 @@ Assert-FileContains -RelativePath "docs-machine-handoff-plan-2026-06-07.md" -Mar
     "check_pc_capture_artifact_hygiene.ps1",
     "check_pc_window_contract.ps1",
     "check_pc_launch_log_hygiene.ps1",
+    "check_pc_build_artifact_hygiene.ps1",
     "check_current_plan_gate.ps1",
     "check_android_smoke_log.ps1",
     "check_android_smoke_summary.ps1",

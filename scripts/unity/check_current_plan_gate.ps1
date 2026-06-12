@@ -112,6 +112,7 @@ $pcCapturePresetContractScript = Resolve-RepoPath -RelativePath "scripts\unity\c
 $pcCaptureArtifactHygieneScript = Resolve-RepoPath -RelativePath "scripts\unity\check_pc_capture_artifact_hygiene.ps1"
 $pcWindowContractScript = Resolve-RepoPath -RelativePath "scripts\unity\check_pc_window_contract.ps1"
 $pcLaunchLogHygieneScript = Resolve-RepoPath -RelativePath "scripts\unity\check_pc_launch_log_hygiene.ps1"
+$pcBuildArtifactHygieneScript = Resolve-RepoPath -RelativePath "scripts\unity\check_pc_build_artifact_hygiene.ps1"
 $androidSdkToolingScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_sdk_tooling.ps1"
 $androidApkFreshnessScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_apk_freshness.ps1"
 $androidApkIdentityScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_apk_identity.ps1"
@@ -215,6 +216,12 @@ Invoke-GateStep `
     -ScriptPath $pcLaunchLogHygieneScript `
     -Arguments @("-RepoRoot", $RepoRoot) `
     -RequiredMarkers @("PC launch log hygiene check OK.")
+
+Invoke-GateStep `
+    -Name "PC build artifact hygiene gate" `
+    -ScriptPath $pcBuildArtifactHygieneScript `
+    -Arguments @("-RepoRoot", $RepoRoot) `
+    -RequiredMarkers @("PC build artifact hygiene check OK.")
 
 Invoke-GateStep `
     -Name "Android SDK tooling gate" `
