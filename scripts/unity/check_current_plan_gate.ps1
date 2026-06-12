@@ -126,6 +126,7 @@ $androidApkSizeBudgetScript = Resolve-RepoPath -RelativePath "scripts\unity\chec
 $androidDeviceConnectionScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_device_connection.ps1"
 $androidPreflightScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_device_preflight.ps1"
 $androidSmokeScript = Resolve-RepoPath -RelativePath "scripts\unity\android_device_smoke.ps1"
+$androidSmokeConnectionGateScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_smoke_connection_gate.ps1"
 $androidSmokePlanConsistencyScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_smoke_plan_consistency.ps1"
 $androidG3ReadinessScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_g3_readiness.ps1"
 $androidG3DeviceRequirementScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_g3_device_requirement.ps1"
@@ -334,6 +335,21 @@ Invoke-GateStep `
         "Summary:",
         "SummaryWrite: True",
         "ConnectionCheck: check_android_device_connection.ps1 -RequireDevice"
+    )
+
+Invoke-GateStep `
+    -Name "Android smoke connection gate" `
+    -ScriptPath $androidSmokeConnectionGateScript `
+    -Arguments @("-RepoRoot", $RepoRoot) `
+    -RequiredMarkers @(
+        "Android smoke connection gate check OK."
+    ) `
+    -AnySuccessMarkers @(
+        "Android smoke connection gate check ready for G3 device smoke.",
+        "Android smoke connection gate check waiting on device.",
+        "Android smoke connection gate check waiting on authorization.",
+        "Android smoke connection gate check waiting on online device.",
+        "Android smoke connection gate check waiting on device selection."
     )
 
 Invoke-GateStep `

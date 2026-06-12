@@ -275,6 +275,19 @@ Expected without a phone:
 Android device connection check waiting on device
 ```
 
+Check the Android smoke connection gate behavior before real G3 smoke:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_smoke_connection_gate.ps1
+```
+
+Expected without a phone:
+
+```text
+Android smoke connection gate check OK
+Android smoke connection gate check waiting on device
+```
+
 Check the full G3 readiness bundle before installing:
 
 ```powershell
@@ -332,6 +345,9 @@ strong crash markers, validates the summary schema, and fails if the package
 does not stay running. If the strict connection gate is not satisfied, it fails
 before install or launch with
 `Android device smoke requires a single authorized Android device before install or launch`.
+The standalone `check_android_smoke_connection_gate.ps1` gate also proves this
+failure path does not rewrite the ignored log, screenshot or summary evidence
+before a valid device is selected.
 
 Self-test the log scanner without a device:
 
@@ -419,6 +435,7 @@ scripts\unity\check_android_device_preflight.ps1 -AllowNoDevice -> smoke summary
 scripts\unity\android_device_smoke.ps1 -PlanOnly -> ScreenshotCapture: True, Screenshot -> analysis-output\android-device-smoke.png
 scripts\unity\android_device_smoke.ps1 -PlanOnly -> SummaryWrite: True, Summary -> analysis-output\android-device-smoke-summary.json
 scripts\unity\android_device_smoke.ps1 -PlanOnly -> ConnectionCheck: check_android_device_connection.ps1 -RequireDevice
+scripts\unity\check_android_smoke_connection_gate.ps1 -> Android smoke connection gate check waiting on device
 scripts\unity\check_android_smoke_plan_consistency.ps1 -> Android smoke plan/preflight consistency check OK
 scripts\unity\check_android_g3_readiness.ps1 -> Android G3 readiness check waiting on device
 scripts\unity\check_android_g3_device_requirement.ps1 -> Android G3 device requirement check waiting on device

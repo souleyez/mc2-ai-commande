@@ -14,7 +14,7 @@
 
 Mobile support remains the product priority, but `G3 Android Device Smoke` is waiting on a physical Android phone with USB debugging authorized. While that device blocker existed, this plan used PC demo optimization to keep the Windows demo moving.
 
-The current PC/mobile wait-state optimization pass is now sealed through PC1-PC49. This does not move G4/G5 mobile touch and performance ahead of G3; the next mobile gate is still `G3 Run Android device smoke` and still requires the physical authorized phone.
+The current PC/mobile wait-state optimization pass is now sealed through PC1-PC50. This does not move G4/G5 mobile touch and performance ahead of G3; the next mobile gate is still `G3 Run Android device smoke` and still requires the physical authorized phone.
 
 ## Definition Of Done
 
@@ -70,6 +70,7 @@ The current PC optimization pass is complete when:
 - Current plan queue consistency can be checked without launching Unity through `check_current_plan_queue.ps1`, proving README, BUILD-WIN, master/detailed/PC/mobile/evidence/handoff docs and helper scripts agree on the latest PC checkpoint and `G3 Run Android device smoke` as the formal next task.
 - Android device connection can be checked without launching Unity through `check_android_device_connection.ps1`, proving `adb devices -l` is readable and reports no-device, unauthorized, offline, multi-device or ready states before G3 tries to install or launch the APK.
 - Android smoke connection gate wiring can be checked without a device through `android_device_smoke.ps1 -PlanOnly`, proving the real smoke path runs `check_android_device_connection.ps1 -RequireDevice` before install or launch and fails early with `Android device smoke requires a single authorized Android device before install or launch` when no authorized phone is available.
+- Android smoke connection gate behavior can be checked without a device through `check_android_smoke_connection_gate.ps1`, proving the real smoke fail-fast path is enforced before install or launch and ignored smoke evidence is not rewritten while no valid device is selected.
 - Sparse battle HUD can be checked without launching Unity through `check_battle_hud_sparse_contract.ps1`.
 - Demo source hygiene can be checked without launching Unity through `check_demo_source_hygiene.ps1`.
 - AI deputy contract can be checked without launching Unity or calling the model through `check_ai_deputy_contract.ps1`.
@@ -150,6 +151,7 @@ The current PC optimization pass is complete when:
 | PC47 | Done | Add current plan queue consistency check | Current docs and helper scripts agreed that the then-current wait-state package was sealed through PC1-PC47 and that G3 real-device smoke remained next |
 | PC48 | Done | Add Android device connection check | `adb devices -l` reports no-device, unauthorized, offline, multi-device or ready state before G3 install/launch |
 | PC49 | Done | Wire Android smoke connection gate | `android_device_smoke.ps1` exposes `ConnectionCheck: check_android_device_connection.ps1 -RequireDevice` and real smoke fails before install/launch without one authorized phone |
+| PC50 | Done | Add Android smoke connection gate check | `check_android_smoke_connection_gate.ps1` proves real smoke fails before install/launch and leaves smoke log/screenshot/summary evidence unchanged without one authorized phone |
 
 Do not open another PC polish gate from visual inspection alone. If the issue is collision, damage, command state or objective logic, first prove it in `BattleCore`.
 
@@ -1884,6 +1886,41 @@ git status --short --branch --untracked-files=all
 ```
 
 **Commit:** `Wire Android smoke connection gate`
+
+## Completed Target: PC50 Add Android Smoke Connection Gate Check
+
+**Goal:** 在 G3 真机仍不可用时，不提前做 G4/G5；把 PC49 的严格连接门禁做成独立自测，证明无授权设备时真实 Android smoke 只能在安装/启动前失败，并且不会刷新 smoke log、截图或 summary evidence。
+
+**Scope:**
+
+- Add `scripts/unity/check_android_smoke_connection_gate.ps1`.
+- Reuse `check_android_device_connection.ps1` to classify ready, no-device, unauthorized, offline and multi-device states.
+- If an authorized device is ready, report that G3 device smoke is ready and do not install or launch.
+- If no valid device is selected, run the real `android_device_smoke.ps1` only to prove the strict failure marker.
+- Snapshot `analysis-output\android-device-smoke.log`, `analysis-output\android-device-smoke.png` and `analysis-output\android-device-smoke-summary.json` and require them to remain unchanged.
+- Wire the new gate into `check_current_plan_gate.ps1`, `check_current_plan_queue.ps1`, handoff consistency, mobile preflight and current docs.
+
+**Acceptance:**
+
+- `check_android_smoke_connection_gate.ps1` prints `Android smoke connection gate check OK`.
+- On the current no-phone machine, it prints `Android smoke connection gate check waiting on device`.
+- The real smoke failure marker remains `Android device smoke requires a single authorized Android device before install or launch`.
+- The smoke log, screenshot and summary output snapshots remain unchanged before a valid device is selected.
+
+**Validation:**
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_smoke_connection_gate.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_current_plan_queue.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_current_plan_gate.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_controlled_demo_handoff.ps1 -RunReadiness
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_mobile_command_model_preflight.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_demo_source_hygiene.ps1
+git diff --check
+git status --short --branch --untracked-files=all
+```
+
+**Commit:** `Add Android smoke connection gate check`
 
 ## Stop Conditions
 

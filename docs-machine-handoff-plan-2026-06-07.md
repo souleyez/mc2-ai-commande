@@ -25,8 +25,9 @@ As of this handoff plan:
 - Previous project remote: `git@github.com:souleyez/mc2-ai-commander-demo.git` now redirects to the current repository.
 - Upstream source remote kept for history: `origin https://github.com/alariq/mc2.git`
 - Current branch state after the latest controlled demo checkpoint: `master...ai-origin/master`
-- Latest sealed PC/mobile wait-state checkpoint: `PC1-PC49`
-- Last completed PC checkpoint: `Wire Android smoke connection gate`
+- Latest sealed PC/mobile wait-state checkpoint: `PC1-PC50`
+- Last completed PC checkpoint: `Add Android smoke connection gate check`
+- Previous PC checkpoint retained in the gate chain: `Wire Android smoke connection gate`
 - Previous PC checkpoint retained in the gate chain: `Add Android device connection check`
 - Previous PC checkpoint retained in the gate chain: `Add current plan queue consistency check`
 - Previous PC checkpoint retained in the gate chain: `Add PC smoke artifact hygiene check`
@@ -103,6 +104,8 @@ The machine switch is safe only when all of these are true:
 - `scripts/unity/check_pc_smoke_artifact_hygiene.ps1` prints `PC smoke artifact hygiene check OK`.
 - `scripts/unity/check_current_plan_queue.ps1` prints `Current plan queue consistency check OK`.
 - `scripts/unity/check_android_device_connection.ps1` prints `Android device connection check waiting on device` if no phone is connected.
+- `scripts/unity/check_android_smoke_connection_gate.ps1` prints `Android smoke connection gate check OK`.
+- `scripts/unity/check_android_smoke_connection_gate.ps1` prints `Android smoke connection gate check waiting on device` if no phone is connected.
 - `scripts/unity/check_current_plan_gate.ps1` prints `Current plan gate check OK`.
 - `scripts/unity/check_android_smoke_log.ps1 -SelfTest` prints `Android smoke log check self-test OK`.
 - `scripts/unity/check_android_smoke_summary.ps1 -SelfTest` prints `Android smoke summary check self-test OK`.
@@ -568,8 +571,8 @@ Current plan queue consistency check OK
 
 This verifies README, BUILD-WIN, master/detailed/PC/mobile/evidence/handoff docs
 and helper scripts agree that the current wait-state package is sealed through
-the then-current PC47 checkpoint, and that `G3 Run Android device smoke` remains
-the formal next task.
+the PC1-PC50 checkpoint, and that `G3 Run Android device smoke` remains the
+formal next task.
 
 **Step 19: Run Android device connection check**
 
@@ -587,6 +590,23 @@ This reads `adb devices -l` without installing or launching the APK. It reports
 no-device, unauthorized, offline, multiple-device and ready states before G3
 tries to run the real smoke.
 
+**Step 19A: Run Android smoke connection gate check**
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_smoke_connection_gate.ps1
+```
+
+Expected without a connected phone:
+
+```text
+Android smoke connection gate check OK
+Android smoke connection gate check waiting on device
+```
+
+This proves the real Android smoke helper fails before install or launch when
+no authorized phone is selected, and that existing ignored smoke log, screenshot
+and summary evidence are not rewritten by that waiting-state check.
+
 **Step 20: Run current plan gate check**
 
 ```powershell
@@ -600,7 +620,7 @@ Current plan gate check OK
 ```
 
 This wraps handoff/readiness, Windows build freshness, demo source hygiene, AI
-deputy contract, mobile command model, battle HUD sparse contract, PC visual capture sanity, PC visual capture sanity self-test, PC capture sidecar schema, PC capture preset contract, PC capture artifact hygiene, PC window contract, PC launch log hygiene, PC build artifact hygiene, PC smoke artifact hygiene, current plan queue consistency, Android device connection and Android
+deputy contract, mobile command model, battle HUD sparse contract, PC visual capture sanity, PC visual capture sanity self-test, PC capture sidecar schema, PC capture preset contract, PC capture artifact hygiene, PC window contract, PC launch log hygiene, PC build artifact hygiene, PC smoke artifact hygiene, current plan queue consistency, Android device connection, Android smoke connection gate and Android
 preflight checks. With no authorized phone connected, Android should be
 reported as waiting on device; with one authorized phone, Android should report
 OK.
