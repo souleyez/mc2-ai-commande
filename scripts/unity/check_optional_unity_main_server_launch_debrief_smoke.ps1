@@ -286,10 +286,12 @@ Require-Text -Text $queue -Needle "F10 wire optional Unity inventory bootstrap s
 Require-Text -Text $queue -Needle "F11 plan inventory-to-MechBay binding boundary" -Label "queue next task"
 Require-Text -Text $masterPlan -Needle '| 87 | Done | `Wire optional Unity main-server adapter into launch/debrief smoke` |' -Label "master F9 done"
 Require-Text -Text $masterPlan -Needle '| 88 | Done | `Wire optional Unity inventory bootstrap smoke` |' -Label "master F10 done"
-Require-Text -Text $masterPlan -Needle '| 89 | Next | `Plan inventory-to-MechBay binding boundary` |' -Label "master F11 next"
+Require-Text -Text $masterPlan -Needle '| 89 | Done | `Plan inventory-to-MechBay binding boundary` |' -Label "master F11 done"
+Require-Text -Text $masterPlan -Needle '| 90 | Next | `Implement opt-in inventory-to-MechBay preview binding` |' -Label "master F12 next"
 Require-Text -Text $detailedPlan -Needle '| F9 | Done | `Wire optional Unity main-server adapter into launch/debrief smoke` |' -Label "detailed F9 done"
 Require-Text -Text $detailedPlan -Needle '| F10 | Done | `Wire optional Unity inventory bootstrap smoke` |' -Label "detailed F10 done"
-Require-Text -Text $detailedPlan -Needle '| F11 | Next | `Plan inventory-to-MechBay binding boundary` |' -Label "detailed F11 next"
+Require-Text -Text $detailedPlan -Needle '| F11 | Done | `Plan inventory-to-MechBay binding boundary` |' -Label "detailed F11 done"
+Require-Text -Text $detailedPlan -Needle '| F12 | Next | `Implement opt-in inventory-to-MechBay preview binding` |' -Label "detailed F12 next"
 Require-Text -Text $mobilePlan -Needle "first phone version is landscape-only" -Label "mobile landscape invariant"
 
 if ($failures.Count -eq 0) {

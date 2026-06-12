@@ -293,7 +293,8 @@ This confirms the current PC/mobile package is sealed through `PC1-PC57`, that
 `F8 implement optional Unity main-server client adapter` and
 `F9 wire optional Unity main-server adapter into launch/debrief smoke` are
 recorded, that `F10 wire optional Unity inventory bootstrap smoke` is recorded,
-and that `F11 plan inventory-to-MechBay binding boundary` is the formal next
+that `F11 plan inventory-to-MechBay binding boundary` is recorded, and that
+`F12 implement opt-in inventory-to-MechBay preview binding` is the formal next
 task.
 
 Expected success string: `Current plan queue consistency check OK`.
@@ -399,6 +400,17 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_option
 ```
 
 Expected success string: `Optional Unity inventory bootstrap smoke check OK`.
+
+Check the inventory-to-MechBay binding boundary:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_inventory_mechbay_binding_boundary.ps1 -RepoRoot .
+```
+
+This validates `docs-inventory-mechbay-binding-boundary-2026-06-12.md` before
+any opt-in preview binding is implemented.
+
+Expected success string: `Inventory-to-MechBay binding boundary check OK.`.
 
 Expected waiting-state string without an authorized adb phone: `Android device connection check waiting on device`.
 

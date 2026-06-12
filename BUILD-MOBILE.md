@@ -294,7 +294,8 @@ Completed mobile gates: `Pass Android G3 device smoke`, the landscape
 `F8 implement optional Unity main-server client adapter` is also complete.
 `F9 wire optional Unity main-server adapter into launch/debrief smoke` is also complete.
 `F10 wire optional Unity inventory bootstrap smoke` is also complete.
-Formal next task: `F11 plan inventory-to-MechBay binding boundary`.
+`F11 plan inventory-to-MechBay binding boundary` is also complete.
+Formal next task: `F12 implement opt-in inventory-to-MechBay preview binding`.
 
 Mobile orientation decision: the first phone version is landscape-only.
 Treat it as a horizontal phone game version, not as a portrait UI that can
@@ -550,7 +551,8 @@ UI pass, the first mobile performance budget, the iOS feasibility gate, the map
 authoring contract, the Unity main-server integration contract, the optional
 Unity main-server client adapter and the optional Unity main-server
 launch/debrief smoke and optional Unity inventory bootstrap smoke have passed;
-the next formal task is `F11 plan inventory-to-MechBay binding boundary`.
+the inventory-to-MechBay binding boundary has passed; the next formal task is
+`F12 implement opt-in inventory-to-MechBay preview binding`.
 At the time this note was updated, `adb devices -l` returned `b5212798 device`
 for Mi 11 Lite through `winusb.inf`; the package installs and launches through
 the G3 when-ready runner/direct smoke path, the visible-flow command-file smoke
@@ -694,4 +696,17 @@ Expected:
 
 ```text
 Optional Unity inventory bootstrap smoke check OK
+```
+
+Inventory-to-MechBay binding boundary
+-------------------------------------
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_inventory_mechbay_binding_boundary.ps1 -RepoRoot .
+```
+
+Expected:
+
+```text
+Inventory-to-MechBay binding boundary check OK
 ```
