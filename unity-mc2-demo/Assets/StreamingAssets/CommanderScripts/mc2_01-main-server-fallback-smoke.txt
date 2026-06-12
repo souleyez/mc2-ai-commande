@@ -1,0 +1,12 @@
+# Proves the opt-in Unity main-server path falls back without blocking the local demo when no server is running.
+main-server-smoke
+prepare-local-candidate
+squad-swap
+hide-squad-preview
+mech-bay-launch
+assert-restart-identity depot
+complete-visible-objectives
+open-debrief
+assert-debrief-visible
+assert-debrief-summary
+report

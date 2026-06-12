@@ -162,6 +162,15 @@ namespace MC2Demo.Presentation
         private const string LoadoutGridPressureLabel = "G ";
         private const string MechLabPcLayoutSummary = "layout=pressure-cards+whole-blocks+single-fillers";
         private const string MobileTouchLayoutSummary = "MobileTouchUi=ready orientation=landscape commandTargets=44 statusRows=44 primaryButtons=44 mapBack=44 systemButtons=44 mechLabBack=44 mechLabGridCell>=36 touchRatios=16:9+19.5:9+20:9 landscapeOnly=yes noDragBox=yes combatLog=hidden";
+        private const string MainServerSmokeAccountId = "local-dev-account";
+        private const string MainServerSmokeMapVersion = "local-fixture-v1";
+        private const string MainServerSmokeClaimSource = "unity-demo-f9-smoke";
+        private static readonly string[] MainServerSmokeOwnedMechIds =
+        {
+            "demo-mech-01",
+            "demo-mech-02",
+            "demo-mech-03"
+        };
         private static readonly Color UiPanelColor = new(0.035f, 0.045f, 0.055f, 0.92f);
         private static readonly Color UiButtonColor = new(0.075f, 0.105f, 0.125f, 0.96f);
         private static readonly Color UiTrackColor = new(0.015f, 0.02f, 0.025f, 0.9f);
@@ -353,6 +362,13 @@ namespace MC2Demo.Presentation
         private MechBayInventoryValidationResult demoInventoryValidation;
         private MechBayMissionReceipt missionReceipt;
         private bool missionReceiptApplied;
+        private UnityMainServerClient mainServerSmokeClient;
+        private UnitySignedSquadResult mainServerSmokeSignedSquad;
+        private UnityRewardClaimResult mainServerSmokeRewardClaim;
+        private bool mainServerSmokeEnabled;
+        private bool mainServerSmokeSignAttempted;
+        private bool mainServerSmokeClaimAttempted;
+        private string mainServerSmokeSummary = "MainServerSmoke=disabled";
         private string pendingDetachedUnitId;
         private bool pendingJumpOrder;
         private bool showMissionMap;
@@ -1527,6 +1543,9 @@ namespace MC2Demo.Presentation
                     case StartupCommanderScriptActionKind.OpenDebrief:
                         RunStartupOpenDebrief();
                         break;
+                    case StartupCommanderScriptActionKind.MainServerSmoke:
+                        RunStartupMainServerSmoke();
+                        break;
                     case StartupCommanderScriptActionKind.SavedAccountReport:
                         RunStartupSavedAccountReport();
                         break;
@@ -1571,6 +1590,9 @@ namespace MC2Demo.Presentation
                         break;
                     case StartupCommanderScriptActionKind.AssertDebriefVisible:
                         RunStartupDebriefVisibleAssertion();
+                        break;
+                    case StartupCommanderScriptActionKind.AssertMainServerSmoke:
+                        RunStartupMainServerSmokeAssertion();
                         break;
                     case StartupCommanderScriptActionKind.AssertCommandResult:
                         RunStartupCommandResultAssertion(action.ExpectedCommandBlocked, action.ExpectedCommandAcceptedCount);
@@ -1762,6 +1784,7 @@ namespace MC2Demo.Presentation
 
         private void RunStartupMechBayLaunch()
         {
+            TrySignMainServerSmokeSquadBeforeLaunch("mech-bay-launch");
             MechBayMissionRestartDryRun dryRun = MechBayMissionHandoffPreviewService.BuildRestartDryRun(demoInventory);
             bool expectsUpdatedSquadStatus = dryRun?.IncludesDepotMissionSlot == true;
             bool accepted = TryApplyMissionRestartRuntimeSwap(keepMechBayOpen: true);
@@ -2890,10 +2913,64 @@ namespace MC2Demo.Presentation
             Debug.LogError("MC2 debrief resolve failed: " + result);
         }
 
+        private void RunStartupMainServerSmoke()
+        {
+            mainServerSmokeEnabled = true;
+            mainServerSmokeClient ??= new UnityMainServerClient(new UnityServerSettings
+            {
+                enabled = true,
+                baseUrl = UnityServerSettings.DefaultBaseUrl,
+                timeoutMilliseconds = UnityServerSettings.DefaultTimeoutMilliseconds
+            });
+            mainServerSmokeSummary = "MainServerSmoke=enabled SignedSquadBeforeLaunch: Pending RewardClaimAfterDebrief: Pending NoPerFrameServerCalls: "
+                + UnityMainServerClient.NoPerFrameServerCalls;
+            AddCombatLogLine("CLI main-server smoke enabled");
+            Debug.Log("MC2 main-server smoke opt-in: " + mainServerSmokeSummary);
+            TrySignMainServerSmokeSquadBeforeLaunch("command-file");
+        }
+
+        private void TrySignMainServerSmokeSquadBeforeLaunch(string source)
+        {
+            if (!mainServerSmokeEnabled || mainServerSmokeSignAttempted)
+            {
+                return;
+            }
+
+            mainServerSmokeSignAttempted = true;
+            UnitySquadSignRequest request = BuildMainServerSmokeSquadSignRequest();
+            mainServerSmokeSignedSquad = mainServerSmokeClient?.TrySignSquad(request);
+            UnitySignedSquad signed = mainServerSmokeSignedSquad?.signedSquad;
+            if (mainServerSmokeSignedSquad?.IsSigned == true)
+            {
+                mainServerSmokeSummary = "MainServerSmoke=signed source="
+                    + source
+                    + " SignedSquadBeforeLaunch: True signedSquadId="
+                    + signed.signedSquadId
+                    + " units="
+                    + signed.unitCount.ToString(CultureInfo.InvariantCulture)
+                    + " NoPerFrameServerCalls: "
+                    + UnityMainServerClient.NoPerFrameServerCalls;
+                AddCombatLogLine("CLI main-server smoke signed");
+                Debug.Log("MC2 main-server smoke signed squad OK: " + mainServerSmokeSummary);
+                return;
+            }
+
+            string reason = MainServerSmokeFallbackReason(mainServerSmokeSignedSquad?.fallback, mainServerSmokeSignedSquad?.message);
+            mainServerSmokeSummary = "MainServerSmoke=fallback source="
+                + source
+                + " SignedSquadBeforeLaunch: False reason="
+                + reason
+                + " LocalFixtureLaunchPlayable: True NoPerFrameServerCalls: "
+                + UnityMainServerClient.NoPerFrameServerCalls;
+            AddCombatLogLine("CLI main-server smoke fallback: " + reason);
+            Debug.LogWarning("MC2 main-server smoke fallback: " + mainServerSmokeSummary);
+        }
+
         private void RunStartupOpenDebrief()
         {
             if (TryOpenDebriefPanelForStartup(out string summary))
             {
+                TrySubmitMainServerSmokeRewardClaimAfterDebrief();
                 AddCombatLogLine("CLI debrief open OK: " + summary);
                 Debug.Log("MC2 debrief open OK: " + summary);
                 return;
@@ -2935,6 +3012,153 @@ namespace MC2Demo.Presentation
             statusText = "Debrief visible assertion failed";
             AddCombatLogLine("CLI debrief visible assert failed: " + result.Summary);
             Debug.LogError("MC2 debrief visible assertion failed: " + result.Summary);
+        }
+
+        private void RunStartupMainServerSmokeAssertion()
+        {
+            bool signedOk = mainServerSmokeEnabled
+                && mainServerSmokeSignAttempted
+                && mainServerSmokeSignedSquad?.IsSigned == true;
+            bool claimOk = mainServerSmokeEnabled
+                && mainServerSmokeClaimAttempted
+                && mainServerSmokeRewardClaim?.IsApproved == true;
+            bool noFrameCallsOk = UnityMainServerClient.NoPerFrameServerCalls;
+            string summary = "enabled="
+                + mainServerSmokeEnabled
+                + " SignedSquadBeforeLaunch: "
+                + signedOk
+                + " RewardClaimAfterDebrief: "
+                + claimOk
+                + " NoPerFrameServerCalls: "
+                + noFrameCallsOk
+                + " detail="
+                + mainServerSmokeSummary;
+
+            if (signedOk && claimOk && noFrameCallsOk)
+            {
+                AddCombatLogLine("CLI main-server smoke assert OK");
+                Debug.Log("MC2 main-server smoke assertion OK: " + summary);
+                return;
+            }
+
+            startupSmokeFailed = true;
+            statusText = "Main-server smoke failed";
+            AddCombatLogLine("CLI main-server smoke assert failed: " + summary);
+            Debug.LogError("MC2 main-server smoke assertion failed: " + summary);
+        }
+
+        private void TrySubmitMainServerSmokeRewardClaimAfterDebrief()
+        {
+            if (!mainServerSmokeEnabled || mainServerSmokeClaimAttempted)
+            {
+                return;
+            }
+
+            if (mainServerSmokeSignedSquad?.IsSigned != true)
+            {
+                mainServerSmokeSummary = mainServerSmokeSummary
+                    + " RewardClaimAfterDebrief: SkippedUnsigned";
+                Debug.LogWarning("MC2 main-server smoke reward claim skipped: unsigned squad; LocalDebriefPlayable: True");
+                return;
+            }
+
+            if (mission == null || mission.Result == MissionResultState.InProgress)
+            {
+                return;
+            }
+
+            mainServerSmokeClaimAttempted = true;
+            UnityBattleResultClaim claim = BuildMainServerSmokeRewardClaim();
+            mainServerSmokeRewardClaim = mainServerSmokeClient?.TrySubmitRewardClaim(claim, mainServerSmokeSignedSquad);
+            if (mainServerSmokeRewardClaim?.IsApproved == true)
+            {
+                int tokenDelta = mainServerSmokeRewardClaim.rewardGrant?.tokenDelta ?? 0;
+                mainServerSmokeSummary = "MainServerSmoke=claimed SignedSquadBeforeLaunch: True RewardClaimAfterDebrief: True signedSquadId="
+                    + claim.signedSquadId
+                    + " tokenDelta="
+                    + tokenDelta.ToString(CultureInfo.InvariantCulture)
+                    + " NoPerFrameServerCalls: "
+                    + UnityMainServerClient.NoPerFrameServerCalls;
+                AddCombatLogLine("CLI main-server smoke reward claim OK");
+                Debug.Log("MC2 main-server smoke reward claim OK: " + mainServerSmokeSummary);
+                return;
+            }
+
+            string reason = MainServerSmokeFallbackReason(mainServerSmokeRewardClaim?.fallback, mainServerSmokeRewardClaim?.message);
+            mainServerSmokeSummary = "MainServerSmoke=claim-fallback SignedSquadBeforeLaunch: True RewardClaimAfterDebrief: False reason="
+                + reason
+                + " LocalDebriefPlayable: True NoPerFrameServerCalls: "
+                + UnityMainServerClient.NoPerFrameServerCalls;
+            AddCombatLogLine("CLI main-server smoke reward fallback: " + reason);
+            Debug.LogWarning("MC2 main-server smoke reward claim fallback: " + mainServerSmokeSummary);
+        }
+
+        private UnitySquadSignRequest BuildMainServerSmokeSquadSignRequest()
+        {
+            return new UnitySquadSignRequest
+            {
+                accountId = MainServerSmokeAccountId,
+                mapId = CurrentMainServerSmokeMapId(),
+                mapVersion = MainServerSmokeMapVersion,
+                battleCoreVersion = UnityMainServerClient.BattleCoreVersion,
+                ownedMechIds = (string[])MainServerSmokeOwnedMechIds.Clone()
+            };
+        }
+
+        private UnityBattleResultClaim BuildMainServerSmokeRewardClaim()
+        {
+            MissionResultSummary summary = mission?.ResultSummary ?? new MissionResultSummary();
+            UnitySignedSquad signed = mainServerSmokeSignedSquad?.signedSquad;
+            string signedSquadId = signed?.signedSquadId ?? "";
+            string battleSummaryKey = "unity-f9-smoke-"
+                + signedSquadId
+                + "-"
+                + summary.completedVisibleObjectives.ToString(CultureInfo.InvariantCulture)
+                + "-"
+                + summary.destroyedEnemyUnits.ToString(CultureInfo.InvariantCulture)
+                + "-"
+                + summary.destroyedStructures.ToString(CultureInfo.InvariantCulture)
+                + "-"
+                + mission.Result;
+
+            return new UnityBattleResultClaim
+            {
+                accountId = signed?.accountId ?? MainServerSmokeAccountId,
+                idempotencyKey = battleSummaryKey,
+                signedSquadId = signedSquadId,
+                mapId = signed?.mapId ?? CurrentMainServerSmokeMapId(),
+                mapVersion = signed?.mapVersion ?? MainServerSmokeMapVersion,
+                battleCoreVersion = signed?.battleCoreVersion ?? UnityMainServerClient.BattleCoreVersion,
+                battleSummaryHash = battleSummaryKey + "-summary",
+                claimSource = MainServerSmokeClaimSource,
+                resultSummary = new UnityBattleResultSummary
+                {
+                    result = mission != null && mission.Result == MissionResultState.Victory ? "success" : "failed",
+                    completedRewardResourcePoints = Math.Max(0, summary.completedRewardResourcePoints),
+                    causedDamageScore = Math.Max(0, summary.destroyedEnemyUnits * 2000 + summary.destroyedStructures * 500),
+                    debuffSeconds = 0,
+                    objectivesCompleted = Math.Max(0, summary.completedVisibleObjectives),
+                    enemiesDestroyed = Math.Max(0, summary.destroyedEnemyUnits),
+                    squadLosses = Math.Max(0, summary.damagedPlayerUnits)
+                }
+            };
+        }
+
+        private string CurrentMainServerSmokeMapId()
+        {
+            return string.IsNullOrWhiteSpace(mission?.Contract?.mission?.id)
+                ? "mc2_01"
+                : mission.Contract.mission.id;
+        }
+
+        private static string MainServerSmokeFallbackReason(OfflineFixtureFallback fallback, string message)
+        {
+            if (!string.IsNullOrWhiteSpace(fallback?.reason))
+            {
+                return fallback.reason;
+            }
+
+            return string.IsNullOrWhiteSpace(message) ? "Unknown" : message;
         }
 
         private bool TryOpenDebriefPanelForStartup(out string summary)

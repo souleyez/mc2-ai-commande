@@ -48,8 +48,9 @@ is complete as a public ranking/profile/battle-record boundary. F4 creator
 economy boundary is complete as a centralized-ledger-first and late-chain
 contract. F5 server implementation boundary is complete as a local main-server
 first-slice contract. F6 local main-server prototype is complete with a local
-smoke gate. F8 optional Unity main-server client adapter is complete. The next
-formal task is `F9 wire optional Unity main-server adapter into launch/debrief smoke`.
+smoke gate. F8 optional Unity main-server client adapter and F9 optional Unity
+main-server launch/debrief smoke are complete. The next formal task is
+`F10 wire optional Unity inventory bootstrap smoke`.
 G3 Android device-smoke preflight now verifies the APK, Android SDK tooling,
 adb, aapt, apksigner, package name, launchable activity, compatibility metadata,
 signing and manifest install-target metadata, Unity/IL2CPP runtime payload,
@@ -72,9 +73,10 @@ manifest checks, landscape screenshot summary checks, Android performance
 baseline capture, mobile performance budget check and iOS feasibility gate
 check. F2 map authoring contract, F3 web ranking contract, F4 creator economy
 boundary, F5 server implementation boundary, F6 local main-server prototype,
-F7 document Unity main-server integration contract and F8 implement optional
-Unity main-server client adapter are complete. Formal next work is
-`F9 wire optional Unity main-server adapter into launch/debrief smoke`.
+F7 document Unity main-server integration contract, F8 implement optional
+Unity main-server client adapter and F9 wire optional Unity main-server adapter
+into launch/debrief smoke are complete. Formal next work is
+`F10 wire optional Unity inventory bootstrap smoke`.
 
 ## Definition Of Done
 
@@ -120,7 +122,7 @@ failing, unless the later work is explicitly diagnostic.
 - **Failure Handling:** 失败时先看什么、停在哪里、哪些输出不能提交。
 - **Commit Scope:** 允许进入提交的文件范围；生成物、日志和私有素材默认不提交。
 
-当前移动执行目标只允许有一个 `In Progress` 或 `Waiting on Device`。如果前置条件失败，先把失败写成明确 blocker 或安装步骤，不跳到后续移动玩法任务。G3 真机 smoke、横屏 G4 Touch UI pass、G5 Mobile Performance Budget、G6 iOS feasibility gate、F2 map authoring contract、F3 web ranking contract、F4 creator economy boundary、F5 server implementation boundary、F6 local main-server prototype、F7 document Unity main-server integration contract 和 F8 implement optional Unity main-server client adapter 已通过；手机端第一版固定横屏；下一步回到主计划的 `F9 wire optional Unity main-server adapter into launch/debrief smoke`。
+当前移动执行目标只允许有一个 `In Progress` 或 `Waiting on Device`。如果前置条件失败，先把失败写成明确 blocker 或安装步骤，不跳到后续移动玩法任务。G3 真机 smoke、横屏 G4 Touch UI pass、G5 Mobile Performance Budget、G6 iOS feasibility gate、F2 map authoring contract、F3 web ranking contract、F4 creator economy boundary、F5 server implementation boundary、F6 local main-server prototype、F7 document Unity main-server integration contract、F8 implement optional Unity main-server client adapter 和 F9 wire optional Unity main-server adapter into launch/debrief smoke 已通过；手机端第一版固定横屏；下一步回到主计划的 `F10 wire optional Unity inventory bootstrap smoke`。
 
 ### Completed Mobile Target: G3 Android Device Smoke
 
@@ -265,7 +267,7 @@ scripts\unity\check_ios_feasibility_gate.ps1 -> iOS feasibility gate check OK.
 Local Windows iOS build -> unsupported; this is documented as a blocker, not a failure.
 Unity playback engines on this machine -> AndroidPlayer and windowsstandalonesupport; iOSSupport absent.
 FirstIOSSmoke -> Build Xcode project -> install on iOS device -> launch visible-flow battle.
-Next formal task -> F9 wire optional Unity main-server adapter into launch/debrief smoke.
+Next formal task -> F10 wire optional Unity inventory bootstrap smoke.
 ```
 
 **Current G3 Evidence 2026-06-12:**
@@ -736,7 +738,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_ios_fe
 - F6 scaffold local main-server prototype. Complete.
 - F7 document Unity main-server integration contract. This is complete.
 - F8 implement optional Unity main-server client adapter. Complete.
-- F9 wire optional Unity main-server adapter into launch/debrief smoke. This is the next formal task.
+- F9 wire optional Unity main-server adapter into launch/debrief smoke. Complete.
+- F10 wire optional Unity inventory bootstrap smoke. This is the next formal task.
 - Server implementation.
 - Realtime PVP.
 - Chain integration.

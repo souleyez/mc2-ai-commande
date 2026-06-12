@@ -168,6 +168,7 @@ $serverBoundaryScript = Resolve-RepoPath -RelativePath "scripts\unity\check_serv
 $localMainServerScript = Resolve-RepoPath -RelativePath "scripts\server\check_local_main_server.ps1"
 $unityMainServerIntegrationScript = Resolve-RepoPath -RelativePath "scripts\unity\check_unity_main_server_integration_contract.ps1"
 $optionalUnityMainServerClientScript = Resolve-RepoPath -RelativePath "scripts\unity\check_optional_unity_main_server_client_adapter.ps1"
+$optionalUnityMainServerLaunchDebriefScript = Resolve-RepoPath -RelativePath "scripts\unity\check_optional_unity_main_server_launch_debrief_smoke.ps1"
 $androidDeviceConnectionScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_device_connection.ps1"
 $androidAdbDriverPackageScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_adb_driver_package.ps1"
 $androidDeviceWatchScript = Resolve-RepoPath -RelativePath "scripts\unity\watch_android_device_connection.ps1"
@@ -395,6 +396,12 @@ Invoke-GateStep `
     -ScriptPath $optionalUnityMainServerClientScript `
     -Arguments @("-RepoRoot", $RepoRoot) `
     -RequiredMarkers @("Optional Unity main-server client adapter check OK.")
+
+Invoke-GateStep `
+    -Name "Optional Unity main-server launch/debrief smoke gate" `
+    -ScriptPath $optionalUnityMainServerLaunchDebriefScript `
+    -Arguments @("-RepoRoot", $RepoRoot) `
+    -RequiredMarkers @("Optional Unity main-server launch/debrief smoke check OK.")
 
 Invoke-GateStep `
     -Name "Android device connection gate" `

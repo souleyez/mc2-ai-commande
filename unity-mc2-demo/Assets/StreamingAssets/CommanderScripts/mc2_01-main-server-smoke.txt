@@ -1,0 +1,13 @@
+# Proves the opt-in Unity main-server path: signed squad before launch, reward claim after debrief.
+main-server-smoke
+prepare-local-candidate
+squad-swap
+hide-squad-preview
+mech-bay-launch
+assert-restart-identity depot
+complete-visible-objectives
+open-debrief
+assert-debrief-visible
+assert-debrief-summary
+assert-main-server-smoke
+report

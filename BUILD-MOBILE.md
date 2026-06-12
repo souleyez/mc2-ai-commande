@@ -292,7 +292,8 @@ Completed mobile gates: `Pass Android G3 device smoke`, the landscape
 `F6 local main-server prototype` is also complete.
 `F7 document Unity main-server integration contract` is also complete.
 `F8 implement optional Unity main-server client adapter` is also complete.
-Formal next task: `F9 wire optional Unity main-server adapter into launch/debrief smoke`.
+`F9 wire optional Unity main-server adapter into launch/debrief smoke` is also complete.
+Formal next task: `F10 wire optional Unity inventory bootstrap smoke`.
 
 Mobile orientation decision: the first phone version is landscape-only.
 Portrait layout is not a supported first-version target; future mobile UI work
@@ -543,9 +544,10 @@ No-device fallback marker remains `Android device smoke preflight waiting on dev
 The APK, SDK logs, Unity build folder, Gradle cache, and device logs remain
 ignored local outputs. The real Android device smoke gate, the landscape touch
 UI pass, the first mobile performance budget, the iOS feasibility gate, the map
-authoring contract, the Unity main-server integration contract and the optional
-Unity main-server client adapter have passed; the next formal task is
-`F9 wire optional Unity main-server adapter into launch/debrief smoke`.
+authoring contract, the Unity main-server integration contract, the optional
+Unity main-server client adapter and the optional Unity main-server
+launch/debrief smoke have passed; the next formal task is
+`F10 wire optional Unity inventory bootstrap smoke`.
 At the time this note was updated, `adb devices -l` returned `b5212798 device`
 for Mi 11 Lite through `winusb.inf`; the package installs and launches through
 the G3 when-ready runner/direct smoke path, the visible-flow command-file smoke
@@ -663,4 +665,17 @@ Expected:
 
 ```text
 Optional Unity main-server client adapter check OK
+```
+
+Optional Unity main-server launch/debrief smoke
+-----------------------------------------------
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_optional_unity_main_server_launch_debrief_smoke.ps1 -RepoRoot .
+```
+
+Expected:
+
+```text
+Optional Unity main-server launch/debrief smoke check OK
 ```

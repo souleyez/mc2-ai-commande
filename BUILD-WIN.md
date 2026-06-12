@@ -290,8 +290,9 @@ This confirms the current PC/mobile package is sealed through `PC1-PC57`, that
 `F4 creator economy boundary`, `F5 server implementation boundary`,
 `F6 local main-server prototype`,
 `F7 document Unity main-server integration contract` and
-`F8 implement optional Unity main-server client adapter` are recorded, and that
-`F9 wire optional Unity main-server adapter into launch/debrief smoke` is the
+`F8 implement optional Unity main-server client adapter` and
+`F9 wire optional Unity main-server adapter into launch/debrief smoke` are
+recorded, and that `F10 wire optional Unity inventory bootstrap smoke` is the
 formal next task.
 
 Expected success string: `Current plan queue consistency check OK`.
@@ -381,6 +382,14 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_option
 ```
 
 Expected success string: `Optional Unity main-server client adapter check OK`.
+
+Check the optional Unity main-server launch/debrief smoke:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_optional_unity_main_server_launch_debrief_smoke.ps1 -RepoRoot .
+```
+
+Expected success string: `Optional Unity main-server launch/debrief smoke check OK`.
 
 Expected waiting-state string without an authorized adb phone: `Android device connection check waiting on device`.
 

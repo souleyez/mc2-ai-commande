@@ -199,6 +199,18 @@ namespace MC2Demo.Presentation
                 return true;
             }
 
+            if (string.Equals(verb, "main-server-smoke", StringComparison.OrdinalIgnoreCase))
+            {
+                if (!string.IsNullOrWhiteSpace(payload))
+                {
+                    error = "Main server smoke action does not accept arguments.";
+                    return false;
+                }
+
+                action = StartupCommanderScriptAction.MainServerSmoke(lineNumber, rawLine);
+                return true;
+            }
+
             if (string.Equals(verb, "saved-account-report", StringComparison.OrdinalIgnoreCase))
             {
                 if (!string.IsNullOrWhiteSpace(payload))
@@ -382,6 +394,18 @@ namespace MC2Demo.Presentation
                 }
 
                 action = StartupCommanderScriptAction.AssertDebriefVisible(lineNumber, rawLine);
+                return true;
+            }
+
+            if (string.Equals(verb, "assert-main-server-smoke", StringComparison.OrdinalIgnoreCase))
+            {
+                if (!string.IsNullOrWhiteSpace(payload))
+                {
+                    error = "Assert main server smoke action does not accept arguments.";
+                    return false;
+                }
+
+                action = StartupCommanderScriptAction.AssertMainServerSmoke(lineNumber, rawLine);
                 return true;
             }
 
@@ -597,7 +621,7 @@ namespace MC2Demo.Presentation
                 return true;
             }
 
-            error = "Command file action must be command, status-row, battle-click, battle-target, advance, report, restart, mech-bay-launch, hide-squad-preview, complete-visible-objectives, open-debrief, saved-account-report, saved-account-save-load-preview, saved-account-export, saved-account-import-preview, saved-account-import-apply-preview, saved-account-import-apply, saved-account-load-default-preview, saved-account-save-current-default, saved-account-load-default-apply, prepare-depot-candidate, prepare-local-candidate, squad-swap, assert-restart-identity, assert-debrief-summary, assert-debrief-visible, assert-command-result, assert-combat-situation, assert-encounter-pacing, assert-objective-graph, assert-loadout-compact, or assert-ai-deputy-window.";
+            error = "Command file action must be command, status-row, battle-click, battle-target, advance, report, restart, mech-bay-launch, hide-squad-preview, complete-visible-objectives, open-debrief, main-server-smoke, saved-account-report, saved-account-save-load-preview, saved-account-export, saved-account-import-preview, saved-account-import-apply-preview, saved-account-import-apply, saved-account-load-default-preview, saved-account-save-current-default, saved-account-load-default-apply, prepare-depot-candidate, prepare-local-candidate, squad-swap, assert-restart-identity, assert-debrief-summary, assert-debrief-visible, assert-main-server-smoke, assert-command-result, assert-combat-situation, assert-encounter-pacing, assert-objective-graph, assert-loadout-compact, or assert-ai-deputy-window.";
             return false;
         }
     }
@@ -752,6 +776,16 @@ namespace MC2Demo.Presentation
             return new StartupCommanderScriptAction
             {
                 Kind = StartupCommanderScriptActionKind.OpenDebrief,
+                LineNumber = lineNumber,
+                SourceLine = sourceLine ?? string.Empty
+            };
+        }
+
+        public static StartupCommanderScriptAction MainServerSmoke(int lineNumber, string sourceLine)
+        {
+            return new StartupCommanderScriptAction
+            {
+                Kind = StartupCommanderScriptActionKind.MainServerSmoke,
                 LineNumber = lineNumber,
                 SourceLine = sourceLine ?? string.Empty
             };
@@ -915,6 +949,16 @@ namespace MC2Demo.Presentation
             };
         }
 
+        public static StartupCommanderScriptAction AssertMainServerSmoke(int lineNumber, string sourceLine)
+        {
+            return new StartupCommanderScriptAction
+            {
+                Kind = StartupCommanderScriptActionKind.AssertMainServerSmoke,
+                LineNumber = lineNumber,
+                SourceLine = sourceLine ?? string.Empty
+            };
+        }
+
         public static StartupCommanderScriptAction AssertCommandResult(
             int lineNumber,
             string sourceLine,
@@ -1012,6 +1056,7 @@ namespace MC2Demo.Presentation
         HideSquadPreview,
         CompleteVisibleObjectives,
         OpenDebrief,
+        MainServerSmoke,
         SavedAccountReport,
         SavedAccountSaveLoadPreview,
         SavedAccountExport,
@@ -1027,6 +1072,7 @@ namespace MC2Demo.Presentation
         AssertRestartIdentity,
         AssertDebriefSummary,
         AssertDebriefVisible,
+        AssertMainServerSmoke,
         AssertCommandResult,
         AssertCombatSituation,
         AssertEncounterPacing,
