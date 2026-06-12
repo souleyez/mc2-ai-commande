@@ -42,13 +42,14 @@ visible-flow command file，并在 logcat 同时看到 debrief 与 loadout compa
 演示总预检、交接一致性检查、Android 真机 smoke 前置检查、PC 核心玩法合约检查、
 移动指挥模型预检、战斗 HUD 稀疏合约检查、PC 视觉截图 sanity 检查、PC 视觉截图 sanity 自测、PC 截图 sidecar schema 检查、PC 截图 preset 契约检查、PC 截图生成物卫生检查、PC 受控窗口尺寸契约检查、PC 启动日志卫生检查、PC 构建输出卫生检查、PC smoke 生成物卫生检查、当前计划队列一致性检查、Android 设备连接诊断检查、Android WPD-only device diagnosis、Android ADB setup guidance、Android ADB driver package probe、Android ADB readiness watch、Android G3 device status report、Android G3 when-ready runner、Android smoke 真实入口连接检查、Android smoke 连接 gate 自测、Android visible-flow command-file smoke、源码/生成物卫生检查、Android smoke 生成物卫生检查、Android smoke 截图证据捕获、Android smoke 摘要证据输出、Android smoke 摘要 schema 检查、Android smoke 摘要 preflight 检查、Android smoke 预演/前置一致性检查、Android G3 readiness 检查、Android G3 真机要求检查、AI 副官边界检查、Windows 演示构建新鲜度检查、受控演示证据新鲜度检查、capture 日志新鲜度检查、Android SDK 工具链检查、Android APK 新鲜度检查、Android APK 身份检查、Android APK 兼容性检查、Android APK 签名检查、Android APK 清单检查、Android APK 载荷检查、Android APK 包体预算检查、当前计划 gate 总预检、Android smoke 日志崩溃扫描、Android smoke 预演模式、visible-flow、截图证据、战场可读性和 MechLab 操作。
 计划队列已记录 `Pass Android G3 device smoke`、横屏版 `G4 Touch UI pass`、
-`G5 Mobile performance budget` 和 `G6 iOS feasibility gate`；手机端第一版
-固定按横屏版设计和验证，竖屏不是当前支持目标。Android 真机截图已验证为
-2400x1080 横屏，Mi 11 Lite 稳态性能基线为 30.48 FPS、273,342 KB PSS。
+`G5 Mobile performance budget`、`G6 iOS feasibility gate` 和手机横屏契约检查；
+手机端第一版固定按横屏版设计和验证，竖屏不是当前支持目标。Android 真机截图
+已验证为 2400x1080 横屏，Mi 11 Lite 稳态性能基线为 30.48 FPS、273,342 KB PSS。
 iOS 已明确为 Mac/Xcode/签名交接链路，F2 地图包契约已明确开放地图与
 主服务器认证奖励边界，F3 Web 排行契约已明确公开排行榜、地图页、战绩页
 和隐私边界，F4 创作者经济契约已明确中心化账本优先和可选链上晚期边界，
-正式下一开发任务推进到 `F5 server implementation boundary`。
+F5 服务器实现契约已明确本地主服务器小切片和离线优先边界，正式下一开发
+任务推进到 `F6 scaffold local main-server prototype`。
 
 ## 产品愿景
 
@@ -317,8 +318,21 @@ This confirms the docs and helper scripts agree that the current PC/mobile
 package is sealed through `PC1-PC57`, that `Pass Android G3 device smoke`, the
 landscape `G4 Touch UI pass`, `G5 Mobile performance budget`,
 `G6 iOS feasibility gate`, `F2 map authoring contract`,
-`F3 web ranking contract`, and `F4 creator economy boundary` are recorded,
-and that `F5 server implementation boundary` is the formal next task.
+`F3 web ranking contract`, `F4 creator economy boundary`, and
+`F5 server implementation boundary` are recorded, and that
+`F6 scaffold local main-server prototype` is the formal next task.
+
+Check the mobile landscape contract:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_mobile_landscape_contract.ps1 -RepoRoot .
+```
+
+This confirms the first phone build remains landscape-only in Unity settings,
+Android build settings, runtime rotation guards, APK/smoke checks and planning
+docs. Portrait is not a first-version acceptance target.
+
+Expected success string: `Mobile landscape contract check OK`.
 
 Check the iOS feasibility gate:
 
@@ -354,6 +368,14 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_creato
 ```
 
 Expected success string: `Creator economy boundary check OK`.
+
+Check the server implementation boundary:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_server_implementation_boundary.ps1 -RepoRoot .
+```
+
+Expected success string: `Server implementation boundary check OK`.
 
 Checkpoint marker: `Add Android ADB driver package probe`.
 

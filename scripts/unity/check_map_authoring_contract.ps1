@@ -159,7 +159,8 @@ Require-Text -Text $rewardContract -Needle "Map packages reference reward table 
 Require-Text -Text $detailedPlan -Needle "| F2 | Done | ``Document map authoring contract`` |" -Label "detailed plan F2 status"
 Require-Text -Text $detailedPlan -Needle "| F3 | Done | ``Document web ranking contract`` |" -Label "detailed plan F3 status"
 Require-Text -Text $detailedPlan -Needle "| F4 | Done | ``Document creator economy boundary`` |" -Label "detailed plan F4 status"
-Require-Text -Text $detailedPlan -Needle "| F5 | Next | ``Document server implementation boundary`` |" -Label "detailed plan next task"
+Require-Text -Text $detailedPlan -Needle "| F5 | Done | ``Document server implementation boundary`` |" -Label "detailed plan F5 status"
+Require-Text -Text $detailedPlan -Needle "| F6 | Next | ``Scaffold local main-server prototype`` |" -Label "detailed plan next task"
 
 if ($failures.Count -gt 0) {
     Write-Host "Map authoring contract check failed."

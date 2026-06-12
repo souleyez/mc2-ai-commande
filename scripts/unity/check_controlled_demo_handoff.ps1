@@ -131,6 +131,8 @@ Assert-ScriptExists -RelativePath "scripts\unity\check_ios_feasibility_gate.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_map_authoring_contract.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_web_ranking_contract.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_creator_economy_boundary.ps1"
+Assert-ScriptExists -RelativePath "scripts\unity\check_server_implementation_boundary.ps1"
+Assert-ScriptExists -RelativePath "scripts\unity\check_mobile_landscape_contract.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_android_device_connection.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_android_adb_driver_package.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\watch_android_device_connection.ps1"
@@ -228,6 +230,11 @@ Assert-FileContains -RelativePath "README.md" -Markers @(
     "check_creator_economy_boundary.ps1",
     "Creator economy boundary check OK",
     "F5 server implementation boundary",
+    "check_server_implementation_boundary.ps1",
+    "Server implementation boundary check OK",
+    "check_mobile_landscape_contract.ps1",
+    "Mobile landscape contract check OK",
+    "F6 scaffold local main-server prototype",
     "Add Android WPD-only device diagnosis",
     "Add Android ADB setup guidance",
     "Add Android ADB driver package probe",
@@ -347,6 +354,11 @@ Assert-FileContains -RelativePath "BUILD-WIN.md" -Markers @(
     "check_creator_economy_boundary.ps1",
     "Creator economy boundary check OK",
     "F5 server implementation boundary",
+    "check_server_implementation_boundary.ps1",
+    "Server implementation boundary check OK",
+    "check_mobile_landscape_contract.ps1",
+    "Mobile landscape contract check OK",
+    "F6 scaffold local main-server prototype",
     "Controlled demo readiness preflight OK"
 )
 
@@ -406,6 +418,11 @@ Assert-FileContains -RelativePath "BUILD-MOBILE.md" -Markers @(
     "check_creator_economy_boundary.ps1",
     "Creator economy boundary check OK",
     "F5 server implementation boundary",
+    "check_server_implementation_boundary.ps1",
+    "Server implementation boundary check OK",
+    "check_mobile_landscape_contract.ps1",
+    "Mobile landscape contract check OK",
+    "F6 scaffold local main-server prototype",
     "first phone version is landscape-only",
     "check_android_smoke_plan_consistency.ps1",
     "Android smoke plan/preflight consistency check OK",
@@ -904,6 +921,9 @@ Assert-FileContains -RelativePath "docs-machine-handoff-plan-2026-06-07.md" -Mar
     "check_creator_economy_boundary.ps1",
     "Creator economy boundary check OK",
     "F5 server implementation boundary",
+    "check_server_implementation_boundary.ps1",
+    "Server implementation boundary check OK",
+    "F6 scaffold local main-server prototype",
     "first phone version is landscape-only",
     "android-device-smoke.png",
     "ScreenshotCapture: True",

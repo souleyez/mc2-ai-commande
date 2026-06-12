@@ -140,6 +140,7 @@ $sourceHygieneScript = Resolve-RepoPath -RelativePath "scripts\unity\check_demo_
 $androidSmokeArtifactHygieneScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_smoke_artifact_hygiene.ps1"
 $aiDeputyScript = Resolve-RepoPath -RelativePath "scripts\unity\check_ai_deputy_contract.ps1"
 $mobileCommandScript = Resolve-RepoPath -RelativePath "scripts\unity\check_mobile_command_model_preflight.ps1"
+$mobileLandscapeContractScript = Resolve-RepoPath -RelativePath "scripts\unity\check_mobile_landscape_contract.ps1"
 $battleHudScript = Resolve-RepoPath -RelativePath "scripts\unity\check_battle_hud_sparse_contract.ps1"
 $pcVisualCaptureSanityScript = Resolve-RepoPath -RelativePath "scripts\unity\check_pc_visual_capture_sanity.ps1"
 $pcCaptureSidecarSchemaScript = Resolve-RepoPath -RelativePath "scripts\unity\check_pc_capture_sidecar_schema.ps1"
@@ -163,6 +164,7 @@ $iosFeasibilityScript = Resolve-RepoPath -RelativePath "scripts\unity\check_ios_
 $mapAuthoringScript = Resolve-RepoPath -RelativePath "scripts\unity\check_map_authoring_contract.ps1"
 $webRankingScript = Resolve-RepoPath -RelativePath "scripts\unity\check_web_ranking_contract.ps1"
 $creatorEconomyScript = Resolve-RepoPath -RelativePath "scripts\unity\check_creator_economy_boundary.ps1"
+$serverBoundaryScript = Resolve-RepoPath -RelativePath "scripts\unity\check_server_implementation_boundary.ps1"
 $androidDeviceConnectionScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_device_connection.ps1"
 $androidAdbDriverPackageScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_adb_driver_package.ps1"
 $androidDeviceWatchScript = Resolve-RepoPath -RelativePath "scripts\unity\watch_android_device_connection.ps1"
@@ -216,6 +218,12 @@ Invoke-GateStep `
     -ScriptPath $mobileCommandScript `
     -Arguments @("-RepoRoot", $RepoRoot) `
     -RequiredMarkers @("Mobile command model preflight OK.")
+
+Invoke-GateStep `
+    -Name "Mobile landscape contract gate" `
+    -ScriptPath $mobileLandscapeContractScript `
+    -Arguments @("-RepoRoot", $RepoRoot) `
+    -RequiredMarkers @("Mobile landscape contract check OK.")
 
 Invoke-GateStep `
     -Name "Battle HUD sparse contract gate" `
@@ -360,6 +368,12 @@ Invoke-GateStep `
     -ScriptPath $creatorEconomyScript `
     -Arguments @("-RepoRoot", $RepoRoot) `
     -RequiredMarkers @("Creator economy boundary check OK.")
+
+Invoke-GateStep `
+    -Name "Server implementation boundary gate" `
+    -ScriptPath $serverBoundaryScript `
+    -Arguments @("-RepoRoot", $RepoRoot) `
+    -RequiredMarkers @("Server implementation boundary check OK.")
 
 Invoke-GateStep `
     -Name "Android device connection gate" `

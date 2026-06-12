@@ -171,7 +171,8 @@ Require-Text -Text $platformPlan -Needle "creator economy boundary" -Label "plat
 Require-Text -Text $platformPlan -Needle "Chain remains optional and late." -Label "platform chain boundary"
 Require-Text -Text $platformPlan -Needle "Do not put core combat, mech stats, weapon stats, repair costs, ordinary inventory mutation, normal token ledger, battle outcomes or anti-cheat-sensitive state on chain." -Label "platform off-chain boundary"
 Require-Text -Text $detailedPlan -Needle "| F4 | Done | ``Document creator economy boundary`` |" -Label "detailed plan F4 status"
-Require-Text -Text $detailedPlan -Needle "| F5 | Next | ``Document server implementation boundary`` |" -Label "detailed plan next task"
+Require-Text -Text $detailedPlan -Needle "| F5 | Done | ``Document server implementation boundary`` |" -Label "detailed plan F5 status"
+Require-Text -Text $detailedPlan -Needle "| F6 | Next | ``Scaffold local main-server prototype`` |" -Label "detailed plan next task"
 
 if ($failures.Count -gt 0) {
     Write-Host "Creator economy boundary check failed."

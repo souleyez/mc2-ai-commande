@@ -229,6 +229,19 @@ fast operational control while the economy is still changing.
 
 Start as a modular server, not many microservices.
 
+Detailed server implementation boundary:
+
+- `docs-server-implementation-boundary-2026-06-07.md`
+
+That contract defines the first server target as a small local main-server
+prototype with account id, token ledger, inventory snapshot, signed squad
+loadout, reward claim endpoint and basic leaderboard. No payment, marketplace,
+realtime PVP, chain integration, public map server registration or remote Unity
+dependency belongs in the first server slice.
+
+Stable server boundary marker: small local main-server prototype.
+No payment, marketplace, realtime PVP, chain integration, public map server registration or remote Unity dependency belongs in the first server slice.
+
 Initial modules:
 
 - Auth and account

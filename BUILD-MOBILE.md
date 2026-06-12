@@ -288,12 +288,25 @@ Completed mobile gates: `Pass Android G3 device smoke`, the landscape
 `G6 iOS feasibility gate`. `F2 map authoring contract` is also complete.
 `F3 web ranking contract` is also complete.
 `F4 creator economy boundary` is also complete.
-Formal next task: `F5 server implementation boundary`.
+`F5 server implementation boundary` is also complete.
+Formal next task: `F6 scaffold local main-server prototype`.
 
 Mobile orientation decision: the first phone version is landscape-only.
 Portrait layout is not a supported first-version target; future mobile UI work
 must keep the battle map, unit status rows, Jet/system controls and MechLab
 usable on landscape phone aspect ratios before considering any portrait pass.
+
+Check the mobile landscape contract without launching Unity or the APK:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_mobile_landscape_contract.ps1 -RepoRoot .
+```
+
+Expected success string:
+
+```text
+Mobile landscape contract check OK.
+```
 
 Check installed Android ADB driver package candidates without installing or
 launching:
@@ -519,6 +532,7 @@ scripts\unity\write_android_g3_device_status.ps1 -> Android G3 device status rep
 scripts\unity\run_android_g3_when_ready.ps1 -PlanOnly -> Android G3 when-ready plan OK, G3WhenReady: True
 scripts\unity\check_android_device_preflight.ps1 -AllowNoDevice -> Android device smoke preflight OK
 scripts\unity\run_android_g3_when_ready.ps1 -TimeoutSeconds 30 -AllowWaiting -LaunchWaitSeconds 75 -> G3WhenReady: True, SmokeTestPassed: True, status=smokePassed
+scripts\unity\check_mobile_landscape_contract.ps1 -> Mobile landscape contract check OK.
 ```
 
 No-device fallback marker remains `Android device smoke preflight waiting on device`.
@@ -527,7 +541,7 @@ The APK, SDK logs, Unity build folder, Gradle cache, and device logs remain
 ignored local outputs. The real Android device smoke gate, the landscape touch
 UI pass, the first mobile performance budget, the iOS feasibility gate and the
 map authoring contract have passed; the next formal task is
-`F5 server implementation boundary`.
+`F6 scaffold local main-server prototype`.
 At the time this note was updated, `adb devices -l` returned `b5212798 device`
 for Mi 11 Lite through `winusb.inf`; the package installs and launches through
 the G3 when-ready runner/direct smoke path, the visible-flow command-file smoke
@@ -590,4 +604,17 @@ Expected success string:
 
 ```text
 Creator economy boundary check OK
+```
+
+Server implementation boundary
+------------------------------
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_server_implementation_boundary.ps1 -RepoRoot .
+```
+
+Expected success string:
+
+```text
+Server implementation boundary check OK
 ```

@@ -287,8 +287,9 @@ This confirms the current PC/mobile package is sealed through `PC1-PC57`, that
 `Pass Android G3 device smoke`, the landscape `G4 Touch UI pass`,
 `G5 Mobile performance budget`, `G6 iOS feasibility gate`,
 `F2 map authoring contract`, `F3 web ranking contract`, and
-`F4 creator economy boundary` are recorded, and that
-`F5 server implementation boundary` is the formal next task.
+`F4 creator economy boundary` and `F5 server implementation boundary` are
+recorded, and that `F6 scaffold local main-server prototype` is the formal next
+task.
 
 Expected success string: `Current plan queue consistency check OK`.
 
@@ -302,6 +303,14 @@ This reads `adb devices -l` and reports no-device, unauthorized, offline,
 multiple-device or ready states without installing or launching the APK.
 
 Current wait-state checkpoint: `PC1-PC57`.
+
+Check the mobile landscape contract without launching Unity or the APK:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_mobile_landscape_contract.ps1 -RepoRoot .
+```
+
+Expected success string: `Mobile landscape contract check OK`.
 
 Check the iOS feasibility gate without attempting a Windows iOS build:
 
@@ -334,6 +343,14 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_creato
 ```
 
 Expected success string: `Creator economy boundary check OK`.
+
+Check the server implementation boundary:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_server_implementation_boundary.ps1 -RepoRoot .
+```
+
+Expected success string: `Server implementation boundary check OK`.
 
 Expected waiting-state string without an authorized adb phone: `Android device connection check waiting on device`.
 
