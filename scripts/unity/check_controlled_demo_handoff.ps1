@@ -126,6 +126,8 @@ Assert-ScriptExists -RelativePath "scripts\unity\check_android_apk_signing.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_android_apk_manifest.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_android_apk_payload.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_android_apk_size_budget.ps1"
+Assert-ScriptExists -RelativePath "scripts\unity\check_mobile_performance_budget.ps1"
+Assert-ScriptExists -RelativePath "scripts\unity\check_ios_feasibility_gate.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_android_device_connection.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_android_adb_driver_package.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\watch_android_device_connection.ps1"
@@ -211,6 +213,9 @@ Assert-FileContains -RelativePath "README.md" -Markers @(
     "Android smoke connection gate check OK",
     "Android smoke connection gate check waiting on device",
     "Add Android visible-flow command-file smoke",
+    "check_ios_feasibility_gate.ps1",
+    "iOS feasibility gate check OK",
+    "F2 map authoring contract",
     "Add Android WPD-only device diagnosis",
     "Add Android ADB setup guidance",
     "Add Android ADB driver package probe",
@@ -373,6 +378,9 @@ Assert-FileContains -RelativePath "BUILD-MOBILE.md" -Markers @(
     "Android smoke connection gate check OK",
     "Android smoke connection gate check waiting on device",
     "Android device smoke preflight waiting on device",
+    "check_ios_feasibility_gate.ps1",
+    "iOS feasibility gate check OK",
+    "F2 map authoring contract",
     "check_android_smoke_plan_consistency.ps1",
     "Android smoke plan/preflight consistency check OK",
     "check_android_g3_readiness.ps1",
@@ -826,6 +834,8 @@ Assert-FileContains -RelativePath "docs-machine-handoff-plan-2026-06-07.md" -Mar
     "Add controlled demo capture log freshness check",
     "Pass Android G3 device smoke",
     "G4 Touch UI pass",
+    "G5 Mobile performance budget",
+    "G6 iOS feasibility gate",
     "check_windows_demo_build_freshness.ps1",
     "check_demo_source_hygiene.ps1",
     "check_ai_deputy_contract.ps1",
@@ -854,6 +864,10 @@ Assert-FileContains -RelativePath "docs-machine-handoff-plan-2026-06-07.md" -Mar
     "check_android_smoke_plan_consistency.ps1",
     "check_android_g3_readiness.ps1",
     "check_android_g3_device_requirement.ps1",
+    "check_mobile_performance_budget.ps1",
+    "check_ios_feasibility_gate.ps1",
+    "iOS feasibility gate check OK",
+    "F2 map authoring contract",
     "android-device-smoke.png",
     "ScreenshotCapture: True",
     "android-device-smoke-summary.json",

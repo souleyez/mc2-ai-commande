@@ -122,11 +122,12 @@ $mobilePlan = Read-RequiredText -RelativePath "docs-mobile-first-plan-2026-06-10
 Assert-Contains -Text $mobilePlan -Needle "| G3 | Done | Android device smoke |" -Label "mobile gate order"
 Assert-Contains -Text $mobilePlan -Needle "| G4 | Done | Touch UI pass |" -Label "mobile gate order"
 Assert-Contains -Text $mobilePlan -Needle "| G5 | Done | Mobile performance budget |" -Label "mobile gate order"
-Assert-Contains -Text $mobilePlan -Needle "| G6 | Next | iOS feasibility gate |" -Label "mobile gate order"
+Assert-Contains -Text $mobilePlan -Needle "| G6 | Done | iOS feasibility gate |" -Label "mobile gate order"
+Assert-Contains -Text $mobilePlan -Needle "F2 map authoring contract" -Label "mobile next task"
 
 $handoff = Read-RequiredText -RelativePath "docs-machine-handoff-plan-2026-06-07.md"
-Assert-Contains -Text $handoff -Needle 'Current formal next development task after handoff: `G6 iOS feasibility gate`' -Label "handoff next task"
-Assert-Contains -Text $handoff -Needle 'Next planned work: `G6 iOS feasibility gate`' -Label "handoff next planned work"
+Assert-Contains -Text $handoff -Needle 'Current formal next development task after handoff: `F2 map authoring contract`' -Label "handoff next task"
+Assert-Contains -Text $handoff -Needle 'Next planned work: `F2 map authoring contract`' -Label "handoff next planned work"
 
 $currentGate = Read-RequiredText -RelativePath "scripts\unity\check_current_plan_gate.ps1"
 Assert-Contains -Text $currentGate -Needle 'CommandFileSmoke: True' -Label "current gate script marker"
@@ -139,6 +140,7 @@ Assert-Contains -Text $currentGate -Needle 'G3WhenReady: True' -Label "current g
 Assert-Contains -Text $currentGate -Needle 'SmokeSuccessMarker: MC2 loadout compact assertion OK' -Label "current gate success marker"
 Assert-Contains -Text $currentGate -Needle 'LandscapeScreenshot: True' -Label "current gate landscape screenshot marker"
 Assert-Contains -Text $currentGate -Needle 'Mobile performance budget check OK.' -Label "current gate performance marker"
+Assert-Contains -Text $currentGate -Needle 'iOS feasibility gate check OK.' -Label "current gate iOS feasibility marker"
 
 $handoffScript = Read-RequiredText -RelativePath "scripts\unity\check_controlled_demo_handoff.ps1"
 Assert-Contains -Text $handoffScript -Needle 'CommandFileSmoke: True' -Label "handoff script marker"

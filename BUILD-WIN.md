@@ -284,9 +284,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_curren
 ```
 
 This confirms the current PC/mobile package is sealed through `PC1-PC57`, that
-`Pass Android G3 device smoke`, the landscape `G4 Touch UI pass`, and
-`G5 Mobile performance budget` are recorded, and that
-`G6 iOS feasibility gate` is the formal next task.
+`Pass Android G3 device smoke`, the landscape `G4 Touch UI pass`,
+`G5 Mobile performance budget`, and `G6 iOS feasibility gate` are recorded,
+and that `F2 map authoring contract` is the formal next task.
 
 Expected success string: `Current plan queue consistency check OK`.
 
@@ -300,6 +300,14 @@ This reads `adb devices -l` and reports no-device, unauthorized, offline,
 multiple-device or ready states without installing or launching the APK.
 
 Current wait-state checkpoint: `PC1-PC57`.
+
+Check the iOS feasibility gate without attempting a Windows iOS build:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_ios_feasibility_gate.ps1 -RepoRoot .
+```
+
+Expected success string: `iOS feasibility gate check OK`.
 
 Expected waiting-state string without an authorized adb phone: `Android device connection check waiting on device`.
 

@@ -28,6 +28,8 @@ As of this handoff plan:
 - Latest sealed PC/mobile wait-state checkpoint: `PC1-PC57`
 - Last completed PC/mobile checkpoint: landscape `G4 Touch UI pass`
 - Previous mobile checkpoint retained in the gate chain: `Pass Android G3 device smoke`
+- Previous mobile checkpoint retained in the gate chain: `G5 Mobile performance budget`
+- Previous mobile checkpoint retained in the gate chain: `G6 iOS feasibility gate`
 - Previous PC checkpoint retained in the gate chain: `Add Android ADB driver package probe`
 - Previous PC checkpoint retained in the gate chain: `Add Android G3 when-ready runner`
 - Previous PC checkpoint retained in the gate chain: `Add Android G3 device status report`
@@ -65,7 +67,7 @@ As of this handoff plan:
 - Previous PC checkpoint retained in the gate chain: `Add Android APK identity check`
 - Previous PC checkpoint retained in the gate chain: `Add Android APK freshness check`
 - Previous PC checkpoint retained in the gate chain: `Add controlled demo capture log freshness check`
-- Current formal next development task after handoff: `G6 iOS feasibility gate`
+- Current formal next development task after handoff: `F2 map authoring contract`
 
 Important: the new machine will not see local commits unless the old machine
 first pushes to `ai-origin`, or the full repository is migrated by a trusted
@@ -99,6 +101,8 @@ The machine switch is safe only when all of these are true:
 - `scripts/unity/check_android_apk_payload.ps1` prints `Android APK payload check OK`.
 - `scripts/unity/check_android_apk_size_budget.ps1` prints `Android APK size budget check OK`.
 - `scripts/unity/check_android_smoke_artifact_hygiene.ps1` prints `Android smoke artifact hygiene check OK`.
+- `scripts/unity/check_mobile_performance_budget.ps1` prints `Mobile performance budget check OK`.
+- `scripts/unity/check_ios_feasibility_gate.ps1` prints `iOS feasibility gate check OK`.
 - `scripts/unity/check_pc_core_playable_contract.ps1` prints `PC core playable contract check OK`.
 - `scripts/unity/check_mobile_command_model_preflight.ps1` prints `Mobile command model preflight OK`.
 - `scripts/unity/check_battle_hud_sparse_contract.ps1` prints `Battle HUD sparse contract check OK`.
@@ -586,9 +590,10 @@ Current plan queue consistency check OK
 
 This verifies README, BUILD-WIN, master/detailed/PC/mobile/evidence/handoff docs
 and helper scripts agree that the current PC/mobile package is sealed through
-the PC1-PC57 checkpoint, that `Pass Android G3 device smoke` and the landscape
-`G4 Touch UI pass` and `G5 Mobile performance budget` are recorded, and that
-`G6 iOS feasibility gate` is the formal next task.
+the PC1-PC57 checkpoint, that `Pass Android G3 device smoke`, the landscape
+`G4 Touch UI pass`, `G5 Mobile performance budget`, and
+`G6 iOS feasibility gate` are recorded, and that `F2 map authoring contract`
+is the formal next task.
 
 **Step 19: Run Android device connection check**
 
@@ -974,7 +979,7 @@ documentation.
 - Read: `docs-ai-rts-commander-current-master-plan-2026-06-07.md`
 - Read: `docs-ai-rts-commander-current-detailed-plan-2026-06-07.md`
 - Read: `docs-mobile-first-plan-2026-06-10.md`
-- Next planned work: `G6 iOS feasibility gate`
+- Next planned work: `F2 map authoring contract`
 
 **Step 1: Confirm current next task**
 
@@ -982,7 +987,7 @@ Read the current commit queue. After this handoff, the product work should
 resume at:
 
 ```text
-G6 iOS feasibility gate
+F2 map authoring contract
 ```
 
 **Step 2: Do not start with server or map-editor implementation**

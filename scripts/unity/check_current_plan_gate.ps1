@@ -159,6 +159,7 @@ $androidApkManifestScript = Resolve-RepoPath -RelativePath "scripts\unity\check_
 $androidApkPayloadScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_apk_payload.ps1"
 $androidApkSizeBudgetScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_apk_size_budget.ps1"
 $mobilePerformanceBudgetScript = Resolve-RepoPath -RelativePath "scripts\unity\check_mobile_performance_budget.ps1"
+$iosFeasibilityScript = Resolve-RepoPath -RelativePath "scripts\unity\check_ios_feasibility_gate.ps1"
 $androidDeviceConnectionScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_device_connection.ps1"
 $androidAdbDriverPackageScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_adb_driver_package.ps1"
 $androidDeviceWatchScript = Resolve-RepoPath -RelativePath "scripts\unity\watch_android_device_connection.ps1"
@@ -332,6 +333,12 @@ Invoke-GateStep `
     -ScriptPath $mobilePerformanceBudgetScript `
     -Arguments @("-RepoRoot", $RepoRoot) `
     -RequiredMarkers @("Mobile performance budget check OK.")
+
+Invoke-GateStep `
+    -Name "iOS feasibility gate" `
+    -ScriptPath $iosFeasibilityScript `
+    -Arguments @("-RepoRoot", $RepoRoot) `
+    -RequiredMarkers @("iOS feasibility gate check OK.")
 
 Invoke-GateStep `
     -Name "Android device connection gate" `

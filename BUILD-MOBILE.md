@@ -283,9 +283,9 @@ NoInstallOrLaunchUntilDeviceReady: True
 ```
 
 Current wait-state checkpoint: `PC1-PC57`.
-Formal next gate: `G6 iOS feasibility gate`; `Pass Android G3 device smoke`,
-the landscape `G4 Touch UI pass`, and `G5 Mobile performance budget` are
-already recorded.
+Completed mobile gates: `Pass Android G3 device smoke`, the landscape
+`G4 Touch UI pass`, `G5 Mobile performance budget`, and
+`G6 iOS feasibility gate`. Formal next task: `F2 map authoring contract`.
 
 Check installed Android ADB driver package candidates without installing or
 launching:
@@ -517,8 +517,8 @@ No-device fallback marker remains `Android device smoke preflight waiting on dev
 
 The APK, SDK logs, Unity build folder, Gradle cache, and device logs remain
 ignored local outputs. The real Android device smoke gate, the landscape touch
-UI pass, and the first mobile performance budget have passed; the next mobile
-gate is `G6 iOS feasibility gate`.
+UI pass, the first mobile performance budget, and the iOS feasibility gate have
+passed; the next formal task is `F2 map authoring contract`.
 At the time this note was updated, `adb devices -l` returned `b5212798 device`
 for Mi 11 Lite through `winusb.inf`; the package installs and launches through
 the G3 when-ready runner/direct smoke path, the visible-flow command-file smoke
@@ -526,3 +526,20 @@ reaches the debrief and loadout compact success markers, and the device
 screenshot summary reports `screenshot orientation OK landscape 2400x1080`.
 The G5 performance baseline reports 30.48 FPS after warmup, 273,342 KB PSS,
 19.80 MiB APK size, and `Thermal Status: 0`.
+
+iOS feasibility
+---------------
+
+This Windows machine does not attempt an iOS build. The iOS lane requires a
+Mac build host, Unity iOS Build Support, Xcode, Apple signing and a physical
+iOS device.
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_ios_feasibility_gate.ps1 -RepoRoot .
+```
+
+Expected success string:
+
+```text
+iOS feasibility gate check OK
+```
