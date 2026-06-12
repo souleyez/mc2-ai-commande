@@ -287,8 +287,8 @@ Require-Text -Text $detailedPlan -Needle '| F11 | Done | `Plan inventory-to-Mech
 Require-Text -Text $detailedPlan -Needle '| F12 | Done | `Implement opt-in inventory-to-MechBay preview binding` |' -Label "detailed F12 next"
 Require-Text -Text $mobilePlan -Needle "F11 plan inventory-to-MechBay binding boundary" -Label "mobile completed task"
 Require-Text -Text $mobilePlan -Needle "F12 implement opt-in inventory-to-MechBay preview binding" -Label "mobile next task"
-Require-Text -Text $handoff -Needle 'Current formal next development task after handoff: `F17 plan post-receipt inventory refresh boundary`' -Label "handoff next task"
-Require-Text -Text $handoff -Needle 'Next planned work: `F17 plan post-receipt inventory refresh boundary`' -Label "handoff next planned work"
+Require-Text -Text $handoff -Needle 'Current formal next development task after handoff: `F18 implement opt-in post-receipt inventory refresh binding`' -Label "handoff next task"
+Require-Text -Text $handoff -Needle 'Next planned work: `F18 implement opt-in post-receipt inventory refresh binding`' -Label "handoff next planned work"
 
 foreach ($textAndLabel in @(
     @{ Text = $readme; Label = "README" },

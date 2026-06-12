@@ -55,7 +55,7 @@ main-server launch/debrief smoke and F10 optional Unity inventory bootstrap
 smoke are complete. F11 inventory-to-MechBay binding boundary is complete.
 F12 opt-in MechBay preview binding, F13 preview evidence, and F14
 landscape-phone MechLab source-line evidence are complete. The next formal
-task is `F17 plan post-receipt inventory refresh boundary`.
+task is `F18 implement opt-in post-receipt inventory refresh binding`.
 G3 Android device-smoke preflight now verifies the APK, Android SDK tooling,
 adb, aapt, apksigner, package name, launchable activity, compatibility metadata,
 signing and manifest install-target metadata, Unity/IL2CPP runtime payload,
@@ -84,8 +84,9 @@ into launch/debrief smoke, F10 wire optional Unity inventory bootstrap smoke and
 F11 plan inventory-to-MechBay binding boundary are complete. F12 opt-in
 MechBay preview binding, F13 preview evidence, and F14 landscape-phone MechLab
 source-line evidence are complete. F16 implement server-backed receipt evidence
-gate is complete. Formal next work is
-`F17 plan post-receipt inventory refresh boundary`.
+gate is complete. F17 plan post-receipt inventory refresh boundary is complete.
+Formal next work is
+`F18 implement opt-in post-receipt inventory refresh binding`.
 
 ## Definition Of Done
 
@@ -131,7 +132,7 @@ failing, unless the later work is explicitly diagnostic.
 - **Failure Handling:** 失败时先看什么、停在哪里、哪些输出不能提交。
 - **Commit Scope:** 允许进入提交的文件范围；生成物、日志和私有素材默认不提交。
 
-当前移动执行目标只允许有一个 `In Progress` 或 `Waiting on Device`。如果前置条件失败，先把失败写成明确 blocker 或安装步骤，不跳到后续移动玩法任务。G3 真机 smoke、横屏 G4 Touch UI pass、G5 Mobile Performance Budget、G6 iOS feasibility gate、F2 map authoring contract、F3 web ranking contract、F4 creator economy boundary、F5 server implementation boundary、F6 local main-server prototype、F7 document Unity main-server integration contract、F8 implement optional Unity main-server client adapter、F9 wire optional Unity main-server adapter into launch/debrief smoke、F10 wire optional Unity inventory bootstrap smoke 和 F11 plan inventory-to-MechBay binding boundary 已通过；手机端第一版固定横屏；F12 implement opt-in inventory-to-MechBay preview binding 已完成；`F13 capture opt-in MechBay preview evidence` 已完成；`F14 capture landscape-phone MechLab source-line evidence` 已完成；F15 plan server-backed receipt slice 已完成；F16 implement server-backed receipt evidence gate 已完成；下一步回到主计划的 `F17 plan post-receipt inventory refresh boundary`，且后续证据必须继续按横版手机布局验收。
+当前移动执行目标只允许有一个 `In Progress` 或 `Waiting on Device`。如果前置条件失败，先把失败写成明确 blocker 或安装步骤，不跳到后续移动玩法任务。G3 真机 smoke、横屏 G4 Touch UI pass、G5 Mobile Performance Budget、G6 iOS feasibility gate、F2 map authoring contract、F3 web ranking contract、F4 creator economy boundary、F5 server implementation boundary、F6 local main-server prototype、F7 document Unity main-server integration contract、F8 implement optional Unity main-server client adapter、F9 wire optional Unity main-server adapter into launch/debrief smoke、F10 wire optional Unity inventory bootstrap smoke 和 F11 plan inventory-to-MechBay binding boundary 已通过；手机端第一版固定横屏；F12 implement opt-in inventory-to-MechBay preview binding 已完成；`F13 capture opt-in MechBay preview evidence` 已完成；`F14 capture landscape-phone MechLab source-line evidence` 已完成；F15 plan server-backed receipt slice 已完成；F16 implement server-backed receipt evidence gate 已完成；F17 plan post-receipt inventory refresh boundary 已完成；下一步回到主计划的 `F18 implement opt-in post-receipt inventory refresh binding`，且后续证据必须继续按横版手机布局验收。
 
 ### Completed Mobile Target: G3 Android Device Smoke
 
@@ -279,7 +280,7 @@ FirstIOSSmoke -> Build Xcode project -> install on iOS device -> launch visible-
 Completed formal task -> F12 implement opt-in inventory-to-MechBay preview binding.
 Completed formal task -> F13 capture opt-in MechBay preview evidence.
 Completed formal task -> F14 capture landscape-phone MechLab source-line evidence.
-Completed formal task -> F15 plan server-backed receipt slice. Completed formal task -> F16 implement server-backed receipt evidence gate. Next formal task -> F17 plan post-receipt inventory refresh boundary.
+Completed formal task -> F15 plan server-backed receipt slice. Completed formal task -> F16 implement server-backed receipt evidence gate. Completed formal task -> F17 plan post-receipt inventory refresh boundary. Next formal task -> F18 implement opt-in post-receipt inventory refresh binding.
 ```
 
 **Current G3 Evidence 2026-06-12:**
@@ -758,7 +759,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_ios_fe
 - F14 capture landscape-phone MechLab source-line evidence. Complete; evidence gate captures a 2400x1080 landscape-phone MechLab source-line screenshot.
 - F15 plan server-backed receipt slice. Complete; `check_server_backed_receipt_slice_plan.ps1` locks the main-server receipt plan and keeps server authority out of the BattleCore frame loop.
 - F16 implement server-backed receipt evidence gate. Complete; `capture_server_backed_receipt_evidence.ps1` proves the local main-server receipt flow without launching Unity.
-- F17 plan post-receipt inventory refresh boundary. This is the next formal task and should define how accepted receipts refresh inventory, debrief and MechBay/garage state while keeping offline fallback and landscape phone UI.
+- F17 plan post-receipt inventory refresh boundary. Complete; `check_post_receipt_inventory_refresh_boundary.ps1` defines how accepted receipts refresh inventory, debrief and MechBay/garage state while keeping offline fallback and landscape phone UI.
+- F18 implement opt-in post-receipt inventory refresh binding. This is the next formal task and should wire the accepted refresh path as opt-in only.
 - Server implementation.
 - Realtime PVP.
 - Chain integration.
@@ -782,4 +784,4 @@ Stop and reassess before continuing if:
 
 ## F12 Preview Binding Checkpoint
 
-`F12 implement opt-in inventory-to-MechBay preview binding` is complete. `F13 capture opt-in MechBay preview evidence` is complete. `F14 capture landscape-phone MechLab source-line evidence` is complete. The opt-in gate is `scripts/unity/check_optional_inventory_mechbay_preview_binding.ps1`, with expected success string `Optional inventory-to-MechBay preview binding check OK`; the preview evidence gate is `scripts/unity/capture_inventory_mechbay_preview_evidence.ps1`, with expected success string `Inventory MechBay preview evidence capture OK`; the landscape-phone evidence gate is `scripts/unity/capture_landscape_phone_mechlab_source_line_evidence.ps1`, with expected success string `Landscape-phone MechLab source-line evidence capture OK`. `F15 plan server-backed receipt slice` is complete. Evidence gate: `scripts/unity/check_server_backed_receipt_slice_plan.ps1` -> `Server-backed receipt slice plan check OK`. `F16 implement server-backed receipt evidence gate` is complete. Evidence gate: `scripts/unity/capture_server_backed_receipt_evidence.ps1` -> `Server-backed receipt evidence capture OK`. Formal next task: `F17 plan post-receipt inventory refresh boundary`. Mobile phones remain first-version landscape-only; portrait is not a first-slice support target.
+`F12 implement opt-in inventory-to-MechBay preview binding` is complete. `F13 capture opt-in MechBay preview evidence` is complete. `F14 capture landscape-phone MechLab source-line evidence` is complete. The opt-in gate is `scripts/unity/check_optional_inventory_mechbay_preview_binding.ps1`, with expected success string `Optional inventory-to-MechBay preview binding check OK`; the preview evidence gate is `scripts/unity/capture_inventory_mechbay_preview_evidence.ps1`, with expected success string `Inventory MechBay preview evidence capture OK`; the landscape-phone evidence gate is `scripts/unity/capture_landscape_phone_mechlab_source_line_evidence.ps1`, with expected success string `Landscape-phone MechLab source-line evidence capture OK`. `F15 plan server-backed receipt slice` is complete. Evidence gate: `scripts/unity/check_server_backed_receipt_slice_plan.ps1` -> `Server-backed receipt slice plan check OK`. `F16 implement server-backed receipt evidence gate` is complete. Evidence gate: `scripts/unity/capture_server_backed_receipt_evidence.ps1` -> `Server-backed receipt evidence capture OK`. `F17 plan post-receipt inventory refresh boundary` is complete. Evidence gate: `scripts/unity/check_post_receipt_inventory_refresh_boundary.ps1` -> `Post-receipt inventory refresh boundary check OK`. Formal next task: `F18 implement opt-in post-receipt inventory refresh binding`. Mobile phones remain first-version landscape-only; portrait is not a first-slice support target.

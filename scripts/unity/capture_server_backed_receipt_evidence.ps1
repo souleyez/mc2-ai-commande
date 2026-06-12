@@ -199,16 +199,16 @@ foreach ($doc in @(
     @{ Name = "handoff"; Text = $handoffText }
 )) {
     Require-Text -Text $doc.Text -Needle "F16 implement server-backed receipt evidence gate" -Label "$($doc.Name) F16 marker"
-    Require-Text -Text $doc.Text -Needle "F17 plan post-receipt inventory refresh boundary" -Label "$($doc.Name) F17 next marker"
+    Require-Text -Text $doc.Text -Needle "F17 plan post-receipt inventory refresh boundary" -Label "$($doc.Name) F17 marker"
 }
 
 Require-Text -Text $masterPlanText -Needle '| 94 | Done | `Implement server-backed receipt evidence gate` |' -Label "master F16 done"
-Require-Text -Text $masterPlanText -Needle '| 95 | Next | `Plan post-receipt inventory refresh boundary` |' -Label "master F17 next"
+Require-Text -Text $masterPlanText -Needle '| 95 | Done | `Plan post-receipt inventory refresh boundary` |' -Label "master F17 done"
 Require-Text -Text $detailedPlanText -Needle '| F16 | Done | `Implement server-backed receipt evidence gate` |' -Label "detailed F16 done"
-Require-Text -Text $detailedPlanText -Needle '| F17 | Next | `Plan post-receipt inventory refresh boundary` |' -Label "detailed F17 next"
+Require-Text -Text $detailedPlanText -Needle '| F17 | Done | `Plan post-receipt inventory refresh boundary` |' -Label "detailed F17 done"
 Require-Text -Text $mobilePlanText -Needle "first phone version is landscape-only" -Label "mobile landscape invariant"
-Require-Text -Text $handoffText -Needle 'Current formal next development task after handoff: `F17 plan post-receipt inventory refresh boundary`' -Label "handoff next task"
-Require-Text -Text $handoffText -Needle 'Next planned work: `F17 plan post-receipt inventory refresh boundary`' -Label "handoff next planned work"
+Require-Text -Text $handoffText -Needle 'Current formal next development task after handoff: `F18 implement opt-in post-receipt inventory refresh binding`' -Label "handoff next task"
+Require-Text -Text $handoffText -Needle 'Next planned work: `F18 implement opt-in post-receipt inventory refresh binding`' -Label "handoff next planned work"
 Require-Text -Text $currentGateText -Needle "capture_server_backed_receipt_evidence.ps1" -Label "current gate receipt evidence script"
 Require-Text -Text $currentGateText -Needle "Server-backed receipt evidence capture OK." -Label "current gate receipt evidence marker"
 

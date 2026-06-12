@@ -176,6 +176,7 @@ $inventoryMechBayPreviewEvidenceScript = Resolve-RepoPath -RelativePath "scripts
 $landscapePhoneMechLabSourceLineScript = Resolve-RepoPath -RelativePath "scripts\unity\capture_landscape_phone_mechlab_source_line_evidence.ps1"
 $serverBackedReceiptSlicePlanScript = Resolve-RepoPath -RelativePath "scripts\unity\check_server_backed_receipt_slice_plan.ps1"
 $serverBackedReceiptEvidenceScript = Resolve-RepoPath -RelativePath "scripts\unity\capture_server_backed_receipt_evidence.ps1"
+$postReceiptInventoryRefreshBoundaryScript = Resolve-RepoPath -RelativePath "scripts\unity\check_post_receipt_inventory_refresh_boundary.ps1"
 $androidDeviceConnectionScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_device_connection.ps1"
 $androidAdbDriverPackageScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_adb_driver_package.ps1"
 $androidDeviceWatchScript = Resolve-RepoPath -RelativePath "scripts\unity\watch_android_device_connection.ps1"
@@ -451,6 +452,12 @@ Invoke-GateStep `
     -ScriptPath $serverBackedReceiptEvidenceScript `
     -Arguments @("-RepoRoot", $RepoRoot) `
     -RequiredMarkers @("Server-backed receipt evidence capture OK.")
+
+Invoke-GateStep `
+    -Name "Post-receipt inventory refresh boundary gate" `
+    -ScriptPath $postReceiptInventoryRefreshBoundaryScript `
+    -Arguments @("-RepoRoot", $RepoRoot) `
+    -RequiredMarkers @("Post-receipt inventory refresh boundary check OK.")
 
 Invoke-GateStep `
     -Name "Android device connection gate" `

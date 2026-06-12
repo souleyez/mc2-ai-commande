@@ -144,6 +144,7 @@ Assert-ScriptExists -RelativePath "scripts\unity\capture_inventory_mechbay_previ
 Assert-ScriptExists -RelativePath "scripts\unity\capture_landscape_phone_mechlab_source_line_evidence.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_server_backed_receipt_slice_plan.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\capture_server_backed_receipt_evidence.ps1"
+Assert-ScriptExists -RelativePath "scripts\unity\check_post_receipt_inventory_refresh_boundary.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_android_device_connection.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_android_adb_driver_package.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\watch_android_device_connection.ps1"
@@ -279,6 +280,9 @@ Assert-FileContains -RelativePath "README.md" -Markers @(
     "capture_server_backed_receipt_evidence.ps1",
     "Server-backed receipt evidence capture OK",
     "F17 plan post-receipt inventory refresh boundary",
+    "check_post_receipt_inventory_refresh_boundary.ps1",
+    "Post-receipt inventory refresh boundary check OK",
+    "F18 implement opt-in post-receipt inventory refresh binding",
     "Add Android WPD-only device diagnosis",
     "Add Android ADB setup guidance",
     "Add Android ADB driver package probe",
@@ -436,6 +440,9 @@ Assert-FileContains -RelativePath "BUILD-WIN.md" -Markers @(
     "capture_server_backed_receipt_evidence.ps1",
     "Server-backed receipt evidence capture OK",
     "F17 plan post-receipt inventory refresh boundary",
+    "check_post_receipt_inventory_refresh_boundary.ps1",
+    "Post-receipt inventory refresh boundary check OK",
+    "F18 implement opt-in post-receipt inventory refresh binding",
     "Controlled demo readiness preflight OK"
 )
 
@@ -533,6 +540,9 @@ Assert-FileContains -RelativePath "BUILD-MOBILE.md" -Markers @(
     "capture_server_backed_receipt_evidence.ps1",
     "Server-backed receipt evidence capture OK",
     "F17 plan post-receipt inventory refresh boundary",
+    "check_post_receipt_inventory_refresh_boundary.ps1",
+    "Post-receipt inventory refresh boundary check OK",
+    "F18 implement opt-in post-receipt inventory refresh binding",
     "first phone version is landscape-only",
     "check_android_smoke_plan_consistency.ps1",
     "Android smoke plan/preflight consistency check OK",
@@ -1067,6 +1077,9 @@ Assert-FileContains -RelativePath "docs-machine-handoff-plan-2026-06-07.md" -Mar
     "capture_server_backed_receipt_evidence.ps1",
     "Server-backed receipt evidence capture OK",
     "F17 plan post-receipt inventory refresh boundary",
+    "check_post_receipt_inventory_refresh_boundary.ps1",
+    "Post-receipt inventory refresh boundary check OK",
+    "F18 implement opt-in post-receipt inventory refresh binding",
     "first phone version is landscape-only",
     "android-device-smoke.png",
     "ScreenshotCapture: True",
