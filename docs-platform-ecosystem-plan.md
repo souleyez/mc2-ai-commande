@@ -253,6 +253,16 @@ signed squad loadout, idempotent reward claim, token ledger mutation and basic
 leaderboard output locally. Unity remains offline-first and does not need this
 server to validate, smoke, build or open MechLab.
 
+Unity main-server integration contract:
+
+- `docs-unity-main-server-integration-contract-2026-06-12.md`
+- `scripts/unity/check_unity_main_server_integration_contract.ps1`
+
+Unity integration stays optional and offline-first. The first adapter may call
+`POST /squads/sign` before launch and `POST /reward-claims` after debrief, but
+BattleCore combat, MechLab, validator, Windows smoke and Android smoke must keep
+working with local fixtures when no server is running.
+
 Initial modules:
 
 - Auth and account

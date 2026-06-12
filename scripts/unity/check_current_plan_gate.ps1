@@ -166,6 +166,7 @@ $webRankingScript = Resolve-RepoPath -RelativePath "scripts\unity\check_web_rank
 $creatorEconomyScript = Resolve-RepoPath -RelativePath "scripts\unity\check_creator_economy_boundary.ps1"
 $serverBoundaryScript = Resolve-RepoPath -RelativePath "scripts\unity\check_server_implementation_boundary.ps1"
 $localMainServerScript = Resolve-RepoPath -RelativePath "scripts\server\check_local_main_server.ps1"
+$unityMainServerIntegrationScript = Resolve-RepoPath -RelativePath "scripts\unity\check_unity_main_server_integration_contract.ps1"
 $androidDeviceConnectionScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_device_connection.ps1"
 $androidAdbDriverPackageScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_adb_driver_package.ps1"
 $androidDeviceWatchScript = Resolve-RepoPath -RelativePath "scripts\unity\watch_android_device_connection.ps1"
@@ -381,6 +382,12 @@ Invoke-GateStep `
     -ScriptPath $localMainServerScript `
     -Arguments @("-RepoRoot", $RepoRoot) `
     -RequiredMarkers @("Local main-server prototype check OK.")
+
+Invoke-GateStep `
+    -Name "Unity main-server integration contract gate" `
+    -ScriptPath $unityMainServerIntegrationScript `
+    -Arguments @("-RepoRoot", $RepoRoot) `
+    -RequiredMarkers @("Unity main-server integration contract check OK.")
 
 Invoke-GateStep `
     -Name "Android device connection gate" `

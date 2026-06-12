@@ -95,7 +95,8 @@ $requiredPlanMarkers = @(
     "Pass Android G3 device smoke",
     "G4 Touch UI pass",
     "F6 local main-server prototype",
-    "F7 document Unity main-server integration contract"
+    "F7 document Unity main-server integration contract",
+    "F8 implement optional Unity main-server client adapter"
 )
 
 $docsToCheck = @(
@@ -130,7 +131,8 @@ Assert-Contains -Text $mobilePlan -Needle "F3 web ranking contract" -Label "mobi
 Assert-Contains -Text $mobilePlan -Needle "F4 creator economy boundary" -Label "mobile completed platform task"
 Assert-Contains -Text $mobilePlan -Needle "F5 server implementation boundary" -Label "mobile completed platform task"
 Assert-Contains -Text $mobilePlan -Needle "F6 local main-server prototype" -Label "mobile completed platform task"
-Assert-Contains -Text $mobilePlan -Needle "F7 document Unity main-server integration contract" -Label "mobile next task"
+Assert-Contains -Text $mobilePlan -Needle "F7 document Unity main-server integration contract" -Label "mobile completed platform task"
+Assert-Contains -Text $mobilePlan -Needle "F8 implement optional Unity main-server client adapter" -Label "mobile next task"
 Assert-Contains -Text $mobilePlan -Needle "first phone version is landscape-only" -Label "mobile orientation decision"
 
 $detailedPlan = Read-RequiredText -RelativePath "docs-ai-rts-commander-current-detailed-plan-2026-06-07.md"
@@ -139,11 +141,12 @@ Assert-Contains -Text $detailedPlan -Needle '| F3 | Done | `Document web ranking
 Assert-Contains -Text $detailedPlan -Needle '| F4 | Done | `Document creator economy boundary` |' -Label "detailed queue F4"
 Assert-Contains -Text $detailedPlan -Needle '| F5 | Done | `Document server implementation boundary` |' -Label "detailed queue F5"
 Assert-Contains -Text $detailedPlan -Needle '| F6 | Done | `Scaffold local main-server prototype` |' -Label "detailed queue F6"
-Assert-Contains -Text $detailedPlan -Needle '| F7 | Next | `Document Unity main-server integration contract` |' -Label "detailed queue F7"
+Assert-Contains -Text $detailedPlan -Needle '| F7 | Done | `Document Unity main-server integration contract` |' -Label "detailed queue F7"
+Assert-Contains -Text $detailedPlan -Needle '| F8 | Next | `Implement optional Unity main-server client adapter` |' -Label "detailed queue F8"
 
 $handoff = Read-RequiredText -RelativePath "docs-machine-handoff-plan-2026-06-07.md"
-Assert-Contains -Text $handoff -Needle 'Current formal next development task after handoff: `F7 document Unity main-server integration contract`' -Label "handoff next task"
-Assert-Contains -Text $handoff -Needle 'Next planned work: `F7 document Unity main-server integration contract`' -Label "handoff next planned work"
+Assert-Contains -Text $handoff -Needle 'Current formal next development task after handoff: `F8 implement optional Unity main-server client adapter`' -Label "handoff next task"
+Assert-Contains -Text $handoff -Needle 'Next planned work: `F8 implement optional Unity main-server client adapter`' -Label "handoff next planned work"
 
 $currentGate = Read-RequiredText -RelativePath "scripts\unity\check_current_plan_gate.ps1"
 Assert-Contains -Text $currentGate -Needle 'CommandFileSmoke: True' -Label "current gate script marker"
@@ -163,6 +166,7 @@ Assert-Contains -Text $currentGate -Needle 'Creator economy boundary check OK.' 
 Assert-Contains -Text $currentGate -Needle 'Server implementation boundary check OK.' -Label "current gate server boundary marker"
 Assert-Contains -Text $currentGate -Needle 'Mobile landscape contract check OK.' -Label "current gate mobile landscape marker"
 Assert-Contains -Text $currentGate -Needle 'Local main-server prototype check OK.' -Label "current gate local main-server marker"
+Assert-Contains -Text $currentGate -Needle 'Unity main-server integration contract check OK.' -Label "current gate unity main-server integration marker"
 
 $handoffScript = Read-RequiredText -RelativePath "scripts\unity\check_controlled_demo_handoff.ps1"
 Assert-Contains -Text $handoffScript -Needle 'CommandFileSmoke: True' -Label "handoff script marker"
@@ -178,6 +182,7 @@ Assert-Contains -Text $handoffScript -Needle 'Creator economy boundary check OK'
 Assert-Contains -Text $handoffScript -Needle 'Server implementation boundary check OK' -Label "handoff script server boundary marker"
 Assert-Contains -Text $handoffScript -Needle 'Mobile landscape contract check OK' -Label "handoff script mobile landscape marker"
 Assert-Contains -Text $handoffScript -Needle 'Local main-server prototype check OK' -Label "handoff script local main-server marker"
+Assert-Contains -Text $handoffScript -Needle 'Unity main-server integration contract check OK' -Label "handoff script unity main-server integration marker"
 
 $tracked = @(& git -C $RepoRoot ls-files 2>$null | ForEach-Object { $_.ToString() })
 if ($LASTEXITCODE -ne 0) {

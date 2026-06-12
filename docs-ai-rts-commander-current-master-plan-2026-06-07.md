@@ -8,7 +8,7 @@
 
 **Tech Stack:** Unity 6, C#, Windows PC build/smoke/capture as active demo loop, Android/iOS mobile-first after device blocker clears, deterministic BattleCore, PowerShell validator/build/smoke/capture scripts, replaceable content packs, optional high-level AI deputy adapter, later main server/map server/Web ranking contracts.
 
-**Revision:** 2026-06-12 v73. This is the current master plan after the private reference visual bridge, visible-flow seal, investor evidence package, art-safe metadata target, AI deputy offline guard, platform reward authority contract, machine handoff plan, mobile-first priority reset, Android build smoke, PC optimization resumption, PC1 baseline audit, PC2 battle readability pass, PC3 MechLab PC flow polish, PC4 controlled demo evidence package, PC5 Windows demo launcher preflight, PC6 controlled demo evidence health check, PC7 controlled demo public boundary preflight, PC8 controlled demo readiness preflight, PC9 controlled demo handoff consistency check, PC10 Android device-smoke preflight, PC11 PC core playable contract check, PC12 mobile command model preflight, PC13 current plan gate check, PC14 Android smoke log crash scan, PC15 Android smoke plan mode, PC16 battle HUD sparse contract check, PC17 demo source hygiene check, PC18 AI deputy contract check, PC19 Windows demo build freshness check, PC20 controlled demo evidence freshness check, PC21 controlled demo capture log freshness check, PC22 Android APK freshness check, PC23 Android APK identity check, PC24 Android APK compatibility check, PC25 Android APK signing check, PC26 Android APK manifest check, PC27 Android APK payload check, PC28 Android APK size budget check, PC29 Android SDK tooling check, PC30 Android smoke artifact hygiene check, PC31 Android smoke screenshot evidence capture, PC32 Android smoke summary evidence output, PC33 Android smoke summary schema check, PC34 Android smoke summary preflight check, PC35 Android smoke plan/preflight consistency check, PC36 Android G3 readiness check, PC37 Android G3 device requirement check, PC38 PC visual capture sanity check, PC39 PC visual capture sanity self-test, PC40 PC capture sidecar schema check, PC41 PC capture preset contract check, PC42 PC capture artifact hygiene check, PC43 PC window contract check, PC44 PC launch log hygiene check, PC45 PC build artifact hygiene check, PC46 PC smoke artifact hygiene check, PC47 current plan queue consistency check, PC48 Android device connection check, PC49 Android smoke connection gate wiring, PC50 Android smoke connection gate check, PC51 Android visible-flow command-file smoke, PC52 Android WPD-only device diagnosis, PC53 Android ADB setup guidance, PC54 Android ADB readiness watch, PC55 Android G3 device status report, PC56 Android G3 when-ready runner, PC57 Android ADB driver package probe, `Pass Android G3 device smoke`, the landscape `G4 Touch UI pass`, `G5 Mobile performance budget`, `G6 iOS feasibility gate`, `F2 map authoring contract`, `F3 web ranking contract`, `F4 creator economy boundary`, `F5 server implementation boundary`, and `F6 local main-server prototype` were refreshed. Mobile phones remain landscape-only for the first playable target; portrait UI is not part of the first version. Older plan files remain evidence/history; this file is the first place to read when the user says "按计划继续". The finer task breakdown now lives in `docs-ai-rts-commander-current-detailed-plan-2026-06-07.md`.
+**Revision:** 2026-06-12 v74. This is the current master plan after the private reference visual bridge, visible-flow seal, investor evidence package, art-safe metadata target, AI deputy offline guard, platform reward authority contract, machine handoff plan, mobile-first priority reset, Android build smoke, PC optimization resumption, PC1 baseline audit, PC2 battle readability pass, PC3 MechLab PC flow polish, PC4 controlled demo evidence package, PC5 Windows demo launcher preflight, PC6 controlled demo evidence health check, PC7 controlled demo public boundary preflight, PC8 controlled demo readiness preflight, PC9 controlled demo handoff consistency check, PC10 Android device-smoke preflight, PC11 PC core playable contract check, PC12 mobile command model preflight, PC13 current plan gate check, PC14 Android smoke log crash scan, PC15 Android smoke plan mode, PC16 battle HUD sparse contract check, PC17 demo source hygiene check, PC18 AI deputy contract check, PC19 Windows demo build freshness check, PC20 controlled demo evidence freshness check, PC21 controlled demo capture log freshness check, PC22 Android APK freshness check, PC23 Android APK identity check, PC24 Android APK compatibility check, PC25 Android APK signing check, PC26 Android APK manifest check, PC27 Android APK payload check, PC28 Android APK size budget check, PC29 Android SDK tooling check, PC30 Android smoke artifact hygiene check, PC31 Android smoke screenshot evidence capture, PC32 Android smoke summary evidence output, PC33 Android smoke summary schema check, PC34 Android smoke summary preflight check, PC35 Android smoke plan/preflight consistency check, PC36 Android G3 readiness check, PC37 Android G3 device requirement check, PC38 PC visual capture sanity check, PC39 PC visual capture sanity self-test, PC40 PC capture sidecar schema check, PC41 PC capture preset contract check, PC42 PC capture artifact hygiene check, PC43 PC window contract check, PC44 PC launch log hygiene check, PC45 PC build artifact hygiene check, PC46 PC smoke artifact hygiene check, PC47 current plan queue consistency check, PC48 Android device connection check, PC49 Android smoke connection gate wiring, PC50 Android smoke connection gate check, PC51 Android visible-flow command-file smoke, PC52 Android WPD-only device diagnosis, PC53 Android ADB setup guidance, PC54 Android ADB readiness watch, PC55 Android G3 device status report, PC56 Android G3 when-ready runner, PC57 Android ADB driver package probe, `Pass Android G3 device smoke`, the landscape `G4 Touch UI pass`, `G5 Mobile performance budget`, `G6 iOS feasibility gate`, `F2 map authoring contract`, `F3 web ranking contract`, `F4 creator economy boundary`, `F5 server implementation boundary`, `F6 local main-server prototype`, and `F7 document Unity main-server integration contract` were refreshed. Mobile phones remain landscape-only for the first playable target; portrait UI is not part of the first version. Older plan files remain evidence/history; this file is the first place to read when the user says "按计划继续". The finer task breakdown now lives in `docs-ai-rts-commander-current-detailed-plan-2026-06-07.md`.
 
 ---
 
@@ -51,7 +51,7 @@
 当前阶段是：
 
 ```text
-F6 local main-server prototype sealed -> F7 document Unity main-server integration contract
+F7 Unity main-server integration contract sealed -> F8 implement optional Unity main-server client adapter
 ```
 
 不是从零开发，也不是马上做平台。现在要把本地 Demo 收成：
@@ -65,7 +65,7 @@ F6 local main-server prototype sealed -> F7 document Unity main-server integrati
 - 部位损伤有记忆点；
 - AI 副官是可选能力，不拖慢本地战斗；
 - 公开替换包路线讲得清楚；
-- Android G3 真机 smoke、横屏 G4 Touch UI pass、G5 Mobile performance budget、G6 iOS feasibility gate、F2 map authoring contract、F3 web ranking contract、F4 creator economy boundary、F5 server implementation boundary 和 F6 local main-server prototype 已通过；手机第一版按横屏版设计和验证，竖屏不是支持目标；下一步进入 F7 document Unity main-server integration contract。
+- Android G3 真机 smoke、横屏 G4 Touch UI pass、G5 Mobile performance budget、G6 iOS feasibility gate、F2 map authoring contract、F3 web ranking contract、F4 creator economy boundary、F5 server implementation boundary、F6 local main-server prototype 和 F7 document Unity main-server integration contract 已通过；手机第一版按横屏版设计和验证，竖屏不是支持目标；下一步进入 F8 implement optional Unity main-server client adapter。
 
 已完成的关键基础：
 
@@ -90,7 +90,7 @@ F6 local main-server prototype sealed -> F7 document Unity main-server integrati
 | Gap | Why It Matters | First Fix |
 | --- | --- | --- |
 | Android 真机 smoke 等待设备 | APK 已能构建，但当前没有授权 Android 手机证明真实设备可启动并进入战斗/战报 | G3 等待连接 Android 手机，安装 APK，抓取 logcat 并记录启动结果 |
-| PC/移动/平台契约前置质量本轮已收口 | Windows 构建、visible-flow、六截图、战场可读性、MechLab、演示文档、受控启动预检、受控窗口尺寸契约检查、PC 启动日志卫生检查、PC 构建输出卫生检查、PC smoke 生成物卫生检查、当前计划队列一致性检查、Android 设备连接诊断检查、Android visible-flow command-file smoke、构建新鲜度检查、证据健康检查、证据新鲜度检查、capture 日志新鲜度检查、Android SDK 工具链检查、Android APK 新鲜度检查、Android APK 身份检查、Android APK 兼容性检查、Android APK 签名检查、Android APK 清单检查、Android APK 载荷检查、Android APK 包体预算检查、Android smoke 生成物卫生检查、Android smoke 截图证据捕获、Android smoke 摘要证据输出、Android smoke 摘要 schema 检查、Android smoke 摘要 preflight 检查、Android smoke 预演/前置一致性检查、Android G3 readiness 检查、Android G3 真机要求检查、PC 视觉截图 sanity 检查和自测、PC 截图 sidecar schema 检查、PC 截图 preset 契约检查、PC 截图生成物卫生检查、公开边界预检、总预检、交接一致性检查、Android 真机 smoke 前置检查、PC 核心玩法合约检查、移动指挥模型预检、战斗 HUD 稀疏合约检查、源码/生成物卫生检查、AI 副官边界检查、当前计划 gate 总预检、Android smoke 日志崩溃扫描、Android smoke 预演模式、Android performance baseline capture、mobile performance budget check、iOS feasibility gate check、map authoring contract check、web ranking contract check、creator economy boundary check、server implementation boundary check 和 local main-server prototype check 已经形成当前展示包 | `Pass Android G3 device smoke`、横屏 `G4 Touch UI pass`、`G5 Mobile performance budget`、`G6 iOS feasibility gate`、`F2 map authoring contract`、`F3 web ranking contract`、`F4 creator economy boundary`、`F5 server implementation boundary` 和 `F6 local main-server prototype` 已完成；正式下一步是 `F7 document Unity main-server integration contract` |
+| PC/移动/平台契约前置质量本轮已收口 | Windows 构建、visible-flow、六截图、战场可读性、MechLab、演示文档、受控启动预检、受控窗口尺寸契约检查、PC 启动日志卫生检查、PC 构建输出卫生检查、PC smoke 生成物卫生检查、当前计划队列一致性检查、Android 设备连接诊断检查、Android visible-flow command-file smoke、构建新鲜度检查、证据健康检查、证据新鲜度检查、capture 日志新鲜度检查、Android SDK 工具链检查、Android APK 新鲜度检查、Android APK 身份检查、Android APK 兼容性检查、Android APK 签名检查、Android APK 清单检查、Android APK 载荷检查、Android APK 包体预算检查、Android smoke 生成物卫生检查、Android smoke 截图证据捕获、Android smoke 摘要证据输出、Android smoke 摘要 schema 检查、Android smoke 摘要 preflight 检查、Android smoke 预演/前置一致性检查、Android G3 readiness 检查、Android G3 真机要求检查、PC 视觉截图 sanity 检查和自测、PC 截图 sidecar schema 检查、PC 截图 preset 契约检查、PC 截图生成物卫生检查、公开边界预检、总预检、交接一致性检查、Android 真机 smoke 前置检查、PC 核心玩法合约检查、移动指挥模型预检、战斗 HUD 稀疏合约检查、源码/生成物卫生检查、AI 副官边界检查、当前计划 gate 总预检、Android smoke 日志崩溃扫描、Android smoke 预演模式、Android performance baseline capture、mobile performance budget check、iOS feasibility gate check、map authoring contract check、web ranking contract check、creator economy boundary check、server implementation boundary check、local main-server prototype check 和 Unity main-server integration contract check 已经形成当前展示包 | `Pass Android G3 device smoke`、横屏 `G4 Touch UI pass`、`G5 Mobile performance budget`、`G6 iOS feasibility gate`、`F2 map authoring contract`、`F3 web ranking contract`、`F4 creator economy boundary`、`F5 server implementation boundary`、`F6 local main-server prototype` 和 `F7 document Unity main-server integration contract` 已完成；正式下一步是 `F8 implement optional Unity main-server client adapter` |
 | 移动端交互和性能未验证 | 移动端是产品优先项；第一版手机端只做横屏版，避免为竖屏重排战场和状态栏 | 后续移动 UI 优化只检查横屏手机比例，竖屏不进入第一版验收 |
 | 清权资产还未真正接入运行包 | D1 已有 metadata 合同，但不是最终美术包 | D2 以后再做 mountable clean content pack |
 | Unity 与服务器集成契约未写 | 本地主服务器原型已能本地启动和 smoke，但 Unity 仍必须离线优先，后续接入需要先写请求/回退契约 | F7 排在 F6 之后 |
@@ -434,7 +434,8 @@ Known good strings:
 | 82 | Done | `Plan creator economy boundary` | 创作者分成、皮肤、自定义、链上边界 | `check_creator_economy_boundary.ps1` |
 | 83 | Done | `Plan server implementation boundary` | 主服务器最小原型边界和模块切片 | `check_server_implementation_boundary.ps1` |
 | 84 | Done | `Scaffold local main-server prototype` | 本地 health/version、fixture account/inventory、签名小队、奖励申领和基础排行榜骨架 | `check_local_main_server.ps1` |
-| 85 | Next | `Document Unity main-server integration contract` | Unity 未来可选请求签名小队和提交奖励 claim，同时保持当前 Demo 离线优先 | docs + gate |
+| 85 | Done | `Document Unity main-server integration contract` | Unity 未来可选请求签名小队和提交奖励 claim，同时保持当前 Demo 离线优先 | `check_unity_main_server_integration_contract.ps1` |
+| 86 | Next | `Implement optional Unity main-server client adapter` | Unity 内实现可禁用的签名小队/奖励 claim 客户端适配层 | C# adapter + gates |
 
 ## 6. Detailed Tasks
 
@@ -1061,15 +1062,18 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\server\check_local
 
 ### Task 16: Document Unity Main-Server Integration Contract
 
-**Status:** Next.
+**Status:** Done.
 
 **Goal:** 写清 Unity 后续如何可选调用本地主服务器：出战前请求签名小队，战后提交奖励 claim，同时保持 validator、Windows smoke、Android smoke 和 MechLab 离线优先。
 
 **Files:**
 
-- Create if needed: `docs-unity-main-server-integration-contract-2026-06-12.md`
-- Modify if needed: `README.md`
-- Modify if needed: gate scripts
+- `docs-unity-main-server-integration-contract-2026-06-12.md`
+- `scripts/unity/check_unity_main_server_integration_contract.ps1`
+- `README.md`
+- `BUILD-WIN.md`
+- `BUILD-MOBILE.md`
+- Plan, platform and handoff docs
 
 **Steps:**
 
@@ -1082,6 +1086,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\server\check_local
 ```powershell
 git diff --check
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\server\check_local_main_server.ps1 -RepoRoot .
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_unity_main_server_integration_contract.ps1 -RepoRoot .
 ```
 
 **Acceptance:**
@@ -1090,6 +1095,39 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\server\check_local
 - Current Unity demo remains runnable with no server.
 
 **Commit:** `Document Unity main-server integration contract`
+
+### Task 17: Implement Optional Unity Main-Server Client Adapter
+
+**Status:** Next.
+
+**Goal:** 在 Unity Demo 中添加默认关闭、失败回退的主服务器客户端边界，覆盖 `POST /squads/sign` 和 `POST /reward-claims`，同时保持现有离线 validator、Windows smoke、Android smoke 和 MechLab 不依赖服务器。
+
+**Files:**
+
+- Add if needed: narrow Unity C# DTO/client files.
+- Modify if needed: opt-in smoke/validator gates only.
+- Do not rename server endpoints from the F6 prototype.
+
+**Steps:**
+
+1. Add typed DTOs matching the F7 contract.
+2. Add an opt-in client wrapper with timeout and fallback status.
+3. Keep BattleCore frame loop, MechLab and smoke paths offline-first by default.
+
+**Validation:**
+
+```powershell
+git diff --check
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\server\check_local_main_server.ps1 -RepoRoot .
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_unity_main_server_integration_contract.ps1 -RepoRoot .
+```
+
+**Acceptance:**
+
+- Unity can later request a signed squad and submit a reward claim through typed opt-in code.
+- Existing demo gates remain valid when no server process is running.
+
+**Commit:** `Implement optional Unity main-server client adapter`
 
 ## 7. Milestones
 
@@ -1106,7 +1144,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\server\check_local
 | M8 Controlled demo evidence | Done | visible-flow, six captures, walkthrough and investor evidence refreshed |
 | M9 Public-safe slice | Done for metadata | art-safe manifest/provenance and boundary check pass |
 | M10 AI deputy V1 | Done | offline/no-key and high-level directive guarded |
-| M11 Platform contracts | In Progress | reward authority, map authoring, ranking, creator boundary, server boundary and local main-server prototype are done; Unity-server integration contract remains |
+| M11 Platform contracts | Done for contract layer | reward authority, map authoring, ranking, creator boundary, server boundary, local main-server prototype and Unity-server integration contract are done; optional Unity client adapter remains F8 |
 | M12 Machine handoff | Done | current machine is clean and validator/build/smoke passed |
 | M13 Mobile-first viability | Done for current pass | Android APK build smoke, real-device smoke, landscape touch UI, mobile performance budget and iOS feasibility gate passed |
 | M14 PC/mobile wait-state optimization | Done for current pass | PC1-PC57 passed: PC1 baseline, PC2 battle readability, PC3 MechLab polish, PC4 controlled demo evidence package, PC5 launch preflight, PC6 evidence health check, PC7 public boundary preflight, PC8 readiness preflight, PC9 handoff consistency check, PC10 Android device-smoke preflight, PC11 PC core playable contract check, PC12 mobile command model preflight, PC13 current plan gate check, PC14 Android smoke log crash scan, PC15 Android smoke plan mode, PC16 battle HUD sparse contract check, PC17 demo source hygiene check, PC18 AI deputy contract check, PC19 Windows demo build freshness check, PC20 controlled demo evidence freshness check, PC21 controlled demo capture log freshness check, PC22 Android APK freshness check, PC23 Android APK identity check, PC24 Android APK compatibility check, PC25 Android APK signing check, PC26 Android APK manifest check, PC27 Android APK payload check, PC28 Android APK size budget check, PC29 Android SDK tooling check, PC30 Android smoke artifact hygiene check, PC31 Android smoke screenshot evidence capture, PC32 Android smoke summary evidence output, PC33 Android smoke summary schema check, PC34 Android smoke summary preflight check, PC35 Android smoke plan/preflight consistency check, PC36 Android G3 readiness check, PC37 Android G3 device requirement check, PC38 PC visual capture sanity check, PC39 PC visual capture sanity self-test, PC40 PC capture sidecar schema check, PC41 PC capture preset contract check, PC42 PC capture artifact hygiene check, PC43 PC window contract check, PC44 PC launch log hygiene check, PC45 PC build artifact hygiene check, PC46 PC smoke artifact hygiene check, PC47 current plan queue consistency check, PC48 Android device connection check, PC49 Android smoke connection gate wiring, PC50 Android smoke connection gate check, PC51 Android visible-flow command-file smoke, PC52 Android WPD-only device diagnosis, PC53 Android ADB setup guidance, PC54 Android ADB readiness watch, PC55 Android G3 device status report, PC56 Android G3 when-ready runner and PC57 Android ADB driver package probe |
@@ -1200,4 +1238,4 @@ Stop and reassess if:
 
 ## 10. One-Line Direction
 
-Windows 本地 Demo 的画面、碰撞、稀疏 UI、MechLab、损伤故事、受控演示证据、PC 视觉截图 sanity 与自测、PC 截图 sidecar schema、PC 截图 preset 契约、PC 截图生成物卫生、PC 受控窗口尺寸契约、PC 启动日志卫生、PC 构建输出卫生、PC smoke 生成物卫生、当前计划队列一致性、Android 设备连接诊断、Android WPD-only device diagnosis、Android ADB setup guidance、Android ADB driver package probe、Android ADB readiness watch、Android G3 device status report、Android G3 when-ready runner、Android smoke 真实入口连接检查、Android smoke 连接 gate 自测、Android visible-flow command-file smoke、启动预检、构建新鲜度检查、证据健康检查、证据新鲜度检查、capture 日志新鲜度检查、Android SDK 工具链检查、Android APK 新鲜度检查、Android APK 身份检查、Android APK 兼容性检查、Android APK 签名检查、Android APK 清单检查、Android APK 载荷检查、Android APK 包体预算检查、Android smoke 生成物卫生检查、Android smoke 截图证据捕获、Android smoke 摘要证据输出、Android smoke 摘要 schema 检查、Android smoke 摘要 preflight 检查、Android smoke 预演/前置一致性检查、Android G3 readiness 检查、Android G3 真机要求检查、公开边界预检、演示总预检、交接一致性检查、Android 真机 smoke 前置检查、PC 核心玩法合约检查、移动指挥模型预检、战斗 HUD 稀疏合约检查、源码/生成物卫生检查、AI 副官边界检查、当前计划 gate 总预检、Android smoke 日志崩溃扫描、Android smoke 预演模式、Android performance baseline capture、mobile performance budget check、iOS feasibility gate check、map authoring contract check、web ranking contract check、creator economy boundary check、server implementation boundary check、local main-server prototype check、公开 art-safe 元数据合同、AI 副官离线边界和主服务器奖励权威契约已经收稳；H2 validator/build/smoke 基线已过；G2 Android APK build smoke 已过；PC1-PC57 PC/移动等待态优化包已封口；`Pass Android G3 device smoke`、横屏 `G4 Touch UI pass`、`G5 Mobile performance budget`、`G6 iOS feasibility gate`、`F2 map authoring contract`、`F3 web ranking contract`、`F4 creator economy boundary`、`F5 server implementation boundary` 和 `F6 local main-server prototype` 已完成；手机端第一版固定横屏；正式下一步是 `F7 document Unity main-server integration contract`。
+Windows 本地 Demo 的画面、碰撞、稀疏 UI、MechLab、损伤故事、受控演示证据、PC 视觉截图 sanity 与自测、PC 截图 sidecar schema、PC 截图 preset 契约、PC 截图生成物卫生、PC 受控窗口尺寸契约、PC 启动日志卫生、PC 构建输出卫生、PC smoke 生成物卫生、当前计划队列一致性、Android 设备连接诊断、Android WPD-only device diagnosis、Android ADB setup guidance、Android ADB driver package probe、Android ADB readiness watch、Android G3 device status report、Android G3 when-ready runner、Android smoke 真实入口连接检查、Android smoke 连接 gate 自测、Android visible-flow command-file smoke、启动预检、构建新鲜度检查、证据健康检查、证据新鲜度检查、capture 日志新鲜度检查、Android SDK 工具链检查、Android APK 新鲜度检查、Android APK 身份检查、Android APK 兼容性检查、Android APK 签名检查、Android APK 清单检查、Android APK 载荷检查、Android APK 包体预算检查、Android smoke 生成物卫生检查、Android smoke 截图证据捕获、Android smoke 摘要证据输出、Android smoke 摘要 schema 检查、Android smoke 摘要 preflight 检查、Android smoke 预演/前置一致性检查、Android G3 readiness 检查、Android G3 真机要求检查、公开边界预检、演示总预检、交接一致性检查、Android 真机 smoke 前置检查、PC 核心玩法合约检查、移动指挥模型预检、战斗 HUD 稀疏合约检查、源码/生成物卫生检查、AI 副官边界检查、当前计划 gate 总预检、Android smoke 日志崩溃扫描、Android smoke 预演模式、Android performance baseline capture、mobile performance budget check、iOS feasibility gate check、map authoring contract check、web ranking contract check、creator economy boundary check、server implementation boundary check、local main-server prototype check、Unity main-server integration contract check、公开 art-safe 元数据合同、AI 副官离线边界和主服务器奖励权威契约已经收稳；H2 validator/build/smoke 基线已过；G2 Android APK build smoke 已过；PC1-PC57 PC/移动等待态优化包已封口；`Pass Android G3 device smoke`、横屏 `G4 Touch UI pass`、`G5 Mobile performance budget`、`G6 iOS feasibility gate`、`F2 map authoring contract`、`F3 web ranking contract`、`F4 creator economy boundary`、`F5 server implementation boundary`、`F6 local main-server prototype` 和 `F7 document Unity main-server integration contract` 已完成；手机端第一版固定横屏；正式下一步是 `F8 implement optional Unity main-server client adapter`。

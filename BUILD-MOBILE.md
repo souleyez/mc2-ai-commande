@@ -290,7 +290,8 @@ Completed mobile gates: `Pass Android G3 device smoke`, the landscape
 `F4 creator economy boundary` is also complete.
 `F5 server implementation boundary` is also complete.
 `F6 local main-server prototype` is also complete.
-Formal next task: `F7 document Unity main-server integration contract`.
+`F7 document Unity main-server integration contract` is also complete.
+Formal next task: `F8 implement optional Unity main-server client adapter`.
 
 Mobile orientation decision: the first phone version is landscape-only.
 Portrait layout is not a supported first-version target; future mobile UI work
@@ -540,9 +541,9 @@ No-device fallback marker remains `Android device smoke preflight waiting on dev
 
 The APK, SDK logs, Unity build folder, Gradle cache, and device logs remain
 ignored local outputs. The real Android device smoke gate, the landscape touch
-UI pass, the first mobile performance budget, the iOS feasibility gate and the
-map authoring contract have passed; the next formal task is
-`F7 document Unity main-server integration contract`.
+UI pass, the first mobile performance budget, the iOS feasibility gate, the map
+authoring contract and the Unity main-server integration contract have passed;
+the next formal task is `F8 implement optional Unity main-server client adapter`.
 At the time this note was updated, `adb devices -l` returned `b5212798 device`
 for Mi 11 Lite through `winusb.inf`; the package installs and launches through
 the G3 when-ready runner/direct smoke path, the visible-flow command-file smoke
@@ -631,4 +632,20 @@ Expected success string:
 
 ```text
 Local main-server prototype check OK
+```
+
+Unity main-server integration contract
+--------------------------------------
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_unity_main_server_integration_contract.ps1 -RepoRoot .
+```
+
+This validates `docs-unity-main-server-integration-contract-2026-06-12.md`
+against the local server prototype and the current offline-first plan markers.
+
+Expected:
+
+```text
+Unity main-server integration contract check OK
 ```
