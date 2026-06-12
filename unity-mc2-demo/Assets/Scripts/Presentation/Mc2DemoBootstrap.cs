@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.IO.Compression;
 using MC2Demo.BattleCore;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -420,7 +421,7 @@ namespace MC2Demo.Presentation
             LoadMission();
             BuildWorld();
             RunStartupCommanderSequence();
-            ConfigureStartupContinuePanel(Environment.GetCommandLineArgs());
+            ConfigureStartupContinuePanel(GetStartupArgs());
             ScheduleStartupScreenshotIfRequested();
             ScheduleSmokeTestQuitIfRequested();
         }
@@ -477,15 +478,14 @@ namespace MC2Demo.Presentation
         private void LoadMission()
         {
             combatProfiles = LoadCombatProfiles();
-            string path = Path.Combine(Application.streamingAssetsPath, missionContractRelativePath);
-            if (!File.Exists(path))
+            if (!TryReadStreamingAssetText(missionContractRelativePath, out string missionJson, out string path))
             {
                 statusText = "Missing mission contract: " + path;
                 Debug.LogError(statusText);
                 return;
             }
 
-            mission = BattleMission.FromJson(File.ReadAllText(path), combatProfiles);
+            mission = BattleMission.FromJson(missionJson, combatProfiles);
             scriptBridge = new MissionScriptBridge(mission);
             commandPort = new CommanderCommandPort(mission, JumpDistance, DemoTerrainView.IsUsableLandingPosition);
             observationPort = new CommanderObservationPort(mission);
@@ -504,17 +504,71 @@ namespace MC2Demo.Presentation
 
         private CombatProfileCatalog LoadCombatProfiles()
         {
-            string path = Path.Combine(Application.streamingAssetsPath, combatDataRelativePath);
-            if (!File.Exists(path))
+            if (!TryReadStreamingAssetText(combatDataRelativePath, out string combatJson, out string path))
             {
                 Debug.LogWarning("MC2 combat data missing, using fallback profiles: " + path);
                 return CombatProfileCatalog.Empty;
             }
 
-            CombatProfileCatalog catalog = CombatProfileCatalog.FromJson(File.ReadAllText(path));
+            CombatProfileCatalog catalog = CombatProfileCatalog.FromJson(combatJson);
             Debug.Log("MC2 demo loaded combat profiles: " + catalog.UnitProfileCount);
             return catalog;
         }
+
+        private static bool TryReadStreamingAssetText(string relativePath, out string text, out string resolvedPath)
+        {
+            text = "";
+            string normalizedRelativePath = (relativePath ?? string.Empty).Replace('\\', '/');
+            resolvedPath = Path.Combine(Application.streamingAssetsPath, normalizedRelativePath);
+
+            if (File.Exists(resolvedPath))
+            {
+                text = File.ReadAllText(resolvedPath);
+                return true;
+            }
+
+#if UNITY_ANDROID && !UNITY_EDITOR
+            return TryReadAndroidJarStreamingAssetText(resolvedPath, out text);
+#else
+            return false;
+#endif
+        }
+
+#if UNITY_ANDROID && !UNITY_EDITOR
+        private static bool TryReadAndroidJarStreamingAssetText(string jarUri, out string text)
+        {
+            text = "";
+            if (string.IsNullOrWhiteSpace(jarUri))
+            {
+                return false;
+            }
+
+            const string prefix = "jar:file://";
+            int entryMarker = jarUri.IndexOf("!/", StringComparison.Ordinal);
+            if (!jarUri.StartsWith(prefix, StringComparison.Ordinal) || entryMarker < 0)
+            {
+                return false;
+            }
+
+            string apkPath = Uri.UnescapeDataString(jarUri.Substring(prefix.Length, entryMarker - prefix.Length));
+            string entryName = Uri.UnescapeDataString(jarUri.Substring(entryMarker + 2)).Replace('\\', '/');
+            using (FileStream stream = File.OpenRead(apkPath))
+            using (ZipArchive archive = new ZipArchive(stream, ZipArchiveMode.Read))
+            {
+                ZipArchiveEntry entry = archive.GetEntry(entryName);
+                if (entry == null)
+                {
+                    return false;
+                }
+
+                using (StreamReader reader = new StreamReader(entry.Open()))
+                {
+                    text = reader.ReadToEnd();
+                    return true;
+                }
+            }
+        }
+#endif
 
         private void BuildWorld()
         {
@@ -820,7 +874,7 @@ namespace MC2Demo.Presentation
 
         private void ScheduleSmokeTestQuitIfRequested()
         {
-            string[] args = Environment.GetCommandLineArgs();
+            string[] args = GetStartupArgs();
             for (int index = 0; index < args.Length; index++)
             {
                 if (args[index] == "-mc2SmokeTest")
@@ -839,7 +893,7 @@ namespace MC2Demo.Presentation
 
         private void ScheduleStartupScreenshotIfRequested()
         {
-            string[] args = Environment.GetCommandLineArgs();
+            string[] args = GetStartupArgs();
             for (int index = 0; index < args.Length; index++)
             {
                 if (args[index] != "-mc2CaptureScreenshot")
@@ -914,6 +968,149 @@ namespace MC2Demo.Presentation
             return "";
         }
 
+        private static string[] GetStartupArgs()
+        {
+            string[] commandLineArgs = Environment.GetCommandLineArgs();
+            List<string> args = commandLineArgs == null
+                ? new List<string>()
+                : new List<string>(commandLineArgs);
+
+#if UNITY_ANDROID && !UNITY_EDITOR
+            AppendAndroidUnityIntentArgs(args);
+#endif
+
+            return args.ToArray();
+        }
+
+#if UNITY_ANDROID && !UNITY_EDITOR
+        private static void AppendAndroidUnityIntentArgs(List<string> args)
+        {
+            string unityExtra = AndroidIntentStringExtra("unity");
+            List<string> extraArgs = SplitStartupArgumentString(unityExtra);
+
+            string commandFileExtra = AndroidIntentStringExtra("mc2CommandFile");
+            if (!string.IsNullOrWhiteSpace(commandFileExtra))
+            {
+                extraArgs.Add("-mc2CommandFile");
+                extraArgs.Add(commandFileExtra.Trim());
+            }
+
+            if (extraArgs.Count == 0 || ContainsArgumentSequence(args, extraArgs))
+            {
+                return;
+            }
+
+            args.AddRange(extraArgs);
+            Debug.Log("MC2 Android startup args: source=intent tokens=" + extraArgs.Count.ToString(CultureInfo.InvariantCulture));
+        }
+
+        private static string AndroidIntentStringExtra(string key)
+        {
+            try
+            {
+                using (AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
+                using (AndroidJavaObject activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity"))
+                using (AndroidJavaObject intent = activity == null ? null : activity.Call<AndroidJavaObject>("getIntent"))
+                {
+                    return intent == null ? "" : intent.Call<string>("getStringExtra", key) ?? "";
+                }
+            }
+            catch (Exception exception)
+            {
+                Debug.LogWarning("MC2 Android startup args blocked: key=" + key + " error=" + exception.Message);
+                return "";
+            }
+        }
+#endif
+
+        private static List<string> SplitStartupArgumentString(string value)
+        {
+            List<string> tokens = new List<string>();
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return tokens;
+            }
+
+            string trimmed = value.Trim();
+            int start = -1;
+            char quote = '\0';
+            for (int index = 0; index < trimmed.Length; index++)
+            {
+                char current = trimmed[index];
+                if (quote != '\0')
+                {
+                    if (current == quote)
+                    {
+                        quote = '\0';
+                    }
+
+                    continue;
+                }
+
+                if (current == '"' || current == '\'')
+                {
+                    if (start < 0)
+                    {
+                        start = index + 1;
+                    }
+
+                    quote = current;
+                    continue;
+                }
+
+                if (char.IsWhiteSpace(current))
+                {
+                    if (start >= 0)
+                    {
+                        tokens.Add(trimmed.Substring(start, index - start).Trim('"', '\''));
+                        start = -1;
+                    }
+
+                    continue;
+                }
+
+                if (start < 0)
+                {
+                    start = index;
+                }
+            }
+
+            if (start >= 0)
+            {
+                tokens.Add(trimmed.Substring(start).Trim('"', '\''));
+            }
+
+            return tokens;
+        }
+
+        private static bool ContainsArgumentSequence(List<string> args, List<string> expected)
+        {
+            if (args == null || expected == null || expected.Count == 0 || expected.Count > args.Count)
+            {
+                return false;
+            }
+
+            for (int index = 0; index <= args.Count - expected.Count; index++)
+            {
+                bool matched = true;
+                for (int offset = 0; offset < expected.Count; offset++)
+                {
+                    if (!string.Equals(args[index + offset], expected[offset], StringComparison.Ordinal))
+                    {
+                        matched = false;
+                        break;
+                    }
+                }
+
+                if (matched)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         private static string SidecarPathFor(string screenshotPath, string requestedSidecarPath)
         {
             if (!string.IsNullOrWhiteSpace(requestedSidecarPath))
@@ -949,7 +1146,7 @@ namespace MC2Demo.Presentation
                 return;
             }
 
-            string[] args = Environment.GetCommandLineArgs();
+            string[] args = GetStartupArgs();
             for (int index = 0; index < args.Length; index++)
             {
                 switch (args[index])
@@ -9487,8 +9684,8 @@ namespace MC2Demo.Presentation
         private static bool ShouldShowOccupancyPlaceholders()
         {
             return string.Equals(Environment.GetEnvironmentVariable("MC2_SHOW_OCCUPANCY_PLACEHOLDERS"), "1", StringComparison.Ordinal)
-                || HasCommandLineArg(Environment.GetCommandLineArgs(), "-mc2ShowOccupancyPlaceholders")
-                || HasCommandLineArg(Environment.GetCommandLineArgs(), "-mc2ShowOccupancyReviewLayer");
+                || HasCommandLineArg(GetStartupArgs(), "-mc2ShowOccupancyPlaceholders")
+                || HasCommandLineArg(GetStartupArgs(), "-mc2ShowOccupancyReviewLayer");
         }
 
         private void RefreshOccupancyPlaceholdersForCapture()

@@ -508,15 +508,15 @@ scripts\unity\watch_android_device_connection.ps1 -Once -AllowWaiting -> Android
 scripts\unity\write_android_g3_device_status.ps1 -> Android G3 device status report OK, G3DeviceStatusReport: True, G3DeviceReady: True
 scripts\unity\run_android_g3_when_ready.ps1 -PlanOnly -> Android G3 when-ready plan OK, G3WhenReady: True
 scripts\unity\check_android_device_preflight.ps1 -AllowNoDevice -> Android device smoke preflight OK
-scripts\unity\run_android_g3_when_ready.ps1 -TimeoutSeconds 0 -AllowWaiting -> G3InstallPolicyBlocked: True
+scripts\unity\run_android_g3_when_ready.ps1 -TimeoutSeconds 30 -AllowWaiting -LaunchWaitSeconds 75 -> G3WhenReady: True, SmokeTestPassed: True, status=smokePassed
 ```
 
 No-device fallback marker remains `Android device smoke preflight waiting on device`.
 
 The APK, SDK logs, Unity build folder, Gradle cache, and device logs remain
-ignored local outputs. The next gate is a real Android device smoke.
+ignored local outputs. The real Android device smoke gate has passed; the next
+mobile gate is `G4 Touch UI pass`.
 At the time this note was updated, `adb devices -l` returned `b5212798 device`
-for Mi 11 Lite through `winusb.inf`; the package is not installed yet because
-the phone rejected ADB installation with `INSTALL_FAILED_USER_RESTRICTED`.
-`run_android_g3_when_ready.ps1 -TimeoutSeconds 0 -AllowWaiting` now classifies
-that as `G3InstallPolicyBlocked: True` and does not report a false G3 pass.
+for Mi 11 Lite through `winusb.inf`; the package installs and launches through
+the G3 when-ready runner, and the visible-flow command-file smoke reaches the
+debrief and loadout compact success markers.

@@ -487,7 +487,7 @@ if ($commandFileSmoke) {
 if (-not $NoLaunch) {
     if (-not [string]::IsNullOrWhiteSpace($ActivityName)) {
         if ($commandFileSmoke) {
-            & $AdbPath @adbArgs shell am start -n "$PackageName/$ActivityName" -e unity $unityArguments
+            & $AdbPath @adbArgs shell am start -n "$PackageName/$ActivityName" --es unity "'$unityArguments'" --es mc2CommandFile "'$DeviceCommandFilePath'"
         }
         else {
             & $AdbPath @adbArgs shell am start -n "$PackageName/$ActivityName"

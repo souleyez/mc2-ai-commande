@@ -5,12 +5,14 @@ param(
     [int]$TimeoutSeconds = 300,
     [int]$PollSeconds = 2,
     [int]$LaunchWaitSeconds = 12,
+    [string]$StatusPath = "",
     [switch]$PlanOnly,
     [switch]$AllowWaiting,
     [switch]$NoInstall,
     [switch]$NoLaunch,
     [switch]$SkipScreenshot,
-    [switch]$SkipSummary
+    [switch]$SkipSummary,
+    [switch]$NoWriteStatus
 )
 
 Set-StrictMode -Version Latest
@@ -21,6 +23,10 @@ if ([string]::IsNullOrWhiteSpace($RepoRoot)) {
 }
 else {
     $RepoRoot = (Resolve-Path -LiteralPath $RepoRoot).Path
+}
+
+if ([string]::IsNullOrWhiteSpace($StatusPath)) {
+    $StatusPath = Join-Path $RepoRoot "analysis-output\android-g3-when-ready-status.json"
 }
 
 $watchScript = Join-Path $PSScriptRoot "watch_android_device_connection.ps1"
@@ -76,6 +82,73 @@ function Add-OptionalDeviceArgs {
     }
 
     return $result
+}
+
+function Write-WhenReadyStatus {
+    param(
+        [string]$Status,
+        [string]$Blocker,
+        [bool]$DeviceReady,
+        [bool]$InstallPolicyBlocked,
+        [bool]$SmokePassed,
+        [string]$NextGate = "G3 Run Android device smoke",
+        [object]$WatchResult = $null,
+        [object]$DeviceStatusResult = $null,
+        [object]$SmokeResult = $null
+    )
+
+    if ($NoWriteStatus) {
+        return
+    }
+
+    $report = [ordered]@{
+        reportType = "AndroidG3WhenReadyStatus"
+        g3WhenReady = $true
+        timestampUtc = [DateTime]::UtcNow.ToString("o")
+        repoRoot = $RepoRoot
+        outputPath = $StatusPath
+        nextGate = $NextGate
+        status = $Status
+        blocker = $Blocker
+        deviceReady = $DeviceReady
+        installPolicyBlocked = $InstallPolicyBlocked
+        smokePassed = $SmokePassed
+        noLaunchAfterInstallFailure = $InstallPolicyBlocked
+        watch = if ($null -eq $WatchResult) {
+            $null
+        }
+        else {
+            [ordered]@{
+                exitCode = $WatchResult.ExitCode
+                lines = $WatchResult.Lines
+            }
+        }
+        deviceStatus = if ($null -eq $DeviceStatusResult) {
+            $null
+        }
+        else {
+            [ordered]@{
+                exitCode = $DeviceStatusResult.ExitCode
+                lines = $DeviceStatusResult.Lines
+            }
+        }
+        smoke = if ($null -eq $SmokeResult) {
+            $null
+        }
+        else {
+            [ordered]@{
+                exitCode = $SmokeResult.ExitCode
+                lines = $SmokeResult.Lines
+            }
+        }
+    }
+
+    $parent = Split-Path -Parent $StatusPath
+    if (-not [string]::IsNullOrWhiteSpace($parent) -and -not (Test-Path -LiteralPath $parent)) {
+        New-Item -ItemType Directory -Path $parent -Force | Out-Null
+    }
+
+    $report | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $StatusPath -Encoding UTF8
 }
 
 $smokeArgs = @("-RepoRoot", $RepoRoot, "-LaunchWaitSeconds", $LaunchWaitSeconds.ToString())
@@ -134,6 +207,14 @@ foreach ($line in $watch.Lines) {
 }
 
 if ($watch.ExitCode -ne 0) {
+    Write-WhenReadyStatus `
+        -Status "watchFailed" `
+        -Blocker "Android G3 when-ready watch failed." `
+        -DeviceReady $false `
+        -InstallPolicyBlocked $false `
+        -SmokePassed $false `
+        -WatchResult $watch
+
     throw "Android G3 when-ready watch failed with exit code $($watch.ExitCode)."
 }
 
@@ -147,7 +228,17 @@ if ($watchText -notlike "*Android device connection watch OK.*") {
     Write-Host "Android G3 when-ready waiting on device."
     Write-Host "G3WhenReady: True"
     Write-Host "NoInstallOrLaunchUntilDeviceReady: True"
+    Write-Host "WhenReadyStatus: $StatusPath"
     Write-Host "NextGate: G3 Run Android device smoke"
+
+    Write-WhenReadyStatus `
+        -Status "waitingOnDevice" `
+        -Blocker "Android device is not ready for G3 install." `
+        -DeviceReady $false `
+        -InstallPolicyBlocked $false `
+        -SmokePassed $false `
+        -WatchResult $watch `
+        -DeviceStatusResult $status
 
     if ($AllowWaiting) {
         exit 0
@@ -180,7 +271,18 @@ if ($smoke.ExitCode -ne 0) {
         Write-Host "G3DeviceReady: True"
         Write-Host "G3InstallPolicyBlocked: True"
         Write-Host "NoLaunchAfterInstallFailure: True"
+        Write-Host "WhenReadyStatus: $StatusPath"
         Write-Host "NextGate: G3 Run Android device smoke"
+
+        Write-WhenReadyStatus `
+            -Status "installPolicyBlocked" `
+            -Blocker "Phone rejected adb install with INSTALL_FAILED_USER_RESTRICTED." `
+            -DeviceReady $true `
+            -InstallPolicyBlocked $true `
+            -SmokePassed $false `
+            -WatchResult $watch `
+            -DeviceStatusResult $readyStatus `
+            -SmokeResult $smoke
 
         if ($AllowWaiting) {
             exit 0
@@ -189,9 +291,32 @@ if ($smoke.ExitCode -ne 0) {
         throw "Android G3 when-ready is blocked by phone-side USB install permission."
     }
 
+    Write-WhenReadyStatus `
+        -Status "smokeFailed" `
+        -Blocker "Android device smoke failed after the device became ready." `
+        -DeviceReady $true `
+        -InstallPolicyBlocked $false `
+        -SmokePassed $false `
+        -WatchResult $watch `
+        -DeviceStatusResult $readyStatus `
+        -SmokeResult $smoke
+
     throw "Android G3 when-ready smoke failed with exit code $($smoke.ExitCode)."
 }
 
+Write-WhenReadyStatus `
+    -Status "smokePassed" `
+    -Blocker "none" `
+    -DeviceReady $true `
+    -InstallPolicyBlocked $false `
+    -SmokePassed $true `
+    -NextGate "G4 Touch UI pass" `
+    -WatchResult $watch `
+    -DeviceStatusResult $readyStatus `
+    -SmokeResult $smoke
+
 Write-Host "Android G3 when-ready smoke OK."
 Write-Host "G3WhenReady: True"
-Write-Host "NextGate: G3 Run Android device smoke"
+Write-Host "WhenReadyStatus: $StatusPath"
+Write-Host "CompletedGate: Pass Android G3 device smoke"
+Write-Host "NextGate: G4 Touch UI pass"

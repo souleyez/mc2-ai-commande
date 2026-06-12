@@ -26,7 +26,8 @@ As of this handoff plan:
 - Upstream source remote kept for history: `origin https://github.com/alariq/mc2.git`
 - Current branch state after the latest controlled demo checkpoint: `master...ai-origin/master`
 - Latest sealed PC/mobile wait-state checkpoint: `PC1-PC57`
-- Last completed PC checkpoint: `Add Android ADB driver package probe`
+- Last completed PC/mobile checkpoint: `Pass Android G3 device smoke`
+- Previous PC checkpoint retained in the gate chain: `Add Android ADB driver package probe`
 - Previous PC checkpoint retained in the gate chain: `Add Android G3 when-ready runner`
 - Previous PC checkpoint retained in the gate chain: `Add Android G3 device status report`
 - Previous PC checkpoint retained in the gate chain: `Add Android ADB readiness watch`
@@ -63,7 +64,7 @@ As of this handoff plan:
 - Previous PC checkpoint retained in the gate chain: `Add Android APK identity check`
 - Previous PC checkpoint retained in the gate chain: `Add Android APK freshness check`
 - Previous PC checkpoint retained in the gate chain: `Add controlled demo capture log freshness check`
-- Current formal next development task after handoff: `G3 Run Android device smoke`
+- Current formal next development task after handoff: `G4 Touch UI pass`
 
 Important: the new machine will not see local commits unless the old machine
 first pushes to `ai-origin`, or the full repository is migrated by a trusted
@@ -583,9 +584,9 @@ Current plan queue consistency check OK
 ```
 
 This verifies README, BUILD-WIN, master/detailed/PC/mobile/evidence/handoff docs
-and helper scripts agree that the current G3 prep package is sealed through
-the PC1-PC57 checkpoint, and that `G3 Run Android device smoke` remains the
-formal next task.
+and helper scripts agree that the current PC/mobile package is sealed through
+the PC1-PC57 checkpoint, that `Pass Android G3 device smoke` is recorded, and
+that `G4 Touch UI pass` is the formal next task.
 
 **Step 19: Run Android device connection check**
 
@@ -662,8 +663,7 @@ NoInstallOrLaunch: True
 ```
 
 This writes ignored `analysis-output\android-g3-device-status.json`, records the
-current blocker, and keeps `G3 Run Android device smoke` as the next real mobile
-gate.
+current blocker or ready state, and remains useful diagnostic evidence after G3.
 
 **Step 19D: Check Android ADB driver package candidates**
 
@@ -683,12 +683,11 @@ CurrentPhoneDriver: name=Mi 11 Lite; class=USBDevice; provider=Microsoft; desc=W
 This is read-only. It does not install drivers, change PnP state, install APKs,
 or launch the app.
 
-Current G3 install attempt reached `adb install` and then stopped at the phone
-policy prompt with `INSTALL_FAILED_USER_RESTRICTED: Install canceled by user`.
-With `-AllowWaiting`, the runner now classifies this as
-`G3InstallPolicyBlocked: True` and returns a waiting state instead of forcing a
-PowerShell stack trace as the only signal.
-Before retrying G3, enable/allow phone-side USB installation for this PC.
+Current G3 passed on Mi 11 Lite after phone-side USB installation was allowed.
+`run_android_g3_when_ready.ps1 -TimeoutSeconds 30 -AllowWaiting -LaunchWaitSeconds 75`
+installed the APK, launched the Unity activity, pushed the visible-flow command
+file, captured log/screenshot/summary evidence and wrote
+`status=smokePassed` to ignored `analysis-output\android-g3-when-ready-status.json`.
 
 **Step 19E: Preview Android G3 when-ready runner**
 
@@ -973,7 +972,7 @@ documentation.
 - Read: `docs-ai-rts-commander-current-master-plan-2026-06-07.md`
 - Read: `docs-ai-rts-commander-current-detailed-plan-2026-06-07.md`
 - Read: `docs-mobile-first-plan-2026-06-10.md`
-- Next planned work: `G3 Run Android device smoke`
+- Next planned work: `G4 Touch UI pass`
 
 **Step 1: Confirm current next task**
 
@@ -981,7 +980,7 @@ Read the current commit queue. After this handoff, the product work should
 resume at:
 
 ```text
-G3 Run Android device smoke
+G4 Touch UI pass
 ```
 
 **Step 2: Do not start with server or map-editor implementation**

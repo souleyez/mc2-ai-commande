@@ -283,9 +283,9 @@ Check the current plan queue consistency without launching Unity:
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_current_plan_queue.ps1
 ```
 
-This confirms the current PC/mobile wait-state package is sealed through
-`PC1-PC57`, that `Add Android ADB driver package probe` is the latest PC
-checkpoint, and that `G3 Run Android device smoke` remains the formal next task.
+This confirms the current PC/mobile package is sealed through `PC1-PC57`, that
+`Pass Android G3 device smoke` is recorded, and that `G4 Touch UI pass` is the
+formal next task.
 
 Expected success string: `Current plan queue consistency check OK`.
 
@@ -312,9 +312,8 @@ When-ready marker: `G3WhenReady: True`.
 When Windows only exposes a connected Android phone as WPD/MTP, the helper can
 also report `WpdOnlyAndroidDevice: True`; that still means G3 is waiting for USB
 debugging authorization or an ADB driver before install/launch. In the current
-Mi 11 Lite state, Windows reports the phone through `winusb.inf` and adb exposes
-one authorized `device` row; the remaining real G3 blocker is phone-side USB
-install permission.
+Mi 11 Lite state, Windows reports the phone through `winusb.inf`, adb exposes
+one authorized `device` row, and the real G3 device smoke has passed.
 
 Checkpoint marker: `Add Android ADB setup guidance`.
 

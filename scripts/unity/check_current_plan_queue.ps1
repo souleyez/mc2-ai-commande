@@ -92,7 +92,8 @@ $requiredPlanMarkers = @(
     "CommandFileSmoke: True",
     "SmokeSuccessMarker: MC2 debrief summary assertion OK",
     "SmokeSuccessMarker: MC2 loadout compact assertion OK",
-    "G3 Run Android device smoke"
+    "Pass Android G3 device smoke",
+    "G4 Touch UI pass"
 )
 
 $docsToCheck = @(
@@ -118,13 +119,13 @@ foreach ($relativePath in $docsToCheck) {
 }
 
 $mobilePlan = Read-RequiredText -RelativePath "docs-mobile-first-plan-2026-06-10.md"
-Assert-Contains -Text $mobilePlan -Needle "| G3 | Waiting on Phone Install Permission | Android device smoke |" -Label "mobile gate order"
-Assert-Contains -Text $mobilePlan -Needle "| G4 | Later | Touch UI pass |" -Label "mobile gate order"
+Assert-Contains -Text $mobilePlan -Needle "| G3 | Done | Android device smoke |" -Label "mobile gate order"
+Assert-Contains -Text $mobilePlan -Needle "| G4 | Next | Touch UI pass |" -Label "mobile gate order"
 Assert-Contains -Text $mobilePlan -Needle "| G5 | Later | Mobile performance budget |" -Label "mobile gate order"
 
 $handoff = Read-RequiredText -RelativePath "docs-machine-handoff-plan-2026-06-07.md"
-Assert-Contains -Text $handoff -Needle 'Current formal next development task after handoff: `G3 Run Android device smoke`' -Label "handoff next task"
-Assert-Contains -Text $handoff -Needle 'Next planned work: `G3 Run Android device smoke`' -Label "handoff next planned work"
+Assert-Contains -Text $handoff -Needle 'Current formal next development task after handoff: `G4 Touch UI pass`' -Label "handoff next task"
+Assert-Contains -Text $handoff -Needle 'Next planned work: `G4 Touch UI pass`' -Label "handoff next planned work"
 
 $currentGate = Read-RequiredText -RelativePath "scripts\unity\check_current_plan_gate.ps1"
 Assert-Contains -Text $currentGate -Needle 'CommandFileSmoke: True' -Label "current gate script marker"

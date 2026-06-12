@@ -12,9 +12,9 @@
 
 ## Product Decision
 
-Mobile support remains the product priority, but `G3 Android Device Smoke` is waiting on a physical Android phone with USB debugging authorized. While that device blocker existed, this plan used PC demo optimization to keep the Windows demo moving.
+Mobile support remains the product priority. `G3 Android Device Smoke` has now passed on a physical Mi 11 Lite with USB debugging authorized, and this PC optimization plan is retained as the wait-state evidence package that kept the Windows demo moving while the phone blocker existed.
 
-The current PC/mobile wait-state optimization pass is now sealed through PC1-PC57. This does not move G4/G5 mobile touch and performance ahead of G3; the next mobile gate is still `G3 Run Android device smoke` and still requires the physical authorized phone.
+The current PC/mobile wait-state optimization pass is now sealed through PC1-PC57. `Pass Android G3 device smoke` is recorded, and the next mobile gate is `G4 Touch UI pass`.
 
 ## Definition Of Done
 
@@ -2071,15 +2071,15 @@ git diff --check
 
 - `run_android_g3_when_ready.ps1 -PlanOnly` prints `Android G3 when-ready plan OK.`.
 - The plan output includes `G3WhenReady: True` and `NoInstallOrLaunchUntilDeviceReady: True`.
-- `run_android_g3_when_ready.ps1 -TimeoutSeconds 0 -AllowWaiting` reports waiting on non-ready phones without installing or launching; when adb is ready it proceeds to the real install step.
-- If adb is ready but the phone rejects ADB installation with `INSTALL_FAILED_USER_RESTRICTED`, `-AllowWaiting` reports `G3InstallPolicyBlocked: True` and keeps G3 waiting on phone-side USB install permission.
-- Current plan queue, current plan gate, handoff and mobile command preflight accept PC1-PC57.
+- `run_android_g3_when_ready.ps1 -TimeoutSeconds 30 -AllowWaiting -LaunchWaitSeconds 75` installs and launches on the ready Mi 11 Lite, then reports `G3WhenReady: True`, `SmokeTestPassed: True` and `status=smokePassed`.
+- If adb is ready but a future phone rejects ADB installation with `INSTALL_FAILED_USER_RESTRICTED`, `-AllowWaiting` reports `G3InstallPolicyBlocked: True` and keeps G3 waiting on phone-side USB install permission.
+- Current plan queue, current plan gate, handoff and mobile command preflight accept PC1-PC57, `Pass Android G3 device smoke` and `G4 Touch UI pass`.
 
 **Validation:**
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\run_android_g3_when_ready.ps1 -PlanOnly
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\run_android_g3_when_ready.ps1 -TimeoutSeconds 0 -AllowWaiting
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\run_android_g3_when_ready.ps1 -TimeoutSeconds 30 -AllowWaiting -LaunchWaitSeconds 75
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_current_plan_queue.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_current_plan_gate.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_controlled_demo_handoff.ps1 -RunReadiness
