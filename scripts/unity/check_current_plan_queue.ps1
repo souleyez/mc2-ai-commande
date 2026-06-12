@@ -81,10 +81,11 @@ function Assert-DoesNotContain {
 }
 
 $requiredPlanMarkers = @(
-    "PC1-PC48",
-    "Add Android device connection check",
+    "PC1-PC49",
+    "Wire Android smoke connection gate",
     "check_android_device_connection.ps1",
-    "Android device connection check waiting on device",
+    "ConnectionCheck: check_android_device_connection.ps1 -RequireDevice",
+    "Android device smoke requires a single authorized Android device before install or launch",
     "G3 Run Android device smoke"
 )
 
@@ -105,9 +106,9 @@ foreach ($relativePath in $docsToCheck) {
         Assert-Contains -Text $text -Needle $marker -Label "$relativePath plan queue marker"
     }
 
-    Assert-DoesNotContain -Text $text -Needle "define PC48 before implementation" -Label $relativePath
-    Assert-DoesNotContain -Text $text -Needle "必须先定义 PC48" -Label $relativePath
-    Assert-DoesNotContain -Text $text -Needle "必须先写清 PC48" -Label $relativePath
+    Assert-DoesNotContain -Text $text -Needle "define PC49 before implementation" -Label $relativePath
+    Assert-DoesNotContain -Text $text -Needle "必须先定义 PC49" -Label $relativePath
+    Assert-DoesNotContain -Text $text -Needle "必须先写清 PC49" -Label $relativePath
 }
 
 $mobilePlan = Read-RequiredText -RelativePath "docs-mobile-first-plan-2026-06-10.md"
@@ -121,11 +122,11 @@ Assert-Contains -Text $handoff -Needle 'Next planned work: `G3 Run Android devic
 
 $currentGate = Read-RequiredText -RelativePath "scripts\unity\check_current_plan_gate.ps1"
 Assert-Contains -Text $currentGate -Needle 'check_android_device_connection.ps1' -Label "current gate script marker"
-Assert-Contains -Text $currentGate -Needle 'Android device connection check waiting on device.' -Label "current gate success marker"
+Assert-Contains -Text $currentGate -Needle 'ConnectionCheck: check_android_device_connection.ps1 -RequireDevice' -Label "current gate success marker"
 
 $handoffScript = Read-RequiredText -RelativePath "scripts\unity\check_controlled_demo_handoff.ps1"
 Assert-Contains -Text $handoffScript -Needle 'check_android_device_connection.ps1' -Label "handoff script marker"
-Assert-Contains -Text $handoffScript -Needle 'Android device connection check waiting on device' -Label "handoff script success marker"
+Assert-Contains -Text $handoffScript -Needle 'ConnectionCheck: check_android_device_connection.ps1 -RequireDevice' -Label "handoff script success marker"
 
 $tracked = @(& git -C $RepoRoot ls-files 2>$null | ForEach-Object { $_.ToString() })
 if ($LASTEXITCODE -ne 0) {

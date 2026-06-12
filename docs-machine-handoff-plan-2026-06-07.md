@@ -25,8 +25,9 @@ As of this handoff plan:
 - Previous project remote: `git@github.com:souleyez/mc2-ai-commander-demo.git` now redirects to the current repository.
 - Upstream source remote kept for history: `origin https://github.com/alariq/mc2.git`
 - Current branch state after the latest controlled demo checkpoint: `master...ai-origin/master`
-- Latest sealed PC/mobile wait-state checkpoint: `PC1-PC48`
-- Last completed PC checkpoint: `Add Android device connection check`
+- Latest sealed PC/mobile wait-state checkpoint: `PC1-PC49`
+- Last completed PC checkpoint: `Wire Android smoke connection gate`
+- Previous PC checkpoint retained in the gate chain: `Add Android device connection check`
 - Previous PC checkpoint retained in the gate chain: `Add current plan queue consistency check`
 - Previous PC checkpoint retained in the gate chain: `Add PC smoke artifact hygiene check`
 - Previous PC checkpoint retained in the gate chain: `Add PC build artifact hygiene check`
@@ -106,8 +107,10 @@ The machine switch is safe only when all of these are true:
 - `scripts/unity/check_android_smoke_log.ps1 -SelfTest` prints `Android smoke log check self-test OK`.
 - `scripts/unity/check_android_smoke_summary.ps1 -SelfTest` prints `Android smoke summary check self-test OK`.
 - `scripts/unity/android_device_smoke.ps1 -PlanOnly` prints `Android device smoke plan OK`.
+- `scripts/unity/android_device_smoke.ps1 -PlanOnly` prints `ConnectionCheck: check_android_device_connection.ps1 -RequireDevice`.
 - `scripts/unity/android_device_smoke.ps1 -PlanOnly` prints `ScreenshotCapture: True` and `analysis-output\android-device-smoke.png`.
 - `scripts/unity/android_device_smoke.ps1 -PlanOnly` prints `SummaryWrite: True` and `analysis-output\android-device-smoke-summary.json`.
+- A real Android smoke run without one authorized phone fails before install or launch with `Android device smoke requires a single authorized Android device before install or launch`.
 - `scripts/unity/check_android_smoke_plan_consistency.ps1` prints `Android smoke plan/preflight consistency check OK`.
 - `scripts/unity/check_android_g3_readiness.ps1` prints `Android G3 readiness check waiting on device` if no phone is connected.
 - `scripts/unity/check_android_g3_device_requirement.ps1` prints `Android G3 device requirement check waiting on device` if no phone is connected.
@@ -644,11 +647,12 @@ Expected:
 
 ```text
 Android device smoke plan OK
+ConnectionCheck: check_android_device_connection.ps1 -RequireDevice
 ```
 
 This proves the real device-smoke helper can resolve the APK, adb, aapt,
-package, activity, log path and planned install/launch/log-check actions before
-a phone is connected.
+package, activity, log path, planned install/launch/log-check actions and the
+strict connection gate before a phone is connected.
 
 **Step 24: Check Android smoke plan/preflight consistency**
 

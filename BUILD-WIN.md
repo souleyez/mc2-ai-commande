@@ -284,7 +284,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_curren
 ```
 
 This confirms the current PC/mobile wait-state package is sealed through
-`PC1-PC48`, that `Add Android device connection check` is the latest PC
+`PC1-PC49`, that `Wire Android smoke connection gate` is the latest PC
 checkpoint, and that `G3 Run Android device smoke` remains the formal next task.
 
 Expected success string: `Current plan queue consistency check OK`.
@@ -298,11 +298,19 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_androi
 This reads `adb devices -l` and reports no-device, unauthorized, offline,
 multiple-device or ready states without installing or launching the APK.
 
-Current wait-state checkpoint: `PC1-PC48`.
+Current wait-state checkpoint: `PC1-PC49`.
 
 Expected waiting-state string without a phone: `Android device connection check waiting on device`.
 
 Checkpoint marker: `Add Android device connection check`.
+
+Real Android smoke runs now require the same connection gate before install or
+launch. The plan output must include
+`ConnectionCheck: check_android_device_connection.ps1 -RequireDevice`, and a
+strict no-device run reports
+`Android device smoke requires a single authorized Android device before install or launch`.
+
+Checkpoint marker: `Wire Android smoke connection gate`.
 
 Check the current plan gate without launching Unity:
 
@@ -497,6 +505,7 @@ Expected success strings:
 - `Android device smoke plan OK`
 - `ScreenshotCapture: True`
 - `SummaryWrite: True`
+- `ConnectionCheck: check_android_device_connection.ps1 -RequireDevice`
 - `Controlled demo public boundary preflight OK`
 - `MC2 demo smoke test exiting with code 0`
 - `MC2 reference visual captures passed`

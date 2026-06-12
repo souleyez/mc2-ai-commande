@@ -332,7 +332,8 @@ Invoke-GateStep `
         "Screenshot:",
         "ScreenshotCapture: True",
         "Summary:",
-        "SummaryWrite: True"
+        "SummaryWrite: True",
+        "ConnectionCheck: check_android_device_connection.ps1 -RequireDevice"
     )
 
 Invoke-GateStep `
@@ -348,6 +349,7 @@ Invoke-GateStep `
     -RequiredMarkers @(
         "Android smoke plan/preflight consistency check OK.",
         "Android device smoke plan OK.",
+        "ConnectionCheck: check_android_device_connection.ps1 -RequireDevice",
         "Android smoke log check self-test OK.",
         "Android smoke summary check self-test OK."
     ) `

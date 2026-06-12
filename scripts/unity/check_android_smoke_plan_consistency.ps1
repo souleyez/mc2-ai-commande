@@ -139,6 +139,7 @@ Assert-TextContains -Text $planText -Needle "Launch: True" -Label "android_devic
 Assert-TextContains -Text $planText -Needle "LogCheck: True" -Label "android_device_smoke.ps1 -PlanOnly"
 Assert-TextContains -Text $planText -Needle "ScreenshotCapture: True" -Label "android_device_smoke.ps1 -PlanOnly"
 Assert-TextContains -Text $planText -Needle "SummaryWrite: True" -Label "android_device_smoke.ps1 -PlanOnly"
+Assert-TextContains -Text $planText -Needle "ConnectionCheck: check_android_device_connection.ps1 -RequireDevice" -Label "android_device_smoke.ps1 -PlanOnly"
 
 $planPackageName = Get-PlanValue -Text $planText -Name "Package"
 $planActivityName = Get-PlanValue -Text $planText -Name "Activity"
@@ -162,6 +163,8 @@ Assert-TextContains -Text $preflightText -Needle "APK signing" -Label "check_and
 Assert-TextContains -Text $preflightText -Needle "APK manifest" -Label "check_android_device_preflight.ps1 -AllowNoDevice"
 Assert-TextContains -Text $preflightText -Needle "APK payload" -Label "check_android_device_preflight.ps1 -AllowNoDevice"
 Assert-TextContains -Text $preflightText -Needle "APK size budget" -Label "check_android_device_preflight.ps1 -AllowNoDevice"
+Assert-TextContains -Text $preflightText -Needle "device connection" -Label "check_android_device_preflight.ps1 -AllowNoDevice"
+Assert-TextContains -Text $preflightText -Needle "Android device connection check waiting on device." -Label "check_android_device_preflight.ps1 -AllowNoDevice"
 
 $preflightReadiness = ""
 if ($preflightText -like "*Android device smoke preflight waiting on device.*") {
@@ -177,9 +180,10 @@ else {
 Add-Row -Check "plan package" -Status "OK" -Detail $planPackageName
 Add-Row -Check "plan activity" -Status "OK" -Detail $planActivityName
 Add-Row -Check "plan evidence outputs" -Status "OK" -Detail "log+screenshot+summary"
-Add-Row -Check "plan execution flags" -Status "OK" -Detail "install+launch+log+screenshot+summary"
+Add-Row -Check "plan execution flags" -Status "OK" -Detail "install+launch+log+screenshot+summary+connection"
 Add-Row -Check "preflight package/activity" -Status "OK" -Detail "$ExpectedPackageName / $ExpectedActivityName"
 Add-Row -Check "preflight readiness" -Status $preflightReadiness -Detail "AllowNoDevice accepted"
+Add-Row -Check "preflight device connection" -Status $preflightReadiness -Detail "check_android_device_connection.ps1"
 Add-Row -Check "summary schema" -Status "OK" -Detail "Android smoke summary check self-test OK."
 
 if ($failures.Count -gt 0) {

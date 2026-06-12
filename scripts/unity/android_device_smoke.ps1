@@ -349,7 +349,44 @@ if ($PlanOnly) {
     Write-Host "LogCheck: $(-not $SkipLogCheck)"
     Write-Host "ScreenshotCapture: $(-not $SkipScreenshot)"
     Write-Host "SummaryWrite: $(-not $SkipSummary)"
+    Write-Host "ConnectionCheck: check_android_device_connection.ps1 -RequireDevice"
     return
+}
+
+$deviceConnectionScript = Join-Path $PSScriptRoot "check_android_device_connection.ps1"
+if (-not (Test-Path -LiteralPath $deviceConnectionScript)) {
+    throw "Missing Android device connection checker: $deviceConnectionScript"
+}
+
+$deviceConnectionArgs = @(
+    "-RepoRoot",
+    $RepoRoot,
+    "-AdbPath",
+    $AdbPath,
+    "-RequireDevice"
+)
+if (-not [string]::IsNullOrWhiteSpace($DeviceId)) {
+    $deviceConnectionArgs += @("-DeviceId", $DeviceId)
+}
+
+$previousErrorActionPreference = $ErrorActionPreference
+$ErrorActionPreference = "Continue"
+try {
+    $deviceConnectionOutput = & powershell -NoProfile -ExecutionPolicy Bypass -File $deviceConnectionScript @deviceConnectionArgs 2>&1
+    $deviceConnectionExitCode = $LASTEXITCODE
+}
+finally {
+    $ErrorActionPreference = $previousErrorActionPreference
+}
+
+$deviceConnectionLines = @($deviceConnectionOutput | ForEach-Object { $_.ToString() })
+$deviceConnectionText = $deviceConnectionLines -join [Environment]::NewLine
+if ($deviceConnectionExitCode -ne 0 -or $deviceConnectionText -notlike "*Android device connection check OK.*") {
+    foreach ($line in $deviceConnectionLines) {
+        Write-Host $line
+    }
+
+    throw "Android device smoke requires a single authorized Android device before install or launch."
 }
 
 $device = Get-AdbDevice -Adb $AdbPath -RequestedDeviceId $DeviceId

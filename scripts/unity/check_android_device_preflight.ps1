@@ -454,46 +454,60 @@ else {
     }
 }
 
-if (Test-Path -LiteralPath $AdbPath) {
-    $devices = @(Get-AdbDevices -Adb $AdbPath)
-    if ($devices.Count -eq 0) {
+$deviceConnectionScript = Join-Path $PSScriptRoot "check_android_device_connection.ps1"
+if (-not (Test-Path -LiteralPath $deviceConnectionScript)) {
+    Add-Failure "Missing Android device connection checker: $deviceConnectionScript"
+}
+elseif (Test-Path -LiteralPath $AdbPath) {
+    $connectionArgs = @(
+        "-RepoRoot",
+        $RepoRoot,
+        "-AdbPath",
+        $AdbPath
+    )
+    if (-not [string]::IsNullOrWhiteSpace($DeviceId)) {
+        $connectionArgs += @("-DeviceId", $DeviceId)
+    }
+
+    if (-not $AllowNoDevice) {
+        $connectionArgs += "-RequireDevice"
+    }
+
+    $connectionResult = Invoke-NativeCommand -FilePath "powershell" -Arguments (@(
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        $deviceConnectionScript
+    ) + $connectionArgs)
+    $connectionText = $connectionResult.Output -join " "
+
+    if ($connectionText -like "*Android device connection check OK.*") {
+        Add-Row -Check "device connection" -Status "OK" -Detail "Android device connection check OK."
+    }
+    elseif ($AllowNoDevice -and $connectionText -like "*Android device connection check waiting on device.*") {
         $message = "No Android device rows. Connect a phone, enable USB debugging, authorize this PC, then run android_device_smoke.ps1."
-        if ($AllowNoDevice) {
-            Add-Warning $message
-            Add-Row -Check "device" -Status "WAITING" -Detail "no adb device rows"
-        }
-        else {
-            Add-Failure $message
-        }
+        Add-Warning $message
+        Add-Row -Check "device connection" -Status "WAITING" -Detail "Android device connection check waiting on device."
+    }
+    elseif ($AllowNoDevice -and $connectionText -like "*Android device connection check waiting on authorization.*") {
+        Add-Warning "Android device is connected but unauthorized. Confirm the USB debugging prompt on the phone."
+        Add-Row -Check "device connection" -Status "WAITING" -Detail "Android device connection check waiting on authorization."
+    }
+    elseif ($AllowNoDevice -and $connectionText -like "*Android device connection check waiting on online device.*") {
+        Add-Warning "Android device is offline. Reconnect USB or restart adb before G3 smoke."
+        Add-Row -Check "device connection" -Status "WAITING" -Detail "Android device connection check waiting on online device."
+    }
+    elseif ($AllowNoDevice -and $connectionText -like "*Android device connection check waiting on device selection.*") {
+        Add-Warning "Multiple Android devices are available. Pass -DeviceId before G3 smoke."
+        Add-Row -Check "device connection" -Status "WAITING" -Detail "Android device connection check waiting on device selection."
     }
     else {
-        $summary = ($devices | ForEach-Object { "$($_.Id):$($_.State)" }) -join ", "
-        Add-Row -Check "adb devices" -Status "OK" -Detail $summary
+        if ($connectionText -like "*adb returned no device rows.*") {
+            Add-Failure "No Android device rows. Android device connection requires one authorized device."
+        }
 
-        if (-not [string]::IsNullOrWhiteSpace($DeviceId)) {
-            $requested = $devices | Where-Object { $_.Id -eq $DeviceId } | Select-Object -First 1
-            if ($null -eq $requested) {
-                Add-Failure "Requested Android device was not found: $DeviceId"
-            }
-            elseif ($requested.State -ne "device") {
-                Add-Failure "Requested Android device is $($requested.State): $DeviceId"
-            }
-            else {
-                Add-Row -Check "selected device" -Status "OK" -Detail $requested.Id
-            }
-        }
-        else {
-            $ready = @($devices | Where-Object { $_.State -eq "device" })
-            if ($ready.Count -eq 0) {
-                Add-Failure "No authorized Android device found. Current adb states: $summary"
-            }
-            elseif ($ready.Count -gt 1) {
-                Add-Failure "Multiple authorized Android devices found. Pass -DeviceId. Devices: $(($ready | ForEach-Object { $_.Id }) -join ', ')"
-            }
-            else {
-                Add-Row -Check "selected device" -Status "OK" -Detail $ready[0].Id
-            }
-        }
+        Add-Failure "Android device connection preflight failed: $connectionText"
     }
 }
 

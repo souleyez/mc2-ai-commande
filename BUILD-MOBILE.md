@@ -319,6 +319,7 @@ Screenshot: C:\...\analysis-output\android-device-smoke.png
 ScreenshotCapture: True
 Summary: C:\...\analysis-output\android-device-smoke-summary.json
 SummaryWrite: True
+ConnectionCheck: check_android_device_connection.ps1 -RequireDevice
 ```
 
 The helper verifies SDK tooling plus APK freshness, identity, compatibility,
@@ -328,7 +329,9 @@ installs the APK, launches it, waits briefly, captures logcat, an ignored
 `analysis-output\android-device-smoke.png` screenshot and an ignored
 `analysis-output\android-device-smoke-summary.json` summary, scans the log for
 strong crash markers, validates the summary schema, and fails if the package
-does not stay running.
+does not stay running. If the strict connection gate is not satisfied, it fails
+before install or launch with
+`Android device smoke requires a single authorized Android device before install or launch`.
 
 Self-test the log scanner without a device:
 
@@ -415,6 +418,7 @@ scripts\unity\check_android_smoke_summary.ps1 -SelfTest -> Android smoke summary
 scripts\unity\check_android_device_preflight.ps1 -AllowNoDevice -> smoke summary schema OK
 scripts\unity\android_device_smoke.ps1 -PlanOnly -> ScreenshotCapture: True, Screenshot -> analysis-output\android-device-smoke.png
 scripts\unity\android_device_smoke.ps1 -PlanOnly -> SummaryWrite: True, Summary -> analysis-output\android-device-smoke-summary.json
+scripts\unity\android_device_smoke.ps1 -PlanOnly -> ConnectionCheck: check_android_device_connection.ps1 -RequireDevice
 scripts\unity\check_android_smoke_plan_consistency.ps1 -> Android smoke plan/preflight consistency check OK
 scripts\unity\check_android_g3_readiness.ps1 -> Android G3 readiness check waiting on device
 scripts\unity\check_android_g3_device_requirement.ps1 -> Android G3 device requirement check waiting on device

@@ -164,7 +164,8 @@ Assert-TextContains -Text $planResult.Text -Needle "Package: com.DefaultCompany.
 Assert-TextContains -Text $planResult.Text -Needle "Activity: com.unity3d.player.UnityPlayerGameActivity" -Label "Android smoke plan"
 Assert-TextContains -Text $planResult.Text -Needle "ScreenshotCapture: True" -Label "Android smoke plan"
 Assert-TextContains -Text $planResult.Text -Needle "SummaryWrite: True" -Label "Android smoke plan"
-Add-Row -Check "smoke plan" -Status "OK" -Detail "install+launch+log+screenshot+summary"
+Assert-TextContains -Text $planResult.Text -Needle "ConnectionCheck: check_android_device_connection.ps1 -RequireDevice" -Label "Android smoke plan"
+Add-Row -Check "smoke plan" -Status "OK" -Detail "install+launch+log+screenshot+summary+connection"
 
 $logResult = Invoke-ChildScript -ScriptPath $androidLogScript -Arguments @("-SelfTest")
 if ($logResult.ExitCode -ne 0) {
@@ -193,6 +194,7 @@ if ($failures.Count -gt 0) {
 
 Write-Host "Android smoke plan/preflight consistency check OK."
 Write-Host "Android device smoke plan OK."
+Write-Host "ConnectionCheck: check_android_device_connection.ps1 -RequireDevice"
 Write-Host "Android smoke log check self-test OK."
 Write-Host "Android smoke summary check self-test OK."
 
