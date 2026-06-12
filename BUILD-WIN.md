@@ -284,7 +284,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_curren
 ```
 
 This confirms the current PC/mobile wait-state package is sealed through
-`PC1-PC56`, that `Add Android G3 when-ready runner` is the latest PC
+`PC1-PC57`, that `Add Android ADB driver package probe` is the latest PC
 checkpoint, and that `G3 Run Android device smoke` remains the formal next task.
 
 Expected success string: `Current plan queue consistency check OK`.
@@ -298,23 +298,38 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_androi
 This reads `adb devices -l` and reports no-device, unauthorized, offline,
 multiple-device or ready states without installing or launching the APK.
 
-Current wait-state checkpoint: `PC1-PC56`.
+Current wait-state checkpoint: `PC1-PC57`.
 
 Expected waiting-state string without an authorized adb phone: `Android device connection check waiting on device`.
 
 Diagnostic marker: `WpdOnlyAndroidProbe: True`.
 Setup hint marker: `AdbSetupHint: True`.
+Driver package marker: `AdbDriverPackageProbe: True`.
 Watch marker: `AdbWatchHint: True`.
 Status report marker: `G3DeviceStatusReport: True`.
 When-ready marker: `G3WhenReady: True`.
 
 When Windows only exposes a connected Android phone as WPD/MTP, the helper can
 also report `WpdOnlyAndroidDevice: True`; that still means G3 is waiting for USB
-debugging authorization or an ADB driver before install/launch. On the current
-Mi 11 Lite state it also reports the Microsoft MTP driver path, such as
-`driver=MTP USB 设备; provider=Microsoft; inf=wpdmtp.inf; service=WUDFWpdMtp`.
+debugging authorization or an ADB driver before install/launch. In the current
+Mi 11 Lite state, Windows reports the phone through `winusb.inf` and adb exposes
+one authorized `device` row; the remaining real G3 blocker is phone-side USB
+install permission.
 
 Checkpoint marker: `Add Android ADB setup guidance`.
+
+Check installed Android ADB driver package candidates:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_adb_driver_package.ps1
+```
+
+Expected markers: `AdbDriverPackageProbe: True`,
+`CandidateDriverPackages:` and `CurrentPhoneDriver:`.
+
+Checkpoint marker: `Add Android ADB driver package probe`.
+
+Previous checkpoint marker: `Add Android ADB setup guidance`.
 
 Watch the connection while changing phone-side USB debugging or driver state:
 
@@ -580,7 +595,7 @@ Expected success strings:
 - `PC build artifact hygiene check OK`
 - `PC smoke artifact hygiene check OK`
 - `Current plan queue consistency check OK`
-- `Android device connection check waiting on device`
+- `Android device connection check OK` or `Android device connection check waiting on device`
 - `Current plan gate check OK`
 - `Android SDK tooling check OK`
 - `Android APK compatibility check OK`
@@ -590,14 +605,14 @@ Expected success strings:
 - `Android APK size budget check OK`
 - `Android smoke log check self-test OK`
 - `Android smoke plan/preflight consistency check OK`
-- `Android G3 readiness check waiting on device`
-- `Android G3 device requirement check waiting on device`
+- `Android G3 readiness check OK` or `Android G3 readiness check waiting on device`
+- `Android G3 device requirement check OK` or `Android G3 device requirement check waiting on device`
 - `Android device smoke plan OK`
 - `ScreenshotCapture: True`
 - `SummaryWrite: True`
 - `ConnectionCheck: check_android_device_connection.ps1 -RequireDevice`
 - `Android smoke connection gate check OK`
-- `Android smoke connection gate check waiting on device`
+- `Android smoke connection gate check ready for G3 device smoke` or `Android smoke connection gate check waiting on device`
 - `Controlled demo public boundary preflight OK`
 - `MC2 demo smoke test exiting with code 0`
 - `MC2 reference visual captures passed`

@@ -14,7 +14,7 @@
 
 Mobile support remains the product priority, but `G3 Android Device Smoke` is waiting on a physical Android phone with USB debugging authorized. While that device blocker existed, this plan used PC demo optimization to keep the Windows demo moving.
 
-The current PC/mobile wait-state optimization pass is now sealed through PC1-PC56. This does not move G4/G5 mobile touch and performance ahead of G3; the next mobile gate is still `G3 Run Android device smoke` and still requires the physical authorized phone.
+The current PC/mobile wait-state optimization pass is now sealed through PC1-PC57. This does not move G4/G5 mobile touch and performance ahead of G3; the next mobile gate is still `G3 Run Android device smoke` and still requires the physical authorized phone.
 
 ## Definition Of Done
 
@@ -71,7 +71,8 @@ The current PC optimization pass is complete when:
 - Android device connection can be checked without launching Unity through `check_android_device_connection.ps1`, proving `adb devices -l` is readable and reports no-device, unauthorized, offline, multi-device or ready states before G3 tries to install or launch the APK.
 - Android WPD-only device diagnosis can be checked without launching Unity through `check_android_device_connection.ps1`, proving `WpdOnlyAndroidProbe: True` is emitted and a Windows-only WPD/MTP phone remains a G3 waiting state until adb shows one authorized `device` row.
 - Android ADB setup guidance can be checked without launching Unity through `check_android_device_connection.ps1`, proving `AdbSetupHint: True` is emitted with current Windows driver/provider/inf/service when the connected phone is still MTP-only.
-- Android ADB readiness watch can be checked without launching Unity through `watch_android_device_connection.ps1 -Once -AllowWaiting`, proving `AdbWatchHint: True` is emitted and the current WPD/MTP-only phone remains a waiting state until adb shows one authorized `device` row.
+- Android ADB driver package probe can be checked without launching Unity through `check_android_adb_driver_package.ps1`, proving `AdbDriverPackageProbe: True`, current phone driver details and installed ADB/WinUSB candidate package state are reported without installing or changing drivers.
+- Android ADB readiness watch can be checked without launching Unity through `watch_android_device_connection.ps1 -Once -AllowWaiting`, proving `AdbWatchHint: True` is emitted and the helper can report waiting until adb shows one authorized `device` row or OK after the phone is authorized.
 - Android G3 device status report can be written without launching Unity through `write_android_g3_device_status.ps1`, proving `G3DeviceStatusReport: True`, ready/waiting status and blocker details are captured in ignored JSON without install or launch.
 - Android G3 when-ready runner can be previewed without launching Unity through `run_android_g3_when_ready.ps1 -PlanOnly`, proving `G3WhenReady: True` and `NoInstallOrLaunchUntilDeviceReady: True` before it waits for adb and calls real smoke.
 - Android smoke connection gate wiring can be checked without a device through `android_device_smoke.ps1 -PlanOnly`, proving the real smoke path runs `check_android_device_connection.ps1 -RequireDevice` before install or launch and fails early with `Android device smoke requires a single authorized Android device before install or launch` when no authorized phone is available.
@@ -164,6 +165,7 @@ The current PC optimization pass is complete when:
 | PC54 | Done | Add Android ADB readiness watch | `watch_android_device_connection.ps1 -Once -AllowWaiting` exposes `AdbWatchHint: True`, can wait for adb `device`, and stays no-device-safe while the phone is WPD/MTP-only |
 | PC55 | Done | Add Android G3 device status report | `write_android_g3_device_status.ps1` writes ignored JSON and exposes `G3DeviceStatusReport: True`, `G3DeviceReady`, blocker and no-install/no-launch markers |
 | PC56 | Done | Add Android G3 when-ready runner | `run_android_g3_when_ready.ps1 -PlanOnly` exposes `G3WhenReady: True` and `NoInstallOrLaunchUntilDeviceReady: True`; real smoke only runs after adb is ready |
+| PC57 | Done | Add Android ADB driver package probe | `check_android_adb_driver_package.ps1` exposes `AdbDriverPackageProbe: True`, current phone driver and candidate driver package state without install/launch |
 
 Do not open another PC polish gate from visual inspection alone. If the issue is collision, damage, command state or objective logic, first prove it in `BattleCore`.
 
@@ -1990,12 +1992,12 @@ git diff --check
 
 ## Completed Target: PC53 Add Android ADB Setup Guidance
 
-**Goal:** 当前手机已经连到 Windows，但仍是 Microsoft MTP driver，不是 ADB interface。连接检查需要给出 driver/provider/inf/service 和下一步 ADB 设置提示。
+**Goal:** 当手机已经连到 Windows、但仍是 Microsoft MTP driver 而不是 ADB interface 时，连接检查需要给出 driver/provider/inf/service 和下一步 ADB 设置提示。
 
 **Acceptance:**
 
 - `check_android_device_connection.ps1` prints `AdbSetupHint: True`.
-- Current Mi 11 Lite WPD/MTP-only output includes `provider=Microsoft`, `inf=wpdmtp.inf` and `service=WUDFWpdMtp`.
+- Mi 11 Lite WPD/MTP-only sample output includes `provider=Microsoft`, `inf=wpdmtp.inf` and `service=WUDFWpdMtp`; the current ADB-ready state reports `inf=winusb.inf` and `service=WINUSB`.
 - Current plan gate requires both `WpdOnlyAndroidProbe: True` and `AdbSetupHint: True`.
 - Current plan queue, handoff and mobile command preflight accept PC1-PC54.
 
@@ -2019,7 +2021,7 @@ git diff --check
 **Acceptance:**
 
 - `watch_android_device_connection.ps1 -Once -AllowWaiting` prints `AdbWatchHint: True`.
-- Current Mi 11 Lite WPD/MTP-only output reports `Android device connection watch waiting on device`.
+- Mi 11 Lite WPD/MTP-only sample output reports `Android device connection watch waiting on device`; the current ADB-ready state reports `Android device connection watch OK`.
 - Current plan gate includes an Android device watch gate and still treats the real G3 smoke as waiting until adb shows one authorized `device` row.
 - Current plan queue, handoff and mobile command preflight accept PC1-PC54.
 
@@ -2043,9 +2045,9 @@ git diff --check
 **Acceptance:**
 
 - `write_android_g3_device_status.ps1` prints `G3DeviceStatusReport: True`.
-- Current Mi 11 Lite WPD/MTP-only output prints `G3DeviceReady: False` and `NoInstallOrLaunch: True`.
+- Mi 11 Lite WPD/MTP-only sample output prints `G3DeviceReady: False` and `NoInstallOrLaunch: True`; the current ADB-ready state prints `G3DeviceReady: True` while still not installing or launching.
 - The script writes ignored `analysis-output/android-g3-device-status.json` with ready/waiting state, blocker, next gate and raw helper output.
-- Current plan queue, current plan gate, handoff and mobile command preflight accept PC1-PC56.
+- Current plan queue, current plan gate, handoff and mobile command preflight accept PC1-PC57.
 
 **Validation:**
 
@@ -2069,8 +2071,8 @@ git diff --check
 
 - `run_android_g3_when_ready.ps1 -PlanOnly` prints `Android G3 when-ready plan OK.`.
 - The plan output includes `G3WhenReady: True` and `NoInstallOrLaunchUntilDeviceReady: True`.
-- `run_android_g3_when_ready.ps1 -TimeoutSeconds 0 -AllowWaiting` reports waiting on the current WPD/MTP-only phone without installing or launching.
-- Current plan queue, current plan gate, handoff and mobile command preflight accept PC1-PC56.
+- `run_android_g3_when_ready.ps1 -TimeoutSeconds 0 -AllowWaiting` reports waiting on non-ready phones without installing or launching; when adb is ready it proceeds to the real install step.
+- Current plan queue, current plan gate, handoff and mobile command preflight accept PC1-PC57.
 
 **Validation:**
 
@@ -2085,6 +2087,31 @@ git diff --check
 ```
 
 **Commit:** `Add Android G3 when-ready runner`
+
+## Completed Target: PC57 Add Android ADB Driver Package Probe
+
+**Goal:** Clarify the WPD/MTP-only blocker with a read-only driver package probe before changing phone, cable, or driver state.
+
+**Acceptance:**
+
+- `check_android_adb_driver_package.ps1` prints `Android ADB driver package probe OK.`.
+- It prints `AdbDriverPackageProbe: True` and `NoInstallOrLaunch: True`.
+- On the current machine it reports `CandidateDriverPackages: none`.
+- It reports the current Mi 11 Lite driver state; WPD/MTP-only samples include `inf=wpdmtp.inf` and `service=WUDFWpdMtp`, while the current ADB-ready state reports `inf=winusb.inf` and `service=WINUSB`.
+- Current plan queue, current plan gate, handoff and mobile command preflight accept PC1-PC57.
+
+**Validation:**
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_adb_driver_package.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_current_plan_queue.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_current_plan_gate.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_controlled_demo_handoff.ps1 -RunReadiness
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_mobile_command_model_preflight.ps1
+git diff --check
+```
+
+**Commit:** `Add Android ADB driver package probe`
 
 ## Stop Conditions
 

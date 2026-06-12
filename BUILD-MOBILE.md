@@ -275,14 +275,32 @@ Expected without a phone:
 Android device connection check waiting on device
 WpdOnlyAndroidProbe: True
 AdbSetupHint: True
+AdbDriverPackageProbe: True
 AdbWatchHint: True
 G3DeviceStatusReport: True
 G3WhenReady: True
 NoInstallOrLaunchUntilDeviceReady: True
 ```
 
-Current wait-state checkpoint: `PC1-PC56`.
+Current wait-state checkpoint: `PC1-PC57`.
 Formal next gate: `G3 Run Android device smoke`.
+
+Check installed Android ADB driver package candidates without installing or
+launching:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_adb_driver_package.ps1
+```
+
+Expected markers:
+
+```text
+Android ADB driver package probe OK
+AdbDriverPackageProbe: True
+NoInstallOrLaunch: True
+```
+
+Checkpoint marker: `Add Android ADB driver package probe`.
 
 If Windows sees a connected Android phone only as WPD/MTP, the same helper can
 report `WpdOnlyAndroidDevice: True`. That is still a G3 waiting state until adb
@@ -480,18 +498,23 @@ scripts\unity\check_android_device_preflight.ps1 -AllowNoDevice -> smoke summary
 scripts\unity\android_device_smoke.ps1 -PlanOnly -> ScreenshotCapture: True, Screenshot -> analysis-output\android-device-smoke.png
 scripts\unity\android_device_smoke.ps1 -PlanOnly -> SummaryWrite: True, Summary -> analysis-output\android-device-smoke-summary.json
 scripts\unity\android_device_smoke.ps1 -PlanOnly -> ConnectionCheck: check_android_device_connection.ps1 -RequireDevice
-scripts\unity\check_android_smoke_connection_gate.ps1 -> Android smoke connection gate check waiting on device
+scripts\unity\check_android_smoke_connection_gate.ps1 -> Android smoke connection gate check ready for G3 device smoke
 scripts\unity\check_android_smoke_plan_consistency.ps1 -> Android smoke plan/preflight consistency check OK
-scripts\unity\check_android_g3_readiness.ps1 -> Android G3 readiness check waiting on device
-scripts\unity\check_android_g3_device_requirement.ps1 -> Android G3 device requirement check waiting on device
-scripts\unity\check_android_device_connection.ps1 -> Android device connection check waiting on device, WpdOnlyAndroidProbe: True, AdbSetupHint: True
-scripts\unity\watch_android_device_connection.ps1 -Once -AllowWaiting -> Android device connection watch waiting on device, AdbWatchHint: True
-scripts\unity\write_android_g3_device_status.ps1 -> Android G3 device status report OK, G3DeviceStatusReport: True
+scripts\unity\check_android_g3_readiness.ps1 -RequireDevice -> Android G3 readiness check OK
+scripts\unity\check_android_g3_device_requirement.ps1 -> Android G3 device requirement check OK
+scripts\unity\check_android_device_connection.ps1 -> Android device connection check OK, b5212798:device, WpdOnlyAndroidProbe: True, AdbSetupHint: True
+scripts\unity\check_android_adb_driver_package.ps1 -> Android ADB driver package probe OK, AdbDriverPackageProbe: True
+scripts\unity\watch_android_device_connection.ps1 -Once -AllowWaiting -> Android device connection watch OK, AdbWatchHint: True
+scripts\unity\write_android_g3_device_status.ps1 -> Android G3 device status report OK, G3DeviceStatusReport: True, G3DeviceReady: True
 scripts\unity\run_android_g3_when_ready.ps1 -PlanOnly -> Android G3 when-ready plan OK, G3WhenReady: True
-scripts\unity\check_android_device_preflight.ps1 -AllowNoDevice -> Android device smoke preflight waiting on device
+scripts\unity\check_android_device_preflight.ps1 -AllowNoDevice -> Android device smoke preflight OK
+scripts\unity\run_android_g3_when_ready.ps1 -TimeoutSeconds 0 -AllowWaiting -> INSTALL_FAILED_USER_RESTRICTED: Install canceled by user
 ```
+
+No-device fallback marker remains `Android device smoke preflight waiting on device`.
 
 The APK, SDK logs, Unity build folder, Gradle cache, and device logs remain
 ignored local outputs. The next gate is a real Android device smoke.
-At the time this note was updated, `adb devices` returned no device rows, so G3
-is waiting for a USB-debugging-enabled phone authorized on this PC.
+At the time this note was updated, `adb devices -l` returned `b5212798 device`
+for Mi 11 Lite through `winusb.inf`; the package is not installed yet because
+the phone rejected ADB installation with `INSTALL_FAILED_USER_RESTRICTED`.

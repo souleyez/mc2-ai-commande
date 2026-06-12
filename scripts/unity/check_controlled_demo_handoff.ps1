@@ -127,6 +127,7 @@ Assert-ScriptExists -RelativePath "scripts\unity\check_android_apk_manifest.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_android_apk_payload.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_android_apk_size_budget.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_android_device_connection.ps1"
+Assert-ScriptExists -RelativePath "scripts\unity\check_android_adb_driver_package.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\watch_android_device_connection.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\write_android_g3_device_status.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\run_android_g3_when_ready.ps1"
@@ -154,7 +155,7 @@ Assert-ScriptExists -RelativePath "scripts\content-pack\check_controlled_demo_pu
 
 Assert-FileContains -RelativePath "README.md" -Markers @(
     "AI RTS Commander Lab",
-    "PC1-PC56",
+    "PC1-PC57",
     "check_controlled_demo_handoff.ps1",
     "check_windows_demo_build_freshness.ps1",
     "check_demo_source_hygiene.ps1",
@@ -194,9 +195,11 @@ Assert-FileContains -RelativePath "README.md" -Markers @(
     "check_current_plan_queue.ps1",
     "Current plan queue consistency check OK",
     "check_android_device_connection.ps1",
+    "check_android_adb_driver_package.ps1",
     "Android device connection check waiting on device",
     "WpdOnlyAndroidProbe: True",
     "AdbSetupHint: True",
+    "AdbDriverPackageProbe: True",
     "AdbWatchHint: True",
     "G3DeviceStatusReport: True",
     "G3WhenReady: True",
@@ -210,6 +213,7 @@ Assert-FileContains -RelativePath "README.md" -Markers @(
     "Add Android visible-flow command-file smoke",
     "Add Android WPD-only device diagnosis",
     "Add Android ADB setup guidance",
+    "Add Android ADB driver package probe",
     "Add Android ADB readiness watch",
     "Add Android G3 when-ready runner",
     "CommandFileSmoke: True",
@@ -259,12 +263,14 @@ Assert-FileContains -RelativePath "BUILD-WIN.md" -Markers @(
     "check_current_plan_queue.ps1",
     "Current plan queue consistency check OK",
     "check_android_device_connection.ps1",
+    "check_android_adb_driver_package.ps1",
     "watch_android_device_connection.ps1",
     "write_android_g3_device_status.ps1",
     "run_android_g3_when_ready.ps1",
     "Android device connection check waiting on device",
     "WpdOnlyAndroidProbe: True",
     "AdbSetupHint: True",
+    "AdbDriverPackageProbe: True",
     "AdbWatchHint: True",
     "G3DeviceStatusReport: True",
     "G3WhenReady: True",
@@ -294,6 +300,7 @@ Assert-FileContains -RelativePath "BUILD-WIN.md" -Markers @(
     "ConnectionCheck: check_android_device_connection.ps1 -RequireDevice",
     "WpdOnlyAndroidProbe: True",
     "AdbSetupHint: True",
+    "AdbDriverPackageProbe: True",
     "AdbWatchHint: True",
     "G3DeviceStatusReport: True",
     "G3WhenReady: True",
@@ -353,6 +360,7 @@ Assert-FileContains -RelativePath "BUILD-MOBILE.md" -Markers @(
     "ConnectionCheck: check_android_device_connection.ps1 -RequireDevice",
     "WpdOnlyAndroidProbe: True",
     "AdbSetupHint: True",
+    "AdbDriverPackageProbe: True",
     "AdbWatchHint: True",
     "G3DeviceStatusReport: True",
     "G3WhenReady: True",
@@ -375,7 +383,7 @@ Assert-FileContains -RelativePath "BUILD-MOBILE.md" -Markers @(
 )
 
 Assert-FileContains -RelativePath "docs-ai-rts-commander-current-master-plan-2026-06-07.md" -Markers @(
-    "PC1-PC56",
+    "PC1-PC57",
     "Add controlled demo handoff consistency check",
     "Add demo source hygiene check",
     "Add AI deputy contract check",
@@ -415,6 +423,7 @@ Assert-FileContains -RelativePath "docs-ai-rts-commander-current-master-plan-202
     "Add Android visible-flow command-file smoke",
     "Add Android WPD-only device diagnosis",
     "Add Android ADB setup guidance",
+    "Add Android ADB driver package probe",
     "Add Android ADB readiness watch",
     "Add Android G3 when-ready runner",
     "Add current plan gate check",
@@ -440,6 +449,7 @@ Assert-FileContains -RelativePath "docs-ai-rts-commander-current-master-plan-202
     "check_pc_smoke_artifact_hygiene.ps1",
     "check_current_plan_queue.ps1",
     "check_android_device_connection.ps1",
+    "check_android_adb_driver_package.ps1",
     "watch_android_device_connection.ps1",
     "write_android_g3_device_status.ps1",
     "run_android_g3_when_ready.ps1",
@@ -461,6 +471,7 @@ Assert-FileContains -RelativePath "docs-ai-rts-commander-current-master-plan-202
     "ConnectionCheck: check_android_device_connection.ps1 -RequireDevice",
     "WpdOnlyAndroidProbe: True",
     "AdbSetupHint: True",
+    "AdbDriverPackageProbe: True",
     "AdbWatchHint: True",
     "G3DeviceStatusReport: True",
     "G3WhenReady: True",
@@ -480,7 +491,7 @@ Assert-FileContains -RelativePath "docs-ai-rts-commander-current-master-plan-202
 )
 
 Assert-FileContains -RelativePath "docs-ai-rts-commander-current-detailed-plan-2026-06-07.md" -Markers @(
-    "PC1-PC56",
+    "PC1-PC57",
     "Add controlled demo handoff consistency check",
     "Add demo source hygiene check",
     "Add AI deputy contract check",
@@ -520,6 +531,7 @@ Assert-FileContains -RelativePath "docs-ai-rts-commander-current-detailed-plan-2
     "Add Android visible-flow command-file smoke",
     "Add Android WPD-only device diagnosis",
     "Add Android ADB setup guidance",
+    "Add Android ADB driver package probe",
     "Add Android ADB readiness watch",
     "Add Android G3 when-ready runner",
     "Add current plan gate check",
@@ -545,6 +557,7 @@ Assert-FileContains -RelativePath "docs-ai-rts-commander-current-detailed-plan-2
     "check_pc_smoke_artifact_hygiene.ps1",
     "check_current_plan_queue.ps1",
     "check_android_device_connection.ps1",
+    "check_android_adb_driver_package.ps1",
     "check_android_smoke_connection_gate.ps1",
     "check_current_plan_gate.ps1",
     "check_android_apk_freshness.ps1",
@@ -576,7 +589,7 @@ Assert-FileContains -RelativePath "docs-ai-rts-commander-current-detailed-plan-2
 )
 
 Assert-FileContains -RelativePath "docs-pc-optimization-plan-2026-06-11.md" -Markers @(
-    "sealed through PC1-PC56",
+    "sealed through PC1-PC57",
     "Add controlled demo handoff consistency check",
     "Add demo source hygiene check",
     "Add AI deputy contract check",
@@ -616,6 +629,7 @@ Assert-FileContains -RelativePath "docs-pc-optimization-plan-2026-06-11.md" -Mar
     "Add Android visible-flow command-file smoke",
     "Add Android WPD-only device diagnosis",
     "Add Android ADB setup guidance",
+    "Add Android ADB driver package probe",
     "Add Android ADB readiness watch",
     "Add Android G3 when-ready runner",
     "Add current plan gate check",
@@ -638,6 +652,7 @@ Assert-FileContains -RelativePath "docs-pc-optimization-plan-2026-06-11.md" -Mar
     "check_pc_smoke_artifact_hygiene.ps1",
     "check_current_plan_queue.ps1",
     "check_android_device_connection.ps1",
+    "check_android_adb_driver_package.ps1",
     "check_android_smoke_connection_gate.ps1",
     "check_android_apk_freshness.ps1",
     "check_android_apk_identity.ps1",
@@ -729,6 +744,7 @@ Assert-FileContains -RelativePath "docs-playable-demo-investor-evidence-2026-06-
     "check_pc_smoke_artifact_hygiene.ps1",
     "check_current_plan_queue.ps1",
     "check_android_device_connection.ps1",
+    "check_android_adb_driver_package.ps1",
     "watch_android_device_connection.ps1",
     "write_android_g3_device_status.ps1",
     "run_android_g3_when_ready.ps1",
@@ -747,6 +763,7 @@ Assert-FileContains -RelativePath "docs-playable-demo-investor-evidence-2026-06-
     "ConnectionCheck: check_android_device_connection.ps1 -RequireDevice",
     "WpdOnlyAndroidProbe: True",
     "AdbSetupHint: True",
+    "AdbDriverPackageProbe: True",
     "AdbWatchHint: True",
     "G3DeviceStatusReport: True",
     "G3WhenReady: True",
@@ -770,7 +787,7 @@ Assert-FileContains -RelativePath "docs-playable-demo-investor-evidence-2026-06-
 )
 
 Assert-FileContains -RelativePath "docs-machine-handoff-plan-2026-06-07.md" -Markers @(
-    "PC1-PC56",
+    "PC1-PC57",
     "Add PC visual capture sanity check",
     "Add PC visual capture sanity self-test",
     "Add PC capture sidecar schema check",
@@ -787,6 +804,7 @@ Assert-FileContains -RelativePath "docs-machine-handoff-plan-2026-06-07.md" -Mar
     "Add Android visible-flow command-file smoke",
     "Add Android WPD-only device diagnosis",
     "Add Android ADB setup guidance",
+    "Add Android ADB driver package probe",
     "Add Android ADB readiness watch",
     "Add Android G3 when-ready runner",
     "Add Android smoke summary evidence output",
@@ -823,6 +841,7 @@ Assert-FileContains -RelativePath "docs-machine-handoff-plan-2026-06-07.md" -Mar
     "check_pc_smoke_artifact_hygiene.ps1",
     "check_current_plan_queue.ps1",
     "check_android_device_connection.ps1",
+    "check_android_adb_driver_package.ps1",
     "watch_android_device_connection.ps1",
     "write_android_g3_device_status.ps1",
     "run_android_g3_when_ready.ps1",
@@ -841,6 +860,7 @@ Assert-FileContains -RelativePath "docs-machine-handoff-plan-2026-06-07.md" -Mar
     "ConnectionCheck: check_android_device_connection.ps1 -RequireDevice",
     "WpdOnlyAndroidProbe: True",
     "AdbSetupHint: True",
+    "AdbDriverPackageProbe: True",
     "AdbWatchHint: True",
     "G3DeviceStatusReport: True",
     "G3WhenReady: True",

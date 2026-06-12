@@ -81,10 +81,11 @@ function Assert-DoesNotContain {
 }
 
 $requiredPlanMarkers = @(
-    "PC1-PC56",
-    "Add Android G3 when-ready runner",
+    "PC1-PC57",
+    "Add Android ADB driver package probe",
     "WpdOnlyAndroidProbe: True",
     "AdbSetupHint: True",
+    "AdbDriverPackageProbe: True",
     "AdbWatchHint: True",
     "G3DeviceStatusReport: True",
     "G3WhenReady: True",
@@ -117,7 +118,7 @@ foreach ($relativePath in $docsToCheck) {
 }
 
 $mobilePlan = Read-RequiredText -RelativePath "docs-mobile-first-plan-2026-06-10.md"
-Assert-Contains -Text $mobilePlan -Needle "| G3 | Waiting on Device | Android device smoke |" -Label "mobile gate order"
+Assert-Contains -Text $mobilePlan -Needle "| G3 | Waiting on Phone Install Permission | Android device smoke |" -Label "mobile gate order"
 Assert-Contains -Text $mobilePlan -Needle "| G4 | Later | Touch UI pass |" -Label "mobile gate order"
 Assert-Contains -Text $mobilePlan -Needle "| G5 | Later | Mobile performance budget |" -Label "mobile gate order"
 
@@ -129,6 +130,7 @@ $currentGate = Read-RequiredText -RelativePath "scripts\unity\check_current_plan
 Assert-Contains -Text $currentGate -Needle 'CommandFileSmoke: True' -Label "current gate script marker"
 Assert-Contains -Text $currentGate -Needle 'WpdOnlyAndroidProbe: True' -Label "current gate device diagnosis marker"
 Assert-Contains -Text $currentGate -Needle 'AdbSetupHint: True' -Label "current gate adb setup marker"
+Assert-Contains -Text $currentGate -Needle 'AdbDriverPackageProbe: True' -Label "current gate adb driver package marker"
 Assert-Contains -Text $currentGate -Needle 'AdbWatchHint: True' -Label "current gate adb watch marker"
 Assert-Contains -Text $currentGate -Needle 'G3DeviceStatusReport: True' -Label "current gate g3 device status marker"
 Assert-Contains -Text $currentGate -Needle 'G3WhenReady: True' -Label "current gate g3 when-ready marker"
@@ -138,6 +140,7 @@ $handoffScript = Read-RequiredText -RelativePath "scripts\unity\check_controlled
 Assert-Contains -Text $handoffScript -Needle 'CommandFileSmoke: True' -Label "handoff script marker"
 Assert-Contains -Text $handoffScript -Needle 'WpdOnlyAndroidProbe: True' -Label "handoff script device diagnosis marker"
 Assert-Contains -Text $handoffScript -Needle 'AdbSetupHint: True' -Label "handoff script adb setup marker"
+Assert-Contains -Text $handoffScript -Needle 'AdbDriverPackageProbe: True' -Label "handoff script adb driver package marker"
 Assert-Contains -Text $handoffScript -Needle 'AdbWatchHint: True' -Label "handoff script adb watch marker"
 Assert-Contains -Text $handoffScript -Needle 'G3DeviceStatusReport: True' -Label "handoff script g3 device status marker"
 Assert-Contains -Text $handoffScript -Needle 'G3WhenReady: True' -Label "handoff script g3 when-ready marker"

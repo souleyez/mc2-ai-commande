@@ -169,14 +169,32 @@ Assert-TextContains -Text $preflightText -Needle "APK manifest" -Label "check_an
 Assert-TextContains -Text $preflightText -Needle "APK payload" -Label "check_android_device_preflight.ps1 -AllowNoDevice"
 Assert-TextContains -Text $preflightText -Needle "APK size budget" -Label "check_android_device_preflight.ps1 -AllowNoDevice"
 Assert-TextContains -Text $preflightText -Needle "device connection" -Label "check_android_device_preflight.ps1 -AllowNoDevice"
-Assert-TextContains -Text $preflightText -Needle "Android device connection check waiting on device." -Label "check_android_device_preflight.ps1 -AllowNoDevice"
 
 $preflightReadiness = ""
-if ($preflightText -like "*Android device smoke preflight waiting on device.*") {
+$deviceConnectionDetail = ""
+if ($preflightText -like "*Android device connection check OK.*") {
+    $preflightReadiness = "OK"
+    $deviceConnectionDetail = "Android device connection check OK."
+}
+elseif ($preflightText -like "*Android device connection check waiting on device.*") {
     $preflightReadiness = "WAITING"
+    $deviceConnectionDetail = "Android device connection check waiting on device."
+}
+elseif ($preflightText -like "*Android device connection check waiting on authorization.*") {
+    $preflightReadiness = "WAITING"
+    $deviceConnectionDetail = "Android device connection check waiting on authorization."
+}
+elseif ($preflightText -like "*Android device connection check waiting on online device.*") {
+    $preflightReadiness = "WAITING"
+    $deviceConnectionDetail = "Android device connection check waiting on online device."
+}
+elseif ($preflightText -like "*Android device connection check waiting on device selection.*") {
+    $preflightReadiness = "WAITING"
+    $deviceConnectionDetail = "Android device connection check waiting on device selection."
 }
 elseif ($preflightText -like "*Android device smoke preflight OK.*") {
     $preflightReadiness = "OK"
+    $deviceConnectionDetail = "Android device smoke preflight OK."
 }
 else {
     Add-Failure "Preflight output did not expose a recognized readiness marker."
@@ -189,7 +207,7 @@ Add-Row -Check "plan command-file smoke" -Status "OK" -Detail "mc2_01-visible-fl
 Add-Row -Check "plan execution flags" -Status "OK" -Detail "install+launch+log+screenshot+summary+connection+command-file"
 Add-Row -Check "preflight package/activity" -Status "OK" -Detail "$ExpectedPackageName / $ExpectedActivityName"
 Add-Row -Check "preflight readiness" -Status $preflightReadiness -Detail "AllowNoDevice accepted"
-Add-Row -Check "preflight device connection" -Status $preflightReadiness -Detail "check_android_device_connection.ps1"
+Add-Row -Check "preflight device connection" -Status $preflightReadiness -Detail $deviceConnectionDetail
 Add-Row -Check "summary schema" -Status "OK" -Detail "Android smoke summary check self-test OK."
 
 if ($failures.Count -gt 0) {

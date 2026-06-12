@@ -35,20 +35,19 @@ signing and manifest install-target metadata, Unity/IL2CPP runtime payload,
 APK size budget, Android smoke artifact hygiene, Android smoke screenshot
 evidence capture, Android smoke summary evidence output, Android smoke
 summary schema check, Android smoke summary preflight check and Android smoke
-plan/preflight consistency check, Android G3 readiness check and Android G3 device requirement check. PC wait-state capture evidence is additionally guarded and self-tested by `check_pc_visual_capture_sanity.ps1`, the six PC capture sidecars are schema-checked by `check_pc_capture_sidecar_schema.ps1`, the standard six capture preset list is guarded by `check_pc_capture_preset_contract.ps1`, local PC capture artifacts are guarded by `check_pc_capture_artifact_hygiene.ps1`, the controlled PC window contract is guarded by `check_pc_window_contract.ps1`, the PC launch log path is guarded by `check_pc_launch_log_hygiene.ps1`, the PC build output path is guarded by `check_pc_build_artifact_hygiene.ps1`, PC smoke outputs are guarded by `check_pc_smoke_artifact_hygiene.ps1`, the plan queue is guarded by `check_current_plan_queue.ps1`, Android device connection state, Windows WPD/MTP-only phone diagnosis and ADB setup guidance are guarded by `check_android_device_connection.ps1` through `WpdOnlyAndroidProbe: True` and `AdbSetupHint: True`, Android ADB readiness watch is guarded by `watch_android_device_connection.ps1` through `AdbWatchHint: True`, Android G3 device status report is guarded by `write_android_g3_device_status.ps1` through `G3DeviceStatusReport: True`, Android G3 when-ready runner is guarded by `run_android_g3_when_ready.ps1` through `G3WhenReady: True` and `NoInstallOrLaunchUntilDeviceReady: True`, real Android smoke wires that connection gate before install or launch, `check_android_smoke_connection_gate.ps1` proves the fail-fast path without rewriting device-smoke evidence, and Android visible-flow command-file smoke is now part of the G3 entry contract through `CommandFileSmoke: True`, `UnityArguments: -mc2CommandFile`, `SmokeSuccessMarker: MC2 debrief summary assertion OK`, and `SmokeSuccessMarker: MC2 loadout compact assertion OK`. The real G3 device smoke is still waiting on a physical Android
-phone that is visible through `adb devices` and authorized for USB debugging.
+plan/preflight consistency check, Android G3 readiness check and Android G3 device requirement check. PC wait-state capture evidence is additionally guarded and self-tested by `check_pc_visual_capture_sanity.ps1`, the six PC capture sidecars are schema-checked by `check_pc_capture_sidecar_schema.ps1`, the standard six capture preset list is guarded by `check_pc_capture_preset_contract.ps1`, local PC capture artifacts are guarded by `check_pc_capture_artifact_hygiene.ps1`, the controlled PC window contract is guarded by `check_pc_window_contract.ps1`, the PC launch log path is guarded by `check_pc_launch_log_hygiene.ps1`, the PC build output path is guarded by `check_pc_build_artifact_hygiene.ps1`, PC smoke outputs are guarded by `check_pc_smoke_artifact_hygiene.ps1`, the plan queue is guarded by `check_current_plan_queue.ps1`, Android device connection state, Windows WPD/MTP-only phone diagnosis and ADB setup guidance are guarded by `check_android_device_connection.ps1` through `WpdOnlyAndroidProbe: True` and `AdbSetupHint: True`, Android ADB driver package state is guarded by `check_android_adb_driver_package.ps1` through `AdbDriverPackageProbe: True`, Android ADB readiness watch is guarded by `watch_android_device_connection.ps1` through `AdbWatchHint: True`, Android G3 device status report is guarded by `write_android_g3_device_status.ps1` through `G3DeviceStatusReport: True`, Android G3 when-ready runner is guarded by `run_android_g3_when_ready.ps1` through `G3WhenReady: True` and `NoInstallOrLaunchUntilDeviceReady: True`, real Android smoke wires that connection gate before install or launch, `check_android_smoke_connection_gate.ps1` proves the fail-fast path without rewriting device-smoke evidence, and Android visible-flow command-file smoke is now part of the G3 entry contract through `CommandFileSmoke: True`, `UnityArguments: -mc2CommandFile`, `SmokeSuccessMarker: MC2 debrief summary assertion OK`, and `SmokeSuccessMarker: MC2 loadout compact assertion OK`. The real G3 device smoke now sees Mi 11 Lite through adb, but the install step is blocked by phone-side USB installation policy with `INSTALL_FAILED_USER_RESTRICTED`.
 
 While G3 is waiting, the active project work may continue on PC demo
 optimization as defined in `docs-pc-optimization-plan-2026-06-11.md`. This does
 not advance G4/G5 ahead of G3; it only keeps Windows demo quality moving while
 the required phone is unavailable. The current PC/mobile waiting-state work is
-sealed through PC1-PC56, including the PC core playable contract check, mobile
+sealed through PC1-PC57, including the PC core playable contract check, mobile
 command model preflight, battle HUD sparse contract check, demo source hygiene
 check, AI deputy contract check, Windows demo build freshness check, controlled
 demo evidence freshness check, controlled demo capture log freshness check,
 Android SDK tooling check, Android APK freshness check, Android APK identity check, Android APK
 compatibility check, Android APK signing check, Android APK manifest check,
-Android APK payload check, Android APK size budget check, Android smoke artifact hygiene check, Android smoke screenshot evidence capture, Android smoke summary evidence output, Android smoke summary schema check, Android smoke summary preflight check, Android smoke plan/preflight consistency check, Android G3 readiness check, Android G3 device requirement check, Android device connection check, Android WPD-only device diagnosis, Android ADB setup guidance, Android ADB readiness watch, Android G3 device status report, Android G3 when-ready runner, Android smoke connection gate, Android smoke connection gate check, Android visible-flow command-file smoke, PC visual capture sanity check, PC visual capture sanity self-test, PC capture sidecar schema check, PC capture preset contract check, PC capture artifact hygiene check, PC window contract check, PC launch log hygiene check, PC build artifact hygiene check, PC smoke artifact hygiene check, Add current plan queue consistency check, Add Android device connection check, Wire Android smoke connection gate, Add Android smoke connection gate check, Add Android visible-flow command-file smoke, Add Android WPD-only device diagnosis, Add Android ADB setup guidance, Add Android ADB readiness watch, Add Android G3 device status report, Add Android G3 when-ready runner, current plan gate
+Android APK payload check, Android APK size budget check, Android smoke artifact hygiene check, Android smoke screenshot evidence capture, Android smoke summary evidence output, Android smoke summary schema check, Android smoke summary preflight check, Android smoke plan/preflight consistency check, Android G3 readiness check, Android G3 device requirement check, Android device connection check, Android WPD-only device diagnosis, Android ADB setup guidance, Android ADB driver package probe, Android ADB readiness watch, Android G3 device status report, Android G3 when-ready runner, Android smoke connection gate, Android smoke connection gate check, Android visible-flow command-file smoke, PC visual capture sanity check, PC visual capture sanity self-test, PC capture sidecar schema check, PC capture preset contract check, PC capture artifact hygiene check, PC window contract check, PC launch log hygiene check, PC build artifact hygiene check, PC smoke artifact hygiene check, Add current plan queue consistency check, Add Android device connection check, Wire Android smoke connection gate, Add Android smoke connection gate check, Add Android visible-flow command-file smoke, Add Android WPD-only device diagnosis, Add Android ADB setup guidance, Add Android ADB driver package probe, Add Android ADB readiness watch, Add Android G3 device status report, Add Android G3 when-ready runner, current plan gate
 check, Android smoke log crash scan and Android smoke plan mode. Formal next work remains `G3 Run Android device smoke`.
 
 ## Definition Of Done
@@ -77,7 +76,7 @@ failing, unless the later work is explicitly diagnostic.
 | --- | --- | --- | --- |
 | H2 | Done | New-machine baseline | Clone repo, run Windows validator/build/smoke on new machine |
 | G2 | Done | Android build path | Produce Android artifact from Unity 6 without staging generated output |
-| G3 | Waiting on Device | Android device smoke | Launch on real Android device and reach battle/debrief path |
+| G3 | Waiting on Phone Install Permission | Android device smoke | Launch on real Android device and reach battle/debrief path |
 | G4 | Later | Touch UI pass | Core command model usable on phone aspect ratios |
 | G5 | Later | Mobile performance budget | Baseline FPS, memory, package size, load time and thermal notes recorded |
 | G6 | Later | iOS feasibility | Document macOS/Xcode/signing requirements after Android proof |
@@ -110,8 +109,9 @@ failing, unless the later work is explicitly diagnostic.
 
 1. Run `scripts\unity\check_android_device_preflight.ps1`.
 2. If no device row is shown, `check_android_device_preflight.ps1 -AllowNoDevice` should still prove the APK/tooling/package/summary-schema path and then stop at waiting-on-device; `check_android_smoke_plan_consistency.ps1` and `check_android_g3_readiness.ps1` should also prove the no-install G3 readiness bundle; `check_android_g3_device_requirement.ps1` should prove strict readiness still requires a phone; connect/authorize a phone before real G3.
-3. If a device is present, run `scripts\unity\android_device_smoke.ps1`; it installs the APK, launches it, waits briefly and captures ignored `analysis-output/android-device-smoke.log`.
-4. Record whether the app reaches battle/debrief manually or by command-file smoke.
+3. If a device is present, run `scripts\unity\run_android_g3_when_ready.ps1 -TimeoutSeconds 0 -AllowWaiting`; it installs the APK, launches it, waits briefly and captures ignored `analysis-output/android-device-smoke.log`.
+4. If installation fails with `INSTALL_FAILED_USER_RESTRICTED`, allow phone-side USB installation/USB debugging security settings and retry G3 before changing gameplay code.
+5. Record whether the app reaches battle/debrief manually or by command-file smoke.
 
 **Output:**
 
@@ -157,10 +157,10 @@ scripts\unity\check_android_device_preflight.ps1 -AllowNoDevice -> smoke summary
 scripts\unity\android_device_smoke.ps1 -PlanOnly -> ScreenshotCapture: True, Screenshot -> analysis-output\android-device-smoke.png.
 scripts\unity\android_device_smoke.ps1 -PlanOnly -> SummaryWrite: True, Summary -> analysis-output\android-device-smoke-summary.json.
 scripts\unity\android_device_smoke.ps1 -PlanOnly -> ConnectionCheck: check_android_device_connection.ps1 -RequireDevice.
-scripts\unity\check_android_smoke_connection_gate.ps1 -> Android smoke connection gate check waiting on device.
+scripts\unity\check_android_smoke_connection_gate.ps1 -> Android smoke connection gate check ready for G3 device smoke.
 scripts\unity\check_android_smoke_plan_consistency.ps1 -> Android smoke plan/preflight consistency check OK.
-scripts\unity\check_android_g3_readiness.ps1 -> Android G3 readiness check waiting on device.
-scripts\unity\check_android_g3_device_requirement.ps1 -> Android G3 device requirement check waiting on device.
+scripts\unity\check_android_g3_readiness.ps1 -RequireDevice -> Android G3 readiness check OK.
+scripts\unity\check_android_g3_device_requirement.ps1 -> Android G3 device requirement check OK.
 scripts\unity\check_pc_visual_capture_sanity.ps1 -> PC visual capture sanity check OK.
 scripts\unity\check_pc_visual_capture_sanity.ps1 -SelfTest -> PC visual capture sanity self-test OK.
 scripts\unity\check_pc_capture_sidecar_schema.ps1 -> PC capture sidecar schema check OK.
@@ -171,10 +171,10 @@ scripts\unity\check_pc_launch_log_hygiene.ps1 -> PC launch log hygiene check OK.
 scripts\unity\check_pc_build_artifact_hygiene.ps1 -> PC build artifact hygiene check OK.
 scripts\unity\check_pc_smoke_artifact_hygiene.ps1 -> PC smoke artifact hygiene check OK.
 scripts\unity\check_current_plan_queue.ps1 -> Current plan queue consistency check OK.
-scripts\unity\check_android_device_connection.ps1 -> Android device connection check waiting on device.
+scripts\unity\check_android_device_connection.ps1 -> Android device connection check OK.
 scripts\unity\check_android_device_connection.ps1 -> WpdOnlyAndroidProbe: True.
 scripts\unity\check_android_device_connection.ps1 -> AdbSetupHint: True.
-scripts\unity\check_android_device_preflight.ps1 -AllowNoDevice -> Android device smoke preflight waiting on device.
+scripts\unity\check_android_device_preflight.ps1 -AllowNoDevice -> Android device smoke preflight OK.
 APK package -> com.DefaultCompany.unitymc2demo.
 APK activity -> com.unity3d.player.UnityPlayerGameActivity.
 APK compatibility -> minSdkVersion 25, targetSdkVersion 36, native-code arm64-v8a.
@@ -187,12 +187,12 @@ Android smoke artifact hygiene -> APK/AAB outputs, Android smoke logs/screenshot
 Android smoke screenshot evidence -> PlanOnly reports ScreenshotCapture: True and the ignored target analysis-output\android-device-smoke.png.
 Android smoke summary evidence -> PlanOnly reports SummaryWrite: True and the ignored target analysis-output\android-device-smoke-summary.json.
 Android smoke summary schema -> SelfTest reports Android smoke summary check self-test OK.
-Android smoke summary preflight -> device preflight reports smoke summary schema OK before waiting on device.
+Android smoke summary preflight -> device preflight reports smoke summary schema OK before G3 install.
 Android smoke plan/preflight consistency -> plan mode and preflight agree on package, activity, evidence paths, execution flags and summary schema readiness.
-Android G3 readiness -> direct readiness gate reports waiting on device after passing preflight, plan consistency, plan mode, log scanner and summary schema checks.
-Android G3 device requirement -> strict readiness is not accepted without an authorized Android phone.
-adb devices -> no device rows.
-G3 still requires a physical Android phone with USB debugging enabled and authorized.
+Android G3 readiness -> direct readiness gate reports OK after passing preflight, plan consistency, plan mode, log scanner and summary schema checks.
+Android G3 device requirement -> strict readiness sees the authorized Android phone.
+adb devices -> b5212798 device.
+G3 install now requires phone-side USB installation permission.
 ```
 
 **Commit Scope:**
@@ -271,13 +271,13 @@ Minimum device target for the first pass:
 | ID | Requirement | Output | Verification |
 | --- | --- | --- | --- |
 | G3-R1 | Device is visible through adb | device id | `adb devices` shows one `device` row |
-| G3-R1s | Device connection state is diagnosed before install | connection rows | `check_android_device_connection.ps1` reports no-device, unauthorized, offline, multi-device or ready state; current no-phone machine reports `Android device connection check waiting on device` |
+| G3-R1s | Device connection state is diagnosed before install | connection rows | `check_android_device_connection.ps1` reports no-device, unauthorized, offline, multi-device or ready state; current Mi 11 Lite reports `Android device connection check OK` |
 | G3-R1w | WPD/MTP-only Android phone is diagnosed before install | connection rows | `check_android_device_connection.ps1` reports `WpdOnlyAndroidProbe: True`; if Windows sees the phone only as WPD/MTP while adb has no rows, it can report `WpdOnlyAndroidDevice: True` and G3 remains waiting |
 | G3-R1x | ADB setup guidance is shown before install | connection rows | `check_android_device_connection.ps1` reports `AdbSetupHint: True`; WPD/MTP-only output includes current driver/provider/inf/service and setup action before G3 can run |
 | G3-R1t | Real Android smoke uses the strict connection gate before install | plan marker / failure text | `android_device_smoke.ps1 -PlanOnly` reports `ConnectionCheck: check_android_device_connection.ps1 -RequireDevice`; real smoke reports `Android device smoke requires a single authorized Android device before install or launch` if no authorized phone is available |
-| G3-R1u | Android smoke connection gate fail-fast path is self-tested | gate rows | `check_android_smoke_connection_gate.ps1` reports `Android smoke connection gate check OK` and the current no-phone machine reports `Android smoke connection gate check waiting on device` without changing smoke log, screenshot or summary evidence |
+| G3-R1u | Android smoke connection gate fail-fast path is self-tested | gate rows | `check_android_smoke_connection_gate.ps1` reports `Android smoke connection gate check OK` and can report either ready-for-G3 or waiting-on-device without changing smoke log, screenshot or summary evidence |
 | G3-R1v | Android smoke runs the visible-flow command file once a device exists | plan/log markers | `android_device_smoke.ps1 -PlanOnly` reports `CommandFileSmoke: True`, `UnityArguments: -mc2CommandFile`, `SmokeSuccessMarker: MC2 debrief summary assertion OK`, and `SmokeSuccessMarker: MC2 loadout compact assertion OK`; real smoke pushes `mc2_01-visible-flow-audit.txt` to the app external files path and requires both log markers |
-| G3-R1a | Device-smoke preflight can prove APK/tooling/package readiness before install | preflight rows | `check_android_device_preflight.ps1 -AllowNoDevice` reports waiting on device, with APK, Android SDK tooling, APK freshness, APK identity, APK compatibility, APK signing, APK manifest, APK payload, APK size budget, Android smoke artifact hygiene, Android smoke summary schema, adb, aapt, apksigner, package and activity OK |
+| G3-R1a | Device-smoke preflight can prove APK/tooling/package readiness before install | preflight rows | `check_android_device_preflight.ps1 -AllowNoDevice` reports APK, Android SDK tooling, APK freshness, APK identity, APK compatibility, APK signing, APK manifest, APK payload, APK size budget, Android smoke artifact hygiene, Android smoke summary schema, adb, aapt, apksigner, package and activity OK; with the current authorized phone it reports preflight OK |
 | G3-R1j | Android SDK tooling is present before install | tooling output | `check_android_sdk_tooling.ps1` reports `Android SDK tooling check OK` for Unity AndroidPlayer SDK, NDK, OpenJDK, build-tools, platform, adb, aapt and apksigner |
 | G3-R1c | Android APK is not stale before install | freshness output | `check_android_apk_freshness.ps1` reports `Android APK freshness check OK` |
 | G3-R1d | Android APK identity matches the expected launch path | identity output | `check_android_apk_identity.ps1` reports `Android APK identity check OK` for package `com.DefaultCompany.unitymc2demo` and activity `com.unity3d.player.UnityPlayerGameActivity` |
@@ -292,8 +292,8 @@ Minimum device target for the first pass:
 | G3-R1n | Android smoke summary schema is checked | summary self-test/real smoke output | `check_android_smoke_summary.ps1 -SelfTest` reports `Android smoke summary check self-test OK`; real device smoke validates the summary after writing it |
 | G3-R1o | Device-smoke preflight includes summary schema | preflight output | `check_android_device_preflight.ps1 -AllowNoDevice` reports `smoke summary schema` and `Android smoke summary check self-test OK` before waiting on device |
 | G3-R1p | Device-smoke plan and preflight agree before install | consistency output | `check_android_smoke_plan_consistency.ps1` reports `Android smoke plan/preflight consistency check OK` for package, activity, evidence paths, execution flags and summary schema readiness |
-| G3-R1q | Direct G3 readiness bundle passes before install | readiness output | `check_android_g3_readiness.ps1` reports `Android G3 readiness check waiting on device` when no authorized phone is connected, after preflight, plan consistency, plan mode, log scanner and summary schema checks pass |
-| G3-R1r | Strict G3 readiness requires a real device | device requirement output | `check_android_g3_device_requirement.ps1` reports `Android G3 device requirement check waiting on device` when no authorized phone is connected and OK only after strict readiness sees a phone |
+| G3-R1q | Direct G3 readiness bundle passes before install | readiness output | `check_android_g3_readiness.ps1` reports `Android G3 readiness check waiting on device` when no authorized phone is connected, and `Android G3 readiness check OK` after preflight, plan consistency, plan mode, log scanner and summary schema checks pass with a phone |
+| G3-R1r | Strict G3 readiness requires a real device | device requirement output | `check_android_g3_device_requirement.ps1` reports waiting when no authorized phone is connected and OK after strict readiness sees a phone |
 | G3-R1b | Device-smoke helper can preview planned actions without a device | plan output | `android_device_smoke.ps1 -PlanOnly` reports package, activity, log path and install/launch/log-check actions |
 | G3-R2 | APK installs cleanly | installed package | `adb install -r <apk>` returns success |
 | G3-R3 | App launches without immediate crash | app process/log | `adb logcat` has no fatal crash during launch |

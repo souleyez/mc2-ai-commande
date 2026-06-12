@@ -124,6 +124,7 @@ $androidApkManifestScript = Resolve-RepoPath -RelativePath "scripts\unity\check_
 $androidApkPayloadScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_apk_payload.ps1"
 $androidApkSizeBudgetScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_apk_size_budget.ps1"
 $androidDeviceConnectionScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_device_connection.ps1"
+$androidAdbDriverPackageScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_adb_driver_package.ps1"
 $androidDeviceWatchScript = Resolve-RepoPath -RelativePath "scripts\unity\watch_android_device_connection.ps1"
 $androidG3DeviceStatusScript = Resolve-RepoPath -RelativePath "scripts\unity\write_android_g3_device_status.ps1"
 $androidG3WhenReadyScript = Resolve-RepoPath -RelativePath "scripts\unity\run_android_g3_when_ready.ps1"
@@ -301,6 +302,17 @@ Invoke-GateStep `
         "Android device connection check waiting on authorization.",
         "Android device connection check waiting on online device.",
         "Android device connection check waiting on device selection."
+    )
+
+Invoke-GateStep `
+    -Name "Android ADB driver package gate" `
+    -ScriptPath $androidAdbDriverPackageScript `
+    -Arguments @("-RepoRoot", $RepoRoot) `
+    -RequiredMarkers @(
+        "Android ADB driver package probe OK.",
+        "AdbDriverPackageProbe: True",
+        "NoInstallOrLaunch: True",
+        "NextGate: G3 Run Android device smoke"
     )
 
 Invoke-GateStep `

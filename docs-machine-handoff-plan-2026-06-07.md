@@ -25,8 +25,9 @@ As of this handoff plan:
 - Previous project remote: `git@github.com:souleyez/mc2-ai-commander-demo.git` now redirects to the current repository.
 - Upstream source remote kept for history: `origin https://github.com/alariq/mc2.git`
 - Current branch state after the latest controlled demo checkpoint: `master...ai-origin/master`
-- Latest sealed PC/mobile wait-state checkpoint: `PC1-PC56`
-- Last completed PC checkpoint: `Add Android G3 when-ready runner`
+- Latest sealed PC/mobile wait-state checkpoint: `PC1-PC57`
+- Last completed PC checkpoint: `Add Android ADB driver package probe`
+- Previous PC checkpoint retained in the gate chain: `Add Android G3 when-ready runner`
 - Previous PC checkpoint retained in the gate chain: `Add Android G3 device status report`
 - Previous PC checkpoint retained in the gate chain: `Add Android ADB readiness watch`
 - Previous PC checkpoint retained in the gate chain: `Add Android ADB setup guidance`
@@ -582,8 +583,8 @@ Current plan queue consistency check OK
 ```
 
 This verifies README, BUILD-WIN, master/detailed/PC/mobile/evidence/handoff docs
-and helper scripts agree that the current wait-state package is sealed through
-the PC1-PC56 checkpoint, and that `G3 Run Android device smoke` remains the
+and helper scripts agree that the current G3 prep package is sealed through
+the PC1-PC57 checkpoint, and that `G3 Run Android device smoke` remains the
 formal next task.
 
 **Step 19: Run Android device connection check**
@@ -606,8 +607,9 @@ tries to run the real smoke. It also probes Windows PnP; when Windows only sees
 the phone as WPD/MTP and adb has no rows, it can report `WpdOnlyAndroidDevice: True`.
 That is still a waiting state until adb shows one authorized `device` row. The
 setup hint reports current Windows driver/provider/inf/service, for example
-`provider=Microsoft`, `inf=wpdmtp.inf` and `service=WUDFWpdMtp` on the current
-Mi 11 Lite MTP-only state.
+`provider=Microsoft`, `inf=wpdmtp.inf` and `service=WUDFWpdMtp` on a Mi 11 Lite
+MTP-only state. The current ADB-ready state reports `inf=winusb.inf` and
+`service=WINUSB`.
 
 **Step 19A: Run Android smoke connection gate check**
 
@@ -650,12 +652,12 @@ adb shows one authorized `device` row.
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\write_android_g3_device_status.ps1
 ```
 
-Expected while the phone is still WPD/MTP-only or absent from adb:
+Expected after adb exposes one authorized device:
 
 ```text
 Android G3 device status report OK
 G3DeviceStatusReport: True
-G3DeviceReady: False
+G3DeviceReady: True
 NoInstallOrLaunch: True
 ```
 
@@ -663,7 +665,29 @@ This writes ignored `analysis-output\android-g3-device-status.json`, records the
 current blocker, and keeps `G3 Run Android device smoke` as the next real mobile
 gate.
 
-**Step 19D: Preview Android G3 when-ready runner**
+**Step 19D: Check Android ADB driver package candidates**
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_adb_driver_package.ps1
+```
+
+Expected on the current ADB-ready Mi 11 Lite:
+
+```text
+Android ADB driver package probe OK
+AdbDriverPackageProbe: True
+CandidateDriverPackages: none
+CurrentPhoneDriver: name=Mi 11 Lite; class=USBDevice; provider=Microsoft; desc=WinUsb Device; inf=winusb.inf; service=WINUSB
+```
+
+This is read-only. It does not install drivers, change PnP state, install APKs,
+or launch the app.
+
+Current G3 install attempt reached `adb install` and then stopped at the phone
+policy prompt with `INSTALL_FAILED_USER_RESTRICTED: Install canceled by user`.
+Before retrying G3, enable/allow phone-side USB installation for this PC.
+
+**Step 19E: Preview Android G3 when-ready runner**
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\run_android_g3_when_ready.ps1 -PlanOnly
@@ -693,10 +717,11 @@ Current plan gate check OK
 ```
 
 This wraps handoff/readiness, Windows build freshness, demo source hygiene, AI
-deputy contract, mobile command model, battle HUD sparse contract, PC visual capture sanity, PC visual capture sanity self-test, PC capture sidecar schema, PC capture preset contract, PC capture artifact hygiene, PC window contract, PC launch log hygiene, PC build artifact hygiene, PC smoke artifact hygiene, current plan queue consistency, Android device connection, Android WPD-only device diagnosis, Android ADB setup guidance, Android ADB readiness watch, Android G3 device status report, Android G3 when-ready runner, Android smoke connection gate and Android
+deputy contract, mobile command model, battle HUD sparse contract, PC visual capture sanity, PC visual capture sanity self-test, PC capture sidecar schema, PC capture preset contract, PC capture artifact hygiene, PC window contract, PC launch log hygiene, PC build artifact hygiene, PC smoke artifact hygiene, current plan queue consistency, Android device connection, Android WPD-only device diagnosis, Android ADB setup guidance, Android ADB driver package probe, Android ADB readiness watch, Android G3 device status report, Android G3 when-ready runner, Android smoke connection gate and Android
 preflight checks. With no authorized phone connected, Android should be
 reported as waiting on device; with one authorized phone, Android should report
-OK.
+OK. If the phone then rejects installation, the blocker is phone-side USB
+install permission, not adb connectivity.
 
 **Step 21: Self-test Android smoke log scanning**
 
