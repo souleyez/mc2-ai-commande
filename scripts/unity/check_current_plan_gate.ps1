@@ -174,6 +174,7 @@ $inventoryMechBayBindingScript = Resolve-RepoPath -RelativePath "scripts\unity\c
 $optionalInventoryMechBayPreviewScript = Resolve-RepoPath -RelativePath "scripts\unity\check_optional_inventory_mechbay_preview_binding.ps1"
 $inventoryMechBayPreviewEvidenceScript = Resolve-RepoPath -RelativePath "scripts\unity\capture_inventory_mechbay_preview_evidence.ps1"
 $landscapePhoneMechLabSourceLineScript = Resolve-RepoPath -RelativePath "scripts\unity\capture_landscape_phone_mechlab_source_line_evidence.ps1"
+$serverBackedReceiptSlicePlanScript = Resolve-RepoPath -RelativePath "scripts\unity\check_server_backed_receipt_slice_plan.ps1"
 $androidDeviceConnectionScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_device_connection.ps1"
 $androidAdbDriverPackageScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_adb_driver_package.ps1"
 $androidDeviceWatchScript = Resolve-RepoPath -RelativePath "scripts\unity\watch_android_device_connection.ps1"
@@ -437,6 +438,12 @@ Invoke-GateStep `
     -ScriptPath $landscapePhoneMechLabSourceLineScript `
     -Arguments @("-RepoRoot", $RepoRoot) `
     -RequiredMarkers @("Landscape-phone MechLab source-line evidence capture OK.")
+
+Invoke-GateStep `
+    -Name "Server-backed receipt slice plan gate" `
+    -ScriptPath $serverBackedReceiptSlicePlanScript `
+    -Arguments @("-RepoRoot", $RepoRoot) `
+    -RequiredMarkers @("Server-backed receipt slice plan check OK.")
 
 Invoke-GateStep `
     -Name "Android device connection gate" `

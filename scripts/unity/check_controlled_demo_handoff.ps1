@@ -142,6 +142,7 @@ Assert-ScriptExists -RelativePath "scripts\unity\check_inventory_mechbay_binding
 Assert-ScriptExists -RelativePath "scripts\unity\check_optional_inventory_mechbay_preview_binding.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\capture_inventory_mechbay_preview_evidence.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\capture_landscape_phone_mechlab_source_line_evidence.ps1"
+Assert-ScriptExists -RelativePath "scripts\unity\check_server_backed_receipt_slice_plan.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_android_device_connection.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_android_adb_driver_package.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\watch_android_device_connection.ps1"
@@ -271,6 +272,9 @@ Assert-FileContains -RelativePath "README.md" -Markers @(
     "capture_landscape_phone_mechlab_source_line_evidence.ps1",
     "Landscape-phone MechLab source-line evidence capture OK",
     "F15 plan server-backed receipt slice",
+    "check_server_backed_receipt_slice_plan.ps1",
+    "Server-backed receipt slice plan check OK",
+    "F16 implement server-backed receipt evidence gate",
     "Add Android WPD-only device diagnosis",
     "Add Android ADB setup guidance",
     "Add Android ADB driver package probe",
@@ -422,6 +426,9 @@ Assert-FileContains -RelativePath "BUILD-WIN.md" -Markers @(
     "capture_landscape_phone_mechlab_source_line_evidence.ps1",
     "Landscape-phone MechLab source-line evidence capture OK",
     "F15 plan server-backed receipt slice",
+    "check_server_backed_receipt_slice_plan.ps1",
+    "Server-backed receipt slice plan check OK",
+    "F16 implement server-backed receipt evidence gate",
     "Controlled demo readiness preflight OK"
 )
 
@@ -513,6 +520,9 @@ Assert-FileContains -RelativePath "BUILD-MOBILE.md" -Markers @(
     "capture_landscape_phone_mechlab_source_line_evidence.ps1",
     "Landscape-phone MechLab source-line evidence capture OK",
     "F15 plan server-backed receipt slice",
+    "check_server_backed_receipt_slice_plan.ps1",
+    "Server-backed receipt slice plan check OK",
+    "F16 implement server-backed receipt evidence gate",
     "first phone version is landscape-only",
     "check_android_smoke_plan_consistency.ps1",
     "Android smoke plan/preflight consistency check OK",
@@ -1041,6 +1051,9 @@ Assert-FileContains -RelativePath "docs-machine-handoff-plan-2026-06-07.md" -Mar
     "capture_landscape_phone_mechlab_source_line_evidence.ps1",
     "Landscape-phone MechLab source-line evidence capture OK",
     "F15 plan server-backed receipt slice",
+    "check_server_backed_receipt_slice_plan.ps1",
+    "Server-backed receipt slice plan check OK",
+    "F16 implement server-backed receipt evidence gate",
     "first phone version is landscape-only",
     "android-device-smoke.png",
     "ScreenshotCapture: True",
