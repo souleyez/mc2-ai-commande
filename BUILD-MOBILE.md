@@ -277,7 +277,12 @@ WpdOnlyAndroidProbe: True
 AdbSetupHint: True
 AdbWatchHint: True
 G3DeviceStatusReport: True
+G3WhenReady: True
+NoInstallOrLaunchUntilDeviceReady: True
 ```
+
+Current wait-state checkpoint: `PC1-PC56`.
+Formal next gate: `G3 Run Android device smoke`.
 
 If Windows sees a connected Android phone only as WPD/MTP, the same helper can
 report `WpdOnlyAndroidDevice: True`. That is still a G3 waiting state until adb
@@ -296,6 +301,14 @@ To write the current G3 device status report without installing or launching:
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\write_android_g3_device_status.ps1
 ```
+
+To preview the when-ready G3 runner without installing or launching:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\run_android_g3_when_ready.ps1 -PlanOnly
+```
+
+Checkpoint marker: `Add Android G3 when-ready runner`.
 
 Check the Android smoke connection gate behavior before real G3 smoke:
 
@@ -474,6 +487,7 @@ scripts\unity\check_android_g3_device_requirement.ps1 -> Android G3 device requi
 scripts\unity\check_android_device_connection.ps1 -> Android device connection check waiting on device, WpdOnlyAndroidProbe: True, AdbSetupHint: True
 scripts\unity\watch_android_device_connection.ps1 -Once -AllowWaiting -> Android device connection watch waiting on device, AdbWatchHint: True
 scripts\unity\write_android_g3_device_status.ps1 -> Android G3 device status report OK, G3DeviceStatusReport: True
+scripts\unity\run_android_g3_when_ready.ps1 -PlanOnly -> Android G3 when-ready plan OK, G3WhenReady: True
 scripts\unity\check_android_device_preflight.ps1 -AllowNoDevice -> Android device smoke preflight waiting on device
 ```
 

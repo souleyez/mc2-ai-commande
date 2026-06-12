@@ -25,8 +25,9 @@ As of this handoff plan:
 - Previous project remote: `git@github.com:souleyez/mc2-ai-commander-demo.git` now redirects to the current repository.
 - Upstream source remote kept for history: `origin https://github.com/alariq/mc2.git`
 - Current branch state after the latest controlled demo checkpoint: `master...ai-origin/master`
-- Latest sealed PC/mobile wait-state checkpoint: `PC1-PC55`
-- Last completed PC checkpoint: `Add Android G3 device status report`
+- Latest sealed PC/mobile wait-state checkpoint: `PC1-PC56`
+- Last completed PC checkpoint: `Add Android G3 when-ready runner`
+- Previous PC checkpoint retained in the gate chain: `Add Android G3 device status report`
 - Previous PC checkpoint retained in the gate chain: `Add Android ADB readiness watch`
 - Previous PC checkpoint retained in the gate chain: `Add Android ADB setup guidance`
 - Previous PC checkpoint retained in the gate chain: `Add Android WPD-only device diagnosis`
@@ -582,7 +583,7 @@ Current plan queue consistency check OK
 
 This verifies README, BUILD-WIN, master/detailed/PC/mobile/evidence/handoff docs
 and helper scripts agree that the current wait-state package is sealed through
-the PC1-PC55 checkpoint, and that `G3 Run Android device smoke` remains the
+the PC1-PC56 checkpoint, and that `G3 Run Android device smoke` remains the
 formal next task.
 
 **Step 19: Run Android device connection check**
@@ -662,6 +663,23 @@ This writes ignored `analysis-output\android-g3-device-status.json`, records the
 current blocker, and keeps `G3 Run Android device smoke` as the next real mobile
 gate.
 
+**Step 19D: Preview Android G3 when-ready runner**
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\run_android_g3_when_ready.ps1 -PlanOnly
+```
+
+Expected:
+
+```text
+Android G3 when-ready plan OK
+G3WhenReady: True
+NoInstallOrLaunchUntilDeviceReady: True
+```
+
+This proves the real G3 entry will wait for adb readiness before calling
+`android_device_smoke.ps1`. The preview path does not install or launch.
+
 **Step 20: Run current plan gate check**
 
 ```powershell
@@ -675,7 +693,7 @@ Current plan gate check OK
 ```
 
 This wraps handoff/readiness, Windows build freshness, demo source hygiene, AI
-deputy contract, mobile command model, battle HUD sparse contract, PC visual capture sanity, PC visual capture sanity self-test, PC capture sidecar schema, PC capture preset contract, PC capture artifact hygiene, PC window contract, PC launch log hygiene, PC build artifact hygiene, PC smoke artifact hygiene, current plan queue consistency, Android device connection, Android WPD-only device diagnosis, Android ADB setup guidance, Android ADB readiness watch, Android G3 device status report, Android smoke connection gate and Android
+deputy contract, mobile command model, battle HUD sparse contract, PC visual capture sanity, PC visual capture sanity self-test, PC capture sidecar schema, PC capture preset contract, PC capture artifact hygiene, PC window contract, PC launch log hygiene, PC build artifact hygiene, PC smoke artifact hygiene, current plan queue consistency, Android device connection, Android WPD-only device diagnosis, Android ADB setup guidance, Android ADB readiness watch, Android G3 device status report, Android G3 when-ready runner, Android smoke connection gate and Android
 preflight checks. With no authorized phone connected, Android should be
 reported as waiting on device; with one authorized phone, Android should report
 OK.

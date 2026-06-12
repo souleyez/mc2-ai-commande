@@ -81,12 +81,13 @@ function Assert-DoesNotContain {
 }
 
 $requiredPlanMarkers = @(
-    "PC1-PC55",
-    "Add Android G3 device status report",
+    "PC1-PC56",
+    "Add Android G3 when-ready runner",
     "WpdOnlyAndroidProbe: True",
     "AdbSetupHint: True",
     "AdbWatchHint: True",
     "G3DeviceStatusReport: True",
+    "G3WhenReady: True",
     "CommandFileSmoke: True",
     "SmokeSuccessMarker: MC2 debrief summary assertion OK",
     "SmokeSuccessMarker: MC2 loadout compact assertion OK",
@@ -130,6 +131,7 @@ Assert-Contains -Text $currentGate -Needle 'WpdOnlyAndroidProbe: True' -Label "c
 Assert-Contains -Text $currentGate -Needle 'AdbSetupHint: True' -Label "current gate adb setup marker"
 Assert-Contains -Text $currentGate -Needle 'AdbWatchHint: True' -Label "current gate adb watch marker"
 Assert-Contains -Text $currentGate -Needle 'G3DeviceStatusReport: True' -Label "current gate g3 device status marker"
+Assert-Contains -Text $currentGate -Needle 'G3WhenReady: True' -Label "current gate g3 when-ready marker"
 Assert-Contains -Text $currentGate -Needle 'SmokeSuccessMarker: MC2 loadout compact assertion OK' -Label "current gate success marker"
 
 $handoffScript = Read-RequiredText -RelativePath "scripts\unity\check_controlled_demo_handoff.ps1"
@@ -138,6 +140,7 @@ Assert-Contains -Text $handoffScript -Needle 'WpdOnlyAndroidProbe: True' -Label 
 Assert-Contains -Text $handoffScript -Needle 'AdbSetupHint: True' -Label "handoff script adb setup marker"
 Assert-Contains -Text $handoffScript -Needle 'AdbWatchHint: True' -Label "handoff script adb watch marker"
 Assert-Contains -Text $handoffScript -Needle 'G3DeviceStatusReport: True' -Label "handoff script g3 device status marker"
+Assert-Contains -Text $handoffScript -Needle 'G3WhenReady: True' -Label "handoff script g3 when-ready marker"
 Assert-Contains -Text $handoffScript -Needle 'SmokeSuccessMarker: MC2 loadout compact assertion OK' -Label "handoff script success marker"
 
 $tracked = @(& git -C $RepoRoot ls-files 2>$null | ForEach-Object { $_.ToString() })

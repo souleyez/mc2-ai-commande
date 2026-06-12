@@ -75,10 +75,31 @@ if (-not [string]::IsNullOrWhiteSpace($DeviceId)) {
 
 $connection = Invoke-StatusScript -ScriptPath $connectionScript -Arguments $connectionArgs
 $watch = Invoke-StatusScript -ScriptPath $watchScript -Arguments $watchArgs
-$requirement = Invoke-StatusScript -ScriptPath $requirementScript -Arguments @("-RepoRoot", $RepoRoot)
-
 $connectionText = $connection.Lines -join [Environment]::NewLine
 $watchText = $watch.Lines -join [Environment]::NewLine
+
+$connectionBlocked = (
+    $connectionText -like "*WpdOnlyAndroidDevice: True*" -or
+    $connectionText -like "*unauthorized*" -or
+    $connectionText -like "*offline*" -or
+    $connectionText -like "*no device rows*" -or
+    $watchText -like "*DeviceReady: False*"
+)
+
+if ($connectionBlocked) {
+    $requirement = [pscustomobject]@{
+        ExitCode = 0
+        Lines = @(
+            "Android G3 device requirement check waiting on device.",
+            "Repo: $RepoRoot",
+            "Detail: skipped strict G3 readiness because adb has no authorized device yet."
+        )
+    }
+}
+else {
+    $requirement = Invoke-StatusScript -ScriptPath $requirementScript -Arguments @("-RepoRoot", $RepoRoot)
+}
+
 $requirementText = $requirement.Lines -join [Environment]::NewLine
 
 $deviceReady = (

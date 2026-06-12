@@ -14,7 +14,7 @@
 
 Mobile support remains the product priority, but `G3 Android Device Smoke` is waiting on a physical Android phone with USB debugging authorized. While that device blocker existed, this plan used PC demo optimization to keep the Windows demo moving.
 
-The current PC/mobile wait-state optimization pass is now sealed through PC1-PC55. This does not move G4/G5 mobile touch and performance ahead of G3; the next mobile gate is still `G3 Run Android device smoke` and still requires the physical authorized phone.
+The current PC/mobile wait-state optimization pass is now sealed through PC1-PC56. This does not move G4/G5 mobile touch and performance ahead of G3; the next mobile gate is still `G3 Run Android device smoke` and still requires the physical authorized phone.
 
 ## Definition Of Done
 
@@ -73,6 +73,7 @@ The current PC optimization pass is complete when:
 - Android ADB setup guidance can be checked without launching Unity through `check_android_device_connection.ps1`, proving `AdbSetupHint: True` is emitted with current Windows driver/provider/inf/service when the connected phone is still MTP-only.
 - Android ADB readiness watch can be checked without launching Unity through `watch_android_device_connection.ps1 -Once -AllowWaiting`, proving `AdbWatchHint: True` is emitted and the current WPD/MTP-only phone remains a waiting state until adb shows one authorized `device` row.
 - Android G3 device status report can be written without launching Unity through `write_android_g3_device_status.ps1`, proving `G3DeviceStatusReport: True`, ready/waiting status and blocker details are captured in ignored JSON without install or launch.
+- Android G3 when-ready runner can be previewed without launching Unity through `run_android_g3_when_ready.ps1 -PlanOnly`, proving `G3WhenReady: True` and `NoInstallOrLaunchUntilDeviceReady: True` before it waits for adb and calls real smoke.
 - Android smoke connection gate wiring can be checked without a device through `android_device_smoke.ps1 -PlanOnly`, proving the real smoke path runs `check_android_device_connection.ps1 -RequireDevice` before install or launch and fails early with `Android device smoke requires a single authorized Android device before install or launch` when no authorized phone is available.
 - Android smoke connection gate behavior can be checked without a device through `check_android_smoke_connection_gate.ps1`, proving the real smoke fail-fast path is enforced before install or launch and ignored smoke evidence is not rewritten while no valid device is selected.
 - Android visible-flow command-file smoke can be previewed without a device through `android_device_smoke.ps1 -PlanOnly`, proving real G3 will push `mc2_01-visible-flow-audit.txt`, launch with `-mc2CommandFile`, and require debrief/loadout compact success markers.
@@ -162,6 +163,7 @@ The current PC optimization pass is complete when:
 | PC53 | Done | Add Android ADB setup guidance | `check_android_device_connection.ps1` exposes `AdbSetupHint: True` with current Windows driver/provider/inf/service and next setup action |
 | PC54 | Done | Add Android ADB readiness watch | `watch_android_device_connection.ps1 -Once -AllowWaiting` exposes `AdbWatchHint: True`, can wait for adb `device`, and stays no-device-safe while the phone is WPD/MTP-only |
 | PC55 | Done | Add Android G3 device status report | `write_android_g3_device_status.ps1` writes ignored JSON and exposes `G3DeviceStatusReport: True`, `G3DeviceReady`, blocker and no-install/no-launch markers |
+| PC56 | Done | Add Android G3 when-ready runner | `run_android_g3_when_ready.ps1 -PlanOnly` exposes `G3WhenReady: True` and `NoInstallOrLaunchUntilDeviceReady: True`; real smoke only runs after adb is ready |
 
 Do not open another PC polish gate from visual inspection alone. If the issue is collision, damage, command state or objective logic, first prove it in `BattleCore`.
 
@@ -2043,7 +2045,7 @@ git diff --check
 - `write_android_g3_device_status.ps1` prints `G3DeviceStatusReport: True`.
 - Current Mi 11 Lite WPD/MTP-only output prints `G3DeviceReady: False` and `NoInstallOrLaunch: True`.
 - The script writes ignored `analysis-output/android-g3-device-status.json` with ready/waiting state, blocker, next gate and raw helper output.
-- Current plan queue, current plan gate, handoff and mobile command preflight accept PC1-PC55.
+- Current plan queue, current plan gate, handoff and mobile command preflight accept PC1-PC56.
 
 **Validation:**
 
@@ -2058,6 +2060,31 @@ git diff --check
 ```
 
 **Commit:** `Add Android G3 device status report`
+
+## Completed Target: PC56 Add Android G3 When-Ready Runner
+
+**Goal:** Provide one safe G3 entry point that waits for an authorized adb `device` and then calls the real Android smoke path. Plan and waiting modes must not install or launch.
+
+**Acceptance:**
+
+- `run_android_g3_when_ready.ps1 -PlanOnly` prints `Android G3 when-ready plan OK.`.
+- The plan output includes `G3WhenReady: True` and `NoInstallOrLaunchUntilDeviceReady: True`.
+- `run_android_g3_when_ready.ps1 -TimeoutSeconds 0 -AllowWaiting` reports waiting on the current WPD/MTP-only phone without installing or launching.
+- Current plan queue, current plan gate, handoff and mobile command preflight accept PC1-PC56.
+
+**Validation:**
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\run_android_g3_when_ready.ps1 -PlanOnly
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\run_android_g3_when_ready.ps1 -TimeoutSeconds 0 -AllowWaiting
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_current_plan_queue.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_current_plan_gate.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_controlled_demo_handoff.ps1 -RunReadiness
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_mobile_command_model_preflight.ps1
+git diff --check
+```
+
+**Commit:** `Add Android G3 when-ready runner`
 
 ## Stop Conditions
 

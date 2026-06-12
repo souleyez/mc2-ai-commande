@@ -126,6 +126,7 @@ $androidApkSizeBudgetScript = Resolve-RepoPath -RelativePath "scripts\unity\chec
 $androidDeviceConnectionScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_device_connection.ps1"
 $androidDeviceWatchScript = Resolve-RepoPath -RelativePath "scripts\unity\watch_android_device_connection.ps1"
 $androidG3DeviceStatusScript = Resolve-RepoPath -RelativePath "scripts\unity\write_android_g3_device_status.ps1"
+$androidG3WhenReadyScript = Resolve-RepoPath -RelativePath "scripts\unity\run_android_g3_when_ready.ps1"
 $androidPreflightScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_device_preflight.ps1"
 $androidSmokeScript = Resolve-RepoPath -RelativePath "scripts\unity\android_device_smoke.ps1"
 $androidSmokeConnectionGateScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_smoke_connection_gate.ps1"
@@ -320,6 +321,17 @@ Invoke-GateStep `
     -AnySuccessMarkers @(
         "G3DeviceReady: True",
         "G3DeviceReady: False"
+    )
+
+Invoke-GateStep `
+    -Name "Android G3 when-ready plan gate" `
+    -ScriptPath $androidG3WhenReadyScript `
+    -Arguments @("-RepoRoot", $RepoRoot, "-PlanOnly") `
+    -RequiredMarkers @(
+        "Android G3 when-ready plan OK.",
+        "G3WhenReady: True",
+        "NoInstallOrLaunchUntilDeviceReady: True",
+        "NextGate: G3 Run Android device smoke"
     )
 
 Invoke-GateStep `

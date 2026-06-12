@@ -8,7 +8,7 @@
 
 **Tech Stack:** Unity 6, C#, Windows PC build/smoke/capture as active demo loop, Android/iOS mobile-first after device blocker clears, deterministic BattleCore, PowerShell build/smoke/capture scripts, replaceable content packs, optional high-level AI deputy, later main server/map server/Web ranking contracts.
 
-**Revision:** 2026-06-12 v68. This file is the fine-grained execution plan paired with `docs-ai-rts-commander-current-master-plan-2026-06-07.md`. The private reference visual bridge, local investor evidence package, art-safe metadata contract, AI deputy offline guard, reward authority contract, machine handoff plan, mobile-first priority reset, Android build smoke, PC optimization resumption, PC1 baseline audit, PC2 battle readability pass, PC3 MechLab PC flow polish, PC4 controlled demo evidence package, PC5 Windows demo launcher preflight, PC6 controlled demo evidence health check, PC7 controlled demo public boundary preflight, PC8 controlled demo readiness preflight, PC9 controlled demo handoff consistency check, PC10 Android device-smoke preflight, PC11 PC core playable contract check, PC12 mobile command model preflight, PC13 current plan gate check, PC14 Android smoke log crash scan, PC15 Android smoke plan mode, PC16 battle HUD sparse contract check, PC17 demo source hygiene check, PC18 AI deputy contract check, PC19 Windows demo build freshness check, PC20 controlled demo evidence freshness check, PC21 controlled demo capture log freshness check, PC22 Android APK freshness check, PC23 Android APK identity check, PC24 Android APK compatibility check, PC25 Android APK signing check, PC26 Android APK manifest check, PC27 Android APK payload check, PC28 Android APK size budget check, PC29 Android SDK tooling check, PC30 Android smoke artifact hygiene check, PC31 Android smoke screenshot evidence capture, PC32 Android smoke summary evidence output, PC33 Android smoke summary schema check, PC34 Android smoke summary preflight check, PC35 Android smoke plan/preflight consistency check, PC36 Android G3 readiness check, PC37 Android G3 device requirement check, PC38 PC visual capture sanity check, PC39 PC visual capture sanity self-test, PC40 PC capture sidecar schema check, PC41 PC capture preset contract check, PC42 PC capture artifact hygiene check, PC43 PC window contract check, PC44 PC launch log hygiene check, PC45 PC build artifact hygiene check, PC46 PC smoke artifact hygiene check, PC47 current plan queue consistency check, PC48 Android device connection check, PC49 Android smoke connection gate wiring, PC50 Android smoke connection gate check, PC51 Android visible-flow command-file smoke, PC52 Android WPD-only device diagnosis, PC53 Android ADB setup guidance, PC54 Android ADB readiness watch, and PC55 Android G3 device status report are now sealed for the current Demo. H2 validator/build/smoke is green; G2 Android build smoke is green with a generated APK; `G3 Run Android device smoke` is waiting on a physical authorized phone.
+**Revision:** 2026-06-12 v69. This file is the fine-grained execution plan paired with `docs-ai-rts-commander-current-master-plan-2026-06-07.md`. The private reference visual bridge, local investor evidence package, art-safe metadata contract, AI deputy offline guard, reward authority contract, machine handoff plan, mobile-first priority reset, Android build smoke, PC optimization resumption, PC1 baseline audit, PC2 battle readability pass, PC3 MechLab PC flow polish, PC4 controlled demo evidence package, PC5 Windows demo launcher preflight, PC6 controlled demo evidence health check, PC7 controlled demo public boundary preflight, PC8 controlled demo readiness preflight, PC9 controlled demo handoff consistency check, PC10 Android device-smoke preflight, PC11 PC core playable contract check, PC12 mobile command model preflight, PC13 current plan gate check, PC14 Android smoke log crash scan, PC15 Android smoke plan mode, PC16 battle HUD sparse contract check, PC17 demo source hygiene check, PC18 AI deputy contract check, PC19 Windows demo build freshness check, PC20 controlled demo evidence freshness check, PC21 controlled demo capture log freshness check, PC22 Android APK freshness check, PC23 Android APK identity check, PC24 Android APK compatibility check, PC25 Android APK signing check, PC26 Android APK manifest check, PC27 Android APK payload check, PC28 Android APK size budget check, PC29 Android SDK tooling check, PC30 Android smoke artifact hygiene check, PC31 Android smoke screenshot evidence capture, PC32 Android smoke summary evidence output, PC33 Android smoke summary schema check, PC34 Android smoke summary preflight check, PC35 Android smoke plan/preflight consistency check, PC36 Android G3 readiness check, PC37 Android G3 device requirement check, PC38 PC visual capture sanity check, PC39 PC visual capture sanity self-test, PC40 PC capture sidecar schema check, PC41 PC capture preset contract check, PC42 PC capture artifact hygiene check, PC43 PC window contract check, PC44 PC launch log hygiene check, PC45 PC build artifact hygiene check, PC46 PC smoke artifact hygiene check, PC47 current plan queue consistency check, PC48 Android device connection check, PC49 Android smoke connection gate wiring, PC50 Android smoke connection gate check, PC51 Android visible-flow command-file smoke, PC52 Android WPD-only device diagnosis, PC53 Android ADB setup guidance, PC54 Android ADB readiness watch, PC55 Android G3 device status report, and PC56 Android G3 when-ready runner are now sealed for the current Demo. H2 validator/build/smoke is green; G2 Android build smoke is green with a generated APK; `G3 Run Android device smoke` is waiting on a physical authorized phone.
 
 ---
 
@@ -38,7 +38,7 @@
 1. `H2` validator、Windows build 和 visible-flow smoke 已通过；Unity scene fileID churn 已恢复，工作区保持干净。
 2. `G3` 仍是当前移动端 gate：在真 Android 设备上安装并启动 APK，证明移动端运行链路可用。
 3. 当前机器没有授权 Android 设备；G3 进入 Waiting on Device 状态，不推进 G4/G5。
-4. Android 设备等待期间，PC1 基线审计、PC2 战场可读性优化、PC3 MechLab 打磨、PC4 受控演示证据包、PC5 Windows 启动预检、PC6 证据健康检查、PC7 公开边界预检、PC8 演示总预检、PC9 交接一致性检查、PC10 Android 真机 smoke 前置检查、PC11 PC 核心玩法合约检查、PC12 移动指挥模型预检、PC13 当前计划 gate 总预检、PC14 Android smoke 日志崩溃扫描、PC15 Android smoke 预演模式、PC16 战斗 HUD 稀疏合约检查、PC17 源码/生成物卫生检查、PC18 AI 副官边界检查、PC19 Windows 演示构建新鲜度检查、PC20 受控演示证据新鲜度检查、PC21 capture 日志新鲜度检查、PC22 Android APK 新鲜度检查、PC23 Android APK 身份检查、PC24 Android APK 兼容性检查、PC25 Android APK 签名检查、PC26 Android APK 清单检查、PC27 Android APK 载荷检查、PC28 Android APK 包体预算检查、PC29 Android SDK 工具链检查、PC30 Android smoke 生成物卫生检查、PC31 Android smoke 截图证据捕获、PC32 Android smoke 摘要证据输出、PC33 Android smoke 摘要 schema 检查、PC34 Android smoke 摘要 preflight 检查、PC35 Android smoke 预演/前置一致性检查、PC36 Android G3 readiness 检查、PC37 Android G3 真机要求检查、PC38 PC 视觉截图 sanity 检查、PC39 PC 视觉截图 sanity 自测、PC40 PC 截图 sidecar schema 检查、PC41 PC 截图 preset 契约检查、PC42 PC 截图生成物卫生检查、PC43 PC 受控窗口尺寸契约检查、PC44 PC 启动日志卫生检查、PC45 PC 构建输出卫生检查、PC46 PC smoke 生成物卫生检查、PC47 当前计划队列一致性检查、PC48 Android 设备连接诊断检查、PC49 Android smoke 真实入口连接检查、PC50 Android smoke 连接 gate 自测、PC51 Android visible-flow command-file smoke、PC52 Android WPD-only device diagnosis、PC53 Android ADB setup guidance、PC54 Android ADB readiness watch 和 PC55 Android G3 device status report 已通过；正式下一步仍是 `G3 Run Android device smoke`。
+4. Android 设备等待期间，PC1 基线审计、PC2 战场可读性优化、PC3 MechLab 打磨、PC4 受控演示证据包、PC5 Windows 启动预检、PC6 证据健康检查、PC7 公开边界预检、PC8 演示总预检、PC9 交接一致性检查、PC10 Android 真机 smoke 前置检查、PC11 PC 核心玩法合约检查、PC12 移动指挥模型预检、PC13 当前计划 gate 总预检、PC14 Android smoke 日志崩溃扫描、PC15 Android smoke 预演模式、PC16 战斗 HUD 稀疏合约检查、PC17 源码/生成物卫生检查、PC18 AI 副官边界检查、PC19 Windows 演示构建新鲜度检查、PC20 受控演示证据新鲜度检查、PC21 capture 日志新鲜度检查、PC22 Android APK 新鲜度检查、PC23 Android APK 身份检查、PC24 Android APK 兼容性检查、PC25 Android APK 签名检查、PC26 Android APK 清单检查、PC27 Android APK 载荷检查、PC28 Android APK 包体预算检查、PC29 Android SDK 工具链检查、PC30 Android smoke 生成物卫生检查、PC31 Android smoke 截图证据捕获、PC32 Android smoke 摘要证据输出、PC33 Android smoke 摘要 schema 检查、PC34 Android smoke 摘要 preflight 检查、PC35 Android smoke 预演/前置一致性检查、PC36 Android G3 readiness 检查、PC37 Android G3 真机要求检查、PC38 PC 视觉截图 sanity 检查、PC39 PC 视觉截图 sanity 自测、PC40 PC 截图 sidecar schema 检查、PC41 PC 截图 preset 契约检查、PC42 PC 截图生成物卫生检查、PC43 PC 受控窗口尺寸契约检查、PC44 PC 启动日志卫生检查、PC45 PC 构建输出卫生检查、PC46 PC smoke 生成物卫生检查、PC47 当前计划队列一致性检查、PC48 Android 设备连接诊断检查、PC49 Android smoke 真实入口连接检查、PC50 Android smoke 连接 gate 自测、PC51 Android visible-flow command-file smoke、PC52 Android WPD-only device diagnosis、PC53 Android ADB setup guidance、PC54 Android ADB readiness watch、PC55 Android G3 device status report 和 PC56 Android G3 when-ready runner 已通过；正式下一步仍是 `G3 Run Android device smoke`。
 5. D1 只是 art-safe metadata 合同，不是可挂载 runtime pack；后续 D2 才能进入清权资产生产和 mountable pack。
 6. 私有参考素材可以继续用于本机开发验证，但公开材料不能把它描述成最终产品内容。
 7. `F2-F4` 平台化方向仍保留，但现在只在移动端可行性通过后继续。
@@ -110,7 +110,7 @@
 | M11 | 平台契约 | In Progress | 奖励认证契约完成；地图包、排行、创作者边界待写 |
 | M12 | 换机开发交接 | Done | H2 validator/build/smoke 已通过 |
 | M13 | 移动端优先可行性 | Waiting on Device | Android APK build smoke 已通过；真机 smoke 等授权手机，之后再做触控 UI 和性能预算 |
-| M14 | PC/移动等待态优化 | Done for current pass | PC1-PC55 passed: PC1 baseline, PC2 battle readability, PC3 MechLab polish, PC4 controlled demo evidence package, PC5 launch preflight, PC6 evidence health check, PC7 public boundary preflight, PC8 readiness preflight, PC9 handoff consistency check, PC10 Android device-smoke preflight, PC11 PC core playable contract check, PC12 mobile command model preflight, PC13 current plan gate check, PC14 Android smoke log crash scan, PC15 Android smoke plan mode, PC16 battle HUD sparse contract check, PC17 demo source hygiene check, PC18 AI deputy contract check, PC19 Windows demo build freshness check, PC20 controlled demo evidence freshness check, PC21 controlled demo capture log freshness check, PC22 Android APK freshness check, PC23 Android APK identity check, PC24 Android APK compatibility check, PC25 Android APK signing check, PC26 Android APK manifest check, PC27 Android APK payload check, PC28 Android APK size budget check, PC29 Android SDK tooling check, PC30 Android smoke artifact hygiene check, PC31 Android smoke screenshot evidence capture, PC32 Android smoke summary evidence output, PC33 Android smoke summary schema check, PC34 Android smoke summary preflight check, PC35 Android smoke plan/preflight consistency check, PC36 Android G3 readiness check, PC37 Android G3 device requirement check, PC38 PC visual capture sanity check, PC39 PC visual capture sanity self-test, PC40 PC capture sidecar schema check, PC41 PC capture preset contract check, PC42 PC capture artifact hygiene check, PC43 PC window contract check, PC44 PC launch log hygiene check, PC45 PC build artifact hygiene check, PC46 PC smoke artifact hygiene check, PC47 current plan queue consistency check, PC48 Android device connection check, PC49 Android smoke connection gate wiring, PC50 Android smoke connection gate check, PC51 Android visible-flow command-file smoke, PC52 Android WPD-only device diagnosis, PC53 Android ADB setup guidance, PC54 Android ADB readiness watch and PC55 Android G3 device status report |
+| M14 | PC/移动等待态优化 | Done for current pass | PC1-PC56 passed: PC1 baseline, PC2 battle readability, PC3 MechLab polish, PC4 controlled demo evidence package, PC5 launch preflight, PC6 evidence health check, PC7 public boundary preflight, PC8 readiness preflight, PC9 handoff consistency check, PC10 Android device-smoke preflight, PC11 PC core playable contract check, PC12 mobile command model preflight, PC13 current plan gate check, PC14 Android smoke log crash scan, PC15 Android smoke plan mode, PC16 battle HUD sparse contract check, PC17 demo source hygiene check, PC18 AI deputy contract check, PC19 Windows demo build freshness check, PC20 controlled demo evidence freshness check, PC21 controlled demo capture log freshness check, PC22 Android APK freshness check, PC23 Android APK identity check, PC24 Android APK compatibility check, PC25 Android APK signing check, PC26 Android APK manifest check, PC27 Android APK payload check, PC28 Android APK size budget check, PC29 Android SDK tooling check, PC30 Android smoke artifact hygiene check, PC31 Android smoke screenshot evidence capture, PC32 Android smoke summary evidence output, PC33 Android smoke summary schema check, PC34 Android smoke summary preflight check, PC35 Android smoke plan/preflight consistency check, PC36 Android G3 readiness check, PC37 Android G3 device requirement check, PC38 PC visual capture sanity check, PC39 PC visual capture sanity self-test, PC40 PC capture sidecar schema check, PC41 PC capture preset contract check, PC42 PC capture artifact hygiene check, PC43 PC window contract check, PC44 PC launch log hygiene check, PC45 PC build artifact hygiene check, PC46 PC smoke artifact hygiene check, PC47 current plan queue consistency check, PC48 Android device connection check, PC49 Android smoke connection gate wiring, PC50 Android smoke connection gate check, PC51 Android visible-flow command-file smoke, PC52 Android WPD-only device diagnosis, PC53 Android ADB setup guidance, PC54 Android ADB readiness watch, PC55 Android G3 device status report and PC56 Android G3 when-ready runner |
 
 ## 4. Fine-Grained Commit Queue
 
@@ -191,6 +191,7 @@
 | PC53 | Done | `Add Android ADB setup guidance` | WPD/MTP-only 时输出当前 Windows driver/provider/inf/service 和下一步 ADB 设置提示，避免把 MTP 误当可安装真机 | `AdbSetupHint: True` |
 | PC54 | Done | `Add Android ADB readiness watch` | 手机侧切 USB 调试或驱动状态时可轮询等待 adb `device`，当前无设备时可用 no-device-safe 模式验证 | `AdbWatchHint: True` |
 | PC55 | Done | `Add Android G3 device status report` | 生成 ignored `analysis-output/android-g3-device-status.json`，记录当前 G3 设备 ready/waiting、blocker 和 helper 输出 | `G3DeviceStatusReport: True` |
+| PC56 | Done | `Add Android G3 when-ready runner` | 等待 adb `device` 后才调用真实 `android_device_smoke.ps1`，PlanOnly 只预演不安装/启动 | `G3WhenReady: True` |
 | G4 | Later | `Adapt command UI for mobile touch` | 状态行、Jet、地图、系统和 MechLab 手机触控可用 | device smoke |
 | G5 | Later | `Define mobile performance budget` | FPS、内存、包体、加载、热量/电量基线 | docs + device evidence |
 | G6 | Later | `Document iOS feasibility gate` | macOS/Xcode/签名/Metal/真机要求 | docs |
@@ -297,6 +298,7 @@
 | PC53.1 | Done | 增加 Android ADB setup guidance，输出当前 Windows driver/provider/inf/service 和下一步 ADB 设置提示 | `scripts/unity/check_android_device_connection.ps1`; current gate; handoff/docs | `AdbSetupHint: True` |
 | PC54.1 | Done | 增加 Android ADB readiness watch，允许手机侧切 USB 调试或驱动状态时轮询等待 adb `device`，无设备时可 no-device-safe 验证 | `scripts/unity/watch_android_device_connection.ps1`; current gate; handoff/docs | `AdbWatchHint: True` |
 | PC55.1 | Done | 增加 Android G3 device status report，写入 ignored JSON 报告并把 G3 ready/waiting/blocker 固化为机器可读证据 | `scripts/unity/write_android_g3_device_status.ps1`; current gate; handoff/docs | `G3DeviceStatusReport: True` |
+| PC56.1 | Done | 增加 Android G3 when-ready runner，一条命令等待 adb `device` 就绪后进入真实 smoke；PlanOnly/AllowWaiting 不安装不启动 | `scripts/unity/run_android_g3_when_ready.ps1`; current gate; handoff/docs | `G3WhenReady: True` |
 | G4.1 | Later | 调整触控命令 UI，保持无框选、稀疏 HUD、状态栏单选 | Unity presentation | mobile smoke |
 | G5.1 | Later | 定义移动端性能预算并记录首轮基线 | docs + ignored evidence | budget doc |
 | F2.1 | Later | 写地图包/编辑器契约，定义地图元数据、触发图、敌人、奖励引用和验证器边界 | platform docs | `git diff --check` |
@@ -3309,14 +3311,14 @@ git status --short --branch --untracked-files=all
 - 新增 `scripts/unity/write_android_g3_device_status.ps1`。
 - 默认写入 ignored `analysis-output/android-g3-device-status.json`。
 - 报告包含 `g3DeviceStatusReport`、`deviceReady`、`status`、`blocker`、`nextGate`、`noInstallOrLaunch` 以及 connection/watch/device requirement 三段输出。
-- `check_current_plan_gate.ps1` 增加 Android G3 device status report gate；queue、handoff 和 mobile command preflight 同步到 PC1-PC55。
+- `check_current_plan_gate.ps1` 增加 Android G3 device status report gate；queue、handoff 和 mobile command preflight 同步到 PC1-PC56。
 
 **Acceptance:**
 
 - `write_android_g3_device_status.ps1` 输出 `Android G3 device status report OK.`。
 - 当前 WPD/MTP-only 状态下，脚本输出 `G3DeviceStatusReport: True`、`G3DeviceReady: False` 和 `NoInstallOrLaunch: True`。
 - ignored `analysis-output/android-g3-device-status.json` 可解析，且不进入 git。
-- `check_current_plan_queue.ps1`、`check_current_plan_gate.ps1`、`check_controlled_demo_handoff.ps1 -RunReadiness` 和 `check_mobile_command_model_preflight.ps1` 接受 PC1-PC55。
+- `check_current_plan_queue.ps1`、`check_current_plan_gate.ps1`、`check_controlled_demo_handoff.ps1 -RunReadiness` 和 `check_mobile_command_model_preflight.ps1` 接受 PC1-PC56。
 
 **Validation:**
 
@@ -3332,6 +3334,41 @@ git status --short --branch --untracked-files=all
 ```
 
 **Commit:** `Add Android G3 device status report`
+
+### PC56: Add Android G3 When-Ready Runner
+
+**Status:** Completed 2026-06-12.
+
+**Goal:** 设备一旦从 WPD/MTP-only 变成授权 adb `device`，需要一条稳定入口自动进入真实 G3 smoke；设备未就绪时，该入口必须只报告等待状态，不安装、不启动。
+
+**Implementation:**
+
+- 新增 `scripts/unity/run_android_g3_when_ready.ps1`。
+- `-PlanOnly` 调用 `android_device_smoke.ps1 -PlanOnly` 并输出 `G3WhenReady: True`。
+- 非 PlanOnly 先调用 `watch_android_device_connection.ps1`，只有看到 `Android device connection watch OK.` 才继续调用真实 `android_device_smoke.ps1`。
+- `write_android_g3_device_status.ps1` 在 adb 已明确无授权设备时跳过较慢的 strict readiness 子链路，快速输出当前 blocker。
+- `check_current_plan_gate.ps1` 增加 Android G3 when-ready plan gate；queue、handoff 和 mobile command preflight 同步到 PC1-PC56。
+
+**Acceptance:**
+
+- `run_android_g3_when_ready.ps1 -PlanOnly` 输出 `Android G3 when-ready plan OK.`、`G3WhenReady: True` 和 `NoInstallOrLaunchUntilDeviceReady: True`。
+- `run_android_g3_when_ready.ps1 -TimeoutSeconds 0 -AllowWaiting` 在当前 WPD/MTP-only 状态下只输出 waiting，不安装、不启动。
+- 当前计划 gate、handoff 和移动指挥模型预检接受 PC1-PC56。
+
+**Validation:**
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\run_android_g3_when_ready.ps1 -PlanOnly
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\run_android_g3_when_ready.ps1 -TimeoutSeconds 0 -AllowWaiting
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_current_plan_queue.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_current_plan_gate.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_controlled_demo_handoff.ps1 -RunReadiness
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_mobile_command_model_preflight.ps1
+git diff --check
+git status --short --branch --untracked-files=all
+```
+
+**Commit:** `Add Android G3 when-ready runner`
 
 ### G4: Adapt Command UI For Mobile Touch
 
@@ -3581,9 +3618,10 @@ Demo 可以给少量外部人看时，必须满足：
 55. Android ADB setup guidance proves WPD/MTP-only output includes `AdbSetupHint: True`, current driver/provider/inf/service, and explicit next action before G3 install or launch.
 56. Android ADB readiness watch proves `watch_android_device_connection.ps1 -Once -AllowWaiting` can safely report `AdbWatchHint: True` and waiting state without installing or launching, while the normal mode can wait for one adb `device` row.
 57. Android G3 device status report proves `write_android_g3_device_status.ps1` writes ignored `analysis-output/android-g3-device-status.json`, reports `G3DeviceStatusReport: True`, and records ready/waiting state without installing or launching.
-58. Android smoke connection gate wiring proves `android_device_smoke.ps1 -PlanOnly` exposes `ConnectionCheck: check_android_device_connection.ps1 -RequireDevice` and real smoke fails before install or launch with `Android device smoke requires a single authorized Android device before install or launch` unless the strict connection gate passes.
-59. Android smoke connection gate check proves the real smoke helper fail-fast path is machine-checked without installing or launching, and no smoke log, screenshot or summary evidence is rewritten before a valid Android device is selected.
-60. Android visible-flow command-file smoke proves `android_device_smoke.ps1 -PlanOnly` exposes `CommandFileSmoke: True`, `UnityArguments: -mc2CommandFile`, and the debrief/loadout success markers that real G3 will require after pushing `mc2_01-visible-flow-audit.txt` to the device.
+58. Android G3 when-ready runner proves `run_android_g3_when_ready.ps1 -PlanOnly` reports `G3WhenReady: True` and `NoInstallOrLaunchUntilDeviceReady: True`, then only calls real `android_device_smoke.ps1` after the adb watch reports one authorized device.
+59. Android smoke connection gate wiring proves `android_device_smoke.ps1 -PlanOnly` exposes `ConnectionCheck: check_android_device_connection.ps1 -RequireDevice` and real smoke fails before install or launch with `Android device smoke requires a single authorized Android device before install or launch` unless the strict connection gate passes.
+60. Android smoke connection gate check proves the real smoke helper fail-fast path is machine-checked without installing or launching, and no smoke log, screenshot or summary evidence is rewritten before a valid Android device is selected.
+61. Android visible-flow command-file smoke proves `android_device_smoke.ps1 -PlanOnly` exposes `CommandFileSmoke: True`, `UnityArguments: -mc2CommandFile`, and the debrief/loadout success markers that real G3 will require after pushing `mc2_01-visible-flow-audit.txt` to the device.
 
 ## 8. Stop Conditions
 
@@ -3601,4 +3639,4 @@ Stop and reassess before committing if:
 
 ## 9. One-Line Direction
 
-Windows 本地 Demo 的画面、碰撞、稀疏 UI、MechLab、损伤故事、受控演示证据、PC 视觉截图 sanity 与自测、PC 截图 sidecar schema、PC 截图 preset 契约、PC 截图生成物卫生、PC 受控窗口尺寸契约、PC 启动日志卫生、PC 构建输出卫生、PC smoke 生成物卫生、当前计划队列一致性、Android 设备连接诊断、Android WPD-only device diagnosis、Android ADB setup guidance、Android ADB readiness watch、Android G3 device status report、Android smoke 真实入口连接检查、Android smoke 连接 gate 自测、Android visible-flow command-file smoke、启动预检、构建新鲜度检查、证据健康检查、证据新鲜度检查、capture 日志新鲜度检查、Android SDK 工具链检查、Android APK 新鲜度检查、Android APK 身份检查、Android APK 兼容性检查、Android APK 签名检查、Android APK 清单检查、Android APK 载荷检查、Android APK 包体预算检查、Android smoke 生成物卫生检查、Android smoke 截图证据捕获、Android smoke 摘要证据输出、Android smoke 摘要 schema 检查、Android smoke 摘要 preflight 检查、Android smoke 预演/前置一致性检查、Android G3 readiness 检查、Android G3 真机要求检查、公开边界预检、演示总预检、交接一致性检查、Android 真机 smoke 前置检查、PC 核心玩法合约检查、移动指挥模型预检、战斗 HUD 稀疏合约检查、源码/生成物卫生检查、AI 副官边界检查、当前计划 gate 总预检、Android smoke 日志崩溃扫描、Android smoke 预演模式、公开 art-safe 元数据合同、AI 副官离线边界和主服务器奖励权威契约已经收稳；代码已推到 GitHub，H2 validator/build/smoke 已过，G2 Android APK build smoke 已过；PC1-PC55 PC/移动等待态优化包已封口；正式下一步仍是 `G3 Run Android device smoke`，等待授权 Android 手机到位后继续 G3-G5。
+Windows 本地 Demo 的画面、碰撞、稀疏 UI、MechLab、损伤故事、受控演示证据、PC 视觉截图 sanity 与自测、PC 截图 sidecar schema、PC 截图 preset 契约、PC 截图生成物卫生、PC 受控窗口尺寸契约、PC 启动日志卫生、PC 构建输出卫生、PC smoke 生成物卫生、当前计划队列一致性、Android 设备连接诊断、Android WPD-only device diagnosis、Android ADB setup guidance、Android ADB readiness watch、Android G3 device status report、Android G3 when-ready runner、Android smoke 真实入口连接检查、Android smoke 连接 gate 自测、Android visible-flow command-file smoke、启动预检、构建新鲜度检查、证据健康检查、证据新鲜度检查、capture 日志新鲜度检查、Android SDK 工具链检查、Android APK 新鲜度检查、Android APK 身份检查、Android APK 兼容性检查、Android APK 签名检查、Android APK 清单检查、Android APK 载荷检查、Android APK 包体预算检查、Android smoke 生成物卫生检查、Android smoke 截图证据捕获、Android smoke 摘要证据输出、Android smoke 摘要 schema 检查、Android smoke 摘要 preflight 检查、Android smoke 预演/前置一致性检查、Android G3 readiness 检查、Android G3 真机要求检查、公开边界预检、演示总预检、交接一致性检查、Android 真机 smoke 前置检查、PC 核心玩法合约检查、移动指挥模型预检、战斗 HUD 稀疏合约检查、源码/生成物卫生检查、AI 副官边界检查、当前计划 gate 总预检、Android smoke 日志崩溃扫描、Android smoke 预演模式、公开 art-safe 元数据合同、AI 副官离线边界和主服务器奖励权威契约已经收稳；代码已推到 GitHub，H2 validator/build/smoke 已过，G2 Android APK build smoke 已过；PC1-PC56 PC/移动等待态优化包已封口；正式下一步仍是 `G3 Run Android device smoke`，等待授权 Android 手机到位后继续 G3-G5。
