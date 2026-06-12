@@ -129,6 +129,7 @@ Assert-ScriptExists -RelativePath "scripts\unity\check_android_apk_size_budget.p
 Assert-ScriptExists -RelativePath "scripts\unity\check_mobile_performance_budget.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_ios_feasibility_gate.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_map_authoring_contract.ps1"
+Assert-ScriptExists -RelativePath "scripts\unity\check_web_ranking_contract.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_android_device_connection.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_android_adb_driver_package.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\watch_android_device_connection.ps1"
@@ -220,6 +221,9 @@ Assert-FileContains -RelativePath "README.md" -Markers @(
     "check_map_authoring_contract.ps1",
     "Map authoring contract check OK",
     "F3 web ranking contract",
+    "check_web_ranking_contract.ps1",
+    "Web ranking contract check OK",
+    "F4 creator economy boundary",
     "Add Android WPD-only device diagnosis",
     "Add Android ADB setup guidance",
     "Add Android ADB driver package probe",
@@ -388,6 +392,10 @@ Assert-FileContains -RelativePath "BUILD-MOBILE.md" -Markers @(
     "check_map_authoring_contract.ps1",
     "Map authoring contract check OK",
     "F3 web ranking contract",
+    "check_web_ranking_contract.ps1",
+    "Web ranking contract check OK",
+    "F4 creator economy boundary",
+    "first phone version is landscape-only",
     "check_android_smoke_plan_consistency.ps1",
     "Android smoke plan/preflight consistency check OK",
     "check_android_g3_readiness.ps1",
@@ -879,6 +887,10 @@ Assert-FileContains -RelativePath "docs-machine-handoff-plan-2026-06-07.md" -Mar
     "check_map_authoring_contract.ps1",
     "Map authoring contract check OK",
     "F3 web ranking contract",
+    "check_web_ranking_contract.ps1",
+    "Web ranking contract check OK",
+    "F4 creator economy boundary",
+    "first phone version is landscape-only",
     "android-device-smoke.png",
     "ScreenshotCapture: True",
     "android-device-smoke-summary.json",

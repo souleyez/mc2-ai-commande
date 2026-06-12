@@ -161,6 +161,7 @@ $androidApkSizeBudgetScript = Resolve-RepoPath -RelativePath "scripts\unity\chec
 $mobilePerformanceBudgetScript = Resolve-RepoPath -RelativePath "scripts\unity\check_mobile_performance_budget.ps1"
 $iosFeasibilityScript = Resolve-RepoPath -RelativePath "scripts\unity\check_ios_feasibility_gate.ps1"
 $mapAuthoringScript = Resolve-RepoPath -RelativePath "scripts\unity\check_map_authoring_contract.ps1"
+$webRankingScript = Resolve-RepoPath -RelativePath "scripts\unity\check_web_ranking_contract.ps1"
 $androidDeviceConnectionScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_device_connection.ps1"
 $androidAdbDriverPackageScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_adb_driver_package.ps1"
 $androidDeviceWatchScript = Resolve-RepoPath -RelativePath "scripts\unity\watch_android_device_connection.ps1"
@@ -346,6 +347,12 @@ Invoke-GateStep `
     -ScriptPath $mapAuthoringScript `
     -Arguments @("-RepoRoot", $RepoRoot) `
     -RequiredMarkers @("Map authoring contract check OK.")
+
+Invoke-GateStep `
+    -Name "Web ranking contract gate" `
+    -ScriptPath $webRankingScript `
+    -Arguments @("-RepoRoot", $RepoRoot) `
+    -RequiredMarkers @("Web ranking contract check OK.")
 
 Invoke-GateStep `
     -Name "Android device connection gate" `

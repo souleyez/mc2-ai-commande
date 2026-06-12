@@ -286,7 +286,13 @@ Current wait-state checkpoint: `PC1-PC57`.
 Completed mobile gates: `Pass Android G3 device smoke`, the landscape
 `G4 Touch UI pass`, `G5 Mobile performance budget`, and
 `G6 iOS feasibility gate`. `F2 map authoring contract` is also complete.
-Formal next task: `F3 web ranking contract`.
+`F3 web ranking contract` is also complete.
+Formal next task: `F4 creator economy boundary`.
+
+Mobile orientation decision: the first phone version is landscape-only.
+Portrait layout is not a supported first-version target; future mobile UI work
+must keep the battle map, unit status rows, Jet/system controls and MechLab
+usable on landscape phone aspect ratios before considering any portrait pass.
 
 Check installed Android ADB driver package candidates without installing or
 launching:
@@ -520,7 +526,7 @@ The APK, SDK logs, Unity build folder, Gradle cache, and device logs remain
 ignored local outputs. The real Android device smoke gate, the landscape touch
 UI pass, the first mobile performance budget, the iOS feasibility gate and the
 map authoring contract have passed; the next formal task is
-`F3 web ranking contract`.
+`F4 creator economy boundary`.
 At the time this note was updated, `adb devices -l` returned `b5212798 device`
 for Mi 11 Lite through `winusb.inf`; the package installs and launches through
 the G3 when-ready runner/direct smoke path, the visible-flow command-file smoke
@@ -557,4 +563,17 @@ Expected success string:
 
 ```text
 Map authoring contract check OK
+```
+
+Web ranking contract
+--------------------
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_web_ranking_contract.ps1 -RepoRoot .
+```
+
+Expected success string:
+
+```text
+Web ranking contract check OK
 ```

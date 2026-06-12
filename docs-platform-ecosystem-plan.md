@@ -243,6 +243,15 @@ First web version:
 - map author pages
 - reward and event announcements
 
+Detailed Web ranking contract:
+
+- `docs-web-ranking-plan-2026-06-07.md`
+
+That contract defines public leaderboard/profile/battle-record surfaces,
+approved-claim data sources, public-safe fields, privacy boundaries and
+anti-abuse publication rules. The Web/ranking service should publish certified
+achievements, not raw account, inventory or anti-cheat state.
+
 Later:
 
 - replay viewer

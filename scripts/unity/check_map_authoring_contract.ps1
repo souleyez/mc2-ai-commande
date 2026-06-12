@@ -157,7 +157,8 @@ Require-Text -Text $platformPlan -Needle "docs-map-authoring-contract-2026-06-07
 Require-Text -Text $platformPlan -Needle "Maps can be open; rewards must be certified." -Label "platform reward boundary"
 Require-Text -Text $rewardContract -Needle "Map packages reference reward table ids; they do not define direct token" -Label "reward authority boundary"
 Require-Text -Text $detailedPlan -Needle "| F2 | Done | ``Document map authoring contract`` |" -Label "detailed plan F2 status"
-Require-Text -Text $detailedPlan -Needle "| F3 | Next | ``Document web ranking contract`` |" -Label "detailed plan next task"
+Require-Text -Text $detailedPlan -Needle "| F3 | Done | ``Document web ranking contract`` |" -Label "detailed plan F3 status"
+Require-Text -Text $detailedPlan -Needle "| F4 | Next | ``Document creator economy boundary`` |" -Label "detailed plan next task"
 
 if ($failures.Count -gt 0) {
     Write-Host "Map authoring contract check failed."
