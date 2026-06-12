@@ -211,6 +211,54 @@ namespace MC2Demo.Presentation
                 return true;
             }
 
+            if (string.Equals(verb, "open-map", StringComparison.OrdinalIgnoreCase))
+            {
+                if (!string.IsNullOrWhiteSpace(payload))
+                {
+                    error = "Open map action does not accept arguments.";
+                    return false;
+                }
+
+                action = StartupCommanderScriptAction.OpenMissionMap(lineNumber, rawLine);
+                return true;
+            }
+
+            if (string.Equals(verb, "close-map", StringComparison.OrdinalIgnoreCase))
+            {
+                if (!string.IsNullOrWhiteSpace(payload))
+                {
+                    error = "Close map action does not accept arguments.";
+                    return false;
+                }
+
+                action = StartupCommanderScriptAction.CloseMissionMap(lineNumber, rawLine);
+                return true;
+            }
+
+            if (string.Equals(verb, "open-system", StringComparison.OrdinalIgnoreCase))
+            {
+                if (!string.IsNullOrWhiteSpace(payload))
+                {
+                    error = "Open system action does not accept arguments.";
+                    return false;
+                }
+
+                action = StartupCommanderScriptAction.OpenSystem(lineNumber, rawLine);
+                return true;
+            }
+
+            if (string.Equals(verb, "close-system", StringComparison.OrdinalIgnoreCase))
+            {
+                if (!string.IsNullOrWhiteSpace(payload))
+                {
+                    error = "Close system action does not accept arguments.";
+                    return false;
+                }
+
+                action = StartupCommanderScriptAction.CloseSystem(lineNumber, rawLine);
+                return true;
+            }
+
             if (string.Equals(verb, "main-server-smoke", StringComparison.OrdinalIgnoreCase))
             {
                 if (!string.IsNullOrWhiteSpace(payload))
@@ -657,6 +705,18 @@ namespace MC2Demo.Presentation
                 return true;
             }
 
+            if (string.Equals(verb, "assert-battle-touch-controls", StringComparison.OrdinalIgnoreCase))
+            {
+                if (!string.IsNullOrWhiteSpace(payload))
+                {
+                    error = "Assert battle touch controls action does not accept arguments.";
+                    return false;
+                }
+
+                action = StartupCommanderScriptAction.AssertBattleTouchControls(lineNumber, rawLine);
+                return true;
+            }
+
             if (string.Equals(verb, "assert-encounter-pacing", StringComparison.OrdinalIgnoreCase))
             {
                 if (!string.IsNullOrWhiteSpace(payload))
@@ -705,7 +765,7 @@ namespace MC2Demo.Presentation
                 return true;
             }
 
-            error = "Command file action must be command, status-row, battle-click, battle-target, advance, report, restart, mech-bay-launch, hide-squad-preview, complete-visible-objectives, open-debrief, open-mech-lab, main-server-smoke, inventory-bootstrap-smoke, inventory-mechbay-preview-smoke, post-receipt-duplicate-smoke, saved-account-report, saved-account-save-load-preview, saved-account-export, saved-account-import-preview, saved-account-import-apply-preview, saved-account-import-apply, saved-account-load-default-preview, saved-account-save-current-default, saved-account-load-default-apply, prepare-depot-candidate, prepare-local-candidate, squad-swap, assert-restart-identity, assert-debrief-summary, assert-debrief-visible, assert-main-server-smoke, assert-inventory-bootstrap-smoke, assert-inventory-mechbay-preview-smoke, assert-post-receipt-refresh-smoke, assert-command-result, assert-combat-situation, assert-encounter-pacing, assert-objective-graph, assert-loadout-compact, or assert-ai-deputy-window.";
+            error = "Command file action must be command, status-row, battle-click, battle-target, advance, report, restart, mech-bay-launch, hide-squad-preview, complete-visible-objectives, open-debrief, open-mech-lab, open-map, close-map, open-system, close-system, main-server-smoke, inventory-bootstrap-smoke, inventory-mechbay-preview-smoke, post-receipt-duplicate-smoke, saved-account-report, saved-account-save-load-preview, saved-account-export, saved-account-import-preview, saved-account-import-apply-preview, saved-account-import-apply, saved-account-load-default-preview, saved-account-save-current-default, saved-account-load-default-apply, prepare-depot-candidate, prepare-local-candidate, squad-swap, assert-restart-identity, assert-debrief-summary, assert-debrief-visible, assert-main-server-smoke, assert-inventory-bootstrap-smoke, assert-inventory-mechbay-preview-smoke, assert-post-receipt-refresh-smoke, assert-command-result, assert-combat-situation, assert-battle-touch-controls, assert-encounter-pacing, assert-objective-graph, assert-loadout-compact, or assert-ai-deputy-window.";
             return false;
         }
     }
@@ -870,6 +930,46 @@ namespace MC2Demo.Presentation
             return new StartupCommanderScriptAction
             {
                 Kind = StartupCommanderScriptActionKind.OpenMechLab,
+                LineNumber = lineNumber,
+                SourceLine = sourceLine ?? string.Empty
+            };
+        }
+
+        public static StartupCommanderScriptAction OpenMissionMap(int lineNumber, string sourceLine)
+        {
+            return new StartupCommanderScriptAction
+            {
+                Kind = StartupCommanderScriptActionKind.OpenMissionMap,
+                LineNumber = lineNumber,
+                SourceLine = sourceLine ?? string.Empty
+            };
+        }
+
+        public static StartupCommanderScriptAction CloseMissionMap(int lineNumber, string sourceLine)
+        {
+            return new StartupCommanderScriptAction
+            {
+                Kind = StartupCommanderScriptActionKind.CloseMissionMap,
+                LineNumber = lineNumber,
+                SourceLine = sourceLine ?? string.Empty
+            };
+        }
+
+        public static StartupCommanderScriptAction OpenSystem(int lineNumber, string sourceLine)
+        {
+            return new StartupCommanderScriptAction
+            {
+                Kind = StartupCommanderScriptActionKind.OpenSystem,
+                LineNumber = lineNumber,
+                SourceLine = sourceLine ?? string.Empty
+            };
+        }
+
+        public static StartupCommanderScriptAction CloseSystem(int lineNumber, string sourceLine)
+        {
+            return new StartupCommanderScriptAction
+            {
+                Kind = StartupCommanderScriptActionKind.CloseSystem,
                 LineNumber = lineNumber,
                 SourceLine = sourceLine ?? string.Empty
             };
@@ -1155,6 +1255,16 @@ namespace MC2Demo.Presentation
             };
         }
 
+        public static StartupCommanderScriptAction AssertBattleTouchControls(int lineNumber, string sourceLine)
+        {
+            return new StartupCommanderScriptAction
+            {
+                Kind = StartupCommanderScriptActionKind.AssertBattleTouchControls,
+                LineNumber = lineNumber,
+                SourceLine = sourceLine ?? string.Empty
+            };
+        }
+
         public static StartupCommanderScriptAction AssertEncounterPacing(int lineNumber, string sourceLine)
         {
             return new StartupCommanderScriptAction
@@ -1211,6 +1321,10 @@ namespace MC2Demo.Presentation
         CompleteVisibleObjectives,
         OpenDebrief,
         OpenMechLab,
+        OpenMissionMap,
+        CloseMissionMap,
+        OpenSystem,
+        CloseSystem,
         MainServerSmoke,
         InventoryBootstrapSmoke,
         InventoryMechBayPreviewSmoke,
@@ -1236,6 +1350,7 @@ namespace MC2Demo.Presentation
         AssertPostReceiptRefreshSmoke,
         AssertCommandResult,
         AssertCombatSituation,
+        AssertBattleTouchControls,
         AssertEncounterPacing,
         AssertObjectiveGraph,
         AssertLoadoutCompact,

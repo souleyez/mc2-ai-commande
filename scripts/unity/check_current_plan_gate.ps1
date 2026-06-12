@@ -178,6 +178,7 @@ $inventoryMechBayPreviewEvidenceScript = Resolve-RepoPath -RelativePath "scripts
 $landscapePhoneMechLabSourceLineScript = Resolve-RepoPath -RelativePath "scripts\unity\capture_landscape_phone_mechlab_source_line_evidence.ps1"
 $landscapeMechLabTouchEvidenceScript = Resolve-RepoPath -RelativePath "scripts\unity\capture_landscape_mechlab_touch_evidence.ps1"
 $androidMechLabTouchEvidenceScript = Resolve-RepoPath -RelativePath "scripts\unity\capture_android_mechlab_touch_evidence.ps1"
+$androidBattleCommandTouchEvidenceScript = Resolve-RepoPath -RelativePath "scripts\unity\capture_android_battle_command_touch_evidence.ps1"
 $serverBackedReceiptSlicePlanScript = Resolve-RepoPath -RelativePath "scripts\unity\check_server_backed_receipt_slice_plan.ps1"
 $serverBackedReceiptEvidenceScript = Resolve-RepoPath -RelativePath "scripts\unity\capture_server_backed_receipt_evidence.ps1"
 $postReceiptInventoryRefreshBoundaryScript = Resolve-RepoPath -RelativePath "scripts\unity\check_post_receipt_inventory_refresh_boundary.ps1"
@@ -470,6 +471,12 @@ Invoke-GateStep `
     -ScriptPath $androidMechLabTouchEvidenceScript `
     -Arguments @("-RepoRoot", $RepoRoot, "-PlanOnly") `
     -RequiredMarkers @("Android MechLab touch evidence capture plan OK.")
+
+Invoke-GateStep `
+    -Name "Android battle command touch evidence plan gate" `
+    -ScriptPath $androidBattleCommandTouchEvidenceScript `
+    -Arguments @("-RepoRoot", $RepoRoot, "-PlanOnly") `
+    -RequiredMarkers @("Android battle command touch evidence capture plan OK.")
 
 Invoke-GateStep `
     -Name "Server-backed receipt slice plan gate" `

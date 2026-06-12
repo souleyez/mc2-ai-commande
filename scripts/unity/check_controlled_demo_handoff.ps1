@@ -143,6 +143,7 @@ Assert-ScriptExists -RelativePath "scripts\unity\check_optional_inventory_mechba
 Assert-ScriptExists -RelativePath "scripts\unity\capture_inventory_mechbay_preview_evidence.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\capture_landscape_phone_mechlab_source_line_evidence.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\capture_landscape_mechlab_touch_evidence.ps1"
+Assert-ScriptExists -RelativePath "scripts\unity\capture_android_battle_command_touch_evidence.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_server_backed_receipt_slice_plan.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\capture_server_backed_receipt_evidence.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_post_receipt_inventory_refresh_boundary.ps1"
@@ -297,6 +298,9 @@ Assert-FileContains -RelativePath "README.md" -Markers @(
     "capture_android_mechlab_touch_evidence.ps1",
     "Android MechLab touch evidence capture OK",
     "F25 capture Android battle command touch evidence",
+    "capture_android_battle_command_touch_evidence.ps1",
+    "Android battle command touch evidence capture OK",
+    "F26 reduce Android combat effect log noise",
     "Add Android WPD-only device diagnosis",
     "Add Android ADB setup guidance",
     "Add Android ADB driver package probe",
@@ -470,6 +474,9 @@ Assert-FileContains -RelativePath "BUILD-WIN.md" -Markers @(
     "capture_android_mechlab_touch_evidence.ps1",
     "Android MechLab touch evidence capture OK",
     "F25 capture Android battle command touch evidence",
+    "capture_android_battle_command_touch_evidence.ps1",
+    "Android battle command touch evidence capture OK",
+    "F26 reduce Android combat effect log noise",
     "Controlled demo readiness preflight OK"
 )
 
@@ -583,6 +590,9 @@ Assert-FileContains -RelativePath "BUILD-MOBILE.md" -Markers @(
     "capture_android_mechlab_touch_evidence.ps1",
     "Android MechLab touch evidence capture OK",
     "F25 capture Android battle command touch evidence",
+    "capture_android_battle_command_touch_evidence.ps1",
+    "Android battle command touch evidence capture OK",
+    "F26 reduce Android combat effect log noise",
     "first phone version is landscape-only",
     "check_android_smoke_plan_consistency.ps1",
     "Android smoke plan/preflight consistency check OK",
@@ -1133,6 +1143,9 @@ Assert-FileContains -RelativePath "docs-machine-handoff-plan-2026-06-07.md" -Mar
     "capture_android_mechlab_touch_evidence.ps1",
     "Android MechLab touch evidence capture OK",
     "F25 capture Android battle command touch evidence",
+    "capture_android_battle_command_touch_evidence.ps1",
+    "Android battle command touch evidence capture OK",
+    "F26 reduce Android combat effect log noise",
     "first phone version is landscape-only",
     "android-device-smoke.png",
     "ScreenshotCapture: True",

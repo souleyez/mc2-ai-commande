@@ -1151,7 +1151,8 @@ namespace MC2Demo.Presentation
             List<string> extraArgs = SplitStartupArgumentString(unityExtra);
 
             string commandFileExtra = AndroidIntentStringExtra("mc2CommandFile");
-            if (!string.IsNullOrWhiteSpace(commandFileExtra))
+            if (!string.IsNullOrWhiteSpace(commandFileExtra)
+                && !HasCommandLineArg(extraArgs.ToArray(), "-mc2CommandFile"))
             {
                 extraArgs.Add("-mc2CommandFile");
                 extraArgs.Add(commandFileExtra.Trim());
@@ -1572,6 +1573,18 @@ namespace MC2Demo.Presentation
                     case StartupCommanderScriptActionKind.OpenMechLab:
                         RunStartupOpenMechLab();
                         break;
+                    case StartupCommanderScriptActionKind.OpenMissionMap:
+                        RunStartupOpenMissionMap();
+                        break;
+                    case StartupCommanderScriptActionKind.CloseMissionMap:
+                        RunStartupCloseMissionMap();
+                        break;
+                    case StartupCommanderScriptActionKind.OpenSystem:
+                        RunStartupOpenSystemPanel();
+                        break;
+                    case StartupCommanderScriptActionKind.CloseSystem:
+                        RunStartupCloseSystemPanel();
+                        break;
                     case StartupCommanderScriptActionKind.MainServerSmoke:
                         RunStartupMainServerSmoke();
                         break;
@@ -1653,6 +1666,9 @@ namespace MC2Demo.Presentation
                             action.ExpectedSelection,
                             action.ExpectedRowUnitId,
                             action.ExpectedRowState);
+                        break;
+                    case StartupCommanderScriptActionKind.AssertBattleTouchControls:
+                        RunStartupBattleTouchControlsAssertion();
                         break;
                     case StartupCommanderScriptActionKind.AssertEncounterPacing:
                         RunStartupEncounterPacingAssertion();
@@ -3231,6 +3247,119 @@ namespace MC2Demo.Presentation
             Debug.LogError("MC2 Mech Lab open failed: " + summary);
         }
 
+        private void RunStartupOpenMissionMap()
+        {
+            if (mission == null)
+            {
+                startupSmokeFailed = true;
+                statusText = "Mission map open failed";
+                AddCombatLogLine("CLI mission map open failed: no mission");
+                Debug.LogError("MC2 commander mission map open failed: no mission");
+                return;
+            }
+
+            showMissionMap = true;
+            showLoadoutPanel = false;
+            showWarehouseDraftFitPreview = false;
+            showSquadSelectionPreview = false;
+            warehouseDraftFitPreviewMechId = null;
+            ClearSquadSelectionDraft();
+            ClearSquadSelectionCompletedReplacement();
+            showSystemPanel = false;
+            showMissionListPanel = false;
+            if (mission.Result == MissionResultState.InProgress)
+            {
+                SetPaused(false);
+            }
+
+            statusText = "Mission map open";
+            SetDemoFlowScreen(DemoFlowScreen.Battle);
+            string summary = "mapOpen=" + showMissionMap
+                + " flow=" + DemoFlowScreenName(demoFlowScreen)
+                + " paused=" + isPaused
+                + " touch=" + BuildCaptureMobileTouchSummary();
+            AddCombatLogLine("CLI mission map open OK: " + summary);
+            Debug.Log("MC2 commander mission map open OK: " + summary);
+        }
+
+        private void RunStartupCloseMissionMap()
+        {
+            if (mission == null)
+            {
+                startupSmokeFailed = true;
+                statusText = "Mission map close failed";
+                AddCombatLogLine("CLI mission map close failed: no mission");
+                Debug.LogError("MC2 commander mission map close failed: no mission");
+                return;
+            }
+
+            showMissionMap = false;
+            if (mission.Result == MissionResultState.InProgress)
+            {
+                SetPaused(false);
+            }
+
+            statusText = "Mission map closed";
+            SetDemoFlowScreen(DemoFlowScreen.Battle);
+            string summary = "mapOpen=" + showMissionMap
+                + " flow=" + DemoFlowScreenName(demoFlowScreen)
+                + " paused=" + isPaused
+                + " hud=" + BuildCaptureBattleHudSummary();
+            AddCombatLogLine("CLI mission map close OK: " + summary);
+            Debug.Log("MC2 commander mission map closed OK: " + summary);
+        }
+
+        private void RunStartupOpenSystemPanel()
+        {
+            if (mission == null)
+            {
+                startupSmokeFailed = true;
+                statusText = "System open failed";
+                AddCombatLogLine("CLI system open failed: no mission");
+                Debug.LogError("MC2 commander system open failed: no mission");
+                return;
+            }
+
+            OpenSystemPanel();
+            string summary = "systemOpen=" + showSystemPanel
+                + " flow=" + DemoFlowScreenName(demoFlowScreen)
+                + " paused=" + isPaused
+                + " touch=" + BuildCaptureMobileTouchSummary();
+            AddCombatLogLine("CLI system open OK: " + summary);
+            Debug.Log("MC2 commander system open OK: " + summary);
+        }
+
+        private void RunStartupCloseSystemPanel()
+        {
+            if (mission == null)
+            {
+                startupSmokeFailed = true;
+                statusText = "System close failed";
+                AddCombatLogLine("CLI system close failed: no mission");
+                Debug.LogError("MC2 commander system close failed: no mission");
+                return;
+            }
+
+            showSystemPanel = false;
+            if (mission.Result == MissionResultState.InProgress)
+            {
+                SetPaused(false);
+                SetDemoFlowScreen(DemoFlowScreen.Battle);
+            }
+            else
+            {
+                SetDemoFlowScreen(DemoFlowScreen.Debrief);
+            }
+
+            statusText = "System closed";
+            string summary = "systemOpen=" + showSystemPanel
+                + " flow=" + DemoFlowScreenName(demoFlowScreen)
+                + " paused=" + isPaused
+                + " hud=" + BuildCaptureBattleHudSummary();
+            AddCombatLogLine("CLI system close OK: " + summary);
+            Debug.Log("MC2 commander system closed OK: " + summary);
+        }
+
         private void RunStartupDebriefSummaryAssertion()
         {
             DebriefSummaryAssertionResult result = BuildDebriefSummaryAssertion();
@@ -3964,6 +4093,49 @@ namespace MC2Demo.Presentation
             statusText = "Combat situation assertion failed";
             AddCombatLogLine("CLI combat situation assert failed: " + result.Summary);
             Debug.LogError("MC2 combat situation assertion failed: " + result.Summary);
+        }
+
+        private void RunStartupBattleTouchControlsAssertion()
+        {
+            string mobileTouch = BuildCaptureMobileTouchSummary();
+            string battleHud = BuildCaptureBattleHudSummary();
+            string sparseHud = BuildSparseBattleUiRegressionSummary();
+            bool accepted = mission != null
+                && mission.Result == MissionResultState.InProgress
+                && demoFlowScreen == DemoFlowScreen.Battle
+                && IsLandscapeScreen(Screen.width, Screen.height)
+                && mobileTouch.IndexOf("MobileTouchUi=ready", StringComparison.Ordinal) >= 0
+                && mobileTouch.IndexOf("orientation=landscape", StringComparison.Ordinal) >= 0
+                && mobileTouch.IndexOf("status=ready", StringComparison.Ordinal) >= 0
+                && mobileTouch.IndexOf("landscapeOnly=yes", StringComparison.Ordinal) >= 0
+                && mobileTouch.IndexOf("noDragBox=yes", StringComparison.Ordinal) >= 0
+                && mobileTouch.IndexOf("combatLog=hidden", StringComparison.Ordinal) >= 0
+                && battleHud.IndexOf("BattleHud=active controls=statusRows+jet+map+bay+system", StringComparison.Ordinal) >= 0
+                && SparseBattleUiRegressionSummaryOk(sparseHud);
+            string summary = "screen="
+                + Screen.width.ToString(CultureInfo.InvariantCulture)
+                + "x"
+                + Screen.height.ToString(CultureInfo.InvariantCulture)
+                + " flow="
+                + DemoFlowScreenName(demoFlowScreen)
+                + " mission="
+                + (mission == null ? "none" : mission.Result.ToString())
+                + " "
+                + mobileTouch
+                + " "
+                + battleHud;
+
+            if (accepted)
+            {
+                AddCombatLogLine("CLI battle touch controls assert OK: " + summary);
+                Debug.Log("MC2 battle touch controls assertion OK: " + summary);
+                return;
+            }
+
+            startupSmokeFailed = true;
+            statusText = "Battle touch controls assertion failed";
+            AddCombatLogLine("CLI battle touch controls assert failed: " + summary);
+            Debug.LogError("MC2 battle touch controls assertion failed: " + summary);
         }
 
         private void RunStartupEncounterPacingAssertion()
