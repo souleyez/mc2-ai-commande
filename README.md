@@ -330,9 +330,10 @@ landscape `G4 Touch UI pass`, `G5 Mobile performance budget`,
 `F9 wire optional Unity main-server adapter into launch/debrief smoke` are
 recorded, that `F10 wire optional Unity inventory bootstrap smoke` is recorded,
 that `F11 plan inventory-to-MechBay binding boundary` is recorded, and that
-`F12 implement opt-in inventory-to-MechBay preview binding` and
-`F13 capture opt-in MechBay preview evidence` are recorded. The formal next
-task is `F14 capture landscape-phone MechLab source-line evidence`.
+`F12 implement opt-in inventory-to-MechBay preview binding`,
+`F13 capture opt-in MechBay preview evidence`, and
+`F14 capture landscape-phone MechLab source-line evidence` are recorded. The
+formal next task is `F15 plan server-backed receipt slice`.
 
 Check the mobile landscape contract:
 
@@ -790,4 +791,4 @@ Windows 构建细节见 `BUILD-WIN.md`。当前重点开发目标是 Unity 6 Win
 
 ## F12 Preview Binding Checkpoint
 
-`F12 implement opt-in inventory-to-MechBay preview binding` is complete. `F13 capture opt-in MechBay preview evidence` is complete. The opt-in gate is `scripts/unity/check_optional_inventory_mechbay_preview_binding.ps1`, with expected success string `Optional inventory-to-MechBay preview binding check OK`; the evidence gate is `scripts/unity/capture_inventory_mechbay_preview_evidence.ps1`, with expected success string `Inventory MechBay preview evidence capture OK`. Formal next task: `F14 capture landscape-phone MechLab source-line evidence`. Mobile phones remain first-version landscape-only; portrait is not a first-slice support target.
+`F12 implement opt-in inventory-to-MechBay preview binding` is complete. `F13 capture opt-in MechBay preview evidence` is complete. `F14 capture landscape-phone MechLab source-line evidence` is complete. The opt-in gate is `scripts/unity/check_optional_inventory_mechbay_preview_binding.ps1`, with expected success string `Optional inventory-to-MechBay preview binding check OK`; the preview evidence gate is `scripts/unity/capture_inventory_mechbay_preview_evidence.ps1`, with expected success string `Inventory MechBay preview evidence capture OK`; the landscape-phone evidence gate is `scripts/unity/capture_landscape_phone_mechlab_source_line_evidence.ps1`, with expected success string `Landscape-phone MechLab source-line evidence capture OK`. Formal next task: `F15 plan server-backed receipt slice`. Mobile phones remain first-version landscape-only; portrait is not a first-slice support target.
