@@ -115,7 +115,8 @@ $requiredPlanMarkers = @(
     "F24 capture Android MechLab touch evidence",
     "F25 capture Android battle command touch evidence",
     "F26 reduce Android combat effect log noise",
-    "F27 audit Android entity placeholder collision path"
+    "F27 audit Android entity placeholder collision path",
+    "F28 capture Android entity placeholder collision runtime evidence"
 )
 
 $docsToCheck = @(
@@ -170,7 +171,8 @@ Assert-Contains -Text $mobilePlan -Needle "F23 capture landscape MechLab touch e
 Assert-Contains -Text $mobilePlan -Needle "F24 capture Android MechLab touch evidence" -Label "mobile completed platform task"
 Assert-Contains -Text $mobilePlan -Needle "F25 capture Android battle command touch evidence" -Label "mobile completed platform task"
 Assert-Contains -Text $mobilePlan -Needle "F26 reduce Android combat effect log noise" -Label "mobile completed platform task"
-Assert-Contains -Text $mobilePlan -Needle "F27 audit Android entity placeholder collision path" -Label "mobile next task"
+Assert-Contains -Text $mobilePlan -Needle "F27 audit Android entity placeholder collision path" -Label "mobile completed platform task"
+Assert-Contains -Text $mobilePlan -Needle "F28 capture Android entity placeholder collision runtime evidence" -Label "mobile next task"
 Assert-Contains -Text $mobilePlan -Needle "first phone version is landscape-only" -Label "mobile orientation decision"
 
 $detailedPlan = Read-RequiredText -RelativePath "docs-ai-rts-commander-current-detailed-plan-2026-06-07.md"
@@ -199,11 +201,12 @@ Assert-Contains -Text $detailedPlan -Needle '| F23 | Done | `Capture landscape M
 Assert-Contains -Text $detailedPlan -Needle '| F24 | Done | `Capture Android MechLab touch evidence` |' -Label "detailed queue F24"
 Assert-Contains -Text $detailedPlan -Needle '| F25 | Done | `Capture Android battle command touch evidence` |' -Label "detailed queue F25"
 Assert-Contains -Text $detailedPlan -Needle '| F26 | Done | `Reduce Android combat effect log noise` |' -Label "detailed queue F26"
-Assert-Contains -Text $detailedPlan -Needle '| F27 | Next | `Audit Android entity placeholder collision path` |' -Label "detailed queue F27"
+Assert-Contains -Text $detailedPlan -Needle '| F27 | Done | `Audit Android entity placeholder collision path` |' -Label "detailed queue F27"
+Assert-Contains -Text $detailedPlan -Needle '| F28 | Next | `Capture Android entity placeholder collision runtime evidence` |' -Label "detailed queue F28"
 
 $handoff = Read-RequiredText -RelativePath "docs-machine-handoff-plan-2026-06-07.md"
-Assert-Contains -Text $handoff -Needle 'Current formal next development task after handoff: `F27 audit Android entity placeholder collision path`' -Label "handoff next task"
-Assert-Contains -Text $handoff -Needle 'Next planned work: `F27 audit Android entity placeholder collision path`' -Label "handoff next planned work"
+Assert-Contains -Text $handoff -Needle 'Current formal next development task after handoff: `F28 capture Android entity placeholder collision runtime evidence`' -Label "handoff next task"
+Assert-Contains -Text $handoff -Needle 'Next planned work: `F28 capture Android entity placeholder collision runtime evidence`' -Label "handoff next planned work"
 
 $currentGate = Read-RequiredText -RelativePath "scripts\unity\check_current_plan_gate.ps1"
 Assert-Contains -Text $currentGate -Needle 'CommandFileSmoke: True' -Label "current gate script marker"
@@ -235,6 +238,7 @@ Assert-Contains -Text $currentGate -Needle 'Landscape MechLab touch evidence cap
 Assert-Contains -Text $currentGate -Needle 'Android MechLab touch evidence capture plan OK.' -Label "current gate Android MechLab touch evidence marker"
 Assert-Contains -Text $currentGate -Needle 'Android battle command touch evidence capture plan OK.' -Label "current gate Android battle command touch evidence marker"
 Assert-Contains -Text $currentGate -Needle 'Android combat effect log noise check OK.' -Label "current gate Android combat effect log noise marker"
+Assert-Contains -Text $currentGate -Needle 'Android entity placeholder collision path check OK.' -Label "current gate Android entity placeholder collision path marker"
 Assert-Contains -Text $currentGate -Needle 'Server-backed receipt slice plan check OK.' -Label "current gate server-backed receipt slice marker"
 Assert-Contains -Text $currentGate -Needle 'Server-backed receipt evidence capture OK.' -Label "current gate server-backed receipt evidence marker"
 Assert-Contains -Text $currentGate -Needle 'Post-receipt inventory refresh boundary check OK.' -Label "current gate post-receipt inventory refresh marker"
@@ -271,7 +275,10 @@ Assert-Contains -Text $handoffScript -Needle 'capture_android_battle_command_tou
 Assert-Contains -Text $handoffScript -Needle 'Android battle command touch evidence capture OK' -Label "handoff script Android battle command touch evidence marker"
 Assert-Contains -Text $handoffScript -Needle 'check_android_combat_effect_log_noise.ps1' -Label "handoff script Android combat effect log noise script marker"
 Assert-Contains -Text $handoffScript -Needle 'Android combat effect log noise check OK' -Label "handoff script Android combat effect log noise marker"
-Assert-Contains -Text $handoffScript -Needle 'F27 audit Android entity placeholder collision path' -Label "handoff script F27 next task marker"
+Assert-Contains -Text $handoffScript -Needle 'check_android_entity_placeholder_collision_path.ps1' -Label "handoff script Android entity placeholder collision path script marker"
+Assert-Contains -Text $handoffScript -Needle 'Android entity placeholder collision path check OK' -Label "handoff script Android entity placeholder collision path marker"
+Assert-Contains -Text $handoffScript -Needle 'F27 audit Android entity placeholder collision path' -Label "handoff script F27 completed task marker"
+Assert-Contains -Text $handoffScript -Needle 'F28 capture Android entity placeholder collision runtime evidence' -Label "handoff script F28 next task marker"
 Assert-Contains -Text $handoffScript -Needle 'Server-backed receipt slice plan check OK' -Label "handoff script server-backed receipt slice marker"
 Assert-Contains -Text $handoffScript -Needle 'Server-backed receipt evidence capture OK' -Label "handoff script server-backed receipt evidence marker"
 Assert-Contains -Text $handoffScript -Needle 'Post-receipt inventory refresh boundary check OK' -Label "handoff script post-receipt inventory refresh marker"
