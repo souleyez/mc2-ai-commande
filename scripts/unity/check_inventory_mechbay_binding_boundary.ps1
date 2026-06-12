@@ -282,13 +282,13 @@ Require-Text -Text $handoffScript -Needle "check_inventory_mechbay_binding_bound
 Require-Text -Text $handoffScript -Needle "Inventory-to-MechBay binding boundary check OK" -Label "handoff script marker"
 
 Require-Text -Text $masterPlan -Needle '| 89 | Done | `Plan inventory-to-MechBay binding boundary` |' -Label "master F11 done"
-Require-Text -Text $masterPlan -Needle '| 90 | Next | `Implement opt-in inventory-to-MechBay preview binding` |' -Label "master F12 next"
+Require-Text -Text $masterPlan -Needle '| 90 | Done | `Implement opt-in inventory-to-MechBay preview binding` |' -Label "master F12 next"
 Require-Text -Text $detailedPlan -Needle '| F11 | Done | `Plan inventory-to-MechBay binding boundary` |' -Label "detailed F11 done"
-Require-Text -Text $detailedPlan -Needle '| F12 | Next | `Implement opt-in inventory-to-MechBay preview binding` |' -Label "detailed F12 next"
+Require-Text -Text $detailedPlan -Needle '| F12 | Done | `Implement opt-in inventory-to-MechBay preview binding` |' -Label "detailed F12 next"
 Require-Text -Text $mobilePlan -Needle "F11 plan inventory-to-MechBay binding boundary" -Label "mobile completed task"
 Require-Text -Text $mobilePlan -Needle "F12 implement opt-in inventory-to-MechBay preview binding" -Label "mobile next task"
-Require-Text -Text $handoff -Needle 'Current formal next development task after handoff: `F12 implement opt-in inventory-to-MechBay preview binding`' -Label "handoff next task"
-Require-Text -Text $handoff -Needle 'Next planned work: `F12 implement opt-in inventory-to-MechBay preview binding`' -Label "handoff next planned work"
+Require-Text -Text $handoff -Needle 'Current formal next development task after handoff: `F13 capture opt-in MechBay preview evidence`' -Label "handoff next task"
+Require-Text -Text $handoff -Needle 'Next planned work: `F13 capture opt-in MechBay preview evidence`' -Label "handoff next planned work"
 
 foreach ($textAndLabel in @(
     @{ Text = $readme; Label = "README" },

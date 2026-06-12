@@ -852,3 +852,7 @@ Copy all required dlls to your exe folder of preference
 Run the game!
 
 .. and, hopefully, enjoy
+
+## F12 Preview Binding Checkpoint
+
+`F12 implement opt-in inventory-to-MechBay preview binding` is complete. The opt-in gate is `scripts/unity/check_optional_inventory_mechbay_preview_binding.ps1`, with expected success string `Optional inventory-to-MechBay preview binding check OK`. Formal next task: `F13 capture opt-in MechBay preview evidence`. Mobile phones remain first-version landscape-only; portrait is not a first-slice support target.

@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -89,6 +91,8 @@ namespace MC2Demo.BattleCore
     public sealed class UnityInventorySnapshot
     {
         public string schema;
+        public string accountId;
+        public string snapshotId;
         public int tokenBalance;
         public UnityOwnedMechRecord[] ownedMechs;
         public UnityItemStackRecord[] itemStacks;
@@ -98,11 +102,16 @@ namespace MC2Demo.BattleCore
     public sealed class UnityOwnedMechRecord
     {
         public string ownedMechId;
+        public string unitId;
+        public string unitType;
+        public string chassisId;
+        public string displayName;
         public string activeLoadoutId;
         public bool availableForMission;
         public int conditionPercent;
         public string pilotId;
         public string pilotDisplayName;
+        public string pilotType;
     }
 
     [Serializable]
@@ -112,6 +121,7 @@ namespace MC2Demo.BattleCore
         public string displayName;
         public string category;
         public int quantity;
+        public int equippedQuantity;
     }
 
     [Serializable]
@@ -383,6 +393,260 @@ namespace MC2Demo.BattleCore
         public string schema;
         public UnityAccountRecord account;
         public UnityInventorySnapshot inventory;
+    }
+
+    public sealed class MechBayInventoryProjectionResult
+    {
+        public bool Accepted { get; internal set; }
+        public MechBayInventoryContract Inventory { get; internal set; }
+        public MechBayInventoryValidationResult Validation { get; internal set; }
+        public string FallbackReason { get; internal set; }
+        public string Message { get; internal set; }
+        public string SourceLabel { get; internal set; }
+        public string AccountId { get; internal set; }
+        public int TokenBalance { get; internal set; }
+        public int ServerOwnedMechCount { get; internal set; }
+        public int ServerItemStackCount { get; internal set; }
+        public int ProjectedItemStackCount { get; internal set; }
+        public int SkippedCurrencyStackCount { get; internal set; }
+
+        public string Summary => "accepted="
+            + Accepted
+            + " accountId="
+            + (AccountId ?? "")
+            + " tokenBalance="
+            + TokenBalance.ToString(CultureInfo.InvariantCulture)
+            + " ownedMechs="
+            + ServerOwnedMechCount.ToString(CultureInfo.InvariantCulture)
+            + " serverItemStacks="
+            + ServerItemStackCount.ToString(CultureInfo.InvariantCulture)
+            + " projectedItemStacks="
+            + ProjectedItemStackCount.ToString(CultureInfo.InvariantCulture)
+            + " skippedCurrencyStacks="
+            + SkippedCurrencyStackCount.ToString(CultureInfo.InvariantCulture)
+            + " reason="
+            + (FallbackReason ?? "");
+    }
+
+    public static class UnityInventoryToMechBayProjector
+    {
+        public const string FallbackInvalidInventorySnapshot = "FallbackInvalidInventorySnapshot";
+        public const string FallbackUnknownChassisOrLoadout = "FallbackUnknownChassisOrLoadout";
+        public const string FallbackUnknownItemCategory = "FallbackUnknownItemCategory";
+        public const string FallbackPilotIncomplete = "FallbackPilotIncomplete";
+        public const string FallbackServerPreviewRejected = "FallbackServerPreviewRejected";
+        public const string SourceLabel = "MainServerPreview";
+
+        private const string ServerCategoryWeapon = "weapon";
+        private const string ServerCategoryArmor = "armor";
+        private const string ServerCategoryArmorPlate = "armor-plate";
+        private const string ServerCategoryHeatSink = "heat-sink";
+        private const string ServerCategoryMechFragment = "mech-fragment";
+        private const string ServerCategoryCurrency = "currency";
+
+        public static MechBayInventoryProjectionResult Project(UnityInventoryBootstrap bootstrap)
+        {
+            UnityInventorySnapshot inventory = bootstrap?.inventory;
+            MechBayInventoryProjectionResult result = new()
+            {
+                SourceLabel = SourceLabel,
+                AccountId = bootstrap?.account?.accountId ?? inventory?.accountId ?? "",
+                TokenBalance = inventory?.tokenBalance ?? 0,
+                ServerOwnedMechCount = inventory?.ownedMechs?.Length ?? 0,
+                ServerItemStackCount = inventory?.itemStacks?.Length ?? 0
+            };
+
+            if (bootstrap == null || bootstrap.fallback != null)
+            {
+                return Reject(
+                    result,
+                    FallbackServerPreviewRejected,
+                    bootstrap?.fallback?.message ?? "Unity inventory bootstrap was unavailable.");
+            }
+
+            if (bootstrap.account == null
+                || inventory == null
+                || string.IsNullOrWhiteSpace(bootstrap.account.accountId)
+                || inventory.tokenBalance < 0
+                || inventory.ownedMechs == null
+                || inventory.ownedMechs.Length == 0
+                || inventory.itemStacks == null
+                || inventory.itemStacks.Length == 0)
+            {
+                return Reject(result, FallbackInvalidInventorySnapshot, "Unity inventory snapshot is incomplete.");
+            }
+
+            if (!string.IsNullOrWhiteSpace(inventory.accountId)
+                && !string.Equals(inventory.accountId, bootstrap.account.accountId, StringComparison.Ordinal))
+            {
+                return Reject(result, FallbackInvalidInventorySnapshot, "Unity inventory account does not match the bootstrap account.");
+            }
+
+            List<MechBayOwnedMechDefinition> ownedMechs = new();
+            for (int index = 0; index < inventory.ownedMechs.Length; index++)
+            {
+                UnityOwnedMechRecord mech = inventory.ownedMechs[index];
+                if (mech == null
+                    || string.IsNullOrWhiteSpace(mech.ownedMechId)
+                    || string.IsNullOrWhiteSpace(mech.unitId)
+                    || string.IsNullOrWhiteSpace(mech.unitType)
+                    || string.IsNullOrWhiteSpace(mech.chassisId)
+                    || string.IsNullOrWhiteSpace(mech.displayName)
+                    || mech.conditionPercent < 0
+                    || mech.conditionPercent > 100)
+                {
+                    return Reject(result, FallbackInvalidInventorySnapshot, "Unity owned mech is incomplete at index " + index + ".");
+                }
+
+                if (!IsCompatibleSourceLoadout(mech))
+                {
+                    return Reject(result, FallbackUnknownChassisOrLoadout, "Unity owned mech loadout is not a local source loadout: " + mech.activeLoadoutId);
+                }
+
+                if (string.IsNullOrWhiteSpace(mech.pilotId)
+                    || string.IsNullOrWhiteSpace(mech.pilotDisplayName)
+                    || string.IsNullOrWhiteSpace(mech.pilotType))
+                {
+                    return Reject(result, FallbackPilotIncomplete, "Unity owned mech pilot assignment is incomplete: " + mech.ownedMechId);
+                }
+
+                ownedMechs.Add(new MechBayOwnedMechDefinition
+                {
+                    ownedMechId = mech.ownedMechId,
+                    unitId = mech.unitId,
+                    unitType = mech.unitType,
+                    chassisId = mech.chassisId,
+                    displayName = mech.displayName,
+                    activeLoadoutId = mech.activeLoadoutId,
+                    availableForMission = mech.availableForMission,
+                    conditionPercent = mech.conditionPercent,
+                    pilotId = mech.pilotId,
+                    pilotDisplayName = mech.pilotDisplayName,
+                    pilotType = mech.pilotType
+                });
+            }
+
+            List<MechBayItemStackDefinition> itemStacks = new();
+            for (int index = 0; index < inventory.itemStacks.Length; index++)
+            {
+                UnityItemStackRecord stack = inventory.itemStacks[index];
+                if (stack == null
+                    || string.IsNullOrWhiteSpace(stack.itemId)
+                    || string.IsNullOrWhiteSpace(stack.displayName)
+                    || stack.quantity < 0
+                    || stack.equippedQuantity < 0
+                    || stack.equippedQuantity > stack.quantity)
+                {
+                    return Reject(result, FallbackInvalidInventorySnapshot, "Unity item stack is incomplete at index " + index + ".");
+                }
+
+                if (IsServerCategory(stack.category, ServerCategoryCurrency))
+                {
+                    result.SkippedCurrencyStackCount++;
+                    continue;
+                }
+
+                if (!TryMapCategory(stack.category, out string mechBayCategory))
+                {
+                    return Reject(result, FallbackUnknownItemCategory, "Unity item stack has unsupported category: " + stack.category);
+                }
+
+                itemStacks.Add(new MechBayItemStackDefinition
+                {
+                    itemId = stack.itemId,
+                    displayName = stack.displayName,
+                    category = mechBayCategory,
+                    quantity = stack.quantity,
+                    equippedQuantity = stack.equippedQuantity
+                });
+            }
+
+            MechBayInventoryContract projected = new()
+            {
+                schema = MechBayInventoryValidator.Schema,
+                tokenBalance = inventory.tokenBalance,
+                ownedMechs = ownedMechs.ToArray(),
+                itemStacks = itemStacks.ToArray()
+            };
+
+            result.Inventory = projected;
+            result.ProjectedItemStackCount = itemStacks.Count;
+            result.Validation = MechBayInventoryValidator.Validate(projected);
+            if (!result.Validation.IsValid)
+            {
+                return Reject(result, FallbackServerPreviewRejected, FirstValidationError(result.Validation));
+            }
+
+            result.Accepted = true;
+            result.Message = "Unity inventory projected into MechBay inventory.";
+            return result;
+        }
+
+        private static bool IsCompatibleSourceLoadout(UnityOwnedMechRecord mech)
+        {
+            if (string.IsNullOrWhiteSpace(mech.activeLoadoutId))
+            {
+                return false;
+            }
+
+            string unitTypeSource = mech.unitType + "-source";
+            string chassisSource = mech.chassisId + "-source";
+            return string.Equals(mech.activeLoadoutId, unitTypeSource, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(mech.activeLoadoutId, chassisSource, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static bool TryMapCategory(string serverCategory, out string mechBayCategory)
+        {
+            if (IsServerCategory(serverCategory, ServerCategoryWeapon))
+            {
+                mechBayCategory = LoadoutItemCategory.Weapon;
+                return true;
+            }
+
+            if (IsServerCategory(serverCategory, ServerCategoryArmor)
+                || IsServerCategory(serverCategory, ServerCategoryArmorPlate))
+            {
+                mechBayCategory = LoadoutItemCategory.ArmorPlate;
+                return true;
+            }
+
+            if (IsServerCategory(serverCategory, ServerCategoryHeatSink))
+            {
+                mechBayCategory = LoadoutItemCategory.HeatSink;
+                return true;
+            }
+
+            if (IsServerCategory(serverCategory, ServerCategoryMechFragment))
+            {
+                mechBayCategory = LoadoutItemCategory.MechFragment;
+                return true;
+            }
+
+            mechBayCategory = "";
+            return false;
+        }
+
+        private static bool IsServerCategory(string actual, string expected)
+        {
+            return string.Equals(actual, expected, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static MechBayInventoryProjectionResult Reject(
+            MechBayInventoryProjectionResult result,
+            string reason,
+            string message)
+        {
+            result.Accepted = false;
+            result.FallbackReason = reason;
+            result.Message = string.IsNullOrWhiteSpace(message) ? reason : message;
+            return result;
+        }
+
+        private static string FirstValidationError(MechBayInventoryValidationResult validation)
+        {
+            string[] errors = validation?.Errors ?? Array.Empty<string>();
+            return errors.Length == 0 ? "Projected MechBay inventory was rejected." : errors[0];
+        }
     }
 
     public sealed class UnityMainServerClient

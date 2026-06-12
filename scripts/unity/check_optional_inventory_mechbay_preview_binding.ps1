@@ -123,13 +123,30 @@ function Wait-MainServerReady {
     return $false
 }
 
+function Reset-MainServer {
+    param([int]$Port)
+
+    try {
+        $response = Invoke-WebRequest -UseBasicParsing -TimeoutSec 4 -Method POST -Uri "http://127.0.0.1:$Port/dev/reset"
+        if ($response.StatusCode -eq 200 -and $response.Content -like '*AdminDevResetResponse*') {
+            Add-Row -Check "local main-server reset" -Detail "POST /dev/reset"
+            return
+        }
+
+        Add-Failure "local main-server reset returned unexpected response: $($response.StatusCode)"
+    }
+    catch {
+        Add-Failure "local main-server reset failed: $($_.Exception.Message)"
+    }
+}
+
 function Invoke-UnityCommandFileSmoke {
     param(
         [string]$Name,
         [string]$CommandFile,
         [string]$LogPath,
         [string[]]$RequiredMarkers,
-        [string[]]$AnyMarkers = @()
+        [string[]]$ForbiddenMarkers = @()
     )
 
     if (-not (Test-Path -LiteralPath $ExePath -PathType Leaf)) {
@@ -191,17 +208,9 @@ function Invoke-UnityCommandFileSmoke {
         }
     }
 
-    if ($AnyMarkers.Count -gt 0) {
-        $matched = $false
-        foreach ($marker in $AnyMarkers) {
-            if ($logText -like "*$marker*") {
-                $matched = $true
-                break
-            }
-        }
-
-        if (-not $matched) {
-            Add-Failure "$Name log missing one of: $($AnyMarkers -join ' | ')"
+    foreach ($marker in $ForbiddenMarkers) {
+        if ($logText -like "*$marker*") {
+            Add-Failure "$Name log contains forbidden marker: $marker"
         }
     }
 
@@ -211,94 +220,142 @@ function Invoke-UnityCommandFileSmoke {
 $bootstrap = Read-RequiredText -RelativePath "unity-mc2-demo\Assets\Scripts\Presentation\Mc2DemoBootstrap.cs"
 $commanderScript = Read-RequiredText -RelativePath "unity-mc2-demo\Assets\Scripts\Presentation\StartupCommanderScript.cs"
 $adapter = Read-RequiredText -RelativePath "unity-mc2-demo\Assets\Scripts\BattleCore\UnityMainServerClient.cs"
-$serverCommandFile = Read-RequiredText -RelativePath "unity-mc2-demo\Assets\StreamingAssets\CommanderScripts\mc2_01-main-server-smoke.txt"
-$fallbackCommandFile = Read-RequiredText -RelativePath "unity-mc2-demo\Assets\StreamingAssets\CommanderScripts\mc2_01-main-server-fallback-smoke.txt"
+$inventoryContract = Read-RequiredText -RelativePath "unity-mc2-demo\Assets\Scripts\BattleCore\MechBayInventoryContract.cs"
+$fixture = Read-RequiredText -RelativePath "server\main-server\fixtures\local-dev-fixture.json"
+$previewCommandFile = Read-RequiredText -RelativePath "unity-mc2-demo\Assets\StreamingAssets\CommanderScripts\mc2_01-inventory-mechbay-preview-smoke.txt"
+$fallbackCommandFile = Read-RequiredText -RelativePath "unity-mc2-demo\Assets\StreamingAssets\CommanderScripts\mc2_01-inventory-mechbay-preview-fallback-smoke.txt"
 $visibleFlow = Read-RequiredText -RelativePath "unity-mc2-demo\Assets\StreamingAssets\CommanderScripts\mc2_01-visible-flow-audit.txt"
 $currentGate = Read-RequiredText -RelativePath "scripts\unity\check_current_plan_gate.ps1"
 $queue = Read-RequiredText -RelativePath "scripts\unity\check_current_plan_queue.ps1"
+$handoffScript = Read-RequiredText -RelativePath "scripts\unity\check_controlled_demo_handoff.ps1"
 $masterPlan = Read-RequiredText -RelativePath "docs-ai-rts-commander-current-master-plan-2026-06-07.md"
 $detailedPlan = Read-RequiredText -RelativePath "docs-ai-rts-commander-current-detailed-plan-2026-06-07.md"
 $mobilePlan = Read-RequiredText -RelativePath "docs-mobile-first-plan-2026-06-10.md"
+$handoff = Read-RequiredText -RelativePath "docs-machine-handoff-plan-2026-06-07.md"
 
 foreach ($marker in @(
-    "main-server-smoke",
-    "assert-main-server-smoke",
-    "MainServerSmoke",
-    "AssertMainServerSmoke"
+    "inventory-mechbay-preview-smoke",
+    "assert-inventory-mechbay-preview-smoke",
+    "InventoryMechBayPreviewSmoke",
+    "AssertInventoryMechBayPreviewSmoke"
 )) {
     Require-Text -Text $commanderScript -Needle $marker -Label "command parser"
 }
 
 foreach ($marker in @(
-    "mainServerSmokeEnabled",
-    "RunStartupMainServerSmoke",
-    "TrySignMainServerSmokeSquadBeforeLaunch",
-    "TrySubmitMainServerSmokeRewardClaimAfterDebrief",
-    "BuildMainServerSmokeRewardClaim",
-    "MC2 main-server smoke signed squad OK",
-    "MC2 main-server smoke reward claim OK",
-    "MC2 main-server smoke assertion OK",
-    "SignedSquadBeforeLaunch: True",
-    "RewardClaimAfterDebrief: True",
-    "NoPerFrameServerCalls: "
+    "inventoryMechBayPreviewSmokeEnabled",
+    "RunStartupInventoryMechBayPreviewSmoke",
+    "TryApplyMainServerInventoryMechBayPreview",
+    "RunStartupInventoryMechBayPreviewSmokeAssertion",
+    "MC2 inventory-to-MechBay preview OK",
+    "MC2 inventory-to-MechBay preview assertion OK",
+    "MainServerPreviewApplied: ",
+    "ProjectedInventoryValid: ",
+    "InventorySource=MainServerPreview",
+    "LocalFixtureInventoryPlayable: True",
+    "ServerInventoryNotCombatAuthority: True",
+    "NoPerFrameServerCalls: ",
+    "MobileLandscapeOnly: True",
+    "Inventory Source: Main Server Preview",
+    "Inventory Source: Local Fixture"
 )) {
-    Require-Text -Text $bootstrap -Needle $marker -Label "bootstrap opt-in wiring"
+    Require-Text -Text $bootstrap -Needle $marker -Label "preview binding wiring"
 }
 
 foreach ($marker in @(
-    "TrySignSquad",
-    "TrySubmitRewardClaim",
-    "NoPerFrameServerCalls = true",
-    "DefaultEnabled = false"
+    "UnityInventoryToMechBayProjector",
+    "MechBayInventoryProjectionResult",
+    "unitId",
+    "unitType",
+    "chassisId",
+    "displayName",
+    "pilotType",
+    "equippedQuantity",
+    "weapon",
+    "armor",
+    "heat-sink",
+    "mech-fragment",
+    "currency",
+    "MechBayInventoryValidator.Validate",
+    "FallbackUnknownItemCategory",
+    "FallbackUnknownChassisOrLoadout",
+    "FallbackPilotIncomplete",
+    "FallbackServerPreviewRejected"
 )) {
-    Require-Text -Text $adapter -Needle $marker -Label "adapter boundary"
+    Require-Text -Text $adapter -Needle $marker -Label "projector contract"
 }
 
 foreach ($marker in @(
-    "main-server-smoke",
+    "BuildDemoInventory",
+    "LoadoutItemCategory.Weapon",
+    "LoadoutItemCategory.ArmorPlate",
+    "LoadoutItemCategory.HeatSink",
+    "LoadoutItemCategory.MechFragment"
+)) {
+    Require-Text -Text $inventoryContract -Needle $marker -Label "local MechBay fallback contract"
+}
+
+foreach ($marker in @(
+    '"category": "currency"',
+    '"category": "weapon"',
+    '"category": "armor"',
+    '"category": "heat-sink"',
+    '"category": "mech-fragment"',
+    '"equippedQuantity": 4',
+    '"tokenBalance": 12000'
+)) {
+    Require-Text -Text $fixture -Needle $marker -Label "server fixture projection source"
+}
+
+foreach ($marker in @(
+    "inventory-mechbay-preview-smoke",
+    "assert-inventory-mechbay-preview-smoke",
     "mech-bay-launch",
-    "complete-visible-objectives",
-    "open-debrief",
-    "assert-main-server-smoke"
-)) {
-    Require-Text -Text $serverCommandFile -Needle $marker -Label "server command file"
-}
-
-foreach ($marker in @(
-    "main-server-smoke",
-    "mech-bay-launch",
+    "assert-restart-identity depot",
     "complete-visible-objectives",
     "open-debrief",
     "assert-debrief-summary"
 )) {
-    Require-Text -Text $fallbackCommandFile -Needle $marker -Label "fallback command file"
+    Require-Text -Text $previewCommandFile -Needle $marker -Label "preview command file"
 }
 
-Forbid-Text -Text $fallbackCommandFile -Needle "assert-main-server-smoke" -Label "fallback command file"
-Forbid-Text -Text $visibleFlow -Needle "main-server-smoke" -Label "default visible-flow command file"
-Forbid-Text -Text $visibleFlow -Needle "assert-main-server-smoke" -Label "default visible-flow command file"
+foreach ($marker in @(
+    "inventory-mechbay-preview-smoke",
+    "mech-bay-launch",
+    "assert-restart-identity depot",
+    "complete-visible-objectives",
+    "open-debrief",
+    "assert-debrief-summary"
+)) {
+    Require-Text -Text $fallbackCommandFile -Needle $marker -Label "preview fallback command file"
+}
+
+Forbid-Text -Text $fallbackCommandFile -Needle "assert-inventory-mechbay-preview-smoke" -Label "preview fallback command file"
+Forbid-Text -Text $visibleFlow -Needle "inventory-mechbay-preview-smoke" -Label "default visible-flow command file"
+Forbid-Text -Text $visibleFlow -Needle "assert-inventory-mechbay-preview-smoke" -Label "default visible-flow command file"
 Forbid-Text -Text $adapter -Needle "Update(" -Label "adapter frame loop"
 Forbid-Text -Text $adapter -Needle "FixedUpdate(" -Label "adapter frame loop"
 Forbid-Text -Text $adapter -Needle "LateUpdate(" -Label "adapter frame loop"
 
-Require-Text -Text $currentGate -Needle "Optional Unity main-server launch/debrief smoke check OK." -Label "current gate marker"
-Require-Text -Text $queue -Needle "F10 wire optional Unity inventory bootstrap smoke" -Label "queue completed task"
-Require-Text -Text $queue -Needle "F11 plan inventory-to-MechBay binding boundary" -Label "queue next task"
-Require-Text -Text $masterPlan -Needle '| 87 | Done | `Wire optional Unity main-server adapter into launch/debrief smoke` |' -Label "master F9 done"
-Require-Text -Text $masterPlan -Needle '| 88 | Done | `Wire optional Unity inventory bootstrap smoke` |' -Label "master F10 done"
-Require-Text -Text $masterPlan -Needle '| 89 | Done | `Plan inventory-to-MechBay binding boundary` |' -Label "master F11 done"
-Require-Text -Text $masterPlan -Needle '| 90 | Done | `Implement opt-in inventory-to-MechBay preview binding` |' -Label "master F12 next"
-Require-Text -Text $detailedPlan -Needle '| F9 | Done | `Wire optional Unity main-server adapter into launch/debrief smoke` |' -Label "detailed F9 done"
-Require-Text -Text $detailedPlan -Needle '| F10 | Done | `Wire optional Unity inventory bootstrap smoke` |' -Label "detailed F10 done"
-Require-Text -Text $detailedPlan -Needle '| F11 | Done | `Plan inventory-to-MechBay binding boundary` |' -Label "detailed F11 done"
-Require-Text -Text $detailedPlan -Needle '| F12 | Done | `Implement opt-in inventory-to-MechBay preview binding` |' -Label "detailed F12 next"
+Require-Text -Text $currentGate -Needle "Optional inventory-to-MechBay preview binding check OK." -Label "current gate marker"
+Require-Text -Text $queue -Needle "F12 implement opt-in inventory-to-MechBay preview binding" -Label "queue completed task"
+Require-Text -Text $queue -Needle "F13 capture opt-in MechBay preview evidence" -Label "queue next task"
+Require-Text -Text $handoffScript -Needle "Optional inventory-to-MechBay preview binding check OK" -Label "handoff script marker"
+Require-Text -Text $masterPlan -Needle '| 90 | Done | `Implement opt-in inventory-to-MechBay preview binding` |' -Label "master F12 done"
+Require-Text -Text $masterPlan -Needle '| 91 | Next | `Capture opt-in MechBay preview evidence` |' -Label "master F13 next"
+Require-Text -Text $detailedPlan -Needle '| F12 | Done | `Implement opt-in inventory-to-MechBay preview binding` |' -Label "detailed F12 done"
+Require-Text -Text $detailedPlan -Needle '| F13 | Next | `Capture opt-in MechBay preview evidence` |' -Label "detailed F13 next"
+Require-Text -Text $mobilePlan -Needle "F12 implement opt-in inventory-to-MechBay preview binding" -Label "mobile completed task"
+Require-Text -Text $mobilePlan -Needle "F13 capture opt-in MechBay preview evidence" -Label "mobile next task"
 Require-Text -Text $mobilePlan -Needle "first phone version is landscape-only" -Label "mobile landscape invariant"
+Require-Text -Text $handoff -Needle 'Current formal next development task after handoff: `F13 capture opt-in MechBay preview evidence`' -Label "handoff next task"
+Require-Text -Text $handoff -Needle 'Next planned work: `F13 capture opt-in MechBay preview evidence`' -Label "handoff next planned work"
 
 if ($failures.Count -eq 0) {
     $serverStarted = $false
     $serverProcess = $null
-    $serverOut = Join-Path $RepoRoot "analysis-output\main-server-f9-smoke.out.log"
-    $serverErr = Join-Path $RepoRoot "analysis-output\main-server-f9-smoke.err.log"
+    $serverOut = Join-Path $RepoRoot "analysis-output\main-server-f12-preview.out.log"
+    $serverErr = Join-Path $RepoRoot "analysis-output\main-server-f12-preview.err.log"
     $serverDir = Resolve-RepoPath -RelativePath "server\main-server"
 
     try {
@@ -325,18 +382,29 @@ if ($failures.Count -eq 0) {
         }
 
         if ($failures.Count -eq 0) {
+            Reset-MainServer -Port $ServerPort
             Invoke-UnityCommandFileSmoke `
-                -Name "Unity main-server launch/debrief smoke" `
-                -CommandFile (Resolve-RepoPath -RelativePath "unity-mc2-demo\Assets\StreamingAssets\CommanderScripts\mc2_01-main-server-smoke.txt") `
-                -LogPath (Resolve-RepoPath -RelativePath "analysis-output\unity-player-main-server-smoke.log") `
+                -Name "Unity inventory-to-MechBay preview smoke" `
+                -CommandFile (Resolve-RepoPath -RelativePath "unity-mc2-demo\Assets\StreamingAssets\CommanderScripts\mc2_01-inventory-mechbay-preview-smoke.txt") `
+                -LogPath (Resolve-RepoPath -RelativePath "analysis-output\unity-player-inventory-mechbay-preview-smoke.log") `
                 -RequiredMarkers @(
-                    "MC2 main-server smoke signed squad OK",
-                    "MC2 main-server smoke reward claim OK",
-                    "MC2 main-server smoke assertion OK",
-                    "SignedSquadBeforeLaunch: True",
-                    "RewardClaimAfterDebrief: True",
+                    "MC2 inventory-to-MechBay preview OK",
+                    "MC2 inventory-to-MechBay preview assertion OK",
+                    "MainServerPreviewApplied: True",
+                    "ProjectedInventoryValid: True",
+                    "InventorySource=MainServerPreview",
+                    "tokenBalance=12000",
+                    "ownedMechs=3",
+                    "serverItemStacks=6",
+                    "projectedItemStacks=5",
+                    "skippedCurrencyStacks=1",
+                    "ServerInventoryNotCombatAuthority: True",
                     "NoPerFrameServerCalls: True",
+                    "MobileLandscapeOnly: True",
                     "MC2 debrief summary assertion OK"
+                ) `
+                -ForbiddenMarkers @(
+                    "RewardClaimAfterDebrief: True"
                 )
         }
     }
@@ -349,12 +417,14 @@ if ($failures.Count -eq 0) {
 
     if (-not (Test-MainServerReady -Port $ServerPort)) {
         Invoke-UnityCommandFileSmoke `
-            -Name "Unity main-server no-server fallback smoke" `
-            -CommandFile (Resolve-RepoPath -RelativePath "unity-mc2-demo\Assets\StreamingAssets\CommanderScripts\mc2_01-main-server-fallback-smoke.txt") `
-            -LogPath (Resolve-RepoPath -RelativePath "analysis-output\unity-player-main-server-fallback-smoke.log") `
+            -Name "Unity inventory-to-MechBay preview no-server fallback smoke" `
+            -CommandFile (Resolve-RepoPath -RelativePath "unity-mc2-demo\Assets\StreamingAssets\CommanderScripts\mc2_01-inventory-mechbay-preview-fallback-smoke.txt") `
+            -LogPath (Resolve-RepoPath -RelativePath "analysis-output\unity-player-inventory-mechbay-preview-fallback-smoke.log") `
             -RequiredMarkers @(
-                "MC2 main-server smoke fallback",
-                "LocalFixtureLaunchPlayable: True",
+                "MC2 inventory-to-MechBay preview fallback",
+                "LocalFixtureInventoryPlayable: True",
+                "NoPerFrameServerCalls: True",
+                "MobileLandscapeOnly: True",
                 "MC2 debrief summary assertion OK"
             )
     }
@@ -364,14 +434,14 @@ if ($failures.Count -eq 0) {
 }
 
 if ($failures.Count -gt 0) {
-    Write-Host "Optional Unity main-server launch/debrief smoke check failed."
+    Write-Host "Optional inventory-to-MechBay preview binding check failed."
     foreach ($failure in $failures) {
         Write-Host " - $failure"
     }
 
-    throw "$($failures.Count) optional Unity main-server launch/debrief smoke check(s) failed."
+    throw "$($failures.Count) optional inventory-to-MechBay preview binding check(s) failed."
 }
 
-Write-Host "Optional Unity main-server launch/debrief smoke check OK."
+Write-Host "Optional inventory-to-MechBay preview binding check OK."
 Write-Host "Repo: $RepoRoot"
 $rows | Format-Table -AutoSize

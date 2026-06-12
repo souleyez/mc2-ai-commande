@@ -14,7 +14,7 @@
 
 Mobile support remains the product priority. `G3 Android Device Smoke` has now passed on a physical Mi 11 Lite with USB debugging authorized, and this PC optimization plan is retained as the wait-state evidence package that kept the Windows demo moving while the phone blocker existed.
 
-The current PC/mobile wait-state optimization pass is now sealed through PC1-PC57. `Pass Android G3 device smoke`, landscape `G4 Touch UI pass`, `G5 Mobile performance budget`, `G6 iOS feasibility gate`, `F2 map authoring contract`, `F3 web ranking contract`, `F4 creator economy boundary`, `F5 server implementation boundary`, `F6 local main-server prototype`, `F7 document Unity main-server integration contract`, `F8 implement optional Unity main-server client adapter`, `F9 wire optional Unity main-server adapter into launch/debrief smoke`, `F10 wire optional Unity inventory bootstrap smoke`, and `F11 plan inventory-to-MechBay binding boundary` are recorded; the formal next task is `F12 implement opt-in inventory-to-MechBay preview binding`.
+The current PC/mobile wait-state optimization pass is now sealed through PC1-PC57. `Pass Android G3 device smoke`, landscape `G4 Touch UI pass`, `G5 Mobile performance budget`, `G6 iOS feasibility gate`, `F2 map authoring contract`, `F3 web ranking contract`, `F4 creator economy boundary`, `F5 server implementation boundary`, `F6 local main-server prototype`, `F7 document Unity main-server integration contract`, `F8 implement optional Unity main-server client adapter`, `F9 wire optional Unity main-server adapter into launch/debrief smoke`, `F10 wire optional Unity inventory bootstrap smoke`, and `F11 plan inventory-to-MechBay binding boundary` are recorded; `F12 implement opt-in inventory-to-MechBay preview binding` is complete; the formal next task is `F13 capture opt-in MechBay preview evidence`.
 
 ## Definition Of Done
 
@@ -2124,3 +2124,7 @@ Stop and reassess before committing if:
 - Unity scene churn is only fileID noise.
 - Any private original-derived file, generated screenshot, JSON sidecar, log or build output is about to be staged.
 - Battle UI grows dense again.
+
+## F12 Preview Binding Checkpoint
+
+`F12 implement opt-in inventory-to-MechBay preview binding` is complete. The opt-in gate is `scripts/unity/check_optional_inventory_mechbay_preview_binding.ps1`, with expected success string `Optional inventory-to-MechBay preview binding check OK`. Formal next task: `F13 capture opt-in MechBay preview evidence`. Mobile phones remain first-version landscape-only; portrait is not a first-slice support target.

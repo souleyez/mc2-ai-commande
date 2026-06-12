@@ -73,7 +73,7 @@ As of this handoff plan:
 - Previous PC checkpoint retained in the gate chain: `Add Android APK identity check`
 - Previous PC checkpoint retained in the gate chain: `Add Android APK freshness check`
 - Previous PC checkpoint retained in the gate chain: `Add controlled demo capture log freshness check`
-- Current formal next development task after handoff: `F12 implement opt-in inventory-to-MechBay preview binding`
+- Current formal next development task after handoff: `F13 capture opt-in MechBay preview evidence`
 - Mobile orientation decision retained for handoff: first phone version is landscape-only; portrait is not a first-version target.
 
 Important: the new machine will not see local commits unless the old machine
@@ -631,10 +631,10 @@ the PC1-PC57 checkpoint, that `Pass Android G3 device smoke`, the landscape
 `F6 local main-server prototype`, `F7 document Unity main-server integration
 contract`, `F8 implement optional Unity main-server client adapter` and
 `F9 wire optional Unity main-server adapter into launch/debrief smoke` are
-recorded, that `F10 wire optional Unity inventory bootstrap smoke` and
-`F11 plan inventory-to-MechBay binding boundary` are recorded, and that
-`F12 implement opt-in inventory-to-MechBay preview binding` is the formal next
-task.
+recorded, that `F10 wire optional Unity inventory bootstrap smoke`,
+`F11 plan inventory-to-MechBay binding boundary` and
+`F12 implement opt-in inventory-to-MechBay preview binding` are recorded, and
+that `F13 capture opt-in MechBay preview evidence` is the formal next task.
 
 **Step 19: Run Android device connection check**
 
@@ -1020,7 +1020,7 @@ documentation.
 - Read: `docs-ai-rts-commander-current-master-plan-2026-06-07.md`
 - Read: `docs-ai-rts-commander-current-detailed-plan-2026-06-07.md`
 - Read: `docs-mobile-first-plan-2026-06-10.md`
-- Next planned work: `F12 implement opt-in inventory-to-MechBay preview binding`
+- Next planned work: `F13 capture opt-in MechBay preview evidence`
 
 **Step 1: Confirm current next task**
 
@@ -1028,7 +1028,7 @@ Read the current commit queue. After this handoff, the product work should
 resume at:
 
 ```text
-F12 implement opt-in inventory-to-MechBay preview binding
+F13 capture opt-in MechBay preview evidence
 ```
 
 **Step 2: Do not start with a full remote platform**
@@ -1078,3 +1078,7 @@ Stop before continuing product development if:
 - private reference assets appear as tracked Git changes;
 - AI key is needed for normal local validation;
 - any generated screenshot, log, JSON sidecar, Unity build output, or private reference export appears in the staged diff.
+
+## F12 Preview Binding Checkpoint
+
+`F12 implement opt-in inventory-to-MechBay preview binding` is complete. The opt-in gate is `scripts/unity/check_optional_inventory_mechbay_preview_binding.ps1`, with expected success string `Optional inventory-to-MechBay preview binding check OK`. Formal next task: `F13 capture opt-in MechBay preview evidence`. Mobile phones remain first-version landscape-only; portrait is not a first-slice support target.

@@ -75,6 +75,9 @@ namespace MC2Demo.Presentation
         private const string MechLabCompanyPrefix = "Company ";
         private const string MechLabPartsLabel = "Parts";
         private const string MechLabBuildPrefix = "Build ";
+        private const string MechLabInventorySourceLocalText = "Inventory Source: Local Fixture";
+        private const string MechLabInventorySourcePreviewText = "Inventory Source: Main Server Preview";
+        private const string MechLabInventorySourceFallbackText = "Inventory Source: Main Server Unavailable - Local Fixture";
         private const string SavedAccountIdleLabel = "Ready  no recent save action";
         private const string SavedAccountPathReadyStatusText = "Save slot path ready";
         private const string SavedAccountNoLoadPreviewText = "No save checked";
@@ -365,14 +368,19 @@ namespace MC2Demo.Presentation
         private bool missionReceiptApplied;
         private UnityMainServerClient mainServerSmokeClient;
         private UnityInventoryBootstrap mainServerInventoryBootstrap;
+        private MechBayInventoryProjectionResult inventoryMechBayProjection;
         private UnitySignedSquadResult mainServerSmokeSignedSquad;
         private UnityRewardClaimResult mainServerSmokeRewardClaim;
         private bool inventoryBootstrapSmokeEnabled;
         private bool inventoryBootstrapAttempted;
+        private bool inventoryMechBayPreviewSmokeEnabled;
+        private bool inventoryMechBayPreviewAttempted;
+        private bool inventoryMechBayPreviewApplied;
         private bool mainServerSmokeEnabled;
         private bool mainServerSmokeSignAttempted;
         private bool mainServerSmokeClaimAttempted;
         private string inventoryBootstrapSummary = "InventoryBootstrapSmoke=disabled";
+        private string inventoryMechBayPreviewSummary = "InventoryMechBayPreview=disabled";
         private string mainServerSmokeSummary = "MainServerSmoke=disabled";
         private string pendingDetachedUnitId;
         private bool pendingJumpOrder;
@@ -1554,6 +1562,9 @@ namespace MC2Demo.Presentation
                     case StartupCommanderScriptActionKind.InventoryBootstrapSmoke:
                         RunStartupInventoryBootstrapSmoke();
                         break;
+                    case StartupCommanderScriptActionKind.InventoryMechBayPreviewSmoke:
+                        RunStartupInventoryMechBayPreviewSmoke();
+                        break;
                     case StartupCommanderScriptActionKind.SavedAccountReport:
                         RunStartupSavedAccountReport();
                         break;
@@ -1604,6 +1615,9 @@ namespace MC2Demo.Presentation
                         break;
                     case StartupCommanderScriptActionKind.AssertInventoryBootstrapSmoke:
                         RunStartupInventoryBootstrapSmokeAssertion();
+                        break;
+                    case StartupCommanderScriptActionKind.AssertInventoryMechBayPreviewSmoke:
+                        RunStartupInventoryMechBayPreviewSmokeAssertion();
                         break;
                     case StartupCommanderScriptActionKind.AssertCommandResult:
                         RunStartupCommandResultAssertion(action.ExpectedCommandBlocked, action.ExpectedCommandAcceptedCount);
@@ -2947,6 +2961,18 @@ namespace MC2Demo.Presentation
             TryBootstrapMainServerInventoryBeforeLaunch("command-file");
         }
 
+        private void RunStartupInventoryMechBayPreviewSmoke()
+        {
+            inventoryMechBayPreviewSmokeEnabled = true;
+            EnsureMainServerSmokeClient();
+            inventoryMechBayPreviewSummary = "InventoryMechBayPreview=enabled MainServerPreviewApplied: Pending ProjectedInventoryValid: Pending LocalFixtureInventoryPlayable: True ServerInventoryNotCombatAuthority: True NoPerFrameServerCalls: "
+                + UnityMainServerClient.NoPerFrameServerCalls
+                + " MobileLandscapeOnly: True";
+            AddCombatLogLine("CLI inventory-to-MechBay preview enabled");
+            Debug.Log("MC2 inventory-to-MechBay preview opt-in: " + inventoryMechBayPreviewSummary);
+            TryApplyMainServerInventoryMechBayPreview("command-file");
+        }
+
         private UnityMainServerClient EnsureMainServerSmokeClient()
         {
             mainServerSmokeClient ??= new UnityMainServerClient(new UnityServerSettings
@@ -2998,6 +3024,97 @@ namespace MC2Demo.Presentation
                 + UnityMainServerClient.NoPerFrameServerCalls;
             AddCombatLogLine("CLI inventory bootstrap fallback: " + reason);
             Debug.LogWarning("MC2 inventory bootstrap fallback: " + inventoryBootstrapSummary);
+        }
+
+        private void TryApplyMainServerInventoryMechBayPreview(string source)
+        {
+            if (!inventoryMechBayPreviewSmokeEnabled || inventoryMechBayPreviewAttempted)
+            {
+                return;
+            }
+
+            inventoryMechBayPreviewAttempted = true;
+            if (mainServerInventoryBootstrap == null || !IsMainServerInventoryBootstrapReady(mainServerInventoryBootstrap))
+            {
+                mainServerInventoryBootstrap = EnsureMainServerSmokeClient().TryBootstrapInventory(MainServerSmokeDisplayName);
+                inventoryBootstrapAttempted = true;
+            }
+
+            MechBayInventoryContract localInventory = demoInventory;
+            inventoryMechBayProjection = UnityInventoryToMechBayProjector.Project(mainServerInventoryBootstrap);
+            if (inventoryMechBayProjection.Accepted)
+            {
+                demoInventory = inventoryMechBayProjection.Inventory;
+                RefreshDemoInventoryValidation();
+                bool projectedValid = demoInventoryValidation?.IsValid == true;
+                if (projectedValid)
+                {
+                    inventoryMechBayPreviewApplied = true;
+                    inventoryMechBayPreviewSummary = BuildInventoryMechBayPreviewSummary(
+                        source,
+                        inventoryMechBayProjection,
+                        "ready",
+                        true,
+                        true,
+                        "InventorySource=MainServerPreview");
+                    AddCombatLogLine("CLI inventory-to-MechBay preview OK");
+                    Debug.Log("MC2 inventory-to-MechBay preview OK: " + inventoryMechBayPreviewSummary);
+                    return;
+                }
+
+                inventoryMechBayProjection.FallbackReason = UnityInventoryToMechBayProjector.FallbackServerPreviewRejected;
+                inventoryMechBayProjection.Message = FirstInventoryError(demoInventoryValidation);
+            }
+
+            demoInventory = localInventory;
+            RefreshDemoInventoryValidation();
+            inventoryMechBayPreviewApplied = false;
+            string fallbackReason = string.IsNullOrWhiteSpace(inventoryMechBayProjection?.FallbackReason)
+                ? MainServerSmokeFallbackReason(mainServerInventoryBootstrap?.fallback, inventoryMechBayProjection?.Message)
+                : inventoryMechBayProjection.FallbackReason;
+            inventoryMechBayPreviewSummary = BuildInventoryMechBayPreviewSummary(
+                source,
+                inventoryMechBayProjection,
+                "fallback",
+                false,
+                false,
+                "reason=" + fallbackReason + " LocalFixtureInventoryPlayable: True InventorySource=LocalFixture");
+            AddCombatLogLine("CLI inventory-to-MechBay preview fallback: " + fallbackReason);
+            Debug.LogWarning("MC2 inventory-to-MechBay preview fallback: " + inventoryMechBayPreviewSummary);
+        }
+
+        private static string BuildInventoryMechBayPreviewSummary(
+            string source,
+            MechBayInventoryProjectionResult projection,
+            string state,
+            bool applied,
+            bool projectedValid,
+            string suffix)
+        {
+            return "InventoryMechBayPreview="
+                + state
+                + " source="
+                + source
+                + " MainServerPreviewApplied: "
+                + applied
+                + " ProjectedInventoryValid: "
+                + projectedValid
+                + " accountId="
+                + (projection?.AccountId ?? "")
+                + " tokenBalance="
+                + (projection?.TokenBalance ?? 0).ToString(CultureInfo.InvariantCulture)
+                + " ownedMechs="
+                + (projection?.ServerOwnedMechCount ?? 0).ToString(CultureInfo.InvariantCulture)
+                + " serverItemStacks="
+                + (projection?.ServerItemStackCount ?? 0).ToString(CultureInfo.InvariantCulture)
+                + " projectedItemStacks="
+                + (projection?.ProjectedItemStackCount ?? 0).ToString(CultureInfo.InvariantCulture)
+                + " skippedCurrencyStacks="
+                + (projection?.SkippedCurrencyStackCount ?? 0).ToString(CultureInfo.InvariantCulture)
+                + " ServerInventoryNotCombatAuthority: True NoPerFrameServerCalls: "
+                + UnityMainServerClient.NoPerFrameServerCalls
+                + " MobileLandscapeOnly: True "
+                + suffix;
         }
 
         private void TrySignMainServerSmokeSquadBeforeLaunch(string source)
@@ -3158,6 +3275,64 @@ namespace MC2Demo.Presentation
             statusText = "Inventory bootstrap smoke failed";
             AddCombatLogLine("CLI inventory bootstrap assert failed: " + summary);
             Debug.LogError("MC2 inventory bootstrap smoke assertion failed: " + summary);
+        }
+
+        private void RunStartupInventoryMechBayPreviewSmokeAssertion()
+        {
+            bool previewOk = inventoryMechBayPreviewSmokeEnabled
+                && inventoryMechBayPreviewAttempted
+                && inventoryMechBayPreviewApplied
+                && inventoryMechBayProjection?.Accepted == true;
+            bool validationOk = demoInventoryValidation?.IsValid == true;
+            bool tokenOk = demoInventory != null && demoInventory.tokenBalance == 12000;
+            bool mechCountOk = demoInventory?.ownedMechs?.Length == 3;
+            bool serverItemCountOk = inventoryMechBayProjection?.ServerItemStackCount == 6;
+            bool projectedItemCountOk = inventoryMechBayProjection?.ProjectedItemStackCount == 5;
+            bool skippedCurrencyOk = inventoryMechBayProjection?.SkippedCurrencyStackCount == 1;
+            bool noFrameCallsOk = UnityMainServerClient.NoPerFrameServerCalls;
+            bool mobileLandscapeOk = true;
+            string summary = "enabled="
+                + inventoryMechBayPreviewSmokeEnabled
+                + " MainServerPreviewApplied: "
+                + previewOk
+                + " ProjectedInventoryValid: "
+                + validationOk
+                + " tokenBalance="
+                + (demoInventory?.tokenBalance ?? 0).ToString(CultureInfo.InvariantCulture)
+                + " ownedMechs="
+                + (demoInventory?.ownedMechs?.Length ?? 0).ToString(CultureInfo.InvariantCulture)
+                + " serverItemStacks="
+                + (inventoryMechBayProjection?.ServerItemStackCount ?? 0).ToString(CultureInfo.InvariantCulture)
+                + " projectedItemStacks="
+                + (inventoryMechBayProjection?.ProjectedItemStackCount ?? 0).ToString(CultureInfo.InvariantCulture)
+                + " skippedCurrencyStacks="
+                + (inventoryMechBayProjection?.SkippedCurrencyStackCount ?? 0).ToString(CultureInfo.InvariantCulture)
+                + " ServerInventoryNotCombatAuthority: True NoPerFrameServerCalls: "
+                + noFrameCallsOk
+                + " MobileLandscapeOnly: "
+                + mobileLandscapeOk
+                + " detail="
+                + inventoryMechBayPreviewSummary;
+
+            if (previewOk
+                && validationOk
+                && tokenOk
+                && mechCountOk
+                && serverItemCountOk
+                && projectedItemCountOk
+                && skippedCurrencyOk
+                && noFrameCallsOk
+                && mobileLandscapeOk)
+            {
+                AddCombatLogLine("CLI inventory-to-MechBay preview assert OK");
+                Debug.Log("MC2 inventory-to-MechBay preview assertion OK: " + summary);
+                return;
+            }
+
+            startupSmokeFailed = true;
+            statusText = "Inventory-to-MechBay preview failed";
+            AddCombatLogLine("CLI inventory-to-MechBay preview assert failed: " + summary);
+            Debug.LogError("MC2 inventory-to-MechBay preview assertion failed: " + summary);
         }
 
         private void TrySubmitMainServerSmokeRewardClaimAfterDebrief()
@@ -4899,6 +5074,9 @@ namespace MC2Demo.Presentation
                 && MechLabCompanyPrefix.StartsWith("Company", StringComparison.Ordinal)
                 && string.Equals(MechLabPartsLabel, "Parts", StringComparison.Ordinal)
                 && MechLabBuildPrefix.StartsWith("Build", StringComparison.Ordinal)
+                && string.Equals(MechLabInventorySourceLocalText, "Inventory Source: Local Fixture", StringComparison.Ordinal)
+                && string.Equals(MechLabInventorySourcePreviewText, "Inventory Source: Main Server Preview", StringComparison.Ordinal)
+                && string.Equals(MechLabInventorySourceFallbackText, "Inventory Source: Main Server Unavailable - Local Fixture", StringComparison.Ordinal)
                 && string.Equals(MechLabFundsText(13500), "Funds 13,500", StringComparison.Ordinal)
                 && MechLabFundsText(13500).IndexOf("Token", StringComparison.OrdinalIgnoreCase) < 0
                 && string.Equals(MechLabBayOpsPageLabel, "Ops", StringComparison.Ordinal)
@@ -4965,6 +5143,8 @@ namespace MC2Demo.Presentation
                 + MechLabPartsLabel
                 + "/"
                 + MechLabBuildPrefix.Trim()
+                + "/"
+                + MechLabInventorySourceLocalText
                 + "/"
                 + SavedAccountIdleLabel
                 + " bayFunds="
@@ -14894,7 +15074,12 @@ namespace MC2Demo.Presentation
                 MechLabCompanyPrefix + TruncateText(MechBaySavedAccountService.SummaryText(accountSnapshot), 70));
             GUI.Label(
                 new Rect(x, y + 60f, width, 18f),
-                MechLabBuildPrefix + AssemblyPreviewText(MechBayAssemblyPreviewService.BestAssemblyProgress(demoInventory)));
+                TruncateText(
+                    InventorySourceLine()
+                    + "  "
+                    + MechLabBuildPrefix
+                    + AssemblyPreviewText(MechBayAssemblyPreviewService.BestAssemblyProgress(demoInventory)),
+                    92));
             MechBayMissionHandoffPreview handoffPreview =
                 MechBayMissionHandoffPreviewService.BuildPreview(demoInventory);
             MechBayMissionRestartApplyGuard restartGuard =
@@ -14954,6 +15139,18 @@ namespace MC2Demo.Presentation
             {
                 DrawOwnedRosterDetail(x, detailY + 176f, width, roster, pilotHirePreview);
             }
+        }
+
+        private string InventorySourceLine()
+        {
+            if (inventoryMechBayPreviewApplied)
+            {
+                return MechLabInventorySourcePreviewText;
+            }
+
+            return inventoryMechBayPreviewAttempted
+                ? MechLabInventorySourceFallbackText
+                : MechLabInventorySourceLocalText;
         }
 
         private void DrawPostBattleMechBayLane(

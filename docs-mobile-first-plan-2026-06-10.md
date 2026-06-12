@@ -127,7 +127,7 @@ failing, unless the later work is explicitly diagnostic.
 - **Failure Handling:** 失败时先看什么、停在哪里、哪些输出不能提交。
 - **Commit Scope:** 允许进入提交的文件范围；生成物、日志和私有素材默认不提交。
 
-当前移动执行目标只允许有一个 `In Progress` 或 `Waiting on Device`。如果前置条件失败，先把失败写成明确 blocker 或安装步骤，不跳到后续移动玩法任务。G3 真机 smoke、横屏 G4 Touch UI pass、G5 Mobile Performance Budget、G6 iOS feasibility gate、F2 map authoring contract、F3 web ranking contract、F4 creator economy boundary、F5 server implementation boundary、F6 local main-server prototype、F7 document Unity main-server integration contract、F8 implement optional Unity main-server client adapter、F9 wire optional Unity main-server adapter into launch/debrief smoke、F10 wire optional Unity inventory bootstrap smoke 和 F11 plan inventory-to-MechBay binding boundary 已通过；手机端第一版固定横屏；下一步回到主计划的 `F12 implement opt-in inventory-to-MechBay preview binding`，且预览绑定必须继续按横版手机布局验收。
+当前移动执行目标只允许有一个 `In Progress` 或 `Waiting on Device`。如果前置条件失败，先把失败写成明确 blocker 或安装步骤，不跳到后续移动玩法任务。G3 真机 smoke、横屏 G4 Touch UI pass、G5 Mobile Performance Budget、G6 iOS feasibility gate、F2 map authoring contract、F3 web ranking contract、F4 creator economy boundary、F5 server implementation boundary、F6 local main-server prototype、F7 document Unity main-server integration contract、F8 implement optional Unity main-server client adapter、F9 wire optional Unity main-server adapter into launch/debrief smoke、F10 wire optional Unity inventory bootstrap smoke 和 F11 plan inventory-to-MechBay binding boundary 已通过；手机端第一版固定横屏；F12 implement opt-in inventory-to-MechBay preview binding 已完成；下一步回到主计划的 `F13 capture opt-in MechBay preview evidence`，且后续证据必须继续按横版手机布局验收。
 
 ### Completed Mobile Target: G3 Android Device Smoke
 
@@ -272,7 +272,8 @@ scripts\unity\check_ios_feasibility_gate.ps1 -> iOS feasibility gate check OK.
 Local Windows iOS build -> unsupported; this is documented as a blocker, not a failure.
 Unity playback engines on this machine -> AndroidPlayer and windowsstandalonesupport; iOSSupport absent.
 FirstIOSSmoke -> Build Xcode project -> install on iOS device -> launch visible-flow battle.
-Next formal task -> F12 implement opt-in inventory-to-MechBay preview binding.
+Completed formal task -> F12 implement opt-in inventory-to-MechBay preview binding.
+Next formal task -> F13 capture opt-in MechBay preview evidence.
 ```
 
 **Current G3 Evidence 2026-06-12:**
@@ -746,7 +747,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_ios_fe
 - F9 wire optional Unity main-server adapter into launch/debrief smoke. Complete.
 - F10 wire optional Unity inventory bootstrap smoke. Complete.
 - F11 plan inventory-to-MechBay binding boundary. Complete.
-- F12 implement opt-in inventory-to-MechBay preview binding. This is the next formal task and must remain landscape-only on phones.
+- F12 implement opt-in inventory-to-MechBay preview binding. Complete; remains landscape-only on phones.
+- F13 capture opt-in MechBay preview evidence. This is the next formal task and must remain landscape-only on phones.
 - Server implementation.
 - Realtime PVP.
 - Chain integration.
@@ -767,3 +769,7 @@ Stop and reassess before continuing if:
 - Package size is already too large before real art/audio content.
 - Device performance or thermal behavior is unacceptable for the target battle scale.
 - Any generated APK/AAB, device logs, screenshots, JSON sidecars, Unity build output, or private reference art is staged.
+
+## F12 Preview Binding Checkpoint
+
+`F12 implement opt-in inventory-to-MechBay preview binding` is complete. The opt-in gate is `scripts/unity/check_optional_inventory_mechbay_preview_binding.ps1`, with expected success string `Optional inventory-to-MechBay preview binding check OK`. Formal next task: `F13 capture opt-in MechBay preview evidence`. Mobile phones remain first-version landscape-only; portrait is not a first-slice support target.

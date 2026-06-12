@@ -1,0 +1,13 @@
+# Proves the opt-in Unity inventory-to-MechBay preview path.
+inventory-mechbay-preview-smoke
+assert-inventory-mechbay-preview-smoke
+prepare-local-candidate
+squad-swap
+hide-squad-preview
+mech-bay-launch
+assert-restart-identity depot
+complete-visible-objectives
+open-debrief
+assert-debrief-visible
+assert-debrief-summary
+report

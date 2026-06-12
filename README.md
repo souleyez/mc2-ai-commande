@@ -786,3 +786,7 @@ one mission slice. It is still metadata-only, not a mountable runtime pack.
 
 Windows 构建细节见 `BUILD-WIN.md`。当前重点开发目标是 Unity 6 Windows
 可玩原型；Linux 侧保留为后续工程兼容方向。
+
+## F12 Preview Binding Checkpoint
+
+`F12 implement opt-in inventory-to-MechBay preview binding` is complete. The opt-in gate is `scripts/unity/check_optional_inventory_mechbay_preview_binding.ps1`, with expected success string `Optional inventory-to-MechBay preview binding check OK`. Formal next task: `F13 capture opt-in MechBay preview evidence`. Mobile phones remain first-version landscape-only; portrait is not a first-slice support target.
