@@ -81,10 +81,10 @@ function Assert-DoesNotContain {
 }
 
 $requiredPlanMarkers = @(
-    "PC1-PC47",
-    "Add current plan queue consistency check",
-    "check_current_plan_queue.ps1",
-    "Current plan queue consistency check OK",
+    "PC1-PC48",
+    "Add Android device connection check",
+    "check_android_device_connection.ps1",
+    "Android device connection check waiting on device",
     "G3 Run Android device smoke"
 )
 
@@ -105,9 +105,9 @@ foreach ($relativePath in $docsToCheck) {
         Assert-Contains -Text $text -Needle $marker -Label "$relativePath plan queue marker"
     }
 
-    Assert-DoesNotContain -Text $text -Needle "define PC47 before implementation" -Label $relativePath
-    Assert-DoesNotContain -Text $text -Needle "必须先定义 PC47" -Label $relativePath
-    Assert-DoesNotContain -Text $text -Needle "必须先写清 PC47" -Label $relativePath
+    Assert-DoesNotContain -Text $text -Needle "define PC48 before implementation" -Label $relativePath
+    Assert-DoesNotContain -Text $text -Needle "必须先定义 PC48" -Label $relativePath
+    Assert-DoesNotContain -Text $text -Needle "必须先写清 PC48" -Label $relativePath
 }
 
 $mobilePlan = Read-RequiredText -RelativePath "docs-mobile-first-plan-2026-06-10.md"
@@ -120,12 +120,12 @@ Assert-Contains -Text $handoff -Needle 'Current formal next development task aft
 Assert-Contains -Text $handoff -Needle 'Next planned work: `G3 Run Android device smoke`' -Label "handoff next planned work"
 
 $currentGate = Read-RequiredText -RelativePath "scripts\unity\check_current_plan_gate.ps1"
-Assert-Contains -Text $currentGate -Needle 'check_current_plan_queue.ps1' -Label "current gate script marker"
-Assert-Contains -Text $currentGate -Needle 'Current plan queue consistency check OK.' -Label "current gate success marker"
+Assert-Contains -Text $currentGate -Needle 'check_android_device_connection.ps1' -Label "current gate script marker"
+Assert-Contains -Text $currentGate -Needle 'Android device connection check waiting on device.' -Label "current gate success marker"
 
 $handoffScript = Read-RequiredText -RelativePath "scripts\unity\check_controlled_demo_handoff.ps1"
-Assert-Contains -Text $handoffScript -Needle 'check_current_plan_queue.ps1' -Label "handoff script marker"
-Assert-Contains -Text $handoffScript -Needle 'Current plan queue consistency check OK' -Label "handoff script success marker"
+Assert-Contains -Text $handoffScript -Needle 'check_android_device_connection.ps1' -Label "handoff script marker"
+Assert-Contains -Text $handoffScript -Needle 'Android device connection check waiting on device' -Label "handoff script success marker"
 
 $tracked = @(& git -C $RepoRoot ls-files 2>$null | ForEach-Object { $_.ToString() })
 if ($LASTEXITCODE -ne 0) {

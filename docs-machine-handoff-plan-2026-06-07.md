@@ -25,8 +25,9 @@ As of this handoff plan:
 - Previous project remote: `git@github.com:souleyez/mc2-ai-commander-demo.git` now redirects to the current repository.
 - Upstream source remote kept for history: `origin https://github.com/alariq/mc2.git`
 - Current branch state after the latest controlled demo checkpoint: `master...ai-origin/master`
-- Latest sealed PC/mobile wait-state checkpoint: `PC1-PC47`
-- Last completed PC checkpoint: `Add current plan queue consistency check`
+- Latest sealed PC/mobile wait-state checkpoint: `PC1-PC48`
+- Last completed PC checkpoint: `Add Android device connection check`
+- Previous PC checkpoint retained in the gate chain: `Add current plan queue consistency check`
 - Previous PC checkpoint retained in the gate chain: `Add PC smoke artifact hygiene check`
 - Previous PC checkpoint retained in the gate chain: `Add PC build artifact hygiene check`
 - Previous PC checkpoint retained in the gate chain: `Add PC launch log hygiene check`
@@ -100,6 +101,7 @@ The machine switch is safe only when all of these are true:
 - `scripts/unity/check_pc_build_artifact_hygiene.ps1` prints `PC build artifact hygiene check OK`.
 - `scripts/unity/check_pc_smoke_artifact_hygiene.ps1` prints `PC smoke artifact hygiene check OK`.
 - `scripts/unity/check_current_plan_queue.ps1` prints `Current plan queue consistency check OK`.
+- `scripts/unity/check_android_device_connection.ps1` prints `Android device connection check waiting on device` if no phone is connected.
 - `scripts/unity/check_current_plan_gate.ps1` prints `Current plan gate check OK`.
 - `scripts/unity/check_android_smoke_log.ps1 -SelfTest` prints `Android smoke log check self-test OK`.
 - `scripts/unity/check_android_smoke_summary.ps1 -SelfTest` prints `Android smoke summary check self-test OK`.
@@ -563,10 +565,26 @@ Current plan queue consistency check OK
 
 This verifies README, BUILD-WIN, master/detailed/PC/mobile/evidence/handoff docs
 and helper scripts agree that the current wait-state package is sealed through
-`PC1-PC47`, that the latest PC checkpoint is `Add current plan queue consistency
-check`, and that `G3 Run Android device smoke` remains the formal next task.
+the then-current PC47 checkpoint, and that `G3 Run Android device smoke` remains
+the formal next task.
 
-**Step 19: Run current plan gate check**
+**Step 19: Run Android device connection check**
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_device_connection.ps1
+```
+
+Expected without a connected phone:
+
+```text
+Android device connection check waiting on device
+```
+
+This reads `adb devices -l` without installing or launching the APK. It reports
+no-device, unauthorized, offline, multiple-device and ready states before G3
+tries to run the real smoke.
+
+**Step 20: Run current plan gate check**
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_current_plan_gate.ps1
@@ -579,12 +597,12 @@ Current plan gate check OK
 ```
 
 This wraps handoff/readiness, Windows build freshness, demo source hygiene, AI
-deputy contract, mobile command model, battle HUD sparse contract, PC visual capture sanity, PC visual capture sanity self-test, PC capture sidecar schema, PC capture preset contract, PC capture artifact hygiene, PC window contract, PC launch log hygiene, PC build artifact hygiene, PC smoke artifact hygiene, current plan queue consistency and Android
+deputy contract, mobile command model, battle HUD sparse contract, PC visual capture sanity, PC visual capture sanity self-test, PC capture sidecar schema, PC capture preset contract, PC capture artifact hygiene, PC window contract, PC launch log hygiene, PC build artifact hygiene, PC smoke artifact hygiene, current plan queue consistency, Android device connection and Android
 preflight checks. With no authorized phone connected, Android should be
 reported as waiting on device; with one authorized phone, Android should report
 OK.
 
-**Step 20: Self-test Android smoke log scanning**
+**Step 21: Self-test Android smoke log scanning**
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_smoke_log.ps1 -SelfTest
@@ -600,7 +618,7 @@ The real device smoke helper calls this scanner after logcat capture, so a
 device launch with fatal exception, fatal signal, ANR, package process death or
 forced activity finish is not accepted as a pass.
 
-**Step 21: Self-test Android smoke summary schema**
+**Step 22: Self-test Android smoke summary schema**
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_smoke_summary.ps1 -SelfTest
@@ -616,7 +634,7 @@ The real device smoke helper calls this checker after writing
 `analysis-output\android-device-smoke-summary.json`, so incomplete or malformed
 summary evidence is not accepted as a pass.
 
-**Step 22: Preview Android device smoke plan**
+**Step 23: Preview Android device smoke plan**
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\android_device_smoke.ps1 -PlanOnly
@@ -632,7 +650,7 @@ This proves the real device-smoke helper can resolve the APK, adb, aapt,
 package, activity, log path and planned install/launch/log-check actions before
 a phone is connected.
 
-**Step 23: Check Android smoke plan/preflight consistency**
+**Step 24: Check Android smoke plan/preflight consistency**
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_smoke_plan_consistency.ps1
@@ -648,7 +666,7 @@ This proves plan mode and direct G3 preflight agree on package, activity,
 ignored evidence paths, execution flags and summary schema readiness before a
 phone is connected.
 
-**Step 24: Run Android G3 readiness directly**
+**Step 25: Run Android G3 readiness directly**
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_g3_readiness.ps1
@@ -663,7 +681,7 @@ Android G3 readiness check waiting on device
 This wraps device preflight, plan/preflight consistency, plan mode, log scanner
 self-test and summary schema self-test. It does not install or launch the app.
 
-**Step 25: Confirm strict G3 device requirement**
+**Step 26: Confirm strict G3 device requirement**
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_g3_device_requirement.ps1
@@ -678,7 +696,7 @@ Android G3 device requirement check waiting on device
 This proves strict G3 readiness cannot be accepted without an authorized
 Android phone.
 
-**Step 26: Run Android device-smoke preflight directly if needed**
+**Step 27: Run Android device-smoke preflight directly if needed**
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_device_preflight.ps1 -AllowNoDevice
@@ -701,7 +719,7 @@ Android device smoke preflight OK
 This checks the APK, adb, aapt, package name and launchable activity without
 installing or launching the app.
 
-**Step 27: Set paths for rebuilding evidence if needed**
+**Step 28: Set paths for rebuilding evidence if needed**
 
 ```powershell
 $Repo = (Get-Location).Path
@@ -710,7 +728,7 @@ $Unity = "$HOME\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe"
 
 If `$Unity` does not exist, point it to the installed Unity editor path.
 
-**Step 28: Run validator when rebuilding or auditing from scratch**
+**Step 29: Run validator when rebuilding or auditing from scratch**
 
 ```powershell
 & $Unity `
@@ -726,7 +744,7 @@ Expected log string:
 MC2 demo contract validation OK
 ```
 
-**Step 29: Build Windows player when rebuilding or auditing from scratch**
+**Step 30: Build Windows player when rebuilding or auditing from scratch**
 
 ```powershell
 & $Unity `
@@ -743,7 +761,7 @@ Build Finished, Result: Success
 MC2 Unity demo Windows build OK
 ```
 
-**Step 30: Run visible-flow smoke without AI key when rebuilding or auditing from scratch**
+**Step 31: Run visible-flow smoke without AI key when rebuilding or auditing from scratch**
 
 ```powershell
 $env:MINIMAX_API_KEY = ""

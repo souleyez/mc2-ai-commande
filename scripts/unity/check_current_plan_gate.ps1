@@ -123,6 +123,7 @@ $androidApkSigningScript = Resolve-RepoPath -RelativePath "scripts\unity\check_a
 $androidApkManifestScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_apk_manifest.ps1"
 $androidApkPayloadScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_apk_payload.ps1"
 $androidApkSizeBudgetScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_apk_size_budget.ps1"
+$androidDeviceConnectionScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_device_connection.ps1"
 $androidPreflightScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_device_preflight.ps1"
 $androidSmokeScript = Resolve-RepoPath -RelativePath "scripts\unity\android_device_smoke.ps1"
 $androidSmokePlanConsistencyScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_smoke_plan_consistency.ps1"
@@ -284,6 +285,18 @@ Invoke-GateStep `
     -ScriptPath $androidApkSizeBudgetScript `
     -Arguments @("-RepoRoot", $RepoRoot) `
     -RequiredMarkers @("Android APK size budget check OK.")
+
+Invoke-GateStep `
+    -Name "Android device connection gate" `
+    -ScriptPath $androidDeviceConnectionScript `
+    -Arguments @("-RepoRoot", $RepoRoot) `
+    -AnySuccessMarkers @(
+        "Android device connection check OK.",
+        "Android device connection check waiting on device.",
+        "Android device connection check waiting on authorization.",
+        "Android device connection check waiting on online device.",
+        "Android device connection check waiting on device selection."
+    )
 
 Invoke-GateStep `
     -Name "Android device gate" `

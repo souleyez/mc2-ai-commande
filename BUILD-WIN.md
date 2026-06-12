@@ -284,10 +284,25 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_curren
 ```
 
 This confirms the current PC/mobile wait-state package is sealed through
-`PC1-PC47`, that `Add current plan queue consistency check` is the latest PC
+`PC1-PC48`, that `Add Android device connection check` is the latest PC
 checkpoint, and that `G3 Run Android device smoke` remains the formal next task.
 
 Expected success string: `Current plan queue consistency check OK`.
+
+Check the Android device connection state before real G3 smoke:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_device_connection.ps1
+```
+
+This reads `adb devices -l` and reports no-device, unauthorized, offline,
+multiple-device or ready states without installing or launching the APK.
+
+Current wait-state checkpoint: `PC1-PC48`.
+
+Expected waiting-state string without a phone: `Android device connection check waiting on device`.
+
+Checkpoint marker: `Add Android device connection check`.
 
 Check the current plan gate without launching Unity:
 
@@ -297,7 +312,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_curren
 
 The current plan gate wraps handoff/readiness, Windows build freshness, demo
 source hygiene, Android smoke artifact hygiene, AI deputy contract, mobile command model, battle HUD sparse
-contract, PC visual capture sanity, PC visual capture sanity self-test, PC capture sidecar schema, PC capture preset contract, PC capture artifact hygiene, PC window contract, PC launch log hygiene, PC build artifact hygiene, PC smoke artifact hygiene, current plan queue consistency, Android SDK tooling, Android APK freshness, Android APK identity, Android APK
+contract, PC visual capture sanity, PC visual capture sanity self-test, PC capture sidecar schema, PC capture preset contract, PC capture artifact hygiene, PC window contract, PC launch log hygiene, PC build artifact hygiene, PC smoke artifact hygiene, current plan queue consistency, Android device connection, Android SDK tooling, Android APK freshness, Android APK identity, Android APK
 compatibility, Android APK signing, Android APK manifest, Android APK payload,
 Android APK size budget, Android smoke summary schema, Android device-smoke preflight, Android smoke plan/preflight consistency, Android G3 readiness and Android G3 device requirement checks. The device preflight also runs the summary schema self-test. With no
 authorized phone connected it should still pass while reporting Android as
@@ -467,6 +482,7 @@ Expected success strings:
 - `PC build artifact hygiene check OK`
 - `PC smoke artifact hygiene check OK`
 - `Current plan queue consistency check OK`
+- `Android device connection check waiting on device`
 - `Current plan gate check OK`
 - `Android SDK tooling check OK`
 - `Android APK compatibility check OK`
