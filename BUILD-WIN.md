@@ -284,7 +284,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_curren
 ```
 
 This confirms the current PC/mobile wait-state package is sealed through
-`PC1-PC54`, that `Add Android ADB readiness watch` is the latest PC
+`PC1-PC55`, that `Add Android G3 device status report` is the latest PC
 checkpoint, and that `G3 Run Android device smoke` remains the formal next task.
 
 Expected success string: `Current plan queue consistency check OK`.
@@ -298,13 +298,14 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_androi
 This reads `adb devices -l` and reports no-device, unauthorized, offline,
 multiple-device or ready states without installing or launching the APK.
 
-Current wait-state checkpoint: `PC1-PC54`.
+Current wait-state checkpoint: `PC1-PC55`.
 
 Expected waiting-state string without an authorized adb phone: `Android device connection check waiting on device`.
 
 Diagnostic marker: `WpdOnlyAndroidProbe: True`.
 Setup hint marker: `AdbSetupHint: True`.
 Watch marker: `AdbWatchHint: True`.
+Status report marker: `G3DeviceStatusReport: True`.
 
 When Windows only exposes a connected Android phone as WPD/MTP, the helper can
 also report `WpdOnlyAndroidDevice: True`; that still means G3 is waiting for USB
@@ -329,6 +330,20 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\watch_androi
 Checkpoint marker: `Add Android ADB readiness watch`.
 
 Previous checkpoint marker: `Add Android device connection check`.
+
+Write the current Android G3 device status report:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\write_android_g3_device_status.ps1
+```
+
+This writes ignored `analysis-output\android-g3-device-status.json` and reports
+`G3DeviceStatusReport: True`, `G3DeviceReady: False` or `True`, and
+`NoInstallOrLaunch: True`.
+
+Checkpoint marker: `Add Android G3 device status report`.
+
+Previous checkpoint marker: `Add Android ADB readiness watch`.
 
 Real Android smoke runs now require the same connection gate before install or
 launch. The plan output must include

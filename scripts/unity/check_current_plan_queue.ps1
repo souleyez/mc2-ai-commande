@@ -81,11 +81,12 @@ function Assert-DoesNotContain {
 }
 
 $requiredPlanMarkers = @(
-    "PC1-PC54",
-    "Add Android ADB readiness watch",
+    "PC1-PC55",
+    "Add Android G3 device status report",
     "WpdOnlyAndroidProbe: True",
     "AdbSetupHint: True",
     "AdbWatchHint: True",
+    "G3DeviceStatusReport: True",
     "CommandFileSmoke: True",
     "SmokeSuccessMarker: MC2 debrief summary assertion OK",
     "SmokeSuccessMarker: MC2 loadout compact assertion OK",
@@ -109,9 +110,9 @@ foreach ($relativePath in $docsToCheck) {
         Assert-Contains -Text $text -Needle $marker -Label "$relativePath plan queue marker"
     }
 
-    Assert-DoesNotContain -Text $text -Needle "define PC54 before implementation" -Label $relativePath
-    Assert-DoesNotContain -Text $text -Needle "必须先定义 PC54" -Label $relativePath
-    Assert-DoesNotContain -Text $text -Needle "必须先写清 PC54" -Label $relativePath
+    Assert-DoesNotContain -Text $text -Needle "define PC55 before implementation" -Label $relativePath
+    Assert-DoesNotContain -Text $text -Needle "必须先定义 PC55" -Label $relativePath
+    Assert-DoesNotContain -Text $text -Needle "必须先写清 PC55" -Label $relativePath
 }
 
 $mobilePlan = Read-RequiredText -RelativePath "docs-mobile-first-plan-2026-06-10.md"
@@ -128,6 +129,7 @@ Assert-Contains -Text $currentGate -Needle 'CommandFileSmoke: True' -Label "curr
 Assert-Contains -Text $currentGate -Needle 'WpdOnlyAndroidProbe: True' -Label "current gate device diagnosis marker"
 Assert-Contains -Text $currentGate -Needle 'AdbSetupHint: True' -Label "current gate adb setup marker"
 Assert-Contains -Text $currentGate -Needle 'AdbWatchHint: True' -Label "current gate adb watch marker"
+Assert-Contains -Text $currentGate -Needle 'G3DeviceStatusReport: True' -Label "current gate g3 device status marker"
 Assert-Contains -Text $currentGate -Needle 'SmokeSuccessMarker: MC2 loadout compact assertion OK' -Label "current gate success marker"
 
 $handoffScript = Read-RequiredText -RelativePath "scripts\unity\check_controlled_demo_handoff.ps1"
@@ -135,6 +137,7 @@ Assert-Contains -Text $handoffScript -Needle 'CommandFileSmoke: True' -Label "ha
 Assert-Contains -Text $handoffScript -Needle 'WpdOnlyAndroidProbe: True' -Label "handoff script device diagnosis marker"
 Assert-Contains -Text $handoffScript -Needle 'AdbSetupHint: True' -Label "handoff script adb setup marker"
 Assert-Contains -Text $handoffScript -Needle 'AdbWatchHint: True' -Label "handoff script adb watch marker"
+Assert-Contains -Text $handoffScript -Needle 'G3DeviceStatusReport: True' -Label "handoff script g3 device status marker"
 Assert-Contains -Text $handoffScript -Needle 'SmokeSuccessMarker: MC2 loadout compact assertion OK' -Label "handoff script success marker"
 
 $tracked = @(& git -C $RepoRoot ls-files 2>$null | ForEach-Object { $_.ToString() })

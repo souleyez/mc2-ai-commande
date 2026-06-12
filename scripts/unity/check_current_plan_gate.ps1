@@ -94,7 +94,7 @@ function Invoke-GateStep {
 
     [void]$rows.Add([pscustomobject]@{
         Step = $Name
-        Status = if ($matchedAny -like "*waiting on device*") { "WAITING" } else { "OK" }
+        Status = if ($matchedAny -like "*waiting on device*" -or $matchedAny -like "*G3DeviceReady: False*" -or $matchedAny -like "*G3DeviceStatus: waiting*") { "WAITING" } else { "OK" }
         Detail = ($detailMarkers -join "; ")
     })
 }
@@ -125,6 +125,7 @@ $androidApkPayloadScript = Resolve-RepoPath -RelativePath "scripts\unity\check_a
 $androidApkSizeBudgetScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_apk_size_budget.ps1"
 $androidDeviceConnectionScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_device_connection.ps1"
 $androidDeviceWatchScript = Resolve-RepoPath -RelativePath "scripts\unity\watch_android_device_connection.ps1"
+$androidG3DeviceStatusScript = Resolve-RepoPath -RelativePath "scripts\unity\write_android_g3_device_status.ps1"
 $androidPreflightScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_device_preflight.ps1"
 $androidSmokeScript = Resolve-RepoPath -RelativePath "scripts\unity\android_device_smoke.ps1"
 $androidSmokeConnectionGateScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_smoke_connection_gate.ps1"
@@ -309,6 +310,16 @@ Invoke-GateStep `
     -AnySuccessMarkers @(
         "Android device connection watch OK.",
         "Android device connection watch waiting on device."
+    )
+
+Invoke-GateStep `
+    -Name "Android G3 device status report gate" `
+    -ScriptPath $androidG3DeviceStatusScript `
+    -Arguments @("-RepoRoot", $RepoRoot) `
+    -RequiredMarkers @("G3DeviceStatusReport: True", "NoInstallOrLaunch: True", "NextGate: G3 Run Android device smoke") `
+    -AnySuccessMarkers @(
+        "G3DeviceReady: True",
+        "G3DeviceReady: False"
     )
 
 Invoke-GateStep `

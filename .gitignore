@@ -82,6 +82,7 @@ analysis-output/pc-visual-sanity-selftest/
 analysis-output/*saved-account*.json
 analysis-output/*validator*.json
 analysis-output/android-device-smoke*.json
+analysis-output/android-g3-device-status.json
 analysis-output/*.png
 
 # Unity demo generated state

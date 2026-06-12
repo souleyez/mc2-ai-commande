@@ -276,6 +276,7 @@ Android device connection check waiting on device
 WpdOnlyAndroidProbe: True
 AdbSetupHint: True
 AdbWatchHint: True
+G3DeviceStatusReport: True
 ```
 
 If Windows sees a connected Android phone only as WPD/MTP, the same helper can
@@ -288,6 +289,12 @@ To wait while changing phone USB debugging or driver state:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\watch_android_device_connection.ps1 -TimeoutSeconds 120
+```
+
+To write the current G3 device status report without installing or launching:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\write_android_g3_device_status.ps1
 ```
 
 Check the Android smoke connection gate behavior before real G3 smoke:
@@ -466,6 +473,7 @@ scripts\unity\check_android_g3_readiness.ps1 -> Android G3 readiness check waiti
 scripts\unity\check_android_g3_device_requirement.ps1 -> Android G3 device requirement check waiting on device
 scripts\unity\check_android_device_connection.ps1 -> Android device connection check waiting on device, WpdOnlyAndroidProbe: True, AdbSetupHint: True
 scripts\unity\watch_android_device_connection.ps1 -Once -AllowWaiting -> Android device connection watch waiting on device, AdbWatchHint: True
+scripts\unity\write_android_g3_device_status.ps1 -> Android G3 device status report OK, G3DeviceStatusReport: True
 scripts\unity\check_android_device_preflight.ps1 -AllowNoDevice -> Android device smoke preflight waiting on device
 ```
 
