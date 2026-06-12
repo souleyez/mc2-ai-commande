@@ -379,6 +379,7 @@ Invoke-GateStep `
         "Android device smoke plan OK.",
         "Screenshot:",
         "ScreenshotCapture: True",
+        "LandscapeScreenshot: True",
         "Summary:",
         "SummaryWrite: True",
         "CommandFileSmoke: True",

@@ -108,6 +108,9 @@ function Assert-SummaryObject {
         "apkPath",
         "logPath",
         "screenshotPath",
+        "screenshotWidth",
+        "screenshotHeight",
+        "screenshotOrientation",
         "commandFileSmoke",
         "commandFilePath",
         "deviceCommandFilePath",
@@ -186,6 +189,17 @@ function Assert-SummaryObject {
 
     if ($Summary.screenshotCaptured -eq $true) {
         Assert-NotBlank -Value $Summary.screenshotPath -Name "screenshotPath"
+        if ([int]$Summary.screenshotWidth -le 0 -or [int]$Summary.screenshotHeight -le 0) {
+            Add-Failure "Summary screenshot dimensions must be positive: $($Summary.screenshotWidth)x$($Summary.screenshotHeight)"
+        }
+
+        if ([string]$Summary.screenshotOrientation -ne "landscape") {
+            Add-Failure "Summary screenshotOrientation must be landscape: $($Summary.screenshotOrientation)"
+        }
+
+        if ([int]$Summary.screenshotWidth -lt [int]$Summary.screenshotHeight) {
+            Add-Failure "Summary screenshot dimensions must be landscape: $($Summary.screenshotWidth)x$($Summary.screenshotHeight)"
+        }
     }
 
     if ($failures.Count -eq 0) {
@@ -193,6 +207,7 @@ function Assert-SummaryObject {
         Add-Row -Check "package" -Detail ([string]$Summary.packageName)
         Add-Row -Check "device" -Detail "$($Summary.deviceId) / $($Summary.model) / Android $($Summary.androidVersion)"
         Add-Row -Check "evidence paths" -Detail "log=$($Summary.logPath); screenshot=$($Summary.screenshotPath)"
+        Add-Row -Check "screenshot orientation" -Detail "$($Summary.screenshotOrientation) $($Summary.screenshotWidth)x$($Summary.screenshotHeight)"
         Add-Row -Check "command-file smoke" -Detail "enabled=$($Summary.commandFileSmoke); passed=$($Summary.smokeTestPassed)"
         Add-Row -Check "execution flags" -Detail "installed=$($Summary.installed); launched=$($Summary.launched); logChecked=$($Summary.logChecked); screenshotCaptured=$($Summary.screenshotCaptured)"
     }
@@ -211,6 +226,9 @@ if ($SelfTest) {
         apkPath = "unity-mc2-demo\Builds\Android\MC2UnityDemo.apk"
         logPath = "analysis-output\android-device-smoke.log"
         screenshotPath = "analysis-output\android-device-smoke.png"
+        screenshotWidth = 2400
+        screenshotHeight = 1080
+        screenshotOrientation = "landscape"
         commandFileSmoke = $true
         commandFilePath = "unity-mc2-demo\Assets\StreamingAssets\CommanderScripts\mc2_01-visible-flow-audit.txt"
         deviceCommandFilePath = "/sdcard/Android/data/com.DefaultCompany.unitymc2demo/files/mc2_01-visible-flow-audit.txt"

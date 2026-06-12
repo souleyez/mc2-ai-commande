@@ -143,6 +143,7 @@ Assert-TextContains -Text $planText -Needle "Install: True" -Label "android_devi
 Assert-TextContains -Text $planText -Needle "Launch: True" -Label "android_device_smoke.ps1 -PlanOnly"
 Assert-TextContains -Text $planText -Needle "LogCheck: True" -Label "android_device_smoke.ps1 -PlanOnly"
 Assert-TextContains -Text $planText -Needle "ScreenshotCapture: True" -Label "android_device_smoke.ps1 -PlanOnly"
+Assert-TextContains -Text $planText -Needle "LandscapeScreenshot: True" -Label "android_device_smoke.ps1 -PlanOnly"
 Assert-TextContains -Text $planText -Needle "SummaryWrite: True" -Label "android_device_smoke.ps1 -PlanOnly"
 Assert-TextContains -Text $planText -Needle "ConnectionCheck: check_android_device_connection.ps1 -RequireDevice" -Label "android_device_smoke.ps1 -PlanOnly"
 

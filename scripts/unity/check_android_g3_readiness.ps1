@@ -167,6 +167,7 @@ Assert-TextContains -Text $planResult.Text -Needle "UnityArguments: -mc2CommandF
 Assert-TextContains -Text $planResult.Text -Needle "SmokeSuccessMarker: MC2 debrief summary assertion OK" -Label "Android smoke plan"
 Assert-TextContains -Text $planResult.Text -Needle "SmokeSuccessMarker: MC2 loadout compact assertion OK" -Label "Android smoke plan"
 Assert-TextContains -Text $planResult.Text -Needle "ScreenshotCapture: True" -Label "Android smoke plan"
+Assert-TextContains -Text $planResult.Text -Needle "LandscapeScreenshot: True" -Label "Android smoke plan"
 Assert-TextContains -Text $planResult.Text -Needle "SummaryWrite: True" -Label "Android smoke plan"
 Assert-TextContains -Text $planResult.Text -Needle "ConnectionCheck: check_android_device_connection.ps1 -RequireDevice" -Label "Android smoke plan"
 Add-Row -Check "smoke plan" -Status "OK" -Detail "install+launch+command-file+log+screenshot+summary+connection"

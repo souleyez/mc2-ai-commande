@@ -31,7 +31,12 @@ behind this mobile gate.
 G2 Android build smoke is complete and the APK exists in ignored build output.
 G3 Android device smoke is complete on Mi 11 Lite, using the ignored APK, real
 ADB install/launch, visible-flow command-file execution, logcat success markers,
-screenshot capture and summary JSON. The next mobile gate is `G4 Touch UI pass`.
+screenshot capture and summary JSON. G4 Touch UI pass is complete as a
+landscape-phone build: Android manifest is landscape-only, resizable activity is
+off, the runtime blocks portrait autorotation, mobile sidecars require
+`orientation=landscape`, and the real device smoke summary reports
+`screenshot orientation OK landscape 2400x1080`. The next mobile gate is
+`G5 Mobile performance budget`.
 G3 Android device-smoke preflight now verifies the APK, Android SDK tooling,
 adb, aapt, apksigner, package name, launchable activity, compatibility metadata,
 signing and manifest install-target metadata, Unity/IL2CPP runtime payload,
@@ -49,7 +54,9 @@ demo evidence freshness check, controlled demo capture log freshness check,
 Android SDK tooling check, Android APK freshness check, Android APK identity check, Android APK
 compatibility check, Android APK signing check, Android APK manifest check,
 Android APK payload check, Android APK size budget check, Android smoke artifact hygiene check, Android smoke screenshot evidence capture, Android smoke summary evidence output, Android smoke summary schema check, Android smoke summary preflight check, Android smoke plan/preflight consistency check, Android G3 readiness check, Android G3 device requirement check, Android device connection check, Android WPD-only device diagnosis, Android ADB setup guidance, Android ADB driver package probe, Android ADB readiness watch, Android G3 device status report, Android G3 when-ready runner, Android smoke connection gate, Android smoke connection gate check, Android visible-flow command-file smoke, PC visual capture sanity check, PC visual capture sanity self-test, PC capture sidecar schema check, PC capture preset contract check, PC capture artifact hygiene check, PC window contract check, PC launch log hygiene check, PC build artifact hygiene check, PC smoke artifact hygiene check, Add current plan queue consistency check, Add Android device connection check, Wire Android smoke connection gate, Add Android smoke connection gate check, Add Android visible-flow command-file smoke, Add Android WPD-only device diagnosis, Add Android ADB setup guidance, Add Android ADB driver package probe, Add Android ADB readiness watch, Add Android G3 device status report, Add Android G3 when-ready runner, current plan gate
-check, Android smoke log crash scan and Android smoke plan mode. Formal next work is `G4 Touch UI pass`.
+check, Android smoke log crash scan, Android smoke plan mode, landscape APK
+manifest checks and landscape screenshot summary checks. Formal next work is
+`G5 Mobile performance budget`.
 
 ## Definition Of Done
 
@@ -78,8 +85,8 @@ failing, unless the later work is explicitly diagnostic.
 | H2 | Done | New-machine baseline | Clone repo, run Windows validator/build/smoke on new machine |
 | G2 | Done | Android build path | Produce Android artifact from Unity 6 without staging generated output |
 | G3 | Done | Android device smoke | Launch on real Android device and reach battle/debrief path |
-| G4 | Next | Touch UI pass | Core command model usable on phone aspect ratios |
-| G5 | Later | Mobile performance budget | Baseline FPS, memory, package size, load time and thermal notes recorded |
+| G4 | Done | Touch UI pass | Core command model usable on landscape phone aspect ratios |
+| G5 | Next | Mobile performance budget | Baseline FPS, memory, package size, load time and thermal notes recorded |
 | G6 | Later | iOS feasibility | Document macOS/Xcode/signing requirements after Android proof |
 
 ## Executable Requirement Matrix
@@ -95,7 +102,7 @@ failing, unless the later work is explicitly diagnostic.
 - **Failure Handling:** 失败时先看什么、停在哪里、哪些输出不能提交。
 - **Commit Scope:** 允许进入提交的文件范围；生成物、日志和私有素材默认不提交。
 
-当前移动执行目标只允许有一个 `In Progress` 或 `Waiting on Device`。如果前置条件失败，先把失败写成明确 blocker 或安装步骤，不跳到后续移动玩法任务。G3 真机 smoke 已通过，后续移动开发回到 `G4 Touch UI pass`。
+当前移动执行目标只允许有一个 `In Progress` 或 `Waiting on Device`。如果前置条件失败，先把失败写成明确 blocker 或安装步骤，不跳到后续移动玩法任务。G3 真机 smoke 和横屏 G4 Touch UI pass 已通过，后续移动开发回到 `G5 Mobile performance budget`。
 
 ### Completed Mobile Target: G3 Android Device Smoke
 
@@ -120,26 +127,32 @@ failing, unless the later work is explicitly diagnostic.
 - optional short docs note with device model, Android version, install result and smoke result;
 - no APK/log/screenshot sidecar staged.
 
-### Current Mobile Target: G4 Touch UI Pass
+### Completed Mobile Target: G4 Touch UI Pass
 
 **Precondition:**
 
 - G3 Android device smoke remains green on one physical Android phone.
 - Current battle HUD stays sparse: no heavy debug panels during normal combat.
 - Existing PC command model and Android command-file smoke continue to pass.
+- Mobile version is landscape-first; portrait is not a supported primary play
+  layout.
 
 **Action:**
 
-1. Audit current Android viewport, touch target sizes and command affordances on the connected device.
+1. Audit current Android landscape viewport, touch target sizes and command affordances on the connected device.
 2. Keep the battle screen focused on map, unit status list, move/attack tap, boost and pause/system actions.
 3. Add only the minimum UI adaptation needed for touch use; do not introduce realtime PvP, economy, AI director or save-game scope here.
-4. Capture Android screenshot evidence and update this plan only if the G4 gate changes.
+4. Capture Android landscape screenshot evidence and update this plan only if the G4 gate changes.
 
 **Output:**
 
 - touch UI pass/fail notes in ignored local evidence;
 - source/UI changes only if required by the device audit;
 - no APK/log/screenshot artifacts staged.
+- accepted G4 result: Android manifest `screenOrientation=0x0`, runtime
+  landscape autorotation guard, `MobileTouchUi=ready orientation=landscape`,
+  and direct device smoke summary `screenshot orientation OK landscape
+  2400x1080`.
 
 **Verification:**
 
@@ -150,6 +163,37 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_androi
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_smoke_plan_consistency.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_g3_readiness.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_g3_device_requirement.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\android_device_smoke.ps1
+```
+
+The G4 implementation uses `adb install -r --no-streaming` in
+`android_device_smoke.ps1`; streamed install hung on the Mi 11 Lite during this
+checkpoint, while push install completed quickly.
+
+### Current Mobile Target: G5 Mobile Performance Budget
+
+**Precondition:**
+
+- G4 landscape touch UI pass remains green.
+- Fresh Android APK passes freshness, manifest, compatibility, signing, payload
+  and size checks.
+- One physical Android phone can run direct device smoke without portrait
+  screenshots.
+
+**Action:**
+
+1. Define the first mobile runtime budget for battle FPS, memory, load time,
+   package size and thermal/battery observation.
+2. Add a lightweight evidence script or documented manual command sequence that
+   captures those values without changing gameplay.
+3. Record the first Mi 11 Lite baseline in an ignored evidence file and a short
+   tracked budget note.
+
+**Verification:**
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_apk_freshness.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_apk_manifest.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\android_device_smoke.ps1
 ```
 
@@ -362,7 +406,7 @@ G3 is complete when a real phone can launch and the command-file smoke reaches
 the core battle/debrief/relaunch path without requiring any AI key. If no phone
 is available, mark G3 as Waiting on Device and do not start G4/G5.
 
-### G4: Touch Command UI
+### G4: Landscape Touch Command UI
 
 The mobile command model must stay simple. Do not introduce drag-box selection.
 Do not add a dense battle log.
@@ -374,11 +418,11 @@ Do not add a dense battle log.
 | G4-R3 | Tapping a mech status row selects one mech for detached order | selected mech enters single-order state |
 | G4-R4 | Detached mech ignores later squad order until its solo order completes | solo isolation still matches current design |
 | G4-R5 | Detached mech auto-rejoins after order completion | status row returns to squad state |
-| G4-R6 | Jet button is usable on phone | valid Jet moves; illegal landing keeps blocked mech still |
+| G4-R6 | Jet button is usable on landscape phone | valid Jet moves; illegal landing keeps blocked mech still |
 | G4-R7 | Mission map/objective control is usable and closable | map does not cover core command flow permanently |
 | G4-R8 | System/pause panel is usable | restart/end/AI takeover shell remains accessible |
 | G4-R9 | MechLab grid remains usable on touch | select mounted weapon, choose target cell, place/reset/apply, cycle armor/sink/clear |
-| G4-R10 | Text does not overlap at common phone aspect ratios | check at 16:9, 19.5:9 and 20:9 layouts |
+| G4-R10 | Text does not overlap at common landscape phone aspect ratios | check at 16:9, 19.5:9 and 20:9 landscape layouts |
 | G4-R11 | Battle HUD remains sparse | no large combat log, save-slot UI, account UI or debug overlay in active battle |
 
 Initial UI target:
@@ -388,8 +432,8 @@ Initial UI target:
 - no text should be required to read below normal phone legibility at 1080p;
 - if a text label cannot fit, shorten the label before adding another panel.
 
-G4 is complete when the command loop can be performed by touch without relying
-on keyboard, mouse hover, or drag selection.
+G4 is complete when the command loop can be performed by touch on a landscape
+phone without relying on keyboard, mouse hover, or drag selection.
 
 ### G5: Mobile Performance Budget
 

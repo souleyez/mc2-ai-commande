@@ -125,6 +125,23 @@ $battleHudMarkers = @(
     "overlays=hidden"
 )
 
+$mobileTouchMarkers = @(
+    "MobileTouchUi=ready",
+    "orientation=landscape",
+    "commandTargets=44",
+    "statusRows=44",
+    "primaryButtons=44",
+    "mapBack=44",
+    "systemButtons=44",
+    "mechLabBack=44",
+    "mechLabGridCell>=36",
+    "touchRatios=16:9+19.5:9+20:9",
+    "landscapeOnly=yes",
+    "noDragBox=yes",
+    "combatLog=hidden",
+    "status=ready"
+)
+
 foreach ($preset in $battlePresets) {
     $capture = Read-CaptureSidecar -Preset $preset
     if ($null -eq $capture) {
@@ -136,10 +153,15 @@ foreach ($preset in $battlePresets) {
         Assert-Contains -Text $battleHud -Needle $marker -Label "$preset battle HUD"
     }
 
+    $mobileTouch = [string]$capture.mobileTouch
+    foreach ($marker in $mobileTouchMarkers) {
+        Assert-Contains -Text $mobileTouch -Needle $marker -Label "$preset mobile touch UI"
+    }
+
     [void]$rows.Add([pscustomobject]@{
         Check = "$preset battle command model"
         Status = "OK"
-        Detail = "$($battleHudMarkers.Count) marker(s)"
+        Detail = "$($battleHudMarkers.Count + $mobileTouchMarkers.Count) marker(s)"
     })
 }
 
@@ -168,6 +190,10 @@ Assert-FileContains -RelativePath "unity-mc2-demo\Assets\Scripts\Presentation\Mc
     "BattleHud=active controls=statusRows+jet+map+bay+system",
     "SparseBattleUi=statusRows+sections+solo",
     "controls=all+jet+map+bay+system",
+    "MobileTouchUi=ready",
+    "orientation=landscape",
+    "landscapeOnly=yes",
+    "MobileTouchMinTargetHeight = 44f",
     "noToggle="
 )
 

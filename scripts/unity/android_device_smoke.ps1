@@ -329,6 +329,31 @@ function Write-SmokeSummary {
     $Data | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $Path -Encoding UTF8
 }
 
+function Get-PngDimensions {
+    param([string]$Path)
+
+    $bytes = [System.IO.File]::ReadAllBytes($Path)
+    if ($bytes.Length -lt 24) {
+        throw "PNG file is too small to contain dimensions: $Path"
+    }
+
+    $pngSignature = @(0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a)
+    for ($index = 0; $index -lt $pngSignature.Count; $index++) {
+        if ($bytes[$index] -ne $pngSignature[$index]) {
+            throw "Screenshot is not a PNG file: $Path"
+        }
+    }
+
+    $width = ([int]$bytes[16] -shl 24) -bor ([int]$bytes[17] -shl 16) -bor ([int]$bytes[18] -shl 8) -bor [int]$bytes[19]
+    $height = ([int]$bytes[20] -shl 24) -bor ([int]$bytes[21] -shl 16) -bor ([int]$bytes[22] -shl 8) -bor [int]$bytes[23]
+
+    return [pscustomobject]@{
+        Width = $width
+        Height = $height
+        Orientation = if ($width -ge $height) { "landscape" } else { "portrait" }
+    }
+}
+
 function Get-AndroidShellDirectory {
     param([string]$Path)
 
@@ -410,6 +435,9 @@ if ($PlanOnly) {
     Write-Host "Launch: $(-not $NoLaunch)"
     Write-Host "LogCheck: $(-not $SkipLogCheck)"
     Write-Host "ScreenshotCapture: $(-not $SkipScreenshot)"
+    if (-not $SkipScreenshot) {
+        Write-Host "LandscapeScreenshot: True"
+    }
     Write-Host "SummaryWrite: $(-not $SkipSummary)"
     Write-Host "ConnectionCheck: check_android_device_connection.ps1 -RequireDevice"
     return
@@ -460,7 +488,7 @@ $model = (& $AdbPath @adbArgs shell getprop ro.product.model) -join " "
 $androidVersion = (& $AdbPath @adbArgs shell getprop ro.build.version.release) -join " "
 
 if (-not $NoInstall) {
-    & $AdbPath @adbArgs install -r $ApkPath
+    & $AdbPath @adbArgs install -r --no-streaming $ApkPath
     if ($LASTEXITCODE -ne 0) {
         throw "adb install failed with exit code $LASTEXITCODE"
     }
@@ -528,6 +556,18 @@ if (-not $SkipScreenshot) {
     if ($screenshot.Length -lt 1024) {
         throw "Android smoke screenshot is too small to be useful: $ScreenshotPath ($($screenshot.Length) bytes)"
     }
+
+    $screenshotDimensions = Get-PngDimensions -Path $ScreenshotPath
+    if ($screenshotDimensions.Orientation -ne "landscape") {
+        throw "Android smoke screenshot must be landscape, got $($screenshotDimensions.Width)x$($screenshotDimensions.Height): $ScreenshotPath"
+    }
+}
+else {
+    $screenshotDimensions = [pscustomobject]@{
+        Width = 0
+        Height = 0
+        Orientation = ""
+    }
 }
 
 $pidOutput = (& $AdbPath @adbArgs shell pidof $PackageName) -join " "
@@ -553,6 +593,9 @@ if (-not $SkipSummary) {
         apkPath = $ApkPath
         logPath = $LogPath
         screenshotPath = if ($SkipScreenshot) { "" } else { $ScreenshotPath }
+        screenshotWidth = $screenshotDimensions.Width
+        screenshotHeight = $screenshotDimensions.Height
+        screenshotOrientation = $screenshotDimensions.Orientation
         commandFileSmoke = $commandFileSmoke
         commandFilePath = if ($commandFileSmoke) { $CommandFilePath } else { "" }
         deviceCommandFilePath = if ($commandFileSmoke) { $DeviceCommandFilePath } else { "" }
@@ -605,3 +648,5 @@ if (-not $SkipSummary) {
 if ([string]::IsNullOrWhiteSpace($pidOutput) -and -not $smokeTestPassed) {
     throw "Package did not remain running after launch: $PackageName"
 }
+
+exit 0

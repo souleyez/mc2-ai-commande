@@ -203,6 +203,7 @@ function Test-CaptureSidecar {
 
     if ($sidecar.flowScreen -eq "Battle") {
         Test-BattleHudCaptureSidecar -Sidecar $sidecar -Path $Path
+        Test-MobileTouchCaptureSidecar -Sidecar $sidecar -Path $Path
         Test-BattleOccupancyCaptureSidecar -Sidecar $sidecar -Path $Path
         Test-ContactClearanceCaptureSidecar -Sidecar $sidecar -Path $Path
         Test-TerrainReadabilityCaptureSidecar -Sidecar $sidecar -Path $Path
@@ -231,6 +232,35 @@ function Test-CaptureSidecar {
     }
 
     return $sidecar
+}
+
+function Test-MobileTouchCaptureSidecar {
+    param(
+        [object]$Sidecar,
+        [string]$Path
+    )
+
+    $summary = [string]$Sidecar.mobileTouch
+    foreach ($fragment in @(
+        "MobileTouchUi=ready",
+        "orientation=landscape",
+        "commandTargets=44",
+        "statusRows=44",
+        "primaryButtons=44",
+        "mapBack=44",
+        "systemButtons=44",
+        "mechLabBack=44",
+        "mechLabGridCell>=36",
+        "touchRatios=16:9+19.5:9+20:9",
+        "landscapeOnly=yes",
+        "noDragBox=yes",
+        "combatLog=hidden",
+        "status=ready"
+    )) {
+        if ($summary -notlike "*$fragment*") {
+            throw "Mobile touch sidecar summary missing '$fragment': $Path -> $summary"
+        }
+    }
 }
 
 function Read-SummaryNumber {

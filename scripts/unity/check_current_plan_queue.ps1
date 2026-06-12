@@ -120,12 +120,12 @@ foreach ($relativePath in $docsToCheck) {
 
 $mobilePlan = Read-RequiredText -RelativePath "docs-mobile-first-plan-2026-06-10.md"
 Assert-Contains -Text $mobilePlan -Needle "| G3 | Done | Android device smoke |" -Label "mobile gate order"
-Assert-Contains -Text $mobilePlan -Needle "| G4 | Next | Touch UI pass |" -Label "mobile gate order"
-Assert-Contains -Text $mobilePlan -Needle "| G5 | Later | Mobile performance budget |" -Label "mobile gate order"
+Assert-Contains -Text $mobilePlan -Needle "| G4 | Done | Touch UI pass |" -Label "mobile gate order"
+Assert-Contains -Text $mobilePlan -Needle "| G5 | Next | Mobile performance budget |" -Label "mobile gate order"
 
 $handoff = Read-RequiredText -RelativePath "docs-machine-handoff-plan-2026-06-07.md"
-Assert-Contains -Text $handoff -Needle 'Current formal next development task after handoff: `G4 Touch UI pass`' -Label "handoff next task"
-Assert-Contains -Text $handoff -Needle 'Next planned work: `G4 Touch UI pass`' -Label "handoff next planned work"
+Assert-Contains -Text $handoff -Needle 'Current formal next development task after handoff: `G5 Mobile performance budget`' -Label "handoff next task"
+Assert-Contains -Text $handoff -Needle 'Next planned work: `G5 Mobile performance budget`' -Label "handoff next planned work"
 
 $currentGate = Read-RequiredText -RelativePath "scripts\unity\check_current_plan_gate.ps1"
 Assert-Contains -Text $currentGate -Needle 'CommandFileSmoke: True' -Label "current gate script marker"
@@ -136,6 +136,7 @@ Assert-Contains -Text $currentGate -Needle 'AdbWatchHint: True' -Label "current 
 Assert-Contains -Text $currentGate -Needle 'G3DeviceStatusReport: True' -Label "current gate g3 device status marker"
 Assert-Contains -Text $currentGate -Needle 'G3WhenReady: True' -Label "current gate g3 when-ready marker"
 Assert-Contains -Text $currentGate -Needle 'SmokeSuccessMarker: MC2 loadout compact assertion OK' -Label "current gate success marker"
+Assert-Contains -Text $currentGate -Needle 'LandscapeScreenshot: True' -Label "current gate landscape screenshot marker"
 
 $handoffScript = Read-RequiredText -RelativePath "scripts\unity\check_controlled_demo_handoff.ps1"
 Assert-Contains -Text $handoffScript -Needle 'CommandFileSmoke: True' -Label "handoff script marker"

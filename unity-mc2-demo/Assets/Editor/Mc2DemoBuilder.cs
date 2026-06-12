@@ -42,6 +42,7 @@ namespace MC2Demo.EditorTools
                 throw new System.InvalidOperationException("Android Build Support is not installed. Expected Unity module folder: " + androidPlayerPath);
             }
             ConfigureAndroidTools(androidPlayerPath);
+            ConfigureAndroidLandscapePlayerSettings();
 
             Mc2DemoSceneBuilder.RebuildDemoScene();
             Mc2DemoValidator.ValidateMissionContractWithoutExit();
@@ -113,6 +114,17 @@ namespace MC2Demo.EditorTools
             }
 
             property.SetValue(null, path);
+        }
+
+        private static void ConfigureAndroidLandscapePlayerSettings()
+        {
+            PlayerSettings.defaultInterfaceOrientation = UIOrientation.LandscapeLeft;
+            PlayerSettings.allowedAutorotateToPortrait = false;
+            PlayerSettings.allowedAutorotateToPortraitUpsideDown = false;
+            PlayerSettings.allowedAutorotateToLandscapeLeft = true;
+            PlayerSettings.allowedAutorotateToLandscapeRight = true;
+
+            Debug.Log("MC2 Android orientation configured: landscape-only touch build");
         }
     }
 }

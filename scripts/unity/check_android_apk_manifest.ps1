@@ -6,11 +6,15 @@ param(
         "android.permission.INTERNET",
         "com.DefaultCompany.unitymc2demo.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
     ),
+    [string[]]$ExpectedRequiredFeatures = @(
+        "android.hardware.screen.landscape"
+    ),
     [string[]]$ExpectedNotRequiredFeatures = @(
         "android.hardware.touchscreen",
         "android.hardware.vulkan.version"
     ),
-    [string[]]$ExpectedSupportedScreens = @("small", "normal", "large", "xlarge")
+    [string[]]$ExpectedSupportedScreens = @("small", "normal", "large", "xlarge"),
+    [string[]]$ExpectedActivityScreenOrientations = @("0x0", "0x6", "0x8", "0xb")
 )
 
 Set-StrictMode -Version Latest
@@ -114,6 +118,7 @@ function Get-ApkManifestFacts {
         RequiredFeatures = @()
         NotRequiredFeatures = @()
         SupportedScreens = @()
+        ActivityScreenOrientations = @()
     }
 
     $badgingResult = Invoke-NativeCommand -FilePath $Aapt -Arguments @("dump", "badging", $Apk)
@@ -141,6 +146,19 @@ function Get-ApkManifestFacts {
         }
     }
 
+    $xmlTreeResult = Invoke-NativeCommand -FilePath $Aapt -Arguments @("dump", "xmltree", $Apk, "AndroidManifest.xml")
+    $xmlTree = $xmlTreeResult.Output
+    if ($xmlTreeResult.ExitCode -ne 0) {
+        Add-Failure "aapt could not read APK AndroidManifest.xml: $($xmlTree -join ' ')"
+        return $facts
+    }
+
+    foreach ($line in $xmlTree) {
+        if ($line -match "android:screenOrientation.*\)0x([0-9a-fA-F]+)") {
+            $facts["ActivityScreenOrientations"] += ("0x" + $Matches[1].ToLowerInvariant())
+        }
+    }
+
     return $facts
 }
 
@@ -163,12 +181,12 @@ if ((Test-Path -LiteralPath $ApkPath -PathType Leaf) -and (Test-Path -LiteralPat
         Add-Row -Check "permissions" -Detail ($permissionComparison.Actual -join ", ")
     }
 
-    $requiredFeatures = @($facts["RequiredFeatures"] | Sort-Object)
-    if ($requiredFeatures.Count -gt 0) {
-        Add-Failure "APK has required hardware features that may narrow install targets: $($requiredFeatures -join ', ')."
+    $requiredComparison = Compare-Set -Actual $facts["RequiredFeatures"] -Expected $ExpectedRequiredFeatures
+    if (-not $requiredComparison.Matches) {
+        Add-Failure "APK required features mismatch. Expected $($requiredComparison.Expected -join ', '), got $($requiredComparison.Actual -join ', ')."
     }
     else {
-        Add-Row -Check "required features" -Detail "none"
+        Add-Row -Check "required features" -Detail ($requiredComparison.Actual -join ", ")
     }
 
     $notRequiredComparison = Compare-Set -Actual $facts["NotRequiredFeatures"] -Expected $ExpectedNotRequiredFeatures
@@ -186,6 +204,18 @@ if ((Test-Path -LiteralPath $ApkPath -PathType Leaf) -and (Test-Path -LiteralPat
     else {
         Add-Row -Check "supports-screens" -Detail ($screenComparison.Actual -join ", ")
     }
+
+    $actualOrientations = @($facts["ActivityScreenOrientations"] | Sort-Object -Unique)
+    $expectedOrientations = @($ExpectedActivityScreenOrientations | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | ForEach-Object { $_.ToLowerInvariant() } | Sort-Object -Unique)
+    if ($actualOrientations.Count -eq 0) {
+        Add-Failure "APK activity screenOrientation could not be discovered."
+    }
+    elseif (@($actualOrientations | Where-Object { $expectedOrientations -notcontains $_ }).Count -gt 0) {
+        Add-Failure "APK activity screenOrientation is not landscape-only. Expected one of $($expectedOrientations -join ', '), got $($actualOrientations -join ', ')."
+    }
+    else {
+        Add-Row -Check "activity screenOrientation" -Detail ($actualOrientations -join ", ")
+    }
 }
 
 if ($failures.Count -gt 0) {
@@ -201,6 +231,8 @@ Write-Host "Android APK manifest check OK."
 Write-Host "Repo: $RepoRoot"
 Write-Host "APK: $ApkPath"
 Write-Host "AllowedPermissions: $($AllowedPermissions -join ', ')"
+Write-Host "ExpectedRequiredFeatures: $($ExpectedRequiredFeatures -join ', ')"
 Write-Host "ExpectedNotRequiredFeatures: $($ExpectedNotRequiredFeatures -join ', ')"
 Write-Host "ExpectedSupportedScreens: $($ExpectedSupportedScreens -join ', ')"
+Write-Host "ExpectedActivityScreenOrientations: $($ExpectedActivityScreenOrientations -join ', ')"
 $rows | Format-Table -AutoSize

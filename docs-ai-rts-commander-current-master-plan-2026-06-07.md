@@ -51,7 +51,7 @@
 当前阶段是：
 
 ```text
-Mobile G3 Passed -> G4 Touch UI pass
+Mobile G4 Landscape Touch Passed -> G5 Mobile performance budget
 ```
 
 不是从零开发，也不是马上做平台。现在要把本地 Demo 收成：
@@ -65,7 +65,7 @@ Mobile G3 Passed -> G4 Touch UI pass
 - 部位损伤有记忆点；
 - AI 副官是可选能力，不拖慢本地战斗；
 - 公开替换包路线讲得清楚；
-- Android G3 真机 smoke 已通过；下一步进入 G4 Touch UI pass。
+- Android G3 真机 smoke 和横屏 G4 Touch UI pass 已通过；下一步进入 G5 Mobile performance budget。
 
 已完成的关键基础：
 
@@ -90,7 +90,7 @@ Mobile G3 Passed -> G4 Touch UI pass
 | Gap | Why It Matters | First Fix |
 | --- | --- | --- |
 | Android 真机 smoke 等待设备 | APK 已能构建，但当前没有授权 Android 手机证明真实设备可启动并进入战斗/战报 | G3 等待连接 Android 手机，安装 APK，抓取 logcat 并记录启动结果 |
-| PC/移动前置质量本轮已收口 | Windows 构建、visible-flow、六截图、战场可读性、MechLab、演示文档、受控启动预检、受控窗口尺寸契约检查、PC 启动日志卫生检查、PC 构建输出卫生检查、PC smoke 生成物卫生检查、当前计划队列一致性检查、Android 设备连接诊断检查、Android visible-flow command-file smoke、构建新鲜度检查、证据健康检查、证据新鲜度检查、capture 日志新鲜度检查、Android SDK 工具链检查、Android APK 新鲜度检查、Android APK 身份检查、Android APK 兼容性检查、Android APK 签名检查、Android APK 清单检查、Android APK 载荷检查、Android APK 包体预算检查、Android smoke 生成物卫生检查、Android smoke 截图证据捕获、Android smoke 摘要证据输出、Android smoke 摘要 schema 检查、Android smoke 摘要 preflight 检查、Android smoke 预演/前置一致性检查、Android G3 readiness 检查、Android G3 真机要求检查、PC 视觉截图 sanity 检查和自测、PC 截图 sidecar schema 检查、PC 截图 preset 契约检查、PC 截图生成物卫生检查、公开边界预检、总预检、交接一致性检查、Android 真机 smoke 前置检查、PC 核心玩法合约检查、移动指挥模型预检、战斗 HUD 稀疏合约检查、源码/生成物卫生检查、AI 副官边界检查、当前计划 gate 总预检、Android smoke 日志崩溃扫描和 Android smoke 预演模式已经形成当前展示包 | `Pass Android G3 device smoke` 已完成；移动端正式下一步是 `G4 Touch UI pass` |
+| PC/移动前置质量本轮已收口 | Windows 构建、visible-flow、六截图、战场可读性、MechLab、演示文档、受控启动预检、受控窗口尺寸契约检查、PC 启动日志卫生检查、PC 构建输出卫生检查、PC smoke 生成物卫生检查、当前计划队列一致性检查、Android 设备连接诊断检查、Android visible-flow command-file smoke、构建新鲜度检查、证据健康检查、证据新鲜度检查、capture 日志新鲜度检查、Android SDK 工具链检查、Android APK 新鲜度检查、Android APK 身份检查、Android APK 兼容性检查、Android APK 签名检查、Android APK 清单检查、Android APK 载荷检查、Android APK 包体预算检查、Android smoke 生成物卫生检查、Android smoke 截图证据捕获、Android smoke 摘要证据输出、Android smoke 摘要 schema 检查、Android smoke 摘要 preflight 检查、Android smoke 预演/前置一致性检查、Android G3 readiness 检查、Android G3 真机要求检查、PC 视觉截图 sanity 检查和自测、PC 截图 sidecar schema 检查、PC 截图 preset 契约检查、PC 截图生成物卫生检查、公开边界预检、总预检、交接一致性检查、Android 真机 smoke 前置检查、PC 核心玩法合约检查、移动指挥模型预检、战斗 HUD 稀疏合约检查、源码/生成物卫生检查、AI 副官边界检查、当前计划 gate 总预检、Android smoke 日志崩溃扫描和 Android smoke 预演模式已经形成当前展示包 | `Pass Android G3 device smoke` 和横屏 `G4 Touch UI pass` 已完成；移动端正式下一步是 `G5 Mobile performance budget` |
 | 移动端交互和性能未验证 | 移动端是产品优先项，拿到设备后还要证明手机触控和性能可接受 | G3-G5 在设备可用后继续做真机 smoke、触控 UI 和性能预算 |
 | 清权资产还未真正接入运行包 | D1 已有 metadata 合同，但不是最终美术包 | D2 以后再做 mountable clean content pack |
 | 平台化仍停在契约层 | 奖励权威已写清楚，地图包、排行和创作者边界还要补 | F2-F4 排到移动端 gate 之后 |
@@ -1055,4 +1055,4 @@ Stop and reassess if:
 
 ## 10. One-Line Direction
 
-Windows 本地 Demo 的画面、碰撞、稀疏 UI、MechLab、损伤故事、受控演示证据、PC 视觉截图 sanity 与自测、PC 截图 sidecar schema、PC 截图 preset 契约、PC 截图生成物卫生、PC 受控窗口尺寸契约、PC 启动日志卫生、PC 构建输出卫生、PC smoke 生成物卫生、当前计划队列一致性、Android 设备连接诊断、Android WPD-only device diagnosis、Android ADB setup guidance、Android ADB driver package probe、Android ADB readiness watch、Android G3 device status report、Android G3 when-ready runner、Android smoke 真实入口连接检查、Android smoke 连接 gate 自测、Android visible-flow command-file smoke、启动预检、构建新鲜度检查、证据健康检查、证据新鲜度检查、capture 日志新鲜度检查、Android SDK 工具链检查、Android APK 新鲜度检查、Android APK 身份检查、Android APK 兼容性检查、Android APK 签名检查、Android APK 清单检查、Android APK 载荷检查、Android APK 包体预算检查、Android smoke 生成物卫生检查、Android smoke 截图证据捕获、Android smoke 摘要证据输出、Android smoke 摘要 schema 检查、Android smoke 摘要 preflight 检查、Android smoke 预演/前置一致性检查、Android G3 readiness 检查、Android G3 真机要求检查、公开边界预检、演示总预检、交接一致性检查、Android 真机 smoke 前置检查、PC 核心玩法合约检查、移动指挥模型预检、战斗 HUD 稀疏合约检查、源码/生成物卫生检查、AI 副官边界检查、当前计划 gate 总预检、Android smoke 日志崩溃扫描、Android smoke 预演模式、公开 art-safe 元数据合同、AI 副官离线边界和主服务器奖励权威契约已经收稳；H2 validator/build/smoke 基线已过；G2 Android APK build smoke 已过；PC1-PC57 PC/移动等待态优化包已封口；`Pass Android G3 device smoke` 已完成；正式下一步是 `G4 Touch UI pass`。
+Windows 本地 Demo 的画面、碰撞、稀疏 UI、MechLab、损伤故事、受控演示证据、PC 视觉截图 sanity 与自测、PC 截图 sidecar schema、PC 截图 preset 契约、PC 截图生成物卫生、PC 受控窗口尺寸契约、PC 启动日志卫生、PC 构建输出卫生、PC smoke 生成物卫生、当前计划队列一致性、Android 设备连接诊断、Android WPD-only device diagnosis、Android ADB setup guidance、Android ADB driver package probe、Android ADB readiness watch、Android G3 device status report、Android G3 when-ready runner、Android smoke 真实入口连接检查、Android smoke 连接 gate 自测、Android visible-flow command-file smoke、启动预检、构建新鲜度检查、证据健康检查、证据新鲜度检查、capture 日志新鲜度检查、Android SDK 工具链检查、Android APK 新鲜度检查、Android APK 身份检查、Android APK 兼容性检查、Android APK 签名检查、Android APK 清单检查、Android APK 载荷检查、Android APK 包体预算检查、Android smoke 生成物卫生检查、Android smoke 截图证据捕获、Android smoke 摘要证据输出、Android smoke 摘要 schema 检查、Android smoke 摘要 preflight 检查、Android smoke 预演/前置一致性检查、Android G3 readiness 检查、Android G3 真机要求检查、公开边界预检、演示总预检、交接一致性检查、Android 真机 smoke 前置检查、PC 核心玩法合约检查、移动指挥模型预检、战斗 HUD 稀疏合约检查、源码/生成物卫生检查、AI 副官边界检查、当前计划 gate 总预检、Android smoke 日志崩溃扫描、Android smoke 预演模式、公开 art-safe 元数据合同、AI 副官离线边界和主服务器奖励权威契约已经收稳；H2 validator/build/smoke 基线已过；G2 Android APK build smoke 已过；PC1-PC57 PC/移动等待态优化包已封口；`Pass Android G3 device smoke` 和横屏 `G4 Touch UI pass` 已完成；正式下一步是 `G5 Mobile performance budget`。

@@ -148,6 +148,10 @@ namespace MC2Demo.Presentation
         private const float LoadoutNudgeButtonWidth = 40f;
         private const float LoadoutNudgeEastButtonWidth = 44f;
         private const float LoadoutNudgeStatusWidth = 142f;
+        private const float MobileTouchMinTargetHeight = 44f;
+        private const float MobileTouchLoadoutGridCellMinSize = 36f;
+        private const float MobileTouchLoadoutGridCellMaxSize = 48f;
+        private const float MobileTouchBreakpointWidth = 1200f;
         private const float CriticalSectionStatusRatio = 0.35f;
         private const string LoadoutConditionPrefix = "Cond ";
         private const string LoadoutFitOkLabel = "Fit OK";
@@ -156,6 +160,7 @@ namespace MC2Demo.Presentation
         private const string LoadoutWeightPressureLabel = "W ";
         private const string LoadoutGridPressureLabel = "G ";
         private const string MechLabPcLayoutSummary = "layout=pressure-cards+whole-blocks+single-fillers";
+        private const string MobileTouchLayoutSummary = "MobileTouchUi=ready orientation=landscape commandTargets=44 statusRows=44 primaryButtons=44 mapBack=44 systemButtons=44 mechLabBack=44 mechLabGridCell>=36 touchRatios=16:9+19.5:9+20:9 landscapeOnly=yes noDragBox=yes combatLog=hidden";
         private static readonly Color UiPanelColor = new(0.035f, 0.045f, 0.055f, 0.92f);
         private static readonly Color UiButtonColor = new(0.075f, 0.105f, 0.125f, 0.96f);
         private static readonly Color UiTrackColor = new(0.015f, 0.02f, 0.025f, 0.9f);
@@ -210,6 +215,7 @@ namespace MC2Demo.Presentation
             public string damageStory;
             public string damageReadability;
             public string battleHud;
+            public string mobileTouch;
             public VisualCaptureCameraState camera;
             public VisualCaptureReferenceState referenceAssets;
         }
@@ -418,6 +424,7 @@ namespace MC2Demo.Presentation
 
         private void Start()
         {
+            ConfigureMobileLandscapeRuntime();
             LoadMission();
             BuildWorld();
             RunStartupCommanderSequence();
@@ -6045,6 +6052,7 @@ namespace MC2Demo.Presentation
                 damageStory = damageStorySummary,
                 damageReadability = BuildCaptureDamageReadabilitySummary(),
                 battleHud = battleHudSummary,
+                mobileTouch = BuildCaptureMobileTouchSummary(),
                 camera = BuildCaptureCameraState(),
                 referenceAssets = new VisualCaptureReferenceState
                 {
@@ -6841,6 +6849,45 @@ namespace MC2Demo.Presentation
                 + MechLabPcLayoutSummary
                 + " "
                 + alwaysMounted;
+        }
+
+        private string BuildCaptureMobileTouchSummary()
+        {
+            bool ratiosOk = MobileTouchAspectCheck(1920f, 1080f)
+                && MobileTouchAspectCheck(2340f, 1080f)
+                && MobileTouchAspectCheck(2400f, 1080f);
+            bool targetsOk = TouchTargetHeightFor(2400f, 1080f) >= MobileTouchMinTargetHeight
+                && CompactTouchTargetHeightFor(2400f, 1080f) >= MobileTouchMinTargetHeight
+                && UnitStatusRowButtonHeightFor(2400f, 1080f) >= MobileTouchMinTargetHeight;
+            bool loadoutFits = LoadoutPanelRectFor(1560f, 720f).x >= 0f
+                && LoadoutPanelRectFor(1560f, 720f).xMax <= 1560f
+                && LoadoutPanelRectFor(2400f, 1080f).x >= 0f
+                && LoadoutPanelRectFor(2400f, 1080f).xMax <= 2400f;
+            bool landscapeOk = IsLandscapeScreen(Screen.width, Screen.height);
+            bool sparseHud = demoFlowScreen != DemoFlowScreen.Battle || SparseBattleUiRegressionSummaryOk(BuildSparseBattleUiRegressionSummary());
+            string status = ratiosOk && targetsOk && loadoutFits && landscapeOk && sparseHud ? "ready" : "review";
+            return MobileTouchLayoutSummary
+                + " status="
+                + status
+                + " current="
+                + Screen.width.ToString(CultureInfo.InvariantCulture)
+                + "x"
+                + Screen.height.ToString(CultureInfo.InvariantCulture)
+                + " loadout1560x720="
+                + LoadoutPanelRectFor(1560f, 720f).width.ToString("0.#", CultureInfo.InvariantCulture)
+                + " target="
+                + TouchTargetHeightFor(2400f, 1080f).ToString("0.#", CultureInfo.InvariantCulture);
+        }
+
+        private static bool MobileTouchAspectCheck(float screenWidth, float screenHeight)
+        {
+            return IsLandscapeScreen(screenWidth, screenHeight)
+                && ShouldUseMobileTouchLayoutFor(screenWidth, screenHeight)
+                && TouchTargetHeightFor(screenWidth, screenHeight) >= MobileTouchMinTargetHeight
+                && CompactTouchTargetHeightFor(screenWidth, screenHeight) >= MobileTouchMinTargetHeight
+                && UnitStatusRowButtonHeightFor(screenWidth, screenHeight) >= MobileTouchMinTargetHeight
+                && LoadoutPanelRectFor(screenWidth, screenHeight).x >= 0f
+                && LoadoutPanelRectFor(screenWidth, screenHeight).xMax <= screenWidth;
         }
 
         private string BuildCaptureBattleHudSummary()
@@ -13020,23 +13067,33 @@ namespace MC2Demo.Presentation
 
         private void DrawUnitPanel()
         {
+            bool touchLayout = ShouldUseMobileTouchLayout();
             float panelX = 12f;
             float panelY = 54f;
             float panelWidth = 320f;
-            float panelHeight = 74f + (CountPlayerUnits() * 78f);
+            float commandButtonHeight = touchLayout ? MobileTouchMinTargetHeight : 28f;
+            float rowButtonHeight = UnitStatusRowButtonHeight();
+            float rowStride = touchLayout ? 96f : 78f;
+            float rowStartOffset = 34f + commandButtonHeight + 8f;
+            float panelHeight = rowStartOffset + (CountPlayerUnits() * rowStride) + 8f;
             DrawDesignPanelFrame(new Rect(panelX, panelY, panelWidth, panelHeight), "Squad Command", UiCyanColor);
 
             float x = panelX + 10f;
             float y = panelY + 34f;
+            float commandGap = 6f;
+            float commandButtonWidth = touchLayout ? 52f : 50f;
+            float systemButtonWidth = Mathf.Max(
+                touchLayout ? 68f : 76f,
+                panelWidth - 20f - (commandButtonWidth + commandGap) * 4f);
 
-            if (GUI.Button(new Rect(x, y, 50f, 28f), "All"))
+            if (GUI.Button(new Rect(x, y, commandButtonWidth, commandButtonHeight), "All"))
             {
                 pendingDetachedUnitId = null;
                 pendingJumpOrder = false;
                 statusText = "Squad selected";
             }
 
-            if (GUI.Button(new Rect(x + 56f, y, 50f, 28f), pendingJumpOrder ? "Jet..." : "Jet"))
+            if (GUI.Button(new Rect(x + commandButtonWidth + commandGap, y, commandButtonWidth, commandButtonHeight), pendingJumpOrder ? "Jet..." : "Jet"))
             {
                 pendingJumpOrder = true;
                 statusText = string.IsNullOrEmpty(pendingDetachedUnitId)
@@ -13044,7 +13101,7 @@ namespace MC2Demo.Presentation
                     : "Select jet destination for " + pendingDetachedUnitId;
             }
 
-            if (GUI.Button(new Rect(x + 112f, y, 50f, 28f), showMissionMap ? "Map-" : "Map"))
+            if (GUI.Button(new Rect(x + (commandButtonWidth + commandGap) * 2f, y, commandButtonWidth, commandButtonHeight), showMissionMap ? "Map-" : "Map"))
             {
                 showMissionMap = !showMissionMap;
                 showLoadoutPanel = false;
@@ -13064,7 +13121,7 @@ namespace MC2Demo.Presentation
                 SetDemoFlowScreen(DemoFlowScreen.Battle);
             }
 
-            if (GUI.Button(new Rect(x + 168f, y, 50f, 28f), showLoadoutPanel ? "Bay-" : "Bay"))
+            if (GUI.Button(new Rect(x + (commandButtonWidth + commandGap) * 3f, y, commandButtonWidth, commandButtonHeight), showLoadoutPanel ? "Bay-" : "Bay"))
             {
                 if (showLoadoutPanel)
                 {
@@ -13088,12 +13145,12 @@ namespace MC2Demo.Presentation
                 }
             }
 
-            if (GUI.Button(new Rect(x + 224f, y, 76f, 28f), "System"))
+            if (GUI.Button(new Rect(x + (commandButtonWidth + commandGap) * 4f, y, systemButtonWidth, commandButtonHeight), "System"))
             {
                 OpenSystemPanel();
             }
 
-            y += 36f;
+            y += commandButtonHeight + 8f;
 
             foreach (UnitState unit in mission.PlayerUnits())
             {
@@ -13133,7 +13190,7 @@ namespace MC2Demo.Presentation
                     label += "  M" + Mathf.RoundToInt(unit.MobilityRatio * 100f) + "/F" + Mathf.RoundToInt(unit.FirepowerRatio * 100f);
                 }
 
-                Rect rowRect = new(x, y, panelWidth - 20f, 34f);
+                Rect rowRect = new(x, y, panelWidth - 20f, rowButtonHeight);
                 if (GUI.Button(rowRect, label))
                 {
                     pendingDetachedUnitId = unit.Id;
@@ -13145,27 +13202,32 @@ namespace MC2Demo.Presentation
                 Color rowCue = unit.IsDetached ? UiAmberColor : unit.IsDestroyed ? Color.red : UiBorderColor;
                 DrawRectBorder(rowRect, rowCue, unit.IsDetached ? 2f : 1f);
 
-                Rect barBack = new(x + 6f, y + 24f, panelWidth - 32f, 4f);
+                float structureBarY = y + (touchLayout ? 32f : 24f);
+                float heatBarY = y + (touchLayout ? 39f : 31f);
+                float readyBarY = y + (touchLayout ? 46f : 38f);
+                float weaponLabelY = y + (touchLayout ? 52f : 42f);
+                float sectionLineY = y + (touchLayout ? 70f : 58f);
+                Rect barBack = new(x + 6f, structureBarY, panelWidth - 32f, 4f);
                 DrawColorRect(barBack, UiTrackColor);
                 Rect bar = new(barBack.x, barBack.y, barBack.width * unit.Structure, barBack.height);
                 DrawColorRect(bar, unit.IsDestroyed ? Color.red : new Color(0.35f, 0.88f, 0.46f, 0.96f));
 
                 if (unit.CombatHeatPerShot > 0f)
                 {
-                    Rect heatBack = new(x + 6f, y + 31f, panelWidth - 32f, 4f);
+                    Rect heatBack = new(x + 6f, heatBarY, panelWidth - 32f, 4f);
                     DrawColorRect(heatBack, UiTrackColor);
                     Rect heatBar = new(heatBack.x, heatBack.y, heatBack.width * Mathf.Clamp01(unit.HeatRatio), heatBack.height);
                     DrawColorRect(heatBar, unit.IsHeatLocked ? Color.red : UiAmberColor);
                 }
 
-                Rect readyBack = new(x + 6f, y + 38f, panelWidth - 32f, 3f);
+                Rect readyBack = new(x + 6f, readyBarY, panelWidth - 32f, 3f);
                 DrawColorRect(readyBack, UiTrackColor);
                 Rect readyBar = new(readyBack.x, readyBack.y, readyBack.width * unit.WeaponReadinessRatio, readyBack.height);
                 DrawColorRect(readyBar, unit.IsHeatLocked ? Color.red : UiCyanColor);
 
-                GUI.Label(new Rect(x + 6f, y + 42f, panelWidth - 26f, 16f), WeaponStatusText(unit));
-                DrawSectionLine(unit, y + 58);
-                y += 78f;
+                GUI.Label(new Rect(x + 6f, weaponLabelY, panelWidth - 26f, 16f), WeaponStatusText(unit));
+                DrawSectionLine(unit, sectionLineY);
+                y += rowStride;
             }
         }
 
@@ -13996,9 +14058,13 @@ namespace MC2Demo.Presentation
                 return;
             }
 
+            bool touchLayout = ShouldUseMobileTouchLayout();
             Rect panel = MissionMapRect();
             GUI.Box(panel, "Mission Map");
-            Rect map = new(panel.x + 14f, panel.y + 34f, panel.width - 28f, panel.height - 58f);
+            float backButtonHeight = touchLayout ? MobileTouchMinTargetHeight : 24f;
+            float backButtonWidth = touchLayout ? 72f : 52f;
+            float mapTop = panel.y + (touchLayout ? 58f : 34f);
+            Rect map = new(panel.x + 14f, mapTop, panel.width - 28f, Mathf.Max(80f, panel.yMax - mapTop - 14f));
             DrawColorRect(map, new Color(0.035f, 0.045f, 0.048f, 0.92f));
             DrawColorRect(new Rect(map.x, map.y, map.width, 1f), new Color(0.35f, 0.42f, 0.44f));
             DrawColorRect(new Rect(map.x, map.yMax - 1f, map.width, 1f), new Color(0.35f, 0.42f, 0.44f));
@@ -14015,7 +14081,7 @@ namespace MC2Demo.Presentation
                 DrawObjectiveMapMarker(map, objective);
             }
 
-            if (GUI.Button(new Rect(panel.xMax - 66f, panel.y + 6f, 52f, 24f), MissionMapBackButtonLabel))
+            if (GUI.Button(new Rect(panel.xMax - backButtonWidth - 14f, panel.y + 6f, backButtonWidth, backButtonHeight), MissionMapBackButtonLabel))
             {
                 showMissionMap = false;
                 statusText = "Mission map closed";
@@ -14084,9 +14150,11 @@ namespace MC2Demo.Presentation
             float x = panel.x + 14f;
             float y = panel.y + 34f;
             float width = panel.width - 28f;
+            float backButtonHeight = ShouldUseMobileTouchLayout() ? MobileTouchMinTargetHeight : 24f;
+            float backButtonWidth = ShouldUseMobileTouchLayout() ? 72f : 56f;
 
             GUI.Label(new Rect(x, y, width - 76f, 22f), LoadoutPanelHeaderTitle, uiHeaderStyle);
-            if (GUI.Button(new Rect(panel.xMax - 70f, panel.y + 7f, 56f, 24f), MechLabBackButtonLabel))
+            if (GUI.Button(new Rect(panel.xMax - backButtonWidth - 14f, panel.y + 7f, backButtonWidth, backButtonHeight), MechLabBackButtonLabel))
             {
                 showLoadoutPanel = false;
                 showWarehouseDraftFitPreview = false;
@@ -14103,7 +14171,7 @@ namespace MC2Demo.Presentation
                 SetDemoFlowScreen(DemoFlowScreen.Battle);
             }
 
-            y += 30f;
+            y += ShouldUseMobileTouchLayout() ? 52f : 30f;
             if (ShouldUseDedicatedMechLabLayout(panel))
             {
                 DrawDedicatedMechLabSurface(panel, x, y, width);
@@ -14188,20 +14256,26 @@ namespace MC2Demo.Presentation
 
         private void DrawDedicatedMechLabBayPages(float x, float y, float width)
         {
-            Rect tabStrip = new(x, y - 2f, width, 26f);
+            bool touchLayout = ShouldUseMobileTouchLayout();
+            float tabHeight = touchLayout ? MobileTouchMinTargetHeight : 22f;
+            float tabStripHeight = touchLayout ? 48f : 26f;
+            float tabOpsWidth = touchLayout ? 68f : 58f;
+            float tabRosterWidth = touchLayout ? 84f : 70f;
+            float tabGap = touchLayout ? 8f : 6f;
+            Rect tabStrip = new(x, y - 2f, width, tabStripHeight);
             DrawColorRect(tabStrip, new Color(0.015f, 0.025f, 0.03f, 0.74f));
             DrawRectBorder(tabStrip, new Color(UiAmberColor.r, UiAmberColor.g, UiAmberColor.b, 0.36f), 1f);
 
             bool previousEnabled = GUI.enabled;
             GUI.enabled = previousEnabled;
-            if (GUI.Button(new Rect(x + 4f, y, 58f, 22f), MechLabBayOpsPageLabel))
+            if (GUI.Button(new Rect(x + 4f, y, tabOpsWidth, tabHeight), MechLabBayOpsPageLabel))
             {
                 selectedMechLabBayPage = MechLabBayOpsPageIndex;
                 mechLabBayScroll = Vector2.zero;
                 statusText = "Company Bay: Ops";
             }
 
-            if (GUI.Button(new Rect(x + 68f, y, 70f, 22f), MechLabBayRosterPageLabel))
+            if (GUI.Button(new Rect(x + 4f + tabOpsWidth + tabGap, y, tabRosterWidth, tabHeight), MechLabBayRosterPageLabel))
             {
                 selectedMechLabBayPage = MechLabBayRosterPageIndex;
                 mechLabBayScroll = Vector2.zero;
@@ -14210,11 +14284,11 @@ namespace MC2Demo.Presentation
 
             GUI.enabled = previousEnabled;
             Rect selectedTab = selectedMechLabBayPage == MechLabBayRosterPageIndex
-                ? new Rect(x + 68f, y, 70f, 22f)
-                : new Rect(x + 4f, y, 58f, 22f);
+                ? new Rect(x + 4f + tabOpsWidth + tabGap, y, tabRosterWidth, tabHeight)
+                : new Rect(x + 4f, y, tabOpsWidth, tabHeight);
             DrawRectBorder(selectedTab, UiAmberColor, 2f);
 
-            float contentY = y + 32f;
+            float contentY = y + tabHeight + (touchLayout ? 12f : 10f);
             if (selectedMechLabBayPage == MechLabBayRosterPageIndex)
             {
                 DrawDedicatedMechLabRosterPage(x, contentY, width);
@@ -14246,8 +14320,9 @@ namespace MC2Demo.Presentation
             GUI.Label(
                 new Rect(x, y + 76f, width, 18f),
                 "Next Contract " + TruncateText(handoffSummary, 62));
-            DrawMissionHandoffLaunchAction(x, y + 100f, width, handoffPreview, restartGuard);
-            DrawMissionHandoffLineup(x, y + 126f, width, handoffPreview);
+            float launchY = y + (ShouldUseMobileTouchLayout() ? 104f : 100f);
+            DrawMissionHandoffLaunchAction(x, launchY, width, handoffPreview, restartGuard);
+            DrawMissionHandoffLineup(x, launchY + (ShouldUseMobileTouchLayout() ? 50f : 26f), width, handoffPreview);
         }
 
         private void DrawDedicatedMechLabRosterPage(float x, float y, float width)
@@ -14362,14 +14437,15 @@ namespace MC2Demo.Presentation
                 actionY += 22f;
             }
 
+            float bayActionStride = ShouldUseMobileTouchLayout() ? 54f : 24f;
             DrawPostBattleMechBayLane(x, actionY, width, handoffPreview, restartGuard);
-            DrawLocalCandidatePrepAction(x, actionY + 24f, width);
+            DrawLocalCandidatePrepAction(x, actionY + bayActionStride, width);
             if (!showRosterDetail)
             {
                 return;
             }
 
-            float detailY = actionY + 48f;
+            float detailY = actionY + bayActionStride * 2f;
             if (SaveGameUiEnabled)
             {
                 DrawSavedAccountImportPathToolsLine(x, detailY, width);
@@ -14399,8 +14475,9 @@ namespace MC2Demo.Presentation
             GUI.Label(
                 new Rect(x, detailY + 110f, width, 18f),
                 "Next Contract " + TruncateText(handoffSummary, 58));
-            DrawMissionHandoffLaunchAction(x, detailY + 132f, width, handoffPreview, restartGuard);
-            DrawMissionHandoffLineup(x, detailY + 154f, width, handoffPreview);
+            float handoffLaunchY = detailY + (ShouldUseMobileTouchLayout() ? 136f : 132f);
+            DrawMissionHandoffLaunchAction(x, handoffLaunchY, width, handoffPreview, restartGuard);
+            DrawMissionHandoffLineup(x, handoffLaunchY + (ShouldUseMobileTouchLayout() ? 50f : 22f), width, handoffPreview);
             if (showRosterDetail)
             {
                 DrawOwnedRosterDetail(x, detailY + 176f, width, roster, pilotHirePreview);
@@ -14422,34 +14499,40 @@ namespace MC2Demo.Presentation
                 && demoInventory.tokenBalance >= repairCost;
             bool launchReady = restartGuard?.ApplyEnabled == true;
             bool previousEnabled = GUI.enabled;
-            Rect laneRect = new(x - 4f, y - 5f, width + 8f, 30f);
+            bool touchLayout = ShouldUseMobileTouchLayout();
+            float buttonHeight = CompactTouchTargetHeight();
+            float buttonGap = touchLayout ? 8f : 8f;
+            float repairButtonWidth = touchLayout ? 86f : 78f;
+            float contractsButtonWidth = touchLayout ? 90f : 68f;
+            float launchButtonWidth = touchLayout ? 74f : 58f;
+            Rect laneRect = new(x - 4f, y - 5f, width + 8f, touchLayout ? 54f : 30f);
             DrawColorRect(laneRect, new Color(0.015f, 0.025f, 0.03f, 0.82f));
             DrawRectBorder(laneRect, new Color(UiAmberColor.r, UiAmberColor.g, UiAmberColor.b, 0.45f), 1f);
 
             float buttonX = x;
             GUI.enabled = previousEnabled && repairReady;
-            if (DrawActionButton(new Rect(buttonX, y - 2f, 78f, 22f), "Repair All", repairReady))
+            if (DrawActionButton(new Rect(buttonX, y - 2f, repairButtonWidth, buttonHeight), "Repair All", repairReady))
             {
                 TryRepairAllPlayerMechs();
             }
 
-            buttonX += 86f;
+            buttonX += repairButtonWidth + buttonGap;
 
             GUI.enabled = previousEnabled;
-            if (DrawActionButton(new Rect(buttonX, y - 2f, 68f, 22f), "Contracts", true))
+            if (DrawActionButton(new Rect(buttonX, y - 2f, contractsButtonWidth, buttonHeight), "Contracts", true))
             {
                 OpenMissionListFromMechBayLane();
             }
 
-            buttonX += 76f;
+            buttonX += contractsButtonWidth + buttonGap;
 
             GUI.enabled = previousEnabled && launchReady;
-            if (DrawActionButton(new Rect(buttonX, y - 2f, 58f, 22f), "Launch", launchReady))
+            if (DrawActionButton(new Rect(buttonX, y - 2f, launchButtonWidth, buttonHeight), "Launch", launchReady))
             {
                 TryApplyMissionRestartRuntimeSwap(keepMechBayOpen: true);
             }
 
-            buttonX += 68f;
+            buttonX += launchButtonWidth + buttonGap;
             GUI.enabled = previousEnabled;
             bool laneReady = repairCount > 0 ? repairReady : launchReady;
             DrawActionStateLabel(
@@ -15588,8 +15671,12 @@ namespace MC2Demo.Presentation
         {
             bool previousEnabled = GUI.enabled;
             bool ready = guard?.ApplyEnabled == true;
+            bool touchLayout = ShouldUseMobileTouchLayout();
+            float buttonHeight = CompactTouchTargetHeight();
+            float buttonWidth = touchLayout ? 74f : 58f;
+            float labelX = x + buttonWidth + 8f;
             GUI.enabled = previousEnabled && ready;
-            if (DrawActionButton(new Rect(x, y - 2f, 58f, 22f), "Launch", ready))
+            if (DrawActionButton(new Rect(x, y - 2f, buttonWidth, buttonHeight), "Launch", ready))
             {
                 TryApplyMissionRestartRuntimeSwap(keepMechBayOpen: true);
             }
@@ -15599,9 +15686,9 @@ namespace MC2Demo.Presentation
                 ? MissionHandoffCompletedLaunchText(guard)
                 : MissionHandoffLaunchActionText(guard, preview);
             DrawActionStateLabel(
-                x + 66f,
+                labelX,
                 y,
-                width - 66f,
+                width - (labelX - x),
                 text,
                 ready,
                 56);
@@ -16062,8 +16149,12 @@ namespace MC2Demo.Presentation
             bool ready = !string.IsNullOrWhiteSpace(readyCandidate);
             bool canAct = demoInventory != null;
             bool previousEnabled = GUI.enabled;
+            bool touchLayout = ShouldUseMobileTouchLayout();
+            float buttonHeight = CompactTouchTargetHeight();
+            float buttonWidth = touchLayout ? 74f : 58f;
+            float labelX = x + buttonWidth + 8f;
             GUI.enabled = previousEnabled && canAct;
-            if (DrawActionButton(new Rect(x, y - 2f, 58f, 22f), ready ? "Squad" : "Ready", canAct))
+            if (DrawActionButton(new Rect(x, y - 2f, buttonWidth, buttonHeight), ready ? "Squad" : "Ready", canAct))
             {
                 string ownedMechId = readyCandidate;
                 MechBaySavedAccountContract beforeAccount = null;
@@ -16089,9 +16180,9 @@ namespace MC2Demo.Presentation
 
             GUI.enabled = previousEnabled;
             DrawActionStateLabel(
-                x + 66f,
+                labelX,
                 y,
-                width - 66f,
+                width - (labelX - x),
                 "Reserve " + LocalCandidatePrepText(readyCandidate),
                 canAct,
                 56);
@@ -17418,9 +17509,12 @@ namespace MC2Demo.Presentation
                 return 0f;
             }
 
-            float gap = 3f;
-            float maxGridWidth = Mathf.Min(width * 0.48f, 220f);
-            float cellSize = Mathf.Clamp((maxGridWidth - gap * (preview.GridWidth - 1)) / preview.GridWidth, 28f, 42f);
+            bool touchLayout = ShouldUseMobileTouchLayout();
+            float gap = touchLayout ? 4f : 3f;
+            float maxGridWidth = Mathf.Min(width * (touchLayout ? 0.58f : 0.48f), touchLayout ? 290f : 220f);
+            float minCellSize = touchLayout ? MobileTouchLoadoutGridCellMinSize : 28f;
+            float maxCellSize = touchLayout ? MobileTouchLoadoutGridCellMaxSize : 42f;
+            float cellSize = Mathf.Clamp((maxGridWidth - gap * (preview.GridWidth - 1)) / preview.GridWidth, minCellSize, maxCellSize);
             float gridWidth = preview.GridWidth * cellSize + (preview.GridWidth - 1) * gap;
             float gridHeight = preview.GridHeight * cellSize + (preview.GridHeight - 1) * gap;
             int selectedWeaponIndex = SelectedLoadoutWeaponIndexFor(unit, preview);
@@ -17549,8 +17643,8 @@ namespace MC2Demo.Presentation
                     selectedGridCell,
                     selectedWeaponIndex),
                     64));
-            DrawLoadoutPlacementControls(unit, preview, railX, y + 98f, railWidth);
-            return Mathf.Max(gridHeight + 2f, LoadoutGridSectionMinHeight);
+            DrawLoadoutPlacementControls(unit, preview, railX, y + (touchLayout ? 104f : 98f), railWidth);
+            return Mathf.Max(gridHeight + 2f, touchLayout ? 282f : LoadoutGridSectionMinHeight);
         }
 
         private void DrawLoadoutTargetPlacementPreview(
@@ -18332,6 +18426,18 @@ namespace MC2Demo.Presentation
             }
 
             CombatLoadoutPreviewItem baseItem = LoadoutPreviewItemForWeapon(LoadoutBasePreviewFor(unit), selectedWeaponIndex);
+            bool touchLayout = ShouldUseMobileTouchLayout();
+            float buttonHeight = CompactTouchTargetHeight();
+            float buttonGap = touchLayout ? 8f : 4f;
+            float nudgeWidth = touchLayout ? 46f : LoadoutNudgeButtonWidth;
+            float resetWidth = touchLayout ? 58f : LoadoutSelectedResetButtonWidth;
+            float eastWidth = touchLayout ? 50f : LoadoutNudgeEastButtonWidth;
+            float targetButtonWidth = touchLayout ? 78f : LoadoutTargetButtonWidth;
+            float targetOffset = touchLayout ? Mathf.Max(174f, LoadoutTargetControlOffset) : LoadoutTargetControlOffset;
+            float row1 = y + 24f;
+            float row2 = row1 + buttonHeight + buttonGap;
+            float row3 = row2 + buttonHeight + buttonGap;
+            float row4 = row3 + buttonHeight + buttonGap;
             GUI.Label(
                 new Rect(x, y, width, 18f),
                 LoadoutPlacementHeaderText(unit, preview, selectedWeaponIndex, selectedItem, baseItem));
@@ -18340,7 +18446,7 @@ namespace MC2Demo.Presentation
                 unit,
                 preview,
                 selectedItem,
-                new Rect(x + 32f, y + 24f, LoadoutNudgeButtonWidth, 22f),
+                new Rect(x + nudgeWidth + buttonGap, row1, nudgeWidth, buttonHeight),
                 LoadoutNudgeButtonLabel(0, -1),
                 0,
                 -1);
@@ -18348,7 +18454,7 @@ namespace MC2Demo.Presentation
                 unit,
                 preview,
                 selectedItem,
-                new Rect(x, y + 50f, LoadoutNudgeButtonWidth, 22f),
+                new Rect(x, row2, nudgeWidth, buttonHeight),
                 LoadoutNudgeButtonLabel(-1, 0),
                 -1,
                 0);
@@ -18359,7 +18465,7 @@ namespace MC2Demo.Presentation
             GUI.color = LoadoutSelectedResetButtonColor(canResetSelectedWeapon);
             GUI.enabled = previousResetEnabled && canResetSelectedWeapon;
             if (GUI.Button(
-                new Rect(x + 44f, y + 50f, LoadoutSelectedResetButtonWidth, 22f),
+                new Rect(x + nudgeWidth + buttonGap, row2, resetWidth, buttonHeight),
                 LoadoutSelectedResetButtonLabel(canResetSelectedWeapon)))
             {
                 ResetSelectedLoadoutWeapon(unit);
@@ -18371,7 +18477,7 @@ namespace MC2Demo.Presentation
                 unit,
                 preview,
                 selectedItem,
-                new Rect(x + 98f, y + 50f, LoadoutNudgeEastButtonWidth, 22f),
+                new Rect(x + nudgeWidth + resetWidth + buttonGap * 2f, row2, eastWidth, buttonHeight),
                 LoadoutNudgeButtonLabel(1, 0),
                 1,
                 0);
@@ -18379,11 +18485,11 @@ namespace MC2Demo.Presentation
                 unit,
                 preview,
                 selectedItem,
-                new Rect(x + 32f, y + 76f, LoadoutNudgeButtonWidth, 22f),
+                new Rect(x + nudgeWidth + buttonGap, row3, nudgeWidth, buttonHeight),
                 LoadoutNudgeButtonLabel(0, 1),
                 0,
                 1);
-            DrawLoadoutNudgeStatus(preview, selectedItem, x, y + 102f, LoadoutNudgeStatusWidth);
+            DrawLoadoutNudgeStatus(preview, selectedItem, x, row4, Mathf.Max(LoadoutNudgeStatusWidth, targetOffset - 8f));
 
             if (TryGetSelectedLoadoutGridCell(unit, preview, out Vector2Int targetCell))
             {
@@ -18399,7 +18505,7 @@ namespace MC2Demo.Presentation
                         ? new Color(0.50f, 1f, 0.82f, 1f)
                         : new Color(1f, 0.32f, 0.18f, 1f);
                 string placeLabel = LoadoutPlaceButtonLabel(targetClear);
-                if (GUI.Button(new Rect(x + LoadoutTargetControlOffset, y + 24f, LoadoutTargetButtonWidth, 22f), placeLabel))
+                if (GUI.Button(new Rect(x + targetOffset, row1, targetButtonWidth, buttonHeight), placeLabel))
                 {
                     PlaceSelectedLoadoutWeaponAt(unit, preview, targetCell.x, targetCell.y);
                 }
@@ -18413,7 +18519,7 @@ namespace MC2Demo.Presentation
                 string fillerAction = FillerButtonLabel(occupiedCell?.Category, canFill, targetCellStack);
                 GUI.color = LoadoutFillerActionButtonColor(occupiedCell?.Category, canCycleFiller);
                 if (GUI.Button(
-                    new Rect(x + LoadoutTargetControlOffset, y + 50f, LoadoutTargetButtonWidth, 22f),
+                    new Rect(x + targetOffset, row2, targetButtonWidth, buttonHeight),
                     fillerAction))
                 {
                     CycleFillerOverride(unit, targetCell.x, targetCell.y, occupiedCell?.Category);
@@ -18433,9 +18539,9 @@ namespace MC2Demo.Presentation
                 GUI.color = LoadoutTargetStatusColor(canPlace, targetClear);
                 GUI.Label(
                     new Rect(
-                        x + LoadoutTargetControlOffset,
-                        y + 76f,
-                        Mathf.Max(LoadoutTargetStatusMinWidth, width - LoadoutTargetControlOffset),
+                        x + targetOffset,
+                        row3,
+                        Mathf.Max(LoadoutTargetStatusMinWidth, width - targetOffset),
                         18f),
                     targetStatus);
                 GUI.color = previousColor;
@@ -18446,9 +18552,9 @@ namespace MC2Demo.Presentation
                 GUI.color = LoadoutTargetStatusColor(false, true);
                 GUI.Label(
                     new Rect(
-                        x + LoadoutTargetControlOffset,
-                        y + 24f,
-                        Mathf.Max(LoadoutTargetStatusMinWidth, width - LoadoutTargetControlOffset),
+                        x + targetOffset,
+                        row1,
+                        Mathf.Max(LoadoutTargetStatusMinWidth, width - targetOffset),
                         18f),
                     LoadoutTargetPickLabel());
                 GUI.color = previousColor;
@@ -18748,6 +18854,9 @@ namespace MC2Demo.Presentation
             float columnWidth = width / columns;
             int selectedWeaponIndex = SelectedLoadoutWeaponIndexFor(unit, preview);
             DrawSelectedWeaponSummaryLine(unit, preview, selectedWeaponIndex, x, y, width);
+            bool touchLayout = ShouldUseMobileTouchLayout();
+            float buttonHeight = touchLayout ? 36f : 20f;
+            float rowStride = buttonHeight + (touchLayout ? 6f : 2f);
             float listY = y + 22f;
             for (int index = 0; index < count; index++)
             {
@@ -18760,14 +18869,14 @@ namespace MC2Demo.Presentation
                 int row = index / columns;
                 int column = index % columns;
                 float columnX = x + column * columnWidth;
-                float rowY = listY + row * 22f;
+                float rowY = listY + row * rowStride;
                 bool isSelected = index == selectedWeaponIndex;
                 bool hasPlacementOverride = HasLoadoutWeaponPlacementOverride(unit, index);
                 string label = LoadoutWeaponButtonLabel(weapon, preview, index, isSelected, hasPlacementOverride);
                 Color previousColor = GUI.color;
                 Color buttonCue = isSelected ? new Color(1f, 0.95f, 0.22f, 1f) : LoadoutWeaponRangeBandColor(weapon);
                 GUI.color = buttonCue;
-                Rect buttonRect = new(columnX, rowY - 1f, columnWidth - 4f, 20f);
+                Rect buttonRect = new(columnX, rowY - 1f, columnWidth - 4f, buttonHeight);
                 if (GUI.Button(buttonRect, label))
                 {
                     SetSelectedLoadoutWeapon(unit, index);
@@ -18778,7 +18887,7 @@ namespace MC2Demo.Presentation
                 DrawRectBorder(buttonRect, buttonCue, isSelected ? 2f : 1f);
             }
 
-            return 22f + rows * 22f;
+            return 22f + rows * rowStride;
         }
 
         private string LoadoutWeaponSelectionStatus(
@@ -19006,7 +19115,10 @@ namespace MC2Demo.Presentation
             MechBayInventoryAvailabilityResult availability = CurrentDraftInventoryAvailability();
             bool hasInventory = availability != null && availability.IsValid;
             bool canApply = hasPendingEdits && preview != null && preview.Validation.IsValid && hasInventory;
-            Rect lane = new(x - 4f, y - 5f, width + 8f, 30f);
+            bool touchLayout = ShouldUseMobileTouchLayout();
+            float buttonHeight = CompactTouchTargetHeight();
+            float laneHeight = touchLayout ? 52f : 30f;
+            Rect lane = new(x - 4f, y - 5f, width + 8f, laneHeight);
             Color laneCue = canApply
                 ? new Color(0.50f, 1f, 0.82f, 0.62f)
                 : hasPendingEdits
@@ -19034,7 +19146,7 @@ namespace MC2Demo.Presentation
             GUI.color = LoadoutApplyButtonColor(hasPendingEdits, preview, hasInventory);
             GUI.enabled = previousEnabled && canApply;
             if (GUI.Button(
-                new Rect(x + width - LoadoutApplyButtonRightOffset, y - 2f, LoadoutApplyButtonWidth, 22f),
+                new Rect(x + width - LoadoutApplyButtonRightOffset, y - 2f, LoadoutApplyButtonWidth, buttonHeight),
                 applyLabel))
             {
                 ApplyLoadoutDraft(unit, preview);
@@ -19045,7 +19157,7 @@ namespace MC2Demo.Presentation
             GUI.color = LoadoutDraftResetButtonColor(hasPendingEdits);
             GUI.enabled = previousEnabled && hasPendingEdits;
             if (GUI.Button(
-                new Rect(x + width - LoadoutResetButtonRightOffset, y - 2f, LoadoutResetButtonWidth, 22f),
+                new Rect(x + width - LoadoutResetButtonRightOffset, y - 2f, LoadoutResetButtonWidth, buttonHeight),
                 resetLabel))
             {
                 ResetLoadoutDraft(unit);
@@ -19818,6 +19930,7 @@ namespace MC2Demo.Presentation
                 return;
             }
 
+            bool touchLayout = ShouldUseMobileTouchLayout();
             Rect panel = SystemPanelRect();
             DrawDesignPanelFrame(panel, "System / 系统", UiAmberColor);
             GUI.Label(new Rect(panel.x + 18f, panel.y + 36f, panel.width - 36f, 24f), isPaused ? "Paused" : "Running");
@@ -19830,7 +19943,10 @@ namespace MC2Demo.Presentation
             GUI.Label(new Rect(aiRect.x + 10f, aiRect.y + 54f, aiRect.width - 20f, 18f), "Intent " + aiDeputy.Directive);
             GUI.Label(new Rect(aiRect.x + 10f, aiRect.y + 76f, aiRect.width - 20f, 18f), "Advice " + aiDeputy.Advice);
 
-            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 182f, panel.width - 36f, 30f), isPaused ? "Resume" : "Pause"))
+            float buttonHeight = touchLayout ? MobileTouchMinTargetHeight : 30f;
+            float buttonGap = touchLayout ? 10f : 8f;
+            float buttonY = panel.y + (touchLayout ? 180f : 182f);
+            if (GUI.Button(new Rect(panel.x + 18f, buttonY, panel.width - 36f, buttonHeight), isPaused ? "Resume" : "Pause"))
             {
                 if (mission.Result == MissionResultState.InProgress)
                 {
@@ -19843,22 +19959,26 @@ namespace MC2Demo.Presentation
                 }
             }
 
-            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 220f, panel.width - 36f, 30f), SystemRestartButtonLabel))
+            buttonY += buttonHeight + buttonGap;
+            if (GUI.Button(new Rect(panel.x + 18f, buttonY, panel.width - 36f, buttonHeight), SystemRestartButtonLabel))
             {
                 TryApplyMissionRestartRuntimeSwap();
             }
 
-            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 258f, panel.width - 36f, 30f), "Contracts"))
+            buttonY += buttonHeight + buttonGap;
+            if (GUI.Button(new Rect(panel.x + 18f, buttonY, panel.width - 36f, buttonHeight), "Contracts"))
             {
                 OpenMissionListPanelFromSystem();
             }
 
-            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 296f, panel.width - 36f, 30f), EndRunButtonLabel))
+            buttonY += buttonHeight + buttonGap;
+            if (GUI.Button(new Rect(panel.x + 18f, buttonY, panel.width - 36f, buttonHeight), EndRunButtonLabel))
             {
                 Application.Quit(0);
             }
 
-            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 334f, panel.width - 36f, 30f), SystemBackButtonLabel))
+            buttonY += buttonHeight + buttonGap;
+            if (GUI.Button(new Rect(panel.x + 18f, buttonY, panel.width - 36f, buttonHeight), SystemBackButtonLabel))
             {
                 showSystemPanel = false;
                 if (mission.Result == MissionResultState.InProgress)
@@ -20411,10 +20531,82 @@ namespace MC2Demo.Presentation
             return new Rect(Screen.width - width - 16f, Screen.height - height - 16f, width, height);
         }
 
+        private static bool ShouldUseMobileTouchLayout()
+        {
+            return Application.isMobilePlatform || ShouldUseMobileTouchLayoutFor(Screen.width, Screen.height);
+        }
+
+        private static bool ShouldUseMobileTouchLayoutFor(float screenWidth, float screenHeight)
+        {
+            return screenWidth <= MobileTouchBreakpointWidth
+                || screenHeight <= MobileTouchBreakpointWidth
+                || screenHeight > screenWidth * 1.25f;
+        }
+
+        private static bool IsLandscapeScreen(float screenWidth, float screenHeight)
+        {
+            return screenWidth >= screenHeight;
+        }
+
+        private static void ConfigureMobileLandscapeRuntime()
+        {
+            if (!Application.isMobilePlatform)
+            {
+                return;
+            }
+
+            Screen.autorotateToPortrait = false;
+            Screen.autorotateToPortraitUpsideDown = false;
+            Screen.autorotateToLandscapeLeft = true;
+            Screen.autorotateToLandscapeRight = true;
+            Screen.orientation = ScreenOrientation.AutoRotation;
+        }
+
+        private static float TouchTargetHeight()
+        {
+            return ShouldUseMobileTouchLayout() ? MobileTouchMinTargetHeight : 30f;
+        }
+
+        private static float TouchTargetHeightFor(float screenWidth, float screenHeight)
+        {
+            return ShouldUseMobileTouchLayoutFor(screenWidth, screenHeight) ? MobileTouchMinTargetHeight : 30f;
+        }
+
+        private static float CompactTouchTargetHeight()
+        {
+            return ShouldUseMobileTouchLayout() ? MobileTouchMinTargetHeight : 22f;
+        }
+
+        private static float CompactTouchTargetHeightFor(float screenWidth, float screenHeight)
+        {
+            return ShouldUseMobileTouchLayoutFor(screenWidth, screenHeight) ? MobileTouchMinTargetHeight : 22f;
+        }
+
+        private static float UnitStatusRowButtonHeight()
+        {
+            return ShouldUseMobileTouchLayout() ? MobileTouchMinTargetHeight : 34f;
+        }
+
+        private static float UnitStatusRowButtonHeightFor(float screenWidth, float screenHeight)
+        {
+            return ShouldUseMobileTouchLayoutFor(screenWidth, screenHeight) ? MobileTouchMinTargetHeight : 34f;
+        }
+
+        private static float MobileSafePanelWidth(float screenWidth, float desiredWidth, float minWidth, float maxWidth, float horizontalMargin)
+        {
+            float availableWidth = Mathf.Max(320f, screenWidth - horizontalMargin * 2f);
+            float safeMinWidth = Mathf.Min(minWidth, availableWidth);
+            float safeMaxWidth = Mathf.Min(maxWidth, availableWidth);
+            return Mathf.Clamp(desiredWidth, safeMinWidth, Mathf.Max(safeMinWidth, safeMaxWidth));
+        }
+
         private Rect SystemPanelRect()
         {
-            float width = 330f;
-            float height = 406f;
+            bool touchLayout = ShouldUseMobileTouchLayout();
+            float margin = touchLayout ? 12f : 24f;
+            float width = MobileSafePanelWidth(Screen.width, 330f, 330f, 420f, margin);
+            float height = touchLayout ? 494f : 406f;
+            height = Mathf.Min(height, Mathf.Max(360f, Screen.height - margin * 2f));
             return new Rect((Screen.width - width) * 0.5f, (Screen.height - height) * 0.5f, width, height);
         }
 
@@ -20439,10 +20631,17 @@ namespace MC2Demo.Presentation
 
         private static Rect LoadoutPanelRectFor(float screenWidth, float screenHeight)
         {
-            float width = Mathf.Clamp(screenWidth * 0.86f, 760f, 1160f);
-            float height = Mathf.Clamp(screenHeight * 0.90f, 420f, 760f);
+            bool touchLayout = ShouldUseMobileTouchLayoutFor(screenWidth, screenHeight);
+            float margin = touchLayout ? 12f : 24f;
+            float desiredWidth = screenWidth * (touchLayout ? 0.96f : 0.86f);
+            float minWidth = touchLayout ? 360f : 760f;
+            float width = MobileSafePanelWidth(screenWidth, desiredWidth, minWidth, 1160f, margin);
+            float desiredHeight = screenHeight * (touchLayout ? 0.92f : 0.90f);
+            float minHeight = touchLayout ? 520f : 420f;
+            float maxHeight = Mathf.Min(touchLayout ? 980f : 760f, Mathf.Max(minHeight, screenHeight - margin * 2f));
+            float height = Mathf.Clamp(desiredHeight, Mathf.Min(minHeight, maxHeight), maxHeight);
             return new Rect(
-                Mathf.Max(12f, (screenWidth - width) * 0.5f),
+                Mathf.Max(margin, (screenWidth - width) * 0.5f),
                 (screenHeight - height) * 0.5f,
                 width,
                 height);
