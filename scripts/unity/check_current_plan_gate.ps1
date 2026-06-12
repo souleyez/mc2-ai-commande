@@ -110,6 +110,7 @@ $pcVisualCaptureSanityScript = Resolve-RepoPath -RelativePath "scripts\unity\che
 $pcCaptureSidecarSchemaScript = Resolve-RepoPath -RelativePath "scripts\unity\check_pc_capture_sidecar_schema.ps1"
 $pcCapturePresetContractScript = Resolve-RepoPath -RelativePath "scripts\unity\check_pc_capture_preset_contract.ps1"
 $pcCaptureArtifactHygieneScript = Resolve-RepoPath -RelativePath "scripts\unity\check_pc_capture_artifact_hygiene.ps1"
+$pcWindowContractScript = Resolve-RepoPath -RelativePath "scripts\unity\check_pc_window_contract.ps1"
 $androidSdkToolingScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_sdk_tooling.ps1"
 $androidApkFreshnessScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_apk_freshness.ps1"
 $androidApkIdentityScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_apk_identity.ps1"
@@ -201,6 +202,12 @@ Invoke-GateStep `
     -ScriptPath $pcCaptureArtifactHygieneScript `
     -Arguments @("-RepoRoot", $RepoRoot) `
     -RequiredMarkers @("PC capture artifact hygiene check OK.")
+
+Invoke-GateStep `
+    -Name "PC window contract gate" `
+    -ScriptPath $pcWindowContractScript `
+    -Arguments @("-RepoRoot", $RepoRoot) `
+    -RequiredMarkers @("PC window contract check OK.")
 
 Invoke-GateStep `
     -Name "Android SDK tooling gate" `

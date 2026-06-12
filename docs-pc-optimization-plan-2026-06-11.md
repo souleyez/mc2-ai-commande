@@ -14,7 +14,7 @@
 
 Mobile support remains the product priority, but `G3 Android Device Smoke` is waiting on a physical Android phone with USB debugging authorized. While that device blocker existed, this plan used PC demo optimization to keep the Windows demo moving.
 
-The current PC/mobile wait-state optimization pass is now sealed through PC42. This does not move G4/G5 mobile touch and performance ahead of G3; the next mobile gate still requires the physical authorized phone.
+The current PC/mobile wait-state optimization pass is now sealed through PC43. This does not move G4/G5 mobile touch and performance ahead of G3; the next mobile gate still requires the physical authorized phone.
 
 ## Definition Of Done
 
@@ -29,6 +29,7 @@ The current PC optimization pass is complete when:
 - Battle UI remains sparse: status rows, Jet, objective/map, system/pause; no large logs, save slots, account UI or debug overlays in normal battle.
 - MechLab PC flow is easy to read: mounted weapon blocks are whole-grid objects, all installed weapons are active, heat/weight/slot legality is visible, no enable/disable toggle returns.
 - Controlled Windows demo launch has a preflight helper and defaults to a stable 1280x720 windowed launch.
+- Controlled Windows demo window sizing can be checked without launching Unity, proving the demo launcher and reference capture helper keep `1280x720` windowed defaults and pass `-screen-fullscreen 0`.
 - Controlled Windows demo build freshness can be checked without launching Unity, proving the ignored player output is newer than tracked Unity build inputs.
 - Controlled Windows demo evidence can be checked by script without rerunning Unity.
 - Controlled Windows demo evidence freshness can be checked by script, proving visible-flow logs, six capture PNG/JSON sidecars and six capture logs are newer than the current Windows build and evidence inputs.
@@ -38,7 +39,7 @@ The current PC optimization pass is complete when:
 - Android device-smoke readiness can be checked without installing or launching the app, and can explicitly stop at waiting-on-device when no phone is connected.
 - PC core playable contract can be checked by one script that runs the Unity/BattleCore validator and requires command-state, solo-return, Jet, occupancy, damage/ejection and debrief/relaunch coverage.
 - Mobile command model preflight can be checked without launching Unity, proving the current PC command surface still maps to status rows, Jet, map/bay/system, compact objective, sparse HUD and MechLab no-toggle fitting.
-- Current plan gate can be checked by one script that wraps handoff/readiness, Windows build freshness, demo source hygiene, AI deputy contract, mobile command model, battle HUD sparse contract, PC visual capture sanity, PC visual capture sanity self-test, PC capture sidecar schema, PC capture preset contract, PC capture artifact hygiene and Android device-smoke preflight state.
+- Current plan gate can be checked by one script that wraps handoff/readiness, Windows build freshness, demo source hygiene, AI deputy contract, mobile command model, battle HUD sparse contract, PC visual capture sanity, PC visual capture sanity self-test, PC capture sidecar schema, PC capture preset contract, PC capture artifact hygiene, PC window contract and Android device-smoke preflight state.
 - Android device smoke scans captured logcat for strong crash markers before accepting a real-device launch.
 - Android device smoke can be previewed with `-PlanOnly` without a connected phone.
 - Android SDK tooling can be checked before G3, proving Unity's AndroidPlayer SDK, NDK, OpenJDK, build tools, platform and command-line tools are present.
@@ -62,6 +63,7 @@ The current PC optimization pass is complete when:
 - PC capture sidecar schema can be checked without launching Unity, proving the six controlled-demo JSON sidecars keep matching screenshot paths, expected dimensions, flow state, camera state, summary fields and reference-asset metadata.
 - PC capture preset contract can be checked without launching Unity, proving the standard six controlled-demo presets remain `mechlab,spawn,airfield,hangar-contact,damage-demo,north-patrol` across capture generation, evidence, visual sanity, sidecar schema and handoff docs.
 - PC capture artifact hygiene can be checked without launching Unity, proving local reference screenshots, JSON sidecars, capture logs and visual sanity self-test images remain ignored generated evidence and are absent from tracked/staged source paths.
+- PC window contract can be checked without launching Unity through `check_pc_window_contract.ps1`, reporting `PC window contract check OK`.
 - Sparse battle HUD can be checked without launching Unity through `check_battle_hud_sparse_contract.ps1`.
 - Demo source hygiene can be checked without launching Unity through `check_demo_source_hygiene.ps1`.
 - AI deputy contract can be checked without launching Unity or calling the model through `check_ai_deputy_contract.ps1`.
@@ -135,6 +137,7 @@ The current PC optimization pass is complete when:
 | PC40 | Done | Add PC capture sidecar schema check | Six controlled-demo JSON sidecars keep matching screenshot paths, flow, camera, summary fields and reference-asset metadata |
 | PC41 | Done | Add PC capture preset contract check | The standard six controlled-demo presets stay consistent across capture, evidence, sanity, schema and docs |
 | PC42 | Done | Add PC capture artifact hygiene check | Local reference screenshots, sidecars, logs and visual sanity self-test outputs remain ignored and absent from tracked/staged source paths |
+| PC43 | Done | Add PC window contract check | Controlled PC launcher and capture helper keep stable 1280x720 windowed defaults |
 
 Do not open another PC polish gate from visual inspection alone. If the issue is collision, damage, command state or objective logic, first prove it in `BattleCore`.
 
@@ -1603,7 +1606,7 @@ git status --short --branch --untracked-files=all
 - Check `.gitignore` contains the reference capture, no-placeholders capture, PC visual sanity self-test, PNG and log markers.
 - Check existing local PC capture artifacts are ignored by git.
 - Wire the checker into `check_current_plan_gate.ps1`.
-- Update handoff, mobile and evidence docs to keep the current PC/mobile wait-state status sealed through PC42.
+- Update handoff, mobile and evidence docs to keep the then-current PC/mobile wait-state status sealed.
 
 **Acceptance:**
 
@@ -1625,6 +1628,41 @@ git status --short --branch --untracked-files=all
 ```
 
 **Commit:** `Add PC capture artifact hygiene check`
+
+## Completed Target: PC43 Add PC Window Contract Check
+
+**Goal:** 在 G3 真机仍不可用时，不提前做 G4/G5；把 PC 受控演示窗口尺寸固定成机器可检查契约，避免 Windows player 恢复到异常巨大窗口或截图尺寸与演示窗口漂移。
+
+**Scope:**
+
+- Add `scripts/unity/check_pc_window_contract.ps1`.
+- Check `run_windows_demo.ps1` default width/height are `1280x720` and it passes `-screen-width`, `-screen-height` and `-screen-fullscreen 0`.
+- Check `capture_reference_visuals.ps1` default width/height are `1280x720` and it passes the same windowed Unity arguments.
+- Check README, BUILD-WIN and this PC plan explicitly document `1280x720`.
+- Run `run_windows_demo.ps1 -CheckOnly` and require the resolved argument line to contain the controlled window settings.
+- Wire the checker into `check_current_plan_gate.ps1`.
+- Update handoff, mobile and evidence docs to keep the current PC/mobile wait-state status sealed through PC43.
+
+**Acceptance:**
+
+- `check_pc_window_contract.ps1` prints `PC window contract check OK`.
+- `check_current_plan_gate.ps1` includes an explicit PC window contract gate.
+- `check_controlled_demo_handoff.ps1 -RunReadiness` includes the script and docs markers.
+- No screenshot, sidecar, log, APK or build output is staged.
+
+**Validation:**
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_pc_window_contract.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_current_plan_gate.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_controlled_demo_handoff.ps1 -RunReadiness
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_mobile_command_model_preflight.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_demo_source_hygiene.ps1
+git diff --check
+git status --short --branch --untracked-files=all
+```
+
+**Commit:** `Add PC window contract check`
 
 ## Stop Conditions
 
