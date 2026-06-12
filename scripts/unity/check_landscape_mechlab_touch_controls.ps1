@@ -133,6 +133,7 @@ Add-OkRow -Check "runtime source" -Detail "$($sourceMarkers.Count) marker(s), st
 $docMarkers = @(
     "F22 audit landscape MechLab touch controls",
     "F23 capture landscape MechLab touch evidence",
+    "F24 capture Android MechLab touch evidence",
     "check_landscape_mechlab_touch_controls.ps1",
     "Landscape MechLab touch controls check OK"
 )
@@ -143,12 +144,15 @@ foreach ($marker in $docMarkers) {
 }
 
 Assert-Contains -Text $masterPlan -Needle '| 100 | Done | `Audit landscape MechLab touch controls` |' -Label "master plan F22"
-Assert-Contains -Text $masterPlan -Needle '| 101 | Next | `Capture landscape MechLab touch evidence` |' -Label "master plan F23"
+Assert-Contains -Text $masterPlan -Needle '| 101 | Done | `Capture landscape MechLab touch evidence` |' -Label "master plan F23"
+Assert-Contains -Text $masterPlan -Needle '| 102 | Next | `Capture Android MechLab touch evidence` |' -Label "master plan F24"
 Assert-Contains -Text $detailedPlan -Needle '| F22 | Done | `Audit landscape MechLab touch controls` |' -Label "detailed plan F22"
-Assert-Contains -Text $detailedPlan -Needle '| F23 | Next | `Capture landscape MechLab touch evidence` |' -Label "detailed plan F23"
+Assert-Contains -Text $detailedPlan -Needle '| F23 | Done | `Capture landscape MechLab touch evidence` |' -Label "detailed plan F23"
+Assert-Contains -Text $detailedPlan -Needle '| F24 | Next | `Capture Android MechLab touch evidence` |' -Label "detailed plan F24"
 Assert-Contains -Text $readme -Needle "F22 audit landscape MechLab touch controls" -Label "README F22"
 Assert-Contains -Text $readme -Needle "F23 capture landscape MechLab touch evidence" -Label "README F23"
-Add-OkRow -Check "plan docs" -Detail "F22 done, F23 next"
+Assert-Contains -Text $readme -Needle "F24 capture Android MechLab touch evidence" -Label "README F24"
+Add-OkRow -Check "plan docs" -Detail "F22/F23 done, F24 next"
 
 if ($failures.Count -gt 0) {
     Write-Host "Landscape MechLab touch controls check failed."

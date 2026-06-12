@@ -142,6 +142,7 @@ Assert-ScriptExists -RelativePath "scripts\unity\check_inventory_mechbay_binding
 Assert-ScriptExists -RelativePath "scripts\unity\check_optional_inventory_mechbay_preview_binding.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\capture_inventory_mechbay_preview_evidence.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\capture_landscape_phone_mechlab_source_line_evidence.ps1"
+Assert-ScriptExists -RelativePath "scripts\unity\capture_landscape_mechlab_touch_evidence.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_server_backed_receipt_slice_plan.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\capture_server_backed_receipt_evidence.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_post_receipt_inventory_refresh_boundary.ps1"
@@ -290,6 +291,9 @@ Assert-FileContains -RelativePath "README.md" -Markers @(
     "Post-receipt refresh evidence capture OK",
     "F20 refresh Android landscape build/smoke evidence",
     "F23 capture landscape MechLab touch evidence",
+    "capture_landscape_mechlab_touch_evidence.ps1",
+    "Landscape MechLab touch evidence capture OK",
+    "F24 capture Android MechLab touch evidence",
     "Add Android WPD-only device diagnosis",
     "Add Android ADB setup guidance",
     "Add Android ADB driver package probe",
@@ -457,6 +461,9 @@ Assert-FileContains -RelativePath "BUILD-WIN.md" -Markers @(
     "Post-receipt refresh evidence capture OK",
     "F20 refresh Android landscape build/smoke evidence",
     "F23 capture landscape MechLab touch evidence",
+    "capture_landscape_mechlab_touch_evidence.ps1",
+    "Landscape MechLab touch evidence capture OK",
+    "F24 capture Android MechLab touch evidence",
     "Controlled demo readiness preflight OK"
 )
 
@@ -564,6 +571,9 @@ Assert-FileContains -RelativePath "BUILD-MOBILE.md" -Markers @(
     "Post-receipt refresh evidence capture OK",
     "F20 refresh Android landscape build/smoke evidence",
     "F23 capture landscape MechLab touch evidence",
+    "capture_landscape_mechlab_touch_evidence.ps1",
+    "Landscape MechLab touch evidence capture OK",
+    "F24 capture Android MechLab touch evidence",
     "first phone version is landscape-only",
     "check_android_smoke_plan_consistency.ps1",
     "Android smoke plan/preflight consistency check OK",
@@ -1108,6 +1118,9 @@ Assert-FileContains -RelativePath "docs-machine-handoff-plan-2026-06-07.md" -Mar
     "Post-receipt refresh evidence capture OK",
     "F20 refresh Android landscape build/smoke evidence",
     "F23 capture landscape MechLab touch evidence",
+    "capture_landscape_mechlab_touch_evidence.ps1",
+    "Landscape MechLab touch evidence capture OK",
+    "F24 capture Android MechLab touch evidence",
     "first phone version is landscape-only",
     "android-device-smoke.png",
     "ScreenshotCapture: True",

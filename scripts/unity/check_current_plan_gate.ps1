@@ -176,6 +176,7 @@ $inventoryMechBayBindingScript = Resolve-RepoPath -RelativePath "scripts\unity\c
 $optionalInventoryMechBayPreviewScript = Resolve-RepoPath -RelativePath "scripts\unity\check_optional_inventory_mechbay_preview_binding.ps1"
 $inventoryMechBayPreviewEvidenceScript = Resolve-RepoPath -RelativePath "scripts\unity\capture_inventory_mechbay_preview_evidence.ps1"
 $landscapePhoneMechLabSourceLineScript = Resolve-RepoPath -RelativePath "scripts\unity\capture_landscape_phone_mechlab_source_line_evidence.ps1"
+$landscapeMechLabTouchEvidenceScript = Resolve-RepoPath -RelativePath "scripts\unity\capture_landscape_mechlab_touch_evidence.ps1"
 $serverBackedReceiptSlicePlanScript = Resolve-RepoPath -RelativePath "scripts\unity\check_server_backed_receipt_slice_plan.ps1"
 $serverBackedReceiptEvidenceScript = Resolve-RepoPath -RelativePath "scripts\unity\capture_server_backed_receipt_evidence.ps1"
 $postReceiptInventoryRefreshBoundaryScript = Resolve-RepoPath -RelativePath "scripts\unity\check_post_receipt_inventory_refresh_boundary.ps1"
@@ -456,6 +457,12 @@ Invoke-GateStep `
     -ScriptPath $landscapePhoneMechLabSourceLineScript `
     -Arguments @("-RepoRoot", $RepoRoot) `
     -RequiredMarkers @("Landscape-phone MechLab source-line evidence capture OK.")
+
+Invoke-GateStep `
+    -Name "Landscape MechLab touch evidence capture gate" `
+    -ScriptPath $landscapeMechLabTouchEvidenceScript `
+    -Arguments @("-RepoRoot", $RepoRoot) `
+    -RequiredMarkers @("Landscape MechLab touch evidence capture OK.")
 
 Invoke-GateStep `
     -Name "Server-backed receipt slice plan gate" `
