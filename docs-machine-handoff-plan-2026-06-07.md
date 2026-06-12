@@ -25,8 +25,9 @@ As of this handoff plan:
 - Previous project remote: `git@github.com:souleyez/mc2-ai-commander-demo.git` now redirects to the current repository.
 - Upstream source remote kept for history: `origin https://github.com/alariq/mc2.git`
 - Current branch state after the latest controlled demo checkpoint: `master...ai-origin/master`
-- Latest sealed PC/mobile wait-state checkpoint: `PC1-PC53`
-- Last completed PC checkpoint: `Add Android ADB setup guidance`
+- Latest sealed PC/mobile wait-state checkpoint: `PC1-PC54`
+- Last completed PC checkpoint: `Add Android ADB readiness watch`
+- Previous PC checkpoint retained in the gate chain: `Add Android ADB setup guidance`
 - Previous PC checkpoint retained in the gate chain: `Add Android WPD-only device diagnosis`
 - Previous PC checkpoint retained in the gate chain: `Add Android visible-flow command-file smoke`
 - Previous PC checkpoint retained in the gate chain: `Add Android smoke connection gate check`
@@ -580,7 +581,7 @@ Current plan queue consistency check OK
 
 This verifies README, BUILD-WIN, master/detailed/PC/mobile/evidence/handoff docs
 and helper scripts agree that the current wait-state package is sealed through
-the PC1-PC53 checkpoint, and that `G3 Run Android device smoke` remains the
+the PC1-PC54 checkpoint, and that `G3 Run Android device smoke` remains the
 formal next task.
 
 **Step 19: Run Android device connection check**
@@ -623,6 +624,24 @@ This proves the real Android smoke helper fails before install or launch when
 no authorized phone is selected, and that existing ignored smoke log, screenshot
 and summary evidence are not rewritten by that waiting-state check.
 
+**Step 19B: Run Android ADB readiness watch**
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\watch_android_device_connection.ps1 -Once -AllowWaiting
+```
+
+Expected while the phone is still WPD/MTP-only or absent from adb:
+
+```text
+Android device connection watch waiting on device
+AdbWatchHint: True
+```
+
+This wraps the existing connection check in a no-install, no-launch watcher.
+Use the normal timed mode when manually switching USB debugging, accepting the
+RSA prompt, or changing Windows ADB drivers; it should only report ready after
+adb shows one authorized `device` row.
+
 **Step 20: Run current plan gate check**
 
 ```powershell
@@ -636,7 +655,7 @@ Current plan gate check OK
 ```
 
 This wraps handoff/readiness, Windows build freshness, demo source hygiene, AI
-deputy contract, mobile command model, battle HUD sparse contract, PC visual capture sanity, PC visual capture sanity self-test, PC capture sidecar schema, PC capture preset contract, PC capture artifact hygiene, PC window contract, PC launch log hygiene, PC build artifact hygiene, PC smoke artifact hygiene, current plan queue consistency, Android device connection, Android WPD-only device diagnosis, Android ADB setup guidance, Android smoke connection gate and Android
+deputy contract, mobile command model, battle HUD sparse contract, PC visual capture sanity, PC visual capture sanity self-test, PC capture sidecar schema, PC capture preset contract, PC capture artifact hygiene, PC window contract, PC launch log hygiene, PC build artifact hygiene, PC smoke artifact hygiene, current plan queue consistency, Android device connection, Android WPD-only device diagnosis, Android ADB setup guidance, Android ADB readiness watch, Android smoke connection gate and Android
 preflight checks. With no authorized phone connected, Android should be
 reported as waiting on device; with one authorized phone, Android should report
 OK.

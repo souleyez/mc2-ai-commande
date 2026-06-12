@@ -275,6 +275,7 @@ Expected without a phone:
 Android device connection check waiting on device
 WpdOnlyAndroidProbe: True
 AdbSetupHint: True
+AdbWatchHint: True
 ```
 
 If Windows sees a connected Android phone only as WPD/MTP, the same helper can
@@ -282,6 +283,12 @@ report `WpdOnlyAndroidDevice: True`. That is still a G3 waiting state until adb
 shows exactly one authorized `device` row. The setup hint reports the current
 Windows driver/provider/inf/service so the MTP-only state is distinguishable
 from an ADB-ready phone.
+
+To wait while changing phone USB debugging or driver state:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\watch_android_device_connection.ps1 -TimeoutSeconds 120
+```
 
 Check the Android smoke connection gate behavior before real G3 smoke:
 
@@ -458,6 +465,7 @@ scripts\unity\check_android_smoke_plan_consistency.ps1 -> Android smoke plan/pre
 scripts\unity\check_android_g3_readiness.ps1 -> Android G3 readiness check waiting on device
 scripts\unity\check_android_g3_device_requirement.ps1 -> Android G3 device requirement check waiting on device
 scripts\unity\check_android_device_connection.ps1 -> Android device connection check waiting on device, WpdOnlyAndroidProbe: True, AdbSetupHint: True
+scripts\unity\watch_android_device_connection.ps1 -Once -AllowWaiting -> Android device connection watch waiting on device, AdbWatchHint: True
 scripts\unity\check_android_device_preflight.ps1 -AllowNoDevice -> Android device smoke preflight waiting on device
 ```
 

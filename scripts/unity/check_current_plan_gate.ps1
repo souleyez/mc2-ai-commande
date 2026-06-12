@@ -124,6 +124,7 @@ $androidApkManifestScript = Resolve-RepoPath -RelativePath "scripts\unity\check_
 $androidApkPayloadScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_apk_payload.ps1"
 $androidApkSizeBudgetScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_apk_size_budget.ps1"
 $androidDeviceConnectionScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_device_connection.ps1"
+$androidDeviceWatchScript = Resolve-RepoPath -RelativePath "scripts\unity\watch_android_device_connection.ps1"
 $androidPreflightScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_device_preflight.ps1"
 $androidSmokeScript = Resolve-RepoPath -RelativePath "scripts\unity\android_device_smoke.ps1"
 $androidSmokeConnectionGateScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_smoke_connection_gate.ps1"
@@ -298,6 +299,16 @@ Invoke-GateStep `
         "Android device connection check waiting on authorization.",
         "Android device connection check waiting on online device.",
         "Android device connection check waiting on device selection."
+    )
+
+Invoke-GateStep `
+    -Name "Android device watch gate" `
+    -ScriptPath $androidDeviceWatchScript `
+    -Arguments @("-RepoRoot", $RepoRoot, "-Once", "-AllowWaiting") `
+    -RequiredMarkers @("AdbWatchHint: True") `
+    -AnySuccessMarkers @(
+        "Android device connection watch OK.",
+        "Android device connection watch waiting on device."
     )
 
 Invoke-GateStep `
