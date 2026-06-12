@@ -12,6 +12,7 @@ param(
     [string]$SummaryPath = "",
     [string]$CommandFilePath = "",
     [string]$DeviceCommandFilePath = "",
+    [string]$ExtraUnityArguments = "",
     [string[]]$RequiredSmokeMarkers = @("MC2 debrief summary assertion OK", "MC2 loadout compact assertion OK"),
     [string[]]$ForbiddenSmokeMarkers = @("assertion failed", "command file blocked", "Command file blocked"),
     [string]$RequiredSmokeMarkersText = "",
@@ -489,7 +490,16 @@ if ($commandFileSmoke) {
         throw "Android command-file smoke requires a launchable activity. Pass -ActivityName or rebuild the APK with a launchable activity."
     }
 
-    $unityArguments = "-mc2CommandFile $DeviceCommandFilePath"
+    $unityArgumentParts = New-Object System.Collections.Generic.List[string]
+    if (-not [string]::IsNullOrWhiteSpace($ExtraUnityArguments)) {
+        [void]$unityArgumentParts.Add($ExtraUnityArguments.Trim())
+    }
+
+    [void]$unityArgumentParts.Add("-mc2CommandFile $DeviceCommandFilePath")
+    $unityArguments = ($unityArgumentParts -join " ")
+}
+elseif (-not [string]::IsNullOrWhiteSpace($ExtraUnityArguments)) {
+    $unityArguments = $ExtraUnityArguments.Trim()
 }
 
 if ($PlanOnly) {
@@ -513,6 +523,10 @@ if ($PlanOnly) {
         Write-Host "CommandFile: $CommandFilePath"
         Write-Host "DeviceCommandFile: $DeviceCommandFilePath"
         Write-Host "UnityArguments: $unityArguments"
+        if (-not [string]::IsNullOrWhiteSpace($ExtraUnityArguments)) {
+            Write-Host "ExtraUnityArguments: $ExtraUnityArguments"
+        }
+
         foreach ($marker in $RequiredSmokeMarkers) {
             Write-Host "SmokeSuccessMarker: $marker"
         }
@@ -718,6 +732,7 @@ if (-not $SkipSummary) {
         commandFilePath = if ($commandFileSmoke) { $CommandFilePath } else { "" }
         deviceCommandFilePath = if ($commandFileSmoke) { $DeviceCommandFilePath } else { "" }
         unityArguments = if ($commandFileSmoke) { $unityArguments } else { "" }
+        extraUnityArguments = $ExtraUnityArguments
         smokeTestPassed = $smokeTestPassed
         launchWaitSeconds = $LaunchWaitSeconds
         installed = -not $NoInstall
@@ -754,6 +769,10 @@ if ($commandFileSmoke) {
     Write-Host "CommandFile: $CommandFilePath"
     Write-Host "DeviceCommandFile: $DeviceCommandFilePath"
     Write-Host "UnityArguments: $unityArguments"
+    if (-not [string]::IsNullOrWhiteSpace($ExtraUnityArguments)) {
+        Write-Host "ExtraUnityArguments: $ExtraUnityArguments"
+    }
+
     Write-Host "SmokeTestPassed: $smokeTestPassed"
 }
 if (-not $SkipScreenshot) {

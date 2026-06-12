@@ -7075,6 +7075,10 @@ namespace MC2Demo.Presentation
             VisualCaptureSidecar sidecar = BuildCaptureSidecar(screenshotPath);
             File.WriteAllText(sidecarPath, JsonUtility.ToJson(sidecar, true));
             Debug.Log("MC2 capture sidecar written: " + sidecarPath);
+            Debug.Log("MC2 capture sidecar occupancy: " + sidecar.occupancy);
+            Debug.Log("MC2 capture sidecar contact clearance: " + sidecar.contactClearance);
+            Debug.Log("MC2 capture sidecar occupancy placeholders: " + sidecar.occupancyPlaceholders);
+            Debug.Log("MC2 capture sidecar first map visual: " + sidecar.firstMapVisual);
         }
 
         private VisualCaptureSidecar BuildCaptureSidecar(string screenshotPath)

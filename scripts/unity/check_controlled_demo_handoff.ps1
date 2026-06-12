@@ -145,6 +145,7 @@ Assert-ScriptExists -RelativePath "scripts\unity\capture_landscape_phone_mechlab
 Assert-ScriptExists -RelativePath "scripts\unity\capture_landscape_mechlab_touch_evidence.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\capture_android_battle_command_touch_evidence.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_android_entity_placeholder_collision_path.ps1"
+Assert-ScriptExists -RelativePath "scripts\unity\capture_android_entity_placeholder_collision_runtime_evidence.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_server_backed_receipt_slice_plan.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\capture_server_backed_receipt_evidence.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_post_receipt_inventory_refresh_boundary.ps1"
@@ -308,6 +309,9 @@ Assert-FileContains -RelativePath "README.md" -Markers @(
     "check_android_entity_placeholder_collision_path.ps1",
     "Android entity placeholder collision path check OK",
     "F28 capture Android entity placeholder collision runtime evidence",
+    "capture_android_entity_placeholder_collision_runtime_evidence.ps1",
+    "Android entity placeholder collision runtime evidence capture OK",
+    "F29 audit PC controlled-demo visual readability",
     "Add Android WPD-only device diagnosis",
     "Add Android ADB setup guidance",
     "Add Android ADB driver package probe",
@@ -490,6 +494,9 @@ Assert-FileContains -RelativePath "BUILD-WIN.md" -Markers @(
     "check_android_entity_placeholder_collision_path.ps1",
     "Android entity placeholder collision path check OK",
     "F28 capture Android entity placeholder collision runtime evidence",
+    "capture_android_entity_placeholder_collision_runtime_evidence.ps1",
+    "Android entity placeholder collision runtime evidence capture OK",
+    "F29 audit PC controlled-demo visual readability",
     "Controlled demo readiness preflight OK"
 )
 
@@ -612,6 +619,9 @@ Assert-FileContains -RelativePath "BUILD-MOBILE.md" -Markers @(
     "check_android_entity_placeholder_collision_path.ps1",
     "Android entity placeholder collision path check OK",
     "F28 capture Android entity placeholder collision runtime evidence",
+    "capture_android_entity_placeholder_collision_runtime_evidence.ps1",
+    "Android entity placeholder collision runtime evidence capture OK",
+    "F29 audit PC controlled-demo visual readability",
     "first phone version is landscape-only",
     "check_android_smoke_plan_consistency.ps1",
     "Android smoke plan/preflight consistency check OK",
@@ -1171,6 +1181,9 @@ Assert-FileContains -RelativePath "docs-machine-handoff-plan-2026-06-07.md" -Mar
     "check_android_entity_placeholder_collision_path.ps1",
     "Android entity placeholder collision path check OK",
     "F28 capture Android entity placeholder collision runtime evidence",
+    "capture_android_entity_placeholder_collision_runtime_evidence.ps1",
+    "Android entity placeholder collision runtime evidence capture OK",
+    "F29 audit PC controlled-demo visual readability",
     "first phone version is landscape-only",
     "android-device-smoke.png",
     "ScreenshotCapture: True",

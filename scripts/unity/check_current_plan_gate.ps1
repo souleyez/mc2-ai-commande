@@ -181,6 +181,7 @@ $androidMechLabTouchEvidenceScript = Resolve-RepoPath -RelativePath "scripts\uni
 $androidBattleCommandTouchEvidenceScript = Resolve-RepoPath -RelativePath "scripts\unity\capture_android_battle_command_touch_evidence.ps1"
 $androidCombatEffectLogNoiseScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_combat_effect_log_noise.ps1"
 $androidEntityPlaceholderCollisionPathScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_entity_placeholder_collision_path.ps1"
+$androidEntityPlaceholderCollisionRuntimeEvidenceScript = Resolve-RepoPath -RelativePath "scripts\unity\capture_android_entity_placeholder_collision_runtime_evidence.ps1"
 $serverBackedReceiptSlicePlanScript = Resolve-RepoPath -RelativePath "scripts\unity\check_server_backed_receipt_slice_plan.ps1"
 $serverBackedReceiptEvidenceScript = Resolve-RepoPath -RelativePath "scripts\unity\capture_server_backed_receipt_evidence.ps1"
 $postReceiptInventoryRefreshBoundaryScript = Resolve-RepoPath -RelativePath "scripts\unity\check_post_receipt_inventory_refresh_boundary.ps1"
@@ -491,6 +492,12 @@ Invoke-GateStep `
     -ScriptPath $androidEntityPlaceholderCollisionPathScript `
     -Arguments @("-RepoRoot", $RepoRoot) `
     -RequiredMarkers @("Android entity placeholder collision path check OK.")
+
+Invoke-GateStep `
+    -Name "Android entity placeholder collision runtime evidence plan gate" `
+    -ScriptPath $androidEntityPlaceholderCollisionRuntimeEvidenceScript `
+    -Arguments @("-RepoRoot", $RepoRoot, "-PlanOnly") `
+    -RequiredMarkers @("Android entity placeholder collision runtime evidence capture plan OK.")
 
 Invoke-GateStep `
     -Name "Server-backed receipt slice plan gate" `
