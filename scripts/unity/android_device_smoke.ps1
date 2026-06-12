@@ -10,9 +10,12 @@ param(
     [string]$LogPath = "",
     [string]$ScreenshotPath = "",
     [string]$SummaryPath = "",
+    [string]$CommandFilePath = "",
+    [string]$DeviceCommandFilePath = "",
     [int]$LaunchWaitSeconds = 12,
     [switch]$NoInstall,
     [switch]$NoLaunch,
+    [switch]$NoCommandFileSmoke,
     [switch]$SkipLogCheck,
     [switch]$SkipScreenshot,
     [switch]$SkipSummary,
@@ -55,12 +58,23 @@ if ([string]::IsNullOrWhiteSpace($SummaryPath)) {
     $SummaryPath = Join-Path $RepoRoot "analysis-output\android-device-smoke-summary.json"
 }
 
+if ([string]::IsNullOrWhiteSpace($CommandFilePath)) {
+    $CommandFilePath = Join-Path $RepoRoot "unity-mc2-demo\Assets\StreamingAssets\CommanderScripts\mc2_01-visible-flow-audit.txt"
+}
+elseif (-not [System.IO.Path]::IsPathRooted($CommandFilePath)) {
+    $CommandFilePath = Join-Path $RepoRoot $CommandFilePath
+}
+
 if (-not (Test-Path -LiteralPath $ApkPath)) {
     throw "Missing Android APK: $ApkPath"
 }
 
 if (-not (Test-Path -LiteralPath $AdbPath)) {
     throw "Missing adb: $AdbPath"
+}
+
+if (-not $NoCommandFileSmoke -and -not (Test-Path -LiteralPath $CommandFilePath -PathType Leaf)) {
+    throw "Missing Android smoke command file: $CommandFilePath"
 }
 
 $sdkToolingScript = Join-Path $PSScriptRoot "check_android_sdk_tooling.ps1"
@@ -315,6 +329,32 @@ function Write-SmokeSummary {
     $Data | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $Path -Encoding UTF8
 }
 
+function Get-AndroidShellDirectory {
+    param([string]$Path)
+
+    $normalized = $Path -replace "\\", "/"
+    $lastSlash = $normalized.LastIndexOf("/")
+    if ($lastSlash -le 0) {
+        return ""
+    }
+
+    return $normalized.Substring(0, $lastSlash)
+}
+
+function Test-LogContains {
+    param(
+        [string]$Path,
+        [string]$Needle
+    )
+
+    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
+        return $false
+    }
+
+    $text = Get-Content -LiteralPath $Path -Raw
+    return $text -like "*$Needle*"
+}
+
 $metadata = Get-ApkMetadata -Apk $ApkPath -Aapt $AaptPath
 if ([string]::IsNullOrWhiteSpace($PackageName)) {
     $PackageName = $metadata.PackageName
@@ -326,6 +366,20 @@ if ([string]::IsNullOrWhiteSpace($ActivityName)) {
 
 if ([string]::IsNullOrWhiteSpace($PackageName)) {
     throw "PackageName is unknown. Pass -PackageName or ensure aapt can read the APK."
+}
+
+$commandFileSmoke = -not $NoCommandFileSmoke
+if ($commandFileSmoke -and [string]::IsNullOrWhiteSpace($DeviceCommandFilePath)) {
+    $DeviceCommandFilePath = "/sdcard/Android/data/$PackageName/files/" + [System.IO.Path]::GetFileName($CommandFilePath)
+}
+
+$unityArguments = ""
+if ($commandFileSmoke) {
+    if ([string]::IsNullOrWhiteSpace($ActivityName)) {
+        throw "Android command-file smoke requires a launchable activity. Pass -ActivityName or rebuild the APK with a launchable activity."
+    }
+
+    $unityArguments = "-mc2CommandFile $DeviceCommandFilePath"
 }
 
 if ($PlanOnly) {
@@ -344,6 +398,14 @@ if ($PlanOnly) {
     Write-Host "Log: $LogPath"
     Write-Host "Screenshot: $ScreenshotPath"
     Write-Host "Summary: $SummaryPath"
+    Write-Host "CommandFileSmoke: $commandFileSmoke"
+    if ($commandFileSmoke) {
+        Write-Host "CommandFile: $CommandFilePath"
+        Write-Host "DeviceCommandFile: $DeviceCommandFilePath"
+        Write-Host "UnityArguments: $unityArguments"
+        Write-Host "SmokeSuccessMarker: MC2 debrief summary assertion OK"
+        Write-Host "SmokeSuccessMarker: MC2 loadout compact assertion OK"
+    }
     Write-Host "Install: $(-not $NoInstall)"
     Write-Host "Launch: $(-not $NoLaunch)"
     Write-Host "LogCheck: $(-not $SkipLogCheck)"
@@ -404,10 +466,32 @@ if (-not $NoInstall) {
     }
 }
 
+if ($commandFileSmoke) {
+    $deviceCommandFileDirectory = Get-AndroidShellDirectory -Path $DeviceCommandFilePath
+    if ([string]::IsNullOrWhiteSpace($deviceCommandFileDirectory)) {
+        throw "Device command file path must include a directory: $DeviceCommandFilePath"
+    }
+
+    & $AdbPath @adbArgs shell mkdir -p $deviceCommandFileDirectory
+    if ($LASTEXITCODE -ne 0) {
+        throw "adb shell mkdir failed for Android smoke command file directory: $deviceCommandFileDirectory"
+    }
+
+    & $AdbPath @adbArgs push $CommandFilePath $DeviceCommandFilePath
+    if ($LASTEXITCODE -ne 0) {
+        throw "adb push failed for Android smoke command file: $CommandFilePath -> $DeviceCommandFilePath"
+    }
+}
+
 & $AdbPath @adbArgs logcat -c
 if (-not $NoLaunch) {
     if (-not [string]::IsNullOrWhiteSpace($ActivityName)) {
-        & $AdbPath @adbArgs shell am start -n "$PackageName/$ActivityName"
+        if ($commandFileSmoke) {
+            & $AdbPath @adbArgs shell am start -n "$PackageName/$ActivityName" -e unity $unityArguments
+        }
+        else {
+            & $AdbPath @adbArgs shell am start -n "$PackageName/$ActivityName"
+        }
     }
     else {
         & $AdbPath @adbArgs shell monkey -p $PackageName -c android.intent.category.LAUNCHER 1
@@ -421,6 +505,22 @@ if (-not $NoLaunch) {
 }
 
 & $AdbPath @adbArgs logcat -d > $LogPath
+
+$smokeTestPassed = $false
+if ($commandFileSmoke -and -not $NoLaunch) {
+    if ((Test-LogContains -Path $LogPath -Needle "MC2 debrief summary assertion OK") `
+        -and (Test-LogContains -Path $LogPath -Needle "MC2 loadout compact assertion OK")) {
+        $smokeTestPassed = $true
+    }
+    elseif ((Test-LogContains -Path $LogPath -Needle "assertion failed") `
+        -or (Test-LogContains -Path $LogPath -Needle "command file blocked") `
+        -or (Test-LogContains -Path $LogPath -Needle "Command file blocked")) {
+        throw "Android command-file smoke reported an assertion or command-file failure. See log: $LogPath"
+    }
+    else {
+        throw "Android command-file smoke did not report the visible-flow success markers. See log: $LogPath"
+    }
+}
 
 if (-not $SkipScreenshot) {
     Invoke-BinaryCommandToFile -FilePath $AdbPath -Arguments ($adbArgs + @("exec-out", "screencap", "-p")) -OutputPath $ScreenshotPath
@@ -453,6 +553,11 @@ if (-not $SkipSummary) {
         apkPath = $ApkPath
         logPath = $LogPath
         screenshotPath = if ($SkipScreenshot) { "" } else { $ScreenshotPath }
+        commandFileSmoke = $commandFileSmoke
+        commandFilePath = if ($commandFileSmoke) { $CommandFilePath } else { "" }
+        deviceCommandFilePath = if ($commandFileSmoke) { $DeviceCommandFilePath } else { "" }
+        unityArguments = if ($commandFileSmoke) { $unityArguments } else { "" }
+        smokeTestPassed = $smokeTestPassed
         launchWaitSeconds = $LaunchWaitSeconds
         installed = -not $NoInstall
         launched = -not $NoLaunch
@@ -483,6 +588,13 @@ if (-not [string]::IsNullOrWhiteSpace($ActivityName)) {
 }
 Write-Host "Process: $pidOutput"
 Write-Host "Log: $LogPath"
+if ($commandFileSmoke) {
+    Write-Host "CommandFileSmoke: True"
+    Write-Host "CommandFile: $CommandFilePath"
+    Write-Host "DeviceCommandFile: $DeviceCommandFilePath"
+    Write-Host "UnityArguments: $unityArguments"
+    Write-Host "SmokeTestPassed: $smokeTestPassed"
+}
 if (-not $SkipScreenshot) {
     Write-Host "Screenshot: $ScreenshotPath"
 }
@@ -490,6 +602,6 @@ if (-not $SkipSummary) {
     Write-Host "Summary: $SummaryPath"
 }
 
-if ([string]::IsNullOrWhiteSpace($pidOutput)) {
+if ([string]::IsNullOrWhiteSpace($pidOutput) -and -not $smokeTestPassed) {
     throw "Package did not remain running after launch: $PackageName"
 }

@@ -108,6 +108,11 @@ function Assert-SummaryObject {
         "apkPath",
         "logPath",
         "screenshotPath",
+        "commandFileSmoke",
+        "commandFilePath",
+        "deviceCommandFilePath",
+        "unityArguments",
+        "smokeTestPassed",
         "launchWaitSeconds",
         "installed",
         "launched",
@@ -143,9 +148,27 @@ function Assert-SummaryObject {
     Assert-NotBlank -Value $Summary.model -Name "model"
     Assert-NotBlank -Value $Summary.androidVersion -Name "androidVersion"
     Assert-NotBlank -Value $Summary.packageName -Name "packageName"
-    Assert-NotBlank -Value $Summary.process -Name "process"
     Assert-NotBlank -Value $Summary.apkPath -Name "apkPath"
     Assert-NotBlank -Value $Summary.logPath -Name "logPath"
+    Assert-Boolean -Value $Summary.commandFileSmoke -Name "commandFileSmoke"
+    Assert-Boolean -Value $Summary.smokeTestPassed -Name "smokeTestPassed"
+
+    if ($Summary.commandFileSmoke -eq $true) {
+        Assert-NotBlank -Value $Summary.commandFilePath -Name "commandFilePath"
+        Assert-NotBlank -Value $Summary.deviceCommandFilePath -Name "deviceCommandFilePath"
+        Assert-NotBlank -Value $Summary.unityArguments -Name "unityArguments"
+
+        if ($Summary.smokeTestPassed -ne $true) {
+            Add-Failure "Summary smokeTestPassed must be true when commandFileSmoke is true."
+        }
+
+        if ([string]$Summary.unityArguments -notlike "*-mc2CommandFile*") {
+            Add-Failure "Summary unityArguments must include -mc2CommandFile: $($Summary.unityArguments)"
+        }
+    }
+    else {
+        Assert-NotBlank -Value $Summary.process -Name "process"
+    }
 
     if (-not [string]::IsNullOrWhiteSpace($ExpectedPackageName) -and $Summary.packageName -ne $ExpectedPackageName) {
         Add-Failure "Summary packageName mismatch: expected $ExpectedPackageName, got $($Summary.packageName)"
@@ -170,6 +193,7 @@ function Assert-SummaryObject {
         Add-Row -Check "package" -Detail ([string]$Summary.packageName)
         Add-Row -Check "device" -Detail "$($Summary.deviceId) / $($Summary.model) / Android $($Summary.androidVersion)"
         Add-Row -Check "evidence paths" -Detail "log=$($Summary.logPath); screenshot=$($Summary.screenshotPath)"
+        Add-Row -Check "command-file smoke" -Detail "enabled=$($Summary.commandFileSmoke); passed=$($Summary.smokeTestPassed)"
         Add-Row -Check "execution flags" -Detail "installed=$($Summary.installed); launched=$($Summary.launched); logChecked=$($Summary.logChecked); screenshotCaptured=$($Summary.screenshotCaptured)"
     }
 }
@@ -187,6 +211,11 @@ if ($SelfTest) {
         apkPath = "unity-mc2-demo\Builds\Android\MC2UnityDemo.apk"
         logPath = "analysis-output\android-device-smoke.log"
         screenshotPath = "analysis-output\android-device-smoke.png"
+        commandFileSmoke = $true
+        commandFilePath = "unity-mc2-demo\Assets\StreamingAssets\CommanderScripts\mc2_01-visible-flow-audit.txt"
+        deviceCommandFilePath = "/sdcard/Android/data/com.DefaultCompany.unitymc2demo/files/mc2_01-visible-flow-audit.txt"
+        unityArguments = "-mc2CommandFile /sdcard/Android/data/com.DefaultCompany.unitymc2demo/files/mc2_01-visible-flow-audit.txt"
+        smokeTestPassed = $true
         launchWaitSeconds = 12
         installed = $true
         launched = $true

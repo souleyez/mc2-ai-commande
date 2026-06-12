@@ -334,6 +334,10 @@ Invoke-GateStep `
         "ScreenshotCapture: True",
         "Summary:",
         "SummaryWrite: True",
+        "CommandFileSmoke: True",
+        "UnityArguments: -mc2CommandFile",
+        "SmokeSuccessMarker: MC2 debrief summary assertion OK",
+        "SmokeSuccessMarker: MC2 loadout compact assertion OK",
         "ConnectionCheck: check_android_device_connection.ps1 -RequireDevice"
     )
 
@@ -366,6 +370,9 @@ Invoke-GateStep `
         "Android smoke plan/preflight consistency check OK.",
         "Android device smoke plan OK.",
         "ConnectionCheck: check_android_device_connection.ps1 -RequireDevice",
+        "CommandFileSmoke: True",
+        "SmokeSuccessMarker: MC2 debrief summary assertion OK",
+        "SmokeSuccessMarker: MC2 loadout compact assertion OK",
         "Android smoke log check self-test OK.",
         "Android smoke summary check self-test OK."
     ) `

@@ -332,18 +332,26 @@ Screenshot: C:\...\analysis-output\android-device-smoke.png
 ScreenshotCapture: True
 Summary: C:\...\analysis-output\android-device-smoke-summary.json
 SummaryWrite: True
+CommandFileSmoke: True
+UnityArguments: -mc2CommandFile
+SmokeSuccessMarker: MC2 debrief summary assertion OK
+SmokeSuccessMarker: MC2 loadout compact assertion OK
 ConnectionCheck: check_android_device_connection.ps1 -RequireDevice
 ```
 
 The helper verifies SDK tooling plus APK freshness, identity, compatibility,
 signing, manifest, payload and size budget, discovers the APK package name
 through `aapt`, checks that exactly one authorized Android device is connected,
-installs the APK, launches it, waits briefly, captures logcat, an ignored
+installs the APK, pushes
+`unity-mc2-demo\Assets\StreamingAssets\CommanderScripts\mc2_01-visible-flow-audit.txt`
+to `/sdcard/Android/data/com.DefaultCompany.unitymc2demo/files/`, launches Unity
+with `-mc2CommandFile`, waits briefly, captures logcat, an ignored
 `analysis-output\android-device-smoke.png` screenshot and an ignored
 `analysis-output\android-device-smoke-summary.json` summary, scans the log for
-strong crash markers, validates the summary schema, and fails if the package
-does not stay running. If the strict connection gate is not satisfied, it fails
-before install or launch with
+strong crash markers and the visible-flow success markers, validates the summary
+schema, and fails if the package does not stay running before the command-file
+smoke passes. If the strict connection gate is not satisfied, it fails before
+install or launch with
 `Android device smoke requires a single authorized Android device before install or launch`.
 The standalone `check_android_smoke_connection_gate.ps1` gate also proves this
 failure path does not rewrite the ignored log, screenshot or summary evidence
@@ -373,8 +381,10 @@ Manual equivalent:
 $Adb = "$HOME\Unity\Hub\Editor\6000.4.7f1\Editor\Data\PlaybackEngines\AndroidPlayer\SDK\platform-tools\adb.exe"
 & $Adb devices
 & $Adb install -r .\unity-mc2-demo\Builds\Android\MC2UnityDemo.apk
+& $Adb shell mkdir -p /sdcard/Android/data/com.DefaultCompany.unitymc2demo/files
+& $Adb push .\unity-mc2-demo\Assets\StreamingAssets\CommanderScripts\mc2_01-visible-flow-audit.txt /sdcard/Android/data/com.DefaultCompany.unitymc2demo/files/mc2_01-visible-flow-audit.txt
 & $Adb logcat -c
-& $Adb shell am start -n com.DefaultCompany.unitymc2demo/com.unity3d.player.UnityPlayerGameActivity
+& $Adb shell am start -n com.DefaultCompany.unitymc2demo/com.unity3d.player.UnityPlayerGameActivity -e unity "-mc2CommandFile /sdcard/Android/data/com.DefaultCompany.unitymc2demo/files/mc2_01-visible-flow-audit.txt"
 Start-Sleep -Seconds 12
 & $Adb logcat -d > .\analysis-output\android-device-smoke.log
 & $Adb exec-out screencap -p > .\analysis-output\android-device-smoke.png

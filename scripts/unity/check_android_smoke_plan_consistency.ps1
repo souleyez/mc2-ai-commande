@@ -134,6 +134,11 @@ Assert-TextContains -Text $planText -Needle "Activity: $ExpectedActivityName" -L
 Assert-TextContains -Text $planText -Needle "analysis-output\android-device-smoke.log" -Label "android_device_smoke.ps1 -PlanOnly"
 Assert-TextContains -Text $planText -Needle "analysis-output\android-device-smoke.png" -Label "android_device_smoke.ps1 -PlanOnly"
 Assert-TextContains -Text $planText -Needle "analysis-output\android-device-smoke-summary.json" -Label "android_device_smoke.ps1 -PlanOnly"
+Assert-TextContains -Text $planText -Needle "CommandFileSmoke: True" -Label "android_device_smoke.ps1 -PlanOnly"
+Assert-TextContains -Text $planText -Needle "mc2_01-visible-flow-audit.txt" -Label "android_device_smoke.ps1 -PlanOnly"
+Assert-TextContains -Text $planText -Needle "UnityArguments: -mc2CommandFile" -Label "android_device_smoke.ps1 -PlanOnly"
+Assert-TextContains -Text $planText -Needle "SmokeSuccessMarker: MC2 debrief summary assertion OK" -Label "android_device_smoke.ps1 -PlanOnly"
+Assert-TextContains -Text $planText -Needle "SmokeSuccessMarker: MC2 loadout compact assertion OK" -Label "android_device_smoke.ps1 -PlanOnly"
 Assert-TextContains -Text $planText -Needle "Install: True" -Label "android_device_smoke.ps1 -PlanOnly"
 Assert-TextContains -Text $planText -Needle "Launch: True" -Label "android_device_smoke.ps1 -PlanOnly"
 Assert-TextContains -Text $planText -Needle "LogCheck: True" -Label "android_device_smoke.ps1 -PlanOnly"
@@ -180,7 +185,8 @@ else {
 Add-Row -Check "plan package" -Status "OK" -Detail $planPackageName
 Add-Row -Check "plan activity" -Status "OK" -Detail $planActivityName
 Add-Row -Check "plan evidence outputs" -Status "OK" -Detail "log+screenshot+summary"
-Add-Row -Check "plan execution flags" -Status "OK" -Detail "install+launch+log+screenshot+summary+connection"
+Add-Row -Check "plan command-file smoke" -Status "OK" -Detail "mc2_01-visible-flow-audit.txt"
+Add-Row -Check "plan execution flags" -Status "OK" -Detail "install+launch+log+screenshot+summary+connection+command-file"
 Add-Row -Check "preflight package/activity" -Status "OK" -Detail "$ExpectedPackageName / $ExpectedActivityName"
 Add-Row -Check "preflight readiness" -Status $preflightReadiness -Detail "AllowNoDevice accepted"
 Add-Row -Check "preflight device connection" -Status $preflightReadiness -Detail "check_android_device_connection.ps1"

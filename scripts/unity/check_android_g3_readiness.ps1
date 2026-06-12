@@ -162,10 +162,14 @@ if ($planResult.ExitCode -ne 0) {
 Assert-TextContains -Text $planResult.Text -Needle "Android device smoke plan OK." -Label "Android smoke plan"
 Assert-TextContains -Text $planResult.Text -Needle "Package: com.DefaultCompany.unitymc2demo" -Label "Android smoke plan"
 Assert-TextContains -Text $planResult.Text -Needle "Activity: com.unity3d.player.UnityPlayerGameActivity" -Label "Android smoke plan"
+Assert-TextContains -Text $planResult.Text -Needle "CommandFileSmoke: True" -Label "Android smoke plan"
+Assert-TextContains -Text $planResult.Text -Needle "UnityArguments: -mc2CommandFile" -Label "Android smoke plan"
+Assert-TextContains -Text $planResult.Text -Needle "SmokeSuccessMarker: MC2 debrief summary assertion OK" -Label "Android smoke plan"
+Assert-TextContains -Text $planResult.Text -Needle "SmokeSuccessMarker: MC2 loadout compact assertion OK" -Label "Android smoke plan"
 Assert-TextContains -Text $planResult.Text -Needle "ScreenshotCapture: True" -Label "Android smoke plan"
 Assert-TextContains -Text $planResult.Text -Needle "SummaryWrite: True" -Label "Android smoke plan"
 Assert-TextContains -Text $planResult.Text -Needle "ConnectionCheck: check_android_device_connection.ps1 -RequireDevice" -Label "Android smoke plan"
-Add-Row -Check "smoke plan" -Status "OK" -Detail "install+launch+log+screenshot+summary+connection"
+Add-Row -Check "smoke plan" -Status "OK" -Detail "install+launch+command-file+log+screenshot+summary+connection"
 
 $logResult = Invoke-ChildScript -ScriptPath $androidLogScript -Arguments @("-SelfTest")
 if ($logResult.ExitCode -ne 0) {
@@ -195,6 +199,9 @@ if ($failures.Count -gt 0) {
 Write-Host "Android smoke plan/preflight consistency check OK."
 Write-Host "Android device smoke plan OK."
 Write-Host "ConnectionCheck: check_android_device_connection.ps1 -RequireDevice"
+Write-Host "CommandFileSmoke: True"
+Write-Host "SmokeSuccessMarker: MC2 debrief summary assertion OK"
+Write-Host "SmokeSuccessMarker: MC2 loadout compact assertion OK"
 Write-Host "Android smoke log check self-test OK."
 Write-Host "Android smoke summary check self-test OK."
 
