@@ -25,8 +25,9 @@ As of this handoff plan:
 - Previous project remote: `git@github.com:souleyez/mc2-ai-commander-demo.git` now redirects to the current repository.
 - Upstream source remote kept for history: `origin https://github.com/alariq/mc2.git`
 - Current branch state after the latest controlled demo checkpoint: `master...ai-origin/master`
-- Latest sealed PC/mobile wait-state checkpoint: `PC1-PC52`
-- Last completed PC checkpoint: `Add Android WPD-only device diagnosis`
+- Latest sealed PC/mobile wait-state checkpoint: `PC1-PC53`
+- Last completed PC checkpoint: `Add Android ADB setup guidance`
+- Previous PC checkpoint retained in the gate chain: `Add Android WPD-only device diagnosis`
 - Previous PC checkpoint retained in the gate chain: `Add Android visible-flow command-file smoke`
 - Previous PC checkpoint retained in the gate chain: `Add Android smoke connection gate check`
 - Previous PC checkpoint retained in the gate chain: `Wire Android smoke connection gate`
@@ -107,6 +108,7 @@ The machine switch is safe only when all of these are true:
 - `scripts/unity/check_current_plan_queue.ps1` prints `Current plan queue consistency check OK`.
 - `scripts/unity/check_android_device_connection.ps1` prints `Android device connection check waiting on device` if no phone is connected.
 - `scripts/unity/check_android_device_connection.ps1` prints `WpdOnlyAndroidProbe: True`.
+- `scripts/unity/check_android_device_connection.ps1` prints `AdbSetupHint: True`.
 - `scripts/unity/check_android_smoke_connection_gate.ps1` prints `Android smoke connection gate check OK`.
 - `scripts/unity/check_android_smoke_connection_gate.ps1` prints `Android smoke connection gate check waiting on device` if no phone is connected.
 - `scripts/unity/check_current_plan_gate.ps1` prints `Current plan gate check OK`.
@@ -578,7 +580,7 @@ Current plan queue consistency check OK
 
 This verifies README, BUILD-WIN, master/detailed/PC/mobile/evidence/handoff docs
 and helper scripts agree that the current wait-state package is sealed through
-the PC1-PC52 checkpoint, and that `G3 Run Android device smoke` remains the
+the PC1-PC53 checkpoint, and that `G3 Run Android device smoke` remains the
 formal next task.
 
 **Step 19: Run Android device connection check**
@@ -592,13 +594,17 @@ Expected without a connected phone:
 ```text
 Android device connection check waiting on device
 WpdOnlyAndroidProbe: True
+AdbSetupHint: True
 ```
 
 This reads `adb devices -l` without installing or launching the APK. It reports
 no-device, unauthorized, offline, multiple-device and ready states before G3
 tries to run the real smoke. It also probes Windows PnP; when Windows only sees
 the phone as WPD/MTP and adb has no rows, it can report `WpdOnlyAndroidDevice: True`.
-That is still a waiting state until adb shows one authorized `device` row.
+That is still a waiting state until adb shows one authorized `device` row. The
+setup hint reports current Windows driver/provider/inf/service, for example
+`provider=Microsoft`, `inf=wpdmtp.inf` and `service=WUDFWpdMtp` on the current
+Mi 11 Lite MTP-only state.
 
 **Step 19A: Run Android smoke connection gate check**
 
@@ -630,7 +636,7 @@ Current plan gate check OK
 ```
 
 This wraps handoff/readiness, Windows build freshness, demo source hygiene, AI
-deputy contract, mobile command model, battle HUD sparse contract, PC visual capture sanity, PC visual capture sanity self-test, PC capture sidecar schema, PC capture preset contract, PC capture artifact hygiene, PC window contract, PC launch log hygiene, PC build artifact hygiene, PC smoke artifact hygiene, current plan queue consistency, Android device connection, Android WPD-only device diagnosis, Android smoke connection gate and Android
+deputy contract, mobile command model, battle HUD sparse contract, PC visual capture sanity, PC visual capture sanity self-test, PC capture sidecar schema, PC capture preset contract, PC capture artifact hygiene, PC window contract, PC launch log hygiene, PC build artifact hygiene, PC smoke artifact hygiene, current plan queue consistency, Android device connection, Android WPD-only device diagnosis, Android ADB setup guidance, Android smoke connection gate and Android
 preflight checks. With no authorized phone connected, Android should be
 reported as waiting on device; with one authorized phone, Android should report
 OK.

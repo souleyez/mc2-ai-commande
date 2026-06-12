@@ -284,7 +284,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_curren
 ```
 
 This confirms the current PC/mobile wait-state package is sealed through
-`PC1-PC52`, that `Add Android WPD-only device diagnosis` is the latest PC
+`PC1-PC53`, that `Add Android ADB setup guidance` is the latest PC
 checkpoint, and that `G3 Run Android device smoke` remains the formal next task.
 
 Expected success string: `Current plan queue consistency check OK`.
@@ -298,17 +298,20 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_androi
 This reads `adb devices -l` and reports no-device, unauthorized, offline,
 multiple-device or ready states without installing or launching the APK.
 
-Current wait-state checkpoint: `PC1-PC52`.
+Current wait-state checkpoint: `PC1-PC53`.
 
 Expected waiting-state string without an authorized adb phone: `Android device connection check waiting on device`.
 
 Diagnostic marker: `WpdOnlyAndroidProbe: True`.
+Setup hint marker: `AdbSetupHint: True`.
 
 When Windows only exposes a connected Android phone as WPD/MTP, the helper can
 also report `WpdOnlyAndroidDevice: True`; that still means G3 is waiting for USB
-debugging authorization or an ADB driver before install/launch.
+debugging authorization or an ADB driver before install/launch. On the current
+Mi 11 Lite state it also reports the Microsoft MTP driver path, such as
+`driver=MTP USB 设备; provider=Microsoft; inf=wpdmtp.inf; service=WUDFWpdMtp`.
 
-Checkpoint marker: `Add Android WPD-only device diagnosis`.
+Checkpoint marker: `Add Android ADB setup guidance`.
 
 Previous checkpoint marker: `Add Android device connection check`.
 

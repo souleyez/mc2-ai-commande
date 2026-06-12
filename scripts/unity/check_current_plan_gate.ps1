@@ -291,7 +291,7 @@ Invoke-GateStep `
     -Name "Android device connection gate" `
     -ScriptPath $androidDeviceConnectionScript `
     -Arguments @("-RepoRoot", $RepoRoot) `
-    -RequiredMarkers @("WpdOnlyAndroidProbe: True") `
+    -RequiredMarkers @("WpdOnlyAndroidProbe: True", "AdbSetupHint: True") `
     -AnySuccessMarkers @(
         "Android device connection check OK.",
         "Android device connection check waiting on device.",

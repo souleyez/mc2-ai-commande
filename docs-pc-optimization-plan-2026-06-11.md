@@ -14,7 +14,7 @@
 
 Mobile support remains the product priority, but `G3 Android Device Smoke` is waiting on a physical Android phone with USB debugging authorized. While that device blocker existed, this plan used PC demo optimization to keep the Windows demo moving.
 
-The current PC/mobile wait-state optimization pass is now sealed through PC1-PC52. This does not move G4/G5 mobile touch and performance ahead of G3; the next mobile gate is still `G3 Run Android device smoke` and still requires the physical authorized phone.
+The current PC/mobile wait-state optimization pass is now sealed through PC1-PC53. This does not move G4/G5 mobile touch and performance ahead of G3; the next mobile gate is still `G3 Run Android device smoke` and still requires the physical authorized phone.
 
 ## Definition Of Done
 
@@ -70,6 +70,7 @@ The current PC optimization pass is complete when:
 - Current plan queue consistency can be checked without launching Unity through `check_current_plan_queue.ps1`, proving README, BUILD-WIN, master/detailed/PC/mobile/evidence/handoff docs and helper scripts agree on the latest PC checkpoint and `G3 Run Android device smoke` as the formal next task.
 - Android device connection can be checked without launching Unity through `check_android_device_connection.ps1`, proving `adb devices -l` is readable and reports no-device, unauthorized, offline, multi-device or ready states before G3 tries to install or launch the APK.
 - Android WPD-only device diagnosis can be checked without launching Unity through `check_android_device_connection.ps1`, proving `WpdOnlyAndroidProbe: True` is emitted and a Windows-only WPD/MTP phone remains a G3 waiting state until adb shows one authorized `device` row.
+- Android ADB setup guidance can be checked without launching Unity through `check_android_device_connection.ps1`, proving `AdbSetupHint: True` is emitted with current Windows driver/provider/inf/service when the connected phone is still MTP-only.
 - Android smoke connection gate wiring can be checked without a device through `android_device_smoke.ps1 -PlanOnly`, proving the real smoke path runs `check_android_device_connection.ps1 -RequireDevice` before install or launch and fails early with `Android device smoke requires a single authorized Android device before install or launch` when no authorized phone is available.
 - Android smoke connection gate behavior can be checked without a device through `check_android_smoke_connection_gate.ps1`, proving the real smoke fail-fast path is enforced before install or launch and ignored smoke evidence is not rewritten while no valid device is selected.
 - Android visible-flow command-file smoke can be previewed without a device through `android_device_smoke.ps1 -PlanOnly`, proving real G3 will push `mc2_01-visible-flow-audit.txt`, launch with `-mc2CommandFile`, and require debrief/loadout compact success markers.
@@ -156,6 +157,7 @@ The current PC optimization pass is complete when:
 | PC50 | Done | Add Android smoke connection gate check | `check_android_smoke_connection_gate.ps1` proves real smoke fails before install/launch and leaves smoke log/screenshot/summary evidence unchanged without one authorized phone |
 | PC51 | Done | Add Android visible-flow command-file smoke | `android_device_smoke.ps1 -PlanOnly` exposes `CommandFileSmoke: True`, `UnityArguments: -mc2CommandFile`, and both visible-flow success markers for future real-device G3 |
 | PC52 | Done | Add Android WPD-only device diagnosis | `check_android_device_connection.ps1` exposes `WpdOnlyAndroidProbe: True` and identifies WPD/MTP-only phones as waiting, not ready |
+| PC53 | Done | Add Android ADB setup guidance | `check_android_device_connection.ps1` exposes `AdbSetupHint: True` with current Windows driver/provider/inf/service and next setup action |
 
 Do not open another PC polish gate from visual inspection alone. If the issue is collision, damage, command state or objective logic, first prove it in `BattleCore`.
 
@@ -1965,7 +1967,7 @@ git status --short --branch --untracked-files=all
 - `check_android_device_connection.ps1` prints `WpdOnlyAndroidProbe: True`.
 - On the current Mi 11 Lite WPD/MTP-only state, the helper can print `WpdOnlyAndroidDevice: True`.
 - The script still reports `Android device connection check waiting on device` until adb exposes exactly one authorized `device` row.
-- Current plan queue, current plan gate, handoff and mobile command preflight accept PC1-PC52.
+- Current plan queue, current plan gate, handoff and mobile command preflight accept PC1-PC53.
 
 **Validation:**
 
@@ -1979,6 +1981,30 @@ git diff --check
 ```
 
 **Commit:** `Add Android WPD-only device diagnosis`
+
+## Completed Target: PC53 Add Android ADB Setup Guidance
+
+**Goal:** 当前手机已经连到 Windows，但仍是 Microsoft MTP driver，不是 ADB interface。连接检查需要给出 driver/provider/inf/service 和下一步 ADB 设置提示。
+
+**Acceptance:**
+
+- `check_android_device_connection.ps1` prints `AdbSetupHint: True`.
+- Current Mi 11 Lite WPD/MTP-only output includes `provider=Microsoft`, `inf=wpdmtp.inf` and `service=WUDFWpdMtp`.
+- Current plan gate requires both `WpdOnlyAndroidProbe: True` and `AdbSetupHint: True`.
+- Current plan queue, handoff and mobile command preflight accept PC1-PC53.
+
+**Validation:**
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_device_connection.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_current_plan_queue.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_current_plan_gate.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_controlled_demo_handoff.ps1 -RunReadiness
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_mobile_command_model_preflight.ps1
+git diff --check
+```
+
+**Commit:** `Add Android ADB setup guidance`
 
 ## Stop Conditions
 

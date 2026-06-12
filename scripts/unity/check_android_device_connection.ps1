@@ -100,6 +100,24 @@ function Get-WindowsAndroidPnpDevices {
     $androidVendorPattern = "VID_(18D1|2717|04E8|12D1|22B8|2A70|0BB4|1004|19D2|2D95|2D04|05C6)"
     $namePattern = "Android|ADB|Xiaomi|\bMi\s|Redmi|POCO|Galaxy|Huawei|Honor|OnePlus|OPPO|vivo|Phone|Pixel"
 
+    function Get-PnpPropertyText {
+        param(
+            [string]$InstanceId,
+            [string]$KeyName
+        )
+
+        $property = Get-PnpDeviceProperty -InstanceId $InstanceId -KeyName $KeyName -ErrorAction SilentlyContinue
+        if ($null -eq $property -or $null -eq $property.Data) {
+            return ""
+        }
+
+        if ($property.Data -is [array]) {
+            return ($property.Data | ForEach-Object { $_.ToString() }) -join ", "
+        }
+
+        return $property.Data.ToString()
+    }
+
     return @(
         Get-PnpDevice -PresentOnly -ErrorAction SilentlyContinue |
             Where-Object {
@@ -107,11 +125,20 @@ function Get-WindowsAndroidPnpDevices {
                 $_.FriendlyName -match $namePattern
             } |
             ForEach-Object {
+                $service = Get-PnpPropertyText -InstanceId $_.InstanceId -KeyName "DEVPKEY_Device_Service"
+                $driverProvider = Get-PnpPropertyText -InstanceId $_.InstanceId -KeyName "DEVPKEY_Device_DriverProvider"
+                $driverDesc = Get-PnpPropertyText -InstanceId $_.InstanceId -KeyName "DEVPKEY_Device_DriverDesc"
+                $driverInfPath = Get-PnpPropertyText -InstanceId $_.InstanceId -KeyName "DEVPKEY_Device_DriverInfPath"
+
                 [pscustomobject]@{
                     Status = $_.Status
                     Class = $_.Class
                     FriendlyName = $_.FriendlyName
                     InstanceId = $_.InstanceId
+                    Service = $service
+                    DriverProvider = $driverProvider
+                    DriverDesc = $driverDesc
+                    DriverInfPath = $driverInfPath
                     IsAdb = ($_.FriendlyName -match "ADB|Android Composite ADB|Android Bootloader" -or $_.Class -match "AndroidUsbDevice")
                     IsWpdOnlyAndroid = ($_.Class -eq "WPD" -and $_.FriendlyName -match $namePattern)
                 }
@@ -213,7 +240,12 @@ $pnpDevices = @(Get-WindowsAndroidPnpDevices)
 $pnpSummary = "none"
 if ($pnpDevices.Count -gt 0) {
     $pnpSummary = ($pnpDevices | ForEach-Object {
-        "$($_.FriendlyName) [$($_.Class)] $($_.InstanceId)"
+        $driver = ""
+        if (-not [string]::IsNullOrWhiteSpace($_.DriverInfPath)) {
+            $driver = " driver=$($_.DriverInfPath)"
+        }
+
+        "$($_.FriendlyName) [$($_.Class)] $($_.InstanceId)$driver"
     }) -join "; "
 }
 
@@ -221,12 +253,19 @@ $adbPnpDevices = @($pnpDevices | Where-Object { $_.IsAdb })
 $wpdOnlyAndroidDevices = @($pnpDevices | Where-Object { $_.IsWpdOnlyAndroid -and -not $_.IsAdb })
 if ($adbPnpDevices.Count -gt 0) {
     Add-Row -Check "windows android pnp" -Status "OK" -Detail "WpdOnlyAndroidProbe: True; WpdOnlyAndroidDevice: False; ADB interface visible: $(($adbPnpDevices | ForEach-Object { $_.FriendlyName }) -join ', ')"
+    Add-Row -Check "adb setup hint" -Status "OK" -Detail "AdbSetupHint: True; ADB interface visible through Windows PnP"
 }
 elseif ($devices.Count -eq 0 -and $wpdOnlyAndroidDevices.Count -gt 0) {
-    Add-Row -Check "windows android pnp" -Status "WAITING" -Detail "WpdOnlyAndroidProbe: True; WpdOnlyAndroidDevice: True; WPD-only: $(($wpdOnlyAndroidDevices | ForEach-Object { $_.FriendlyName }) -join ', '); enable USB debugging/RSA authorization or install an ADB driver"
+    $wpdNames = ($wpdOnlyAndroidDevices | ForEach-Object { $_.FriendlyName }) -join ", "
+    $driverDetails = ($wpdOnlyAndroidDevices | ForEach-Object {
+        "driver=$($_.DriverDesc); provider=$($_.DriverProvider); inf=$($_.DriverInfPath); service=$($_.Service)"
+    }) -join "; "
+    Add-Row -Check "windows android pnp" -Status "WAITING" -Detail "WpdOnlyAndroidProbe: True; WpdOnlyAndroidDevice: True; WPD-only: $wpdNames; enable USB debugging/RSA authorization or install an ADB driver"
+    Add-Row -Check "adb setup hint" -Status "WAITING" -Detail "AdbSetupHint: True; CurrentDriver: $driverDetails; Action: enable USB debugging, accept RSA authorization, switch USB mode if needed, or install an ADB driver for the detected vendor id"
 }
 else {
     Add-Row -Check "windows android pnp" -Status "OK" -Detail "WpdOnlyAndroidProbe: True; WpdOnlyAndroidDevice: False; no WPD-only Android phone detected"
+    Add-Row -Check "adb setup hint" -Status "OK" -Detail "AdbSetupHint: True; connect one USB-debugging-enabled Android phone and authorize RSA before G3 smoke"
 }
 
 if ($failures.Count -gt 0) {
