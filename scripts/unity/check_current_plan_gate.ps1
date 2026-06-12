@@ -1,6 +1,7 @@
 param(
     [string]$RepoRoot = "",
-    [switch]$SkipReadiness
+    [switch]$SkipReadiness,
+    [int]$StepTimeoutSeconds = 180
 )
 
 Set-StrictMode -Version Latest
@@ -11,6 +12,10 @@ if ([string]::IsNullOrWhiteSpace($RepoRoot)) {
 }
 else {
     $RepoRoot = (Resolve-Path -LiteralPath $RepoRoot).Path
+}
+
+if ($StepTimeoutSeconds -lt 10) {
+    throw "StepTimeoutSeconds must be at least 10."
 }
 
 $failures = New-Object System.Collections.Generic.List[string]
@@ -48,9 +53,39 @@ function Invoke-GateStep {
         $ScriptPath
     ) + $Arguments
 
-    $output = & powershell @processArgs 2>&1
-    $exitCode = $LASTEXITCODE
-    $lines = @($output | ForEach-Object { $_.ToString() })
+    Write-Host "Running gate step: $Name"
+    $job = Start-Job -ScriptBlock {
+        param([string[]]$ChildArgs)
+
+        $output = & powershell @ChildArgs 2>&1
+        [pscustomobject]@{
+            ExitCode = $LASTEXITCODE
+            Output = @($output | ForEach-Object { $_.ToString() })
+        }
+    } -ArgumentList (, $processArgs)
+
+    $completed = $null
+    try {
+        $completed = Wait-Job -Job $job -Timeout $StepTimeoutSeconds
+        if ($null -eq $completed) {
+            Stop-Job -Job $job -ErrorAction SilentlyContinue
+            $partialOutput = @(Receive-Job -Job $job -ErrorAction SilentlyContinue | ForEach-Object { $_.ToString() })
+            Add-Failure "$Name timed out after $StepTimeoutSeconds second(s)."
+            foreach ($line in ($partialOutput | Select-Object -Last 80)) {
+                Add-Failure "  $line"
+            }
+
+            return
+        }
+
+        $jobResult = Receive-Job -Job $job
+    }
+    finally {
+        Remove-Job -Job $job -Force -ErrorAction SilentlyContinue
+    }
+
+    $exitCode = [int]$jobResult.ExitCode
+    $lines = @($jobResult.Output | ForEach-Object { $_.ToString() })
     $joined = $lines -join [Environment]::NewLine
 
     $missing = New-Object System.Collections.Generic.List[string]
@@ -123,6 +158,7 @@ $androidApkSigningScript = Resolve-RepoPath -RelativePath "scripts\unity\check_a
 $androidApkManifestScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_apk_manifest.ps1"
 $androidApkPayloadScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_apk_payload.ps1"
 $androidApkSizeBudgetScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_apk_size_budget.ps1"
+$mobilePerformanceBudgetScript = Resolve-RepoPath -RelativePath "scripts\unity\check_mobile_performance_budget.ps1"
 $androidDeviceConnectionScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_device_connection.ps1"
 $androidAdbDriverPackageScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_adb_driver_package.ps1"
 $androidDeviceWatchScript = Resolve-RepoPath -RelativePath "scripts\unity\watch_android_device_connection.ps1"
@@ -290,6 +326,12 @@ Invoke-GateStep `
     -ScriptPath $androidApkSizeBudgetScript `
     -Arguments @("-RepoRoot", $RepoRoot) `
     -RequiredMarkers @("Android APK size budget check OK.")
+
+Invoke-GateStep `
+    -Name "Mobile performance budget gate" `
+    -ScriptPath $mobilePerformanceBudgetScript `
+    -Arguments @("-RepoRoot", $RepoRoot) `
+    -RequiredMarkers @("Mobile performance budget check OK.")
 
 Invoke-GateStep `
     -Name "Android device connection gate" `

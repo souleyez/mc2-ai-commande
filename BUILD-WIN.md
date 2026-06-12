@@ -284,8 +284,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_curren
 ```
 
 This confirms the current PC/mobile package is sealed through `PC1-PC57`, that
-`Pass Android G3 device smoke` and the landscape `G4 Touch UI pass` are
-recorded, and that `G5 Mobile performance budget` is the formal next task.
+`Pass Android G3 device smoke`, the landscape `G4 Touch UI pass`, and
+`G5 Mobile performance budget` are recorded, and that
+`G6 iOS feasibility gate` is the formal next task.
 
 Expected success string: `Current plan queue consistency check OK`.
 

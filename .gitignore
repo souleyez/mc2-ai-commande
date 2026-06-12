@@ -84,6 +84,7 @@ analysis-output/*validator*.json
 analysis-output/android-device-smoke*.json
 analysis-output/android-g3-device-status.json
 analysis-output/android-g3-when-ready-status.json
+analysis-output/android-performance-*
 analysis-output/*.png
 
 # Unity demo generated state

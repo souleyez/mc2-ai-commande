@@ -6,6 +6,7 @@ using System.IO;
 using System.IO.Compression;
 using MC2Demo.BattleCore;
 using UnityEngine;
+using UnityEngine.Profiling;
 using UnityEngine.SceneManagement;
 
 namespace MC2Demo.Presentation
@@ -419,6 +420,11 @@ namespace MC2Demo.Presentation
         private Texture2D uiButtonTexture;
         private Texture2D uiButtonHoverTexture;
         private Texture2D uiTextFieldTexture;
+        private bool performanceTrackingEnabled;
+        private int performanceFrameCount;
+        private float performanceElapsedSeconds;
+        private float performanceMaxDeltaSeconds;
+        private float performanceWarmupSeconds;
         private const string StartupSmokeDepotOwnedMechId = "assembled-smoke-depot";
         private const string UpdatedSquadLoadedStatusText = "Mech Lab squad loaded";
 
@@ -429,12 +435,15 @@ namespace MC2Demo.Presentation
             BuildWorld();
             RunStartupCommanderSequence();
             ConfigureStartupContinuePanel(GetStartupArgs());
+            SchedulePerformanceLogIfRequested();
             ScheduleStartupScreenshotIfRequested();
             ScheduleSmokeTestQuitIfRequested();
         }
 
         private void Update()
         {
+            CapturePerformanceFrame();
+
             if (mission == null)
             {
                 return;
@@ -896,6 +905,110 @@ namespace MC2Demo.Presentation
         {
             yield return new WaitForSecondsRealtime(0.25f);
             QuitSmokeTest();
+        }
+
+        private void SchedulePerformanceLogIfRequested()
+        {
+            string[] args = GetStartupArgs();
+            string secondsText = CommandLineValue(args, "-mc2PerformanceLogSeconds");
+            if (string.IsNullOrWhiteSpace(secondsText))
+            {
+                return;
+            }
+
+            if (!float.TryParse(secondsText, NumberStyles.Float, CultureInfo.InvariantCulture, out float seconds))
+            {
+                startupSmokeFailed = true;
+                Debug.LogWarning("MC2 performance baseline blocked: invalid seconds '" + secondsText + "'.");
+                return;
+            }
+
+            seconds = Mathf.Clamp(seconds, 1f, 120f);
+            string warmupText = CommandLineValue(args, "-mc2PerformanceWarmupSeconds");
+            float warmupSeconds = 2f;
+            if (!string.IsNullOrWhiteSpace(warmupText)
+                && !float.TryParse(warmupText, NumberStyles.Float, CultureInfo.InvariantCulture, out warmupSeconds))
+            {
+                startupSmokeFailed = true;
+                Debug.LogWarning("MC2 performance baseline blocked: invalid warmup seconds '" + warmupText + "'.");
+                return;
+            }
+
+            warmupSeconds = Mathf.Clamp(warmupSeconds, 0f, 30f);
+            performanceWarmupSeconds = warmupSeconds;
+            Debug.Log("MC2 performance baseline scheduled: warmup="
+                + warmupSeconds.ToString("0.###", CultureInfo.InvariantCulture)
+                + " seconds="
+                + seconds.ToString("0.###", CultureInfo.InvariantCulture));
+            StartCoroutine(LogPerformanceBaselineAfterRealtimeDelay(warmupSeconds, seconds));
+        }
+
+        private IEnumerator LogPerformanceBaselineAfterRealtimeDelay(float warmupSeconds, float seconds)
+        {
+            if (warmupSeconds > 0f)
+            {
+                yield return new WaitForSecondsRealtime(warmupSeconds);
+            }
+
+            performanceFrameCount = 0;
+            performanceElapsedSeconds = 0f;
+            performanceMaxDeltaSeconds = 0f;
+            performanceTrackingEnabled = true;
+            yield return new WaitForSecondsRealtime(seconds);
+            LogPerformanceBaseline();
+        }
+
+        private void CapturePerformanceFrame()
+        {
+            if (!performanceTrackingEnabled)
+            {
+                return;
+            }
+
+            float deltaSeconds = Time.unscaledDeltaTime;
+            if (deltaSeconds <= 0f || deltaSeconds > 5f)
+            {
+                return;
+            }
+
+            performanceFrameCount++;
+            performanceElapsedSeconds += deltaSeconds;
+            performanceMaxDeltaSeconds = Mathf.Max(performanceMaxDeltaSeconds, deltaSeconds);
+        }
+
+        private void LogPerformanceBaseline()
+        {
+            performanceTrackingEnabled = false;
+            float averageFps = performanceElapsedSeconds <= 0f
+                ? 0f
+                : performanceFrameCount / performanceElapsedSeconds;
+            float maxFrameMs = performanceMaxDeltaSeconds * 1000f;
+            long totalAllocatedBytes = Profiler.GetTotalAllocatedMemoryLong();
+            long totalReservedBytes = Profiler.GetTotalReservedMemoryLong();
+            long monoUsedBytes = Profiler.GetMonoUsedSizeLong();
+            float missionTimeSeconds = mission?.MissionTimeSeconds ?? 0f;
+
+            Debug.Log("MC2 mobile performance baseline:"
+                + " frames=" + performanceFrameCount.ToString(CultureInfo.InvariantCulture)
+                + " seconds=" + performanceElapsedSeconds.ToString("0.###", CultureInfo.InvariantCulture)
+                + " warmupSeconds=" + performanceWarmupSeconds.ToString("0.###", CultureInfo.InvariantCulture)
+                + " avgFps=" + averageFps.ToString("0.##", CultureInfo.InvariantCulture)
+                + " maxFrameMs=" + maxFrameMs.ToString("0.##", CultureInfo.InvariantCulture)
+                + " unityTotalMB=" + BytesToMegabytes(totalAllocatedBytes).ToString("0.##", CultureInfo.InvariantCulture)
+                + " unityReservedMB=" + BytesToMegabytes(totalReservedBytes).ToString("0.##", CultureInfo.InvariantCulture)
+                + " monoUsedMB=" + BytesToMegabytes(monoUsedBytes).ToString("0.##", CultureInfo.InvariantCulture)
+                + " systemMemoryMB=" + SystemInfo.systemMemorySize.ToString(CultureInfo.InvariantCulture)
+                + " screen=" + Screen.width.ToString(CultureInfo.InvariantCulture) + "x" + Screen.height.ToString(CultureInfo.InvariantCulture)
+                + " targetFrameRate=" + Application.targetFrameRate.ToString(CultureInfo.InvariantCulture)
+                + " vSync=" + QualitySettings.vSyncCount.ToString(CultureInfo.InvariantCulture)
+                + " flow=" + DemoFlowScreenName(demoFlowScreen)
+                + " result=" + (mission == null ? "Unavailable" : mission.Result.ToString())
+                + " missionTime=" + missionTimeSeconds.ToString("0.##", CultureInfo.InvariantCulture));
+        }
+
+        private static float BytesToMegabytes(long bytes)
+        {
+            return bytes / (1024f * 1024f);
         }
 
         private void ScheduleStartupScreenshotIfRequested()
@@ -20560,6 +20673,11 @@ namespace MC2Demo.Presentation
             Screen.autorotateToLandscapeLeft = true;
             Screen.autorotateToLandscapeRight = true;
             Screen.orientation = ScreenOrientation.AutoRotation;
+
+#if UNITY_ANDROID && !UNITY_EDITOR
+            QualitySettings.vSyncCount = 0;
+            Application.targetFrameRate = 30;
+#endif
         }
 
         private static float TouchTargetHeight()

@@ -283,8 +283,9 @@ NoInstallOrLaunchUntilDeviceReady: True
 ```
 
 Current wait-state checkpoint: `PC1-PC57`.
-Formal next gate: `G5 Mobile performance budget`; `Pass Android G3 device smoke`
-and the landscape `G4 Touch UI pass` are already recorded.
+Formal next gate: `G6 iOS feasibility gate`; `Pass Android G3 device smoke`,
+the landscape `G4 Touch UI pass`, and `G5 Mobile performance budget` are
+already recorded.
 
 Check installed Android ADB driver package candidates without installing or
 launching:
@@ -515,10 +516,13 @@ scripts\unity\run_android_g3_when_ready.ps1 -TimeoutSeconds 30 -AllowWaiting -La
 No-device fallback marker remains `Android device smoke preflight waiting on device`.
 
 The APK, SDK logs, Unity build folder, Gradle cache, and device logs remain
-ignored local outputs. The real Android device smoke gate and the landscape
-touch UI pass have passed; the next mobile gate is `G5 Mobile performance budget`.
+ignored local outputs. The real Android device smoke gate, the landscape touch
+UI pass, and the first mobile performance budget have passed; the next mobile
+gate is `G6 iOS feasibility gate`.
 At the time this note was updated, `adb devices -l` returned `b5212798 device`
 for Mi 11 Lite through `winusb.inf`; the package installs and launches through
 the G3 when-ready runner/direct smoke path, the visible-flow command-file smoke
 reaches the debrief and loadout compact success markers, and the device
 screenshot summary reports `screenshot orientation OK landscape 2400x1080`.
+The G5 performance baseline reports 30.48 FPS after warmup, 273,342 KB PSS,
+19.80 MiB APK size, and `Thermal Status: 0`.

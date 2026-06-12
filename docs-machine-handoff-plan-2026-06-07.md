@@ -65,7 +65,7 @@ As of this handoff plan:
 - Previous PC checkpoint retained in the gate chain: `Add Android APK identity check`
 - Previous PC checkpoint retained in the gate chain: `Add Android APK freshness check`
 - Previous PC checkpoint retained in the gate chain: `Add controlled demo capture log freshness check`
-- Current formal next development task after handoff: `G5 Mobile performance budget`
+- Current formal next development task after handoff: `G6 iOS feasibility gate`
 
 Important: the new machine will not see local commits unless the old machine
 first pushes to `ai-origin`, or the full repository is migrated by a trusted
@@ -587,8 +587,8 @@ Current plan queue consistency check OK
 This verifies README, BUILD-WIN, master/detailed/PC/mobile/evidence/handoff docs
 and helper scripts agree that the current PC/mobile package is sealed through
 the PC1-PC57 checkpoint, that `Pass Android G3 device smoke` and the landscape
-`G4 Touch UI pass` are recorded, and that `G5 Mobile performance budget` is the
-formal next task.
+`G4 Touch UI pass` and `G5 Mobile performance budget` are recorded, and that
+`G6 iOS feasibility gate` is the formal next task.
 
 **Step 19: Run Android device connection check**
 
@@ -974,7 +974,7 @@ documentation.
 - Read: `docs-ai-rts-commander-current-master-plan-2026-06-07.md`
 - Read: `docs-ai-rts-commander-current-detailed-plan-2026-06-07.md`
 - Read: `docs-mobile-first-plan-2026-06-10.md`
-- Next planned work: `G5 Mobile performance budget`
+- Next planned work: `G6 iOS feasibility gate`
 
 **Step 1: Confirm current next task**
 
@@ -982,7 +982,7 @@ Read the current commit queue. After this handoff, the product work should
 resume at:
 
 ```text
-G5 Mobile performance budget
+G6 iOS feasibility gate
 ```
 
 **Step 2: Do not start with server or map-editor implementation**

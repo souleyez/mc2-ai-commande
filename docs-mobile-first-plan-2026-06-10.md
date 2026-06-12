@@ -20,7 +20,7 @@ research topic, but it is not part of the current execution queue.
 After machine handoff validation, the next product work is:
 
 ```text
-Mobile viability spike -> Android build smoke -> touch command UI -> mobile performance budget
+Mobile viability spike -> Android build smoke -> touch command UI -> mobile performance budget -> iOS feasibility
 ```
 
 Map authoring, Web ranking, creator economy, and server implementation move
@@ -35,8 +35,10 @@ screenshot capture and summary JSON. G4 Touch UI pass is complete as a
 landscape-phone build: Android manifest is landscape-only, resizable activity is
 off, the runtime blocks portrait autorotation, mobile sidecars require
 `orientation=landscape`, and the real device smoke summary reports
-`screenshot orientation OK landscape 2400x1080`. The next mobile gate is
-`G5 Mobile performance budget`.
+`screenshot orientation OK landscape 2400x1080`. G5 Mobile Performance Budget
+is complete for the first Android baseline: Mi 11 Lite reports 30.48 FPS after
+warmup, 273,342 KB PSS, 19.80 MiB APK size, activity launch at 260 ms, and
+`Thermal Status: 0`. The next mobile gate is `G6 iOS feasibility gate`.
 G3 Android device-smoke preflight now verifies the APK, Android SDK tooling,
 adb, aapt, apksigner, package name, launchable activity, compatibility metadata,
 signing and manifest install-target metadata, Unity/IL2CPP runtime payload,
@@ -55,8 +57,9 @@ Android SDK tooling check, Android APK freshness check, Android APK identity che
 compatibility check, Android APK signing check, Android APK manifest check,
 Android APK payload check, Android APK size budget check, Android smoke artifact hygiene check, Android smoke screenshot evidence capture, Android smoke summary evidence output, Android smoke summary schema check, Android smoke summary preflight check, Android smoke plan/preflight consistency check, Android G3 readiness check, Android G3 device requirement check, Android device connection check, Android WPD-only device diagnosis, Android ADB setup guidance, Android ADB driver package probe, Android ADB readiness watch, Android G3 device status report, Android G3 when-ready runner, Android smoke connection gate, Android smoke connection gate check, Android visible-flow command-file smoke, PC visual capture sanity check, PC visual capture sanity self-test, PC capture sidecar schema check, PC capture preset contract check, PC capture artifact hygiene check, PC window contract check, PC launch log hygiene check, PC build artifact hygiene check, PC smoke artifact hygiene check, Add current plan queue consistency check, Add Android device connection check, Wire Android smoke connection gate, Add Android smoke connection gate check, Add Android visible-flow command-file smoke, Add Android WPD-only device diagnosis, Add Android ADB setup guidance, Add Android ADB driver package probe, Add Android ADB readiness watch, Add Android G3 device status report, Add Android G3 when-ready runner, current plan gate
 check, Android smoke log crash scan, Android smoke plan mode, landscape APK
-manifest checks and landscape screenshot summary checks. Formal next work is
-`G5 Mobile performance budget`.
+manifest checks, landscape screenshot summary checks, Android performance
+baseline capture and mobile performance budget check. Formal next work is
+`G6 iOS feasibility gate`.
 
 ## Definition Of Done
 
@@ -86,8 +89,8 @@ failing, unless the later work is explicitly diagnostic.
 | G2 | Done | Android build path | Produce Android artifact from Unity 6 without staging generated output |
 | G3 | Done | Android device smoke | Launch on real Android device and reach battle/debrief path |
 | G4 | Done | Touch UI pass | Core command model usable on landscape phone aspect ratios |
-| G5 | Next | Mobile performance budget | Baseline FPS, memory, package size, load time and thermal notes recorded |
-| G6 | Later | iOS feasibility | Document macOS/Xcode/signing requirements after Android proof |
+| G5 | Done | Mobile performance budget | Baseline FPS, memory, package size, load time and thermal notes recorded |
+| G6 | Next | iOS feasibility gate | Document macOS/Xcode/signing requirements after Android proof |
 
 ## Executable Requirement Matrix
 
@@ -102,7 +105,7 @@ failing, unless the later work is explicitly diagnostic.
 - **Failure Handling:** 失败时先看什么、停在哪里、哪些输出不能提交。
 - **Commit Scope:** 允许进入提交的文件范围；生成物、日志和私有素材默认不提交。
 
-当前移动执行目标只允许有一个 `In Progress` 或 `Waiting on Device`。如果前置条件失败，先把失败写成明确 blocker 或安装步骤，不跳到后续移动玩法任务。G3 真机 smoke 和横屏 G4 Touch UI pass 已通过，后续移动开发回到 `G5 Mobile performance budget`。
+当前移动执行目标只允许有一个 `In Progress` 或 `Waiting on Device`。如果前置条件失败，先把失败写成明确 blocker 或安装步骤，不跳到后续移动玩法任务。G3 真机 smoke、横屏 G4 Touch UI pass 和 G5 Mobile Performance Budget 已通过，后续移动开发回到 `G6 iOS feasibility gate`。
 
 ### Completed Mobile Target: G3 Android Device Smoke
 
@@ -170,7 +173,7 @@ The G4 implementation uses `adb install -r --no-streaming` in
 `android_device_smoke.ps1`; streamed install hung on the Mi 11 Lite during this
 checkpoint, while push install completed quickly.
 
-### Current Mobile Target: G5 Mobile Performance Budget
+### Completed Mobile Target: G5 Mobile Performance Budget
 
 **Precondition:**
 
@@ -195,6 +198,8 @@ checkpoint, while push install completed quickly.
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_apk_freshness.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_android_apk_manifest.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\android_device_smoke.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\capture_android_performance_baseline.ps1 -RepoRoot . -SampleSeconds 10 -WarmupSeconds 2 -PostSampleWaitSeconds 2
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_mobile_performance_budget.ps1 -RepoRoot .
 ```
 
 **Failure Handling:**
@@ -203,6 +208,38 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\android_devi
 - install failure: inspect adb output and Android package signing/SDK compatibility before changing gameplay;
 - launch crash: inspect `android-device-smoke.log`, fix the smallest runtime blocker, rebuild APK, reinstall;
 - generated logs/screenshots/APK appear in git: leave ignored or unstage, never commit them.
+
+**Current G5 Evidence 2026-06-12:**
+
+```text
+scripts\unity\capture_android_performance_baseline.ps1 -> Android performance baseline capture OK.
+scripts\unity\check_mobile_performance_budget.ps1 -> Mobile performance budget check OK.
+docs-mobile-performance-budget-2026-06-10.md -> Mi 11 Lite baseline recorded.
+analysis-output\android-performance-baseline.json -> ignored local evidence, result=completed.
+Mi 11 Lite / M2101K9C / Android 13 -> 30.48 FPS, 273,342 KB PSS, 19.80 MiB APK, Thermal Status 0.
+```
+
+### Current Mobile Target: G6 iOS Feasibility Gate
+
+**Precondition:**
+
+- G2 Android build, G3 real-device smoke, G4 landscape touch UI and G5 mobile
+  performance budget are all green.
+- Android remains the playable mobile baseline; iOS is a feasibility note, not
+  a gameplay rewrite.
+
+**Action:**
+
+1. Record required macOS, Xcode, Unity iOS module and Apple signing state.
+2. Define the first iOS smoke path: build Xcode project, install to device and
+   launch the same visible-flow battle.
+3. Keep iOS blockers explicit so Android gameplay development can continue.
+
+**Verification:**
+
+```powershell
+git diff --check
+```
 
 **Current G3 Evidence 2026-06-12:**
 
