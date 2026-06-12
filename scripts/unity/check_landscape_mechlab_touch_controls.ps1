@@ -81,54 +81,60 @@ $masterPlan = Read-RepoText -RelativePath "docs-ai-rts-commander-current-master-
 $readme = Read-RepoText -RelativePath "README.md"
 
 $sourceMarkers = @(
-    "MobileTouchUi=ready orientation=landscape",
-    "commandTargets=44",
-    "statusRows=44",
-    "primaryButtons=44",
-    "mapBack=44",
-    "systemButtons=44",
-    "missionButtons=44",
-    "debriefButtons=44",
-    "landscapeOnly=yes",
-    "noDragBox=yes",
-    "combatLog=hidden",
-    "MissionListButtonHeightFor(2400f, 1080f) >= MobileTouchMinTargetHeight",
-    "MissionResultActionButtonHeightFor(2400f, 1080f) >= MobileTouchMinTargetHeight",
-    "MissionListPanelRectFor(1560f, 720f).yMax <= 720f",
-    "MissionResultPanelRectFor(1560f, 720f).yMax <= 720f",
-    "float buttonHeight = MissionListButtonHeight();",
-    "float actionHeight = MissionResultActionButtonHeight();",
-    "MissionListPanelRectFor(float screenWidth, float screenHeight)",
-    "MissionResultPanelRectFor(float screenWidth, float screenHeight)"
+    "mechLabActions=44",
+    "mechLabShop=44",
+    "mechLabHire=44",
+    "mechLabRoster=44",
+    "mechLabSquad=44",
+    "mechLabWeaponButtons=44",
+    "mechLabRepair=44",
+    "MechLabTouchControlHeightFor(2400f, 1080f) >= MobileTouchMinTargetHeight",
+    "LoadoutWeaponButtonHeightFor(2400f, 1080f) >= MobileTouchMinTargetHeight",
+    "LoadoutRepairButtonHeightFor(2400f, 1080f) >= MobileTouchMinTargetHeight",
+    "private static float MechLabTouchControlHeight()",
+    "private static float LoadoutWeaponButtonHeight()",
+    "private static float LoadoutRepairButtonHeight()",
+    "private const float MobileTouchLoadoutCardHeight = 654f;",
+    "private const float MobileTouchLoadoutCardStride = 666f;",
+    "LoadoutCardStrideForCurrentLayout()",
+    "GUI.Button(new Rect(x, y - 2f, buttonWidth, buttonHeight), `"Buy`")",
+    "GUI.Button(new Rect(x, y - 2f, buttonWidth, buttonHeight), `"Hire`")",
+    "GUI.Button(new Rect(x, y - 2f, buttonWidth, buttonHeight), `"Review`")",
+    "GUI.Button(new Rect(x, y - 2f, buttonWidth, buttonHeight), `"Next Squad`")",
+    "GUI.Box(new Rect(x, y, width, touchLayout ? 410f : 238f), `"Next Contract Squad`")",
+    "float buttonHeight = LoadoutWeaponButtonHeight();",
+    "LoadoutRepairButtonHeight()"
 )
 
 foreach ($marker in $sourceMarkers) {
-    Assert-Contains -Text $bootstrap -Needle $marker -Label "Mc2DemoBootstrap landscape touch ergonomics"
+    Assert-Contains -Text $bootstrap -Needle $marker -Label "Mc2DemoBootstrap landscape MechLab touch controls"
 }
 
-$staleTouchButtonMarkers = @(
-    "GUI.Button(new Rect(x, y, width, 30f), ContractsLaunchButtonLabel)",
-    "GUI.Button(new Rect(x, y, halfWidth, 30f), `"Mech Lab`")",
-    "GUI.Button(new Rect(x + halfWidth + 8f, y, halfWidth, 30f), `"System`")",
-    "GUI.Button(new Rect(x, y, width, 30f), returnText)",
-    "GUI.Button(new Rect(panel.x + 18f, panel.y + 296f, actionWidth, 30f), DebriefRepairMechLabButtonLabel)",
-    "GUI.Button(new Rect(panel.x + 26f + actionWidth, panel.y + 296f, actionWidth, 30f), DebriefNextContractButtonLabel)",
-    "GUI.Button(new Rect(panel.x + 18f, panel.y + 334f, actionWidth, 30f), DebriefRetryButtonLabel)",
-    "GUI.Button(new Rect(panel.x + 26f + actionWidth, panel.y + 334f, actionWidth, 30f), DebriefCloseButtonLabel)"
+$staleButtonMarkers = @(
+    "GUI.Button(new Rect(x, y - 2f, 46f, 22f), `"Buy`")",
+    "GUI.Button(new Rect(x, y - 2f, 46f, 22f), `"Hire`")",
+    "GUI.Button(new Rect(x, y - 2f, 72f, 22f), `"Review`")",
+    "GUI.Button(new Rect(x, y - 2f, 92f, 22f), `"Next Squad`")",
+    "GUI.Button(new Rect(x + width - 58f, y + 4f, 48f, 22f), SquadSelectionBackButtonLabel)",
+    "GUI.Button(new Rect(x, y - 2f, 28f, 22f), `"<`")",
+    "GUI.Button(new Rect(x + 34f, y - 2f, 28f, 22f), `">`")",
+    "DrawActionButton(new Rect(x, y - 2f, 72f, 22f), `"Set`", canConfirm)",
+    "DrawActionButton(new Rect(x, y - 2f, 72f, 22f), `"Launch`", ready)",
+    "GUI.Button(new Rect(right, y - 2f, LoadoutRepairButtonWidth, 22f), LoadoutRepairButtonLabel(repairCost))",
+    "float buttonHeight = touchLayout ? 36f : 20f;"
 )
 
-foreach ($marker in $staleTouchButtonMarkers) {
-    Assert-NotContains -Text $bootstrap -Needle $marker -Label "Mc2DemoBootstrap stale 30px visible-flow controls"
+foreach ($marker in $staleButtonMarkers) {
+    Assert-NotContains -Text $bootstrap -Needle $marker -Label "Mc2DemoBootstrap stale MechLab touch controls"
 }
 
-Add-OkRow -Check "runtime source" -Detail "$($sourceMarkers.Count) marker(s), stale visible-flow 30px controls rejected"
+Add-OkRow -Check "runtime source" -Detail "$($sourceMarkers.Count) marker(s), stale MechLab 22/36px controls rejected"
 
 $docMarkers = @(
-    "F21 audit landscape touch UI ergonomics",
     "F22 audit landscape MechLab touch controls",
     "F23 capture landscape MechLab touch evidence",
-    "check_landscape_touch_ui_ergonomics.ps1",
-    "Landscape touch UI ergonomics check OK"
+    "check_landscape_mechlab_touch_controls.ps1",
+    "Landscape MechLab touch controls check OK"
 )
 
 foreach ($marker in $docMarkers) {
@@ -136,26 +142,23 @@ foreach ($marker in $docMarkers) {
     Assert-Contains -Text $detailedPlan -Needle $marker -Label "detailed plan"
 }
 
-Assert-Contains -Text $masterPlan -Needle '| 99 | Done | `Audit landscape touch UI ergonomics` |' -Label "master plan F21"
 Assert-Contains -Text $masterPlan -Needle '| 100 | Done | `Audit landscape MechLab touch controls` |' -Label "master plan F22"
 Assert-Contains -Text $masterPlan -Needle '| 101 | Next | `Capture landscape MechLab touch evidence` |' -Label "master plan F23"
-Assert-Contains -Text $detailedPlan -Needle '| F21 | Done | `Audit landscape touch UI ergonomics` |' -Label "detailed plan F21"
 Assert-Contains -Text $detailedPlan -Needle '| F22 | Done | `Audit landscape MechLab touch controls` |' -Label "detailed plan F22"
 Assert-Contains -Text $detailedPlan -Needle '| F23 | Next | `Capture landscape MechLab touch evidence` |' -Label "detailed plan F23"
-Assert-Contains -Text $readme -Needle "F21 audit landscape touch UI ergonomics" -Label "README F21"
 Assert-Contains -Text $readme -Needle "F22 audit landscape MechLab touch controls" -Label "README F22"
 Assert-Contains -Text $readme -Needle "F23 capture landscape MechLab touch evidence" -Label "README F23"
-Add-OkRow -Check "plan docs" -Detail "F21/F22 done, F23 next"
+Add-OkRow -Check "plan docs" -Detail "F22 done, F23 next"
 
 if ($failures.Count -gt 0) {
-    Write-Host "Landscape touch UI ergonomics check failed."
+    Write-Host "Landscape MechLab touch controls check failed."
     foreach ($failure in $failures) {
         Write-Host " - $failure"
     }
 
-    throw "$($failures.Count) landscape touch UI ergonomics check(s) failed."
+    throw "$($failures.Count) landscape MechLab touch control check(s) failed."
 }
 
-Write-Host "Landscape touch UI ergonomics check OK."
+Write-Host "Landscape MechLab touch controls check OK."
 Write-Host "Repo: $RepoRoot"
 $rows | Format-Table -AutoSize

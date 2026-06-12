@@ -110,7 +110,8 @@ $requiredPlanMarkers = @(
     "F19 capture opt-in post-receipt refresh evidence",
     "F20 refresh Android landscape build/smoke evidence",
     "F21 audit landscape touch UI ergonomics",
-    "F22 audit landscape MechLab touch controls"
+    "F22 audit landscape MechLab touch controls",
+    "F23 capture landscape MechLab touch evidence"
 )
 
 $docsToCheck = @(
@@ -160,7 +161,8 @@ Assert-Contains -Text $mobilePlan -Needle "F18 implement opt-in post-receipt inv
 Assert-Contains -Text $mobilePlan -Needle "F19 capture opt-in post-receipt refresh evidence" -Label "mobile completed platform task"
 Assert-Contains -Text $mobilePlan -Needle "F20 refresh Android landscape build/smoke evidence" -Label "mobile completed platform task"
 Assert-Contains -Text $mobilePlan -Needle "F21 audit landscape touch UI ergonomics" -Label "mobile completed platform task"
-Assert-Contains -Text $mobilePlan -Needle "F22 audit landscape MechLab touch controls" -Label "mobile next task"
+Assert-Contains -Text $mobilePlan -Needle "F22 audit landscape MechLab touch controls" -Label "mobile completed platform task"
+Assert-Contains -Text $mobilePlan -Needle "F23 capture landscape MechLab touch evidence" -Label "mobile next task"
 Assert-Contains -Text $mobilePlan -Needle "first phone version is landscape-only" -Label "mobile orientation decision"
 
 $detailedPlan = Read-RequiredText -RelativePath "docs-ai-rts-commander-current-detailed-plan-2026-06-07.md"
@@ -184,11 +186,12 @@ Assert-Contains -Text $detailedPlan -Needle '| F18 | Done | `Implement opt-in po
 Assert-Contains -Text $detailedPlan -Needle '| F19 | Done | `Capture opt-in post-receipt refresh evidence` |' -Label "detailed queue F19"
 Assert-Contains -Text $detailedPlan -Needle '| F20 | Done | `Refresh Android landscape build/smoke evidence` |' -Label "detailed queue F20"
 Assert-Contains -Text $detailedPlan -Needle '| F21 | Done | `Audit landscape touch UI ergonomics` |' -Label "detailed queue F21"
-Assert-Contains -Text $detailedPlan -Needle '| F22 | Next | `Audit landscape MechLab touch controls` |' -Label "detailed queue F22"
+Assert-Contains -Text $detailedPlan -Needle '| F22 | Done | `Audit landscape MechLab touch controls` |' -Label "detailed queue F22"
+Assert-Contains -Text $detailedPlan -Needle '| F23 | Next | `Capture landscape MechLab touch evidence` |' -Label "detailed queue F23"
 
 $handoff = Read-RequiredText -RelativePath "docs-machine-handoff-plan-2026-06-07.md"
-Assert-Contains -Text $handoff -Needle 'Current formal next development task after handoff: `F22 audit landscape MechLab touch controls`' -Label "handoff next task"
-Assert-Contains -Text $handoff -Needle 'Next planned work: `F22 audit landscape MechLab touch controls`' -Label "handoff next planned work"
+Assert-Contains -Text $handoff -Needle 'Current formal next development task after handoff: `F23 capture landscape MechLab touch evidence`' -Label "handoff next task"
+Assert-Contains -Text $handoff -Needle 'Next planned work: `F23 capture landscape MechLab touch evidence`' -Label "handoff next planned work"
 
 $currentGate = Read-RequiredText -RelativePath "scripts\unity\check_current_plan_gate.ps1"
 Assert-Contains -Text $currentGate -Needle 'CommandFileSmoke: True' -Label "current gate script marker"
@@ -222,6 +225,7 @@ Assert-Contains -Text $currentGate -Needle 'Post-receipt inventory refresh bound
 Assert-Contains -Text $currentGate -Needle 'Post-receipt inventory refresh binding check OK.' -Label "current gate post-receipt inventory refresh binding marker"
 Assert-Contains -Text $currentGate -Needle 'Post-receipt refresh evidence capture OK.' -Label "current gate post-receipt refresh evidence marker"
 Assert-Contains -Text $currentGate -Needle 'Landscape touch UI ergonomics check OK.' -Label "current gate landscape touch ergonomics marker"
+Assert-Contains -Text $currentGate -Needle 'Landscape MechLab touch controls check OK.' -Label "current gate landscape MechLab touch controls marker"
 
 $handoffScript = Read-RequiredText -RelativePath "scripts\unity\check_controlled_demo_handoff.ps1"
 Assert-Contains -Text $handoffScript -Needle 'CommandFileSmoke: True' -Label "handoff script marker"

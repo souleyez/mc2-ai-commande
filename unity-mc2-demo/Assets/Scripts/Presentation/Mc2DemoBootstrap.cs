@@ -47,6 +47,8 @@ namespace MC2Demo.Presentation
         private const float OcclusionBoundsRadiusPixelCap = 320f;
         private const float LoadoutCardHeight = 488f;
         private const float LoadoutCardStride = 500f;
+        private const float MobileTouchLoadoutCardHeight = 654f;
+        private const float MobileTouchLoadoutCardStride = 666f;
         private const float LoadoutGridSectionMinHeight = 224f;
         private const float LoadoutStatusBandHeight = 32f;
         private const float MechLabDedicatedLayoutMinWidth = 900f;
@@ -165,7 +167,7 @@ namespace MC2Demo.Presentation
         private const string LoadoutWeightPressureLabel = "W ";
         private const string LoadoutGridPressureLabel = "G ";
         private const string MechLabPcLayoutSummary = "layout=pressure-cards+whole-blocks+single-fillers";
-        private const string MobileTouchLayoutSummary = "MobileTouchUi=ready orientation=landscape commandTargets=44 statusRows=44 primaryButtons=44 mapBack=44 systemButtons=44 missionButtons=44 debriefButtons=44 mechLabBack=44 mechLabGridCell>=36 touchRatios=16:9+19.5:9+20:9 landscapeOnly=yes noDragBox=yes combatLog=hidden";
+        private const string MobileTouchLayoutSummary = "MobileTouchUi=ready orientation=landscape commandTargets=44 statusRows=44 primaryButtons=44 mapBack=44 systemButtons=44 missionButtons=44 debriefButtons=44 mechLabBack=44 mechLabActions=44 mechLabShop=44 mechLabHire=44 mechLabRoster=44 mechLabSquad=44 mechLabWeaponButtons=44 mechLabRepair=44 mechLabGridCell>=36 touchRatios=16:9+19.5:9+20:9 landscapeOnly=yes noDragBox=yes combatLog=hidden";
         private const string MainServerSmokeAccountId = "local-dev-account";
         private const string MainServerSmokeDisplayName = "Local Commander";
         private const string MainServerSmokeMapVersion = "local-fixture-v1";
@@ -7816,7 +7818,10 @@ namespace MC2Demo.Presentation
                 && CompactTouchTargetHeightFor(2400f, 1080f) >= MobileTouchMinTargetHeight
                 && UnitStatusRowButtonHeightFor(2400f, 1080f) >= MobileTouchMinTargetHeight
                 && MissionListButtonHeightFor(2400f, 1080f) >= MobileTouchMinTargetHeight
-                && MissionResultActionButtonHeightFor(2400f, 1080f) >= MobileTouchMinTargetHeight;
+                && MissionResultActionButtonHeightFor(2400f, 1080f) >= MobileTouchMinTargetHeight
+                && MechLabTouchControlHeightFor(2400f, 1080f) >= MobileTouchMinTargetHeight
+                && LoadoutWeaponButtonHeightFor(2400f, 1080f) >= MobileTouchMinTargetHeight
+                && LoadoutRepairButtonHeightFor(2400f, 1080f) >= MobileTouchMinTargetHeight;
             bool loadoutFits = LoadoutPanelRectFor(1560f, 720f).x >= 0f
                 && LoadoutPanelRectFor(1560f, 720f).xMax <= 1560f
                 && LoadoutPanelRectFor(2400f, 1080f).x >= 0f
@@ -7846,7 +7851,11 @@ namespace MC2Demo.Presentation
                 + " missionPanel1560x720="
                 + MissionListPanelRectFor(1560f, 720f).height.ToString("0.#", CultureInfo.InvariantCulture)
                 + " debriefPanel1560x720="
-                + MissionResultPanelRectFor(1560f, 720f).height.ToString("0.#", CultureInfo.InvariantCulture);
+                + MissionResultPanelRectFor(1560f, 720f).height.ToString("0.#", CultureInfo.InvariantCulture)
+                + " mechLabControl="
+                + MechLabTouchControlHeightFor(2400f, 1080f).ToString("0.#", CultureInfo.InvariantCulture)
+                + " mechLabWeapon="
+                + LoadoutWeaponButtonHeightFor(2400f, 1080f).ToString("0.#", CultureInfo.InvariantCulture);
         }
 
         private static bool MobileTouchAspectCheck(float screenWidth, float screenHeight)
@@ -7858,6 +7867,9 @@ namespace MC2Demo.Presentation
                 && UnitStatusRowButtonHeightFor(screenWidth, screenHeight) >= MobileTouchMinTargetHeight
                 && MissionListButtonHeightFor(screenWidth, screenHeight) >= MobileTouchMinTargetHeight
                 && MissionResultActionButtonHeightFor(screenWidth, screenHeight) >= MobileTouchMinTargetHeight
+                && MechLabTouchControlHeightFor(screenWidth, screenHeight) >= MobileTouchMinTargetHeight
+                && LoadoutWeaponButtonHeightFor(screenWidth, screenHeight) >= MobileTouchMinTargetHeight
+                && LoadoutRepairButtonHeightFor(screenWidth, screenHeight) >= MobileTouchMinTargetHeight
                 && LoadoutPanelRectFor(screenWidth, screenHeight).x >= 0f
                 && LoadoutPanelRectFor(screenWidth, screenHeight).xMax <= screenWidth
                 && MissionListPanelRectFor(screenWidth, screenHeight).y >= 0f
@@ -15159,17 +15171,18 @@ namespace MC2Demo.Presentation
 
         private void DrawCompactMechLabSurface(Rect panel, float x, float y, float width)
         {
+            bool touchLayout = ShouldUseMobileTouchLayout();
             DrawMechBayInventorySummary(x, y, width, false);
             y += 178f;
             if (showWarehouseDraftFitPreview)
             {
                 DrawWarehouseDraftFitPreview(x, y, width);
-                y += 116f;
+                y += touchLayout ? 166f : 116f;
             }
             else if (showSquadSelectionPreview)
             {
                 DrawSquadSelectionPreview(x, y, width);
-                y += 250f;
+                y += touchLayout ? 424f : 250f;
             }
 
             DrawSelectedMechLabLoadoutEditor(x, y, width, panel.yMax - 12f);
@@ -15197,11 +15210,14 @@ namespace MC2Demo.Presentation
                 selectedMechLabBayPage,
                 MechLabBayOpsPageIndex,
                 MechLabBayRosterPageIndex);
+            bool touchLayout = ShouldUseMobileTouchLayout();
             float pageY = 136f;
-            float pageHeight = selectedMechLabBayPage == MechLabBayRosterPageIndex ? 324f : 194f;
+            float pageHeight = selectedMechLabBayPage == MechLabBayRosterPageIndex
+                ? touchLayout ? 444f : 324f
+                : touchLayout ? 238f : 194f;
             float previewHeight = showWarehouseDraftFitPreview
-                ? 118f
-                : showSquadSelectionPreview ? 252f : 0f;
+                ? touchLayout ? 160f : 118f
+                : showSquadSelectionPreview ? touchLayout ? 424f : 252f : 0f;
             Rect bayContent = new(
                 0f,
                 0f,
@@ -15276,12 +15292,14 @@ namespace MC2Demo.Presentation
 
         private void DrawDedicatedMechLabOpsPage(float x, float y, float width)
         {
+            bool touchLayout = ShouldUseMobileTouchLayout();
             MechBayWeaponShopPreview shopPreview = MechBayWeaponShopPreviewService.BuildPreview(demoInventory);
             GUI.Label(new Rect(x, y, width, 18f), "Shop " + WeaponShopPreviewText(shopPreview));
-            DrawWeaponShopPurchaseStub(x, y + 22f, width, shopPreview, demoInventory);
+            DrawWeaponShopPurchaseStub(x, y + 24f, width, shopPreview, demoInventory);
 
             MechBayPilotHirePreview pilotHirePreview = MechBayPilotHirePreviewService.BuildPreview(demoInventory);
-            GUI.Label(new Rect(x, y + 48f, width, 18f), "Pilot Hire " + PilotHirePreviewText(pilotHirePreview));
+            float pilotY = y + (touchLayout ? 76f : 48f);
+            GUI.Label(new Rect(x, pilotY, width, 18f), "Pilot Hire " + PilotHirePreviewText(pilotHirePreview));
 
             MechBayMissionHandoffPreview handoffPreview =
                 MechBayMissionHandoffPreviewService.BuildPreview(demoInventory);
@@ -15294,11 +15312,11 @@ namespace MC2Demo.Presentation
                 ? MissionHandoffCompletedSummaryText(handoffPreview, restartGuard)
                 : MissionHandoffPlayerSummaryText(handoffPreview, restartGuard);
             GUI.Label(
-                new Rect(x, y + 76f, width, 18f),
+                new Rect(x, y + (touchLayout ? 104f : 76f), width, 18f),
                 "Next Contract " + TruncateText(handoffSummary, 62));
-            float launchY = y + (ShouldUseMobileTouchLayout() ? 104f : 100f);
+            float launchY = y + (touchLayout ? 134f : 100f);
             DrawMissionHandoffLaunchAction(x, launchY, width, handoffPreview, restartGuard);
-            DrawMissionHandoffLineup(x, launchY + (ShouldUseMobileTouchLayout() ? 50f : 26f), width, handoffPreview);
+            DrawMissionHandoffLineup(x, launchY + (touchLayout ? 52f : 26f), width, handoffPreview);
         }
 
         private void DrawDedicatedMechLabRosterPage(float x, float y, float width)
@@ -15318,12 +15336,12 @@ namespace MC2Demo.Presentation
             if (unitCount > 0)
             {
                 DrawMechBayLoadoutUnitSelector(x, y, width, selectedLoadoutUnit);
-                y += 52f;
+                y += ShouldUseMobileTouchLayout() ? 74f : 52f;
             }
 
             float viewportHeight = Mathf.Max(40f, bottomY - y);
             Rect viewport = new(x, y, width, viewportHeight);
-            float contentHeight = selectedLoadoutUnit == null ? viewport.height : LoadoutCardStride;
+            float contentHeight = selectedLoadoutUnit == null ? viewport.height : LoadoutCardStrideForCurrentLayout();
             Rect content = new(0f, 0f, width - 20f, Mathf.Max(viewport.height, contentHeight));
             loadoutScroll = GUI.BeginScrollView(viewport, loadoutScroll, content);
             if (selectedLoadoutUnit == null)
@@ -15441,27 +15459,31 @@ namespace MC2Demo.Presentation
                 "Shop " + WeaponShopPreviewText(shopPreview));
             DrawWeaponShopPurchaseStub(x, detailY + 22f, width, shopPreview, demoInventory);
             MechBayPilotHirePreview pilotHirePreview = MechBayPilotHirePreviewService.BuildPreview(demoInventory);
+            bool touchLayout = ShouldUseMobileTouchLayout();
+            float pilotLabelY = detailY + (touchLayout ? 76f : 44f);
             GUI.Label(
-                new Rect(x, detailY + 44f, width, 18f),
+                new Rect(x, pilotLabelY, width, 18f),
                 "Pilot Hire " + PilotHirePreviewText(pilotHirePreview));
             MechBayOwnedRosterEntry[] roster = MechBayOwnedRosterService.BuildRosterPreview(demoInventory);
             ClampSelectedRosterIndex(roster);
+            float rosterLabelY = detailY + (touchLayout ? 104f : 66f);
             GUI.Label(
-                new Rect(x, detailY + 66f, width, 18f),
+                new Rect(x, rosterLabelY, width, 18f),
                 "Roster " + TruncateText(OwnedRosterText(roster), 62));
-            DrawRosterMissionStateLine(x, detailY + 88f, width, roster);
+            DrawRosterMissionStateLine(x, rosterLabelY + 22f, width, roster);
             string handoffSummary = HasSquadSelectionCompletedReplacement()
                 ? MissionHandoffCompletedSummaryText(handoffPreview, restartGuard)
                 : MissionHandoffPlayerSummaryText(handoffPreview, restartGuard);
+            float handoffSummaryY = detailY + (touchLayout ? 154f : 110f);
             GUI.Label(
-                new Rect(x, detailY + 110f, width, 18f),
+                new Rect(x, handoffSummaryY, width, 18f),
                 "Next Contract " + TruncateText(handoffSummary, 58));
-            float handoffLaunchY = detailY + (ShouldUseMobileTouchLayout() ? 136f : 132f);
+            float handoffLaunchY = detailY + (touchLayout ? 184f : 132f);
             DrawMissionHandoffLaunchAction(x, handoffLaunchY, width, handoffPreview, restartGuard);
-            DrawMissionHandoffLineup(x, handoffLaunchY + (ShouldUseMobileTouchLayout() ? 50f : 22f), width, handoffPreview);
+            DrawMissionHandoffLineup(x, handoffLaunchY + (touchLayout ? 52f : 22f), width, handoffPreview);
             if (showRosterDetail)
             {
-                DrawOwnedRosterDetail(x, detailY + 176f, width, roster, pilotHirePreview);
+                DrawOwnedRosterDetail(x, detailY + (touchLayout ? 250f : 176f), width, roster, pilotHirePreview);
             }
         }
 
@@ -15731,13 +15753,16 @@ namespace MC2Demo.Presentation
 
         private void DrawMechBayLoadoutUnitSelector(float x, float y, float width, UnitState selectedUnit)
         {
-            Rect strip = new(x - 4f, y - 4f, width + 8f, 48f);
+            bool touchLayout = ShouldUseMobileTouchLayout();
+            float buttonHeight = MechLabTouchControlHeight();
+            float stripHeight = touchLayout ? 70f : 48f;
+            Rect strip = new(x - 4f, y - 4f, width + 8f, stripHeight);
             DrawColorRect(strip, new Color(0.015f, 0.025f, 0.03f, 0.82f));
             DrawRectBorder(strip, new Color(UiCyanColor.r, UiCyanColor.g, UiCyanColor.b, 0.36f), 1f);
             GUI.Label(new Rect(x, y, 68f, 18f), "Mech Lab");
 
             int unitCount = CountPlayerUnits();
-            float gap = 5f;
+            float gap = touchLayout ? 8f : 5f;
             float startX = x + 74f;
             float buttonWidth = unitCount <= 0
                 ? 0f
@@ -15760,7 +15785,7 @@ namespace MC2Demo.Presentation
                         ? new Color(1f, 0.82f, 0.30f, 0.95f)
                         : new Color(0.82f, 0.90f, 0.92f, 0.92f);
 
-                Rect button = new(startX + index * (buttonWidth + gap), y - 2f, buttonWidth, 22f);
+                Rect button = new(startX + index * (buttonWidth + gap), y - 2f, buttonWidth, buttonHeight);
                 string label = (index + 1).ToString(CultureInfo.InvariantCulture)
                     + " "
                     + TruncateText(unit.UnitType, buttonWidth < 74f ? 5 : 8)
@@ -15792,7 +15817,7 @@ namespace MC2Demo.Presentation
                 string identity = MechBayFitIdentityText(selectedUnit, preview, HasPendingLoadoutEdits(selectedUnit));
                 DrawSelectedMechBayFitPressureLine(
                     x,
-                    y + 24f,
+                    y + (touchLayout ? 48f : 24f),
                     width,
                     identity,
                     result.IsValid && !HasPendingLoadoutEdits(selectedUnit),
@@ -15877,7 +15902,7 @@ namespace MC2Demo.Presentation
 
         private void DrawLoadoutUnit(UnitState unit, float x, float y, float width)
         {
-            Rect card = new(x, y, width, LoadoutCardHeight);
+            Rect card = new(x, y, width, LoadoutCardHeightForCurrentLayout());
             GUI.Box(card, TruncateText(LoadoutUnitTitle(unit), 82));
 
             float left = x + 12f;
@@ -16779,15 +16804,19 @@ namespace MC2Demo.Presentation
                     demoInventory,
                     mission?.Contract,
                     combatProfiles);
+            bool touchLayout = ShouldUseMobileTouchLayout();
+            float buttonHeight = MechLabTouchControlHeight();
+            float buttonWidth = touchLayout ? 72f : 58f;
+            float labelX = x + buttonWidth + (touchLayout ? 10f : 8f);
             bool previousEnabled = GUI.enabled;
             GUI.enabled = previousEnabled && guard?.ApplyEnabled == true;
-            if (GUI.Button(new Rect(x, y - 2f, 58f, 22f), "Apply"))
+            if (GUI.Button(new Rect(x, y - 2f, buttonWidth, buttonHeight), "Apply"))
             {
                 TryApplyMissionRestartRuntimeSwap(keepMechBayOpen: true);
             }
 
             GUI.enabled = previousEnabled;
-            GUI.Label(new Rect(x + 66f, y, width - 66f, 18f), TruncateText(MissionRestartApplyGuardText(guard), 56));
+            GUI.Label(new Rect(labelX, y, width - (labelX - x), 18f), TruncateText(MissionRestartApplyGuardText(guard), 56));
         }
 
         private static string MissionRestartApplyGuardText(MechBayMissionRestartApplyGuard guard)
@@ -16945,9 +16974,13 @@ namespace MC2Demo.Presentation
                 && purchasePreview != null
                 && purchasePreview.CanAfford;
 
+            bool touchLayout = ShouldUseMobileTouchLayout();
+            float buttonHeight = MechLabTouchControlHeight();
+            float buttonWidth = touchLayout ? 60f : 46f;
+            float labelX = x + buttonWidth + (touchLayout ? 10f : 8f);
             bool previousEnabled = GUI.enabled;
             GUI.enabled = previousEnabled && canPurchase;
-            if (GUI.Button(new Rect(x, y - 2f, 46f, 22f), "Buy"))
+            if (GUI.Button(new Rect(x, y - 2f, buttonWidth, buttonHeight), "Buy"))
             {
                 MechBayWeaponPurchasePreviewResult result =
                     MechBayWeaponShopPreviewService.TryApplyDemoPurchase(inventory, firstEntry.itemId);
@@ -16962,7 +16995,7 @@ namespace MC2Demo.Presentation
             }
 
             GUI.enabled = previousEnabled;
-            GUI.Label(new Rect(x + 54f, y, width - 54f, 18f), TruncateText(WeaponShopPurchaseStubText(purchasePreview), 56));
+            GUI.Label(new Rect(labelX, y, width - (labelX - x), 18f), TruncateText(WeaponShopPurchaseStubText(purchasePreview), 56));
         }
 
         private static MechBayWeaponShopEntry FirstWeaponShopEntry(MechBayWeaponShopPreview preview)
@@ -17053,8 +17086,14 @@ namespace MC2Demo.Presentation
 
         private void DrawSavedAccountImportPathToolsLine(float x, float y, float width)
         {
+            bool touchLayout = ShouldUseMobileTouchLayout();
+            float buttonHeight = MechLabTouchControlHeight();
+            float slotButtonWidth = touchLayout ? 74f : 62f;
+            float exportButtonWidth = touchLayout ? 74f : 58f;
+            float loadButtonWidth = touchLayout ? 64f : 48f;
+            float buttonGap = touchLayout ? 10f : 8f;
             bool previousEnabled = GUI.enabled;
-            if (DrawActionButton(new Rect(x, y - 2f, 62f, 22f), SavedAccountSlotButtonLabel, true))
+            if (DrawActionButton(new Rect(x, y - 2f, slotButtonWidth, buttonHeight), SavedAccountSlotButtonLabel, true))
             {
                 savedAccountImportPreviewInputPath = DefaultSavedAccountFilePath();
                 statusText = SavedAccountPathReadyStatusText;
@@ -17064,7 +17103,8 @@ namespace MC2Demo.Presentation
             bool canExport = demoInventory != null
                 && !string.IsNullOrWhiteSpace(savedAccountImportPreviewInputPath);
             GUI.enabled = previousEnabled && canExport;
-            if (DrawActionButton(new Rect(x + 70f, y - 2f, 58f, 22f), "Export", canExport))
+            float exportX = x + slotButtonWidth + buttonGap;
+            if (DrawActionButton(new Rect(exportX, y - 2f, exportButtonWidth, buttonHeight), "Export", canExport))
             {
                 TryExportSavedAccount(savedAccountImportPreviewInputPath, false, "Mech Lab");
             }
@@ -17072,7 +17112,8 @@ namespace MC2Demo.Presentation
             string defaultPath = DefaultSavedAccountFilePath();
             bool canLoadDefault = demoInventory != null && File.Exists(defaultPath);
             GUI.enabled = previousEnabled && canLoadDefault;
-            if (DrawActionButton(new Rect(x + 136f, y - 2f, 48f, 22f), "Load", canLoadDefault))
+            float loadX = exportX + exportButtonWidth + buttonGap;
+            if (DrawActionButton(new Rect(loadX, y - 2f, loadButtonWidth, buttonHeight), "Load", canLoadDefault))
             {
                 TryLoadDefaultSavedAccount("Mech Lab default load");
             }
@@ -17081,10 +17122,11 @@ namespace MC2Demo.Presentation
             string pathText = string.IsNullOrWhiteSpace(savedAccountImportPreviewInputPath)
                 ? SavedAccountNoSlotPathText
                 : savedAccountImportPreviewInputPath;
+            float labelX = loadX + loadButtonWidth + buttonGap;
             DrawActionStateLabel(
-                x + 192f,
+                labelX,
                 y,
-                width - 192f,
+                width - (labelX - x),
                 SavedAccountSlotPathPrefix + pathText,
                 canExport || canLoadDefault,
                 42);
@@ -17092,8 +17134,10 @@ namespace MC2Demo.Presentation
 
         private void DrawSavedAccountImportPreviewPathLine(float x, float y, float width)
         {
+            bool touchLayout = ShouldUseMobileTouchLayout();
             GUI.Label(new Rect(x, y, 52f, 18f), SavedAccountLoadPathLabel);
-            float buttonWidth = 72f;
+            float buttonWidth = touchLayout ? 82f : 72f;
+            float buttonHeight = MechLabTouchControlHeight();
             float fieldX = x + 56f;
             float fieldWidth = Mathf.Max(48f, width - 56f - buttonWidth - 8f);
             savedAccountImportPreviewInputPath = GUI.TextField(
@@ -17105,7 +17149,7 @@ namespace MC2Demo.Presentation
             bool previousEnabled = GUI.enabled;
             GUI.enabled = previousEnabled && canPreview;
             if (DrawActionButton(
-                    new Rect(fieldX + fieldWidth + 8f, y - 2f, buttonWidth, 22f),
+                    new Rect(fieldX + fieldWidth + 8f, y - 2f, buttonWidth, buttonHeight),
                     SavedAccountCheckButtonLabel,
                     canPreview))
             {
@@ -17124,18 +17168,22 @@ namespace MC2Demo.Presentation
             string text = hasPreview
                 ? lastSavedAccountImportApplyPreviewText
                 : SavedAccountNoLoadPreviewText;
+            bool touchLayout = ShouldUseMobileTouchLayout();
+            float buttonHeight = MechLabTouchControlHeight();
+            float buttonWidth = touchLayout ? 72f : 58f;
+            float labelX = x + buttonWidth + (touchLayout ? 10f : 8f);
             bool previousEnabled = GUI.enabled;
             GUI.enabled = previousEnabled && ready;
-            if (DrawActionButton(new Rect(x, y - 2f, 58f, 22f), SavedAccountLoadButtonLabel, ready))
+            if (DrawActionButton(new Rect(x, y - 2f, buttonWidth, buttonHeight), SavedAccountLoadButtonLabel, ready))
             {
                 TryApplySavedAccountImport(lastSavedAccountImportApplyPreviewPath, false, "Mech Lab");
             }
 
             GUI.enabled = previousEnabled;
             DrawActionStateLabel(
-                x + 66f,
+                labelX,
                 y,
-                width - 66f,
+                width - (labelX - x),
                 SavedAccountLoadPreviewPrefix + text,
                 ready,
                 56);
@@ -17262,16 +17310,22 @@ namespace MC2Demo.Presentation
             }
 
             MechBayOwnedRosterEntry entry = roster[Mathf.Clamp(selectedRosterIndex, 0, roster.Length - 1)];
+            bool touchLayout = ShouldUseMobileTouchLayout();
+            float buttonHeight = MechLabTouchControlHeight();
+            float pagerWidth = touchLayout ? 44f : 28f;
+            float pagerGap = touchLayout ? 8f : 6f;
+            float detailX = x + (touchLayout ? 104f : 70f);
+            float detailWidth = width - (detailX - x);
             bool previousEnabled = GUI.enabled;
             GUI.enabled = previousEnabled && roster.Length > 1;
-            if (GUI.Button(new Rect(x, y - 2f, 28f, 22f), "<"))
+            if (GUI.Button(new Rect(x, y - 2f, pagerWidth, buttonHeight), "<"))
             {
                 selectedRosterIndex = (selectedRosterIndex + roster.Length - 1) % roster.Length;
                 entry = roster[selectedRosterIndex];
                 statusText = "Roster " + TruncateText(entry.displayName, 20);
             }
 
-            if (GUI.Button(new Rect(x + 34f, y - 2f, 28f, 22f), ">"))
+            if (GUI.Button(new Rect(x + pagerWidth + pagerGap, y - 2f, pagerWidth, buttonHeight), ">"))
             {
                 selectedRosterIndex = (selectedRosterIndex + 1) % roster.Length;
                 entry = roster[selectedRosterIndex];
@@ -17280,23 +17334,23 @@ namespace MC2Demo.Presentation
 
             GUI.enabled = previousEnabled;
             GUI.Label(
-                new Rect(x + 70f, y, width - 70f, 18f),
+                new Rect(detailX, y, detailWidth, 18f),
                 TruncateText(OwnedRosterDetailText(entry), 62));
             GUI.Label(
-                new Rect(x + 70f, y + 20f, width - 70f, 18f),
+                new Rect(detailX, y + 22f, detailWidth, 18f),
                 TruncateText(OwnedRosterFitText(entry), 62));
             GUI.Label(
-                new Rect(x + 70f, y + 42f, width - 70f, 18f),
+                new Rect(detailX, y + 44f, detailWidth, 18f),
                 TruncateText(OwnedRosterPilotText(entry), 62));
             GUI.Label(
-                new Rect(x + 70f, y + 64f, width - 70f, 18f),
+                new Rect(detailX, y + 66f, detailWidth, 18f),
                 TruncateText(OwnedRosterDeploymentText(entry), 62));
-            DrawOwnedRosterPilotHireStub(x + 70f, y + 86f, width - 70f, entry, pilotHirePreview);
+            DrawOwnedRosterPilotHireStub(detailX, y + (touchLayout ? 94f : 86f), detailWidth, entry, pilotHirePreview);
             GUI.Label(
-                new Rect(x + 70f, y + 108f, width - 70f, 18f),
+                new Rect(detailX, y + (touchLayout ? 148f : 108f), detailWidth, 18f),
                 TruncateText(OwnedRosterWeaponStockText(entry), 62));
-            DrawOwnedRosterDraftFitStub(x + 70f, y + 130f, width - 70f, entry);
-            DrawOwnedRosterSquadSelectionStub(x + 70f, y + 174f, width - 70f, entry);
+            DrawOwnedRosterDraftFitStub(detailX, y + (touchLayout ? 172f : 130f), detailWidth, entry);
+            DrawOwnedRosterSquadSelectionStub(detailX, y + (touchLayout ? 232f : 174f), detailWidth, entry);
         }
 
         private void ClampSelectedRosterIndex(MechBayOwnedRosterEntry[] roster)
@@ -17394,9 +17448,13 @@ namespace MC2Demo.Presentation
                 && hirePreview.CanAfford
                 && string.Equals(hirePreview.Message, "Ready demo hire", StringComparison.Ordinal);
 
+            bool touchLayout = ShouldUseMobileTouchLayout();
+            float buttonHeight = MechLabTouchControlHeight();
+            float buttonWidth = touchLayout ? 60f : 46f;
+            float labelX = x + buttonWidth + (touchLayout ? 10f : 8f);
             bool previousEnabled = GUI.enabled;
             GUI.enabled = previousEnabled && canHire;
-            if (GUI.Button(new Rect(x, y - 2f, 46f, 22f), "Hire"))
+            if (GUI.Button(new Rect(x, y - 2f, buttonWidth, buttonHeight), "Hire"))
             {
                 MechBayPilotHireResult result =
                     MechBayPilotHirePreviewService.TryApplyDemoHire(demoInventory, entry.ownedMechId, candidate.pilotId);
@@ -17411,7 +17469,7 @@ namespace MC2Demo.Presentation
             }
 
             GUI.enabled = previousEnabled;
-            GUI.Label(new Rect(x + 54f, y, width - 54f, 18f), TruncateText(OwnedRosterPilotHireText(entry, hirePreview), 52));
+            GUI.Label(new Rect(labelX, y, width - (labelX - x), 18f), TruncateText(OwnedRosterPilotHireText(entry, hirePreview), 52));
         }
 
         private static string OwnedRosterPilotHireText(MechBayOwnedRosterEntry entry, MechBayPilotHireResult hirePreview)
@@ -17471,9 +17529,13 @@ namespace MC2Demo.Presentation
         private void DrawOwnedRosterDraftFitStub(float x, float y, float width, MechBayOwnedRosterEntry entry)
         {
             bool canOpenDraftFitGate = entry != null && entry.hasDraftFitStub && entry.draftFitReady;
+            bool touchLayout = ShouldUseMobileTouchLayout();
+            float buttonHeight = MechLabTouchControlHeight();
+            float buttonWidth = touchLayout ? 84f : 72f;
+            float labelX = x + buttonWidth + (touchLayout ? 10f : 8f);
             bool previousEnabled = GUI.enabled;
             GUI.enabled = previousEnabled && canOpenDraftFitGate;
-            if (GUI.Button(new Rect(x, y - 2f, 72f, 22f), "Review"))
+            if (GUI.Button(new Rect(x, y - 2f, buttonWidth, buttonHeight), "Review"))
             {
                 string name = entry == null || string.IsNullOrWhiteSpace(entry.displayName) ? "reserve mech" : entry.displayName;
                 showWarehouseDraftFitPreview = true;
@@ -17490,26 +17552,30 @@ namespace MC2Demo.Presentation
             string status = entry == null || string.IsNullOrWhiteSpace(entry.draftFitStatus)
                 ? "Fit review unavailable"
                 : PlayerFitStatusText(entry.draftFitStatus);
-            GUI.Label(new Rect(x + 80f, y, width - 80f, 18f), TruncateText(status, 44));
+            GUI.Label(new Rect(labelX, y, width - (labelX - x), 18f), TruncateText(status, 44));
 
             string requirements = entry == null || string.IsNullOrWhiteSpace(entry.draftFitRequirements)
                 ? "Requirements unknown"
                 : "Requires " + PlayerRosterStatusText(entry.draftFitRequirements);
-            GUI.Label(new Rect(x + 80f, y + 22f, width - 80f, 18f), TruncateText(requirements, 44));
+            GUI.Label(new Rect(labelX, y + 22f, width - (labelX - x), 18f), TruncateText(requirements, 44));
         }
 
         private void DrawOwnedRosterSquadSelectionStub(float x, float y, float width, MechBayOwnedRosterEntry entry)
         {
             bool canPreviewSquad = entry != null;
+            bool touchLayout = ShouldUseMobileTouchLayout();
+            float buttonHeight = MechLabTouchControlHeight();
+            float buttonWidth = touchLayout ? 104f : 92f;
+            float labelX = x + buttonWidth + (touchLayout ? 10f : 8f);
             bool previousEnabled = GUI.enabled;
             GUI.enabled = previousEnabled && canPreviewSquad;
-            if (GUI.Button(new Rect(x, y - 2f, 92f, 22f), "Next Squad"))
+            if (GUI.Button(new Rect(x, y - 2f, buttonWidth, buttonHeight), "Next Squad"))
             {
                 OpenSquadSelectionPreview(entry);
             }
 
             GUI.enabled = previousEnabled;
-            GUI.Label(new Rect(x + 100f, y, width - 100f, 18f), TruncateText(OwnedRosterSquadSelectionText(entry), 42));
+            GUI.Label(new Rect(labelX, y, width - (labelX - x), 18f), TruncateText(OwnedRosterSquadSelectionText(entry), 42));
         }
 
         private static string OwnedRosterSquadSelectionText(MechBayOwnedRosterEntry entry)
@@ -17603,8 +17669,11 @@ namespace MC2Demo.Presentation
             squadSelectionDraftOutgoingOwnedMechId = draft?.OutgoingOwnedMechId;
             squadSelectionDraftIncomingOwnedMechId = draft?.IncomingOwnedMechId;
 
-            GUI.Box(new Rect(x, y, width, 238f), "Next Contract Squad");
-            if (GUI.Button(new Rect(x + width - 58f, y + 4f, 48f, 22f), SquadSelectionBackButtonLabel))
+            bool touchLayout = ShouldUseMobileTouchLayout();
+            float buttonHeight = MechLabTouchControlHeight();
+            float backButtonWidth = touchLayout ? 64f : 48f;
+            GUI.Box(new Rect(x, y, width, touchLayout ? 410f : 238f), "Next Contract Squad");
+            if (GUI.Button(new Rect(x + width - backButtonWidth - 10f, y + 4f, backButtonWidth, buttonHeight), SquadSelectionBackButtonLabel))
             {
                 bool keepCompletedReplacementCue = SquadSelectionCompleted(preview);
                 showSquadSelectionPreview = false;
@@ -17618,48 +17687,50 @@ namespace MC2Demo.Presentation
             }
 
             string status = SquadSelectionStatusText(preview?.Status);
-            GUI.Label(new Rect(x + 12f, y + 24f, width - 24f, 18f), TruncateText(status, 76));
+            GUI.Label(new Rect(x + 12f, y + (touchLayout ? 54f : 24f), width - 24f, 18f), TruncateText(status, 76));
             if (SquadSelectionCompleted(preview))
             {
+                float doneY = y + (touchLayout ? 80f : 44f);
                 GUI.Label(
-                    new Rect(x + 12f, y + 44f, width - 24f, 18f),
+                    new Rect(x + 12f, doneY, width - 24f, 18f),
                     "Done  Next contract squad ready  "
                     + (preview?.MissionSlotCount ?? 0).ToString(CultureInfo.InvariantCulture)
                     + " mechs");
-                DrawSquadSelectionCompletedSetLine(x + 12f, y + 64f, width - 24f);
+                DrawSquadSelectionCompletedSetLine(x + 12f, y + (touchLayout ? 106f : 64f), width - 24f);
                 GUI.Label(
-                    new Rect(x + 12f, y + 92f, width - 24f, 18f),
+                    new Rect(x + 12f, y + (touchLayout ? 158f : 92f), width - 24f, 18f),
                     TruncateText("Lineup " + SquadSelectionCompactLineupSummary(preview?.MissionSlots, "none ready"), 76));
-                DrawSquadSelectionPendingSwap(x + 12f, y + 114f, width - 24f, preview, draft);
+                DrawSquadSelectionPendingSwap(x + 12f, y + (touchLayout ? 184f : 114f), width - 24f, preview, draft);
                 DrawSquadSelectionRestartHandoff(
                     x + 12f,
-                    y + 136f,
+                    y + (touchLayout ? 238f : 136f),
                     width - 24f,
                     "Launch updated squad  ");
                 GUI.Label(
-                    new Rect(x + 12f, y + 158f, width - 24f, 18f),
+                    new Rect(x + 12f, y + (touchLayout ? 292f : 158f), width - 24f, 18f),
                     TruncateText(SquadSelectionPlayerNote(preview, completed: true), 76));
                 return;
             }
 
+            float currentY = y + (touchLayout ? 80f : 44f);
             GUI.Label(
-                new Rect(x + 12f, y + 44f, width - 24f, 18f),
+                new Rect(x + 12f, currentY, width - 24f, 18f),
                 "Current Slots "
                 + (preview?.MissionSlotCount ?? 0).ToString(CultureInfo.InvariantCulture)
                 + "  Reserve Ready "
                 + (preview?.CandidateCount ?? 0).ToString(CultureInfo.InvariantCulture));
             GUI.Label(
-                new Rect(x + 12f, y + 64f, width - 24f, 18f),
+                new Rect(x + 12f, y + (touchLayout ? 104f : 64f), width - 24f, 18f),
                 TruncateText("Slots " + SquadSelectionSlotSummary(preview?.MissionSlots, "none"), 76));
             GUI.Label(
-                new Rect(x + 12f, y + 84f, width - 24f, 18f),
+                new Rect(x + 12f, y + (touchLayout ? 128f : 84f), width - 24f, 18f),
                 TruncateText("Reserve " + SquadSelectionSlotSummary(preview?.DepotCandidates, "none ready"), 76));
-            DrawSquadSelectionDraftPickers(x + 12f, y + 106f, width - 24f, preview, draft);
-            DrawSquadSelectionSwapPlan(x + 12f, y + 154f, width - 24f, draft);
-            DrawSquadSelectionPendingSwap(x + 12f, y + 176f, width - 24f, preview, draft);
-            DrawSquadSelectionRestartHandoff(x + 12f, y + 198f, width - 24f, "Next Contract  ");
+            DrawSquadSelectionDraftPickers(x + 12f, y + (touchLayout ? 156f : 106f), width - 24f, preview, draft);
+            DrawSquadSelectionSwapPlan(x + 12f, y + (touchLayout ? 260f : 154f), width - 24f, draft);
+            DrawSquadSelectionPendingSwap(x + 12f, y + (touchLayout ? 286f : 176f), width - 24f, preview, draft);
+            DrawSquadSelectionRestartHandoff(x + 12f, y + (touchLayout ? 340f : 198f), width - 24f, "Next Contract  ");
             GUI.Label(
-                new Rect(x + 12f, y + 220f, width - 24f, 18f),
+                new Rect(x + 12f, y + (touchLayout ? 392f : 220f), width - 24f, 18f),
                 TruncateText(SquadSelectionPlayerNote(preview, completed: false), 76));
         }
 
@@ -17719,7 +17790,7 @@ namespace MC2Demo.Presentation
                 true);
             DrawSquadSelectionDraftPicker(
                 x,
-                y + 22f,
+                y + (ShouldUseMobileTouchLayout() ? 52f : 22f),
                 width,
                 "In",
                 preview?.DepotCandidates,
@@ -17737,22 +17808,26 @@ namespace MC2Demo.Presentation
             bool outgoing)
         {
             MechBaySquadSelectionSlot[] safeSlots = slots ?? Array.Empty<MechBaySquadSelectionSlot>();
+            bool touchLayout = ShouldUseMobileTouchLayout();
+            float buttonHeight = MechLabTouchControlHeight();
+            float pagerWidth = touchLayout ? 44f : 28f;
+            float pagerGap = touchLayout ? 8f : 6f;
             Color cueColor = outgoing
                 ? new Color(1f, 0.42f, 0.32f, 0.9f)
                 : new Color(0.42f, 0.82f, 1f, 0.9f);
-            Rect rowRect = new(x, y - 3f, width, 24f);
+            Rect rowRect = new(x, y - 3f, width, touchLayout ? 50f : 24f);
             DrawColorRect(rowRect, new Color(cueColor.r, cueColor.g, cueColor.b, 0.13f));
             DrawRectBorder(rowRect, new Color(cueColor.r, cueColor.g, cueColor.b, 0.55f), 1f);
 
             bool canCycle = safeSlots.Length > 1;
             bool previousEnabled = GUI.enabled;
             GUI.enabled = previousEnabled && canCycle;
-            if (GUI.Button(new Rect(x, y - 2f, 28f, 22f), "<"))
+            if (GUI.Button(new Rect(x, y - 2f, pagerWidth, buttonHeight), "<"))
             {
                 CycleSquadSelectionDraft(safeSlots, outgoing, -1);
             }
 
-            if (GUI.Button(new Rect(x + 34f, y - 2f, 28f, 22f), ">"))
+            if (GUI.Button(new Rect(x + pagerWidth + pagerGap, y - 2f, pagerWidth, buttonHeight), ">"))
             {
                 CycleSquadSelectionDraft(safeSlots, outgoing, 1);
             }
@@ -17768,9 +17843,10 @@ namespace MC2Demo.Presentation
                 ? (outgoing ? "OUT" : "IN")
                 : label.ToUpperInvariant();
             string direction = outgoing ? " leaves next contract  " : " joins next contract  ";
-            DrawColorRect(new Rect(x + 70f, y + 4f, 10f, 10f), cueColor);
+            float labelX = x + pagerWidth * 2f + pagerGap + (touchLayout ? 16f : 8f);
+            DrawColorRect(new Rect(labelX, y + 4f, 10f, 10f), cueColor);
             GUI.Label(
-                new Rect(x + 86f, y, width - 86f, 18f),
+                new Rect(labelX + 16f, y, width - (labelX + 16f - x), 18f),
                 TruncateText(cueLabel + direction + SquadSelectionSlotName(selected) + count, 64));
         }
 
@@ -17805,7 +17881,8 @@ namespace MC2Demo.Presentation
         private void DrawSquadSelectionCompletedSetLine(float x, float y, float width)
         {
             Color cueColor = new(0.42f, 0.82f, 1f, 0.9f);
-            Rect rowRect = new(x, y - 3f, width, 24f);
+            bool touchLayout = ShouldUseMobileTouchLayout();
+            Rect rowRect = new(x, y - 3f, width, touchLayout ? 50f : 24f);
             DrawColorRect(rowRect, new Color(cueColor.r, cueColor.g, cueColor.b, 0.13f));
             DrawRectBorder(rowRect, new Color(cueColor.r, cueColor.g, cueColor.b, 0.55f), 1f);
             DrawColorRect(new Rect(x + 6f, y + 4f, 10f, 10f), cueColor);
@@ -17840,8 +17917,12 @@ namespace MC2Demo.Presentation
         {
             bool previousEnabled = GUI.enabled;
             bool canConfirm = draft?.Ready == true;
+            bool touchLayout = ShouldUseMobileTouchLayout();
+            float buttonHeight = MechLabTouchControlHeight();
+            float buttonWidth = touchLayout ? 84f : 72f;
+            float labelX = x + buttonWidth + (touchLayout ? 10f : 8f);
             GUI.enabled = previousEnabled && canConfirm;
-            if (DrawActionButton(new Rect(x, y - 2f, 72f, 22f), "Set", canConfirm))
+            if (DrawActionButton(new Rect(x, y - 2f, buttonWidth, buttonHeight), "Set", canConfirm))
             {
                 MechBaySquadSelectionApplyResult result =
                     MechBaySquadSelectionPreviewService.TryApplyPendingSwap(demoInventory, draft);
@@ -17870,9 +17951,9 @@ namespace MC2Demo.Presentation
 
             GUI.enabled = previousEnabled;
             DrawActionStateLabel(
-                x + 80f,
+                labelX,
                 y,
-                width - 80f,
+                width - (labelX - x),
                 SquadSelectionConfirmLineText(preview, draft),
                 canConfirm,
                 64);
@@ -17987,8 +18068,12 @@ namespace MC2Demo.Presentation
                     combatProfiles);
             bool previousEnabled = GUI.enabled;
             bool ready = guard?.ApplyEnabled == true;
+            bool touchLayout = ShouldUseMobileTouchLayout();
+            float buttonHeight = MechLabTouchControlHeight();
+            float buttonWidth = touchLayout ? 84f : 72f;
+            float labelX = x + buttonWidth + (touchLayout ? 10f : 8f);
             GUI.enabled = previousEnabled && ready;
-            if (DrawActionButton(new Rect(x, y - 2f, 72f, 22f), "Launch", ready))
+            if (DrawActionButton(new Rect(x, y - 2f, buttonWidth, buttonHeight), "Launch", ready))
             {
                 TryApplyMissionRestartRuntimeSwap(keepMechBayOpen: true);
             }
@@ -17998,7 +18083,7 @@ namespace MC2Demo.Presentation
                 ? MissionHandoffCompletedLaunchText(guard)
                 : MissionHandoffLaunchActionText(guard, preview);
             string prefix = string.IsNullOrWhiteSpace(labelPrefix) ? "Next Contract  " : labelPrefix;
-            DrawActionStateLabel(x + 80f, y, width - 80f, prefix + text, ready, 64);
+            DrawActionStateLabel(labelX, y, width - (labelX - x), prefix + text, ready, 64);
         }
 
         private string MissionHandoffCompletedLaunchText(MechBayMissionRestartApplyGuard guard)
@@ -18158,10 +18243,14 @@ namespace MC2Demo.Presentation
         {
             MechBayWarehouseDraftFitPreview preview =
                 MechBayWarehouseDraftFitPreviewService.BuildPreview(demoInventory, warehouseDraftFitPreviewMechId);
-            GUI.Box(new Rect(x, y, width, 104f), "Reserve Fit Review");
+            bool touchLayout = ShouldUseMobileTouchLayout();
+            float buttonHeight = MechLabTouchControlHeight();
+            float buttonWidth = touchLayout ? 64f : 48f;
+            float buttonGap = touchLayout ? 10f : 6f;
+            GUI.Box(new Rect(x, y, width, touchLayout ? 150f : 104f), "Reserve Fit Review");
             bool previousEnabled = GUI.enabled;
             GUI.enabled = previousEnabled && preview != null && preview.Ready;
-            if (GUI.Button(new Rect(x + width - 112f, y + 4f, 48f, 22f), "Apply"))
+            if (GUI.Button(new Rect(x + width - buttonWidth * 2f - buttonGap - 10f, y + 4f, buttonWidth, buttonHeight), "Apply"))
             {
                 MechBayWarehouseDraftFitApplyResult result =
                     MechBayWarehouseDraftFitPreviewService.TryApplyDemoFit(demoInventory, warehouseDraftFitPreviewMechId);
@@ -18177,29 +18266,30 @@ namespace MC2Demo.Presentation
             }
 
             GUI.enabled = previousEnabled;
-            if (GUI.Button(new Rect(x + width - 58f, y + 4f, 48f, 22f), ReserveFitBackButtonLabel))
+            if (GUI.Button(new Rect(x + width - buttonWidth - 10f, y + 4f, buttonWidth, buttonHeight), ReserveFitBackButtonLabel))
             {
                 showWarehouseDraftFitPreview = false;
                 warehouseDraftFitPreviewMechId = null;
                 statusText = "Fit review closed";
             }
 
+            float textY = y + (touchLayout ? 56f : 24f);
             string mech = string.IsNullOrWhiteSpace(preview?.displayName) ? "Mech unavailable" : preview.displayName;
             string chassis = string.IsNullOrWhiteSpace(preview?.chassisId) ? "unknown" : preview.chassisId;
             string status = string.IsNullOrWhiteSpace(preview?.Status) ? "Review unavailable" : PlayerFitStatusText(preview.Status);
-            GUI.Label(new Rect(x + 12f, y + 24f, width - 24f, 18f), TruncateText(mech + "  Chassis " + chassis + "  " + status, 76));
+            GUI.Label(new Rect(x + 12f, textY, width - 24f, 18f), TruncateText(mech + "  Chassis " + chassis + "  " + status, 76));
 
             string pilot = string.IsNullOrWhiteSpace(preview?.pilotDisplayName) ? "No pilot assigned" : preview.pilotDisplayName;
             string pilotStatus = string.IsNullOrWhiteSpace(preview?.pilotStatus) ? "Pilot required" : preview.pilotStatus;
-            GUI.Label(new Rect(x + 12f, y + 44f, width - 24f, 18f), TruncateText("Pilot " + pilotStatus + " (" + pilot + ")", 76));
+            GUI.Label(new Rect(x + 12f, textY + 22f, width - 24f, 18f), TruncateText("Pilot " + pilotStatus + " (" + pilot + ")", 76));
 
             string weapon = string.IsNullOrWhiteSpace(preview?.weaponDisplayName) ? "No spare weapon selected" : preview.weaponDisplayName;
             string stock = preview == null ? "0" : preview.spareWeaponStockCount.ToString(CultureInfo.InvariantCulture);
-            GUI.Label(new Rect(x + 12f, y + 64f, width - 24f, 18f), TruncateText("Weapon " + weapon + "  spare " + stock, 76));
+            GUI.Label(new Rect(x + 12f, textY + 44f, width - 24f, 18f), TruncateText("Weapon " + weapon + "  spare " + stock, 76));
 
             string requirements = string.IsNullOrWhiteSpace(preview?.Requirements) ? "Requirements unknown" : preview.Requirements;
             GUI.Label(
-                new Rect(x + 12f, y + 84f, width - 24f, 18f),
+                new Rect(x + 12f, textY + 66f, width - 24f, 18f),
                 TruncateText(requirements + "  " + ReserveFitReviewNote(preview), 76));
         }
 
@@ -18294,7 +18384,7 @@ namespace MC2Demo.Presentation
                 && repairCost > 0
                 && demoInventory != null
                 && demoInventory.tokenBalance >= repairCost;
-            if (GUI.Button(new Rect(right, y - 2f, LoadoutRepairButtonWidth, 22f), LoadoutRepairButtonLabel(repairCost)))
+            if (GUI.Button(new Rect(right, y - 2f, LoadoutRepairButtonWidth, LoadoutRepairButtonHeight()), LoadoutRepairButtonLabel(repairCost)))
             {
                 MechBayRepairResult result = MechBayRepairService.TryRepair(demoInventory, unit);
                 RefreshDemoInventoryValidation();
@@ -19853,7 +19943,7 @@ namespace MC2Demo.Presentation
             int selectedWeaponIndex = SelectedLoadoutWeaponIndexFor(unit, preview);
             DrawSelectedWeaponSummaryLine(unit, preview, selectedWeaponIndex, x, y, width);
             bool touchLayout = ShouldUseMobileTouchLayout();
-            float buttonHeight = touchLayout ? 36f : 20f;
+            float buttonHeight = LoadoutWeaponButtonHeight();
             float rowStride = buttonHeight + (touchLayout ? 6f : 2f);
             float listY = y + 22f;
             for (int index = 0; index < count; index++)
@@ -21666,6 +21756,46 @@ namespace MC2Demo.Presentation
         private static float CompactTouchTargetHeightFor(float screenWidth, float screenHeight)
         {
             return ShouldUseMobileTouchLayoutFor(screenWidth, screenHeight) ? MobileTouchMinTargetHeight : 22f;
+        }
+
+        private static float MechLabTouchControlHeight()
+        {
+            return MechLabTouchControlHeightFor(Screen.width, Screen.height);
+        }
+
+        private static float MechLabTouchControlHeightFor(float screenWidth, float screenHeight)
+        {
+            return CompactTouchTargetHeightFor(screenWidth, screenHeight);
+        }
+
+        private static float LoadoutWeaponButtonHeight()
+        {
+            return LoadoutWeaponButtonHeightFor(Screen.width, Screen.height);
+        }
+
+        private static float LoadoutWeaponButtonHeightFor(float screenWidth, float screenHeight)
+        {
+            return ShouldUseMobileTouchLayoutFor(screenWidth, screenHeight) ? MobileTouchMinTargetHeight : 20f;
+        }
+
+        private static float LoadoutRepairButtonHeight()
+        {
+            return LoadoutRepairButtonHeightFor(Screen.width, Screen.height);
+        }
+
+        private static float LoadoutRepairButtonHeightFor(float screenWidth, float screenHeight)
+        {
+            return MechLabTouchControlHeightFor(screenWidth, screenHeight);
+        }
+
+        private static float LoadoutCardHeightForCurrentLayout()
+        {
+            return ShouldUseMobileTouchLayout() ? MobileTouchLoadoutCardHeight : LoadoutCardHeight;
+        }
+
+        private static float LoadoutCardStrideForCurrentLayout()
+        {
+            return ShouldUseMobileTouchLayout() ? MobileTouchLoadoutCardStride : LoadoutCardStride;
         }
 
         private static float UnitStatusRowButtonHeight()
