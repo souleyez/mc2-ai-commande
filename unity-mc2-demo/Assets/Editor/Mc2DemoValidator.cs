@@ -4106,6 +4106,16 @@ namespace MC2Demo.EditorTools
             }
 
             if (!StartupCommanderScript.TryParseLine(
+                    "open-mech-lab",
+                    1,
+                    out StartupCommanderScriptAction openMechLabAction,
+                    out _)
+                || openMechLabAction.Kind != StartupCommanderScriptActionKind.OpenMechLab)
+            {
+                throw new InvalidDataException("Expected command file parser to read open-mech-lab actions.");
+            }
+
+            if (!StartupCommanderScript.TryParseLine(
                     "assert-debrief-visible",
                     1,
                     out StartupCommanderScriptAction assertDebriefVisibleAction,
@@ -4113,6 +4123,26 @@ namespace MC2Demo.EditorTools
                 || assertDebriefVisibleAction.Kind != StartupCommanderScriptActionKind.AssertDebriefVisible)
             {
                 throw new InvalidDataException("Expected command file parser to read assert-debrief-visible actions.");
+            }
+
+            if (!StartupCommanderScript.TryParseLine(
+                    "post-receipt-duplicate-smoke",
+                    1,
+                    out StartupCommanderScriptAction postReceiptDuplicateAction,
+                    out _)
+                || postReceiptDuplicateAction.Kind != StartupCommanderScriptActionKind.PostReceiptDuplicateSmoke)
+            {
+                throw new InvalidDataException("Expected command file parser to read post-receipt-duplicate-smoke actions.");
+            }
+
+            if (!StartupCommanderScript.TryParseLine(
+                    "assert-post-receipt-refresh-smoke",
+                    1,
+                    out StartupCommanderScriptAction assertPostReceiptAction,
+                    out _)
+                || assertPostReceiptAction.Kind != StartupCommanderScriptActionKind.AssertPostReceiptRefreshSmoke)
+            {
+                throw new InvalidDataException("Expected command file parser to read assert-post-receipt-refresh-smoke actions.");
             }
 
             if (!StartupCommanderScript.TryParseLine(

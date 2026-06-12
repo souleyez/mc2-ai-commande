@@ -107,7 +107,9 @@ $requiredPlanMarkers = @(
     "F16 implement server-backed receipt evidence gate",
     "F17 plan post-receipt inventory refresh boundary",
     "F18 implement opt-in post-receipt inventory refresh binding",
-    "F19 capture opt-in post-receipt refresh evidence"
+    "F19 capture opt-in post-receipt refresh evidence",
+    "F20 refresh Android landscape build/smoke evidence",
+    "F21 audit landscape touch UI ergonomics"
 )
 
 $docsToCheck = @(
@@ -154,7 +156,9 @@ Assert-Contains -Text $mobilePlan -Needle "F15 plan server-backed receipt slice"
 Assert-Contains -Text $mobilePlan -Needle "F16 implement server-backed receipt evidence gate" -Label "mobile completed platform task"
 Assert-Contains -Text $mobilePlan -Needle "F17 plan post-receipt inventory refresh boundary" -Label "mobile completed platform task"
 Assert-Contains -Text $mobilePlan -Needle "F18 implement opt-in post-receipt inventory refresh binding" -Label "mobile completed platform task"
-Assert-Contains -Text $mobilePlan -Needle "F19 capture opt-in post-receipt refresh evidence" -Label "mobile next task"
+Assert-Contains -Text $mobilePlan -Needle "F19 capture opt-in post-receipt refresh evidence" -Label "mobile completed platform task"
+Assert-Contains -Text $mobilePlan -Needle "F20 refresh Android landscape build/smoke evidence" -Label "mobile completed platform task"
+Assert-Contains -Text $mobilePlan -Needle "F21 audit landscape touch UI ergonomics" -Label "mobile next task"
 Assert-Contains -Text $mobilePlan -Needle "first phone version is landscape-only" -Label "mobile orientation decision"
 
 $detailedPlan = Read-RequiredText -RelativePath "docs-ai-rts-commander-current-detailed-plan-2026-06-07.md"
@@ -175,11 +179,13 @@ Assert-Contains -Text $detailedPlan -Needle '| F15 | Done | `Plan server-backed 
 Assert-Contains -Text $detailedPlan -Needle '| F16 | Done | `Implement server-backed receipt evidence gate` |' -Label "detailed queue F16"
 Assert-Contains -Text $detailedPlan -Needle '| F17 | Done | `Plan post-receipt inventory refresh boundary` |' -Label "detailed queue F17"
 Assert-Contains -Text $detailedPlan -Needle '| F18 | Done | `Implement opt-in post-receipt inventory refresh binding` |' -Label "detailed queue F18"
-Assert-Contains -Text $detailedPlan -Needle '| F19 | Next | `Capture opt-in post-receipt refresh evidence` |' -Label "detailed queue F19"
+Assert-Contains -Text $detailedPlan -Needle '| F19 | Done | `Capture opt-in post-receipt refresh evidence` |' -Label "detailed queue F19"
+Assert-Contains -Text $detailedPlan -Needle '| F20 | Done | `Refresh Android landscape build/smoke evidence` |' -Label "detailed queue F20"
+Assert-Contains -Text $detailedPlan -Needle '| F21 | Next | `Audit landscape touch UI ergonomics` |' -Label "detailed queue F21"
 
 $handoff = Read-RequiredText -RelativePath "docs-machine-handoff-plan-2026-06-07.md"
-Assert-Contains -Text $handoff -Needle 'Current formal next development task after handoff: `F19 capture opt-in post-receipt refresh evidence`' -Label "handoff next task"
-Assert-Contains -Text $handoff -Needle 'Next planned work: `F19 capture opt-in post-receipt refresh evidence`' -Label "handoff next planned work"
+Assert-Contains -Text $handoff -Needle 'Current formal next development task after handoff: `F21 audit landscape touch UI ergonomics`' -Label "handoff next task"
+Assert-Contains -Text $handoff -Needle 'Next planned work: `F21 audit landscape touch UI ergonomics`' -Label "handoff next planned work"
 
 $currentGate = Read-RequiredText -RelativePath "scripts\unity\check_current_plan_gate.ps1"
 Assert-Contains -Text $currentGate -Needle 'CommandFileSmoke: True' -Label "current gate script marker"
@@ -211,6 +217,7 @@ Assert-Contains -Text $currentGate -Needle 'Server-backed receipt slice plan che
 Assert-Contains -Text $currentGate -Needle 'Server-backed receipt evidence capture OK.' -Label "current gate server-backed receipt evidence marker"
 Assert-Contains -Text $currentGate -Needle 'Post-receipt inventory refresh boundary check OK.' -Label "current gate post-receipt inventory refresh marker"
 Assert-Contains -Text $currentGate -Needle 'Post-receipt inventory refresh binding check OK.' -Label "current gate post-receipt inventory refresh binding marker"
+Assert-Contains -Text $currentGate -Needle 'Post-receipt refresh evidence capture OK.' -Label "current gate post-receipt refresh evidence marker"
 
 $handoffScript = Read-RequiredText -RelativePath "scripts\unity\check_controlled_demo_handoff.ps1"
 Assert-Contains -Text $handoffScript -Needle 'CommandFileSmoke: True' -Label "handoff script marker"
@@ -238,6 +245,7 @@ Assert-Contains -Text $handoffScript -Needle 'Server-backed receipt slice plan c
 Assert-Contains -Text $handoffScript -Needle 'Server-backed receipt evidence capture OK' -Label "handoff script server-backed receipt evidence marker"
 Assert-Contains -Text $handoffScript -Needle 'Post-receipt inventory refresh boundary check OK' -Label "handoff script post-receipt inventory refresh marker"
 Assert-Contains -Text $handoffScript -Needle 'Post-receipt inventory refresh binding check OK' -Label "handoff script post-receipt inventory refresh binding marker"
+Assert-Contains -Text $handoffScript -Needle 'Post-receipt refresh evidence capture OK' -Label "handoff script post-receipt refresh evidence marker"
 
 $tracked = @(& git -C $RepoRoot ls-files 2>$null | ForEach-Object { $_.ToString() })
 if ($LASTEXITCODE -ne 0) {

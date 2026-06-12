@@ -229,6 +229,8 @@ namespace MC2Demo.Presentation
             public string mechLab;
             public string mechLabInventorySource;
             public string inventoryMechBayPreview;
+            public string debriefReward;
+            public string postReceiptInventoryRefresh;
             public string damageStory;
             public string damageReadability;
             public string battleHud;
@@ -1565,6 +1567,9 @@ namespace MC2Demo.Presentation
                     case StartupCommanderScriptActionKind.OpenDebrief:
                         RunStartupOpenDebrief();
                         break;
+                    case StartupCommanderScriptActionKind.OpenMechLab:
+                        RunStartupOpenMechLab();
+                        break;
                     case StartupCommanderScriptActionKind.MainServerSmoke:
                         RunStartupMainServerSmoke();
                         break;
@@ -1573,6 +1578,9 @@ namespace MC2Demo.Presentation
                         break;
                     case StartupCommanderScriptActionKind.InventoryMechBayPreviewSmoke:
                         RunStartupInventoryMechBayPreviewSmoke();
+                        break;
+                    case StartupCommanderScriptActionKind.PostReceiptDuplicateSmoke:
+                        RunStartupPostReceiptDuplicateSmoke();
                         break;
                     case StartupCommanderScriptActionKind.SavedAccountReport:
                         RunStartupSavedAccountReport();
@@ -1627,6 +1635,9 @@ namespace MC2Demo.Presentation
                         break;
                     case StartupCommanderScriptActionKind.AssertInventoryMechBayPreviewSmoke:
                         RunStartupInventoryMechBayPreviewSmokeAssertion();
+                        break;
+                    case StartupCommanderScriptActionKind.AssertPostReceiptRefreshSmoke:
+                        RunStartupPostReceiptRefreshSmokeAssertion();
                         break;
                     case StartupCommanderScriptActionKind.AssertCommandResult:
                         RunStartupCommandResultAssertion(action.ExpectedCommandBlocked, action.ExpectedCommandAcceptedCount);
@@ -3179,6 +3190,45 @@ namespace MC2Demo.Presentation
             Debug.LogError("MC2 debrief open failed: " + summary);
         }
 
+        private void RunStartupOpenMechLab()
+        {
+            if (mission == null)
+            {
+                startupSmokeFailed = true;
+                statusText = "Mech Lab open failed";
+                AddCombatLogLine("CLI Mech Lab open failed: no mission");
+                Debug.LogError("MC2 Mech Lab open failed: no mission");
+                return;
+            }
+
+            OpenLoadoutPanel();
+            bool sourceOk = string.Equals(InventorySourceLine(), MechLabInventorySourceRewardText, StringComparison.Ordinal)
+                || string.Equals(InventorySourceLine(), MechLabInventorySourcePreviewText, StringComparison.Ordinal)
+                || string.Equals(InventorySourceLine(), MechLabInventorySourceLocalText, StringComparison.Ordinal);
+            bool openOk = showLoadoutPanel
+                && demoFlowScreen == DemoFlowScreen.MechBay
+                && demoInventoryValidation?.IsValid == true
+                && sourceOk;
+            string summary = "flow="
+                + DemoFlowScreenName(demoFlowScreen)
+                + " source="
+                + InventorySourceLine()
+                + " validation="
+                + (demoInventoryValidation?.IsValid == true);
+
+            if (openOk)
+            {
+                AddCombatLogLine("CLI Mech Lab open OK: " + summary);
+                Debug.Log("MC2 Mech Lab open OK: " + summary);
+                return;
+            }
+
+            startupSmokeFailed = true;
+            statusText = "Mech Lab open failed";
+            AddCombatLogLine("CLI Mech Lab open failed: " + summary);
+            Debug.LogError("MC2 Mech Lab open failed: " + summary);
+        }
+
         private void RunStartupDebriefSummaryAssertion()
         {
             DebriefSummaryAssertionResult result = BuildDebriefSummaryAssertion();
@@ -3350,6 +3400,78 @@ namespace MC2Demo.Presentation
             statusText = "Inventory-to-MechBay preview failed";
             AddCombatLogLine("CLI inventory-to-MechBay preview assert failed: " + summary);
             Debug.LogError("MC2 inventory-to-MechBay preview assertion failed: " + summary);
+        }
+
+        private void RunStartupPostReceiptDuplicateSmoke()
+        {
+            if (mainServerSmokeRewardClaim?.IsApproved != true || !postReceiptInventoryRefreshApplied)
+            {
+                startupSmokeFailed = true;
+                statusText = "Post-receipt duplicate unavailable";
+                string missing = "approvedClaim="
+                    + (mainServerSmokeRewardClaim?.IsApproved == true)
+                    + " firstApply="
+                    + postReceiptInventoryRefreshApplied;
+                AddCombatLogLine("CLI post-receipt duplicate smoke failed: " + missing);
+                Debug.LogError("MC2 post-receipt duplicate smoke failed: " + missing);
+                return;
+            }
+
+            int beforeBalance = Math.Max(0, demoInventory?.tokenBalance ?? 0);
+            TryApplyPostReceiptInventoryRefresh("duplicate-command-file", mainServerSmokeRewardClaim);
+            int afterBalance = Math.Max(0, demoInventory?.tokenBalance ?? 0);
+            bool duplicateOk = postReceiptInventoryRefresh?.Accepted == true
+                && postReceiptInventoryRefresh.DuplicateLedgerAlreadyApplied
+                && !postReceiptInventoryRefresh.CanApplyInventory;
+            bool noDoubleApplyOk = beforeBalance == afterBalance;
+            bool validationOk = demoInventoryValidation?.IsValid == true;
+            string summary = "DuplicateClaimNoDoubleApplyLocalRefresh: "
+                + (duplicateOk && noDoubleApplyOk)
+                + " beforeBalance="
+                + beforeBalance.ToString(CultureInfo.InvariantCulture)
+                + " afterBalance="
+                + afterBalance.ToString(CultureInfo.InvariantCulture)
+                + " validation="
+                + validationOk
+                + " "
+                + postReceiptInventoryRefreshSummary;
+
+            if (duplicateOk && noDoubleApplyOk && validationOk)
+            {
+                AddCombatLogLine("CLI post-receipt duplicate no-double-apply OK");
+                Debug.Log("MC2 post-receipt duplicate no-double-apply OK: " + summary);
+                return;
+            }
+
+            startupSmokeFailed = true;
+            statusText = "Post-receipt duplicate failed";
+            AddCombatLogLine("CLI post-receipt duplicate no-double-apply failed: " + summary);
+            Debug.LogError("MC2 post-receipt duplicate no-double-apply failed: " + summary);
+        }
+
+        private void RunStartupPostReceiptRefreshSmokeAssertion()
+        {
+            bool refreshOk = postReceiptInventoryRefreshAttempted
+                && postReceiptInventoryRefresh?.Accepted == true
+                && (postReceiptInventoryRefreshApplied || postReceiptInventoryRefreshDuplicateAlreadyApplied);
+            bool sourceOk = string.Equals(InventorySourceLine(), MechLabInventorySourceRewardText, StringComparison.Ordinal);
+            bool validationOk = demoInventoryValidation?.IsValid == true;
+            bool noFrameCallsOk = UnityMainServerClient.NoPerFrameServerCalls;
+            string summary = BuildCapturePostReceiptInventoryRefreshSummary()
+                + " "
+                + BuildCaptureDebriefRewardSummary();
+
+            if (refreshOk && sourceOk && validationOk && noFrameCallsOk)
+            {
+                AddCombatLogLine("CLI post-receipt refresh assert OK");
+                Debug.Log("MC2 post-receipt refresh evidence assertion OK: " + summary);
+                return;
+            }
+
+            startupSmokeFailed = true;
+            statusText = "Post-receipt refresh evidence failed";
+            AddCombatLogLine("CLI post-receipt refresh assert failed: " + summary);
+            Debug.LogError("MC2 post-receipt refresh evidence assertion failed: " + summary);
         }
 
         private void TrySubmitMainServerSmokeRewardClaimAfterDebrief()
@@ -6831,6 +6953,8 @@ namespace MC2Demo.Presentation
                 damageStory = damageStorySummary,
                 damageReadability = BuildCaptureDamageReadabilitySummary(),
                 battleHud = battleHudSummary,
+                debriefReward = BuildCaptureDebriefRewardSummary(),
+                postReceiptInventoryRefresh = BuildCapturePostReceiptInventoryRefreshSummary(),
                 mobileTouch = BuildCaptureMobileTouchSummary(),
                 camera = BuildCaptureCameraState(),
                 referenceAssets = new VisualCaptureReferenceState
@@ -7641,6 +7765,46 @@ namespace MC2Demo.Presentation
                 + " ServerInventoryNotCombatAuthority: True NoPerFrameServerCalls: "
                 + UnityMainServerClient.NoPerFrameServerCalls
                 + " MobileLandscapeOnly: True InventorySource=LocalFixture";
+        }
+
+        private string BuildCaptureDebriefRewardSummary()
+        {
+            string fundsLine = mission?.ResultSummary == null ? "" : MissionResultFundsLine(mission.ResultSummary);
+            string serverRewardLine = PostReceiptDebriefLine(postReceiptInventoryRefresh);
+            bool rewardVisible = !string.IsNullOrWhiteSpace(serverRewardLine);
+            return "DebriefReward="
+                + (rewardVisible ? "ready" : "none")
+                + " flow="
+                + DemoFlowScreenName(demoFlowScreen)
+                + " fundsLine="
+                + fundsLine
+                + " serverRewardLine="
+                + serverRewardLine
+                + " ServerRewardTextVisible: "
+                + rewardVisible
+                + " MainServerRewardText: "
+                + (serverRewardLine.StartsWith("Server Reward +", StringComparison.Ordinal))
+                + " DuplicateRewardText: "
+                + serverRewardLine.StartsWith(UnityPostReceiptInventoryRefreshResult.MessageServerRewardAlreadyApplied, StringComparison.Ordinal)
+                + " MobileLandscapeOnly: True";
+        }
+
+        private string BuildCapturePostReceiptInventoryRefreshSummary()
+        {
+            if (!string.IsNullOrWhiteSpace(postReceiptInventoryRefreshSummary))
+            {
+                return postReceiptInventoryRefreshSummary
+                    + " InventorySourceLine="
+                    + InventorySourceLine()
+                    + " DebriefRewardLine="
+                    + PostReceiptDebriefLine(postReceiptInventoryRefresh);
+            }
+
+            return "PostReceiptInventoryRefresh=not-attempted MainServerRewardApplied: False"
+                + " DuplicateClaimNoDoubleApplyLocalRefresh: False ServerInventoryNotCombatAuthority: True NoPerFrameServerCalls: "
+                + UnityMainServerClient.NoPerFrameServerCalls
+                + " MobileLandscapeOnly: True InventorySourceLine="
+                + InventorySourceLine();
         }
 
         private string BuildCaptureMobileTouchSummary()

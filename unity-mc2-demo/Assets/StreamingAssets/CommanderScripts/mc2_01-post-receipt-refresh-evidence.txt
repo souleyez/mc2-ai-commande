@@ -1,0 +1,17 @@
+# Proves the opt-in post-receipt inventory refresh evidence path, including duplicate no-double-apply.
+main-server-smoke
+prepare-local-candidate
+squad-swap
+hide-squad-preview
+mech-bay-launch
+assert-restart-identity depot
+complete-visible-objectives
+open-debrief
+assert-debrief-visible
+assert-debrief-summary
+assert-main-server-smoke
+post-receipt-duplicate-smoke
+assert-post-receipt-refresh-smoke
+open-mech-lab
+assert-loadout-compact
+report

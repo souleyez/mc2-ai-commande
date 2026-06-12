@@ -12,6 +12,8 @@ param(
     [string]$SummaryPath = "",
     [string]$CommandFilePath = "",
     [string]$DeviceCommandFilePath = "",
+    [string[]]$LogcatFilters = @("Unity:I", "AndroidRuntime:E", "DEBUG:I", "ActivityManager:I", "*:S"),
+    [int]$LogcatTailLines = 0,
     [int]$LaunchWaitSeconds = 12,
     [switch]$NoInstall,
     [switch]$NoLaunch,
@@ -304,9 +306,15 @@ function Invoke-BinaryCommandToFile {
     $fileStream = [System.IO.File]::Open($OutputPath, [System.IO.FileMode]::Create, [System.IO.FileAccess]::Write)
     try {
         [void]$process.Start()
-        $process.StandardOutput.BaseStream.CopyTo($fileStream)
-        $stderr = $process.StandardError.ReadToEnd()
-        $process.WaitForExit()
+        $stderrTask = $process.StandardError.ReadToEndAsync()
+        $copyTask = $process.StandardOutput.BaseStream.CopyToAsync($fileStream)
+        if (-not $process.WaitForExit(60000)) {
+            $process.Kill()
+            throw "Binary command timed out after 60 second(s): $FilePath $(Join-ProcessArguments -Arguments $Arguments)"
+        }
+
+        $copyTask.Wait()
+        $stderr = $stderrTask.Result
         $exitCode = $process.ExitCode
     }
     finally {
@@ -532,7 +540,23 @@ if (-not $NoLaunch) {
     Start-Sleep -Seconds $LaunchWaitSeconds
 }
 
-& $AdbPath @adbArgs logcat -d > $LogPath
+$logcatArgs = $adbArgs + @("logcat", "-d", "-v", "time")
+if ($LogcatTailLines -gt 0) {
+    $logcatArgs += @("-t", $LogcatTailLines.ToString([System.Globalization.CultureInfo]::InvariantCulture))
+}
+
+foreach ($filter in $LogcatFilters) {
+    if (-not [string]::IsNullOrWhiteSpace($filter)) {
+        $logcatArgs += $filter
+    }
+}
+
+$logcatOutput = & $AdbPath @logcatArgs 2>&1
+if ($LASTEXITCODE -ne 0) {
+    throw "adb logcat capture failed with exit code $LASTEXITCODE"
+}
+
+$logcatOutput | ForEach-Object { $_.ToString() } | Set-Content -LiteralPath $LogPath -Encoding UTF8
 
 $smokeTestPassed = $false
 if ($commandFileSmoke -and -not $NoLaunch) {

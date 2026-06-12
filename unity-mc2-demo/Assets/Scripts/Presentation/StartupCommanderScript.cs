@@ -199,6 +199,18 @@ namespace MC2Demo.Presentation
                 return true;
             }
 
+            if (string.Equals(verb, "open-mech-lab", StringComparison.OrdinalIgnoreCase))
+            {
+                if (!string.IsNullOrWhiteSpace(payload))
+                {
+                    error = "Open Mech Lab action does not accept arguments.";
+                    return false;
+                }
+
+                action = StartupCommanderScriptAction.OpenMechLab(lineNumber, rawLine);
+                return true;
+            }
+
             if (string.Equals(verb, "main-server-smoke", StringComparison.OrdinalIgnoreCase))
             {
                 if (!string.IsNullOrWhiteSpace(payload))
@@ -232,6 +244,18 @@ namespace MC2Demo.Presentation
                 }
 
                 action = StartupCommanderScriptAction.InventoryMechBayPreviewSmoke(lineNumber, rawLine);
+                return true;
+            }
+
+            if (string.Equals(verb, "post-receipt-duplicate-smoke", StringComparison.OrdinalIgnoreCase))
+            {
+                if (!string.IsNullOrWhiteSpace(payload))
+                {
+                    error = "Post-receipt duplicate smoke action does not accept arguments.";
+                    return false;
+                }
+
+                action = StartupCommanderScriptAction.PostReceiptDuplicateSmoke(lineNumber, rawLine);
                 return true;
             }
 
@@ -457,6 +481,18 @@ namespace MC2Demo.Presentation
                 return true;
             }
 
+            if (string.Equals(verb, "assert-post-receipt-refresh-smoke", StringComparison.OrdinalIgnoreCase))
+            {
+                if (!string.IsNullOrWhiteSpace(payload))
+                {
+                    error = "Assert post-receipt refresh smoke action does not accept arguments.";
+                    return false;
+                }
+
+                action = StartupCommanderScriptAction.AssertPostReceiptRefreshSmoke(lineNumber, rawLine);
+                return true;
+            }
+
             if (string.Equals(verb, "assert-command-result", StringComparison.OrdinalIgnoreCase))
             {
                 bool hasExpectation = false;
@@ -669,7 +705,7 @@ namespace MC2Demo.Presentation
                 return true;
             }
 
-            error = "Command file action must be command, status-row, battle-click, battle-target, advance, report, restart, mech-bay-launch, hide-squad-preview, complete-visible-objectives, open-debrief, main-server-smoke, inventory-bootstrap-smoke, inventory-mechbay-preview-smoke, saved-account-report, saved-account-save-load-preview, saved-account-export, saved-account-import-preview, saved-account-import-apply-preview, saved-account-import-apply, saved-account-load-default-preview, saved-account-save-current-default, saved-account-load-default-apply, prepare-depot-candidate, prepare-local-candidate, squad-swap, assert-restart-identity, assert-debrief-summary, assert-debrief-visible, assert-main-server-smoke, assert-inventory-bootstrap-smoke, assert-inventory-mechbay-preview-smoke, assert-command-result, assert-combat-situation, assert-encounter-pacing, assert-objective-graph, assert-loadout-compact, or assert-ai-deputy-window.";
+            error = "Command file action must be command, status-row, battle-click, battle-target, advance, report, restart, mech-bay-launch, hide-squad-preview, complete-visible-objectives, open-debrief, open-mech-lab, main-server-smoke, inventory-bootstrap-smoke, inventory-mechbay-preview-smoke, post-receipt-duplicate-smoke, saved-account-report, saved-account-save-load-preview, saved-account-export, saved-account-import-preview, saved-account-import-apply-preview, saved-account-import-apply, saved-account-load-default-preview, saved-account-save-current-default, saved-account-load-default-apply, prepare-depot-candidate, prepare-local-candidate, squad-swap, assert-restart-identity, assert-debrief-summary, assert-debrief-visible, assert-main-server-smoke, assert-inventory-bootstrap-smoke, assert-inventory-mechbay-preview-smoke, assert-post-receipt-refresh-smoke, assert-command-result, assert-combat-situation, assert-encounter-pacing, assert-objective-graph, assert-loadout-compact, or assert-ai-deputy-window.";
             return false;
         }
     }
@@ -829,6 +865,16 @@ namespace MC2Demo.Presentation
             };
         }
 
+        public static StartupCommanderScriptAction OpenMechLab(int lineNumber, string sourceLine)
+        {
+            return new StartupCommanderScriptAction
+            {
+                Kind = StartupCommanderScriptActionKind.OpenMechLab,
+                LineNumber = lineNumber,
+                SourceLine = sourceLine ?? string.Empty
+            };
+        }
+
         public static StartupCommanderScriptAction MainServerSmoke(int lineNumber, string sourceLine)
         {
             return new StartupCommanderScriptAction
@@ -854,6 +900,16 @@ namespace MC2Demo.Presentation
             return new StartupCommanderScriptAction
             {
                 Kind = StartupCommanderScriptActionKind.InventoryMechBayPreviewSmoke,
+                LineNumber = lineNumber,
+                SourceLine = sourceLine ?? string.Empty
+            };
+        }
+
+        public static StartupCommanderScriptAction PostReceiptDuplicateSmoke(int lineNumber, string sourceLine)
+        {
+            return new StartupCommanderScriptAction
+            {
+                Kind = StartupCommanderScriptActionKind.PostReceiptDuplicateSmoke,
                 LineNumber = lineNumber,
                 SourceLine = sourceLine ?? string.Empty
             };
@@ -1047,6 +1103,16 @@ namespace MC2Demo.Presentation
             };
         }
 
+        public static StartupCommanderScriptAction AssertPostReceiptRefreshSmoke(int lineNumber, string sourceLine)
+        {
+            return new StartupCommanderScriptAction
+            {
+                Kind = StartupCommanderScriptActionKind.AssertPostReceiptRefreshSmoke,
+                LineNumber = lineNumber,
+                SourceLine = sourceLine ?? string.Empty
+            };
+        }
+
         public static StartupCommanderScriptAction AssertCommandResult(
             int lineNumber,
             string sourceLine,
@@ -1144,9 +1210,11 @@ namespace MC2Demo.Presentation
         HideSquadPreview,
         CompleteVisibleObjectives,
         OpenDebrief,
+        OpenMechLab,
         MainServerSmoke,
         InventoryBootstrapSmoke,
         InventoryMechBayPreviewSmoke,
+        PostReceiptDuplicateSmoke,
         SavedAccountReport,
         SavedAccountSaveLoadPreview,
         SavedAccountExport,
@@ -1165,6 +1233,7 @@ namespace MC2Demo.Presentation
         AssertMainServerSmoke,
         AssertInventoryBootstrapSmoke,
         AssertInventoryMechBayPreviewSmoke,
+        AssertPostReceiptRefreshSmoke,
         AssertCommandResult,
         AssertCombatSituation,
         AssertEncounterPacing,

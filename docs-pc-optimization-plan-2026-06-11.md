@@ -14,7 +14,7 @@
 
 Mobile support remains the product priority. `G3 Android Device Smoke` has now passed on a physical Mi 11 Lite with USB debugging authorized, and this PC optimization plan is retained as the wait-state evidence package that kept the Windows demo moving while the phone blocker existed.
 
-The current PC/mobile wait-state optimization pass is now sealed through PC1-PC57. `Pass Android G3 device smoke`, landscape `G4 Touch UI pass`, `G5 Mobile performance budget`, `G6 iOS feasibility gate`, `F2 map authoring contract`, `F3 web ranking contract`, `F4 creator economy boundary`, `F5 server implementation boundary`, `F6 local main-server prototype`, `F7 document Unity main-server integration contract`, `F8 implement optional Unity main-server client adapter`, `F9 wire optional Unity main-server adapter into launch/debrief smoke`, `F10 wire optional Unity inventory bootstrap smoke`, and `F11 plan inventory-to-MechBay binding boundary` are recorded; `F12 implement opt-in inventory-to-MechBay preview binding` is complete; `F13 capture opt-in MechBay preview evidence` is complete; `F15 plan server-backed receipt slice` is complete; the `F16 implement server-backed receipt evidence gate` is complete; `F17 plan post-receipt inventory refresh boundary` is complete; `F18 implement opt-in post-receipt inventory refresh binding` is complete; the formal next task is `F19 capture opt-in post-receipt refresh evidence`.
+The current PC/mobile wait-state optimization pass is now sealed through PC1-PC57. `Pass Android G3 device smoke`, landscape `G4 Touch UI pass`, `G5 Mobile performance budget`, `G6 iOS feasibility gate`, `F2 map authoring contract`, `F3 web ranking contract`, `F4 creator economy boundary`, `F5 server implementation boundary`, `F6 local main-server prototype`, `F7 document Unity main-server integration contract`, `F8 implement optional Unity main-server client adapter`, `F9 wire optional Unity main-server adapter into launch/debrief smoke`, `F10 wire optional Unity inventory bootstrap smoke`, and `F11 plan inventory-to-MechBay binding boundary` are recorded; `F12 implement opt-in inventory-to-MechBay preview binding` is complete; `F13 capture opt-in MechBay preview evidence` is complete; `F15 plan server-backed receipt slice` is complete; the `F16 implement server-backed receipt evidence gate` is complete; `F17 plan post-receipt inventory refresh boundary` is complete; `F18 implement opt-in post-receipt inventory refresh binding` is complete; `F19 capture opt-in post-receipt refresh evidence` is complete; `F20 refresh Android landscape build/smoke evidence` is complete; the formal next task is `F21 audit landscape touch UI ergonomics`.
 
 ## Definition Of Done
 
@@ -67,7 +67,7 @@ The current PC optimization pass is complete when:
 - PC launch log hygiene can be checked without launching Unity through `check_pc_launch_log_hygiene.ps1`, proving the controlled launcher writes `analysis-output/windows-demo-run.log` and that local launch logs stay ignored and absent from tracked/staged paths.
 - PC build artifact hygiene can be checked without launching Unity through `check_pc_build_artifact_hygiene.ps1`, proving Windows player output stays under `unity-mc2-demo/Builds/Windows/`, is ignored, and is absent from tracked/staged paths.
 - PC smoke artifact hygiene can be checked without launching Unity through `check_pc_smoke_artifact_hygiene.ps1`, proving PC smoke, validator, build and saved-account evidence outputs stay under ignored `analysis-output/` paths and out of tracked/staged paths.
-- Current plan queue consistency can be checked without launching Unity through `check_current_plan_queue.ps1`, proving README, BUILD-WIN, master/detailed/PC/mobile/evidence/handoff docs and helper scripts agree on the latest PC/mobile/platform checkpoint, `F13 capture opt-in MechBay preview evidence` as complete, and `F14 capture landscape-phone MechLab source-line evidence` as complete, with `F15 plan server-backed receipt slice` complete, `F16 implement server-backed receipt evidence gate` complete, `F17 plan post-receipt inventory refresh boundary` complete, `F18 implement opt-in post-receipt inventory refresh binding` complete, and `F19 capture opt-in post-receipt refresh evidence` as the formal next task.
+- Current plan queue consistency can be checked without launching Unity through `check_current_plan_queue.ps1`, proving README, BUILD-WIN, master/detailed/PC/mobile/evidence/handoff docs and helper scripts agree on the latest PC/mobile/platform checkpoint, `F13 capture opt-in MechBay preview evidence` as complete, and `F14 capture landscape-phone MechLab source-line evidence` as complete, with `F15 plan server-backed receipt slice` complete, `F16 implement server-backed receipt evidence gate` complete, `F17 plan post-receipt inventory refresh boundary` complete, `F18 implement opt-in post-receipt inventory refresh binding` complete, `F19 capture opt-in post-receipt refresh evidence` complete, `F20 refresh Android landscape build/smoke evidence` complete, and `F21 audit landscape touch UI ergonomics` as the formal next task.
 - Android device connection can be checked without launching Unity through `check_android_device_connection.ps1`, proving `adb devices -l` is readable and reports no-device, unauthorized, offline, multi-device or ready states before G3 tries to install or launch the APK.
 - Android WPD-only device diagnosis can be checked without launching Unity through `check_android_device_connection.ps1`, proving `WpdOnlyAndroidProbe: True` is emitted and a Windows-only WPD/MTP phone remains a G3 waiting state until adb shows one authorized `device` row.
 - Android ADB setup guidance can be checked without launching Unity through `check_android_device_connection.ps1`, proving `AdbSetupHint: True` is emitted with current Windows driver/provider/inf/service when the connected phone is still MTP-only.
@@ -279,7 +279,8 @@ docs-reference-visual-audit-2026-06-07.md records the PC1 baseline and selects P
 
 | ID | Requirement | Pass Standard |
 | --- | --- | --- |
-| PC2-R1 | Terrain and water are distinct | `spawn`, `airfield` and `north-patrol` do not read as one broad blue field with yellow-green noise |
+| PC2-R1 | Terrain and water are distinct | `spawn`, `airfield` and
+orth-patrol` do not read as one broad blue field with yellow-green noise |
 | PC2-R2 | Units have readable silhouettes | player squad and first enemies are distinguishable at default camera |
 | PC2-R3 | Contact is not a visual pile | `hangar-contact` sidecar still reports no true overlaps |
 | PC2-R4 | Damage story remains visible | `damage-demo` still shows section damage/ejection/wreck cues |
@@ -1069,7 +1070,8 @@ git status --short --branch --untracked-files=all
   - `com.DefaultCompany.unitymc2demo.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`
 - Fail if any required hardware feature appears.
 - Require `android.hardware.touchscreen` and `android.hardware.vulkan.version` to remain not-required features.
-- Require screen support for `small`, `normal`, `large`, and `xlarge`.
+- Require screen support for `small`,
+ormal`, `large`, and `xlarge`.
 - Wire manifest checking into `check_android_device_preflight.ps1`, `android_device_smoke.ps1`, and `check_current_plan_gate.ps1`.
 - Update handoff, mobile and evidence docs to keep the then-current PC/mobile wait-state status aligned with the manifest checkpoint.
 
@@ -1499,7 +1501,8 @@ git status --short --branch --untracked-files=all
 **Scope:**
 
 - Add `scripts/unity/check_pc_visual_capture_sanity.ps1`.
-- Read `mechlab`, `spawn`, `airfield`, `hangar-contact`, `damage-demo` and `north-patrol` PNGs from `analysis-output\reference-visual-captures`.
+- Read `mechlab`, `spawn`, `airfield`, `hangar-contact`, `damage-demo` and
+orth-patrol` PNGs from `analysis-output\reference-visual-captures`.
 - Check resolution, PNG size, sampled unique colors, center unique colors, center lit ratio, luminance standard deviation, magenta fallback ratio and near-monochrome ratio.
 - Wire visual capture sanity checking into `check_current_plan_gate.ps1`.
 - Update handoff, mobile and evidence docs to keep the then-current PC/mobile wait-state status sealed through the PC38 checkpoint.
@@ -1564,7 +1567,8 @@ git status --short --branch --untracked-files=all
 **Scope:**
 
 - Add `scripts/unity/check_pc_capture_sidecar_schema.ps1`.
-- Read `mechlab`, `spawn`, `airfield`, `hangar-contact`, `damage-demo` and `north-patrol` sidecars under `analysis-output\reference-visual-captures`.
+- Read `mechlab`, `spawn`, `airfield`, `hangar-contact`, `damage-demo` and
+orth-patrol` sidecars under `analysis-output\reference-visual-captures`.
 - Check matching screenshot paths, `1280x720` dimensions, flow state, mission/status fields, nonnegative counters, objective presence, camera vectors, summary fields and reference-asset metadata.
 - Wire the checker into `check_current_plan_gate.ps1`.
 - Update handoff, mobile and evidence docs to keep the then-current PC/mobile wait-state status sealed.
@@ -2127,4 +2131,4 @@ Stop and reassess before committing if:
 
 ## F12 Preview Binding Checkpoint
 
-`F12 implement opt-in inventory-to-MechBay preview binding` is complete. `F13 capture opt-in MechBay preview evidence` is complete. `F14 capture landscape-phone MechLab source-line evidence` is complete. The opt-in gate is `scripts/unity/check_optional_inventory_mechbay_preview_binding.ps1`, with expected success string `Optional inventory-to-MechBay preview binding check OK`; the preview evidence gate is `scripts/unity/capture_inventory_mechbay_preview_evidence.ps1`, with expected success string `Inventory MechBay preview evidence capture OK`; the landscape-phone evidence gate is `scripts/unity/capture_landscape_phone_mechlab_source_line_evidence.ps1`, with expected success string `Landscape-phone MechLab source-line evidence capture OK`. `F15 plan server-backed receipt slice` is complete. Evidence gate: `scripts/unity/check_server_backed_receipt_slice_plan.ps1` -> `Server-backed receipt slice plan check OK`. `F16 implement server-backed receipt evidence gate` is complete. Evidence gate: `scripts/unity/capture_server_backed_receipt_evidence.ps1` -> `Server-backed receipt evidence capture OK`. `F17 plan post-receipt inventory refresh boundary` is complete. Evidence gate: `scripts/unity/check_post_receipt_inventory_refresh_boundary.ps1` -> `Post-receipt inventory refresh boundary check OK`. `F18 implement opt-in post-receipt inventory refresh binding` is complete. Evidence gate: `scripts/unity/check_post_receipt_inventory_refresh_binding.ps1` -> `Post-receipt inventory refresh binding check OK`. Formal next task: `F19 capture opt-in post-receipt refresh evidence`. Mobile phones remain first-version landscape-only; portrait is not a first-slice support target.
+`F12 implement opt-in inventory-to-MechBay preview binding` is complete. `F13 capture opt-in MechBay preview evidence` is complete. `F14 capture landscape-phone MechLab source-line evidence` is complete. The opt-in gate is `scripts/unity/check_optional_inventory_mechbay_preview_binding.ps1`, with expected success string `Optional inventory-to-MechBay preview binding check OK`; the preview evidence gate is `scripts/unity/capture_inventory_mechbay_preview_evidence.ps1`, with expected success string `Inventory MechBay preview evidence capture OK`; the landscape-phone evidence gate is `scripts/unity/capture_landscape_phone_mechlab_source_line_evidence.ps1`, with expected success string `Landscape-phone MechLab source-line evidence capture OK`. `F15 plan server-backed receipt slice` is complete. Evidence gate: `scripts/unity/check_server_backed_receipt_slice_plan.ps1` -> `Server-backed receipt slice plan check OK`. `F16 implement server-backed receipt evidence gate` is complete. Evidence gate: `scripts/unity/capture_server_backed_receipt_evidence.ps1` -> `Server-backed receipt evidence capture OK`. `F17 plan post-receipt inventory refresh boundary` is complete. Evidence gate: `scripts/unity/check_post_receipt_inventory_refresh_boundary.ps1` -> `Post-receipt inventory refresh boundary check OK`. `F18 implement opt-in post-receipt inventory refresh binding` is complete. Evidence gate: `scripts/unity/check_post_receipt_inventory_refresh_binding.ps1` -> `Post-receipt inventory refresh binding check OK`. `F19 capture opt-in post-receipt refresh evidence` is complete. Evidence gate: `scripts/unity/capture_post_receipt_refresh_evidence.ps1` -> `Post-receipt refresh evidence capture OK`. `F20 refresh Android landscape build/smoke evidence` is complete. Formal next task: `F21 audit landscape touch UI ergonomics`. Mobile phones remain first-version landscape-only; portrait is not a first-slice support target.

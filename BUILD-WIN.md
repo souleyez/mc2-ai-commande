@@ -297,7 +297,7 @@ that `F11 plan inventory-to-MechBay binding boundary` is recorded, and that
 `F12 implement opt-in inventory-to-MechBay preview binding`,
 `F13 capture opt-in MechBay preview evidence`, and
 `F14 capture landscape-phone MechLab source-line evidence` are recorded. The
-`F16 implement server-backed receipt evidence gate` is complete; `F17 plan post-receipt inventory refresh boundary` is complete; `F18 implement opt-in post-receipt inventory refresh binding` is complete; the formal next task is `F19 capture opt-in post-receipt refresh evidence`.
+`F16 implement server-backed receipt evidence gate` is complete; `F17 plan post-receipt inventory refresh boundary` is complete; `F18 implement opt-in post-receipt inventory refresh binding` is complete; `F19 capture opt-in post-receipt refresh evidence` is complete; `F20 refresh Android landscape build/smoke evidence` is complete; the formal next task is `F21 audit landscape touch UI ergonomics`.
 
 Expected success string: `Current plan queue consistency check OK`.
 
@@ -752,7 +752,7 @@ If you select to do it then skip directly to **Compiling mc2**
 zlib
 ----
 
-1. Download zlib sources from here: 
+1. Download zlib sources from here:
 https://gnuwin32.sourceforge.net/packages/zlib.htm
 direct link: https://gnuwin32.sourceforge.net/downlinks/zlib-src-zip.php
 2. Download unistd.h for windows here:
@@ -761,7 +761,8 @@ https://gist.githubusercontent.com/mbikovitsky/39224cf521bfea7eabe9/raw/69e4852c
 3. put it where zlib sourse files are located then open zconf.h and change `#include <unistd.h>` for `#include "unistd.h"` (or see 4.)
 4. (alternative to 3) Put unistd.h to place where your compiler system headers are.
 5. Open x86 Native Tools command prompt for VS2022 and cd to zlib
-6. `nmake -f win32\Makefile.msc`
+6.
+make -f win32\Makefile.msc`
 7. copy resulting .dll & .lib files to your 3rdparty folder: e.g. 3rdparty\lib\x86\
 8. delete compilation files because we will now do same steps starting from step 5 but in x64 Native Tools (copy them to 3rdparty\lib\x64
 9. Copy that unistd.h file to 3rdparty include folder
@@ -771,7 +772,7 @@ SDL
 
 1. Download SLD x864 & x64 here: https://github.com/libsdl-org/SDL/releases/tag/release-2.30.11
 direct link: https://github.com/libsdl-org/SDL/releases/download/release-2.30.11/SDL2-devel-2.30.11-VC.zip
-2. copy libraries to corresponding x86 and x64 folders 
+2. copy libraries to corresponding x86 and x64 folders
 3. copy headers to 3rdparty\include\SDL2 folder
 4. copy files from cmake folder to 3rdparty\cmake
 
@@ -794,7 +795,7 @@ From sources:
 3. build for x64 and Win32
 
 Binaries:
-2. Or download prebuilt lib/dlls from this page: https://glew.sourceforge.net/ 
+2. Or download prebuilt lib/dlls from this page: https://glew.sourceforge.net/
 3. Put lib/dll/headers accordingly to x86/x64 (headers go into 3rdparty\include\GL)
 
 
@@ -829,14 +830,14 @@ cd mc2srcdata
 1. Read `README.md` in `build_scripts` folder
 
 If you did not here are the steps:
-1. copy the following tools from the exe solution to `build_scripts` folder 
+1. copy the following tools from the exe solution to `build_scripts` folder
 (better copy Release version of these to make things faster):
     `aseconv`
     `makefst`
     `makersp`
     `pak`
     `text_tool`
-    
+
     1a. Copy glew32.dll there as well (x86 or x64 depending on what version of tools you've built)
 
 2. launch some console which has `make` in its path (needs GNUMake)
@@ -857,4 +858,4 @@ Run the game!
 
 ## F12 Preview Binding Checkpoint
 
-`F12 implement opt-in inventory-to-MechBay preview binding` is complete. `F13 capture opt-in MechBay preview evidence` is complete. `F14 capture landscape-phone MechLab source-line evidence` is complete. The opt-in gate is `scripts/unity/check_optional_inventory_mechbay_preview_binding.ps1`, with expected success string `Optional inventory-to-MechBay preview binding check OK`; the preview evidence gate is `scripts/unity/capture_inventory_mechbay_preview_evidence.ps1`, with expected success string `Inventory MechBay preview evidence capture OK`; the landscape-phone evidence gate is `scripts/unity/capture_landscape_phone_mechlab_source_line_evidence.ps1`, with expected success string `Landscape-phone MechLab source-line evidence capture OK`. `F15 plan server-backed receipt slice` is complete. Evidence gate: `scripts/unity/check_server_backed_receipt_slice_plan.ps1` -> `Server-backed receipt slice plan check OK`. `F16 implement server-backed receipt evidence gate` is complete. Evidence gate: `scripts/unity/capture_server_backed_receipt_evidence.ps1` -> `Server-backed receipt evidence capture OK`. `F17 plan post-receipt inventory refresh boundary` is complete. Evidence gate: `scripts/unity/check_post_receipt_inventory_refresh_boundary.ps1` -> `Post-receipt inventory refresh boundary check OK.` `F18 implement opt-in post-receipt inventory refresh binding` is complete. Evidence gate: `scripts/unity/check_post_receipt_inventory_refresh_binding.ps1` -> `Post-receipt inventory refresh binding check OK.` Formal next task: `F19 capture opt-in post-receipt refresh evidence`. Mobile phones remain first-version landscape-only; portrait is not a first-slice support target.
+`F12 implement opt-in inventory-to-MechBay preview binding` is complete. `F13 capture opt-in MechBay preview evidence` is complete. `F14 capture landscape-phone MechLab source-line evidence` is complete. The opt-in gate is `scripts/unity/check_optional_inventory_mechbay_preview_binding.ps1`, with expected success string `Optional inventory-to-MechBay preview binding check OK`; the preview evidence gate is `scripts/unity/capture_inventory_mechbay_preview_evidence.ps1`, with expected success string `Inventory MechBay preview evidence capture OK`; the landscape-phone evidence gate is `scripts/unity/capture_landscape_phone_mechlab_source_line_evidence.ps1`, with expected success string `Landscape-phone MechLab source-line evidence capture OK`. `F15 plan server-backed receipt slice` is complete. Evidence gate: `scripts/unity/check_server_backed_receipt_slice_plan.ps1` -> `Server-backed receipt slice plan check OK`. `F16 implement server-backed receipt evidence gate` is complete. Evidence gate: `scripts/unity/capture_server_backed_receipt_evidence.ps1` -> `Server-backed receipt evidence capture OK`. `F17 plan post-receipt inventory refresh boundary` is complete. Evidence gate: `scripts/unity/check_post_receipt_inventory_refresh_boundary.ps1` -> `Post-receipt inventory refresh boundary check OK.` `F18 implement opt-in post-receipt inventory refresh binding` is complete. Evidence gate: `scripts/unity/check_post_receipt_inventory_refresh_binding.ps1` -> `Post-receipt inventory refresh binding check OK.` `F19 capture opt-in post-receipt refresh evidence` is complete. Evidence gate: `scripts/unity/capture_post_receipt_refresh_evidence.ps1` -> `Post-receipt refresh evidence capture OK.` `F20 refresh Android landscape build/smoke evidence` is complete. Formal next task: `F21 audit landscape touch UI ergonomics`. Mobile phones remain first-version landscape-only; portrait is not a first-slice support target.
