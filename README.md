@@ -48,8 +48,9 @@ visible-flow command file，并在 logcat 同时看到 debrief 与 loadout compa
 iOS 已明确为 Mac/Xcode/签名交接链路，F2 地图包契约已明确开放地图与
 主服务器认证奖励边界，F3 Web 排行契约已明确公开排行榜、地图页、战绩页
 和隐私边界，F4 创作者经济契约已明确中心化账本优先和可选链上晚期边界，
-F5 服务器实现契约已明确本地主服务器小切片和离线优先边界，正式下一开发
-任务推进到 `F6 scaffold local main-server prototype`。
+F5 服务器实现契约已明确本地主服务器小切片和离线优先边界，F6 已提供
+本地 main-server 原型；正式下一开发任务推进到
+`F7 document Unity main-server integration contract`。
 
 ## 产品愿景
 
@@ -319,8 +320,9 @@ package is sealed through `PC1-PC57`, that `Pass Android G3 device smoke`, the
 landscape `G4 Touch UI pass`, `G5 Mobile performance budget`,
 `G6 iOS feasibility gate`, `F2 map authoring contract`,
 `F3 web ranking contract`, `F4 creator economy boundary`, and
-`F5 server implementation boundary` are recorded, and that
-`F6 scaffold local main-server prototype` is the formal next task.
+`F5 server implementation boundary` and `F6 local main-server prototype` are
+recorded, and that `F7 document Unity main-server integration contract` is the
+formal next task.
 
 Check the mobile landscape contract:
 
@@ -376,6 +378,18 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_server
 ```
 
 Expected success string: `Server implementation boundary check OK`.
+
+Check the local main-server prototype:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\server\check_local_main_server.ps1 -RepoRoot .
+```
+
+This starts the local prototype in-process and proves health/version, fixture
+account/inventory, signed squad loadout, idempotent reward claim, token ledger
+update and basic leaderboard output without touching Unity build artifacts.
+
+Expected success string: `Local main-server prototype check OK`.
 
 Checkpoint marker: `Add Android ADB driver package probe`.
 

@@ -1,0 +1,10 @@
+{
+  "name": "mc2-local-main-server",
+  "version": "0.1.0-local",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node main-server.mjs",
+    "smoke": "node smoke.mjs"
+  }
+}

@@ -69,7 +69,7 @@ Assert-FileContains -RelativePath "unity-mc2-demo\ProjectSettings\ProjectSetting
 )
 
 Assert-FileContains -RelativePath "unity-mc2-demo\Assets\Editor\Mc2DemoBuilder.cs" -Markers @(
-    "ConfigureAndroidLandscapePlayerSettings();",
+    "ConfigureMobileLandscapePlayerSettings();",
     "PlayerSettings.defaultInterfaceOrientation = UIOrientation.LandscapeLeft;",
     "PlayerSettings.allowedAutorotateToPortrait = false;",
     "PlayerSettings.allowedAutorotateToPortraitUpsideDown = false;",

@@ -148,7 +148,8 @@ Require-Text -Text $rewardContract -Needle "expose private account ids, anti-che
 Require-Text -Text $detailedPlan -Needle "| F3 | Done | ``Document web ranking contract`` |" -Label "detailed plan F3 status"
 Require-Text -Text $detailedPlan -Needle "| F4 | Done | ``Document creator economy boundary`` |" -Label "detailed plan F4 status"
 Require-Text -Text $detailedPlan -Needle "| F5 | Done | ``Document server implementation boundary`` |" -Label "detailed plan F5 status"
-Require-Text -Text $detailedPlan -Needle "| F6 | Next | ``Scaffold local main-server prototype`` |" -Label "detailed plan next task"
+Require-Text -Text $detailedPlan -Needle "| F6 | Done | ``Scaffold local main-server prototype`` |" -Label "detailed plan F6 status"
+Require-Text -Text $detailedPlan -Needle "| F7 | Next | ``Document Unity main-server integration contract`` |" -Label "detailed plan next task"
 
 if ($failures.Count -gt 0) {
     Write-Host "Web ranking contract check failed."

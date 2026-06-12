@@ -289,7 +289,8 @@ Completed mobile gates: `Pass Android G3 device smoke`, the landscape
 `F3 web ranking contract` is also complete.
 `F4 creator economy boundary` is also complete.
 `F5 server implementation boundary` is also complete.
-Formal next task: `F6 scaffold local main-server prototype`.
+`F6 local main-server prototype` is also complete.
+Formal next task: `F7 document Unity main-server integration contract`.
 
 Mobile orientation decision: the first phone version is landscape-only.
 Portrait layout is not a supported first-version target; future mobile UI work
@@ -541,7 +542,7 @@ The APK, SDK logs, Unity build folder, Gradle cache, and device logs remain
 ignored local outputs. The real Android device smoke gate, the landscape touch
 UI pass, the first mobile performance budget, the iOS feasibility gate and the
 map authoring contract have passed; the next formal task is
-`F6 scaffold local main-server prototype`.
+`F7 document Unity main-server integration contract`.
 At the time this note was updated, `adb devices -l` returned `b5212798 device`
 for Mi 11 Lite through `winusb.inf`; the package installs and launches through
 the G3 when-ready runner/direct smoke path, the visible-flow command-file smoke
@@ -617,4 +618,17 @@ Expected success string:
 
 ```text
 Server implementation boundary check OK
+```
+
+Local main-server prototype
+---------------------------
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\server\check_local_main_server.ps1 -RepoRoot .
+```
+
+Expected success string:
+
+```text
+Local main-server prototype check OK
 ```

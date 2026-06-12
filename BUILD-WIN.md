@@ -287,9 +287,9 @@ This confirms the current PC/mobile package is sealed through `PC1-PC57`, that
 `Pass Android G3 device smoke`, the landscape `G4 Touch UI pass`,
 `G5 Mobile performance budget`, `G6 iOS feasibility gate`,
 `F2 map authoring contract`, `F3 web ranking contract`, and
-`F4 creator economy boundary` and `F5 server implementation boundary` are
-recorded, and that `F6 scaffold local main-server prototype` is the formal next
-task.
+`F4 creator economy boundary`, `F5 server implementation boundary` and
+`F6 local main-server prototype` are recorded, and that
+`F7 document Unity main-server integration contract` is the formal next task.
 
 Expected success string: `Current plan queue consistency check OK`.
 
@@ -351,6 +351,14 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_server
 ```
 
 Expected success string: `Server implementation boundary check OK`.
+
+Check the local main-server prototype:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\server\check_local_main_server.ps1 -RepoRoot .
+```
+
+Expected success string: `Local main-server prototype check OK`.
 
 Expected waiting-state string without an authorized adb phone: `Android device connection check waiting on device`.
 

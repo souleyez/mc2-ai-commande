@@ -242,6 +242,17 @@ dependency belongs in the first server slice.
 Stable server boundary marker: small local main-server prototype.
 No payment, marketplace, realtime PVP, chain integration, public map server registration or remote Unity dependency belongs in the first server slice.
 
+Local main-server prototype implementation:
+
+- `server/main-server/main-server.mjs`
+- `server/main-server/fixtures/local-dev-fixture.json`
+- `scripts/server/check_local_main_server.ps1`
+
+The prototype proves health/version, deterministic fixture account/inventory,
+signed squad loadout, idempotent reward claim, token ledger mutation and basic
+leaderboard output locally. Unity remains offline-first and does not need this
+server to validate, smoke, build or open MechLab.
+
 Initial modules:
 
 - Auth and account

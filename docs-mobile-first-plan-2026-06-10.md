@@ -47,8 +47,9 @@ Mac/Xcode/signing handoff lane, not as iOS build proof. F3 web ranking contract
 is complete as a public ranking/profile/battle-record boundary. F4 creator
 economy boundary is complete as a centralized-ledger-first and late-chain
 contract. F5 server implementation boundary is complete as a local main-server
-first-slice contract. The next formal task is
-`F6 scaffold local main-server prototype`.
+first-slice contract. F6 local main-server prototype is complete with a local
+smoke gate. The next formal task is
+`F7 document Unity main-server integration contract`.
 G3 Android device-smoke preflight now verifies the APK, Android SDK tooling,
 adb, aapt, apksigner, package name, launchable activity, compatibility metadata,
 signing and manifest install-target metadata, Unity/IL2CPP runtime payload,
@@ -70,8 +71,9 @@ check, Android smoke log crash scan, Android smoke plan mode, landscape APK
 manifest checks, landscape screenshot summary checks, Android performance
 baseline capture, mobile performance budget check and iOS feasibility gate
 check. F2 map authoring contract, F3 web ranking contract, F4 creator economy
-boundary and F5 server implementation boundary are complete. Formal next work
-is `F6 scaffold local main-server prototype`.
+boundary, F5 server implementation boundary and F6 local main-server prototype
+are complete. Formal next work is
+`F7 document Unity main-server integration contract`.
 
 ## Definition Of Done
 
@@ -117,7 +119,7 @@ failing, unless the later work is explicitly diagnostic.
 - **Failure Handling:** 失败时先看什么、停在哪里、哪些输出不能提交。
 - **Commit Scope:** 允许进入提交的文件范围；生成物、日志和私有素材默认不提交。
 
-当前移动执行目标只允许有一个 `In Progress` 或 `Waiting on Device`。如果前置条件失败，先把失败写成明确 blocker 或安装步骤，不跳到后续移动玩法任务。G3 真机 smoke、横屏 G4 Touch UI pass、G5 Mobile Performance Budget、G6 iOS feasibility gate、F2 map authoring contract、F3 web ranking contract、F4 creator economy boundary 和 F5 server implementation boundary 已通过；手机端第一版固定横屏；下一步回到主计划的 `F6 scaffold local main-server prototype`。
+当前移动执行目标只允许有一个 `In Progress` 或 `Waiting on Device`。如果前置条件失败，先把失败写成明确 blocker 或安装步骤，不跳到后续移动玩法任务。G3 真机 smoke、横屏 G4 Touch UI pass、G5 Mobile Performance Budget、G6 iOS feasibility gate、F2 map authoring contract、F3 web ranking contract、F4 creator economy boundary、F5 server implementation boundary 和 F6 local main-server prototype 已通过；手机端第一版固定横屏；下一步回到主计划的 `F7 document Unity main-server integration contract`。
 
 ### Completed Mobile Target: G3 Android Device Smoke
 
@@ -262,7 +264,7 @@ scripts\unity\check_ios_feasibility_gate.ps1 -> iOS feasibility gate check OK.
 Local Windows iOS build -> unsupported; this is documented as a blocker, not a failure.
 Unity playback engines on this machine -> AndroidPlayer and windowsstandalonesupport; iOSSupport absent.
 FirstIOSSmoke -> Build Xcode project -> install on iOS device -> launch visible-flow battle.
-Next formal task -> F6 scaffold local main-server prototype.
+Next formal task -> F7 document Unity main-server integration contract.
 ```
 
 **Current G3 Evidence 2026-06-12:**
@@ -730,7 +732,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_ios_fe
 - F3 Web ranking contract. Complete.
 - F4 creator economy boundary. Complete.
 - F5 server implementation boundary. Complete.
-- F6 scaffold local main-server prototype. This is the next formal task.
+- F6 scaffold local main-server prototype. Complete.
+- F7 document Unity main-server integration contract. This is the next formal task.
 - Server implementation.
 - Realtime PVP.
 - Chain integration.

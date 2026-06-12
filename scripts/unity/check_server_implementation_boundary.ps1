@@ -192,7 +192,8 @@ Require-Text -Text $platformPlan -Needle "docs-server-implementation-boundary-20
 Require-Text -Text $platformPlan -Needle "small local main-server prototype" -Label "platform first server target"
 Require-Text -Text $platformPlan -Needle "No payment, marketplace, realtime PVP, chain integration, public map server registration or remote Unity dependency belongs in the first server slice." -Label "platform first server exclusions"
 Require-Text -Text $detailedPlan -Needle "| F5 | Done | ``Document server implementation boundary`` |" -Label "detailed plan F5 status"
-Require-Text -Text $detailedPlan -Needle "| F6 | Next | ``Scaffold local main-server prototype`` |" -Label "detailed plan next task"
+Require-Text -Text $detailedPlan -Needle "| F6 | Done | ``Scaffold local main-server prototype`` |" -Label "detailed plan F6 status"
+Require-Text -Text $detailedPlan -Needle "| F7 | Next | ``Document Unity main-server integration contract`` |" -Label "detailed plan next task"
 
 if ($failures.Count -gt 0) {
     Write-Host "Server implementation boundary check failed."

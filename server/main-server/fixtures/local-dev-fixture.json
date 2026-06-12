@@ -1,0 +1,127 @@
+{
+  "schema": "mc2-local-main-server-fixture-v1",
+  "account": {
+    "schema": "AccountRecord",
+    "accountId": "local-dev-account",
+    "publicPlayerId": "pilot-local-0001",
+    "displayName": "Local Commander",
+    "state": "active"
+  },
+  "publicProfile": {
+    "schema": "PublicProfileRecord",
+    "publicPlayerId": "pilot-local-0001",
+    "displayName": "Local Commander",
+    "visibility": "public-safe"
+  },
+  "inventory": {
+    "schema": "InventorySnapshot",
+    "accountId": "local-dev-account",
+    "snapshotId": "inventory-local-dev-v1",
+    "tokenBalance": 12000,
+    "ownedMechs": [
+      {
+        "ownedMechId": "demo-mech-01",
+        "unitId": "unit-1",
+        "unitType": "Werewolf",
+        "chassisId": "Werewolf",
+        "displayName": "Werewolf unit-1",
+        "activeLoadoutId": "Werewolf-source",
+        "availableForMission": true,
+        "conditionPercent": 100,
+        "pilotId": "pilot-local-0001",
+        "pilotDisplayName": "Local Commander",
+        "pilotType": "commander"
+      },
+      {
+        "ownedMechId": "demo-mech-02",
+        "unitId": "unit-2",
+        "unitType": "Bushwacker",
+        "chassisId": "Bushwacker",
+        "displayName": "Bushwacker unit-2",
+        "activeLoadoutId": "Bushwacker-source",
+        "availableForMission": true,
+        "conditionPercent": 100,
+        "pilotId": "pilot-npc-0002",
+        "pilotDisplayName": "Kestrel",
+        "pilotType": "npc"
+      },
+      {
+        "ownedMechId": "demo-mech-03",
+        "unitId": "unit-3",
+        "unitType": "Bushwacker",
+        "chassisId": "Bushwacker",
+        "displayName": "Bushwacker unit-3",
+        "activeLoadoutId": "Bushwacker-source",
+        "availableForMission": true,
+        "conditionPercent": 100,
+        "pilotId": "pilot-npc-0003",
+        "pilotDisplayName": "Mantis",
+        "pilotType": "npc"
+      }
+    ],
+    "itemStacks": [
+      {
+        "itemId": "token-credit",
+        "displayName": "Token",
+        "category": "currency",
+        "quantity": 12000,
+        "equippedQuantity": 0
+      },
+      {
+        "itemId": "fragment-werewolf",
+        "displayName": "Werewolf Fragment",
+        "category": "mech-fragment",
+        "quantity": 12,
+        "equippedQuantity": 0
+      },
+      {
+        "itemId": "fragment-bushwacker",
+        "displayName": "Bushwacker Fragment",
+        "category": "mech-fragment",
+        "quantity": 18,
+        "equippedQuantity": 0
+      },
+      {
+        "itemId": "weapon-medium-missile",
+        "displayName": "Medium Missile Pack",
+        "category": "weapon",
+        "quantity": 6,
+        "equippedQuantity": 4
+      },
+      {
+        "itemId": "armor-plate",
+        "displayName": "Armor Plate",
+        "category": "armor",
+        "quantity": 16,
+        "equippedQuantity": 8
+      },
+      {
+        "itemId": "heat-sink",
+        "displayName": "Heat Sink",
+        "category": "heat-sink",
+        "quantity": 10,
+        "equippedQuantity": 4
+      }
+    ]
+  },
+  "tokenLedger": [
+    {
+      "schema": "TokenLedgerEntry",
+      "ledgerEntryId": "ledger-seed-local-dev",
+      "accountId": "local-dev-account",
+      "idempotencyKey": "seed-local-dev-v1",
+      "delta": 12000,
+      "balanceAfter": 12000,
+      "reason": "dev-fixture-seed"
+    }
+  ],
+  "rewardRules": {
+    "schema": "RewardRuleSet",
+    "rewardRulesVersion": "local-reward-rules-v1",
+    "maxTokenDeltaPerClaim": 2500,
+    "objectiveTokenCap": 1800,
+    "damageTokenDivisor": 20,
+    "debuffTokenPerSecond": 2,
+    "leaderboardScoreCap": 10000
+  }
+}
