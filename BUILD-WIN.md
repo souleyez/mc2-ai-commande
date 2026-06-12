@@ -277,6 +277,18 @@ source paths.
 
 Expected success string: `PC smoke artifact hygiene check OK`.
 
+Check the current plan queue consistency without launching Unity:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_current_plan_queue.ps1
+```
+
+This confirms the current PC/mobile wait-state package is sealed through
+`PC1-PC47`, that `Add current plan queue consistency check` is the latest PC
+checkpoint, and that `G3 Run Android device smoke` remains the formal next task.
+
+Expected success string: `Current plan queue consistency check OK`.
+
 Check the current plan gate without launching Unity:
 
 ```powershell
@@ -285,7 +297,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_curren
 
 The current plan gate wraps handoff/readiness, Windows build freshness, demo
 source hygiene, Android smoke artifact hygiene, AI deputy contract, mobile command model, battle HUD sparse
-contract, PC visual capture sanity, PC visual capture sanity self-test, PC capture sidecar schema, PC capture preset contract, PC capture artifact hygiene, PC window contract, PC launch log hygiene, PC build artifact hygiene, PC smoke artifact hygiene, Android SDK tooling, Android APK freshness, Android APK identity, Android APK
+contract, PC visual capture sanity, PC visual capture sanity self-test, PC capture sidecar schema, PC capture preset contract, PC capture artifact hygiene, PC window contract, PC launch log hygiene, PC build artifact hygiene, PC smoke artifact hygiene, current plan queue consistency, Android SDK tooling, Android APK freshness, Android APK identity, Android APK
 compatibility, Android APK signing, Android APK manifest, Android APK payload,
 Android APK size budget, Android smoke summary schema, Android device-smoke preflight, Android smoke plan/preflight consistency, Android G3 readiness and Android G3 device requirement checks. The device preflight also runs the summary schema self-test. With no
 authorized phone connected it should still pass while reporting Android as
@@ -454,6 +466,7 @@ Expected success strings:
 - `PC launch log hygiene check OK`
 - `PC build artifact hygiene check OK`
 - `PC smoke artifact hygiene check OK`
+- `Current plan queue consistency check OK`
 - `Current plan gate check OK`
 - `Android SDK tooling check OK`
 - `Android APK compatibility check OK`

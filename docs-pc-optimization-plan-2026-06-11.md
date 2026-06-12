@@ -14,7 +14,7 @@
 
 Mobile support remains the product priority, but `G3 Android Device Smoke` is waiting on a physical Android phone with USB debugging authorized. While that device blocker existed, this plan used PC demo optimization to keep the Windows demo moving.
 
-The current PC/mobile wait-state optimization pass is now sealed through PC46. This does not move G4/G5 mobile touch and performance ahead of G3; the next mobile gate still requires the physical authorized phone.
+The current PC/mobile wait-state optimization pass is now sealed through PC47. This does not move G4/G5 mobile touch and performance ahead of G3; the next mobile gate is still `G3 Run Android device smoke` and still requires the physical authorized phone.
 
 ## Definition Of Done
 
@@ -39,7 +39,7 @@ The current PC optimization pass is complete when:
 - Android device-smoke readiness can be checked without installing or launching the app, and can explicitly stop at waiting-on-device when no phone is connected.
 - PC core playable contract can be checked by one script that runs the Unity/BattleCore validator and requires command-state, solo-return, Jet, occupancy, damage/ejection and debrief/relaunch coverage.
 - Mobile command model preflight can be checked without launching Unity, proving the current PC command surface still maps to status rows, Jet, map/bay/system, compact objective, sparse HUD and MechLab no-toggle fitting.
-- Current plan gate can be checked by one script that wraps handoff/readiness, Windows build freshness, demo source hygiene, AI deputy contract, mobile command model, battle HUD sparse contract, PC visual capture sanity, PC visual capture sanity self-test, PC capture sidecar schema, PC capture preset contract, PC capture artifact hygiene, PC window contract, PC launch log hygiene, PC build artifact hygiene, PC smoke artifact hygiene and Android device-smoke preflight state.
+- Current plan gate can be checked by one script that wraps handoff/readiness, Windows build freshness, demo source hygiene, AI deputy contract, mobile command model, battle HUD sparse contract, PC visual capture sanity, PC visual capture sanity self-test, PC capture sidecar schema, PC capture preset contract, PC capture artifact hygiene, PC window contract, PC launch log hygiene, PC build artifact hygiene, PC smoke artifact hygiene, current plan queue consistency and Android device-smoke preflight state.
 - Android device smoke scans captured logcat for strong crash markers before accepting a real-device launch.
 - Android device smoke can be previewed with `-PlanOnly` without a connected phone.
 - Android SDK tooling can be checked before G3, proving Unity's AndroidPlayer SDK, NDK, OpenJDK, build tools, platform and command-line tools are present.
@@ -67,6 +67,7 @@ The current PC optimization pass is complete when:
 - PC launch log hygiene can be checked without launching Unity through `check_pc_launch_log_hygiene.ps1`, proving the controlled launcher writes `analysis-output/windows-demo-run.log` and that local launch logs stay ignored and absent from tracked/staged paths.
 - PC build artifact hygiene can be checked without launching Unity through `check_pc_build_artifact_hygiene.ps1`, proving Windows player output stays under `unity-mc2-demo/Builds/Windows/`, is ignored, and is absent from tracked/staged paths.
 - PC smoke artifact hygiene can be checked without launching Unity through `check_pc_smoke_artifact_hygiene.ps1`, proving PC smoke, validator, build and saved-account evidence outputs stay under ignored `analysis-output/` paths and out of tracked/staged paths.
+- Current plan queue consistency can be checked without launching Unity through `check_current_plan_queue.ps1`, proving README, BUILD-WIN, master/detailed/PC/mobile/evidence/handoff docs and helper scripts agree on `PC1-PC47`, the latest PC checkpoint, and `G3 Run Android device smoke` as the formal next task.
 - Sparse battle HUD can be checked without launching Unity through `check_battle_hud_sparse_contract.ps1`.
 - Demo source hygiene can be checked without launching Unity through `check_demo_source_hygiene.ps1`.
 - AI deputy contract can be checked without launching Unity or calling the model through `check_ai_deputy_contract.ps1`.
@@ -144,6 +145,7 @@ The current PC optimization pass is complete when:
 | PC44 | Done | Add PC launch log hygiene check | Controlled PC launcher runtime logs stay fixed to the ignored `analysis-output/windows-demo-run.log` path and out of tracked/staged source paths |
 | PC45 | Done | Add PC build artifact hygiene check | Windows player output stays fixed to ignored `unity-mc2-demo/Builds/Windows/` paths and out of tracked/staged source paths |
 | PC46 | Done | Add PC smoke artifact hygiene check | PC smoke, validator, build and saved-account evidence outputs stay under ignored `analysis-output/` paths and out of tracked/staged source paths |
+| PC47 | Done | Add current plan queue consistency check | Current docs and helper scripts agree that the wait-state package is sealed through PC1-PC47 and that G3 real-device smoke remains next |
 
 Do not open another PC polish gate from visual inspection alone. If the issue is collision, damage, command state or objective logic, first prove it in `BattleCore`.
 
@@ -1754,7 +1756,7 @@ git status --short --branch --untracked-files=all
 - Check `git check-ignore` accepts representative PC player smoke logs, Unity build/validator logs, validator JSON and saved-account JSON outputs.
 - Check tracked and staged source paths contain no `analysis-output/*.log`, `analysis-output/*saved-account*.json` or `analysis-output/*validator*.json` artifacts.
 - Wire the checker into `check_current_plan_gate.ps1`.
-- Update handoff, mobile and evidence docs to keep the current PC/mobile wait-state status sealed through PC46.
+- Update handoff, mobile and evidence docs to keep the then-current PC/mobile wait-state status sealed through PC46.
 
 **Acceptance:**
 
@@ -1776,6 +1778,40 @@ git status --short --branch --untracked-files=all
 ```
 
 **Commit:** `Add PC smoke artifact hygiene check`
+
+## Completed Target: PC47 Add Current Plan Queue Consistency Check
+
+**Goal:** 在 G3 真机仍不可用时，不提前做 G4/G5；把当前计划队列、封口点和正式下一步做成机器可检查契约，避免多文档继续开发时漂移。
+
+**Scope:**
+
+- Add `scripts/unity/check_current_plan_queue.ps1`.
+- Check README, BUILD-WIN, master/detailed/PC/mobile/evidence/handoff docs contain `PC1-PC47`, `Add current plan queue consistency check`, `check_current_plan_queue.ps1`, `Current plan queue consistency check OK` and `G3 Run Android device smoke`.
+- Check mobile plan still keeps G3 as Waiting on Device and G4/G5 as Later.
+- Check handoff docs still list `G3 Run Android device smoke` as the formal next development task.
+- Wire the checker into `check_current_plan_gate.ps1`.
+- Update handoff consistency markers so the machine handoff also checks PC47.
+
+**Acceptance:**
+
+- `check_current_plan_queue.ps1` prints `Current plan queue consistency check OK`.
+- `check_current_plan_gate.ps1` includes an explicit current plan queue consistency gate.
+- `check_controlled_demo_handoff.ps1 -RunReadiness` includes the script and docs markers.
+- No G4/G5 implementation starts before G3 real-device smoke.
+
+**Validation:**
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_current_plan_queue.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_current_plan_gate.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_controlled_demo_handoff.ps1 -RunReadiness
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_mobile_command_model_preflight.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_demo_source_hygiene.ps1
+git diff --check
+git status --short --branch --untracked-files=all
+```
+
+**Commit:** `Add current plan queue consistency check`
 
 ## Stop Conditions
 

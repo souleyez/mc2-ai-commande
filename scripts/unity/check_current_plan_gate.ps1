@@ -114,6 +114,7 @@ $pcWindowContractScript = Resolve-RepoPath -RelativePath "scripts\unity\check_pc
 $pcLaunchLogHygieneScript = Resolve-RepoPath -RelativePath "scripts\unity\check_pc_launch_log_hygiene.ps1"
 $pcBuildArtifactHygieneScript = Resolve-RepoPath -RelativePath "scripts\unity\check_pc_build_artifact_hygiene.ps1"
 $pcSmokeArtifactHygieneScript = Resolve-RepoPath -RelativePath "scripts\unity\check_pc_smoke_artifact_hygiene.ps1"
+$currentPlanQueueScript = Resolve-RepoPath -RelativePath "scripts\unity\check_current_plan_queue.ps1"
 $androidSdkToolingScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_sdk_tooling.ps1"
 $androidApkFreshnessScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_apk_freshness.ps1"
 $androidApkIdentityScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_apk_identity.ps1"
@@ -229,6 +230,12 @@ Invoke-GateStep `
     -ScriptPath $pcSmokeArtifactHygieneScript `
     -Arguments @("-RepoRoot", $RepoRoot) `
     -RequiredMarkers @("PC smoke artifact hygiene check OK.")
+
+Invoke-GateStep `
+    -Name "Current plan queue consistency gate" `
+    -ScriptPath $currentPlanQueueScript `
+    -Arguments @("-RepoRoot", $RepoRoot) `
+    -RequiredMarkers @("Current plan queue consistency check OK.")
 
 Invoke-GateStep `
     -Name "Android SDK tooling gate" `

@@ -8,7 +8,7 @@
 
 **Tech Stack:** Unity 6, C#, Windows PC build/smoke/capture as active demo loop, Android/iOS mobile-first after device blocker clears, deterministic BattleCore, PowerShell build/smoke/capture scripts, replaceable content packs, optional high-level AI deputy, later main server/map server/Web ranking contracts.
 
-**Revision:** 2026-06-12 v59. This file is the fine-grained execution plan paired with `docs-ai-rts-commander-current-master-plan-2026-06-07.md`. The private reference visual bridge, local investor evidence package, art-safe metadata contract, AI deputy offline guard, reward authority contract, machine handoff plan, mobile-first priority reset, Android build smoke, PC optimization resumption, PC1 baseline audit, PC2 battle readability pass, PC3 MechLab PC flow polish, PC4 controlled demo evidence package, PC5 Windows demo launcher preflight, PC6 controlled demo evidence health check, PC7 controlled demo public boundary preflight, PC8 controlled demo readiness preflight, PC9 controlled demo handoff consistency check, PC10 Android device-smoke preflight, PC11 PC core playable contract check, PC12 mobile command model preflight, PC13 current plan gate check, PC14 Android smoke log crash scan, PC15 Android smoke plan mode, PC16 battle HUD sparse contract check, PC17 demo source hygiene check, PC18 AI deputy contract check, PC19 Windows demo build freshness check, PC20 controlled demo evidence freshness check, PC21 controlled demo capture log freshness check, PC22 Android APK freshness check, PC23 Android APK identity check, PC24 Android APK compatibility check, PC25 Android APK signing check, PC26 Android APK manifest check, PC27 Android APK payload check, PC28 Android APK size budget check, PC29 Android SDK tooling check, PC30 Android smoke artifact hygiene check, PC31 Android smoke screenshot evidence capture, PC32 Android smoke summary evidence output, PC33 Android smoke summary schema check, PC34 Android smoke summary preflight check, PC35 Android smoke plan/preflight consistency check, PC36 Android G3 readiness check, PC37 Android G3 device requirement check, PC38 PC visual capture sanity check, PC39 PC visual capture sanity self-test, PC40 PC capture sidecar schema check, PC41 PC capture preset contract check, PC42 PC capture artifact hygiene check, PC43 PC window contract check, PC44 PC launch log hygiene check, PC45 PC build artifact hygiene check, and PC46 PC smoke artifact hygiene check are now sealed for the current Demo. H2 validator/build/smoke is green; G2 Android build smoke is green with a generated APK; `G3 Run Android Device Smoke` is waiting on a physical authorized phone. Further PC wait-state work should define PC47 before implementation.
+**Revision:** 2026-06-12 v60. This file is the fine-grained execution plan paired with `docs-ai-rts-commander-current-master-plan-2026-06-07.md`. The private reference visual bridge, local investor evidence package, art-safe metadata contract, AI deputy offline guard, reward authority contract, machine handoff plan, mobile-first priority reset, Android build smoke, PC optimization resumption, PC1 baseline audit, PC2 battle readability pass, PC3 MechLab PC flow polish, PC4 controlled demo evidence package, PC5 Windows demo launcher preflight, PC6 controlled demo evidence health check, PC7 controlled demo public boundary preflight, PC8 controlled demo readiness preflight, PC9 controlled demo handoff consistency check, PC10 Android device-smoke preflight, PC11 PC core playable contract check, PC12 mobile command model preflight, PC13 current plan gate check, PC14 Android smoke log crash scan, PC15 Android smoke plan mode, PC16 battle HUD sparse contract check, PC17 demo source hygiene check, PC18 AI deputy contract check, PC19 Windows demo build freshness check, PC20 controlled demo evidence freshness check, PC21 controlled demo capture log freshness check, PC22 Android APK freshness check, PC23 Android APK identity check, PC24 Android APK compatibility check, PC25 Android APK signing check, PC26 Android APK manifest check, PC27 Android APK payload check, PC28 Android APK size budget check, PC29 Android SDK tooling check, PC30 Android smoke artifact hygiene check, PC31 Android smoke screenshot evidence capture, PC32 Android smoke summary evidence output, PC33 Android smoke summary schema check, PC34 Android smoke summary preflight check, PC35 Android smoke plan/preflight consistency check, PC36 Android G3 readiness check, PC37 Android G3 device requirement check, PC38 PC visual capture sanity check, PC39 PC visual capture sanity self-test, PC40 PC capture sidecar schema check, PC41 PC capture preset contract check, PC42 PC capture artifact hygiene check, PC43 PC window contract check, PC44 PC launch log hygiene check, PC45 PC build artifact hygiene check, PC46 PC smoke artifact hygiene check, and PC47 current plan queue consistency check are now sealed for the current Demo. H2 validator/build/smoke is green; G2 Android build smoke is green with a generated APK; `G3 Run Android device smoke` is waiting on a physical authorized phone.
 
 ---
 
@@ -38,7 +38,7 @@
 1. `H2` validator、Windows build 和 visible-flow smoke 已通过；Unity scene fileID churn 已恢复，工作区保持干净。
 2. `G3` 仍是当前移动端 gate：在真 Android 设备上安装并启动 APK，证明移动端运行链路可用。
 3. 当前机器没有授权 Android 设备；G3 进入 Waiting on Device 状态，不推进 G4/G5。
-4. Android 设备等待期间，PC1 基线审计、PC2 战场可读性优化、PC3 MechLab 打磨、PC4 受控演示证据包、PC5 Windows 启动预检、PC6 证据健康检查、PC7 公开边界预检、PC8 演示总预检、PC9 交接一致性检查、PC10 Android 真机 smoke 前置检查、PC11 PC 核心玩法合约检查、PC12 移动指挥模型预检、PC13 当前计划 gate 总预检、PC14 Android smoke 日志崩溃扫描、PC15 Android smoke 预演模式、PC16 战斗 HUD 稀疏合约检查、PC17 源码/生成物卫生检查、PC18 AI 副官边界检查、PC19 Windows 演示构建新鲜度检查、PC20 受控演示证据新鲜度检查、PC21 capture 日志新鲜度检查、PC22 Android APK 新鲜度检查、PC23 Android APK 身份检查、PC24 Android APK 兼容性检查、PC25 Android APK 签名检查、PC26 Android APK 清单检查、PC27 Android APK 载荷检查、PC28 Android APK 包体预算检查、PC29 Android SDK 工具链检查、PC30 Android smoke 生成物卫生检查、PC31 Android smoke 截图证据捕获、PC32 Android smoke 摘要证据输出、PC33 Android smoke 摘要 schema 检查、PC34 Android smoke 摘要 preflight 检查、PC35 Android smoke 预演/前置一致性检查、PC36 Android G3 readiness 检查、PC37 Android G3 真机要求检查、PC38 PC 视觉截图 sanity 检查、PC39 PC 视觉截图 sanity 自测、PC40 PC 截图 sidecar schema 检查、PC41 PC 截图 preset 契约检查、PC42 PC 截图生成物卫生检查、PC43 PC 受控窗口尺寸契约检查、PC44 PC 启动日志卫生检查、PC45 PC 构建输出卫生检查和 PC46 PC smoke 生成物卫生检查已通过；下一步回到 `G3` 真机 smoke，或先定义 PC47 再继续 PC/等待态工作。
+4. Android 设备等待期间，PC1 基线审计、PC2 战场可读性优化、PC3 MechLab 打磨、PC4 受控演示证据包、PC5 Windows 启动预检、PC6 证据健康检查、PC7 公开边界预检、PC8 演示总预检、PC9 交接一致性检查、PC10 Android 真机 smoke 前置检查、PC11 PC 核心玩法合约检查、PC12 移动指挥模型预检、PC13 当前计划 gate 总预检、PC14 Android smoke 日志崩溃扫描、PC15 Android smoke 预演模式、PC16 战斗 HUD 稀疏合约检查、PC17 源码/生成物卫生检查、PC18 AI 副官边界检查、PC19 Windows 演示构建新鲜度检查、PC20 受控演示证据新鲜度检查、PC21 capture 日志新鲜度检查、PC22 Android APK 新鲜度检查、PC23 Android APK 身份检查、PC24 Android APK 兼容性检查、PC25 Android APK 签名检查、PC26 Android APK 清单检查、PC27 Android APK 载荷检查、PC28 Android APK 包体预算检查、PC29 Android SDK 工具链检查、PC30 Android smoke 生成物卫生检查、PC31 Android smoke 截图证据捕获、PC32 Android smoke 摘要证据输出、PC33 Android smoke 摘要 schema 检查、PC34 Android smoke 摘要 preflight 检查、PC35 Android smoke 预演/前置一致性检查、PC36 Android G3 readiness 检查、PC37 Android G3 真机要求检查、PC38 PC 视觉截图 sanity 检查、PC39 PC 视觉截图 sanity 自测、PC40 PC 截图 sidecar schema 检查、PC41 PC 截图 preset 契约检查、PC42 PC 截图生成物卫生检查、PC43 PC 受控窗口尺寸契约检查、PC44 PC 启动日志卫生检查、PC45 PC 构建输出卫生检查、PC46 PC smoke 生成物卫生检查和 PC47 当前计划队列一致性检查已通过；正式下一步仍是 `G3 Run Android device smoke`。
 5. D1 只是 art-safe metadata 合同，不是可挂载 runtime pack；后续 D2 才能进入清权资产生产和 mountable pack。
 6. 私有参考素材可以继续用于本机开发验证，但公开材料不能把它描述成最终产品内容。
 7. `F2-F4` 平台化方向仍保留，但现在只在移动端可行性通过后继续。
@@ -110,7 +110,7 @@
 | M11 | 平台契约 | In Progress | 奖励认证契约完成；地图包、排行、创作者边界待写 |
 | M12 | 换机开发交接 | Done | H2 validator/build/smoke 已通过 |
 | M13 | 移动端优先可行性 | Waiting on Device | Android APK build smoke 已通过；真机 smoke 等授权手机，之后再做触控 UI 和性能预算 |
-| M14 | PC/移动等待态优化 | Done for current pass | PC1-PC46 passed: PC1 baseline, PC2 battle readability, PC3 MechLab polish, PC4 controlled demo evidence package, PC5 launch preflight, PC6 evidence health check, PC7 public boundary preflight, PC8 readiness preflight, PC9 handoff consistency check, PC10 Android device-smoke preflight, PC11 PC core playable contract check, PC12 mobile command model preflight, PC13 current plan gate check, PC14 Android smoke log crash scan, PC15 Android smoke plan mode, PC16 battle HUD sparse contract check, PC17 demo source hygiene check, PC18 AI deputy contract check, PC19 Windows demo build freshness check, PC20 controlled demo evidence freshness check, PC21 controlled demo capture log freshness check, PC22 Android APK freshness check, PC23 Android APK identity check, PC24 Android APK compatibility check, PC25 Android APK signing check, PC26 Android APK manifest check, PC27 Android APK payload check, PC28 Android APK size budget check, PC29 Android SDK tooling check, PC30 Android smoke artifact hygiene check, PC31 Android smoke screenshot evidence capture, PC32 Android smoke summary evidence output, PC33 Android smoke summary schema check, PC34 Android smoke summary preflight check, PC35 Android smoke plan/preflight consistency check, PC36 Android G3 readiness check, PC37 Android G3 device requirement check, PC38 PC visual capture sanity check, PC39 PC visual capture sanity self-test, PC40 PC capture sidecar schema check, PC41 PC capture preset contract check, PC42 PC capture artifact hygiene check, PC43 PC window contract check, PC44 PC launch log hygiene check, PC45 PC build artifact hygiene check and PC46 PC smoke artifact hygiene check |
+| M14 | PC/移动等待态优化 | Done for current pass | PC1-PC47 passed: PC1 baseline, PC2 battle readability, PC3 MechLab polish, PC4 controlled demo evidence package, PC5 launch preflight, PC6 evidence health check, PC7 public boundary preflight, PC8 readiness preflight, PC9 handoff consistency check, PC10 Android device-smoke preflight, PC11 PC core playable contract check, PC12 mobile command model preflight, PC13 current plan gate check, PC14 Android smoke log crash scan, PC15 Android smoke plan mode, PC16 battle HUD sparse contract check, PC17 demo source hygiene check, PC18 AI deputy contract check, PC19 Windows demo build freshness check, PC20 controlled demo evidence freshness check, PC21 controlled demo capture log freshness check, PC22 Android APK freshness check, PC23 Android APK identity check, PC24 Android APK compatibility check, PC25 Android APK signing check, PC26 Android APK manifest check, PC27 Android APK payload check, PC28 Android APK size budget check, PC29 Android SDK tooling check, PC30 Android smoke artifact hygiene check, PC31 Android smoke screenshot evidence capture, PC32 Android smoke summary evidence output, PC33 Android smoke summary schema check, PC34 Android smoke summary preflight check, PC35 Android smoke plan/preflight consistency check, PC36 Android G3 readiness check, PC37 Android G3 device requirement check, PC38 PC visual capture sanity check, PC39 PC visual capture sanity self-test, PC40 PC capture sidecar schema check, PC41 PC capture preset contract check, PC42 PC capture artifact hygiene check, PC43 PC window contract check, PC44 PC launch log hygiene check, PC45 PC build artifact hygiene check, PC46 PC smoke artifact hygiene check and PC47 current plan queue consistency check |
 
 ## 4. Fine-Grained Commit Queue
 
@@ -182,6 +182,7 @@
 | PC44 | Done | `Add PC launch log hygiene check` | 受控 Windows launcher runtime log 固定到 ignored `analysis-output/windows-demo-run.log`，并禁止 launch log 进入 tracked/staged 路径 | `check_pc_launch_log_hygiene.ps1` |
 | PC45 | Done | `Add PC build artifact hygiene check` | Windows player 输出固定到 ignored `unity-mc2-demo/Builds/Windows/`，并禁止 player build 进入 tracked/staged 路径 | `check_pc_build_artifact_hygiene.ps1` |
 | PC46 | Done | `Add PC smoke artifact hygiene check` | PC smoke、validator、build 和 saved-account evidence 输出固定到 ignored `analysis-output/`，并禁止运行证据进入 tracked/staged 路径 | `check_pc_smoke_artifact_hygiene.ps1` |
+| PC47 | Done | `Add current plan queue consistency check` | 主计划、细计划、PC 计划、移动计划、证据页和换机文档都明确 PC1-PC47 封口，且正式下一步仍是 G3 真机 smoke | `check_current_plan_queue.ps1` |
 | G4 | Later | `Adapt command UI for mobile touch` | 状态行、Jet、地图、系统和 MechLab 手机触控可用 | device smoke |
 | G5 | Later | `Define mobile performance budget` | FPS、内存、包体、加载、热量/电量基线 | docs + device evidence |
 | G6 | Later | `Document iOS feasibility gate` | macOS/Xcode/签名/Metal/真机要求 | docs |
@@ -279,6 +280,7 @@
 | PC44.1 | Done | 增加 PC 启动日志卫生检查，确认 launcher runtime log 固定到 ignored `analysis-output/windows-demo-run.log`，且 launch log 不进入 tracked/staged 路径 | `scripts/unity/check_pc_launch_log_hygiene.ps1`; current gate; docs | `check_pc_launch_log_hygiene.ps1` |
 | PC45.1 | Done | 增加 PC 构建输出卫生检查，确认 Windows player 输出固定到 ignored `unity-mc2-demo/Builds/Windows/`，且 player build 不进入 tracked/staged 路径 | `scripts/unity/check_pc_build_artifact_hygiene.ps1`; current gate; docs | `check_pc_build_artifact_hygiene.ps1` |
 | PC46.1 | Done | 增加 PC smoke 生成物卫生检查，确认 smoke、validator、build 和 saved-account evidence 输出固定到 ignored `analysis-output/`，且运行证据不进入 tracked/staged 路径 | `scripts/unity/check_pc_smoke_artifact_hygiene.ps1`; current gate; docs | `check_pc_smoke_artifact_hygiene.ps1` |
+| PC47.1 | Done | 增加当前计划队列一致性检查，确认 README、BUILD-WIN、主/细/PC/移动/证据/换机文档和 helper scripts 都指向 PC1-PC47、PC47、G3 真机 smoke | `scripts/unity/check_current_plan_queue.ps1`; current gate; handoff docs | `check_current_plan_queue.ps1` |
 | G4.1 | Later | 调整触控命令 UI，保持无框选、稀疏 HUD、状态栏单选 | Unity presentation | mobile smoke |
 | G5.1 | Later | 定义移动端性能预算并记录首轮基线 | docs + ignored evidence | budget doc |
 | F2.1 | Later | 写地图包/编辑器契约，定义地图元数据、触发图、敌人、奖励引用和验证器边界 | platform docs | `git diff --check` |
@@ -2972,7 +2974,7 @@ git status --short --branch --untracked-files=all
 - It uses `git check-ignore` to prove representative PC player smoke logs, Unity build/validator logs, validator JSON and saved-account JSON outputs are ignored.
 - It checks tracked and staged paths contain no `analysis-output/*.log`, `analysis-output/*saved-account*.json` or `analysis-output/*validator*.json` artifacts.
 - Wired the checker into `scripts/unity/check_current_plan_gate.ps1`.
-- Updated README, Windows build notes, master/detailed/mobile/evidence/handoff docs and handoff consistency markers to seal PC1-PC46.
+- Updated README, Windows build notes, master/detailed/mobile/evidence/handoff docs and handoff consistency markers for the then-current PC46 checkpoint.
 
 **Acceptance:**
 
@@ -2994,6 +2996,41 @@ git status --short --branch --untracked-files=all
 ```
 
 **Commit:** `Add PC smoke artifact hygiene check`
+
+### PC47: Add Current Plan Queue Consistency Check
+
+**Status:** Completed 2026-06-12.
+
+**Goal:** G3 真机仍不可用时，不扩大玩法；把“当前计划到底封口到哪里、下一步是不是仍回到 G3 真机 smoke”做成机器可检查契约，避免换机、连续提交或文档同步时误把 G4/G5 提前。
+
+**Implementation:**
+
+- Added `scripts/unity/check_current_plan_queue.ps1`.
+- The checker confirms README, BUILD-WIN, master/detailed/PC/mobile/evidence/handoff docs contain `PC1-PC47`, `Add current plan queue consistency check`, `check_current_plan_queue.ps1`, `Current plan queue consistency check OK` and `G3 Run Android device smoke`.
+- It confirms mobile G3 remains `Waiting on Device` while G4/G5 remain `Later`.
+- It confirms handoff docs still list `G3 Run Android device smoke` as the formal next planned work.
+- Wired the checker into `scripts/unity/check_current_plan_gate.ps1` and `scripts/unity/check_controlled_demo_handoff.ps1`.
+
+**Acceptance:**
+
+- `check_current_plan_queue.ps1` prints `Current plan queue consistency check OK`.
+- `check_current_plan_gate.ps1` includes an explicit current plan queue consistency gate.
+- `check_controlled_demo_handoff.ps1 -RunReadiness` keeps passing after the new PC47 status is documented.
+- No G4/G5 implementation starts before G3 real-device smoke.
+
+**Validation:**
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_current_plan_queue.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_current_plan_gate.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_controlled_demo_handoff.ps1 -RunReadiness
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_mobile_command_model_preflight.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_demo_source_hygiene.ps1
+git diff --check
+git status --short --branch --untracked-files=all
+```
+
+**Commit:** `Add current plan queue consistency check`
 
 ### G4: Adapt Command UI For Mobile Touch
 
@@ -3237,6 +3274,7 @@ Demo 可以给少量外部人看时，必须满足：
 49. PC launch log hygiene check proves the controlled PC launcher runtime log stays fixed to ignored `analysis-output/windows-demo-run.log` and that `analysis-output/*.log` paths are absent from tracked/staged source paths.
 50. PC build artifact hygiene check proves the Windows player output stays fixed to ignored `unity-mc2-demo/Builds/Windows/` paths and that Unity player build artifacts are absent from tracked/staged source paths.
 51. PC smoke artifact hygiene check proves PC smoke, validator, build and saved-account evidence outputs stay under ignored `analysis-output/` paths and that those generated artifacts are absent from tracked/staged source paths.
+52. Current plan queue consistency check proves README, BUILD-WIN, master/detailed/PC/mobile/evidence/handoff docs and helper scripts agree on `PC1-PC47`, `Add current plan queue consistency check`, `check_current_plan_queue.ps1`, `Current plan queue consistency check OK`, and `G3 Run Android device smoke`.
 
 ## 8. Stop Conditions
 
@@ -3254,4 +3292,4 @@ Stop and reassess before committing if:
 
 ## 9. One-Line Direction
 
-Windows 本地 Demo 的画面、碰撞、稀疏 UI、MechLab、损伤故事、受控演示证据、PC 视觉截图 sanity 与自测、PC 截图 sidecar schema、PC 截图 preset 契约、PC 截图生成物卫生、PC 受控窗口尺寸契约、PC 启动日志卫生、PC 构建输出卫生、PC smoke 生成物卫生、启动预检、构建新鲜度检查、证据健康检查、证据新鲜度检查、capture 日志新鲜度检查、Android SDK 工具链检查、Android APK 新鲜度检查、Android APK 身份检查、Android APK 兼容性检查、Android APK 签名检查、Android APK 清单检查、Android APK 载荷检查、Android APK 包体预算检查、Android smoke 生成物卫生检查、Android smoke 截图证据捕获、Android smoke 摘要证据输出、Android smoke 摘要 schema 检查、Android smoke 摘要 preflight 检查、Android smoke 预演/前置一致性检查、Android G3 readiness 检查、Android G3 真机要求检查、公开边界预检、演示总预检、交接一致性检查、Android 真机 smoke 前置检查、PC 核心玩法合约检查、移动指挥模型预检、战斗 HUD 稀疏合约检查、源码/生成物卫生检查、AI 副官边界检查、当前计划 gate 总预检、Android smoke 日志崩溃扫描、Android smoke 预演模式、公开 art-safe 元数据合同、AI 副官离线边界和主服务器奖励权威契约已经收稳；代码已推到 GitHub，H2 validator/build/smoke 已过，G2 Android APK build smoke 已过；PC1-PC46 PC/移动等待态优化包已封口；G3 真机 smoke 等待授权 Android 手机，设备到位后继续 G3-G5，设备不到位时如继续 PC 端必须先定义 PC47 目标。
+Windows 本地 Demo 的画面、碰撞、稀疏 UI、MechLab、损伤故事、受控演示证据、PC 视觉截图 sanity 与自测、PC 截图 sidecar schema、PC 截图 preset 契约、PC 截图生成物卫生、PC 受控窗口尺寸契约、PC 启动日志卫生、PC 构建输出卫生、PC smoke 生成物卫生、当前计划队列一致性、启动预检、构建新鲜度检查、证据健康检查、证据新鲜度检查、capture 日志新鲜度检查、Android SDK 工具链检查、Android APK 新鲜度检查、Android APK 身份检查、Android APK 兼容性检查、Android APK 签名检查、Android APK 清单检查、Android APK 载荷检查、Android APK 包体预算检查、Android smoke 生成物卫生检查、Android smoke 截图证据捕获、Android smoke 摘要证据输出、Android smoke 摘要 schema 检查、Android smoke 摘要 preflight 检查、Android smoke 预演/前置一致性检查、Android G3 readiness 检查、Android G3 真机要求检查、公开边界预检、演示总预检、交接一致性检查、Android 真机 smoke 前置检查、PC 核心玩法合约检查、移动指挥模型预检、战斗 HUD 稀疏合约检查、源码/生成物卫生检查、AI 副官边界检查、当前计划 gate 总预检、Android smoke 日志崩溃扫描、Android smoke 预演模式、公开 art-safe 元数据合同、AI 副官离线边界和主服务器奖励权威契约已经收稳；代码已推到 GitHub，H2 validator/build/smoke 已过，G2 Android APK build smoke 已过；PC1-PC47 PC/移动等待态优化包已封口；正式下一步仍是 `G3 Run Android device smoke`，等待授权 Android 手机到位后继续 G3-G5。
