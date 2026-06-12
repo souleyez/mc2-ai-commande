@@ -15,6 +15,7 @@ param(
     [string[]]$LogcatFilters = @("Unity:I", "AndroidRuntime:E", "DEBUG:I", "ActivityManager:I", "*:S"),
     [int]$LogcatTailLines = 0,
     [int]$LaunchWaitSeconds = 12,
+    [int]$AdbInstallTimeoutSeconds = 120,
     [switch]$NoInstall,
     [switch]$NoLaunch,
     [switch]$NoCommandFileSmoke,
@@ -327,6 +328,70 @@ function Invoke-BinaryCommandToFile {
     }
 }
 
+function Invoke-BinaryCommandWithTimeout {
+    param(
+        [string]$FilePath,
+        [string[]]$Arguments,
+        [int]$TimeoutSeconds,
+        [string]$FailureLabel
+    )
+
+    $timeoutMilliseconds = [Math]::Max(1, $TimeoutSeconds) * 1000
+    $processInfo = New-Object System.Diagnostics.ProcessStartInfo
+    $processInfo.FileName = $FilePath
+    $processInfo.Arguments = Join-ProcessArguments -Arguments $Arguments
+    $processInfo.RedirectStandardOutput = $true
+    $processInfo.RedirectStandardError = $true
+    $processInfo.UseShellExecute = $false
+    $processInfo.CreateNoWindow = $true
+
+    $process = New-Object System.Diagnostics.Process
+    $process.StartInfo = $processInfo
+
+    try {
+        [void]$process.Start()
+        $stdoutTask = $process.StandardOutput.ReadToEndAsync()
+        $stderrTask = $process.StandardError.ReadToEndAsync()
+        if (-not $process.WaitForExit($timeoutMilliseconds)) {
+            try {
+                $process.Kill()
+            }
+            catch {
+                Write-Host "Failed to kill timed-out process: $($_.Exception.Message)"
+            }
+
+            throw "$FailureLabel timed out after $TimeoutSeconds second(s): $FilePath $(Join-ProcessArguments -Arguments $Arguments)"
+        }
+
+        $stdout = $stdoutTask.Result
+        $stderr = $stderrTask.Result
+        $exitCode = $process.ExitCode
+    }
+    finally {
+        $process.Dispose()
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace($stdout)) {
+        foreach ($line in ($stdout -split "`r?`n")) {
+            if (-not [string]::IsNullOrWhiteSpace($line)) {
+                Write-Host $line
+            }
+        }
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace($stderr)) {
+        foreach ($line in ($stderr -split "`r?`n")) {
+            if (-not [string]::IsNullOrWhiteSpace($line)) {
+                Write-Host $line
+            }
+        }
+    }
+
+    if ($exitCode -ne 0) {
+        throw "$FailureLabel failed with exit code $($exitCode)"
+    }
+}
+
 function Write-SmokeSummary {
     param(
         [string]$Path,
@@ -440,6 +505,9 @@ if ($PlanOnly) {
         Write-Host "SmokeSuccessMarker: MC2 loadout compact assertion OK"
     }
     Write-Host "Install: $(-not $NoInstall)"
+    if (-not $NoInstall) {
+        Write-Host "InstallTimeoutSeconds: $AdbInstallTimeoutSeconds"
+    }
     Write-Host "Launch: $(-not $NoLaunch)"
     Write-Host "LogCheck: $(-not $SkipLogCheck)"
     Write-Host "ScreenshotCapture: $(-not $SkipScreenshot)"
@@ -496,10 +564,11 @@ $model = (& $AdbPath @adbArgs shell getprop ro.product.model) -join " "
 $androidVersion = (& $AdbPath @adbArgs shell getprop ro.build.version.release) -join " "
 
 if (-not $NoInstall) {
-    & $AdbPath @adbArgs install -r --no-streaming $ApkPath
-    if ($LASTEXITCODE -ne 0) {
-        throw "adb install failed with exit code $LASTEXITCODE"
-    }
+    Invoke-BinaryCommandWithTimeout `
+        -FilePath $AdbPath `
+        -Arguments ($adbArgs + @("install", "-r", "--no-streaming", $ApkPath)) `
+        -TimeoutSeconds $AdbInstallTimeoutSeconds `
+        -FailureLabel "adb install"
 }
 
 if ($commandFileSmoke) {

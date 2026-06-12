@@ -141,6 +141,7 @@ $androidSmokeArtifactHygieneScript = Resolve-RepoPath -RelativePath "scripts\uni
 $aiDeputyScript = Resolve-RepoPath -RelativePath "scripts\unity\check_ai_deputy_contract.ps1"
 $mobileCommandScript = Resolve-RepoPath -RelativePath "scripts\unity\check_mobile_command_model_preflight.ps1"
 $mobileLandscapeContractScript = Resolve-RepoPath -RelativePath "scripts\unity\check_mobile_landscape_contract.ps1"
+$landscapeTouchUiErgonomicsScript = Resolve-RepoPath -RelativePath "scripts\unity\check_landscape_touch_ui_ergonomics.ps1"
 $battleHudScript = Resolve-RepoPath -RelativePath "scripts\unity\check_battle_hud_sparse_contract.ps1"
 $pcVisualCaptureSanityScript = Resolve-RepoPath -RelativePath "scripts\unity\check_pc_visual_capture_sanity.ps1"
 $pcCaptureSidecarSchemaScript = Resolve-RepoPath -RelativePath "scripts\unity\check_pc_capture_sidecar_schema.ps1"
@@ -238,6 +239,12 @@ Invoke-GateStep `
     -ScriptPath $mobileLandscapeContractScript `
     -Arguments @("-RepoRoot", $RepoRoot) `
     -RequiredMarkers @("Mobile landscape contract check OK.")
+
+Invoke-GateStep `
+    -Name "Landscape touch UI ergonomics gate" `
+    -ScriptPath $landscapeTouchUiErgonomicsScript `
+    -Arguments @("-RepoRoot", $RepoRoot) `
+    -RequiredMarkers @("Landscape touch UI ergonomics check OK.")
 
 Invoke-GateStep `
     -Name "Battle HUD sparse contract gate" `

@@ -165,7 +165,7 @@ namespace MC2Demo.Presentation
         private const string LoadoutWeightPressureLabel = "W ";
         private const string LoadoutGridPressureLabel = "G ";
         private const string MechLabPcLayoutSummary = "layout=pressure-cards+whole-blocks+single-fillers";
-        private const string MobileTouchLayoutSummary = "MobileTouchUi=ready orientation=landscape commandTargets=44 statusRows=44 primaryButtons=44 mapBack=44 systemButtons=44 mechLabBack=44 mechLabGridCell>=36 touchRatios=16:9+19.5:9+20:9 landscapeOnly=yes noDragBox=yes combatLog=hidden";
+        private const string MobileTouchLayoutSummary = "MobileTouchUi=ready orientation=landscape commandTargets=44 statusRows=44 primaryButtons=44 mapBack=44 systemButtons=44 missionButtons=44 debriefButtons=44 mechLabBack=44 mechLabGridCell>=36 touchRatios=16:9+19.5:9+20:9 landscapeOnly=yes noDragBox=yes combatLog=hidden";
         private const string MainServerSmokeAccountId = "local-dev-account";
         private const string MainServerSmokeDisplayName = "Local Commander";
         private const string MainServerSmokeMapVersion = "local-fixture-v1";
@@ -7814,14 +7814,24 @@ namespace MC2Demo.Presentation
                 && MobileTouchAspectCheck(2400f, 1080f);
             bool targetsOk = TouchTargetHeightFor(2400f, 1080f) >= MobileTouchMinTargetHeight
                 && CompactTouchTargetHeightFor(2400f, 1080f) >= MobileTouchMinTargetHeight
-                && UnitStatusRowButtonHeightFor(2400f, 1080f) >= MobileTouchMinTargetHeight;
+                && UnitStatusRowButtonHeightFor(2400f, 1080f) >= MobileTouchMinTargetHeight
+                && MissionListButtonHeightFor(2400f, 1080f) >= MobileTouchMinTargetHeight
+                && MissionResultActionButtonHeightFor(2400f, 1080f) >= MobileTouchMinTargetHeight;
             bool loadoutFits = LoadoutPanelRectFor(1560f, 720f).x >= 0f
                 && LoadoutPanelRectFor(1560f, 720f).xMax <= 1560f
                 && LoadoutPanelRectFor(2400f, 1080f).x >= 0f
                 && LoadoutPanelRectFor(2400f, 1080f).xMax <= 2400f;
+            bool auxiliaryPanelsFit = MissionListPanelRectFor(1560f, 720f).y >= 0f
+                && MissionListPanelRectFor(1560f, 720f).yMax <= 720f
+                && MissionResultPanelRectFor(1560f, 720f).y >= 0f
+                && MissionResultPanelRectFor(1560f, 720f).yMax <= 720f
+                && MissionListPanelRectFor(2400f, 1080f).y >= 0f
+                && MissionListPanelRectFor(2400f, 1080f).yMax <= 1080f
+                && MissionResultPanelRectFor(2400f, 1080f).y >= 0f
+                && MissionResultPanelRectFor(2400f, 1080f).yMax <= 1080f;
             bool landscapeOk = IsLandscapeScreen(Screen.width, Screen.height);
             bool sparseHud = demoFlowScreen != DemoFlowScreen.Battle || SparseBattleUiRegressionSummaryOk(BuildSparseBattleUiRegressionSummary());
-            string status = ratiosOk && targetsOk && loadoutFits && landscapeOk && sparseHud ? "ready" : "review";
+            string status = ratiosOk && targetsOk && loadoutFits && auxiliaryPanelsFit && landscapeOk && sparseHud ? "ready" : "review";
             return MobileTouchLayoutSummary
                 + " status="
                 + status
@@ -7832,7 +7842,11 @@ namespace MC2Demo.Presentation
                 + " loadout1560x720="
                 + LoadoutPanelRectFor(1560f, 720f).width.ToString("0.#", CultureInfo.InvariantCulture)
                 + " target="
-                + TouchTargetHeightFor(2400f, 1080f).ToString("0.#", CultureInfo.InvariantCulture);
+                + TouchTargetHeightFor(2400f, 1080f).ToString("0.#", CultureInfo.InvariantCulture)
+                + " missionPanel1560x720="
+                + MissionListPanelRectFor(1560f, 720f).height.ToString("0.#", CultureInfo.InvariantCulture)
+                + " debriefPanel1560x720="
+                + MissionResultPanelRectFor(1560f, 720f).height.ToString("0.#", CultureInfo.InvariantCulture);
         }
 
         private static bool MobileTouchAspectCheck(float screenWidth, float screenHeight)
@@ -7842,8 +7856,14 @@ namespace MC2Demo.Presentation
                 && TouchTargetHeightFor(screenWidth, screenHeight) >= MobileTouchMinTargetHeight
                 && CompactTouchTargetHeightFor(screenWidth, screenHeight) >= MobileTouchMinTargetHeight
                 && UnitStatusRowButtonHeightFor(screenWidth, screenHeight) >= MobileTouchMinTargetHeight
+                && MissionListButtonHeightFor(screenWidth, screenHeight) >= MobileTouchMinTargetHeight
+                && MissionResultActionButtonHeightFor(screenWidth, screenHeight) >= MobileTouchMinTargetHeight
                 && LoadoutPanelRectFor(screenWidth, screenHeight).x >= 0f
-                && LoadoutPanelRectFor(screenWidth, screenHeight).xMax <= screenWidth;
+                && LoadoutPanelRectFor(screenWidth, screenHeight).xMax <= screenWidth
+                && MissionListPanelRectFor(screenWidth, screenHeight).y >= 0f
+                && MissionListPanelRectFor(screenWidth, screenHeight).yMax <= screenHeight
+                && MissionResultPanelRectFor(screenWidth, screenHeight).y >= 0f
+                && MissionResultPanelRectFor(screenWidth, screenHeight).yMax <= screenHeight;
         }
 
         private string BuildCaptureBattleHudSummary()
@@ -20976,11 +20996,14 @@ namespace MC2Demo.Presentation
                 return;
             }
 
+            bool touchLayout = ShouldUseMobileTouchLayout();
             Rect panel = MissionListPanelRect();
             DrawDesignPanelFrame(panel, "Contracts / 任务", UiCyanColor);
             float x = panel.x + 18f;
             float y = panel.y + 36f;
             float width = panel.width - 36f;
+            float buttonHeight = MissionListButtonHeight();
+            float buttonGap = touchLayout ? 10f : 8f;
             string missionId = mission?.Contract?.mission?.id ?? "mc2_01";
             int objectiveCount = mission?.Objectives?.Count ?? 0;
             int playerCount = CountPlayerUnits();
@@ -20992,7 +21015,7 @@ namespace MC2Demo.Presentation
             GUI.Label(new Rect(x + 12f, y + 58f, width - 24f, 20f), "Squad " + playerCount.ToString(CultureInfo.InvariantCulture) + " mechs  Ready");
             y += 102f;
 
-            if (GUI.Button(new Rect(x, y, width, 30f), ContractsLaunchButtonLabel))
+            if (GUI.Button(new Rect(x, y, width, buttonHeight), ContractsLaunchButtonLabel))
             {
                 bool launched = TryApplyMissionRestartRuntimeSwap();
                 showMissionListPanel = !launched;
@@ -21000,26 +21023,26 @@ namespace MC2Demo.Presentation
                 statusText = launched ? "Contract launched" : statusText;
             }
 
-            y += 38f;
+            y += buttonHeight + buttonGap;
             float halfWidth = (width - 8f) * 0.5f;
-            if (GUI.Button(new Rect(x, y, halfWidth, 30f), "Mech Lab"))
+            if (GUI.Button(new Rect(x, y, halfWidth, buttonHeight), "Mech Lab"))
             {
                 showMissionListPanel = false;
                 OpenLoadoutPanel();
             }
 
-            if (GUI.Button(new Rect(x + halfWidth + 8f, y, halfWidth, 30f), "System"))
+            if (GUI.Button(new Rect(x + halfWidth + 8f, y, halfWidth, buttonHeight), "System"))
             {
                 showMissionListPanel = false;
                 OpenSystemPanel();
                 statusText = "System open";
             }
 
-            y += 38f;
+            y += buttonHeight + buttonGap;
             string returnText = mission.Result == MissionResultState.InProgress
                 ? ContractsReturnBattleButtonLabel
                 : ContractsReturnDebriefButtonLabel;
-            if (GUI.Button(new Rect(x, y, width, 30f), returnText))
+            if (GUI.Button(new Rect(x, y, width, buttonHeight), returnText))
             {
                 showMissionListPanel = false;
                 if (mission.Result == MissionResultState.InProgress)
@@ -21068,7 +21091,8 @@ namespace MC2Demo.Presentation
                 return;
             }
 
-            Rect panel = new((Screen.width - 460f) * 0.5f, 72f, 460f, 380f);
+            bool touchLayout = ShouldUseMobileTouchLayout();
+            Rect panel = MissionResultPanelRect();
             Color resultAccent = mission.Result == MissionResultState.Victory
                 ? UiCyanColor
                 : new Color(1f, 0.28f, 0.14f, 0.95f);
@@ -21078,22 +21102,26 @@ namespace MC2Demo.Presentation
 
             GUI.Label(new Rect(panel.x + 18f, panel.y + 270f, panel.width - 36f, 20f), DebriefNextStepText);
             float actionWidth = (panel.width - 44f) * 0.5f;
-            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 296f, actionWidth, 30f), DebriefRepairMechLabButtonLabel))
+            float actionHeight = MissionResultActionButtonHeight();
+            float actionGap = touchLayout ? 10f : 8f;
+            float actionY = panel.y + (touchLayout ? 292f : 296f);
+            if (GUI.Button(new Rect(panel.x + 18f, actionY, actionWidth, actionHeight), DebriefRepairMechLabButtonLabel))
             {
                 OpenPostMissionMechBay();
             }
 
-            if (GUI.Button(new Rect(panel.x + 26f + actionWidth, panel.y + 296f, actionWidth, 30f), DebriefNextContractButtonLabel))
+            if (GUI.Button(new Rect(panel.x + 26f + actionWidth, actionY, actionWidth, actionHeight), DebriefNextContractButtonLabel))
             {
                 OpenPostMissionListPanel();
             }
 
-            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 334f, actionWidth, 30f), DebriefRetryButtonLabel))
+            actionY += actionHeight + actionGap;
+            if (GUI.Button(new Rect(panel.x + 18f, actionY, actionWidth, actionHeight), DebriefRetryButtonLabel))
             {
                 TryApplyMissionRestartRuntimeSwap();
             }
 
-            if (GUI.Button(new Rect(panel.x + 26f + actionWidth, panel.y + 334f, actionWidth, 30f), DebriefCloseButtonLabel))
+            if (GUI.Button(new Rect(panel.x + 26f + actionWidth, actionY, actionWidth, actionHeight), DebriefCloseButtonLabel))
             {
                 CloseMissionResultPanel();
             }
@@ -21610,6 +21638,26 @@ namespace MC2Demo.Presentation
             return ShouldUseMobileTouchLayoutFor(screenWidth, screenHeight) ? MobileTouchMinTargetHeight : 30f;
         }
 
+        private static float MissionListButtonHeight()
+        {
+            return MissionListButtonHeightFor(Screen.width, Screen.height);
+        }
+
+        private static float MissionListButtonHeightFor(float screenWidth, float screenHeight)
+        {
+            return ShouldUseMobileTouchLayoutFor(screenWidth, screenHeight) ? MobileTouchMinTargetHeight : 30f;
+        }
+
+        private static float MissionResultActionButtonHeight()
+        {
+            return MissionResultActionButtonHeightFor(Screen.width, Screen.height);
+        }
+
+        private static float MissionResultActionButtonHeightFor(float screenWidth, float screenHeight)
+        {
+            return ShouldUseMobileTouchLayoutFor(screenWidth, screenHeight) ? MobileTouchMinTargetHeight : 30f;
+        }
+
         private static float CompactTouchTargetHeight()
         {
             return ShouldUseMobileTouchLayout() ? MobileTouchMinTargetHeight : 22f;
@@ -21650,9 +21698,33 @@ namespace MC2Demo.Presentation
 
         private Rect MissionListPanelRect()
         {
-            float width = Mathf.Clamp(Screen.width - 48f, 380f, 520f);
-            float height = 292f;
-            return new Rect((Screen.width - width) * 0.5f, (Screen.height - height) * 0.5f, width, height);
+            return MissionListPanelRectFor(Screen.width, Screen.height);
+        }
+
+        private static Rect MissionListPanelRectFor(float screenWidth, float screenHeight)
+        {
+            bool touchLayout = ShouldUseMobileTouchLayoutFor(screenWidth, screenHeight);
+            float margin = touchLayout ? 12f : 24f;
+            float width = Mathf.Clamp(screenWidth - margin * 2f, 380f, 520f);
+            float height = touchLayout ? 340f : 292f;
+            height = Mathf.Min(height, Mathf.Max(292f, screenHeight - margin * 2f));
+            return new Rect((screenWidth - width) * 0.5f, (screenHeight - height) * 0.5f, width, height);
+        }
+
+        private Rect MissionResultPanelRect()
+        {
+            return MissionResultPanelRectFor(Screen.width, Screen.height);
+        }
+
+        private static Rect MissionResultPanelRectFor(float screenWidth, float screenHeight)
+        {
+            bool touchLayout = ShouldUseMobileTouchLayoutFor(screenWidth, screenHeight);
+            float margin = touchLayout ? 12f : 24f;
+            float width = Mathf.Clamp(screenWidth - margin * 2f, 460f, touchLayout ? 560f : 460f);
+            float height = touchLayout ? 410f : 380f;
+            height = Mathf.Min(height, Mathf.Max(380f, screenHeight - margin * 2f));
+            float y = touchLayout ? Mathf.Max(margin, (screenHeight - height) * 0.5f) : 72f;
+            return new Rect((screenWidth - width) * 0.5f, y, width, height);
         }
 
         private Rect StartupContinuePanelRect()

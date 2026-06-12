@@ -225,8 +225,8 @@ Require-Text -Text $mobilePlan -Needle "F10 wire optional Unity inventory bootst
 Require-Text -Text $mobilePlan -Needle "F11 plan inventory-to-MechBay binding boundary" -Label "mobile completed task"
 Require-Text -Text $mobilePlan -Needle "F12 implement opt-in inventory-to-MechBay preview binding" -Label "mobile next task"
 Require-Text -Text $mobilePlan -Needle "first phone version is landscape-only" -Label "mobile landscape invariant"
-Require-Text -Text $handoff -Needle 'Current formal next development task after handoff: `F21 audit landscape touch UI ergonomics`' -Label "handoff next task"
-Require-Text -Text $handoff -Needle 'Next planned work: `F21 audit landscape touch UI ergonomics`' -Label "handoff next planned work"
+Require-Text -Text $handoff -Needle 'Current formal next development task after handoff: `F22 audit landscape MechLab touch controls`' -Label "handoff next task"
+Require-Text -Text $handoff -Needle 'Next planned work: `F22 audit landscape MechLab touch controls`' -Label "handoff next planned work"
 Require-Text -Text $currentGate -Needle 'Optional Unity main-server client adapter check OK.' -Label "current gate marker"
 
 if ($failures.Count -gt 0) {
