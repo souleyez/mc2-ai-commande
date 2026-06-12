@@ -159,6 +159,11 @@ namespace MC2Demo.Presentation
         private const float MobileTouchLoadoutGridCellMinSize = 36f;
         private const float MobileTouchLoadoutGridCellMaxSize = 48f;
         private const float MobileTouchBreakpointWidth = 1200f;
+        private const float PcBattleStatusRailWidth = 292f;
+        private const float PcBattleStatusRailButtonWidth = 44f;
+        private const float PcBattleStatusRailSystemButtonMinWidth = 70f;
+        private const float PcBattleStatusRailRowHeight = 30f;
+        private const float PcBattleStatusRailRowStride = 64f;
         private const float CriticalSectionStatusRatio = 0.35f;
         private const string LoadoutConditionPrefix = "Cond ";
         private const string LoadoutFitOkLabel = "Fit OK";
@@ -193,12 +198,12 @@ namespace MC2Demo.Presentation
         private static readonly Color LoadoutWeaponBlockFrameColor = new(0.015f, 0.02f, 0.025f, 0.98f);
         private static readonly Color LoadoutComponentBlockFrameColor = new(0.42f, 0.30f, 0.05f, 0.96f);
         private static readonly Color LoadoutBlockDividerColor = new(0.015f, 0.025f, 0.028f, 0.50f);
-        private const float TerrainCompositeTextureStrength = 0.28f;
-        private static readonly Color TerrainDeepWaterColor = new(0.045f, 0.24f, 0.32f, 1f);
-        private static readonly Color TerrainShoreColor = new(0.47f, 0.53f, 0.32f, 1f);
-        private static readonly Color TerrainRunwayColor = new(0.70f, 0.68f, 0.58f, 1f);
-        private static readonly Color TerrainRoadColor = new(0.59f, 0.58f, 0.50f, 1f);
-        private static readonly Color TerrainWaterSurfaceColor = new(0.045f, 0.25f, 0.34f, 0.48f);
+        private const float TerrainCompositeTextureStrength = 0.36f;
+        private static readonly Color TerrainDeepWaterColor = new(0.035f, 0.20f, 0.30f, 1f);
+        private static readonly Color TerrainShoreColor = new(0.58f, 0.63f, 0.34f, 1f);
+        private static readonly Color TerrainRunwayColor = new(0.76f, 0.73f, 0.60f, 1f);
+        private static readonly Color TerrainRoadColor = new(0.64f, 0.62f, 0.52f, 1f);
+        private static readonly Color TerrainWaterSurfaceColor = new(0.035f, 0.21f, 0.32f, 0.42f);
 
         [Serializable]
         private sealed class VisualCaptureSidecar
@@ -338,6 +343,9 @@ namespace MC2Demo.Presentation
         private readonly Dictionary<string, Material> materialCache = new(StringComparer.Ordinal);
         private readonly List<OcclusionFadeTarget> occlusionFadeTargets = new();
         private readonly List<Vector3> occlusionFocusWorldPoints = new();
+        private int objectiveNearReadableProps;
+        private int objectiveNearTreeHeightClamps;
+        private int objectiveNearBarricadeToneDowns;
         private readonly Dictionary<string, CombatLoadoutPlacementOverride[]> loadoutPlacementOverridesByUnit = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, List<CombatLoadoutFillerOverride>> loadoutFillerOverridesByUnit = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, CombatLoadoutPlacementOverride[]> appliedLoadoutPlacementOverridesByUnit = new(StringComparer.OrdinalIgnoreCase);
@@ -908,6 +916,9 @@ namespace MC2Demo.Presentation
             lastContactCount = 0;
             lastReferenceScaleSummary = "ReferenceScale=not attempted";
             lastOcclusionFadeSummary = "OcclusionFade=not attempted";
+            objectiveNearReadableProps = 0;
+            objectiveNearTreeHeightClamps = 0;
+            objectiveNearBarricadeToneDowns = 0;
             lastOccupancyPlaceholderSummary = "OccupancyPlaceholders=disabled";
             mainCamera = null;
             DestroyOwnedTextures();
@@ -7314,7 +7325,7 @@ namespace MC2Demo.Presentation
                 + dirtSamples.ToString(CultureInfo.InvariantCulture)
                 + " textured="
                 + texturedSamples.ToString(CultureInfo.InvariantCulture)
-                + " style=land-outline+runway-contrast+water-muted pathing=unchanged";
+                + " style=land-outline+runway-contrast+water-muted shoreContrast=raised pathing=unchanged";
         }
 
         private string BuildCaptureUnitReadabilitySummary()
@@ -7392,7 +7403,7 @@ namespace MC2Demo.Presentation
                 + infantryUnits.ToString(CultureInfo.InvariantCulture)
                 + " damaged="
                 + damagedUnits.ToString(CultureInfo.InvariantCulture)
-                + " style=grounded-silhouette+friend-foe-footprint labels=no pathing=unchanged collision=unchanged";
+                + " style=grounded-silhouette+friend-foe-footprint+high-contact-rings labels=no pathing=unchanged collision=unchanged";
         }
 
         private string BuildCaptureStructureReadabilitySummary()
@@ -7522,11 +7533,24 @@ namespace MC2Demo.Presentation
                 + " other="
                 + otherProps.ToString(CultureInfo.InvariantCulture)
                 + " color=category-tone-separation textureTint=category-base visualOnly=yes collision=unchanged blockerGeometry=unchanged "
+                + BuildObjectiveNearOcclusionReadabilitySummary()
+                + " "
                 + lastReferenceStructureSummary
                 + "; "
                 + lastReferencePropSummary
                 + "; "
                 + lastReferenceScaleSummary;
+        }
+
+        private string BuildObjectiveNearOcclusionReadabilitySummary()
+        {
+            return "ObjectiveNearOcclusion=fade+height-clamp+tone-down"
+                + " props="
+                + objectiveNearReadableProps.ToString(CultureInfo.InvariantCulture)
+                + " treeClamp="
+                + objectiveNearTreeHeightClamps.ToString(CultureInfo.InvariantCulture)
+                + " barricadeTone="
+                + objectiveNearBarricadeToneDowns.ToString(CultureInfo.InvariantCulture);
         }
 
         private static bool UnitHasSectionDamage(UnitState unit)
@@ -7870,6 +7894,7 @@ namespace MC2Demo.Presentation
                 + " weaponShapes beam+arc+tracer+shock"
                 + " hitCues direction+severity+muzzle"
                 + " sectionConsequences arms-firepower legs-mobility cockpit-ejection wreck-salvage"
+                + " cuePalette=target-hot-red damage-amber pilot-cyan"
                 + " hud=section-bars+short-labels+sparse"
                 + " story="
                 + (story.StartsWith("DamageStory=", StringComparison.Ordinal)
@@ -8063,12 +8088,20 @@ namespace MC2Demo.Presentation
 
             Rect combatPanel = CombatPanelRect();
             Rect objectivePanel = MissionBriefPanelRect();
+            bool compactRail = ShouldUseCompactPcBattleStatusRail();
+            float statusRailWidth = BattleStatusRailWidthForCurrentLayout();
             string objectiveMode = ShouldDrawMissionBriefPanel()
                 ? (ShouldUseCompactMissionBriefPanel() ? "compactObjective" : "fullObjective")
                 : "hiddenObjective";
             return "BattleHud=active controls=statusRows+jet+map+bay+system"
                 + " combatPanel=h"
                 + combatPanel.height.ToString("0.#", CultureInfo.InvariantCulture)
+                + " statusRailW="
+                + statusRailWidth.ToString("0.#", CultureInfo.InvariantCulture)
+                + " statusRailShare1280="
+                + (statusRailWidth / 1280f).ToString("0.##", CultureInfo.InvariantCulture)
+                + " statusRailDensity="
+                + (compactRail ? "compact-pc" : ShouldUseMobileTouchLayout() ? "touch" : "standard")
                 + " combatLogVisible=no"
                 + " objectivePanel="
                 + objectiveMode
@@ -11013,6 +11046,9 @@ namespace MC2Demo.Presentation
 
             int referenceProps = 0;
             int fallbackProps = 0;
+            objectiveNearReadableProps = 0;
+            objectiveNearTreeHeightClamps = 0;
+            objectiveNearBarricadeToneDowns = 0;
             foreach (TerrainObjectSpawn terrainObject in mission.Contract.terrainObjects)
             {
                 if (terrainObject.position == null || IsCoveredByTargetStructure(terrainObject))
@@ -11022,15 +11058,40 @@ namespace MC2Demo.Presentation
 
                 PrimitiveType primitive = TerrainPrimitive(terrainObject);
                 GameObject prop = DemoPrimitiveVisualFactory.Create(primitive, terrainObject.objectId + " " + terrainObject.fileName);
-                Vector3 scale = TerrainObjectScale(terrainObject);
-                Vector3 position = DemoUnitView.MissionToWorld(new Vector2(terrainObject.position.x, terrainObject.position.y));
                 Vector2 missionPosition = new(terrainObject.position.x, terrainObject.position.y);
+                bool objectiveNear = IsObjectiveNearSoftOccluder(
+                    missionPosition,
+                    terrainObject,
+                    out bool objectiveNearTree,
+                    out bool objectiveNearBarricade);
+                Vector3 scale = TerrainObjectScale(terrainObject);
+                if (objectiveNear)
+                {
+                    scale = ObjectiveNearReadableScale(scale, objectiveNearTree, objectiveNearBarricade);
+                    objectiveNearReadableProps++;
+                    if (objectiveNearTree)
+                    {
+                        objectiveNearTreeHeightClamps++;
+                    }
+
+                    if (objectiveNearBarricade)
+                    {
+                        objectiveNearBarricadeToneDowns++;
+                    }
+                }
+
+                Vector3 position = DemoUnitView.MissionToWorld(new Vector2(terrainObject.position.x, terrainObject.position.y));
                 position.y = DemoTerrainView.HeightAt(missionPosition) + Mathf.Max(0.03f, scale.y * 0.5f);
                 prop.transform.position = position;
                 prop.transform.rotation = Quaternion.Euler(0f, -terrainObject.position.rotation, 0f);
                 prop.transform.localScale = scale;
 
                 Color propColor = TerrainObjectColor(terrainObject);
+                if (objectiveNear)
+                {
+                    propColor = ObjectiveNearReadableColor(propColor, objectiveNearTree, objectiveNearBarricade);
+                }
+
                 AssignMaterial(prop, TerrainMaterialName(terrainObject), propColor);
                 Renderer rootRenderer = prop.GetComponent<Renderer>();
                 if (ReferencePropLibrary.TryAttachTerrainObject(terrainObject, prop.transform, propColor, out _))
@@ -11051,6 +11112,83 @@ namespace MC2Demo.Presentation
 
             lastReferencePropSummary = ReferencePropLibrary.Summary(referenceProps, fallbackProps);
             Debug.Log("MC2 reference prop visuals: " + lastReferencePropSummary);
+        }
+
+        private bool IsObjectiveNearSoftOccluder(
+            Vector2 missionPosition,
+            TerrainObjectSpawn terrainObject,
+            out bool treeLike,
+            out bool barricadeLike)
+        {
+            treeLike = string.Equals(terrainObject.objectClass, "TREE", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(ReferencePropLibrary.TerrainVisualCategoryFor(terrainObject), "tree", StringComparison.OrdinalIgnoreCase);
+            barricadeLike = string.Equals(ReferencePropLibrary.TerrainVisualCategoryFor(terrainObject), "barricade", StringComparison.OrdinalIgnoreCase)
+                || IsHardTerrainObjectVisual(terrainObject);
+            if (!treeLike && !barricadeLike)
+            {
+                return false;
+            }
+
+            return IsNearAnyObjectiveCue(missionPosition, 140f);
+        }
+
+        private bool IsNearAnyObjectiveCue(Vector2 missionPosition, float extraRadius)
+        {
+            if (mission?.Objectives == null)
+            {
+                return false;
+            }
+
+            foreach (ObjectiveState objective in mission.Objectives)
+            {
+                if (objective?.Definition == null || objective.Definition.hidden)
+                {
+                    continue;
+                }
+
+                if (!TryGetObjectiveCuePoint(objective.Definition, out Vector2 objectivePoint, out float objectiveRadius))
+                {
+                    continue;
+                }
+
+                float readableRadius = Mathf.Max(160f, objectiveRadius + extraRadius);
+                if (Vector2.Distance(missionPosition, objectivePoint) <= readableRadius)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static Vector3 ObjectiveNearReadableScale(Vector3 baseScale, bool treeLike, bool barricadeLike)
+        {
+            if (treeLike)
+            {
+                return new Vector3(baseScale.x * 0.82f, Mathf.Min(baseScale.y * 0.58f, 0.62f), baseScale.z * 0.82f);
+            }
+
+            if (barricadeLike)
+            {
+                return new Vector3(baseScale.x * 0.92f, baseScale.y * 0.72f, baseScale.z * 0.92f);
+            }
+
+            return baseScale;
+        }
+
+        private static Color ObjectiveNearReadableColor(Color baseColor, bool treeLike, bool barricadeLike)
+        {
+            if (treeLike)
+            {
+                return new Color(baseColor.r * 0.78f, baseColor.g * 0.86f, baseColor.b * 0.78f, 0.62f);
+            }
+
+            if (barricadeLike)
+            {
+                return new Color(baseColor.r * 0.84f, baseColor.g * 0.84f, baseColor.b * 0.82f, 0.70f);
+            }
+
+            return baseColor;
         }
 
         private bool IsCoveredByTargetStructure(TerrainObjectSpawn terrainObject)
@@ -11702,17 +11840,17 @@ namespace MC2Demo.Presentation
                 unitDamageWarningMarkers[unit.Id] = CreateMarkerDisc(
                     unit.Id + " Damage Warning",
                     "PlayerDamageWarning",
-                    new Color(1f, 0.44f, 0.10f, 0.36f),
+                    new Color(1f, 0.68f, 0.12f, 0.34f),
                     new Vector3(1.16f, 0.018f, 1.16f));
                 unitDamageWarningBeacons[unit.Id] = CreateMarkerDisc(
                     unit.Id + " Damage Warning Beacon",
                     "PlayerDamageBeacon",
-                    new Color(1f, 0.34f, 0.08f, 0.50f),
+                    new Color(1f, 0.64f, 0.12f, 0.50f),
                     new Vector3(0.078f, 0.36f, 0.078f));
                 unitDamageWarningFlags[unit.Id] = CreateMarkerBlock(
                     unit.Id + " Damage Spotlight Flag",
                     "PlayerDamageSpotlightFlag",
-                    new Color(1f, 0.16f, 0.08f, 0.78f),
+                    new Color(1f, 0.58f, 0.12f, 0.78f),
                     new Vector3(0.72f, 0.045f, 0.13f));
                 unitRangeMarkers[unit.Id] = CreateMarkerDisc(
                     unit.Id + " Weapon Range",
@@ -12252,7 +12390,7 @@ namespace MC2Demo.Presentation
                 AssignMaterial(
                     marker,
                     isCritical ? "PlayerDamageCritical" : "PlayerDamageWarning",
-                    isCritical ? new Color(1f, 0.10f, 0.06f, 0.62f) : new Color(1f, 0.46f, 0.10f, 0.42f));
+                    isCritical ? new Color(1f, 0.58f, 0.10f, 0.60f) : new Color(1f, 0.70f, 0.14f, 0.40f));
             }
 
             if (hasBeacon)
@@ -12265,7 +12403,7 @@ namespace MC2Demo.Presentation
                 AssignMaterial(
                     beacon,
                     isCritical ? "PlayerDamageBeaconCritical" : "PlayerDamageBeaconWarning",
-                    isCritical ? new Color(1f, 0.08f, 0.06f, 0.72f) : new Color(1f, 0.42f, 0.10f, 0.50f));
+                    isCritical ? new Color(1f, 0.54f, 0.10f, 0.70f) : new Color(1f, 0.66f, 0.12f, 0.48f));
             }
 
             if (hasFlag)
@@ -12279,7 +12417,7 @@ namespace MC2Demo.Presentation
                 AssignMaterial(
                     flag,
                     isCritical ? "PlayerDamageSpotlightFlagCritical" : "PlayerDamageSpotlightFlag",
-                    isCritical ? new Color(1f, 0.12f, 0.06f, 0.88f) : new Color(1f, 0.36f, 0.08f, 0.68f));
+                    isCritical ? new Color(1f, 0.52f, 0.10f, 0.86f) : new Color(1f, 0.62f, 0.12f, 0.66f));
             }
         }
 
@@ -13603,7 +13741,9 @@ namespace MC2Demo.Presentation
                 + "/"
                 + validTargets.ToString(CultureInfo.InvariantCulture)
                 + " focus "
-                + occlusionFocusWorldPoints.Count.ToString(CultureInfo.InvariantCulture);
+                + occlusionFocusWorldPoints.Count.ToString(CultureInfo.InvariantCulture)
+                + " "
+                + BuildObjectiveNearOcclusionReadabilitySummary();
         }
 
         private void CollectOcclusionFocusPoints()
@@ -14162,22 +14302,23 @@ namespace MC2Demo.Presentation
         private void DrawUnitPanel()
         {
             bool touchLayout = ShouldUseMobileTouchLayout();
+            bool compactPcRail = ShouldUseCompactPcBattleStatusRail();
             float panelX = 12f;
             float panelY = 54f;
-            float panelWidth = 320f;
-            float commandButtonHeight = touchLayout ? MobileTouchMinTargetHeight : 28f;
-            float rowButtonHeight = UnitStatusRowButtonHeight();
-            float rowStride = touchLayout ? 96f : 78f;
+            float panelWidth = BattleStatusRailWidthForCurrentLayout();
+            float commandButtonHeight = compactPcRail ? 28f : touchLayout ? MobileTouchMinTargetHeight : 28f;
+            float rowButtonHeight = compactPcRail ? PcBattleStatusRailRowHeight : UnitStatusRowButtonHeight();
+            float rowStride = compactPcRail ? PcBattleStatusRailRowStride : touchLayout ? 96f : 78f;
             float rowStartOffset = 34f + commandButtonHeight + 8f;
             float panelHeight = rowStartOffset + (CountPlayerUnits() * rowStride) + 8f;
             DrawDesignPanelFrame(new Rect(panelX, panelY, panelWidth, panelHeight), "Squad Command", UiCyanColor);
 
             float x = panelX + 10f;
             float y = panelY + 34f;
-            float commandGap = 6f;
-            float commandButtonWidth = touchLayout ? 52f : 50f;
+            float commandGap = compactPcRail ? 5f : 6f;
+            float commandButtonWidth = compactPcRail ? PcBattleStatusRailButtonWidth : touchLayout ? 52f : 50f;
             float systemButtonWidth = Mathf.Max(
-                touchLayout ? 68f : 76f,
+                compactPcRail ? PcBattleStatusRailSystemButtonMinWidth : touchLayout ? 68f : 76f,
                 panelWidth - 20f - (commandButtonWidth + commandGap) * 4f);
 
             if (GUI.Button(new Rect(x, y, commandButtonWidth, commandButtonHeight), "All"))
@@ -14296,11 +14437,11 @@ namespace MC2Demo.Presentation
                 Color rowCue = unit.IsDetached ? UiAmberColor : unit.IsDestroyed ? Color.red : UiBorderColor;
                 DrawRectBorder(rowRect, rowCue, unit.IsDetached ? 2f : 1f);
 
-                float structureBarY = y + (touchLayout ? 32f : 24f);
-                float heatBarY = y + (touchLayout ? 39f : 31f);
-                float readyBarY = y + (touchLayout ? 46f : 38f);
-                float weaponLabelY = y + (touchLayout ? 52f : 42f);
-                float sectionLineY = y + (touchLayout ? 70f : 58f);
+                float structureBarY = y + (compactPcRail ? 22f : touchLayout ? 32f : 24f);
+                float heatBarY = y + (compactPcRail ? 28f : touchLayout ? 39f : 31f);
+                float readyBarY = y + (compactPcRail ? 34f : touchLayout ? 46f : 38f);
+                float weaponLabelY = y + (compactPcRail ? 38f : touchLayout ? 52f : 42f);
+                float sectionLineY = y + (compactPcRail ? 52f : touchLayout ? 70f : 58f);
                 Rect barBack = new(x + 6f, structureBarY, panelWidth - 32f, 4f);
                 DrawColorRect(barBack, UiTrackColor);
                 Rect bar = new(barBack.x, barBack.y, barBack.width * unit.Structure, barBack.height);
@@ -21803,6 +21944,18 @@ namespace MC2Demo.Presentation
         private static bool IsLandscapeScreen(float screenWidth, float screenHeight)
         {
             return screenWidth >= screenHeight;
+        }
+
+        private bool ShouldUseCompactPcBattleStatusRail()
+        {
+            return !Application.isMobilePlatform
+                && demoFlowScreen == DemoFlowScreen.Battle
+                && Screen.width <= 1440;
+        }
+
+        private float BattleStatusRailWidthForCurrentLayout()
+        {
+            return ShouldUseCompactPcBattleStatusRail() ? PcBattleStatusRailWidth : 320f;
         }
 
         private static void ConfigureMobileLandscapeRuntime()

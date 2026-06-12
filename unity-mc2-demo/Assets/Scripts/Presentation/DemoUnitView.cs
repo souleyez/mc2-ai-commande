@@ -306,8 +306,8 @@ namespace MC2Demo.Presentation
             factionFootprintCue = CreateHeatCuePart("Faction Footprint Ring", PrimitiveType.Cylinder, new Vector3(0f, -0.468f, 0f), FactionFootprintScale(Unit), FactionFootprintColor(Unit));
             heatVentCue = CreateHeatCuePart("Heat Vent Ring", PrimitiveType.Cylinder, new Vector3(0f, -0.46f, 0f), new Vector3(0.70f, 0.016f, 0.70f), new Color(1f, 0.40f, 0.06f, 0.36f));
             heatLockCue = CreateHeatCuePart("Heat Lock Beacon", PrimitiveType.Cylinder, new Vector3(0f, 0.78f, 0.04f), new Vector3(0.13f, 0.46f, 0.13f), new Color(1f, 0.11f, 0.04f, 0.82f));
-            sectionDamageRingCue = CreateHeatCuePart("Section Damage Ground Ring", PrimitiveType.Cylinder, new Vector3(0f, -0.58f, 0f), new Vector3(0.84f, 0.014f, 0.84f), new Color(1f, 0.52f, 0.08f, 0.34f));
-            sectionDamageBeaconCue = CreateHeatCuePart("Section Damage Beacon", PrimitiveType.Cylinder, new Vector3(0f, 0.64f, 0.10f), new Vector3(0.052f, 0.34f, 0.052f), new Color(1f, 0.34f, 0.08f, 0.62f));
+            sectionDamageRingCue = CreateHeatCuePart("Section Damage Ground Ring", PrimitiveType.Cylinder, new Vector3(0f, -0.58f, 0f), new Vector3(0.84f, 0.014f, 0.84f), new Color(1f, 0.72f, 0.12f, 0.34f));
+            sectionDamageBeaconCue = CreateHeatCuePart("Section Damage Beacon", PrimitiveType.Cylinder, new Vector3(0f, 0.64f, 0.10f), new Vector3(0.052f, 0.34f, 0.052f), new Color(1f, 0.64f, 0.12f, 0.62f));
             SetHeatCueVisible(false, false);
             SetSectionDamageGroundCueVisible(false);
         }
@@ -559,11 +559,11 @@ namespace MC2Demo.Presentation
             Vector3 right = Vector3.Cross(Vector3.up, forward).normalized;
             Quaternion forwardYaw = Quaternion.LookRotation(forward, Vector3.up);
             Color scorch = new(0.07f, 0.045f, 0.030f, 0.92f);
-            Color signal = new(1f, 0.18f, 0.06f, 0.92f);
+            Color signal = new(1f, 0.68f, 0.10f, 0.92f);
             CreateWorldDamageObject("Leg Collapse Skid L", PrimitiveType.Cube, center - right * 0.22f - forward * 0.20f, forwardYaw, new Vector3(0.11f, 0.018f, 0.66f), scorch);
             CreateWorldDamageObject("Leg Collapse Skid R", PrimitiveType.Cube, center + right * 0.22f - forward * 0.18f, forwardYaw, new Vector3(0.11f, 0.018f, 0.58f), scorch);
             CreateWorldDamageObject("Leg Immobilized Ground Bar", PrimitiveType.Cube, center + Vector3.up * 0.035f, forwardYaw * Quaternion.Euler(0f, 90f, 0f), new Vector3(0.84f, 0.026f, 0.070f), signal);
-            CreateWorldDamageObject("Leg Immobilized Danger Ring", PrimitiveType.Cylinder, center + Vector3.up * 0.045f, Quaternion.identity, new Vector3(0.88f, 0.012f, 0.88f), new Color(1f, 0.14f, 0.06f, 0.46f));
+            CreateWorldDamageObject("Leg Immobilized Danger Ring", PrimitiveType.Cylinder, center + Vector3.up * 0.045f, Quaternion.identity, new Vector3(0.88f, 0.012f, 0.88f), new Color(1f, 0.64f, 0.10f, 0.42f));
             CreateWorldDamageObject("Leg Mobility Lost Beacon", PrimitiveType.Cylinder, center + Vector3.up * 0.36f, Quaternion.identity, new Vector3(0.050f, 0.34f, 0.050f), signal);
             CreateTransient("Leg Collapse Dust Ring", PrimitiveType.Cylinder, center, new Color(0.62f, 0.52f, 0.38f, 0.34f), 1.35f, new Vector3(0.34f, 0.012f, 0.34f), new Vector3(1.22f, 0.006f, 1.22f));
             CreateMovingTransient("Leg Drag Spark", PrimitiveType.Sphere, center + right * 0.20f + Vector3.up * 0.10f, center - forward * 0.46f + right * 0.08f + Vector3.up * 0.05f, new Color(1f, 0.44f, 0.08f, 0.66f), 0.85f, Vector3.one * 0.07f, Vector3.one * 0.23f);
@@ -744,7 +744,7 @@ namespace MC2Demo.Presentation
 
             if (string.Equals(cue, "lost", StringComparison.Ordinal))
             {
-                return new Color(1f, 0.18f, 0.08f, 1f);
+                return new Color(1f, 0.64f, 0.10f, 1f);
             }
 
             return new Color(1f, 0.58f, 0.12f, 1f);
@@ -767,7 +767,7 @@ namespace MC2Demo.Presentation
 
         public static string UnitReadabilityCueSummary()
         {
-            return "UnitReadability=contact-shadow+faction-footprint-ring contactShadow=low-black factionRing=player-cyan+hostile-red alpha=low labels=no sectionDamage=overlays battleCore=unchanged";
+            return "UnitReadability=contact-shadow+faction-footprint-ring contactShadow=low-black factionRing=player-cyan+hostile-red ringPalette=high-contact-rose alpha=high-contact labels=no sectionDamage=overlays damagePalette=amber+pilot-cyan battleCore=unchanged";
         }
 
         private static Vector3 ContactShadowScale(UnitState unit)
@@ -816,11 +816,11 @@ namespace MC2Demo.Presentation
         {
             if (unit?.IsPlayerUnit == true)
             {
-                return new Color(0.12f, 0.82f, 1f, 0.34f);
+                return new Color(0.10f, 0.88f, 1f, 0.52f);
             }
 
-            float alpha = unit != null && ReferenceObjMeshLibrary.IsInfantryUnit(unit.UnitType) ? 0.20f : 0.30f;
-            return new Color(1f, 0.18f, 0.24f, alpha);
+            float alpha = unit != null && ReferenceObjMeshLibrary.IsInfantryUnit(unit.UnitType) ? 0.36f : 0.50f;
+            return new Color(1f, 0.26f, 0.38f, alpha);
         }
 
         private void SpawnJetTakeoffCue()

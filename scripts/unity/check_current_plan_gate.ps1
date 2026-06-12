@@ -183,6 +183,7 @@ $androidCombatEffectLogNoiseScript = Resolve-RepoPath -RelativePath "scripts\uni
 $androidEntityPlaceholderCollisionPathScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_entity_placeholder_collision_path.ps1"
 $androidEntityPlaceholderCollisionRuntimeEvidenceScript = Resolve-RepoPath -RelativePath "scripts\unity\capture_android_entity_placeholder_collision_runtime_evidence.ps1"
 $pcControlledDemoVisualReadabilityAuditScript = Resolve-RepoPath -RelativePath "scripts\unity\audit_pc_controlled_demo_visual_readability.ps1"
+$pcControlledDemoVisualReadabilityFixesScript = Resolve-RepoPath -RelativePath "scripts\unity\check_pc_controlled_demo_visual_readability_fixes.ps1"
 $serverBackedReceiptSlicePlanScript = Resolve-RepoPath -RelativePath "scripts\unity\check_server_backed_receipt_slice_plan.ps1"
 $serverBackedReceiptEvidenceScript = Resolve-RepoPath -RelativePath "scripts\unity\capture_server_backed_receipt_evidence.ps1"
 $postReceiptInventoryRefreshBoundaryScript = Resolve-RepoPath -RelativePath "scripts\unity\check_post_receipt_inventory_refresh_boundary.ps1"
@@ -505,6 +506,12 @@ Invoke-GateStep `
     -ScriptPath $pcControlledDemoVisualReadabilityAuditScript `
     -Arguments @("-RepoRoot", $RepoRoot, "-PlanOnly") `
     -RequiredMarkers @("PC controlled-demo visual readability audit plan OK.")
+
+Invoke-GateStep `
+    -Name "PC controlled-demo visual readability fixes plan gate" `
+    -ScriptPath $pcControlledDemoVisualReadabilityFixesScript `
+    -Arguments @("-RepoRoot", $RepoRoot, "-PlanOnly") `
+    -RequiredMarkers @("PC controlled-demo visual readability fixes plan OK.")
 
 Invoke-GateStep `
     -Name "Server-backed receipt slice plan gate" `
