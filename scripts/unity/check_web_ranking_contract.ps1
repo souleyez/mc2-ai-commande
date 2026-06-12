@@ -152,7 +152,8 @@ Require-Text -Text $detailedPlan -Needle "| F6 | Done | ``Scaffold local main-se
 Require-Text -Text $detailedPlan -Needle "| F7 | Done | ``Document Unity main-server integration contract`` |" -Label "detailed plan F7 status"
 Require-Text -Text $detailedPlan -Needle "| F8 | Done | ``Implement optional Unity main-server client adapter`` |" -Label "detailed plan F8"
 Require-Text -Text $detailedPlan -Needle "| F9 | Done | ``Wire optional Unity main-server adapter into launch/debrief smoke`` |" -Label "detailed plan completed F9"
-Require-Text -Text $detailedPlan -Needle "| F10 | Next | ``Wire optional Unity inventory bootstrap smoke`` |" -Label "detailed plan next task"
+Require-Text -Text $detailedPlan -Needle "| F10 | Done | ``Wire optional Unity inventory bootstrap smoke`` |" -Label "detailed plan completed F10"
+Require-Text -Text $detailedPlan -Needle "| F11 | Next | ``Plan inventory-to-MechBay binding boundary`` |" -Label "detailed plan next task"
 
 if ($failures.Count -gt 0) {
     Write-Host "Web ranking contract check failed."

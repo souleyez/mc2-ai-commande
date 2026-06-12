@@ -293,12 +293,15 @@ Completed mobile gates: `Pass Android G3 device smoke`, the landscape
 `F7 document Unity main-server integration contract` is also complete.
 `F8 implement optional Unity main-server client adapter` is also complete.
 `F9 wire optional Unity main-server adapter into launch/debrief smoke` is also complete.
-Formal next task: `F10 wire optional Unity inventory bootstrap smoke`.
+`F10 wire optional Unity inventory bootstrap smoke` is also complete.
+Formal next task: `F11 plan inventory-to-MechBay binding boundary`.
 
 Mobile orientation decision: the first phone version is landscape-only.
-Portrait layout is not a supported first-version target; future mobile UI work
-must keep the battle map, unit status rows, Jet/system controls and MechLab
-usable on landscape phone aspect ratios before considering any portrait pass.
+Treat it as a horizontal phone game version, not as a portrait UI that can
+rotate. Portrait layout is not a supported first-version target; future mobile
+UI work must keep the battle map, unit status rows, Jet/system controls and
+MechLab usable on landscape phone aspect ratios before considering any portrait
+pass.
 
 Check the mobile landscape contract without launching Unity or the APK:
 
@@ -546,8 +549,8 @@ ignored local outputs. The real Android device smoke gate, the landscape touch
 UI pass, the first mobile performance budget, the iOS feasibility gate, the map
 authoring contract, the Unity main-server integration contract, the optional
 Unity main-server client adapter and the optional Unity main-server
-launch/debrief smoke have passed; the next formal task is
-`F10 wire optional Unity inventory bootstrap smoke`.
+launch/debrief smoke and optional Unity inventory bootstrap smoke have passed;
+the next formal task is `F11 plan inventory-to-MechBay binding boundary`.
 At the time this note was updated, `adb devices -l` returned `b5212798 device`
 for Mi 11 Lite through `winusb.inf`; the package installs and launches through
 the G3 when-ready runner/direct smoke path, the visible-flow command-file smoke
@@ -678,4 +681,17 @@ Expected:
 
 ```text
 Optional Unity main-server launch/debrief smoke check OK
+```
+
+Optional Unity inventory bootstrap smoke
+----------------------------------------
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_optional_unity_inventory_bootstrap_smoke.ps1 -RepoRoot .
+```
+
+Expected:
+
+```text
+Optional Unity inventory bootstrap smoke check OK
 ```

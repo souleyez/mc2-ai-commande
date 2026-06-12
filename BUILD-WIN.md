@@ -292,8 +292,9 @@ This confirms the current PC/mobile package is sealed through `PC1-PC57`, that
 `F7 document Unity main-server integration contract` and
 `F8 implement optional Unity main-server client adapter` and
 `F9 wire optional Unity main-server adapter into launch/debrief smoke` are
-recorded, and that `F10 wire optional Unity inventory bootstrap smoke` is the
-formal next task.
+recorded, that `F10 wire optional Unity inventory bootstrap smoke` is recorded,
+and that `F11 plan inventory-to-MechBay binding boundary` is the formal next
+task.
 
 Expected success string: `Current plan queue consistency check OK`.
 
@@ -390,6 +391,14 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_option
 ```
 
 Expected success string: `Optional Unity main-server launch/debrief smoke check OK`.
+
+Check the optional Unity inventory bootstrap smoke:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_optional_unity_inventory_bootstrap_smoke.ps1 -RepoRoot .
+```
+
+Expected success string: `Optional Unity inventory bootstrap smoke check OK`.
 
 Expected waiting-state string without an authorized adb phone: `Android device connection check waiting on device`.
 
@@ -685,6 +694,7 @@ Expected success strings:
 - `PC build artifact hygiene check OK`
 - `PC smoke artifact hygiene check OK`
 - `Current plan queue consistency check OK`
+- `Optional Unity inventory bootstrap smoke check OK`
 - `Android device connection check OK` or `Android device connection check waiting on device`
 - `Current plan gate check OK`
 - `Android SDK tooling check OK`

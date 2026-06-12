@@ -200,7 +200,8 @@ $docMarkers = @(
     "Optional Unity main-server client adapter check OK",
     "F8 implement optional Unity main-server client adapter",
     "F9 wire optional Unity main-server adapter into launch/debrief smoke",
-    "F10 wire optional Unity inventory bootstrap smoke"
+    "F10 wire optional Unity inventory bootstrap smoke",
+    "F11 plan inventory-to-MechBay binding boundary"
 )
 
 foreach ($marker in $docMarkers) {
@@ -211,15 +212,18 @@ foreach ($marker in $docMarkers) {
 
 Require-Text -Text $masterPlan -Needle '| 86 | Done | `Implement optional Unity main-server client adapter` |' -Label "master queue F8"
 Require-Text -Text $masterPlan -Needle '| 87 | Done | `Wire optional Unity main-server adapter into launch/debrief smoke` |' -Label "master queue F9"
-Require-Text -Text $masterPlan -Needle '| 88 | Next | `Wire optional Unity inventory bootstrap smoke` |' -Label "master queue F10"
+Require-Text -Text $masterPlan -Needle '| 88 | Done | `Wire optional Unity inventory bootstrap smoke` |' -Label "master queue F10"
+Require-Text -Text $masterPlan -Needle '| 89 | Next | `Plan inventory-to-MechBay binding boundary` |' -Label "master queue F11"
 Require-Text -Text $detailedPlan -Needle '| F8 | Done | `Implement optional Unity main-server client adapter` |' -Label "detailed queue F8"
 Require-Text -Text $detailedPlan -Needle '| F9 | Done | `Wire optional Unity main-server adapter into launch/debrief smoke` |' -Label "detailed queue F9"
-Require-Text -Text $detailedPlan -Needle '| F10 | Next | `Wire optional Unity inventory bootstrap smoke` |' -Label "detailed queue F10"
+Require-Text -Text $detailedPlan -Needle '| F10 | Done | `Wire optional Unity inventory bootstrap smoke` |' -Label "detailed queue F10"
+Require-Text -Text $detailedPlan -Needle '| F11 | Next | `Plan inventory-to-MechBay binding boundary` |' -Label "detailed queue F11"
 Require-Text -Text $mobilePlan -Needle "F9 wire optional Unity main-server adapter into launch/debrief smoke" -Label "mobile completed task"
-Require-Text -Text $mobilePlan -Needle "F10 wire optional Unity inventory bootstrap smoke" -Label "mobile next task"
+Require-Text -Text $mobilePlan -Needle "F10 wire optional Unity inventory bootstrap smoke" -Label "mobile completed task"
+Require-Text -Text $mobilePlan -Needle "F11 plan inventory-to-MechBay binding boundary" -Label "mobile next task"
 Require-Text -Text $mobilePlan -Needle "first phone version is landscape-only" -Label "mobile landscape invariant"
-Require-Text -Text $handoff -Needle 'Current formal next development task after handoff: `F10 wire optional Unity inventory bootstrap smoke`' -Label "handoff next task"
-Require-Text -Text $handoff -Needle 'Next planned work: `F10 wire optional Unity inventory bootstrap smoke`' -Label "handoff next planned work"
+Require-Text -Text $handoff -Needle 'Current formal next development task after handoff: `F11 plan inventory-to-MechBay binding boundary`' -Label "handoff next task"
+Require-Text -Text $handoff -Needle 'Next planned work: `F11 plan inventory-to-MechBay binding boundary`' -Label "handoff next planned work"
 Require-Text -Text $currentGate -Needle 'Optional Unity main-server client adapter check OK.' -Label "current gate marker"
 
 if ($failures.Count -gt 0) {

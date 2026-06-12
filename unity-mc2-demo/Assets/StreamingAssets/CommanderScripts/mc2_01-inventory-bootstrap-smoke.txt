@@ -1,0 +1,13 @@
+# Proves the opt-in Unity inventory bootstrap path: dev account and inventory snapshot before launch.
+inventory-bootstrap-smoke
+assert-inventory-bootstrap-smoke
+prepare-local-candidate
+squad-swap
+hide-squad-preview
+mech-bay-launch
+assert-restart-identity depot
+complete-visible-objectives
+open-debrief
+assert-debrief-visible
+assert-debrief-summary
+report

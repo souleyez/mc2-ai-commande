@@ -17,9 +17,11 @@ Mobile support is the first priority.
 Do not move the main game to Unreal for now. Unreal MCP can remain a later tool
 research topic, but it is not part of the current execution queue.
 
-The first phone version is landscape-only. Portrait layout is not a supported
-first-version target because the core battle map, squad status rows, Jet/system
-controls and MechLab grid need horizontal room to stay readable.
+The first phone version is landscape-only. Product-wise this is the 手机端横版:
+a horizontal phone game build, not a portrait UI that can rotate. Portrait
+layout is not a supported first-version target because the core battle map,
+squad status rows, Jet/system controls and MechLab grid need horizontal room to
+stay readable.
 
 After machine handoff validation, the next product work is:
 
@@ -48,9 +50,10 @@ is complete as a public ranking/profile/battle-record boundary. F4 creator
 economy boundary is complete as a centralized-ledger-first and late-chain
 contract. F5 server implementation boundary is complete as a local main-server
 first-slice contract. F6 local main-server prototype is complete with a local
-smoke gate. F8 optional Unity main-server client adapter and F9 optional Unity
-main-server launch/debrief smoke are complete. The next formal task is
-`F10 wire optional Unity inventory bootstrap smoke`.
+smoke gate. F8 optional Unity main-server client adapter, F9 optional Unity
+main-server launch/debrief smoke and F10 optional Unity inventory bootstrap
+smoke are complete. The next formal task is
+`F11 plan inventory-to-MechBay binding boundary`.
 G3 Android device-smoke preflight now verifies the APK, Android SDK tooling,
 adb, aapt, apksigner, package name, launchable activity, compatibility metadata,
 signing and manifest install-target metadata, Unity/IL2CPP runtime payload,
@@ -75,8 +78,9 @@ check. F2 map authoring contract, F3 web ranking contract, F4 creator economy
 boundary, F5 server implementation boundary, F6 local main-server prototype,
 F7 document Unity main-server integration contract, F8 implement optional
 Unity main-server client adapter and F9 wire optional Unity main-server adapter
-into launch/debrief smoke are complete. Formal next work is
-`F10 wire optional Unity inventory bootstrap smoke`.
+into launch/debrief smoke and F10 wire optional Unity inventory bootstrap
+smoke are complete. Formal next work is
+`F11 plan inventory-to-MechBay binding boundary`.
 
 ## Definition Of Done
 
@@ -122,7 +126,7 @@ failing, unless the later work is explicitly diagnostic.
 - **Failure Handling:** 失败时先看什么、停在哪里、哪些输出不能提交。
 - **Commit Scope:** 允许进入提交的文件范围；生成物、日志和私有素材默认不提交。
 
-当前移动执行目标只允许有一个 `In Progress` 或 `Waiting on Device`。如果前置条件失败，先把失败写成明确 blocker 或安装步骤，不跳到后续移动玩法任务。G3 真机 smoke、横屏 G4 Touch UI pass、G5 Mobile Performance Budget、G6 iOS feasibility gate、F2 map authoring contract、F3 web ranking contract、F4 creator economy boundary、F5 server implementation boundary、F6 local main-server prototype、F7 document Unity main-server integration contract、F8 implement optional Unity main-server client adapter 和 F9 wire optional Unity main-server adapter into launch/debrief smoke 已通过；手机端第一版固定横屏；下一步回到主计划的 `F10 wire optional Unity inventory bootstrap smoke`。
+当前移动执行目标只允许有一个 `In Progress` 或 `Waiting on Device`。如果前置条件失败，先把失败写成明确 blocker 或安装步骤，不跳到后续移动玩法任务。G3 真机 smoke、横屏 G4 Touch UI pass、G5 Mobile Performance Budget、G6 iOS feasibility gate、F2 map authoring contract、F3 web ranking contract、F4 creator economy boundary、F5 server implementation boundary、F6 local main-server prototype、F7 document Unity main-server integration contract、F8 implement optional Unity main-server client adapter、F9 wire optional Unity main-server adapter into launch/debrief smoke 和 F10 wire optional Unity inventory bootstrap smoke 已通过；手机端第一版固定横屏；下一步回到主计划的 `F11 plan inventory-to-MechBay binding boundary`。
 
 ### Completed Mobile Target: G3 Android Device Smoke
 
@@ -267,7 +271,7 @@ scripts\unity\check_ios_feasibility_gate.ps1 -> iOS feasibility gate check OK.
 Local Windows iOS build -> unsupported; this is documented as a blocker, not a failure.
 Unity playback engines on this machine -> AndroidPlayer and windowsstandalonesupport; iOSSupport absent.
 FirstIOSSmoke -> Build Xcode project -> install on iOS device -> launch visible-flow battle.
-Next formal task -> F10 wire optional Unity inventory bootstrap smoke.
+Next formal task -> F11 plan inventory-to-MechBay binding boundary.
 ```
 
 **Current G3 Evidence 2026-06-12:**
@@ -739,7 +743,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_ios_fe
 - F7 document Unity main-server integration contract. This is complete.
 - F8 implement optional Unity main-server client adapter. Complete.
 - F9 wire optional Unity main-server adapter into launch/debrief smoke. Complete.
-- F10 wire optional Unity inventory bootstrap smoke. This is the next formal task.
+- F10 wire optional Unity inventory bootstrap smoke. Complete.
+- F11 plan inventory-to-MechBay binding boundary. This is the next formal task.
 - Server implementation.
 - Realtime PVP.
 - Chain integration.

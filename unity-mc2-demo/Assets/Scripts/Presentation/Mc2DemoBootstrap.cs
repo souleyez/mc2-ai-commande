@@ -163,6 +163,7 @@ namespace MC2Demo.Presentation
         private const string MechLabPcLayoutSummary = "layout=pressure-cards+whole-blocks+single-fillers";
         private const string MobileTouchLayoutSummary = "MobileTouchUi=ready orientation=landscape commandTargets=44 statusRows=44 primaryButtons=44 mapBack=44 systemButtons=44 mechLabBack=44 mechLabGridCell>=36 touchRatios=16:9+19.5:9+20:9 landscapeOnly=yes noDragBox=yes combatLog=hidden";
         private const string MainServerSmokeAccountId = "local-dev-account";
+        private const string MainServerSmokeDisplayName = "Local Commander";
         private const string MainServerSmokeMapVersion = "local-fixture-v1";
         private const string MainServerSmokeClaimSource = "unity-demo-f9-smoke";
         private static readonly string[] MainServerSmokeOwnedMechIds =
@@ -363,11 +364,15 @@ namespace MC2Demo.Presentation
         private MechBayMissionReceipt missionReceipt;
         private bool missionReceiptApplied;
         private UnityMainServerClient mainServerSmokeClient;
+        private UnityInventoryBootstrap mainServerInventoryBootstrap;
         private UnitySignedSquadResult mainServerSmokeSignedSquad;
         private UnityRewardClaimResult mainServerSmokeRewardClaim;
+        private bool inventoryBootstrapSmokeEnabled;
+        private bool inventoryBootstrapAttempted;
         private bool mainServerSmokeEnabled;
         private bool mainServerSmokeSignAttempted;
         private bool mainServerSmokeClaimAttempted;
+        private string inventoryBootstrapSummary = "InventoryBootstrapSmoke=disabled";
         private string mainServerSmokeSummary = "MainServerSmoke=disabled";
         private string pendingDetachedUnitId;
         private bool pendingJumpOrder;
@@ -1546,6 +1551,9 @@ namespace MC2Demo.Presentation
                     case StartupCommanderScriptActionKind.MainServerSmoke:
                         RunStartupMainServerSmoke();
                         break;
+                    case StartupCommanderScriptActionKind.InventoryBootstrapSmoke:
+                        RunStartupInventoryBootstrapSmoke();
+                        break;
                     case StartupCommanderScriptActionKind.SavedAccountReport:
                         RunStartupSavedAccountReport();
                         break;
@@ -1593,6 +1601,9 @@ namespace MC2Demo.Presentation
                         break;
                     case StartupCommanderScriptActionKind.AssertMainServerSmoke:
                         RunStartupMainServerSmokeAssertion();
+                        break;
+                    case StartupCommanderScriptActionKind.AssertInventoryBootstrapSmoke:
+                        RunStartupInventoryBootstrapSmokeAssertion();
                         break;
                     case StartupCommanderScriptActionKind.AssertCommandResult:
                         RunStartupCommandResultAssertion(action.ExpectedCommandBlocked, action.ExpectedCommandAcceptedCount);
@@ -1784,6 +1795,7 @@ namespace MC2Demo.Presentation
 
         private void RunStartupMechBayLaunch()
         {
+            TryBootstrapMainServerInventoryBeforeLaunch("mech-bay-launch");
             TrySignMainServerSmokeSquadBeforeLaunch("mech-bay-launch");
             MechBayMissionRestartDryRun dryRun = MechBayMissionHandoffPreviewService.BuildRestartDryRun(demoInventory);
             bool expectsUpdatedSquadStatus = dryRun?.IncludesDepotMissionSlot == true;
@@ -2916,17 +2928,76 @@ namespace MC2Demo.Presentation
         private void RunStartupMainServerSmoke()
         {
             mainServerSmokeEnabled = true;
+            EnsureMainServerSmokeClient();
+            mainServerSmokeSummary = "MainServerSmoke=enabled SignedSquadBeforeLaunch: Pending RewardClaimAfterDebrief: Pending NoPerFrameServerCalls: "
+                + UnityMainServerClient.NoPerFrameServerCalls;
+            AddCombatLogLine("CLI main-server smoke enabled");
+            Debug.Log("MC2 main-server smoke opt-in: " + mainServerSmokeSummary);
+            TrySignMainServerSmokeSquadBeforeLaunch("command-file");
+        }
+
+        private void RunStartupInventoryBootstrapSmoke()
+        {
+            inventoryBootstrapSmokeEnabled = true;
+            EnsureMainServerSmokeClient();
+            inventoryBootstrapSummary = "InventoryBootstrapSmoke=enabled InventoryBootstrapBeforeLaunch: Pending LocalFixtureInventorySource: True NoPerFrameServerCalls: "
+                + UnityMainServerClient.NoPerFrameServerCalls;
+            AddCombatLogLine("CLI inventory bootstrap smoke enabled");
+            Debug.Log("MC2 inventory bootstrap smoke opt-in: " + inventoryBootstrapSummary);
+            TryBootstrapMainServerInventoryBeforeLaunch("command-file");
+        }
+
+        private UnityMainServerClient EnsureMainServerSmokeClient()
+        {
             mainServerSmokeClient ??= new UnityMainServerClient(new UnityServerSettings
             {
                 enabled = true,
                 baseUrl = UnityServerSettings.DefaultBaseUrl,
                 timeoutMilliseconds = UnityServerSettings.DefaultTimeoutMilliseconds
             });
-            mainServerSmokeSummary = "MainServerSmoke=enabled SignedSquadBeforeLaunch: Pending RewardClaimAfterDebrief: Pending NoPerFrameServerCalls: "
+
+            return mainServerSmokeClient;
+        }
+
+        private void TryBootstrapMainServerInventoryBeforeLaunch(string source)
+        {
+            if (!inventoryBootstrapSmokeEnabled || inventoryBootstrapAttempted)
+            {
+                return;
+            }
+
+            inventoryBootstrapAttempted = true;
+            mainServerInventoryBootstrap = EnsureMainServerSmokeClient().TryBootstrapInventory(MainServerSmokeDisplayName);
+            UnityInventorySnapshot inventory = mainServerInventoryBootstrap?.inventory;
+            UnityAccountRecord account = mainServerInventoryBootstrap?.account;
+            if (IsMainServerInventoryBootstrapReady(mainServerInventoryBootstrap))
+            {
+                inventoryBootstrapSummary = "InventoryBootstrapSmoke=ready source="
+                    + source
+                    + " InventoryBootstrapBeforeLaunch: True accountId="
+                    + account.accountId
+                    + " tokenBalance="
+                    + inventory.tokenBalance.ToString(CultureInfo.InvariantCulture)
+                    + " ownedMechs="
+                    + InventoryOwnedMechCount(inventory).ToString(CultureInfo.InvariantCulture)
+                    + " itemStacks="
+                    + InventoryItemStackCount(inventory).ToString(CultureInfo.InvariantCulture)
+                    + " LocalFixtureInventorySource: True NoPerFrameServerCalls: "
+                    + UnityMainServerClient.NoPerFrameServerCalls;
+                AddCombatLogLine("CLI inventory bootstrap OK");
+                Debug.Log("MC2 inventory bootstrap smoke OK: " + inventoryBootstrapSummary);
+                return;
+            }
+
+            string reason = MainServerSmokeFallbackReason(mainServerInventoryBootstrap?.fallback, mainServerInventoryBootstrap?.fallback?.message);
+            inventoryBootstrapSummary = "InventoryBootstrapSmoke=fallback source="
+                + source
+                + " InventoryBootstrapBeforeLaunch: False reason="
+                + reason
+                + " LocalFixtureInventoryPlayable: True NoPerFrameServerCalls: "
                 + UnityMainServerClient.NoPerFrameServerCalls;
-            AddCombatLogLine("CLI main-server smoke enabled");
-            Debug.Log("MC2 main-server smoke opt-in: " + mainServerSmokeSummary);
-            TrySignMainServerSmokeSquadBeforeLaunch("command-file");
+            AddCombatLogLine("CLI inventory bootstrap fallback: " + reason);
+            Debug.LogWarning("MC2 inventory bootstrap fallback: " + inventoryBootstrapSummary);
         }
 
         private void TrySignMainServerSmokeSquadBeforeLaunch(string source)
@@ -2938,7 +3009,7 @@ namespace MC2Demo.Presentation
 
             mainServerSmokeSignAttempted = true;
             UnitySquadSignRequest request = BuildMainServerSmokeSquadSignRequest();
-            mainServerSmokeSignedSquad = mainServerSmokeClient?.TrySignSquad(request);
+            mainServerSmokeSignedSquad = EnsureMainServerSmokeClient().TrySignSquad(request);
             UnitySignedSquad signed = mainServerSmokeSignedSquad?.signedSquad;
             if (mainServerSmokeSignedSquad?.IsSigned == true)
             {
@@ -3047,6 +3118,48 @@ namespace MC2Demo.Presentation
             Debug.LogError("MC2 main-server smoke assertion failed: " + summary);
         }
 
+        private void RunStartupInventoryBootstrapSmokeAssertion()
+        {
+            UnityInventorySnapshot inventory = mainServerInventoryBootstrap?.inventory;
+            UnityAccountRecord account = mainServerInventoryBootstrap?.account;
+            bool bootstrapOk = inventoryBootstrapSmokeEnabled
+                && inventoryBootstrapAttempted
+                && IsMainServerInventoryBootstrapReady(mainServerInventoryBootstrap);
+            bool accountOk = string.Equals(account?.accountId, MainServerSmokeAccountId, StringComparison.Ordinal);
+            bool tokenOk = inventory != null && inventory.tokenBalance == 12000;
+            bool mechCountOk = InventoryOwnedMechCount(inventory) == 3;
+            bool itemCountOk = InventoryItemStackCount(inventory) == 6;
+            bool noFrameCallsOk = UnityMainServerClient.NoPerFrameServerCalls;
+            string summary = "enabled="
+                + inventoryBootstrapSmokeEnabled
+                + " InventoryBootstrapBeforeLaunch: "
+                + bootstrapOk
+                + " accountId="
+                + (account?.accountId ?? "")
+                + " tokenBalance="
+                + (inventory?.tokenBalance ?? 0).ToString(CultureInfo.InvariantCulture)
+                + " ownedMechs="
+                + InventoryOwnedMechCount(inventory).ToString(CultureInfo.InvariantCulture)
+                + " itemStacks="
+                + InventoryItemStackCount(inventory).ToString(CultureInfo.InvariantCulture)
+                + " LocalFixtureInventorySource: True NoPerFrameServerCalls: "
+                + noFrameCallsOk
+                + " detail="
+                + inventoryBootstrapSummary;
+
+            if (bootstrapOk && accountOk && tokenOk && mechCountOk && itemCountOk && noFrameCallsOk)
+            {
+                AddCombatLogLine("CLI inventory bootstrap assert OK");
+                Debug.Log("MC2 inventory bootstrap smoke assertion OK: " + summary);
+                return;
+            }
+
+            startupSmokeFailed = true;
+            statusText = "Inventory bootstrap smoke failed";
+            AddCombatLogLine("CLI inventory bootstrap assert failed: " + summary);
+            Debug.LogError("MC2 inventory bootstrap smoke assertion failed: " + summary);
+        }
+
         private void TrySubmitMainServerSmokeRewardClaimAfterDebrief()
         {
             if (!mainServerSmokeEnabled || mainServerSmokeClaimAttempted)
@@ -3069,7 +3182,7 @@ namespace MC2Demo.Presentation
 
             mainServerSmokeClaimAttempted = true;
             UnityBattleResultClaim claim = BuildMainServerSmokeRewardClaim();
-            mainServerSmokeRewardClaim = mainServerSmokeClient?.TrySubmitRewardClaim(claim, mainServerSmokeSignedSquad);
+            mainServerSmokeRewardClaim = EnsureMainServerSmokeClient().TrySubmitRewardClaim(claim, mainServerSmokeSignedSquad);
             if (mainServerSmokeRewardClaim?.IsApproved == true)
             {
                 int tokenDelta = mainServerSmokeRewardClaim.rewardGrant?.tokenDelta ?? 0;
@@ -3159,6 +3272,28 @@ namespace MC2Demo.Presentation
             }
 
             return string.IsNullOrWhiteSpace(message) ? "Unknown" : message;
+        }
+
+        private static bool IsMainServerInventoryBootstrapReady(UnityInventoryBootstrap bootstrap)
+        {
+            UnityInventorySnapshot inventory = bootstrap?.inventory;
+            return bootstrap?.account != null
+                && inventory != null
+                && !string.IsNullOrWhiteSpace(bootstrap.account.accountId)
+                && inventory.tokenBalance >= 0
+                && InventoryOwnedMechCount(inventory) > 0
+                && InventoryItemStackCount(inventory) > 0
+                && bootstrap.fallback == null;
+        }
+
+        private static int InventoryOwnedMechCount(UnityInventorySnapshot inventory)
+        {
+            return inventory?.ownedMechs?.Length ?? 0;
+        }
+
+        private static int InventoryItemStackCount(UnityInventorySnapshot inventory)
+        {
+            return inventory?.itemStacks?.Length ?? 0;
         }
 
         private bool TryOpenDebriefPanelForStartup(out string summary)

@@ -73,7 +73,7 @@ As of this handoff plan:
 - Previous PC checkpoint retained in the gate chain: `Add Android APK identity check`
 - Previous PC checkpoint retained in the gate chain: `Add Android APK freshness check`
 - Previous PC checkpoint retained in the gate chain: `Add controlled demo capture log freshness check`
-- Current formal next development task after handoff: `F10 wire optional Unity inventory bootstrap smoke`
+- Current formal next development task after handoff: `F11 plan inventory-to-MechBay binding boundary`
 - Mobile orientation decision retained for handoff: first phone version is landscape-only; portrait is not a first-version target.
 
 Important: the new machine will not see local commits unless the old machine
@@ -118,6 +118,7 @@ The machine switch is safe only when all of these are true:
 - `scripts/unity/check_unity_main_server_integration_contract.ps1` prints `Unity main-server integration contract check OK`.
 - `scripts/unity/check_optional_unity_main_server_client_adapter.ps1` prints `Optional Unity main-server client adapter check OK`.
 - `scripts/unity/check_optional_unity_main_server_launch_debrief_smoke.ps1` prints `Optional Unity main-server launch/debrief smoke check OK`.
+- `scripts/unity/check_optional_unity_inventory_bootstrap_smoke.ps1` prints `Optional Unity inventory bootstrap smoke check OK`.
 - `scripts/unity/check_pc_core_playable_contract.ps1` prints `PC core playable contract check OK`.
 - `scripts/unity/check_mobile_command_model_preflight.ps1` prints `Mobile command model preflight OK`.
 - `scripts/unity/check_mobile_landscape_contract.ps1` prints `Mobile landscape contract check OK`.
@@ -629,8 +630,9 @@ the PC1-PC57 checkpoint, that `Pass Android G3 device smoke`, the landscape
 `F6 local main-server prototype`, `F7 document Unity main-server integration
 contract`, `F8 implement optional Unity main-server client adapter` and
 `F9 wire optional Unity main-server adapter into launch/debrief smoke` are
-recorded, and that `F10 wire optional Unity inventory bootstrap smoke` is the
-formal next task.
+recorded, that `F10 wire optional Unity inventory bootstrap smoke` is recorded,
+and that `F11 plan inventory-to-MechBay binding boundary` is the formal next
+task.
 
 **Step 19: Run Android device connection check**
 
@@ -1016,7 +1018,7 @@ documentation.
 - Read: `docs-ai-rts-commander-current-master-plan-2026-06-07.md`
 - Read: `docs-ai-rts-commander-current-detailed-plan-2026-06-07.md`
 - Read: `docs-mobile-first-plan-2026-06-10.md`
-- Next planned work: `F10 wire optional Unity inventory bootstrap smoke`
+- Next planned work: `F11 plan inventory-to-MechBay binding boundary`
 
 **Step 1: Confirm current next task**
 
@@ -1024,7 +1026,7 @@ Read the current commit queue. After this handoff, the product work should
 resume at:
 
 ```text
-F10 wire optional Unity inventory bootstrap smoke
+F11 plan inventory-to-MechBay binding boundary
 ```
 
 **Step 2: Do not start with a full remote platform**

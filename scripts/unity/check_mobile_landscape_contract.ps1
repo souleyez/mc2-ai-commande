@@ -37,7 +37,7 @@ function Assert-FileContains {
         return
     }
 
-    $text = Get-Content -LiteralPath $path -Raw
+    $text = Get-Content -LiteralPath $path -Raw -Encoding UTF8
     $missing = New-Object System.Collections.Generic.List[string]
     foreach ($marker in $Markers) {
         if (-not $text.Contains($marker)) {
@@ -107,6 +107,7 @@ Assert-FileContains -RelativePath "scripts\unity\check_android_smoke_summary.ps1
 
 Assert-FileContains -RelativePath "README.md" -Markers @(
     "G4 Touch UI pass",
+    "horizontal phone game",
     "2400x1080",
     "check_mobile_landscape_contract.ps1",
     "Mobile landscape contract check OK"
@@ -114,6 +115,7 @@ Assert-FileContains -RelativePath "README.md" -Markers @(
 
 Assert-FileContains -RelativePath "BUILD-MOBILE.md" -Markers @(
     "the first phone version is landscape-only",
+    "horizontal phone game version",
     "Portrait layout is not a supported first-version target",
     "check_mobile_landscape_contract.ps1",
     "Mobile landscape contract check OK."
@@ -121,17 +123,20 @@ Assert-FileContains -RelativePath "BUILD-MOBILE.md" -Markers @(
 
 Assert-FileContains -RelativePath "docs-mobile-first-plan-2026-06-10.md" -Markers @(
     "The first phone version is landscape-only",
-    "Portrait layout is not a supported",
+    "horizontal phone game build",
+    "layout is not a supported first-version target",
     "screenshot orientation OK landscape"
 )
 
 Assert-FileContains -RelativePath "docs-ai-rts-commander-current-master-plan-2026-06-07.md" -Markers @(
     "Mobile phones remain landscape-only for the first playable target",
+    "horizontal phone game",
     "portrait UI is not part of the first version",
     "G4 Touch UI pass"
 )
 
 Assert-FileContains -RelativePath "docs-ai-rts-commander-current-detailed-plan-2026-06-07.md" -Markers @(
+    "horizontal phone game",
     "G4 Touch UI pass",
     "G5 Mobile performance budget",
     "G6 iOS feasibility gate"
