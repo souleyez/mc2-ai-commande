@@ -3355,6 +3355,7 @@ git status --short --branch --untracked-files=all
 
 - `run_android_g3_when_ready.ps1 -PlanOnly` 输出 `Android G3 when-ready plan OK.`、`G3WhenReady: True` 和 `NoInstallOrLaunchUntilDeviceReady: True`。
 - `run_android_g3_when_ready.ps1 -TimeoutSeconds 0 -AllowWaiting` 在未就绪设备状态下只输出 waiting，不安装、不启动；当前 ADB-ready 实测状态会进入真实安装步骤。
+- 如果当前 ADB-ready 设备拒绝 ADB 安装并返回 `INSTALL_FAILED_USER_RESTRICTED`，`-AllowWaiting` 输出 `G3InstallPolicyBlocked: True`，保持 G3 等待手机侧 USB 安装权限。
 - 当前计划 gate、handoff 和移动指挥模型预检接受 PC1-PC57。
 
 **Validation:**

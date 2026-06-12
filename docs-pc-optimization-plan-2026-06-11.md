@@ -2072,6 +2072,7 @@ git diff --check
 - `run_android_g3_when_ready.ps1 -PlanOnly` prints `Android G3 when-ready plan OK.`.
 - The plan output includes `G3WhenReady: True` and `NoInstallOrLaunchUntilDeviceReady: True`.
 - `run_android_g3_when_ready.ps1 -TimeoutSeconds 0 -AllowWaiting` reports waiting on non-ready phones without installing or launching; when adb is ready it proceeds to the real install step.
+- If adb is ready but the phone rejects ADB installation with `INSTALL_FAILED_USER_RESTRICTED`, `-AllowWaiting` reports `G3InstallPolicyBlocked: True` and keeps G3 waiting on phone-side USB install permission.
 - Current plan queue, current plan gate, handoff and mobile command preflight accept PC1-PC57.
 
 **Validation:**

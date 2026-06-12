@@ -685,6 +685,9 @@ or launch the app.
 
 Current G3 install attempt reached `adb install` and then stopped at the phone
 policy prompt with `INSTALL_FAILED_USER_RESTRICTED: Install canceled by user`.
+With `-AllowWaiting`, the runner now classifies this as
+`G3InstallPolicyBlocked: True` and returns a waiting state instead of forcing a
+PowerShell stack trace as the only signal.
 Before retrying G3, enable/allow phone-side USB installation for this PC.
 
 **Step 19E: Preview Android G3 when-ready runner**

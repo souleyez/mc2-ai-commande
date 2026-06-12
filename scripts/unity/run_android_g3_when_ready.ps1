@@ -168,6 +168,27 @@ foreach ($line in $smoke.Lines) {
 }
 
 if ($smoke.ExitCode -ne 0) {
+    $smokeText = $smoke.Lines -join [Environment]::NewLine
+    $installPolicyBlocked = (
+        $smokeText -like "*INSTALL_FAILED_USER_RESTRICTED*" -or
+        $smokeText -like "*Install canceled by user*"
+    )
+
+    if ($installPolicyBlocked) {
+        Write-Host "Android G3 when-ready waiting on phone install permission."
+        Write-Host "G3WhenReady: True"
+        Write-Host "G3DeviceReady: True"
+        Write-Host "G3InstallPolicyBlocked: True"
+        Write-Host "NoLaunchAfterInstallFailure: True"
+        Write-Host "NextGate: G3 Run Android device smoke"
+
+        if ($AllowWaiting) {
+            exit 0
+        }
+
+        throw "Android G3 when-ready is blocked by phone-side USB install permission."
+    }
+
     throw "Android G3 when-ready smoke failed with exit code $($smoke.ExitCode)."
 }
 
