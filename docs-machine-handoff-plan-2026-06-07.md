@@ -73,7 +73,7 @@ As of this handoff plan:
 - Previous PC checkpoint retained in the gate chain: `Add Android APK identity check`
 - Previous PC checkpoint retained in the gate chain: `Add Android APK freshness check`
 - Previous PC checkpoint retained in the gate chain: `Add controlled demo capture log freshness check`
-- Current formal next development task after handoff: `F8 implement optional Unity main-server client adapter`
+- Current formal next development task after handoff: `F9 wire optional Unity main-server adapter into launch/debrief smoke`
 - Mobile orientation decision retained for handoff: first phone version is landscape-only; portrait is not a first-version target.
 
 Important: the new machine will not see local commits unless the old machine
@@ -116,6 +116,7 @@ The machine switch is safe only when all of these are true:
 - `scripts/unity/check_server_implementation_boundary.ps1` prints `Server implementation boundary check OK`.
 - `scripts/server/check_local_main_server.ps1` prints `Local main-server prototype check OK`.
 - `scripts/unity/check_unity_main_server_integration_contract.ps1` prints `Unity main-server integration contract check OK`.
+- `scripts/unity/check_optional_unity_main_server_client_adapter.ps1` prints `Optional Unity main-server client adapter check OK`.
 - `scripts/unity/check_pc_core_playable_contract.ps1` prints `PC core playable contract check OK`.
 - `scripts/unity/check_mobile_command_model_preflight.ps1` prints `Mobile command model preflight OK`.
 - `scripts/unity/check_mobile_landscape_contract.ps1` prints `Mobile landscape contract check OK`.
@@ -624,10 +625,10 @@ the PC1-PC57 checkpoint, that `Pass Android G3 device smoke`, the landscape
 `G4 Touch UI pass`, `G5 Mobile performance budget`, `G6 iOS feasibility gate`
 `F2 map authoring contract`, `F3 web ranking contract`,
 `F4 creator economy boundary`, `F5 server implementation boundary`,
-`F6 local main-server prototype` and
-`F7 document Unity main-server integration contract` are recorded, and that
-`F8 implement optional Unity main-server client adapter` is the formal next
-task.
+`F6 local main-server prototype`, `F7 document Unity main-server integration
+contract` and `F8 implement optional Unity main-server client adapter` are
+recorded, and that `F9 wire optional Unity main-server adapter into
+launch/debrief smoke` is the formal next task.
 
 **Step 19: Run Android device connection check**
 
@@ -1013,7 +1014,7 @@ documentation.
 - Read: `docs-ai-rts-commander-current-master-plan-2026-06-07.md`
 - Read: `docs-ai-rts-commander-current-detailed-plan-2026-06-07.md`
 - Read: `docs-mobile-first-plan-2026-06-10.md`
-- Next planned work: `F8 implement optional Unity main-server client adapter`
+- Next planned work: `F9 wire optional Unity main-server adapter into launch/debrief smoke`
 
 **Step 1: Confirm current next task**
 
@@ -1021,15 +1022,15 @@ Read the current commit queue. After this handoff, the product work should
 resume at:
 
 ```text
-F8 implement optional Unity main-server client adapter
+F9 wire optional Unity main-server adapter into launch/debrief smoke
 ```
 
 **Step 2: Do not start with a full remote platform**
 
-Mobile proof, server implementation boundary, the local main-server prototype
-and the Unity integration contract are already recorded. The next product work
-should implement the optional Unity client boundary for the existing local
-server endpoints:
+Mobile proof, server implementation boundary, the local main-server prototype,
+the Unity integration contract and the optional Unity client boundary are
+already recorded. The next product work should wire that boundary into an
+explicit opt-in launch/debrief smoke for the existing local server endpoints:
 
 - account id;
 - token ledger;

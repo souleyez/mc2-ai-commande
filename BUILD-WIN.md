@@ -288,10 +288,11 @@ This confirms the current PC/mobile package is sealed through `PC1-PC57`, that
 `G5 Mobile performance budget`, `G6 iOS feasibility gate`,
 `F2 map authoring contract`, `F3 web ranking contract`, and
 `F4 creator economy boundary`, `F5 server implementation boundary`,
-`F6 local main-server prototype` and
-`F7 document Unity main-server integration contract` are recorded, and that
-`F8 implement optional Unity main-server client adapter` is the formal next
-task.
+`F6 local main-server prototype`,
+`F7 document Unity main-server integration contract` and
+`F8 implement optional Unity main-server client adapter` are recorded, and that
+`F9 wire optional Unity main-server adapter into launch/debrief smoke` is the
+formal next task.
 
 Expected success string: `Current plan queue consistency check OK`.
 
@@ -372,6 +373,14 @@ This validates `docs-unity-main-server-integration-contract-2026-06-12.md`
 against the local server prototype and the current offline-first plan markers.
 
 Expected success string: `Unity main-server integration contract check OK`.
+
+Check the optional Unity main-server client adapter:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_optional_unity_main_server_client_adapter.ps1 -RepoRoot .
+```
+
+Expected success string: `Optional Unity main-server client adapter check OK`.
 
 Expected waiting-state string without an authorized adb phone: `Android device connection check waiting on device`.
 
