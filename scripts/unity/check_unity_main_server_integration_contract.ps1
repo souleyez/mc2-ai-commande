@@ -260,8 +260,8 @@ Require-Text -Text $mobilePlan -Needle "F9 wire optional Unity main-server adapt
 Require-Text -Text $mobilePlan -Needle "F10 wire optional Unity inventory bootstrap smoke" -Label "mobile completed task"
 Require-Text -Text $mobilePlan -Needle "F11 plan inventory-to-MechBay binding boundary" -Label "mobile completed task"
 Require-Text -Text $mobilePlan -Needle "F12 implement opt-in inventory-to-MechBay preview binding" -Label "mobile next task"
-Require-Text -Text $handoff -Needle 'Current formal next development task after handoff: `F32 audit PC controlled-demo command readability and formation feel`' -Label "handoff next task"
-Require-Text -Text $handoff -Needle 'Next planned work: `F32 audit PC controlled-demo command readability and formation feel`' -Label "handoff next planned work"
+Require-Text -Text $handoff -Needle 'Current formal next development task after handoff: `F33 implement PC controlled-demo command readability and formation fixes`' -Label "handoff next task"
+Require-Text -Text $handoff -Needle 'Next planned work: `F33 implement PC controlled-demo command readability and formation fixes`' -Label "handoff next planned work"
 Require-Text -Text $currentGate -Needle 'Unity main-server integration contract check OK.' -Label "current gate marker"
 
 if ($failures.Count -gt 0) {
