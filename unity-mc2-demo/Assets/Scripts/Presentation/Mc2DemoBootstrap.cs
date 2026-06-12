@@ -77,6 +77,7 @@ namespace MC2Demo.Presentation
         private const string MechLabBuildPrefix = "Build ";
         private const string MechLabInventorySourceLocalText = "Inventory Source: Local Fixture";
         private const string MechLabInventorySourcePreviewText = "Inventory Source: Main Server Preview";
+        private const string MechLabInventorySourceRewardText = "Inventory Source: Main Server Reward";
         private const string MechLabInventorySourceFallbackText = "Inventory Source: Main Server Unavailable - Local Fixture";
         private const string SavedAccountIdleLabel = "Ready  no recent save action";
         private const string SavedAccountPathReadyStatusText = "Save slot path ready";
@@ -373,6 +374,8 @@ namespace MC2Demo.Presentation
         private MechBayInventoryProjectionResult inventoryMechBayProjection;
         private UnitySignedSquadResult mainServerSmokeSignedSquad;
         private UnityRewardClaimResult mainServerSmokeRewardClaim;
+        private UnityPostReceiptInventoryRefreshResult postReceiptInventoryRefresh;
+        private readonly HashSet<string> postReceiptAppliedLedgerEntryIds = new();
         private bool inventoryBootstrapSmokeEnabled;
         private bool inventoryBootstrapAttempted;
         private bool inventoryMechBayPreviewSmokeEnabled;
@@ -381,8 +384,12 @@ namespace MC2Demo.Presentation
         private bool mainServerSmokeEnabled;
         private bool mainServerSmokeSignAttempted;
         private bool mainServerSmokeClaimAttempted;
+        private bool postReceiptInventoryRefreshAttempted;
+        private bool postReceiptInventoryRefreshApplied;
+        private bool postReceiptInventoryRefreshDuplicateAlreadyApplied;
         private string inventoryBootstrapSummary = "InventoryBootstrapSmoke=disabled";
         private string inventoryMechBayPreviewSummary = "InventoryMechBayPreview=disabled";
+        private string postReceiptInventoryRefreshSummary = "PostReceiptInventoryRefresh=disabled";
         private string mainServerSmokeSummary = "MainServerSmoke=disabled";
         private string pendingDetachedUnitId;
         private bool pendingJumpOrder;
@@ -3212,6 +3219,10 @@ namespace MC2Demo.Presentation
             bool claimOk = mainServerSmokeEnabled
                 && mainServerSmokeClaimAttempted
                 && mainServerSmokeRewardClaim?.IsApproved == true;
+            bool refreshOk = postReceiptInventoryRefreshAttempted
+                && postReceiptInventoryRefresh?.Accepted == true
+                && (postReceiptInventoryRefreshApplied || postReceiptInventoryRefreshDuplicateAlreadyApplied)
+                && postReceiptInventoryRefresh?.Projection?.Validation?.IsValid == true;
             bool noFrameCallsOk = UnityMainServerClient.NoPerFrameServerCalls;
             string summary = "enabled="
                 + mainServerSmokeEnabled
@@ -3219,12 +3230,16 @@ namespace MC2Demo.Presentation
                 + signedOk
                 + " RewardClaimAfterDebrief: "
                 + claimOk
+                + " PostReceiptInventoryRefresh: "
+                + refreshOk
                 + " NoPerFrameServerCalls: "
                 + noFrameCallsOk
                 + " detail="
-                + mainServerSmokeSummary;
+                + mainServerSmokeSummary
+                + " "
+                + postReceiptInventoryRefreshSummary;
 
-            if (signedOk && claimOk && noFrameCallsOk)
+            if (signedOk && claimOk && refreshOk && noFrameCallsOk)
             {
                 AddCombatLogLine("CLI main-server smoke assert OK");
                 Debug.Log("MC2 main-server smoke assertion OK: " + summary);
@@ -3360,6 +3375,7 @@ namespace MC2Demo.Presentation
             mainServerSmokeClaimAttempted = true;
             UnityBattleResultClaim claim = BuildMainServerSmokeRewardClaim();
             mainServerSmokeRewardClaim = EnsureMainServerSmokeClient().TrySubmitRewardClaim(claim, mainServerSmokeSignedSquad);
+            TryApplyPostReceiptInventoryRefresh("post-debrief", mainServerSmokeRewardClaim);
             if (mainServerSmokeRewardClaim?.IsApproved == true)
             {
                 int tokenDelta = mainServerSmokeRewardClaim.rewardGrant?.tokenDelta ?? 0;
@@ -3367,6 +3383,10 @@ namespace MC2Demo.Presentation
                     + claim.signedSquadId
                     + " tokenDelta="
                     + tokenDelta.ToString(CultureInfo.InvariantCulture)
+                    + " PostReceiptInventoryRefresh: "
+                    + (postReceiptInventoryRefresh?.Accepted == true)
+                    + " "
+                    + postReceiptInventoryRefreshSummary
                     + " NoPerFrameServerCalls: "
                     + UnityMainServerClient.NoPerFrameServerCalls;
                 AddCombatLogLine("CLI main-server smoke reward claim OK");
@@ -3377,10 +3397,112 @@ namespace MC2Demo.Presentation
             string reason = MainServerSmokeFallbackReason(mainServerSmokeRewardClaim?.fallback, mainServerSmokeRewardClaim?.message);
             mainServerSmokeSummary = "MainServerSmoke=claim-fallback SignedSquadBeforeLaunch: True RewardClaimAfterDebrief: False reason="
                 + reason
+                + " PostReceiptInventoryRefresh: False "
+                + postReceiptInventoryRefreshSummary
                 + " LocalDebriefPlayable: True NoPerFrameServerCalls: "
                 + UnityMainServerClient.NoPerFrameServerCalls;
             AddCombatLogLine("CLI main-server smoke reward fallback: " + reason);
             Debug.LogWarning("MC2 main-server smoke reward claim fallback: " + mainServerSmokeSummary);
+        }
+
+        private void TryApplyPostReceiptInventoryRefresh(string source, UnityRewardClaimResult rewardClaimResult)
+        {
+            postReceiptInventoryRefreshAttempted = true;
+            MechBayInventoryContract localInventory = demoInventory;
+            postReceiptInventoryRefresh = UnityPostReceiptInventoryRefreshProjector.Build(
+                rewardClaimResult,
+                postReceiptAppliedLedgerEntryIds);
+            postReceiptInventoryRefreshDuplicateAlreadyApplied = postReceiptInventoryRefresh.DuplicateLedgerAlreadyApplied;
+
+            if (postReceiptInventoryRefresh.CanApplyInventory)
+            {
+                demoInventory = postReceiptInventoryRefresh.Projection.Inventory;
+                RefreshDemoInventoryValidation();
+                if (demoInventoryValidation?.IsValid == true)
+                {
+                    postReceiptInventoryRefreshApplied = true;
+                    inventoryMechBayPreviewApplied = false;
+                    inventoryMechBayPreviewAttempted = false;
+                    postReceiptInventoryRefreshSummary = BuildPostReceiptInventoryRefreshSummary(
+                        source,
+                        postReceiptInventoryRefresh,
+                        "ready",
+                        true,
+                        "InventorySource=MainServerReward");
+                    AddCombatLogLine("CLI post-receipt inventory refresh OK");
+                    Debug.Log("MC2 post-receipt inventory refresh OK: " + postReceiptInventoryRefreshSummary);
+                    return;
+                }
+
+                postReceiptInventoryRefresh.FallbackReason = UnityPostReceiptInventoryRefreshProjector.FallbackProjectedInventoryRejected;
+                postReceiptInventoryRefresh.Message = FirstInventoryError(demoInventoryValidation);
+            }
+
+            demoInventory = localInventory;
+            RefreshDemoInventoryValidation();
+
+            if (postReceiptInventoryRefresh.Accepted && postReceiptInventoryRefresh.DuplicateLedgerAlreadyApplied)
+            {
+                postReceiptInventoryRefreshSummary = BuildPostReceiptInventoryRefreshSummary(
+                    source,
+                    postReceiptInventoryRefresh,
+                    "duplicate",
+                    false,
+                    "DuplicateClaimNoDoubleApplyLocalRefresh: True InventorySource=MainServerReward");
+                AddCombatLogLine("CLI post-receipt duplicate refresh OK");
+                Debug.Log("MC2 post-receipt duplicate refresh OK: " + postReceiptInventoryRefreshSummary);
+                return;
+            }
+
+            string fallbackReason = string.IsNullOrWhiteSpace(postReceiptInventoryRefresh?.FallbackReason)
+                ? MainServerSmokeFallbackReason(postReceiptInventoryRefresh?.fallback, postReceiptInventoryRefresh?.Message)
+                : postReceiptInventoryRefresh.FallbackReason;
+            postReceiptInventoryRefreshSummary = BuildPostReceiptInventoryRefreshSummary(
+                source,
+                postReceiptInventoryRefresh,
+                "fallback",
+                false,
+                "reason=" + fallbackReason + " LocalDebriefPlayable: True InventorySource=LocalFixture");
+            AddCombatLogLine("CLI post-receipt rejected refresh OK: " + fallbackReason);
+            Debug.LogWarning("MC2 post-receipt rejected refresh OK: " + postReceiptInventoryRefreshSummary);
+        }
+
+        private static string BuildPostReceiptInventoryRefreshSummary(
+            string source,
+            UnityPostReceiptInventoryRefreshResult refresh,
+            string state,
+            bool applied,
+            string suffix)
+        {
+            UnityLeaderboardRow leaderboard = refresh?.leaderboardRow;
+            return "PostReceiptInventoryRefresh="
+                + state
+                + " source="
+                + source
+                + " packetSource="
+                + (refresh?.source ?? "")
+                + " MainServerRewardApplied: "
+                + applied
+                + " DuplicateClaimNoDoubleApplyLocalRefresh: "
+                + (refresh?.DuplicateLedgerAlreadyApplied == true)
+                + " claimId="
+                + (refresh?.claimId ?? "")
+                + " ledgerEntryId="
+                + (refresh?.ledgerEntryId ?? "")
+                + " tokenDelta="
+                + (refresh?.tokenDelta ?? 0).ToString(CultureInfo.InvariantCulture)
+                + " tokenBalance="
+                + (refresh?.tokenBalance ?? 0).ToString(CultureInfo.InvariantCulture)
+                + " projected="
+                + (refresh?.Projection?.Accepted == true)
+                + " MechBayInventoryValidator.Validate: "
+                + (refresh?.Projection?.Validation?.IsValid == true)
+                + " leaderboard="
+                + LeaderboardCompactText(leaderboard)
+                + " ServerInventoryNotCombatAuthority: True NoPerFrameServerCalls: "
+                + UnityMainServerClient.NoPerFrameServerCalls
+                + " MobileLandscapeOnly: True "
+                + suffix;
         }
 
         private UnitySquadSignRequest BuildMainServerSmokeSquadSignRequest()
@@ -5078,6 +5200,7 @@ namespace MC2Demo.Presentation
                 && MechLabBuildPrefix.StartsWith("Build", StringComparison.Ordinal)
                 && string.Equals(MechLabInventorySourceLocalText, "Inventory Source: Local Fixture", StringComparison.Ordinal)
                 && string.Equals(MechLabInventorySourcePreviewText, "Inventory Source: Main Server Preview", StringComparison.Ordinal)
+                && string.Equals(MechLabInventorySourceRewardText, "Inventory Source: Main Server Reward", StringComparison.Ordinal)
                 && string.Equals(MechLabInventorySourceFallbackText, "Inventory Source: Main Server Unavailable - Local Fixture", StringComparison.Ordinal)
                 && string.Equals(MechLabFundsText(13500), "Funds 13,500", StringComparison.Ordinal)
                 && MechLabFundsText(13500).IndexOf("Token", StringComparison.OrdinalIgnoreCase) < 0
@@ -15160,6 +15283,11 @@ namespace MC2Demo.Presentation
 
         private string InventorySourceLine()
         {
+            if (postReceiptInventoryRefreshApplied || postReceiptInventoryRefreshDuplicateAlreadyApplied)
+            {
+                return MechLabInventorySourceRewardText;
+            }
+
             if (inventoryMechBayPreviewApplied)
             {
                 return MechLabInventorySourcePreviewText;
@@ -20832,6 +20960,13 @@ namespace MC2Demo.Presentation
                 MissionResultSalvageTargetLine(summary));
             y += 22f;
 
+            string serverRewardLine = PostReceiptDebriefLine(postReceiptInventoryRefresh);
+            if (!string.IsNullOrEmpty(serverRewardLine))
+            {
+                GUI.Label(new Rect(panel.x + 18f, y, panel.width - 36f, 20f), serverRewardLine);
+                y += 22f;
+            }
+
             if (missionReceipt != null)
             {
                 GUI.Label(
@@ -20910,6 +21045,54 @@ namespace MC2Demo.Presentation
             return DebriefPayoutLabel + " " + SignedTokens(summary?.completedRewardResourcePoints ?? 0)
                 + "    Repair " + SignedTokens(-(summary?.repairCostResourcePoints ?? 0))
                 + "    Net " + SignedTokens(summary?.netResourcePoints ?? 0);
+        }
+
+        private static string PostReceiptDebriefLine(UnityPostReceiptInventoryRefreshResult refresh)
+        {
+            if (refresh == null)
+            {
+                return "";
+            }
+
+            if (refresh.Accepted && refresh.DuplicateLedgerAlreadyApplied)
+            {
+                return UnityPostReceiptInventoryRefreshResult.MessageServerRewardAlreadyApplied
+                    + "    Balance "
+                    + FormatTokens(refresh.tokenBalance)
+                    + LeaderboardDebriefSuffix(refresh.leaderboardRow);
+            }
+
+            if (refresh.Accepted)
+            {
+                return "Server Reward +"
+                    + refresh.tokenDelta.ToString(CultureInfo.InvariantCulture)
+                    + "    Balance "
+                    + FormatTokens(refresh.tokenBalance)
+                    + LeaderboardDebriefSuffix(refresh.leaderboardRow);
+            }
+
+            if (refresh.fallback != null)
+            {
+                return "Server Reward pending local result";
+            }
+
+            return "";
+        }
+
+        private static string LeaderboardDebriefSuffix(UnityLeaderboardRow row)
+        {
+            string compact = LeaderboardCompactText(row);
+            return string.IsNullOrWhiteSpace(compact) ? "" : "    " + compact;
+        }
+
+        private static string LeaderboardCompactText(UnityLeaderboardRow row)
+        {
+            if (row == null || row.score <= 0)
+            {
+                return "";
+            }
+
+            return "Score " + row.score.ToString(CultureInfo.InvariantCulture);
         }
 
         private static string SummaryItemsText(string[] values, int maxItems)

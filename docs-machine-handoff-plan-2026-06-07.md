@@ -73,7 +73,7 @@ As of this handoff plan:
 - Previous PC checkpoint retained in the gate chain: `Add Android APK identity check`
 - Previous PC checkpoint retained in the gate chain: `Add Android APK freshness check`
 - Previous PC checkpoint retained in the gate chain: `Add controlled demo capture log freshness check`
-- Current formal next development task after handoff: `F18 implement opt-in post-receipt inventory refresh binding`
+- Current formal next development task after handoff: `F19 capture opt-in post-receipt refresh evidence`
 - Mobile orientation decision retained for handoff: first phone version is landscape-only; portrait is not a first-version target.
 
 Important: the new machine will not see local commits unless the old machine
@@ -634,7 +634,7 @@ contract`, `F8 implement optional Unity main-server client adapter` and
 recorded, that `F10 wire optional Unity inventory bootstrap smoke`,
 `F11 plan inventory-to-MechBay binding boundary` and
 `F12 implement opt-in inventory-to-MechBay preview binding` are recorded, and
-that `F13 capture opt-in MechBay preview evidence` is complete; `F14 capture landscape-phone MechLab source-line evidence` is complete; `F15 plan server-backed receipt slice` is complete; `F16 implement server-backed receipt evidence gate` is complete; `F17 plan post-receipt inventory refresh boundary` is complete; `F18 implement opt-in post-receipt inventory refresh binding` is the formal next task.
+that `F13 capture opt-in MechBay preview evidence` is complete; `F14 capture landscape-phone MechLab source-line evidence` is complete; `F15 plan server-backed receipt slice` is complete; `F16 implement server-backed receipt evidence gate` is complete; `F17 plan post-receipt inventory refresh boundary` is complete; `F18 implement opt-in post-receipt inventory refresh binding` is complete; `F19 capture opt-in post-receipt refresh evidence` is the formal next task.
 
 **Step 19: Run Android device connection check**
 
@@ -1020,7 +1020,7 @@ documentation.
 - Read: `docs-ai-rts-commander-current-master-plan-2026-06-07.md`
 - Read: `docs-ai-rts-commander-current-detailed-plan-2026-06-07.md`
 - Read: `docs-mobile-first-plan-2026-06-10.md`
-- Next planned work: `F18 implement opt-in post-receipt inventory refresh binding`
+- Next planned work: `F19 capture opt-in post-receipt refresh evidence`
 
 **Step 1: Confirm current next task**
 
@@ -1029,6 +1029,7 @@ resume at:
 
 ```text
 F18 implement opt-in post-receipt inventory refresh binding
+F19 capture opt-in post-receipt refresh evidence
 ```
 
 **Step 2: Do not start with a full remote platform**
@@ -1081,4 +1082,4 @@ Stop before continuing product development if:
 
 ## F12 Preview Binding Checkpoint
 
-`F12 implement opt-in inventory-to-MechBay preview binding` is complete. `F13 capture opt-in MechBay preview evidence` is complete. `F14 capture landscape-phone MechLab source-line evidence` is complete. The opt-in gate is `scripts/unity/check_optional_inventory_mechbay_preview_binding.ps1`, with expected success string `Optional inventory-to-MechBay preview binding check OK`; the preview evidence gate is `scripts/unity/capture_inventory_mechbay_preview_evidence.ps1`, with expected success string `Inventory MechBay preview evidence capture OK`; the landscape-phone evidence gate is `scripts/unity/capture_landscape_phone_mechlab_source_line_evidence.ps1`, with expected success string `Landscape-phone MechLab source-line evidence capture OK`. `F15 plan server-backed receipt slice` is complete. Evidence gate: `scripts/unity/check_server_backed_receipt_slice_plan.ps1` -> `Server-backed receipt slice plan check OK`. `F16 implement server-backed receipt evidence gate` is complete. Evidence gate: `scripts/unity/capture_server_backed_receipt_evidence.ps1` -> `Server-backed receipt evidence capture OK`. `F17 plan post-receipt inventory refresh boundary` is complete. Evidence gate: `scripts/unity/check_post_receipt_inventory_refresh_boundary.ps1` -> `Post-receipt inventory refresh boundary check OK`. Formal next task: `F18 implement opt-in post-receipt inventory refresh binding`. Mobile phones remain first-version landscape-only; portrait is not a first-slice support target.
+`F12 implement opt-in inventory-to-MechBay preview binding` is complete. `F13 capture opt-in MechBay preview evidence` is complete. `F14 capture landscape-phone MechLab source-line evidence` is complete. The opt-in gate is `scripts/unity/check_optional_inventory_mechbay_preview_binding.ps1`, with expected success string `Optional inventory-to-MechBay preview binding check OK`; the preview evidence gate is `scripts/unity/capture_inventory_mechbay_preview_evidence.ps1`, with expected success string `Inventory MechBay preview evidence capture OK`; the landscape-phone evidence gate is `scripts/unity/capture_landscape_phone_mechlab_source_line_evidence.ps1`, with expected success string `Landscape-phone MechLab source-line evidence capture OK`. `F15 plan server-backed receipt slice` is complete. Evidence gate: `scripts/unity/check_server_backed_receipt_slice_plan.ps1` -> `Server-backed receipt slice plan check OK`. `F16 implement server-backed receipt evidence gate` is complete. Evidence gate: `scripts/unity/capture_server_backed_receipt_evidence.ps1` -> `Server-backed receipt evidence capture OK`. `F17 plan post-receipt inventory refresh boundary` is complete. Evidence gate: `scripts/unity/check_post_receipt_inventory_refresh_boundary.ps1` -> `Post-receipt inventory refresh boundary check OK`. `F18 implement opt-in post-receipt inventory refresh binding` is complete. Evidence gate: `scripts/unity/check_post_receipt_inventory_refresh_binding.ps1` -> `Post-receipt inventory refresh binding check OK`. Formal next task: `F19 capture opt-in post-receipt refresh evidence`. Mobile phones remain first-version landscape-only; portrait is not a first-slice support target.

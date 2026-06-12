@@ -56,6 +56,7 @@ namespace MC2Demo.EditorTools
             string contractJson = File.ReadAllText(contractPath);
             BattleMission mission = BattleMission.FromJson(contractJson, combatProfiles);
             ValidateMechBayInventoryContract(mission, combatProfiles);
+            ValidatePostReceiptInventoryRefreshProjector();
             ValidateMechBaySavedAccountBoundary(mission);
             if (mission.Units.Count != 29)
             {
@@ -525,6 +526,173 @@ namespace MC2Demo.EditorTools
             }
 
             ValidateRepairRelaunchLoop(mission, combatProfiles);
+        }
+
+        private static void ValidatePostReceiptInventoryRefreshProjector()
+        {
+            HashSet<string> appliedLedgerEntryIds = new(StringComparer.Ordinal);
+            UnityRewardClaimResult acceptedClaim = BuildPostReceiptRewardClaimResult(
+                "reward-claim-validator",
+                "ledger-validator",
+                2310,
+                14310,
+                14310);
+            UnityPostReceiptInventoryRefreshResult first =
+                UnityPostReceiptInventoryRefreshProjector.Build(acceptedClaim, appliedLedgerEntryIds);
+            if (!first.Accepted
+                || !first.CanApplyInventory
+                || first.DuplicateLedgerAlreadyApplied
+                || first.Projection?.Validation?.IsValid != true
+                || first.tokenDelta != 2310
+                || first.tokenBalance != 14310
+                || first.source != UnityPostReceiptInventoryRefreshResult.SourceMainServerRewardClaim)
+            {
+                throw new InvalidDataException("Post-receipt accepted reward claim did not project into a valid MechBay refresh: " + first.Summary);
+            }
+
+            UnityPostReceiptInventoryRefreshResult duplicate =
+                UnityPostReceiptInventoryRefreshProjector.Build(acceptedClaim, appliedLedgerEntryIds);
+            if (!duplicate.Accepted
+                || !duplicate.DuplicateLedgerAlreadyApplied
+                || duplicate.CanApplyInventory
+                || duplicate.Message != UnityPostReceiptInventoryRefreshResult.MessageServerRewardAlreadyApplied
+                || duplicate.ledgerEntryId != first.ledgerEntryId)
+            {
+                throw new InvalidDataException("Post-receipt duplicate ledger did not stay accepted without reapply: " + duplicate.Summary);
+            }
+
+            UnityRewardClaimResult rejectedClaim =
+                UnityRewardClaimResult.RejectedClaim(OfflineFixtureFallback.RejectedClaim, "validator rejected claim");
+            UnityPostReceiptInventoryRefreshResult rejected =
+                UnityPostReceiptInventoryRefreshProjector.Build(rejectedClaim, appliedLedgerEntryIds);
+            if (rejected.Accepted
+                || rejected.CanApplyInventory
+                || rejected.fallback == null
+                || rejected.FallbackReason != UnityPostReceiptInventoryRefreshProjector.FallbackInvalidRewardClaim)
+            {
+                throw new InvalidDataException("Post-receipt rejected claim unexpectedly mutated refresh state: " + rejected.Summary);
+            }
+
+            UnityRewardClaimResult invalidLedger = BuildPostReceiptRewardClaimResult(
+                "reward-claim-invalid-ledger",
+                "ledger-invalid-ledger",
+                2310,
+                14310,
+                14311);
+            UnityPostReceiptInventoryRefreshResult invalid =
+                UnityPostReceiptInventoryRefreshProjector.Build(invalidLedger, appliedLedgerEntryIds);
+            if (invalid.Accepted
+                || invalid.CanApplyInventory
+                || invalid.FallbackReason != UnityPostReceiptInventoryRefreshProjector.FallbackInvalidTokenLedgerEntry)
+            {
+                throw new InvalidDataException("Post-receipt invalid token ledger was not rejected: " + invalid.Summary);
+            }
+        }
+
+        private static UnityRewardClaimResult BuildPostReceiptRewardClaimResult(
+            string claimId,
+            string ledgerEntryId,
+            int tokenDelta,
+            int ledgerBalanceAfter,
+            int inventoryTokenBalance)
+        {
+            const string AccountId = "local-dev-account";
+            const string PublicPlayerId = "pilot-local-0001";
+            return new UnityRewardClaimResult
+            {
+                schema = "RewardClaimResponse",
+                rewardClaim = new UnityRewardClaim
+                {
+                    schema = "RewardClaim",
+                    claimId = claimId,
+                    accountId = AccountId,
+                    publicPlayerId = PublicPlayerId,
+                    signedSquadId = "signed-validator",
+                    mapId = "mc2_01",
+                    mapVersion = "local-dev",
+                    battleCoreVersion = UnityMainServerClient.BattleCoreVersion,
+                    battleSummaryHash = claimId + "-summary",
+                    status = "approved",
+                    claimSource = "unity-validator"
+                },
+                rewardGrant = new UnityRewardGrant
+                {
+                    schema = "RewardGrant",
+                    grantId = "grant-" + claimId,
+                    accountId = AccountId,
+                    claimId = claimId,
+                    tokenDelta = tokenDelta,
+                    capped = false,
+                    rewardRulesVersion = "validator"
+                },
+                tokenLedgerEntry = new UnityTokenLedgerEntry
+                {
+                    schema = "TokenLedgerEntry",
+                    ledgerEntryId = ledgerEntryId,
+                    accountId = AccountId,
+                    idempotencyKey = claimId,
+                    delta = tokenDelta,
+                    balanceAfter = ledgerBalanceAfter,
+                    reason = "reward-claim"
+                },
+                inventorySnapshot = new UnityInventorySnapshot
+                {
+                    schema = "InventorySnapshot",
+                    accountId = AccountId,
+                    snapshotId = "inventory-" + claimId,
+                    tokenBalance = inventoryTokenBalance,
+                    ownedMechs = new[]
+                    {
+                        new UnityOwnedMechRecord
+                        {
+                            ownedMechId = "demo-mech-01",
+                            unitId = "unit-1",
+                            unitType = "Werewolf",
+                            chassisId = "Werewolf",
+                            displayName = "Werewolf unit-1",
+                            activeLoadoutId = "Werewolf-source",
+                            availableForMission = true,
+                            conditionPercent = 100,
+                            pilotId = PublicPlayerId,
+                            pilotDisplayName = "Local Commander",
+                            pilotType = "commander"
+                        }
+                    },
+                    itemStacks = new[]
+                    {
+                        new UnityItemStackRecord
+                        {
+                            itemId = "token-credit",
+                            displayName = "Token",
+                            category = "currency",
+                            quantity = inventoryTokenBalance,
+                            equippedQuantity = 0
+                        },
+                        new UnityItemStackRecord
+                        {
+                            itemId = "weapon-medium-missile",
+                            displayName = "Medium Missile Pack",
+                            category = "weapon",
+                            quantity = 6,
+                            equippedQuantity = 4
+                        }
+                    }
+                },
+                leaderboardRow = new UnityLeaderboardRow
+                {
+                    schema = "LeaderboardRow",
+                    leaderboardId = "basic",
+                    publicPlayerId = PublicPlayerId,
+                    displayName = "Local Commander",
+                    mapId = "mc2_01",
+                    mapVersion = "local-dev",
+                    battleId = claimId + "-battle",
+                    score = 2310,
+                    rewardClaimId = claimId,
+                    resultState = "success"
+                },
+                clientStatus = "ApprovedOrDuplicateClaim"
+            };
         }
 
         private static void ValidateRepairRelaunchLoop(BattleMission sourceMission, CombatProfileCatalog combatProfiles)

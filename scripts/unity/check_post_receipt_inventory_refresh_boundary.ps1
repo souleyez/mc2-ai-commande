@@ -273,7 +273,8 @@ $docs = @(
 
 foreach ($doc in $docs) {
     Require-Text -Text $doc.Text -Needle "F17 plan post-receipt inventory refresh boundary" -Label "$($doc.Name) F17 marker"
-    Require-Text -Text $doc.Text -Needle "F18 implement opt-in post-receipt inventory refresh binding" -Label "$($doc.Name) F18 next marker"
+    Require-Text -Text $doc.Text -Needle "F18 implement opt-in post-receipt inventory refresh binding" -Label "$($doc.Name) F18 marker"
+    Require-Text -Text $doc.Text -Needle "F19 capture opt-in post-receipt refresh evidence" -Label "$($doc.Name) F19 next marker"
 }
 
 Require-Text -Text $readme -Needle "docs-post-receipt-inventory-refresh-boundary-2026-06-12.md" -Label "README F17 boundary doc"
@@ -282,15 +283,18 @@ Require-Text -Text $buildWin -Needle "Post-receipt inventory refresh boundary ch
 Require-Text -Text $buildMobile -Needle "first phone version is landscape-only" -Label "BUILD-MOBILE landscape invariant"
 
 Require-Text -Text $masterPlan -Needle '| 95 | Done | `Plan post-receipt inventory refresh boundary` |' -Label "master F17 done"
-Require-Text -Text $masterPlan -Needle '| 96 | Next | `Implement opt-in post-receipt inventory refresh binding` |' -Label "master F18 next"
+Require-Text -Text $masterPlan -Needle '| 96 | Done | `Implement opt-in post-receipt inventory refresh binding` |' -Label "master F18 done"
+Require-Text -Text $masterPlan -Needle '| 97 | Next | `Capture opt-in post-receipt refresh evidence` |' -Label "master F19 next"
 Require-Text -Text $detailedPlan -Needle '| F17 | Done | `Plan post-receipt inventory refresh boundary` |' -Label "detailed F17 done"
-Require-Text -Text $detailedPlan -Needle '| F18 | Next | `Implement opt-in post-receipt inventory refresh binding` |' -Label "detailed F18 next"
-Require-Text -Text $handoff -Needle 'Current formal next development task after handoff: `F18 implement opt-in post-receipt inventory refresh binding`' -Label "handoff next task"
-Require-Text -Text $handoff -Needle 'Next planned work: `F18 implement opt-in post-receipt inventory refresh binding`' -Label "handoff next planned work"
+Require-Text -Text $detailedPlan -Needle '| F18 | Done | `Implement opt-in post-receipt inventory refresh binding` |' -Label "detailed F18 done"
+Require-Text -Text $detailedPlan -Needle '| F19 | Next | `Capture opt-in post-receipt refresh evidence` |' -Label "detailed F19 next"
+Require-Text -Text $handoff -Needle 'Current formal next development task after handoff: `F19 capture opt-in post-receipt refresh evidence`' -Label "handoff next task"
+Require-Text -Text $handoff -Needle 'Next planned work: `F19 capture opt-in post-receipt refresh evidence`' -Label "handoff next planned work"
 Require-Text -Text $currentGate -Needle "check_post_receipt_inventory_refresh_boundary.ps1" -Label "current gate F17 script"
 Require-Text -Text $currentGate -Needle "Post-receipt inventory refresh boundary check OK." -Label "current gate F17 marker"
 Require-Text -Text $queue -Needle "F17 plan post-receipt inventory refresh boundary" -Label "queue completed F17"
-Require-Text -Text $queue -Needle "F18 implement opt-in post-receipt inventory refresh binding" -Label "queue next F18"
+Require-Text -Text $queue -Needle "F18 implement opt-in post-receipt inventory refresh binding" -Label "queue completed F18"
+Require-Text -Text $queue -Needle "F19 capture opt-in post-receipt refresh evidence" -Label "queue next F19"
 Require-Text -Text $handoffScript -Needle "check_post_receipt_inventory_refresh_boundary.ps1" -Label "handoff script F17 gate"
 Require-Text -Text $handoffScript -Needle "Post-receipt inventory refresh boundary check OK" -Label "handoff script F17 marker"
 

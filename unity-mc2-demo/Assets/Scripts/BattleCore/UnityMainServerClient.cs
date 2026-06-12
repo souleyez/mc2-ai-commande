@@ -428,6 +428,204 @@ namespace MC2Demo.BattleCore
             + (FallbackReason ?? "");
     }
 
+    public sealed class UnityPostReceiptInventoryRefreshResult
+    {
+        public const string SourceMainServerRewardClaim = "MainServerRewardClaim";
+        public const string SourceLabelMainServerReward = "MainServerReward";
+        public const string MessageServerRewardAlreadyApplied = "Server Reward Already Applied";
+
+        public bool Accepted { get; internal set; }
+        public bool DuplicateLedgerAlreadyApplied { get; internal set; }
+        public string source { get; internal set; }
+        public string claimId { get; internal set; }
+        public string ledgerEntryId { get; internal set; }
+        public int tokenDelta { get; internal set; }
+        public int tokenBalance { get; internal set; }
+        public UnityInventorySnapshot inventorySnapshot { get; internal set; }
+        public UnityLeaderboardRow leaderboardRow { get; internal set; }
+        public OfflineFixtureFallback fallback { get; internal set; }
+        public MechBayInventoryProjectionResult Projection { get; internal set; }
+        public string FallbackReason { get; internal set; }
+        public string Message { get; internal set; }
+
+        public bool CanApplyInventory => Accepted
+            && !DuplicateLedgerAlreadyApplied
+            && Projection?.Accepted == true
+            && Projection.Validation?.IsValid == true
+            && Projection.Inventory != null;
+
+        public string Summary => "PostReceiptInventoryRefresh=accepted:"
+            + Accepted
+            + " source="
+            + (source ?? "")
+            + " claimId="
+            + (claimId ?? "")
+            + " ledgerEntryId="
+            + (ledgerEntryId ?? "")
+            + " tokenDelta="
+            + tokenDelta.ToString(CultureInfo.InvariantCulture)
+            + " tokenBalance="
+            + tokenBalance.ToString(CultureInfo.InvariantCulture)
+            + " duplicate="
+            + DuplicateLedgerAlreadyApplied
+            + " projected="
+            + (Projection?.Accepted == true)
+            + " validation="
+            + (Projection?.Validation?.IsValid == true)
+            + " reason="
+            + (FallbackReason ?? "")
+            + " message="
+            + (Message ?? "");
+    }
+
+    public static class UnityPostReceiptInventoryRefreshProjector
+    {
+        public const string FallbackInvalidRewardClaim = "FallbackInvalidRewardClaim";
+        public const string FallbackInvalidRewardGrant = "FallbackInvalidRewardGrant";
+        public const string FallbackInvalidTokenLedgerEntry = "FallbackInvalidTokenLedgerEntry";
+        public const string FallbackInvalidInventorySnapshot = "FallbackInvalidInventorySnapshot";
+        public const string FallbackProjectedInventoryRejected = "FallbackProjectedInventoryRejected";
+
+        public static UnityPostReceiptInventoryRefreshResult Build(
+            UnityRewardClaimResult rewardClaimResult,
+            ISet<string> appliedLedgerEntryIds)
+        {
+            UnityRewardClaim rewardClaim = rewardClaimResult?.rewardClaim;
+            UnityRewardGrant rewardGrant = rewardClaimResult?.rewardGrant;
+            UnityTokenLedgerEntry tokenLedgerEntry = rewardClaimResult?.tokenLedgerEntry;
+            UnityInventorySnapshot inventorySnapshot = rewardClaimResult?.inventorySnapshot;
+
+            if (rewardClaimResult?.IsApproved != true || !string.Equals(rewardClaim?.status, "approved", StringComparison.Ordinal))
+            {
+                return Reject(
+                    rewardClaimResult,
+                    FallbackInvalidRewardClaim,
+                    rewardClaimResult?.message ?? "UnityRewardClaimResult.IsApproved == true was not satisfied.");
+            }
+
+            if (string.IsNullOrWhiteSpace(rewardClaim.claimId)
+                || string.IsNullOrWhiteSpace(rewardClaim.accountId))
+            {
+                return Reject(
+                    rewardClaimResult,
+                    FallbackInvalidRewardClaim,
+                    "Reward claim is missing claimId or accountId.");
+            }
+
+            if (rewardGrant == null
+                || string.IsNullOrWhiteSpace(rewardGrant.claimId)
+                || !string.Equals(rewardGrant.claimId, rewardClaim.claimId, StringComparison.Ordinal))
+            {
+                return Reject(
+                    rewardClaimResult,
+                    FallbackInvalidRewardGrant,
+                    "rewardGrant.claimId does not match rewardClaim.claimId.");
+            }
+
+            if (tokenLedgerEntry == null
+                || string.IsNullOrWhiteSpace(tokenLedgerEntry.ledgerEntryId)
+                || !string.Equals(tokenLedgerEntry.reason, "reward-claim", StringComparison.Ordinal))
+            {
+                return Reject(
+                    rewardClaimResult,
+                    FallbackInvalidTokenLedgerEntry,
+                    "tokenLedgerEntry.reason == \"reward-claim\" was not satisfied.");
+            }
+
+            if (inventorySnapshot == null
+                || string.IsNullOrWhiteSpace(inventorySnapshot.accountId)
+                || !string.Equals(inventorySnapshot.accountId, rewardClaim.accountId, StringComparison.Ordinal))
+            {
+                return Reject(
+                    rewardClaimResult,
+                    FallbackInvalidInventorySnapshot,
+                    "inventorySnapshot.accountId does not match rewardClaim.accountId.");
+            }
+
+            if (tokenLedgerEntry.balanceAfter != inventorySnapshot.tokenBalance)
+            {
+                return Reject(
+                    rewardClaimResult,
+                    FallbackInvalidTokenLedgerEntry,
+                    "tokenLedgerEntry.balanceAfter == inventorySnapshot.tokenBalance was not satisfied.");
+            }
+
+            UnityInventoryBootstrap bootstrap = new()
+            {
+                schema = "UnityInventoryBootstrap",
+                account = new UnityAccountRecord
+                {
+                    accountId = rewardClaim.accountId,
+                    publicPlayerId = rewardClaim.publicPlayerId,
+                    displayName = rewardClaimResult.leaderboardRow?.displayName ?? rewardClaim.publicPlayerId ?? rewardClaim.accountId
+                },
+                publicProfile = new UnityPublicProfileRecord
+                {
+                    publicPlayerId = rewardClaim.publicPlayerId,
+                    displayName = rewardClaimResult.leaderboardRow?.displayName ?? rewardClaim.publicPlayerId ?? rewardClaim.accountId
+                },
+                inventory = inventorySnapshot
+            };
+
+            MechBayInventoryProjectionResult projection = UnityInventoryToMechBayProjector.Project(bootstrap);
+            if (projection?.Accepted != true || projection.Validation?.IsValid != true)
+            {
+                return Reject(
+                    rewardClaimResult,
+                    FallbackProjectedInventoryRejected,
+                    projection?.Message ?? "UnityInventoryToMechBayProjector.Project rejected reward inventory.",
+                    projection);
+            }
+
+            projection.SourceLabel = UnityPostReceiptInventoryRefreshResult.SourceLabelMainServerReward;
+            bool duplicate = appliedLedgerEntryIds != null && appliedLedgerEntryIds.Contains(tokenLedgerEntry.ledgerEntryId);
+            if (!duplicate && appliedLedgerEntryIds != null)
+            {
+                appliedLedgerEntryIds.Add(tokenLedgerEntry.ledgerEntryId);
+            }
+
+            return new UnityPostReceiptInventoryRefreshResult
+            {
+                Accepted = true,
+                DuplicateLedgerAlreadyApplied = duplicate,
+                source = UnityPostReceiptInventoryRefreshResult.SourceMainServerRewardClaim,
+                claimId = rewardClaim.claimId,
+                ledgerEntryId = tokenLedgerEntry.ledgerEntryId,
+                tokenDelta = rewardGrant.tokenDelta,
+                tokenBalance = inventorySnapshot.tokenBalance,
+                inventorySnapshot = inventorySnapshot,
+                leaderboardRow = rewardClaimResult.leaderboardRow,
+                Projection = projection,
+                Message = duplicate
+                    ? UnityPostReceiptInventoryRefreshResult.MessageServerRewardAlreadyApplied
+                    : "Server Reward +" + rewardGrant.tokenDelta.ToString(CultureInfo.InvariantCulture)
+            };
+        }
+
+        private static UnityPostReceiptInventoryRefreshResult Reject(
+            UnityRewardClaimResult rewardClaimResult,
+            string reason,
+            string message,
+            MechBayInventoryProjectionResult projection = null)
+        {
+            return new UnityPostReceiptInventoryRefreshResult
+            {
+                Accepted = false,
+                source = "",
+                claimId = rewardClaimResult?.rewardClaim?.claimId ?? "",
+                ledgerEntryId = rewardClaimResult?.tokenLedgerEntry?.ledgerEntryId ?? "",
+                tokenDelta = rewardClaimResult?.rewardGrant?.tokenDelta ?? 0,
+                tokenBalance = rewardClaimResult?.inventorySnapshot?.tokenBalance ?? 0,
+                inventorySnapshot = rewardClaimResult?.inventorySnapshot,
+                leaderboardRow = rewardClaimResult?.leaderboardRow,
+                Projection = projection,
+                FallbackReason = reason,
+                Message = string.IsNullOrWhiteSpace(message) ? reason : message,
+                fallback = OfflineFixtureFallback.ForRejectedClaim(reason, message)
+            };
+        }
+    }
+
     public static class UnityInventoryToMechBayProjector
     {
         public const string FallbackInvalidInventorySnapshot = "FallbackInvalidInventorySnapshot";
