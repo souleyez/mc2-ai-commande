@@ -12,6 +12,10 @@ param(
     [string]$SummaryPath = "",
     [string]$CommandFilePath = "",
     [string]$DeviceCommandFilePath = "",
+    [string[]]$RequiredSmokeMarkers = @("MC2 debrief summary assertion OK", "MC2 loadout compact assertion OK"),
+    [string[]]$ForbiddenSmokeMarkers = @("assertion failed", "command file blocked", "Command file blocked"),
+    [string]$RequiredSmokeMarkersText = "",
+    [string]$ForbiddenSmokeMarkersText = "",
     [string[]]$LogcatFilters = @("Unity:I", "AndroidRuntime:E", "DEBUG:I", "ActivityManager:I", "*:S"),
     [int]$LogcatTailLines = 0,
     [int]$LaunchWaitSeconds = 12,
@@ -78,6 +82,14 @@ if (-not (Test-Path -LiteralPath $AdbPath)) {
 
 if (-not $NoCommandFileSmoke -and -not (Test-Path -LiteralPath $CommandFilePath -PathType Leaf)) {
     throw "Missing Android smoke command file: $CommandFilePath"
+}
+
+if (-not [string]::IsNullOrWhiteSpace($RequiredSmokeMarkersText)) {
+    $RequiredSmokeMarkers = @($RequiredSmokeMarkersText -split [regex]::Escape("|||") | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+}
+
+if (-not [string]::IsNullOrWhiteSpace($ForbiddenSmokeMarkersText)) {
+    $ForbiddenSmokeMarkers = @($ForbiddenSmokeMarkersText -split [regex]::Escape("|||") | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
 }
 
 $sdkToolingScript = Join-Path $PSScriptRoot "check_android_sdk_tooling.ps1"
@@ -501,8 +513,9 @@ if ($PlanOnly) {
         Write-Host "CommandFile: $CommandFilePath"
         Write-Host "DeviceCommandFile: $DeviceCommandFilePath"
         Write-Host "UnityArguments: $unityArguments"
-        Write-Host "SmokeSuccessMarker: MC2 debrief summary assertion OK"
-        Write-Host "SmokeSuccessMarker: MC2 loadout compact assertion OK"
+        foreach ($marker in $RequiredSmokeMarkers) {
+            Write-Host "SmokeSuccessMarker: $marker"
+        }
     }
     Write-Host "Install: $(-not $NoInstall)"
     if (-not $NoInstall) {
@@ -629,17 +642,29 @@ $logcatOutput | ForEach-Object { $_.ToString() } | Set-Content -LiteralPath $Log
 
 $smokeTestPassed = $false
 if ($commandFileSmoke -and -not $NoLaunch) {
-    if ((Test-LogContains -Path $LogPath -Needle "MC2 debrief summary assertion OK") `
-        -and (Test-LogContains -Path $LogPath -Needle "MC2 loadout compact assertion OK")) {
+    $missingSmokeMarkers = New-Object System.Collections.Generic.List[string]
+    foreach ($marker in $RequiredSmokeMarkers) {
+        if (-not (Test-LogContains -Path $LogPath -Needle $marker)) {
+            [void]$missingSmokeMarkers.Add($marker)
+        }
+    }
+
+    $hasForbiddenSmokeMarker = $false
+    foreach ($marker in $ForbiddenSmokeMarkers) {
+        if (Test-LogContains -Path $LogPath -Needle $marker) {
+            $hasForbiddenSmokeMarker = $true
+            break
+        }
+    }
+
+    if ($missingSmokeMarkers.Count -eq 0) {
         $smokeTestPassed = $true
     }
-    elseif ((Test-LogContains -Path $LogPath -Needle "assertion failed") `
-        -or (Test-LogContains -Path $LogPath -Needle "command file blocked") `
-        -or (Test-LogContains -Path $LogPath -Needle "Command file blocked")) {
+    elseif ($hasForbiddenSmokeMarker) {
         throw "Android command-file smoke reported an assertion or command-file failure. See log: $LogPath"
     }
     else {
-        throw "Android command-file smoke did not report the visible-flow success markers. See log: $LogPath"
+        throw "Android command-file smoke did not report the expected success markers: $($missingSmokeMarkers -join '; '). See log: $LogPath"
     }
 }
 

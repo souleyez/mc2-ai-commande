@@ -360,7 +360,7 @@ Require-Text -Text $masterPlan -Needle '| 96 | Done | `Implement opt-in post-rec
 Require-Text -Text $masterPlan -Needle '| 97 | Done | `Capture opt-in post-receipt refresh evidence` |' -Label "master F19 done"
 Require-Text -Text $masterPlan -Needle '| 98 | Done | `Refresh Android landscape build/smoke evidence` |' -Label "master F20 done"
 Require-Text -Text $masterPlan -Needle '| 101 | Done | `Capture landscape MechLab touch evidence` |' -Label "master F23 done"
-Require-Text -Text $masterPlan -Needle '| 102 | Next | `Capture Android MechLab touch evidence` |' -Label "master F24 next"
+Require-Text -Text $masterPlan -Needle '| 102 | Done | `Capture Android MechLab touch evidence` |' -Label "master F24 done"
 Require-Text -Text $detailedPlan -Needle '| F12 | Done | `Implement opt-in inventory-to-MechBay preview binding` |' -Label "detailed F12 done"
 Require-Text -Text $detailedPlan -Needle '| F13 | Done | `Capture opt-in MechBay preview evidence` |' -Label "detailed F13 done"
 Require-Text -Text $detailedPlan -Needle '| F14 | Done | `Capture landscape-phone MechLab source-line evidence` |' -Label "detailed F14 done"
@@ -371,7 +371,7 @@ Require-Text -Text $detailedPlan -Needle '| F18 | Done | `Implement opt-in post-
 Require-Text -Text $detailedPlan -Needle '| F19 | Done | `Capture opt-in post-receipt refresh evidence` |' -Label "detailed F19 done"
 Require-Text -Text $detailedPlan -Needle '| F20 | Done | `Refresh Android landscape build/smoke evidence` |' -Label "detailed F20 done"
 Require-Text -Text $detailedPlan -Needle '| F23 | Done | `Capture landscape MechLab touch evidence` |' -Label "detailed F23 done"
-Require-Text -Text $detailedPlan -Needle '| F24 | Next | `Capture Android MechLab touch evidence` |' -Label "detailed F24 next"
+Require-Text -Text $detailedPlan -Needle '| F24 | Done | `Capture Android MechLab touch evidence` |' -Label "detailed F24 done"
 Require-Text -Text $mobilePlan -Needle "F12 implement opt-in inventory-to-MechBay preview binding" -Label "mobile completed task"
 Require-Text -Text $mobilePlan -Needle "F13 capture opt-in MechBay preview evidence" -Label "mobile completed task"
 Require-Text -Text $mobilePlan -Needle "F14 capture landscape-phone MechLab source-line evidence" -Label "mobile completed task"
@@ -384,8 +384,8 @@ Require-Text -Text $mobilePlan -Needle "F20 refresh Android landscape build/smok
 Require-Text -Text $mobilePlan -Needle "F23 capture landscape MechLab touch evidence" -Label "mobile completed task"
 Require-Text -Text $mobilePlan -Needle "F24 capture Android MechLab touch evidence" -Label "mobile next task"
 Require-Text -Text $mobilePlan -Needle "first phone version is landscape-only" -Label "mobile landscape invariant"
-Require-Text -Text $handoff -Needle 'Current formal next development task after handoff: `F24 capture Android MechLab touch evidence`' -Label "handoff next task"
-Require-Text -Text $handoff -Needle 'Next planned work: `F24 capture Android MechLab touch evidence`' -Label "handoff next planned work"
+Require-Text -Text $handoff -Needle 'Current formal next development task after handoff: `F25 capture Android battle command touch evidence`' -Label "handoff next task"
+Require-Text -Text $handoff -Needle 'Next planned work: `F25 capture Android battle command touch evidence`' -Label "handoff next planned work"
 
 if ($failures.Count -eq 0) {
     $serverStarted = $false
