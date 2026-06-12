@@ -296,7 +296,7 @@ Completed mobile gates: `Pass Android G3 device smoke`, the landscape
 `F10 wire optional Unity inventory bootstrap smoke` is also complete.
 `F11 plan inventory-to-MechBay binding boundary` is also complete.
 Completed task: `F12 implement opt-in inventory-to-MechBay preview binding`.
-Formal next task: `F13 capture opt-in MechBay preview evidence`.
+Completed task: `F13 capture opt-in MechBay preview evidence`. Evidence gate: `scripts/unity/capture_inventory_mechbay_preview_evidence.ps1` -> `Inventory MechBay preview evidence capture OK`. Formal next task: `F14 capture landscape-phone MechLab source-line evidence`.
 
 Mobile orientation decision: the first phone version is landscape-only.
 Treat it as a horizontal phone game version, not as a portrait UI that can
@@ -714,4 +714,4 @@ Inventory-to-MechBay binding boundary check OK
 
 ## F12 Preview Binding Checkpoint
 
-`F12 implement opt-in inventory-to-MechBay preview binding` is complete. The opt-in gate is `scripts/unity/check_optional_inventory_mechbay_preview_binding.ps1`, with expected success string `Optional inventory-to-MechBay preview binding check OK`. Formal next task: `F13 capture opt-in MechBay preview evidence`. Mobile phones remain first-version landscape-only; portrait is not a first-slice support target.
+`F12 implement opt-in inventory-to-MechBay preview binding` is complete. `F13 capture opt-in MechBay preview evidence` is complete. The opt-in gate is `scripts/unity/check_optional_inventory_mechbay_preview_binding.ps1`, with expected success string `Optional inventory-to-MechBay preview binding check OK`; the evidence gate is `scripts/unity/capture_inventory_mechbay_preview_evidence.ps1`, with expected success string `Inventory MechBay preview evidence capture OK`. Formal next task: `F14 capture landscape-phone MechLab source-line evidence`. Mobile phones remain first-version landscape-only; portrait is not a first-slice support target.

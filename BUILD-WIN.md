@@ -294,8 +294,9 @@ This confirms the current PC/mobile package is sealed through `PC1-PC57`, that
 `F9 wire optional Unity main-server adapter into launch/debrief smoke` are
 recorded, that `F10 wire optional Unity inventory bootstrap smoke` is recorded,
 that `F11 plan inventory-to-MechBay binding boundary` is recorded, and that
-`F12 implement opt-in inventory-to-MechBay preview binding` is the formal next
-task.
+`F12 implement opt-in inventory-to-MechBay preview binding` and
+`F13 capture opt-in MechBay preview evidence` are recorded. The formal next
+task is `F14 capture landscape-phone MechLab source-line evidence`.
 
 Expected success string: `Current plan queue consistency check OK`.
 
@@ -855,4 +856,4 @@ Run the game!
 
 ## F12 Preview Binding Checkpoint
 
-`F12 implement opt-in inventory-to-MechBay preview binding` is complete. The opt-in gate is `scripts/unity/check_optional_inventory_mechbay_preview_binding.ps1`, with expected success string `Optional inventory-to-MechBay preview binding check OK`. Formal next task: `F13 capture opt-in MechBay preview evidence`. Mobile phones remain first-version landscape-only; portrait is not a first-slice support target.
+`F12 implement opt-in inventory-to-MechBay preview binding` is complete. `F13 capture opt-in MechBay preview evidence` is complete. The opt-in gate is `scripts/unity/check_optional_inventory_mechbay_preview_binding.ps1`, with expected success string `Optional inventory-to-MechBay preview binding check OK`; the evidence gate is `scripts/unity/capture_inventory_mechbay_preview_evidence.ps1`, with expected success string `Inventory MechBay preview evidence capture OK`. Formal next task: `F14 capture landscape-phone MechLab source-line evidence`. Mobile phones remain first-version landscape-only; portrait is not a first-slice support target.

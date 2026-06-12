@@ -101,7 +101,8 @@ $requiredPlanMarkers = @(
     "F10 wire optional Unity inventory bootstrap smoke",
     "F11 plan inventory-to-MechBay binding boundary",
     "F12 implement opt-in inventory-to-MechBay preview binding",
-    "F13 capture opt-in MechBay preview evidence"
+    "F13 capture opt-in MechBay preview evidence",
+    "F14 capture landscape-phone MechLab source-line evidence"
 )
 
 $docsToCheck = @(
@@ -142,7 +143,8 @@ Assert-Contains -Text $mobilePlan -Needle "F9 wire optional Unity main-server ad
 Assert-Contains -Text $mobilePlan -Needle "F10 wire optional Unity inventory bootstrap smoke" -Label "mobile completed platform task"
 Assert-Contains -Text $mobilePlan -Needle "F11 plan inventory-to-MechBay binding boundary" -Label "mobile completed platform task"
 Assert-Contains -Text $mobilePlan -Needle "F12 implement opt-in inventory-to-MechBay preview binding" -Label "mobile completed platform task"
-Assert-Contains -Text $mobilePlan -Needle "F13 capture opt-in MechBay preview evidence" -Label "mobile next task"
+Assert-Contains -Text $mobilePlan -Needle "F13 capture opt-in MechBay preview evidence" -Label "mobile completed platform task"
+Assert-Contains -Text $mobilePlan -Needle "F14 capture landscape-phone MechLab source-line evidence" -Label "mobile next task"
 Assert-Contains -Text $mobilePlan -Needle "first phone version is landscape-only" -Label "mobile orientation decision"
 
 $detailedPlan = Read-RequiredText -RelativePath "docs-ai-rts-commander-current-detailed-plan-2026-06-07.md"
@@ -157,11 +159,12 @@ Assert-Contains -Text $detailedPlan -Needle '| F9 | Done | `Wire optional Unity 
 Assert-Contains -Text $detailedPlan -Needle '| F10 | Done | `Wire optional Unity inventory bootstrap smoke` |' -Label "detailed queue F10"
 Assert-Contains -Text $detailedPlan -Needle '| F11 | Done | `Plan inventory-to-MechBay binding boundary` |' -Label "detailed queue F11"
 Assert-Contains -Text $detailedPlan -Needle '| F12 | Done | `Implement opt-in inventory-to-MechBay preview binding` |' -Label "detailed queue F12"
-Assert-Contains -Text $detailedPlan -Needle '| F13 | Next | `Capture opt-in MechBay preview evidence` |' -Label "detailed queue F13"
+Assert-Contains -Text $detailedPlan -Needle '| F13 | Done | `Capture opt-in MechBay preview evidence` |' -Label "detailed queue F13"
+Assert-Contains -Text $detailedPlan -Needle '| F14 | Next | `Capture landscape-phone MechLab source-line evidence` |' -Label "detailed queue F14"
 
 $handoff = Read-RequiredText -RelativePath "docs-machine-handoff-plan-2026-06-07.md"
-Assert-Contains -Text $handoff -Needle 'Current formal next development task after handoff: `F13 capture opt-in MechBay preview evidence`' -Label "handoff next task"
-Assert-Contains -Text $handoff -Needle 'Next planned work: `F13 capture opt-in MechBay preview evidence`' -Label "handoff next planned work"
+Assert-Contains -Text $handoff -Needle 'Current formal next development task after handoff: `F14 capture landscape-phone MechLab source-line evidence`' -Label "handoff next task"
+Assert-Contains -Text $handoff -Needle 'Next planned work: `F14 capture landscape-phone MechLab source-line evidence`' -Label "handoff next planned work"
 
 $currentGate = Read-RequiredText -RelativePath "scripts\unity\check_current_plan_gate.ps1"
 Assert-Contains -Text $currentGate -Needle 'CommandFileSmoke: True' -Label "current gate script marker"
@@ -187,6 +190,7 @@ Assert-Contains -Text $currentGate -Needle 'Optional Unity main-server launch/de
 Assert-Contains -Text $currentGate -Needle 'Optional Unity inventory bootstrap smoke check OK.' -Label "current gate optional unity inventory bootstrap marker"
 Assert-Contains -Text $currentGate -Needle 'Inventory-to-MechBay binding boundary check OK.' -Label "current gate inventory-to-MechBay binding marker"
 Assert-Contains -Text $currentGate -Needle 'Optional inventory-to-MechBay preview binding check OK.' -Label "current gate inventory-to-MechBay preview marker"
+Assert-Contains -Text $currentGate -Needle 'Inventory MechBay preview evidence capture OK.' -Label "current gate inventory-to-MechBay preview evidence marker"
 
 $handoffScript = Read-RequiredText -RelativePath "scripts\unity\check_controlled_demo_handoff.ps1"
 Assert-Contains -Text $handoffScript -Needle 'CommandFileSmoke: True' -Label "handoff script marker"
@@ -208,6 +212,7 @@ Assert-Contains -Text $handoffScript -Needle 'Optional Unity main-server launch/
 Assert-Contains -Text $handoffScript -Needle 'Optional Unity inventory bootstrap smoke check OK' -Label "handoff script optional unity inventory bootstrap marker"
 Assert-Contains -Text $handoffScript -Needle 'Inventory-to-MechBay binding boundary check OK' -Label "handoff script inventory-to-MechBay binding marker"
 Assert-Contains -Text $handoffScript -Needle 'Optional inventory-to-MechBay preview binding check OK' -Label "handoff script inventory-to-MechBay preview marker"
+Assert-Contains -Text $handoffScript -Needle 'Inventory MechBay preview evidence capture OK' -Label "handoff script inventory-to-MechBay preview evidence marker"
 
 $tracked = @(& git -C $RepoRoot ls-files 2>$null | ForEach-Object { $_.ToString() })
 if ($LASTEXITCODE -ne 0) {

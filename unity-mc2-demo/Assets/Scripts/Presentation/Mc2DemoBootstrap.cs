@@ -226,6 +226,8 @@ namespace MC2Demo.Presentation
             public string contactSpread;
             public string contactClearance;
             public string mechLab;
+            public string mechLabInventorySource;
+            public string inventoryMechBayPreview;
             public string damageStory;
             public string damageReadability;
             public string battleHud;
@@ -6701,6 +6703,8 @@ namespace MC2Demo.Presentation
                 contactSpread = BuildCaptureContactSpreadSummary(),
                 contactClearance = contactClearanceSummary,
                 mechLab = BuildCaptureMechLabSummary(),
+                mechLabInventorySource = InventorySourceLine(),
+                inventoryMechBayPreview = BuildCaptureInventoryMechBayPreviewSummary(),
                 damageStory = damageStorySummary,
                 damageReadability = BuildCaptureDamageReadabilitySummary(),
                 battleHud = battleHudSummary,
@@ -7501,6 +7505,19 @@ namespace MC2Demo.Presentation
                 + MechLabPcLayoutSummary
                 + " "
                 + alwaysMounted;
+        }
+
+        private string BuildCaptureInventoryMechBayPreviewSummary()
+        {
+            if (!string.IsNullOrWhiteSpace(inventoryMechBayPreviewSummary))
+            {
+                return inventoryMechBayPreviewSummary;
+            }
+
+            return "InventoryMechBayPreview=not-attempted MainServerPreviewApplied: False ProjectedInventoryValid: False"
+                + " ServerInventoryNotCombatAuthority: True NoPerFrameServerCalls: "
+                + UnityMainServerClient.NoPerFrameServerCalls
+                + " MobileLandscapeOnly: True InventorySource=LocalFixture";
         }
 
         private string BuildCaptureMobileTouchSummary()

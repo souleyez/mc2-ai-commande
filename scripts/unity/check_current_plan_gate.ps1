@@ -172,6 +172,7 @@ $optionalUnityMainServerLaunchDebriefScript = Resolve-RepoPath -RelativePath "sc
 $optionalUnityInventoryBootstrapScript = Resolve-RepoPath -RelativePath "scripts\unity\check_optional_unity_inventory_bootstrap_smoke.ps1"
 $inventoryMechBayBindingScript = Resolve-RepoPath -RelativePath "scripts\unity\check_inventory_mechbay_binding_boundary.ps1"
 $optionalInventoryMechBayPreviewScript = Resolve-RepoPath -RelativePath "scripts\unity\check_optional_inventory_mechbay_preview_binding.ps1"
+$inventoryMechBayPreviewEvidenceScript = Resolve-RepoPath -RelativePath "scripts\unity\capture_inventory_mechbay_preview_evidence.ps1"
 $androidDeviceConnectionScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_device_connection.ps1"
 $androidAdbDriverPackageScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_adb_driver_package.ps1"
 $androidDeviceWatchScript = Resolve-RepoPath -RelativePath "scripts\unity\watch_android_device_connection.ps1"
@@ -423,6 +424,12 @@ Invoke-GateStep `
     -ScriptPath $optionalInventoryMechBayPreviewScript `
     -Arguments @("-RepoRoot", $RepoRoot) `
     -RequiredMarkers @("Optional inventory-to-MechBay preview binding check OK.")
+
+Invoke-GateStep `
+    -Name "Inventory MechBay preview evidence capture gate" `
+    -ScriptPath $inventoryMechBayPreviewEvidenceScript `
+    -Arguments @("-RepoRoot", $RepoRoot) `
+    -RequiredMarkers @("Inventory MechBay preview evidence capture OK.")
 
 Invoke-GateStep `
     -Name "Android device connection gate" `

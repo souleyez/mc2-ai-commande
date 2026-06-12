@@ -139,6 +139,8 @@ Assert-ScriptExists -RelativePath "scripts\unity\check_optional_unity_main_serve
 Assert-ScriptExists -RelativePath "scripts\unity\check_optional_unity_main_server_launch_debrief_smoke.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_optional_unity_inventory_bootstrap_smoke.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_inventory_mechbay_binding_boundary.ps1"
+Assert-ScriptExists -RelativePath "scripts\unity\check_optional_inventory_mechbay_preview_binding.ps1"
+Assert-ScriptExists -RelativePath "scripts\unity\capture_inventory_mechbay_preview_evidence.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_android_device_connection.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_android_adb_driver_package.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\watch_android_device_connection.ps1"
@@ -262,6 +264,9 @@ Assert-FileContains -RelativePath "README.md" -Markers @(
     "check_optional_inventory_mechbay_preview_binding.ps1",
     "Optional inventory-to-MechBay preview binding check OK",
     "F13 capture opt-in MechBay preview evidence",
+    "capture_inventory_mechbay_preview_evidence.ps1",
+    "Inventory MechBay preview evidence capture OK",
+    "F14 capture landscape-phone MechLab source-line evidence",
     "Add Android WPD-only device diagnosis",
     "Add Android ADB setup guidance",
     "Add Android ADB driver package probe",
@@ -407,6 +412,9 @@ Assert-FileContains -RelativePath "BUILD-WIN.md" -Markers @(
     "check_optional_inventory_mechbay_preview_binding.ps1",
     "Optional inventory-to-MechBay preview binding check OK",
     "F13 capture opt-in MechBay preview evidence",
+    "capture_inventory_mechbay_preview_evidence.ps1",
+    "Inventory MechBay preview evidence capture OK",
+    "F14 capture landscape-phone MechLab source-line evidence",
     "Controlled demo readiness preflight OK"
 )
 
@@ -492,6 +500,9 @@ Assert-FileContains -RelativePath "BUILD-MOBILE.md" -Markers @(
     "check_optional_inventory_mechbay_preview_binding.ps1",
     "Optional inventory-to-MechBay preview binding check OK",
     "F13 capture opt-in MechBay preview evidence",
+    "capture_inventory_mechbay_preview_evidence.ps1",
+    "Inventory MechBay preview evidence capture OK",
+    "F14 capture landscape-phone MechLab source-line evidence",
     "first phone version is landscape-only",
     "check_android_smoke_plan_consistency.ps1",
     "Android smoke plan/preflight consistency check OK",
@@ -1014,6 +1025,9 @@ Assert-FileContains -RelativePath "docs-machine-handoff-plan-2026-06-07.md" -Mar
     "check_optional_inventory_mechbay_preview_binding.ps1",
     "Optional inventory-to-MechBay preview binding check OK",
     "F13 capture opt-in MechBay preview evidence",
+    "capture_inventory_mechbay_preview_evidence.ps1",
+    "Inventory MechBay preview evidence capture OK",
+    "F14 capture landscape-phone MechLab source-line evidence",
     "first phone version is landscape-only",
     "android-device-smoke.png",
     "ScreenshotCapture: True",
