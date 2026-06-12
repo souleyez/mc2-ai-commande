@@ -209,14 +209,8 @@ namespace MC2Demo.Presentation
 
         private void CreateEffect(string effectName, PrimitiveType primitive, Vector3 position, Color color, float duration, Vector3 fromScale, Vector3 toScale)
         {
-            GameObject effect = GameObject.CreatePrimitive(primitive);
-            effect.name = effectName;
+            GameObject effect = DemoPrimitiveVisualFactory.Create(primitive, effectName);
             effect.transform.position = position;
-            Collider effectCollider = effect.GetComponent<Collider>();
-            if (effectCollider != null)
-            {
-                Destroy(effectCollider);
-            }
 
             DemoTransientEffect transient = effect.AddComponent<DemoTransientEffect>();
             transient.Begin(color, duration, fromScale, toScale);
@@ -224,14 +218,8 @@ namespace MC2Demo.Presentation
 
         private void CreateMovingEffect(string effectName, PrimitiveType primitive, Vector3 start, Vector3 end, Color color, float duration, Vector3 fromScale, Vector3 toScale)
         {
-            GameObject effect = GameObject.CreatePrimitive(primitive);
-            effect.name = effectName;
+            GameObject effect = DemoPrimitiveVisualFactory.Create(primitive, effectName);
             effect.transform.position = start;
-            Collider effectCollider = effect.GetComponent<Collider>();
-            if (effectCollider != null)
-            {
-                Destroy(effectCollider);
-            }
 
             DemoTransientEffect transient = effect.AddComponent<DemoTransientEffect>();
             transient.BeginMoving(color, duration, fromScale, toScale, end);
@@ -245,8 +233,7 @@ namespace MC2Demo.Presentation
             Color color,
             bool transparent = false)
         {
-            GameObject cue = GameObject.CreatePrimitive(primitive);
-            cue.name = Structure.Id + " " + cueName;
+            GameObject cue = DemoPrimitiveVisualFactory.Create(primitive, Structure.Id + " " + cueName);
             cue.transform.SetParent(transform, false);
             cue.transform.localPosition = localPosition;
             cue.transform.localScale = localScale;
@@ -256,11 +243,6 @@ namespace MC2Demo.Presentation
                 cueRenderer.sharedMaterial = CreateOwnedMaterial(color, transparent);
             }
 
-            Collider cueCollider = cue.GetComponent<Collider>();
-            if (cueCollider != null)
-            {
-                Destroy(cueCollider);
-            }
         }
 
         private GameObject CreateReadabilityCue(
@@ -269,8 +251,7 @@ namespace MC2Demo.Presentation
             Vector3 localScale,
             Color color)
         {
-            GameObject cue = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            cue.name = Structure.Id + " " + cueName;
+            GameObject cue = DemoPrimitiveVisualFactory.Create(PrimitiveType.Cylinder, Structure.Id + " " + cueName);
             cue.transform.SetParent(transform, false);
             cue.transform.localPosition = localPosition;
             cue.transform.localScale = localScale;
@@ -279,12 +260,6 @@ namespace MC2Demo.Presentation
             if (cueRenderer != null)
             {
                 cueRenderer.sharedMaterial = CreateOwnedMaterial(color, transparent: true);
-            }
-
-            Collider cueCollider = cue.GetComponent<Collider>();
-            if (cueCollider != null)
-            {
-                Destroy(cueCollider);
             }
 
             return cue;

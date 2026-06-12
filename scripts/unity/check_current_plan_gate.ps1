@@ -179,6 +179,7 @@ $landscapePhoneMechLabSourceLineScript = Resolve-RepoPath -RelativePath "scripts
 $landscapeMechLabTouchEvidenceScript = Resolve-RepoPath -RelativePath "scripts\unity\capture_landscape_mechlab_touch_evidence.ps1"
 $androidMechLabTouchEvidenceScript = Resolve-RepoPath -RelativePath "scripts\unity\capture_android_mechlab_touch_evidence.ps1"
 $androidBattleCommandTouchEvidenceScript = Resolve-RepoPath -RelativePath "scripts\unity\capture_android_battle_command_touch_evidence.ps1"
+$androidCombatEffectLogNoiseScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_combat_effect_log_noise.ps1"
 $serverBackedReceiptSlicePlanScript = Resolve-RepoPath -RelativePath "scripts\unity\check_server_backed_receipt_slice_plan.ps1"
 $serverBackedReceiptEvidenceScript = Resolve-RepoPath -RelativePath "scripts\unity\capture_server_backed_receipt_evidence.ps1"
 $postReceiptInventoryRefreshBoundaryScript = Resolve-RepoPath -RelativePath "scripts\unity\check_post_receipt_inventory_refresh_boundary.ps1"
@@ -477,6 +478,12 @@ Invoke-GateStep `
     -ScriptPath $androidBattleCommandTouchEvidenceScript `
     -Arguments @("-RepoRoot", $RepoRoot, "-PlanOnly") `
     -RequiredMarkers @("Android battle command touch evidence capture plan OK.")
+
+Invoke-GateStep `
+    -Name "Android combat effect log noise gate" `
+    -ScriptPath $androidCombatEffectLogNoiseScript `
+    -Arguments @("-RepoRoot", $RepoRoot) `
+    -RequiredMarkers @("Android combat effect log noise check OK.")
 
 Invoke-GateStep `
     -Name "Server-backed receipt slice plan gate" `

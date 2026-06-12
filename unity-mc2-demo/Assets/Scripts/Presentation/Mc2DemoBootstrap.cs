@@ -9357,15 +9357,9 @@ namespace MC2Demo.Presentation
                 return;
             }
 
-            GameObject beam = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            beam.name = "Weapon Beam";
+            GameObject beam = DemoPrimitiveVisualFactory.Create(PrimitiveType.Cylinder, "Weapon Beam");
             beam.transform.position = (from + to) * 0.5f;
             beam.transform.rotation = Quaternion.FromToRotation(Vector3.up, direction.normalized);
-            Collider beamCollider = beam.GetComponent<Collider>();
-            if (beamCollider != null)
-            {
-                Destroy(beamCollider);
-            }
 
             DemoTransientEffect transient = beam.AddComponent<DemoTransientEffect>();
             transient.Begin(color, duration, new Vector3(radius, length * 0.5f, radius), new Vector3(radius * 0.28f, length * 0.5f, radius * 0.28f));
@@ -9373,14 +9367,8 @@ namespace MC2Demo.Presentation
 
         private void CreateImpact(Vector3 position, Color color, bool destroyedTarget, float scale)
         {
-            GameObject impact = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            impact.name = destroyedTarget ? "Kill Impact" : "Hit Impact";
+            GameObject impact = DemoPrimitiveVisualFactory.Create(PrimitiveType.Sphere, destroyedTarget ? "Kill Impact" : "Hit Impact");
             impact.transform.position = position;
-            Collider impactCollider = impact.GetComponent<Collider>();
-            if (impactCollider != null)
-            {
-                Destroy(impactCollider);
-            }
 
             float duration = destroyedTarget ? 0.36f : 0.22f;
             Vector3 fromScale = Vector3.one * (destroyedTarget ? 0.24f : 0.14f) * scale;
@@ -9391,14 +9379,8 @@ namespace MC2Demo.Presentation
 
         private void CreateImpactDisc(string effectName, Vector3 position, Color color, float duration, float startRadius, float endRadius, float height)
         {
-            GameObject disc = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            disc.name = effectName;
+            GameObject disc = DemoPrimitiveVisualFactory.Create(PrimitiveType.Cylinder, effectName);
             disc.transform.position = position;
-            Collider discCollider = disc.GetComponent<Collider>();
-            if (discCollider != null)
-            {
-                Destroy(discCollider);
-            }
 
             DemoTransientEffect transient = disc.AddComponent<DemoTransientEffect>();
             transient.Begin(
@@ -10296,8 +10278,7 @@ namespace MC2Demo.Presentation
         {
             if (mission.Contract.terrainMesh == null || mission.Contract.terrainMesh.samples == null)
             {
-                GameObject fallbackGround = GameObject.CreatePrimitive(PrimitiveType.Plane);
-                fallbackGround.name = "Mission Ground";
+                GameObject fallbackGround = DemoPrimitiveVisualFactory.Create(PrimitiveType.Plane, "Mission Ground");
                 fallbackGround.transform.localScale = new Vector3(140f, 1f, 140f);
                 AssignMaterial(fallbackGround, "Ground", new Color(0.16f, 0.20f, 0.16f));
                 return;
@@ -10722,7 +10703,7 @@ namespace MC2Demo.Presentation
                 PrimitiveType primitive = unit.IsPlayerUnit || ReferenceObjMeshLibrary.IsInfantryUnit(unit.UnitType)
                     ? PrimitiveType.Capsule
                     : PrimitiveType.Cube;
-                GameObject unitObject = GameObject.CreatePrimitive(primitive);
+                GameObject unitObject = DemoPrimitiveVisualFactory.Create(primitive, unit.Id + " " + unit.UnitType);
                 unitObject.transform.localScale = UnitPrimitiveScale(unit);
                 AssignMaterial(
                     unitObject,
@@ -10788,8 +10769,7 @@ namespace MC2Demo.Presentation
             int fallbackStructures = 0;
             foreach (StructureState structure in mission.Structures)
             {
-                GameObject structureObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                structureObject.name = structure.Id + " " + structure.ObjectType;
+                GameObject structureObject = DemoPrimitiveVisualFactory.Create(PrimitiveType.Cube, structure.Id + " " + structure.ObjectType);
                 structureObject.transform.localScale = StructureScale(structure);
                 structureObject.transform.rotation = Quaternion.Euler(0f, -structure.RotationDegrees, 0f);
                 Color structureColor = structure.IsTargetable ? new Color(0.62f, 0.48f, 0.34f) : new Color(0.32f, 0.34f, 0.34f);
@@ -10907,19 +10887,12 @@ namespace MC2Demo.Presentation
 
         private void CreateOccupancyPlaceholder(BattleOccupancyRegion region)
         {
-            GameObject marker = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            marker.name = "Occupancy " + region.Kind + " " + region.Id;
+            GameObject marker = DemoPrimitiveVisualFactory.Create(PrimitiveType.Cylinder, "Occupancy " + region.Kind + " " + region.Id);
             Vector3 position = DemoUnitView.MissionToWorld(region.Position);
             position.y = DemoTerrainView.HeightAt(region.Position) + 0.075f;
             float diameter = Mathf.Clamp(region.Radius / 50f, 0.26f, 5.2f);
             marker.transform.position = position;
             marker.transform.localScale = new Vector3(diameter, 0.018f, diameter);
-
-            Collider collider = marker.GetComponent<Collider>();
-            if (collider != null)
-            {
-                collider.enabled = false;
-            }
 
             AssignMaterial(marker, OccupancyPlaceholderMaterialName(region.Kind), OccupancyPlaceholderColor(region.Kind));
             occupancyPlaceholderMarkers.Add(marker);
@@ -10931,19 +10904,12 @@ namespace MC2Demo.Presentation
             for (int index = 0; index < blockedMarkers.Count; index++)
             {
                 Vector2 missionPoint = blockedMarkers[index];
-                GameObject marker = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                marker.name = "Occupancy landingBlocked " + index.ToString(CultureInfo.InvariantCulture);
+                GameObject marker = DemoPrimitiveVisualFactory.Create(PrimitiveType.Cube, "Occupancy landingBlocked " + index.ToString(CultureInfo.InvariantCulture));
                 Vector3 position = DemoUnitView.MissionToWorld(missionPoint);
                 position.y = DemoTerrainView.HeightAt(missionPoint) + 0.105f;
                 marker.transform.position = position;
                 marker.transform.localScale = new Vector3(0.34f, 0.030f, 0.34f);
                 marker.transform.rotation = Quaternion.Euler(0f, 45f, 0f);
-
-                Collider collider = marker.GetComponent<Collider>();
-                if (collider != null)
-                {
-                    collider.enabled = false;
-                }
 
                 AssignMaterial(marker, "OccupancyLandingBlocked", new Color(1f, 0.92f, 0.22f, 0.42f));
                 occupancyPlaceholderMarkers.Add(marker);
@@ -11051,8 +11017,7 @@ namespace MC2Demo.Presentation
                 }
 
                 PrimitiveType primitive = TerrainPrimitive(terrainObject);
-                GameObject prop = GameObject.CreatePrimitive(primitive);
-                prop.name = terrainObject.objectId + " " + terrainObject.fileName;
+                GameObject prop = DemoPrimitiveVisualFactory.Create(primitive, terrainObject.objectId + " " + terrainObject.fileName);
                 Vector3 scale = TerrainObjectScale(terrainObject);
                 Vector3 position = DemoUnitView.MissionToWorld(new Vector2(terrainObject.position.x, terrainObject.position.y));
                 Vector2 missionPosition = new(terrainObject.position.x, terrainObject.position.y);
@@ -11060,12 +11025,6 @@ namespace MC2Demo.Presentation
                 prop.transform.position = position;
                 prop.transform.rotation = Quaternion.Euler(0f, -terrainObject.position.rotation, 0f);
                 prop.transform.localScale = scale;
-
-                Collider collider = prop.GetComponent<Collider>();
-                if (collider != null)
-                {
-                    collider.enabled = false;
-                }
 
                 Color propColor = TerrainObjectColor(terrainObject);
                 AssignMaterial(prop, TerrainMaterialName(terrainObject), propColor);
@@ -11379,8 +11338,7 @@ namespace MC2Demo.Presentation
 
             foreach (NavMarker marker in mission.Contract.navMarkers)
             {
-                GameObject markerObject = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-                markerObject.name = "Nav Marker " + marker.index;
+                GameObject markerObject = DemoPrimitiveVisualFactory.Create(PrimitiveType.Cylinder, "Nav Marker " + marker.index);
                 Vector3 markerPosition = DemoUnitView.MissionToWorld(new Vector2(marker.x, marker.y));
                 markerPosition.y = 0.04f;
                 markerObject.transform.position = markerPosition;
@@ -11408,8 +11366,7 @@ namespace MC2Demo.Presentation
                 GameObject root = new("Forest " + forest.index + " " + forest.name);
                 root.transform.position = DemoUnitView.MissionToWorld(missionCenter);
 
-                GameObject groundPatch = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-                groundPatch.name = "Forest Canopy Footprint";
+                GameObject groundPatch = DemoPrimitiveVisualFactory.Create(PrimitiveType.Cylinder, "Forest Canopy Footprint");
                 groundPatch.transform.SetParent(root.transform, false);
                 groundPatch.transform.localPosition = new Vector3(0f, 0.025f, 0f);
                 groundPatch.transform.localScale = new Vector3(worldRadius, 0.02f, worldRadius);
@@ -11432,16 +11389,14 @@ namespace MC2Demo.Presentation
 
         private void CreateTree(Transform parent, int forestIndex, int treeIndex, Vector3 localPosition)
         {
-            GameObject trunk = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            trunk.name = "Tree Trunk";
+            GameObject trunk = DemoPrimitiveVisualFactory.Create(PrimitiveType.Cylinder, "Tree Trunk");
             trunk.transform.SetParent(parent, false);
             trunk.transform.localPosition = localPosition + new Vector3(0f, 0.22f, 0f);
             trunk.transform.localScale = new Vector3(0.08f, 0.22f, 0.08f);
             AssignMaterial(trunk, "TreeTrunk" + forestIndex + "-" + treeIndex, new Color(0.32f, 0.22f, 0.12f));
             RegisterOcclusionFade(trunk, "tree-trunk " + forestIndex.ToString(CultureInfo.InvariantCulture), OcclusionFadeKind.Tree);
 
-            GameObject canopy = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            canopy.name = "Tree Canopy";
+            GameObject canopy = DemoPrimitiveVisualFactory.Create(PrimitiveType.Sphere, "Tree Canopy");
             canopy.transform.SetParent(parent, false);
             canopy.transform.localPosition = localPosition + new Vector3(0f, 0.56f, 0f);
             float canopyScale = 0.34f + ((treeIndex + forestIndex) % 4) * 0.04f;
@@ -11523,8 +11478,7 @@ namespace MC2Demo.Presentation
 
         private GameObject CreateAreaDisc(string objectName, Vector2 missionCenter, float missionRadius, Color color)
         {
-            GameObject disc = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            disc.name = objectName;
+            GameObject disc = DemoPrimitiveVisualFactory.Create(PrimitiveType.Cylinder, objectName);
             Vector3 position = DemoUnitView.MissionToWorld(missionCenter);
             position.y = 0.035f;
             disc.transform.position = position;
@@ -11839,14 +11793,8 @@ namespace MC2Demo.Presentation
 
         private GameObject CreateMarkerDisc(string objectName, string materialName, Color color, Vector3 scale)
         {
-            GameObject marker = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            marker.name = objectName;
+            GameObject marker = DemoPrimitiveVisualFactory.Create(PrimitiveType.Cylinder, objectName);
             marker.transform.localScale = scale;
-            Collider markerCollider = marker.GetComponent<Collider>();
-            if (markerCollider != null)
-            {
-                markerCollider.enabled = false;
-            }
 
             AssignMaterial(marker, materialName, color);
             marker.SetActive(false);
@@ -11855,14 +11803,8 @@ namespace MC2Demo.Presentation
 
         private GameObject CreateMarkerBlock(string objectName, string materialName, Color color, Vector3 scale)
         {
-            GameObject marker = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            marker.name = objectName;
+            GameObject marker = DemoPrimitiveVisualFactory.Create(PrimitiveType.Cube, objectName);
             marker.transform.localScale = scale;
-            Collider markerCollider = marker.GetComponent<Collider>();
-            if (markerCollider != null)
-            {
-                markerCollider.enabled = false;
-            }
 
             AssignMaterial(marker, materialName, color);
             marker.SetActive(false);
@@ -12911,13 +12853,7 @@ namespace MC2Demo.Presentation
 
         private GameObject CreateTargetLine(string objectName)
         {
-            GameObject line = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            line.name = objectName;
-            Collider lineCollider = line.GetComponent<Collider>();
-            if (lineCollider != null)
-            {
-                lineCollider.enabled = false;
-            }
+            GameObject line = DemoPrimitiveVisualFactory.Create(PrimitiveType.Cylinder, objectName);
 
             AssignMaterial(line, "TargetLineReady", new Color(0.28f, 0.78f, 1f, 0.48f));
             line.SetActive(false);
@@ -13088,13 +13024,7 @@ namespace MC2Demo.Presentation
 
         private GameObject CreateHealthBarPart(string objectName, string materialName, Color color)
         {
-            GameObject part = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            part.name = objectName;
-            Collider partCollider = part.GetComponent<Collider>();
-            if (partCollider != null)
-            {
-                partCollider.enabled = false;
-            }
+            GameObject part = DemoPrimitiveVisualFactory.Create(PrimitiveType.Cube, objectName);
 
             AssignMaterial(part, materialName, color);
             part.SetActive(false);

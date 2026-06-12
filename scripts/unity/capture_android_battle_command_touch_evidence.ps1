@@ -93,7 +93,10 @@ $requiredSmokeMarkers = @(
 $forbiddenSmokeMarkers = @(
     "assertion failed",
     "command file blocked",
-    "Command file blocked"
+    "Command file blocked",
+    "class 'CapsuleCollider' doesn't exist",
+    "class 'SphereCollider' doesn't exist",
+    "class 'BoxCollider' doesn't exist"
 )
 
 function Resolve-RepoPath {

@@ -342,8 +342,7 @@ namespace MC2Demo.Presentation
 
         private void CreateSectionPart(string sectionName, PrimitiveType primitive, Vector3 localPosition, Vector3 localScale)
         {
-            GameObject part = GameObject.CreatePrimitive(primitive);
-            part.name = Unit.Id + " " + sectionName;
+            GameObject part = DemoPrimitiveVisualFactory.Create(primitive, Unit.Id + " " + sectionName);
             part.transform.SetParent(transform, false);
             part.transform.localPosition = localPosition;
             part.transform.localScale = localScale;
@@ -358,8 +357,7 @@ namespace MC2Demo.Presentation
 
         private GameObject CreateHeatCuePart(string cueName, PrimitiveType primitive, Vector3 localPosition, Vector3 localScale, Color color)
         {
-            GameObject cue = GameObject.CreatePrimitive(primitive);
-            cue.name = Unit.Id + " " + cueName;
+            GameObject cue = DemoPrimitiveVisualFactory.Create(primitive, Unit.Id + " " + cueName);
             cue.transform.SetParent(transform, false);
             cue.transform.localPosition = localPosition;
             cue.transform.localScale = localScale;
@@ -367,12 +365,6 @@ namespace MC2Demo.Presentation
             if (renderer != null)
             {
                 renderer.sharedMaterial = CreateOwnedTransparentMaterial(color);
-            }
-
-            Collider collider = cue.GetComponent<Collider>();
-            if (collider != null)
-            {
-                Destroy(collider);
             }
 
             return cue;
@@ -452,12 +444,6 @@ namespace MC2Demo.Presentation
             part.transform.SetParent(null, true);
             part.transform.position = startPosition;
             part.transform.rotation = Quaternion.Euler(18f, partName.GetHashCode() % 360, 72f);
-
-            Collider partCollider = part.GetComponent<Collider>();
-            if (partCollider != null)
-            {
-                Destroy(partCollider);
-            }
 
             DemoTransientEffect transient = part.AddComponent<DemoTransientEffect>();
             transient.BeginMoving(color, 2.85f, startScale, startScale * 0.62f, endPosition);
@@ -1083,8 +1069,7 @@ namespace MC2Demo.Presentation
 
         private void CreateDamageScar(string scarName, Vector3 localPosition, Vector3 localScale, Color color)
         {
-            GameObject scar = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            scar.name = Unit.Id + " " + scarName;
+            GameObject scar = DemoPrimitiveVisualFactory.Create(PrimitiveType.Cube, Unit.Id + " " + scarName);
             scar.transform.SetParent(transform, false);
             scar.transform.localPosition = localPosition;
             scar.transform.localScale = localScale;
@@ -1094,17 +1079,11 @@ namespace MC2Demo.Presentation
                 scarRenderer.sharedMaterial = CreateOwnedMaterial(color);
             }
 
-            Collider scarCollider = scar.GetComponent<Collider>();
-            if (scarCollider != null)
-            {
-                Destroy(scarCollider);
-            }
         }
 
         private void CreateDamagePuff(string puffName, Vector3 localPosition, Vector3 localScale, Color color)
         {
-            GameObject puff = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            puff.name = Unit.Id + " " + puffName;
+            GameObject puff = DemoPrimitiveVisualFactory.Create(PrimitiveType.Sphere, Unit.Id + " " + puffName);
             puff.transform.SetParent(transform, false);
             puff.transform.localPosition = localPosition;
             puff.transform.localScale = localScale;
@@ -1114,17 +1093,11 @@ namespace MC2Demo.Presentation
                 puffRenderer.sharedMaterial = CreateOwnedMaterial(color);
             }
 
-            Collider puffCollider = puff.GetComponent<Collider>();
-            if (puffCollider != null)
-            {
-                Destroy(puffCollider);
-            }
         }
 
         private void CreateDamageBeacon(string beaconName, Vector3 localPosition, Color color, float radius, float height)
         {
-            GameObject beacon = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            beacon.name = Unit.Id + " " + beaconName;
+            GameObject beacon = DemoPrimitiveVisualFactory.Create(PrimitiveType.Cylinder, Unit.Id + " " + beaconName);
             beacon.transform.SetParent(transform, false);
             beacon.transform.localPosition = localPosition;
             beacon.transform.localScale = new Vector3(radius, height * 0.5f, radius);
@@ -1134,17 +1107,11 @@ namespace MC2Demo.Presentation
                 beaconRenderer.sharedMaterial = CreateOwnedMaterial(color);
             }
 
-            Collider beaconCollider = beacon.GetComponent<Collider>();
-            if (beaconCollider != null)
-            {
-                Destroy(beaconCollider);
-            }
         }
 
         private void CreateDamageFlag(string flagName, Vector3 localPosition, Vector3 localScale, Color color)
         {
-            GameObject flag = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            flag.name = Unit.Id + " " + flagName;
+            GameObject flag = DemoPrimitiveVisualFactory.Create(PrimitiveType.Cube, Unit.Id + " " + flagName);
             flag.transform.SetParent(transform, false);
             flag.transform.localPosition = localPosition;
             flag.transform.localScale = localScale;
@@ -1154,11 +1121,6 @@ namespace MC2Demo.Presentation
                 flagRenderer.sharedMaterial = CreateOwnedMaterial(color);
             }
 
-            Collider flagCollider = flag.GetComponent<Collider>();
-            if (flagCollider != null)
-            {
-                Destroy(flagCollider);
-            }
         }
 
         private void CreateDamageLink(string linkName, Vector3 localStart, Vector3 localEnd, Color color, float radius)
@@ -1170,8 +1132,7 @@ namespace MC2Demo.Presentation
                 return;
             }
 
-            GameObject link = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            link.name = Unit.Id + " " + linkName;
+            GameObject link = DemoPrimitiveVisualFactory.Create(PrimitiveType.Cylinder, Unit.Id + " " + linkName);
             link.transform.SetParent(transform, false);
             link.transform.localPosition = (localStart + localEnd) * 0.5f;
             link.transform.localRotation = Quaternion.FromToRotation(Vector3.up, direction.normalized);
@@ -1182,29 +1143,17 @@ namespace MC2Demo.Presentation
                 linkRenderer.sharedMaterial = CreateOwnedMaterial(color);
             }
 
-            Collider linkCollider = link.GetComponent<Collider>();
-            if (linkCollider != null)
-            {
-                Destroy(linkCollider);
-            }
         }
 
         private void CreateWorldDamageObject(string objectName, PrimitiveType primitive, Vector3 position, Quaternion rotation, Vector3 scale, Color color)
         {
-            GameObject marker = GameObject.CreatePrimitive(primitive);
-            marker.name = Unit.Id + " " + objectName;
+            GameObject marker = DemoPrimitiveVisualFactory.Create(primitive, Unit.Id + " " + objectName);
             marker.transform.SetPositionAndRotation(position, rotation);
             marker.transform.localScale = scale;
             Renderer markerRenderer = marker.GetComponent<Renderer>();
             if (markerRenderer != null)
             {
                 markerRenderer.sharedMaterial = CreateOwnedMaterial(color);
-            }
-
-            Collider markerCollider = marker.GetComponent<Collider>();
-            if (markerCollider != null)
-            {
-                Destroy(markerCollider);
             }
 
             marker.transform.SetParent(transform, true);
@@ -1275,14 +1224,8 @@ namespace MC2Demo.Presentation
 
         private void CreateTransient(string effectName, PrimitiveType primitive, Vector3 position, Color color, float duration, Vector3 fromScale, Vector3 toScale)
         {
-            GameObject effect = GameObject.CreatePrimitive(primitive);
-            effect.name = effectName;
+            GameObject effect = DemoPrimitiveVisualFactory.Create(primitive, effectName);
             effect.transform.position = position;
-            Collider effectCollider = effect.GetComponent<Collider>();
-            if (effectCollider != null)
-            {
-                Destroy(effectCollider);
-            }
 
             DemoTransientEffect transient = effect.AddComponent<DemoTransientEffect>();
             transient.Begin(color, duration, fromScale, toScale);
@@ -1290,14 +1233,8 @@ namespace MC2Demo.Presentation
 
         private void CreateMovingTransient(string effectName, PrimitiveType primitive, Vector3 start, Vector3 end, Color color, float duration, Vector3 fromScale, Vector3 toScale)
         {
-            GameObject effect = GameObject.CreatePrimitive(primitive);
-            effect.name = effectName;
+            GameObject effect = DemoPrimitiveVisualFactory.Create(primitive, effectName);
             effect.transform.position = start;
-            Collider effectCollider = effect.GetComponent<Collider>();
-            if (effectCollider != null)
-            {
-                Destroy(effectCollider);
-            }
 
             DemoTransientEffect transient = effect.AddComponent<DemoTransientEffect>();
             transient.BeginMoving(color, duration, fromScale, toScale, end);
@@ -1312,15 +1249,9 @@ namespace MC2Demo.Presentation
                 return;
             }
 
-            GameObject beam = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            beam.name = effectName;
+            GameObject beam = DemoPrimitiveVisualFactory.Create(PrimitiveType.Cylinder, effectName);
             beam.transform.position = (from + to) * 0.5f;
             beam.transform.rotation = Quaternion.FromToRotation(Vector3.up, direction.normalized);
-            Collider beamCollider = beam.GetComponent<Collider>();
-            if (beamCollider != null)
-            {
-                Destroy(beamCollider);
-            }
 
             DemoTransientEffect transient = beam.AddComponent<DemoTransientEffect>();
             transient.Begin(color, duration, new Vector3(radius, length * 0.5f, radius), new Vector3(radius * 0.35f, length * 0.5f, radius * 0.35f));
