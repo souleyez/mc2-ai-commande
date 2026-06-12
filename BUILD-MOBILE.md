@@ -287,7 +287,8 @@ Completed mobile gates: `Pass Android G3 device smoke`, the landscape
 `G4 Touch UI pass`, `G5 Mobile performance budget`, and
 `G6 iOS feasibility gate`. `F2 map authoring contract` is also complete.
 `F3 web ranking contract` is also complete.
-Formal next task: `F4 creator economy boundary`.
+`F4 creator economy boundary` is also complete.
+Formal next task: `F5 server implementation boundary`.
 
 Mobile orientation decision: the first phone version is landscape-only.
 Portrait layout is not a supported first-version target; future mobile UI work
@@ -526,7 +527,7 @@ The APK, SDK logs, Unity build folder, Gradle cache, and device logs remain
 ignored local outputs. The real Android device smoke gate, the landscape touch
 UI pass, the first mobile performance budget, the iOS feasibility gate and the
 map authoring contract have passed; the next formal task is
-`F4 creator economy boundary`.
+`F5 server implementation boundary`.
 At the time this note was updated, `adb devices -l` returned `b5212798 device`
 for Mi 11 Lite through `winusb.inf`; the package installs and launches through
 the G3 when-ready runner/direct smoke path, the visible-flow command-file smoke
@@ -576,4 +577,17 @@ Expected success string:
 
 ```text
 Web ranking contract check OK
+```
+
+Creator economy boundary
+------------------------
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_creator_economy_boundary.ps1 -RepoRoot .
+```
+
+Expected success string:
+
+```text
+Creator economy boundary check OK
 ```

@@ -125,17 +125,19 @@ Assert-Contains -Text $mobilePlan -Needle "| G5 | Done | Mobile performance budg
 Assert-Contains -Text $mobilePlan -Needle "| G6 | Done | iOS feasibility gate |" -Label "mobile gate order"
 Assert-Contains -Text $mobilePlan -Needle "F2 map authoring contract" -Label "mobile completed platform task"
 Assert-Contains -Text $mobilePlan -Needle "F3 web ranking contract" -Label "mobile completed platform task"
-Assert-Contains -Text $mobilePlan -Needle "F4 creator economy boundary" -Label "mobile next task"
+Assert-Contains -Text $mobilePlan -Needle "F4 creator economy boundary" -Label "mobile completed platform task"
+Assert-Contains -Text $mobilePlan -Needle "F5 server implementation boundary" -Label "mobile next task"
 Assert-Contains -Text $mobilePlan -Needle "first phone version is landscape-only" -Label "mobile orientation decision"
 
 $detailedPlan = Read-RequiredText -RelativePath "docs-ai-rts-commander-current-detailed-plan-2026-06-07.md"
 Assert-Contains -Text $detailedPlan -Needle '| F2 | Done | `Document map authoring contract` |' -Label "detailed queue F2"
 Assert-Contains -Text $detailedPlan -Needle '| F3 | Done | `Document web ranking contract` |' -Label "detailed queue F3"
-Assert-Contains -Text $detailedPlan -Needle '| F4 | Next | `Document creator economy boundary` |' -Label "detailed queue F4"
+Assert-Contains -Text $detailedPlan -Needle '| F4 | Done | `Document creator economy boundary` |' -Label "detailed queue F4"
+Assert-Contains -Text $detailedPlan -Needle '| F5 | Next | `Document server implementation boundary` |' -Label "detailed queue F5"
 
 $handoff = Read-RequiredText -RelativePath "docs-machine-handoff-plan-2026-06-07.md"
-Assert-Contains -Text $handoff -Needle 'Current formal next development task after handoff: `F4 creator economy boundary`' -Label "handoff next task"
-Assert-Contains -Text $handoff -Needle 'Next planned work: `F4 creator economy boundary`' -Label "handoff next planned work"
+Assert-Contains -Text $handoff -Needle 'Current formal next development task after handoff: `F5 server implementation boundary`' -Label "handoff next task"
+Assert-Contains -Text $handoff -Needle 'Next planned work: `F5 server implementation boundary`' -Label "handoff next planned work"
 
 $currentGate = Read-RequiredText -RelativePath "scripts\unity\check_current_plan_gate.ps1"
 Assert-Contains -Text $currentGate -Needle 'CommandFileSmoke: True' -Label "current gate script marker"
@@ -151,6 +153,7 @@ Assert-Contains -Text $currentGate -Needle 'Mobile performance budget check OK.'
 Assert-Contains -Text $currentGate -Needle 'iOS feasibility gate check OK.' -Label "current gate iOS feasibility marker"
 Assert-Contains -Text $currentGate -Needle 'Map authoring contract check OK.' -Label "current gate map authoring marker"
 Assert-Contains -Text $currentGate -Needle 'Web ranking contract check OK.' -Label "current gate web ranking marker"
+Assert-Contains -Text $currentGate -Needle 'Creator economy boundary check OK.' -Label "current gate creator economy marker"
 
 $handoffScript = Read-RequiredText -RelativePath "scripts\unity\check_controlled_demo_handoff.ps1"
 Assert-Contains -Text $handoffScript -Needle 'CommandFileSmoke: True' -Label "handoff script marker"
@@ -162,6 +165,7 @@ Assert-Contains -Text $handoffScript -Needle 'G3DeviceStatusReport: True' -Label
 Assert-Contains -Text $handoffScript -Needle 'G3WhenReady: True' -Label "handoff script g3 when-ready marker"
 Assert-Contains -Text $handoffScript -Needle 'SmokeSuccessMarker: MC2 loadout compact assertion OK' -Label "handoff script success marker"
 Assert-Contains -Text $handoffScript -Needle 'Web ranking contract check OK' -Label "handoff script web ranking marker"
+Assert-Contains -Text $handoffScript -Needle 'Creator economy boundary check OK' -Label "handoff script creator economy marker"
 
 $tracked = @(& git -C $RepoRoot ls-files 2>$null | ForEach-Object { $_.ToString() })
 if ($LASTEXITCODE -ne 0) {

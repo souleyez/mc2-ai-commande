@@ -146,7 +146,8 @@ Require-Text -Text $platformPlan -Needle "Web/ranking service" -Label "platform 
 Require-Text -Text $rewardContract -Needle "Web/ranking service" -Label "reward contract web actor"
 Require-Text -Text $rewardContract -Needle "expose private account ids, anti-cheat internals, or rejected-claim detail" -Label "reward contract privacy boundary"
 Require-Text -Text $detailedPlan -Needle "| F3 | Done | ``Document web ranking contract`` |" -Label "detailed plan F3 status"
-Require-Text -Text $detailedPlan -Needle "| F4 | Next | ``Document creator economy boundary`` |" -Label "detailed plan next task"
+Require-Text -Text $detailedPlan -Needle "| F4 | Done | ``Document creator economy boundary`` |" -Label "detailed plan F4 status"
+Require-Text -Text $detailedPlan -Needle "| F5 | Next | ``Document server implementation boundary`` |" -Label "detailed plan next task"
 
 if ($failures.Count -gt 0) {
     Write-Host "Web ranking contract check failed."

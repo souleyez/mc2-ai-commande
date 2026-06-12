@@ -162,6 +162,7 @@ $mobilePerformanceBudgetScript = Resolve-RepoPath -RelativePath "scripts\unity\c
 $iosFeasibilityScript = Resolve-RepoPath -RelativePath "scripts\unity\check_ios_feasibility_gate.ps1"
 $mapAuthoringScript = Resolve-RepoPath -RelativePath "scripts\unity\check_map_authoring_contract.ps1"
 $webRankingScript = Resolve-RepoPath -RelativePath "scripts\unity\check_web_ranking_contract.ps1"
+$creatorEconomyScript = Resolve-RepoPath -RelativePath "scripts\unity\check_creator_economy_boundary.ps1"
 $androidDeviceConnectionScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_device_connection.ps1"
 $androidAdbDriverPackageScript = Resolve-RepoPath -RelativePath "scripts\unity\check_android_adb_driver_package.ps1"
 $androidDeviceWatchScript = Resolve-RepoPath -RelativePath "scripts\unity\watch_android_device_connection.ps1"
@@ -353,6 +354,12 @@ Invoke-GateStep `
     -ScriptPath $webRankingScript `
     -Arguments @("-RepoRoot", $RepoRoot) `
     -RequiredMarkers @("Web ranking contract check OK.")
+
+Invoke-GateStep `
+    -Name "Creator economy boundary gate" `
+    -ScriptPath $creatorEconomyScript `
+    -Arguments @("-RepoRoot", $RepoRoot) `
+    -RequiredMarkers @("Creator economy boundary check OK.")
 
 Invoke-GateStep `
     -Name "Android device connection gate" `

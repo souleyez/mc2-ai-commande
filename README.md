@@ -47,7 +47,8 @@ visible-flow command file，并在 logcat 同时看到 debrief 与 loadout compa
 2400x1080 横屏，Mi 11 Lite 稳态性能基线为 30.48 FPS、273,342 KB PSS。
 iOS 已明确为 Mac/Xcode/签名交接链路，F2 地图包契约已明确开放地图与
 主服务器认证奖励边界，F3 Web 排行契约已明确公开排行榜、地图页、战绩页
-和隐私边界，正式下一开发任务推进到 `F4 creator economy boundary`。
+和隐私边界，F4 创作者经济契约已明确中心化账本优先和可选链上晚期边界，
+正式下一开发任务推进到 `F5 server implementation boundary`。
 
 ## 产品愿景
 
@@ -315,9 +316,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_curren
 This confirms the docs and helper scripts agree that the current PC/mobile
 package is sealed through `PC1-PC57`, that `Pass Android G3 device smoke`, the
 landscape `G4 Touch UI pass`, `G5 Mobile performance budget`,
-`G6 iOS feasibility gate`, `F2 map authoring contract`, and
-`F3 web ranking contract` are recorded, and that
-`F4 creator economy boundary` is the formal next task.
+`G6 iOS feasibility gate`, `F2 map authoring contract`,
+`F3 web ranking contract`, and `F4 creator economy boundary` are recorded,
+and that `F5 server implementation boundary` is the formal next task.
 
 Check the iOS feasibility gate:
 
@@ -345,6 +346,14 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_web_ra
 ```
 
 Expected success string: `Web ranking contract check OK`.
+
+Check the creator economy boundary:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_creator_economy_boundary.ps1 -RepoRoot .
+```
+
+Expected success string: `Creator economy boundary check OK`.
 
 Checkpoint marker: `Add Android ADB driver package probe`.
 

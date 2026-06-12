@@ -190,6 +190,14 @@ Main-server accounting should be centralized first. Public or chain-based
 settlement can be added only after fraud, refund, and moderation rules are
 understood.
 
+Detailed creator economy boundary:
+
+- `docs-creator-economy-boundary-2026-06-07.md`
+
+That contract defines centralized token/inventory/reward/creator accounting,
+allowed creator contribution types, revenue-share scope, moderation rollback
+rules and the optional late chain layer. Chain remains optional and late.
+
 ## Blockchain Position
 
 Do not put core combat, mech stats, or normal inventory on-chain in the first
@@ -211,6 +219,8 @@ Avoid early chain coupling for:
 - repair costs
 - normal token ledger
 - anti-cheat-sensitive state
+
+Do not put core combat, mech stats, weapon stats, repair costs, ordinary inventory mutation, normal token ledger, battle outcomes or anti-cheat-sensitive state on chain.
 
 Reason: game balance, rollback, bans, fraud response, and customer support need
 fast operational control while the economy is still changing.

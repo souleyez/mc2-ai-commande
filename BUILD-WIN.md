@@ -286,8 +286,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_curren
 This confirms the current PC/mobile package is sealed through `PC1-PC57`, that
 `Pass Android G3 device smoke`, the landscape `G4 Touch UI pass`,
 `G5 Mobile performance budget`, `G6 iOS feasibility gate`,
-`F2 map authoring contract`, and `F3 web ranking contract` are recorded, and
-that `F4 creator economy boundary` is the formal next task.
+`F2 map authoring contract`, `F3 web ranking contract`, and
+`F4 creator economy boundary` are recorded, and that
+`F5 server implementation boundary` is the formal next task.
 
 Expected success string: `Current plan queue consistency check OK`.
 
@@ -325,6 +326,14 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_web_ra
 ```
 
 Expected success string: `Web ranking contract check OK`.
+
+Check the creator economy boundary:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_creator_economy_boundary.ps1 -RepoRoot .
+```
+
+Expected success string: `Creator economy boundary check OK`.
 
 Expected waiting-state string without an authorized adb phone: `Android device connection check waiting on device`.
 
