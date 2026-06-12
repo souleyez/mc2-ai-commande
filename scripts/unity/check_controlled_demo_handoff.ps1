@@ -151,7 +151,7 @@ Assert-ScriptExists -RelativePath "scripts\content-pack\check_controlled_demo_pu
 
 Assert-FileContains -RelativePath "README.md" -Markers @(
     "AI RTS Commander Lab",
-    "PC1-PC51",
+    "PC1-PC52",
     "check_controlled_demo_handoff.ps1",
     "check_windows_demo_build_freshness.ps1",
     "check_demo_source_hygiene.ps1",
@@ -192,6 +192,7 @@ Assert-FileContains -RelativePath "README.md" -Markers @(
     "Current plan queue consistency check OK",
     "check_android_device_connection.ps1",
     "Android device connection check waiting on device",
+    "WpdOnlyAndroidProbe: True",
     "Wire Android smoke connection gate",
     "ConnectionCheck: check_android_device_connection.ps1 -RequireDevice",
     "Add Android smoke connection gate check",
@@ -199,6 +200,7 @@ Assert-FileContains -RelativePath "README.md" -Markers @(
     "Android smoke connection gate check OK",
     "Android smoke connection gate check waiting on device",
     "Add Android visible-flow command-file smoke",
+    "Add Android WPD-only device diagnosis",
     "CommandFileSmoke: True",
     "UnityArguments: -mc2CommandFile",
     "SmokeSuccessMarker: MC2 debrief summary assertion OK",
@@ -247,6 +249,7 @@ Assert-FileContains -RelativePath "BUILD-WIN.md" -Markers @(
     "Current plan queue consistency check OK",
     "check_android_device_connection.ps1",
     "Android device connection check waiting on device",
+    "WpdOnlyAndroidProbe: True",
     "check_android_smoke_connection_gate.ps1",
     "Android smoke connection gate check OK",
     "Android smoke connection gate check waiting on device",
@@ -270,6 +273,7 @@ Assert-FileContains -RelativePath "BUILD-WIN.md" -Markers @(
     "android-device-smoke-summary.json",
     "SummaryWrite: True",
     "ConnectionCheck: check_android_device_connection.ps1 -RequireDevice",
+    "WpdOnlyAndroidProbe: True",
     "CommandFileSmoke: True",
     "UnityArguments: -mc2CommandFile",
     "SmokeSuccessMarker: MC2 debrief summary assertion OK",
@@ -323,6 +327,7 @@ Assert-FileContains -RelativePath "BUILD-MOBILE.md" -Markers @(
     "android-device-smoke-summary.json",
     "SummaryWrite: True",
     "ConnectionCheck: check_android_device_connection.ps1 -RequireDevice",
+    "WpdOnlyAndroidProbe: True",
     "CommandFileSmoke: True",
     "UnityArguments: -mc2CommandFile",
     "SmokeSuccessMarker: MC2 debrief summary assertion OK",
@@ -341,7 +346,7 @@ Assert-FileContains -RelativePath "BUILD-MOBILE.md" -Markers @(
 )
 
 Assert-FileContains -RelativePath "docs-ai-rts-commander-current-master-plan-2026-06-07.md" -Markers @(
-    "PC1-PC51",
+    "PC1-PC52",
     "Add controlled demo handoff consistency check",
     "Add demo source hygiene check",
     "Add AI deputy contract check",
@@ -379,6 +384,7 @@ Assert-FileContains -RelativePath "docs-ai-rts-commander-current-master-plan-202
     "Wire Android smoke connection gate",
     "Add Android smoke connection gate check",
     "Add Android visible-flow command-file smoke",
+    "Add Android WPD-only device diagnosis",
     "Add current plan gate check",
     "Add Android smoke log crash scan",
     "Add Android smoke plan mode",
@@ -418,6 +424,7 @@ Assert-FileContains -RelativePath "docs-ai-rts-commander-current-master-plan-202
     "android-device-smoke-summary.json",
     "SummaryWrite: True",
     "ConnectionCheck: check_android_device_connection.ps1 -RequireDevice",
+    "WpdOnlyAndroidProbe: True",
     "CommandFileSmoke: True",
     "UnityArguments: -mc2CommandFile",
     "SmokeSuccessMarker: MC2 debrief summary assertion OK",
@@ -433,7 +440,7 @@ Assert-FileContains -RelativePath "docs-ai-rts-commander-current-master-plan-202
 )
 
 Assert-FileContains -RelativePath "docs-ai-rts-commander-current-detailed-plan-2026-06-07.md" -Markers @(
-    "PC1-PC51",
+    "PC1-PC52",
     "Add controlled demo handoff consistency check",
     "Add demo source hygiene check",
     "Add AI deputy contract check",
@@ -471,6 +478,7 @@ Assert-FileContains -RelativePath "docs-ai-rts-commander-current-detailed-plan-2
     "Wire Android smoke connection gate",
     "Add Android smoke connection gate check",
     "Add Android visible-flow command-file smoke",
+    "Add Android WPD-only device diagnosis",
     "Add current plan gate check",
     "Add Android smoke log crash scan",
     "Add Android smoke plan mode",
@@ -525,7 +533,7 @@ Assert-FileContains -RelativePath "docs-ai-rts-commander-current-detailed-plan-2
 )
 
 Assert-FileContains -RelativePath "docs-pc-optimization-plan-2026-06-11.md" -Markers @(
-    "sealed through PC1-PC51",
+    "sealed through PC1-PC52",
     "Add controlled demo handoff consistency check",
     "Add demo source hygiene check",
     "Add AI deputy contract check",
@@ -563,6 +571,7 @@ Assert-FileContains -RelativePath "docs-pc-optimization-plan-2026-06-11.md" -Mar
     "Wire Android smoke connection gate",
     "Add Android smoke connection gate check",
     "Add Android visible-flow command-file smoke",
+    "Add Android WPD-only device diagnosis",
     "Add current plan gate check",
     "Add Android smoke log crash scan",
     "Add Android smoke plan mode",
@@ -644,6 +653,7 @@ Assert-FileContains -RelativePath "docs-playable-demo-investor-evidence-2026-06-
     "PC smoke artifact hygiene",
     "Current plan queue consistency",
     "Android device connection",
+    "Android WPD-only device diagnosis",
     "Android smoke connection gate check",
     "Android visible-flow command-file smoke",
     "Current plan gate",
@@ -683,6 +693,7 @@ Assert-FileContains -RelativePath "docs-playable-demo-investor-evidence-2026-06-
     "android-device-smoke-summary.json",
     "SummaryWrite: True",
     "ConnectionCheck: check_android_device_connection.ps1 -RequireDevice",
+    "WpdOnlyAndroidProbe: True",
     "CommandFileSmoke: True",
     "UnityArguments: -mc2CommandFile",
     "SmokeSuccessMarker: MC2 debrief summary assertion OK",
@@ -702,7 +713,7 @@ Assert-FileContains -RelativePath "docs-playable-demo-investor-evidence-2026-06-
 )
 
 Assert-FileContains -RelativePath "docs-machine-handoff-plan-2026-06-07.md" -Markers @(
-    "PC1-PC51",
+    "PC1-PC52",
     "Add PC visual capture sanity check",
     "Add PC visual capture sanity self-test",
     "Add PC capture sidecar schema check",
@@ -717,6 +728,7 @@ Assert-FileContains -RelativePath "docs-machine-handoff-plan-2026-06-07.md" -Mar
     "Wire Android smoke connection gate",
     "Add Android smoke connection gate check",
     "Add Android visible-flow command-file smoke",
+    "Add Android WPD-only device diagnosis",
     "Add Android smoke summary evidence output",
     "Add Android smoke summary schema check",
     "Add Android smoke summary preflight check",
@@ -764,6 +776,7 @@ Assert-FileContains -RelativePath "docs-machine-handoff-plan-2026-06-07.md" -Mar
     "android-device-smoke-summary.json",
     "SummaryWrite: True",
     "ConnectionCheck: check_android_device_connection.ps1 -RequireDevice",
+    "WpdOnlyAndroidProbe: True",
     "CommandFileSmoke: True",
     "UnityArguments: -mc2CommandFile",
     "SmokeSuccessMarker: MC2 debrief summary assertion OK",

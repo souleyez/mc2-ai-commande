@@ -81,8 +81,9 @@ function Assert-DoesNotContain {
 }
 
 $requiredPlanMarkers = @(
-    "PC1-PC51",
-    "Add Android visible-flow command-file smoke",
+    "PC1-PC52",
+    "Add Android WPD-only device diagnosis",
+    "WpdOnlyAndroidProbe: True",
     "CommandFileSmoke: True",
     "SmokeSuccessMarker: MC2 debrief summary assertion OK",
     "SmokeSuccessMarker: MC2 loadout compact assertion OK",
@@ -106,9 +107,9 @@ foreach ($relativePath in $docsToCheck) {
         Assert-Contains -Text $text -Needle $marker -Label "$relativePath plan queue marker"
     }
 
-    Assert-DoesNotContain -Text $text -Needle "define PC51 before implementation" -Label $relativePath
-    Assert-DoesNotContain -Text $text -Needle "必须先定义 PC51" -Label $relativePath
-    Assert-DoesNotContain -Text $text -Needle "必须先写清 PC51" -Label $relativePath
+    Assert-DoesNotContain -Text $text -Needle "define PC52 before implementation" -Label $relativePath
+    Assert-DoesNotContain -Text $text -Needle "必须先定义 PC52" -Label $relativePath
+    Assert-DoesNotContain -Text $text -Needle "必须先写清 PC52" -Label $relativePath
 }
 
 $mobilePlan = Read-RequiredText -RelativePath "docs-mobile-first-plan-2026-06-10.md"
@@ -122,10 +123,12 @@ Assert-Contains -Text $handoff -Needle 'Next planned work: `G3 Run Android devic
 
 $currentGate = Read-RequiredText -RelativePath "scripts\unity\check_current_plan_gate.ps1"
 Assert-Contains -Text $currentGate -Needle 'CommandFileSmoke: True' -Label "current gate script marker"
+Assert-Contains -Text $currentGate -Needle 'WpdOnlyAndroidProbe: True' -Label "current gate device diagnosis marker"
 Assert-Contains -Text $currentGate -Needle 'SmokeSuccessMarker: MC2 loadout compact assertion OK' -Label "current gate success marker"
 
 $handoffScript = Read-RequiredText -RelativePath "scripts\unity\check_controlled_demo_handoff.ps1"
 Assert-Contains -Text $handoffScript -Needle 'CommandFileSmoke: True' -Label "handoff script marker"
+Assert-Contains -Text $handoffScript -Needle 'WpdOnlyAndroidProbe: True' -Label "handoff script device diagnosis marker"
 Assert-Contains -Text $handoffScript -Needle 'SmokeSuccessMarker: MC2 loadout compact assertion OK' -Label "handoff script success marker"
 
 $tracked = @(& git -C $RepoRoot ls-files 2>$null | ForEach-Object { $_.ToString() })

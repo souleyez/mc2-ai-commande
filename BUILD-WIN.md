@@ -284,7 +284,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_curren
 ```
 
 This confirms the current PC/mobile wait-state package is sealed through
-`PC1-PC51`, that `Add Android visible-flow command-file smoke` is the latest PC
+`PC1-PC52`, that `Add Android WPD-only device diagnosis` is the latest PC
 checkpoint, and that `G3 Run Android device smoke` remains the formal next task.
 
 Expected success string: `Current plan queue consistency check OK`.
@@ -298,11 +298,19 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_androi
 This reads `adb devices -l` and reports no-device, unauthorized, offline,
 multiple-device or ready states without installing or launching the APK.
 
-Current wait-state checkpoint: `PC1-PC51`.
+Current wait-state checkpoint: `PC1-PC52`.
 
-Expected waiting-state string without a phone: `Android device connection check waiting on device`.
+Expected waiting-state string without an authorized adb phone: `Android device connection check waiting on device`.
 
-Checkpoint marker: `Add Android device connection check`.
+Diagnostic marker: `WpdOnlyAndroidProbe: True`.
+
+When Windows only exposes a connected Android phone as WPD/MTP, the helper can
+also report `WpdOnlyAndroidDevice: True`; that still means G3 is waiting for USB
+debugging authorization or an ADB driver before install/launch.
+
+Checkpoint marker: `Add Android WPD-only device diagnosis`.
+
+Previous checkpoint marker: `Add Android device connection check`.
 
 Real Android smoke runs now require the same connection gate before install or
 launch. The plan output must include
