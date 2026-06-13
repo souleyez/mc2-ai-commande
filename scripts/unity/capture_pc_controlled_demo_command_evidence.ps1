@@ -50,8 +50,8 @@ $reportMarkdownPath = Join-Path $OutputDir "pc-controlled-demo-command-evidence.
 $visualEvidenceScript = Join-Path $RepoRoot "scripts\unity\capture_pc_controlled_demo_visual_evidence.ps1"
 $windowsBuildFreshnessScript = Join-Path $RepoRoot "scripts\unity\check_windows_demo_build_freshness.ps1"
 $requiredPresets = @("spawn", "hangar-contact", "damage-demo", "solo-order", "solo-return")
-$completedTaskName = "F40 refresh PC controlled-demo investor-readiness evidence after fixes"
-$nextFormalTaskName = "F41 audit post-F40 PC controlled-demo investor evidence package"
+$completedTaskName = "F43 refresh PC controlled-demo investor evidence package after fixes"
+$nextFormalTaskName = "F44 audit post-F43 PC controlled-demo investor evidence refresh"
 $rows = New-Object System.Collections.Generic.List[object]
 
 function Resolve-RepoPath {
