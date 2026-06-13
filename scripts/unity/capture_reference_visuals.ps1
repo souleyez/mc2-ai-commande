@@ -200,6 +200,9 @@ function Test-CaptureSidecar {
     elseif ($ExpectedPreset -eq "solo-order") {
         Test-SoloOrderCaptureSidecar -Sidecar $sidecar -Path $Path
     }
+    elseif ($ExpectedPreset -eq "solo-return") {
+        Test-SoloReturnCaptureSidecar -Sidecar $sidecar -Path $Path
+    }
     elseif ($ExpectedPreset -eq "hangar-contact") {
         Test-HangarContactCaptureSidecar -Sidecar $sidecar -Path $Path
     }
@@ -437,7 +440,7 @@ function Test-UnitReadabilityCaptureSidecar {
         throw "Unit readability sidecar did not prove active player unit cues: $Path -> $summary"
     }
 
-    if ($Sidecar.preset -ne "spawn" -and $Sidecar.preset -ne "solo-order") {
+    if ($Sidecar.preset -ne "spawn" -and $Sidecar.preset -ne "solo-order" -and $Sidecar.preset -ne "solo-return") {
         $hostileUnits = Read-SummaryNumber -Summary $summary -Pattern "hostile=([0-9]+)" -Context $Path
         if ($hostileUnits -le 0) {
             throw "Unit readability sidecar did not prove hostile unit cues: $Path -> $summary"
@@ -542,7 +545,7 @@ function Test-FirstMapVisualCaptureSidecar {
         throw "First map visual sidecar did not prove player units and objective structure: $Path -> $summary"
     }
 
-    if ($Sidecar.preset -ne "spawn" -and $Sidecar.preset -ne "solo-order") {
+    if ($Sidecar.preset -ne "spawn" -and $Sidecar.preset -ne "solo-order" -and $Sidecar.preset -ne "solo-return") {
         $activeHostiles = Read-SummaryNumber -Summary $summary -Pattern "activeHostiles=([0-9]+)" -Context $Path
         if ($activeHostiles -le 0) {
             throw "First map visual sidecar did not prove hostile presence: $Path -> $summary"
@@ -764,6 +767,46 @@ function Test-SoloOrderCaptureSidecar {
         if ($commander -notlike "*$fragment*") {
             throw "Solo-order commander follow summary missing '$fragment': $Path -> $commander"
         }
+    }
+}
+
+function Test-SoloReturnCaptureSidecar {
+    param(
+        [object]$Sidecar,
+        [string]$Path
+    )
+
+    if ($Sidecar.flowScreen -ne "Battle") {
+        throw "Solo-return capture did not stay in battle flow: $Path -> $($Sidecar.flowScreen)"
+    }
+
+    $command = [string]$Sidecar.commandReadability
+    foreach ($fragment in @(
+        "CommandReadability=all+single+jet+focus+commander-follow+formation",
+        "solo=0",
+        "SoloReturn=ring+beacon",
+        "CommanderFollow=unit-1+first-sort+fixed-view"
+    )) {
+        if ($command -notlike "*$fragment*") {
+            throw "Solo-return command readability summary missing '$fragment': $Path -> $command"
+        }
+    }
+
+    $flow = [string]$Sidecar.playableFlowPolish
+    foreach ($fragment in @(
+        "PlayableFlowPolish=contact-pressure+damage-debrief+solo-return+hud-density+handoff",
+        "soloReturn=returned",
+        "detached=0",
+        "mobileLandscapeOnly=True",
+        "orientation=landscape"
+    )) {
+        if ($flow -notlike "*$fragment*") {
+            throw "Solo-return playable-flow summary missing '$fragment': $Path -> $flow"
+        }
+    }
+
+    if ([string]$Sidecar.status -notlike "*Solo return settled*") {
+        throw "Solo-return capture did not expose settled status: $Path -> $($Sidecar.status)"
     }
 }
 

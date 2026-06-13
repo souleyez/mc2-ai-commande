@@ -1,7 +1,7 @@
 param(
     [string]$RepoRoot = "",
     [string]$OutputDir = "",
-    [string[]]$Presets = @("spawn", "hangar-contact", "damage-demo", "solo-order"),
+    [string[]]$Presets = @("spawn", "hangar-contact", "damage-demo", "solo-order", "solo-return"),
     [int]$Width = 1280,
     [int]$Height = 720,
     [int]$CaptureTimeoutSeconds = 75,
@@ -38,7 +38,7 @@ $fixesReportMarkdownPath = Join-Path $OutputDir "pc-controlled-demo-visual-reada
 $reportJsonPath = Join-Path $OutputDir "pc-controlled-demo-visual-evidence.json"
 $reportMarkdownPath = Join-Path $OutputDir "pc-controlled-demo-visual-evidence.md"
 $fixesScript = Join-Path $RepoRoot "scripts\unity\check_pc_controlled_demo_visual_readability_fixes.ps1"
-$requiredPresets = @("spawn", "hangar-contact", "damage-demo", "solo-order")
+$requiredPresets = @("spawn", "hangar-contact", "damage-demo", "solo-order", "solo-return")
 
 function Normalize-CapturePreset {
     param([string]$Preset)
@@ -150,6 +150,8 @@ function Test-SidecarEvidence {
 
     $hud = [string]$Sidecar.battleHud
     Require-Text -Text $hud -Needle "statusRailDensity=compact-pc" -Label "$Preset battleHud"
+    Require-Text -Text $hud -Needle "statusRailContext=sections+solo+contact" -Label "$Preset battleHud"
+    Require-Text -Text $hud -Needle "pressureCue=ContactPressureCue=" -Label "$Preset battleHud"
     Require-Text -Text $hud -Needle "combatLogVisible=no" -Label "$Preset battleHud"
     $statusRailWidth = Read-SummaryNumber -Summary $hud -Pattern "statusRailW=([0-9.]+)" -Label "$Preset battleHud"
     $statusRailShare = Read-SummaryNumber -Summary $hud -Pattern "statusRailShare1280=([0-9.]+)" -Label "$Preset battleHud"
@@ -174,6 +176,19 @@ function Test-SidecarEvidence {
         Require-Text -Text $commander -Needle "CommanderFollow=unit-1+first-sort+fixed-view" -Label "$Preset commanderFollow"
         Require-Text -Text $commander -Needle "unit=unit-1" -Label "$Preset commanderFollow"
         Require-Text -Text $commander -Needle "sortedIndex=1" -Label "$Preset commanderFollow"
+    }
+
+    if ($Preset -eq "solo-return") {
+        $command = [string]$Sidecar.commandReadability
+        Require-Text -Text $command -Needle "solo=0" -Label "$Preset commandReadability"
+        Require-Text -Text $command -Needle "SoloReturn=ring+beacon" -Label "$Preset commandReadability"
+        Require-Text -Text ([string]$Sidecar.status) -Needle "Solo return settled" -Label "$Preset status"
+        $flow = [string]$Sidecar.playableFlowPolish
+        Require-Text -Text $flow -Needle "PlayableFlowPolish=contact-pressure+damage-debrief+solo-return+hud-density+handoff" -Label "$Preset playableFlowPolish"
+        Require-Text -Text $flow -Needle "soloReturn=returned" -Label "$Preset playableFlowPolish"
+        Require-Text -Text $flow -Needle "detached=0" -Label "$Preset playableFlowPolish"
+        Require-Text -Text $flow -Needle "mobileLandscapeOnly=True" -Label "$Preset playableFlowPolish"
+        Require-Text -Text $flow -Needle "orientation=landscape" -Label "$Preset playableFlowPolish"
     }
 
     return [pscustomobject]@{

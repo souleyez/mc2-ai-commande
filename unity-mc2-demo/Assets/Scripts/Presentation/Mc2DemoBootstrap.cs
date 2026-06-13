@@ -42,6 +42,7 @@ namespace MC2Demo.Presentation
         private const string CapturePresetNorthPatrol = "north-patrol";
         private const string CapturePresetDamageDemo = "damage-demo";
         private const string CapturePresetSoloOrder = "solo-order";
+        private const string CapturePresetSoloReturn = "solo-return";
         private const string CapturePresetMechLab = "mechlab";
         private const int OccupancyLandingReviewMarkerCount = 16;
         private const float OcclusionFadeUpdateSpeed = 8f;
@@ -160,9 +161,9 @@ namespace MC2Demo.Presentation
         private const float MobileTouchLoadoutGridCellMinSize = 36f;
         private const float MobileTouchLoadoutGridCellMaxSize = 48f;
         private const float MobileTouchBreakpointWidth = 1200f;
-        private const float PcBattleStatusRailWidth = 292f;
+        private const float PcBattleStatusRailWidth = 280f;
         private const float PcBattleStatusRailButtonWidth = 44f;
-        private const float PcBattleStatusRailSystemButtonMinWidth = 70f;
+        private const float PcBattleStatusRailSystemButtonMinWidth = 68f;
         private const float PcBattleStatusRailRowHeight = 30f;
         private const float PcBattleStatusRailRowStride = 64f;
         private const float CriticalSectionStatusRatio = 0.35f;
@@ -246,6 +247,7 @@ namespace MC2Demo.Presentation
             public string commandReadability;
             public string commandCuePalette;
             public string commanderFollow;
+            public string playableFlowPolish;
             public VisualCaptureCameraState camera;
             public VisualCaptureReferenceState referenceAssets;
         }
@@ -6805,6 +6807,9 @@ namespace MC2Demo.Presentation
                 case CapturePresetSoloOrder:
                     RunStartupSoloOrderCapturePrelude();
                     break;
+                case CapturePresetSoloReturn:
+                    RunStartupSoloReturnCapturePrelude();
+                    break;
                 case CapturePresetMechLab:
                     RunStartupMechLabCapturePrelude();
                     break;
@@ -6859,6 +6864,22 @@ namespace MC2Demo.Presentation
             AdvanceStartupSimulation(0.25f);
             RunStartupCommanderCommand("unit unit-2 move 3136 -1700");
             AdvanceStartupSimulation(1.25f);
+        }
+
+        private void RunStartupSoloReturnCapturePrelude()
+        {
+            RunStartupSoloOrderCapturePrelude();
+            int guard = 0;
+            while (CountDetachedPlayerUnits() > 0 && guard < 40)
+            {
+                AdvanceStartupSimulation(1f);
+                guard++;
+            }
+
+            int detached = CountDetachedPlayerUnits();
+            statusText = detached <= 0
+                ? "Solo return settled: unit-2 back in squad"
+                : "Solo return pending: detached " + detached.ToString(CultureInfo.InvariantCulture);
         }
 
         private void RunStartupMechLabCapturePrelude()
@@ -7116,6 +7137,11 @@ namespace MC2Demo.Presentation
             string contactClearanceSummary = BuildCaptureContactClearanceSummary();
             string battleHudSummary = BuildCaptureBattleHudSummary();
             string damageStorySummary = BuildCaptureDamageStorySummary();
+            string debriefRewardSummary = BuildCaptureDebriefRewardSummary();
+            string playableFlowPolishSummary = BuildCapturePlayableFlowPolishSummary(
+                battleHudSummary,
+                damageStorySummary,
+                debriefRewardSummary);
             return new VisualCaptureSidecar
             {
                 preset = lastCapturePreset,
@@ -7156,12 +7182,13 @@ namespace MC2Demo.Presentation
                 damageStory = damageStorySummary,
                 damageReadability = BuildCaptureDamageReadabilitySummary(),
                 battleHud = battleHudSummary,
-                debriefReward = BuildCaptureDebriefRewardSummary(),
+                debriefReward = debriefRewardSummary,
                 postReceiptInventoryRefresh = BuildCapturePostReceiptInventoryRefreshSummary(),
                 mobileTouch = BuildCaptureMobileTouchSummary(),
                 commandReadability = BuildCaptureCommandReadabilitySummary(),
                 commandCuePalette = CommandCuePaletteSummary(),
                 commanderFollow = BuildCaptureCommanderFollowSummary(),
+                playableFlowPolish = playableFlowPolishSummary,
                 camera = BuildCaptureCameraState(),
                 referenceAssets = new VisualCaptureReferenceState
                 {
@@ -8046,6 +8073,7 @@ namespace MC2Demo.Presentation
         private string BuildCaptureDebriefRewardSummary()
         {
             string fundsLine = mission?.ResultSummary == null ? "" : MissionResultFundsLine(mission.ResultSummary);
+            string damageConsequenceLine = mission?.ResultSummary == null ? "" : MissionResultDamageConsequenceLine(mission.ResultSummary);
             string serverRewardLine = PostReceiptDebriefLine(postReceiptInventoryRefresh);
             bool rewardVisible = !string.IsNullOrWhiteSpace(serverRewardLine);
             return "DebriefReward="
@@ -8054,6 +8082,10 @@ namespace MC2Demo.Presentation
                 + DemoFlowScreenName(demoFlowScreen)
                 + " fundsLine="
                 + fundsLine
+                + " damageConsequenceLine="
+                + damageConsequenceLine
+                + " "
+                + BuildCaptureDamageDebriefSummary()
                 + " serverRewardLine="
                 + serverRewardLine
                 + " ServerRewardTextVisible: "
@@ -8063,6 +8095,78 @@ namespace MC2Demo.Presentation
                 + " DuplicateRewardText: "
                 + serverRewardLine.StartsWith(UnityPostReceiptInventoryRefreshResult.MessageServerRewardAlreadyApplied, StringComparison.Ordinal)
                 + " MobileLandscapeOnly: True";
+        }
+
+        private string BuildCaptureDamageDebriefSummary()
+        {
+            MissionResultSummary summary = mission?.ResultSummary;
+            int repairCost = summary?.repairCostResourcePoints ?? 0;
+            int damaged = summary?.damagedPlayerUnits ?? 0;
+            bool ready = summary != null && (repairCost > 0 || damaged > 0 || SummaryHas(BuildCaptureDamageStorySummary(), "lostSections="));
+            return "DamageDebrief="
+                + (ready ? "section-status+repair-line" : "none")
+                + " damagedPlayerUnits="
+                + damaged.ToString(CultureInfo.InvariantCulture)
+                + " repairCost="
+                + repairCost.ToString(CultureInfo.InvariantCulture)
+                + " consequence=mechlab-repair"
+                + " cockpitEjection=ready";
+        }
+
+        private string BuildCapturePlayableFlowPolishSummary(
+            string battleHudSummary,
+            string damageStorySummary,
+            string debriefRewardSummary)
+        {
+            int detached = CountDetachedPlayerUnits();
+            bool isSoloReturn = string.Equals(lastCapturePreset, CapturePresetSoloReturn, StringComparison.Ordinal);
+            string soloReturnState = isSoloReturn
+                ? (detached <= 0 ? "returned" : "pending")
+                : string.Equals(lastCapturePreset, CapturePresetSoloOrder, StringComparison.Ordinal)
+                    ? "order-active"
+                    : "not-focused";
+            float statusRailWidth = BattleStatusRailWidthForCurrentLayout();
+            return "PlayableFlowPolish=contact-pressure+damage-debrief+solo-return+hud-density+handoff"
+                + " contactPressure="
+                + BuildPlayableContactPressureCueSummary()
+                + " damageStatus=status-rail-section-bars"
+                + " damageStory="
+                + (SummaryHas(damageStorySummary, "lostSections=") ? "section-loss+ejection+wreck" : "available")
+                + " debrief="
+                + (SummaryHas(debriefRewardSummary, "DamageDebrief=section-status+repair-line") ? "repair-line" : "not-ready")
+                + " soloReturn="
+                + soloReturnState
+                + " detached="
+                + detached.ToString(CultureInfo.InvariantCulture)
+                + " statusRail=denser-context"
+                + " statusRailW="
+                + statusRailWidth.ToString("0.#", CultureInfo.InvariantCulture)
+                + " statusRailShare1280="
+                + (statusRailWidth / 1280f).ToString("0.##", CultureInfo.InvariantCulture)
+                + " battleHud="
+                + (SummaryHas(battleHudSummary, "SparseBattleUi=statusRows+sections+solo") ? "sparse" : "review")
+                + " evidence=unified-playable-flow"
+                + " mobileLandscapeOnly=True"
+                + " orientation=landscape";
+        }
+
+        private string BuildPlayableContactPressureCueSummary()
+        {
+            int activeHostiles = CountActiveHostileUnits();
+            int visibleHostiles = VisibleHostileLabels().Length;
+            int liveTargets = mission == null ? 0 : CountLiveStructures();
+            string cue = activeHostiles > 0 ? "objective-panel+in-world" : "quiet";
+            string tempo = mission == null ? "inactive" : CombatTempoMode();
+            return "ContactPressureCue="
+                + cue
+                + " activeHostiles="
+                + activeHostiles.ToString(CultureInfo.InvariantCulture)
+                + " visibleHostiles="
+                + visibleHostiles.ToString(CultureInfo.InvariantCulture)
+                + " liveTargets="
+                + liveTargets.ToString(CultureInfo.InvariantCulture)
+                + " tempo="
+                + tempo;
         }
 
         private string BuildCapturePostReceiptInventoryRefreshSummary()
@@ -8174,10 +8278,13 @@ namespace MC2Demo.Presentation
                 + " statusRailShare1280="
                 + (statusRailWidth / 1280f).ToString("0.##", CultureInfo.InvariantCulture)
                 + " statusRailDensity="
-                + (compactRail ? "compact-pc" : ShouldUseMobileTouchLayout() ? "touch" : "standard")
+                + (compactRail ? "compact-pc+denser" : ShouldUseMobileTouchLayout() ? "touch" : "standard")
+                + " statusRailContext=sections+solo+contact"
                 + " combatLogVisible=no"
                 + " objectivePanel="
                 + objectiveMode
+                + " pressureCue="
+                + BuildPlayableContactPressureCueSummary()
                 + " objectiveH="
                 + objectivePanel.height.ToString("0.#", CultureInfo.InvariantCulture)
                 + " missionMap="
@@ -8210,9 +8317,11 @@ namespace MC2Demo.Presentation
                 + " controls=all+jet+map+bay+system"
                 + " combatPanel=h"
                 + combatPanel.height.ToString("0.#", CultureInfo.InvariantCulture)
+                + " statusRail=denser-context"
                 + " combatLog=hidden"
                 + " objective="
                 + objectiveMode
+                + " pressureCue=objective-panel"
                 + " missionMap="
                 + (showMissionMap ? "available-open" : "available-closed")
                 + " accountUi=hidden"
@@ -14388,7 +14497,7 @@ namespace MC2Demo.Presentation
 
             float x = panelX + 10f;
             float y = panelY + 34f;
-            float commandGap = compactPcRail ? 5f : 6f;
+            float commandGap = compactPcRail ? 4f : 6f;
             float commandButtonWidth = compactPcRail ? PcBattleStatusRailButtonWidth : touchLayout ? 52f : 50f;
             float systemButtonWidth = Mathf.Max(
                 compactPcRail ? PcBattleStatusRailSystemButtonMinWidth : touchLayout ? 68f : 76f,
@@ -14747,12 +14856,12 @@ namespace MC2Demo.Presentation
         {
             DrawDesignPanelFrame(panel, "Objective / 目标", UiAmberColor);
             float x = panel.x + 12f;
-            float y = panel.y + 32f;
+            float y = panel.y + 30f;
             float width = panel.width - 24f;
             ObjectiveState active = FirstActiveVisibleObjective();
             string objectiveLine = active == null ? "Objective tracking" : MissionBriefObjectiveLine(active);
-            GUI.Label(new Rect(x, y, width, 18f), TruncateText(objectiveLine, 36));
-            y += 20f;
+            GUI.Label(new Rect(x, y, width, 16f), TruncateText(objectiveLine, 38));
+            y += 18f;
 
             MissionResultSummary summary = mission.ResultSummary;
             string targetText = "Targets "
@@ -14763,7 +14872,14 @@ namespace MC2Demo.Presentation
                 + FormatTokens(summary.completedRewardResourcePoints)
                 + "/"
                 + FormatTokens(summary.visibleRewardResourcePoints);
-            GUI.Label(new Rect(x, y, width, 18f), targetText);
+            GUI.Label(new Rect(x, y, width, 16f), targetText);
+            y += 18f;
+
+            string pressureText = CompactContactPressureLine();
+            Color previous = GUI.color;
+            GUI.color = CountActiveHostileUnits() > 0 ? UiAmberColor : UiTextColor;
+            GUI.Label(new Rect(x, y, width, 16f), TruncateText(pressureText, 40));
+            GUI.color = previous;
         }
 
         private ObjectiveState FirstActiveVisibleObjective()
@@ -14780,6 +14896,23 @@ namespace MC2Demo.Presentation
             }
 
             return null;
+        }
+
+        private string CompactContactPressureLine()
+        {
+            int activeHostiles = CountActiveHostileUnits();
+            int visibleHostiles = VisibleHostileLabels().Length;
+            if (activeHostiles <= 0)
+            {
+                return "Contact quiet  visible 0";
+            }
+
+            return "Contact "
+                + visibleHostiles.ToString(CultureInfo.InvariantCulture)
+                + "/"
+                + activeHostiles.ToString(CultureInfo.InvariantCulture)
+                + "  "
+                + CombatTempoText();
         }
 
         private static float MissionBriefObjectiveStartY(Rect panel)
@@ -21620,6 +21753,9 @@ namespace MC2Demo.Presentation
             }
 
             GUI.Label(new Rect(panel.x + 18f, y, panel.width - 36f, 20f), MissionResultCombatLine(summary));
+            y += 20f;
+
+            GUI.Label(new Rect(panel.x + 18f, y, panel.width - 36f, 20f), MissionResultDamageConsequenceLine(summary));
         }
 
         private static string MissionResultDoneText(MissionResultSummary summary)
@@ -21650,6 +21786,22 @@ namespace MC2Demo.Presentation
             string killText = string.IsNullOrEmpty(kills) ? "none" : TruncateText(kills, 26);
             string damageText = string.IsNullOrEmpty(damaged) ? "none" : TruncateText(damaged, 24);
             return "Combat: Kills " + killText + "    Damage " + damageText;
+        }
+
+        private static string MissionResultDamageConsequenceLine(MissionResultSummary summary)
+        {
+            int damaged = summary?.damagedPlayerUnits ?? 0;
+            int repairCost = summary?.repairCostResourcePoints ?? 0;
+            if (damaged <= 0 && repairCost <= 0)
+            {
+                return "Damage: no section repair needed";
+            }
+
+            return "Damage: "
+                + damaged.ToString(CultureInfo.InvariantCulture)
+                + " mech(s) need repair    Repair "
+                + SignedTokens(-repairCost)
+                + "    Mech Lab ready";
         }
 
         private static string MissionResultSalvageTargetLine(MissionResultSummary summary)
@@ -22258,7 +22410,7 @@ namespace MC2Demo.Presentation
             float y = combatPanel.yMax + 8f;
             if (ShouldUseCompactMissionBriefPanel())
             {
-                return new Rect(combatPanel.x, y, combatPanel.width, 74f);
+                return new Rect(combatPanel.x, y, combatPanel.width, 88f);
             }
 
             float height = Mathf.Min(Mathf.Clamp(Screen.height * 0.28f, 150f, 230f), Mathf.Max(120f, Screen.height - y - 16f));

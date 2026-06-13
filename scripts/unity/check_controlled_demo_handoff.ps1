@@ -153,6 +153,7 @@ Assert-ScriptExists -RelativePath "scripts\unity\audit_pc_controlled_demo_comman
 Assert-ScriptExists -RelativePath "scripts\unity\check_pc_controlled_demo_command_readability_fixes.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\capture_pc_controlled_demo_command_evidence.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\audit_pc_controlled_demo_playable_flow_polish.ps1"
+Assert-ScriptExists -RelativePath "scripts\unity\check_pc_controlled_demo_playable_flow_polish_fixes.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_server_backed_receipt_slice_plan.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\capture_server_backed_receipt_evidence.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_post_receipt_inventory_refresh_boundary.ps1"
@@ -340,6 +341,9 @@ Assert-FileContains -RelativePath "README.md" -Markers @(
     "audit_pc_controlled_demo_playable_flow_polish.ps1",
     "PC controlled-demo playable flow polish audit OK",
     "F36 implement post-F34 PC controlled-demo playable flow polish fixes",
+    "check_pc_controlled_demo_playable_flow_polish_fixes.ps1",
+    "PC controlled-demo playable flow polish fixes check OK",
+    "F37 refresh PC controlled-demo playable-flow evidence after polish fixes",
     "Add Android WPD-only device diagnosis",
     "Add Android ADB setup guidance",
     "Add Android ADB driver package probe",
@@ -546,6 +550,9 @@ Assert-FileContains -RelativePath "BUILD-WIN.md" -Markers @(
     "audit_pc_controlled_demo_playable_flow_polish.ps1",
     "PC controlled-demo playable flow polish audit OK",
     "F36 implement post-F34 PC controlled-demo playable flow polish fixes",
+    "check_pc_controlled_demo_playable_flow_polish_fixes.ps1",
+    "PC controlled-demo playable flow polish fixes check OK",
+    "F37 refresh PC controlled-demo playable-flow evidence after polish fixes",
     "Controlled demo readiness preflight OK"
 )
 
@@ -692,6 +699,9 @@ Assert-FileContains -RelativePath "BUILD-MOBILE.md" -Markers @(
     "audit_pc_controlled_demo_playable_flow_polish.ps1",
     "PC controlled-demo playable flow polish audit OK",
     "F36 implement post-F34 PC controlled-demo playable flow polish fixes",
+    "check_pc_controlled_demo_playable_flow_polish_fixes.ps1",
+    "PC controlled-demo playable flow polish fixes check OK",
+    "F37 refresh PC controlled-demo playable-flow evidence after polish fixes",
     "first phone version is landscape-only",
     "check_android_smoke_plan_consistency.ps1",
     "Android smoke plan/preflight consistency check OK",
@@ -1275,6 +1285,9 @@ Assert-FileContains -RelativePath "docs-machine-handoff-plan-2026-06-07.md" -Mar
     "audit_pc_controlled_demo_playable_flow_polish.ps1",
     "PC controlled-demo playable flow polish audit OK",
     "F36 implement post-F34 PC controlled-demo playable flow polish fixes",
+    "check_pc_controlled_demo_playable_flow_polish_fixes.ps1",
+    "PC controlled-demo playable flow polish fixes check OK",
+    "F37 refresh PC controlled-demo playable-flow evidence after polish fixes",
     "first phone version is landscape-only",
     "android-device-smoke.png",
     "ScreenshotCapture: True",

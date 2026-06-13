@@ -48,7 +48,7 @@ $reportJsonPath = Join-Path $OutputDir "pc-controlled-demo-command-evidence.json
 $reportMarkdownPath = Join-Path $OutputDir "pc-controlled-demo-command-evidence.md"
 $visualEvidenceScript = Join-Path $RepoRoot "scripts\unity\capture_pc_controlled_demo_visual_evidence.ps1"
 $windowsBuildFreshnessScript = Join-Path $RepoRoot "scripts\unity\check_windows_demo_build_freshness.ps1"
-$requiredPresets = @("spawn", "hangar-contact", "damage-demo", "solo-order")
+$requiredPresets = @("spawn", "hangar-contact", "damage-demo", "solo-order", "solo-return")
 $rows = New-Object System.Collections.Generic.List[object]
 
 function Resolve-RepoPath {
@@ -106,6 +106,7 @@ function Assert-SourceMarkers {
     $bootstrap = Read-RequiredText -RelativePath "unity-mc2-demo\Assets\Scripts\Presentation\Mc2DemoBootstrap.cs"
     foreach ($marker in @(
         'CapturePresetSoloOrder = "solo-order"',
+        'CapturePresetSoloReturn = "solo-return"',
         "CommandReadability=all+single+jet+focus+commander-follow+formation",
         "CommandCuePalette=command-blue+target-red+damage-amber+hostile-magenta",
         "CommanderFollow=unit-1+first-sort+fixed-view",
@@ -145,6 +146,20 @@ function Test-Sidecar {
         Require-Text -Text $command -Needle "SoloReturn=ring+beacon" -Label "$Preset commandReadability"
         if ([int]$Sidecar.activeHostileCount -ne 0) {
             throw "solo-order should remain a command-isolation capture without active hostiles: $($Sidecar.activeHostileCount)"
+        }
+    }
+
+    if ($Preset -eq "solo-return") {
+        Require-Text -Text $command -Needle "solo=0" -Label "$Preset commandReadability"
+        Require-Text -Text $command -Needle "SoloReturn=ring+beacon" -Label "$Preset commandReadability"
+        Require-Text -Text ([string]$Sidecar.status) -Needle "Solo return settled" -Label "$Preset status"
+        $flow = [string]$Sidecar.playableFlowPolish
+        Require-Text -Text $flow -Needle "PlayableFlowPolish=contact-pressure+damage-debrief+solo-return+hud-density+handoff" -Label "$Preset playableFlowPolish"
+        Require-Text -Text $flow -Needle "soloReturn=returned" -Label "$Preset playableFlowPolish"
+        Require-Text -Text $flow -Needle "detached=0" -Label "$Preset playableFlowPolish"
+        Require-Text -Text $flow -Needle "mobileLandscapeOnly=True" -Label "$Preset playableFlowPolish"
+        if ([int]$Sidecar.activeHostileCount -ne 0) {
+            throw "solo-return should remain a command-isolation capture without active hostiles: $($Sidecar.activeHostileCount)"
         }
     }
 
