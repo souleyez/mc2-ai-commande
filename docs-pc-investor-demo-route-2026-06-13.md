@@ -45,6 +45,18 @@ Purpose: a short Windows-local route for showing the current playable command de
 - RouteAuditFollowUp=P2 area=gate-runtime next=keep-route-gates-focused
 - RouteAuditFix=F48 visibility=investor-route+playable-evidence+handoff noUnityLaunch=True mobile=landscape-only next=F49-route-refresh
 
+## Route Audit Fix Refresh Audit Findings
+
+- RouteAuditFixRefreshAudit=pass-with-followups source=analysis-output/pc-controlled-demo-investor-route-evidence-audit-fix-refresh-audit/pc-controlled-demo-investor-route-evidence-audit-fix-refresh-audit.json completed=F50 next=F51 noUnityLaunch=True mobile=landscape-only
+- RouteAuditFixRefreshAuditFinding=route-proof-clarity status=pass detail=F49 command evidence preserves the exact Windows route, launcher, command report, screenshots and sidecars.
+- RouteAuditFixRefreshAuditFinding=damage-ejection-proof status=pass detail=damage-demo still links screenshot, sidecar, log, section loss, cockpit ejection, wreck salvage and repair cost.
+- RouteAuditFixRefreshAuditFinding=mobile-landscape-proof status=pass detail=first phone version remains landscape-only as a horizontal phone game.
+- RouteAuditFixRefreshAuditFinding=public-safe-proxy-boundary status=pass detail=proxy visuals remain public-safe stand-ins; collision, pathing and BattleCore are unchanged.
+- RouteAuditFixRefreshAuditFinding=audit-fix-closure status=pass detail=F49 command report and markdown carry the F48 route-audit fix closure and source F48 audit-fix report.
+- RouteAuditFixRefreshAuditFollowUp=P1 area=audit-visibility next=F51-doc-gate-visibility
+- RouteAuditFixRefreshAuditFollowUp=P2 area=next-refresh-contract next=F52-consume-F50-audit-report
+- RouteAuditFixRefreshAuditFix=F51 visibility=plan+evidence+handoff+gate noUnityLaunch=True mobile=landscape-only next=F52-route-refresh
+
 ## Current Evidence Commands
 
 ```powershell
