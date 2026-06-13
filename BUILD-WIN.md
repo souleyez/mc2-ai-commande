@@ -283,7 +283,7 @@ Check the current plan queue consistency without launching Unity:
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_current_plan_queue.ps1
 ```
 
-This confirms the current PC/mobile package is sealed through `PC1-PC75`, that
+This confirms the current PC/mobile package is sealed through `PC1-PC76`, that
 `Pass Android G3 device smoke`, the landscape `G4 Touch UI pass`,
 `G5 Mobile performance budget`, `G6 iOS feasibility gate`,
 `F2 map authoring contract`, `F3 web ranking contract`, and
@@ -312,7 +312,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_androi
 This reads `adb devices -l` and reports no-device, unauthorized, offline,
 multiple-device or ready states without installing or launching the APK.
 
-Current wait-state checkpoint: `PC1-PC75`.
+Current wait-state checkpoint: `PC1-PC76`.
 
 Check the mobile landscape contract without launching Unity or the APK:
 
@@ -949,3 +949,11 @@ F74 implementation note: `F74 audit post-F73 PC controlled-demo investor route e
 - F75RouteEvidenceAuditClosure=mobile-landscape status=preserved firstPhoneVersion=landscape-only portraitSupport=False
 
 F75 implementation note: `F75 implement post-F74 PC controlled-demo investor route evidence refresh audit fixes` is complete. Evidence gate: `scripts/unity/check_f75_pc_route_audit_fixes.ps1` -> `F75 PC route audit fixes check OK.`; formal next task: `F76 refresh PC controlled-demo investor route evidence after F74 audit fixes`. Mobile phones remain first-version landscape-only as the horizontal phone build; portrait is not a first-slice support target.
+## F76 PC Route Evidence Refresh
+
+- F76RouteEvidenceRefresh=ready source=analysis-output/f75-pc-route-audit-fixes/report.json completed=F76 next=F77 noUnityLaunch=True mobile=landscape-only
+- F76RouteEvidenceRefreshSource=audit sourceAudit=analysis-output/f74-pc-route-evidence-refresh-audit/report.json sourceFixes=analysis-output/f75-pc-route-audit-fixes/report.json
+- F76RouteEvidenceRefreshClosure=route-proof-preserved route=spawn>hangar-contact>damage-demo>solo-order>solo-return damage=section-loss+cockpit-ejection+wreck-salvage+repair-line publicSafe=proxy-only
+- F76RouteEvidenceRefreshClosure=mobile-landscape status=preserved firstPhoneVersion=landscape-only portraitSupport=False
+
+F76 implementation note: `F76 refresh PC controlled-demo investor route evidence after F74 audit fixes` is complete. Evidence gate: `scripts/unity/check_f76_pc_route_evidence_refresh.ps1` -> `F76 PC route evidence refresh check OK.`; formal next task: `F77 audit post-F76 PC controlled-demo investor route evidence refresh`. Mobile phones remain first-version landscape-only as the horizontal phone build; portrait is not a first-slice support target.
