@@ -214,7 +214,7 @@ Assert-ScriptExists -RelativePath "scripts\content-pack\check_controlled_demo_pu
 
 Assert-FileContains -RelativePath "README.md" -Markers @(
     "AI RTS Commander Lab",
-    "PC1-PC73",
+    "PC1-PC74",
     "check_controlled_demo_handoff.ps1",
     "check_windows_demo_build_freshness.ps1",
     "check_demo_source_hygiene.ps1",
@@ -481,6 +481,9 @@ Assert-FileContains -RelativePath "README.md" -Markers @(
     "check_f73_pc_route_evidence_refresh.ps1",
     "F73 PC route evidence refresh check OK.",
     "F74 audit post-F73 PC controlled-demo investor route evidence refresh",
+    "audit_f74_pc_route_evidence_refresh.ps1",
+    "F74 PC route evidence refresh audit OK.",
+    "F75 implement post-F74 PC controlled-demo investor route evidence refresh audit fixes",
     "Add Android WPD-only device diagnosis",
     "Add Android ADB setup guidance",
     "Add Android ADB driver package probe",
@@ -799,6 +802,9 @@ Assert-FileContains -RelativePath "BUILD-WIN.md" -Markers @(
     "check_f73_pc_route_evidence_refresh.ps1",
     "F73 PC route evidence refresh check OK.",
     "F74 audit post-F73 PC controlled-demo investor route evidence refresh",
+    "audit_f74_pc_route_evidence_refresh.ps1",
+    "F74 PC route evidence refresh audit OK.",
+    "F75 implement post-F74 PC controlled-demo investor route evidence refresh audit fixes",
     "Controlled demo readiness preflight OK"
 )
 
@@ -1057,6 +1063,9 @@ Assert-FileContains -RelativePath "BUILD-MOBILE.md" -Markers @(
     "check_f73_pc_route_evidence_refresh.ps1",
     "F73 PC route evidence refresh check OK.",
     "F74 audit post-F73 PC controlled-demo investor route evidence refresh",
+    "audit_f74_pc_route_evidence_refresh.ps1",
+    "F74 PC route evidence refresh audit OK.",
+    "F75 implement post-F74 PC controlled-demo investor route evidence refresh audit fixes",
     "first phone version is landscape-only",
     "check_android_smoke_plan_consistency.ps1",
     "Android smoke plan/preflight consistency check OK",
@@ -1068,7 +1077,7 @@ Assert-FileContains -RelativePath "BUILD-MOBILE.md" -Markers @(
 )
 
 Assert-FileContains -RelativePath "docs-ai-rts-commander-current-master-plan-2026-06-07.md" -Markers @(
-    "PC1-PC73",
+    "PC1-PC74",
     "Add controlled demo handoff consistency check",
     "Add demo source hygiene check",
     "Add AI deputy contract check",
@@ -1176,7 +1185,7 @@ Assert-FileContains -RelativePath "docs-ai-rts-commander-current-master-plan-202
 )
 
 Assert-FileContains -RelativePath "docs-ai-rts-commander-current-detailed-plan-2026-06-07.md" -Markers @(
-    "PC1-PC73",
+    "PC1-PC74",
     "Add controlled demo handoff consistency check",
     "Add demo source hygiene check",
     "Add AI deputy contract check",
@@ -1274,7 +1283,7 @@ Assert-FileContains -RelativePath "docs-ai-rts-commander-current-detailed-plan-2
 )
 
 Assert-FileContains -RelativePath "docs-pc-optimization-plan-2026-06-11.md" -Markers @(
-    "sealed through PC1-PC73",
+    "sealed through PC1-PC74",
     "Add controlled demo handoff consistency check",
     "Add demo source hygiene check",
     "Add AI deputy contract check",
@@ -1472,7 +1481,7 @@ Assert-FileContains -RelativePath "docs-playable-demo-investor-evidence-2026-06-
 )
 
 Assert-FileContains -RelativePath "docs-machine-handoff-plan-2026-06-07.md" -Markers @(
-    "PC1-PC73",
+    "PC1-PC74",
     "Add PC visual capture sanity check",
     "Add PC visual capture sanity self-test",
     "Add PC capture sidecar schema check",
@@ -1752,6 +1761,9 @@ Assert-FileContains -RelativePath "docs-machine-handoff-plan-2026-06-07.md" -Mar
     "check_f73_pc_route_evidence_refresh.ps1",
     "F73 PC route evidence refresh check OK.",
     "F74 audit post-F73 PC controlled-demo investor route evidence refresh",
+    "audit_f74_pc_route_evidence_refresh.ps1",
+    "F74 PC route evidence refresh audit OK.",
+    "F75 implement post-F74 PC controlled-demo investor route evidence refresh audit fixes",
     "first phone version is landscape-only",
     "android-device-smoke.png",
     "ScreenshotCapture: True",
