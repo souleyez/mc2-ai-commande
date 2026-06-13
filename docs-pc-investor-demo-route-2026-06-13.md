@@ -13,6 +13,11 @@ Purpose: a short Windows-local route for showing the current playable command de
 
 ## Three-Minute Route
 
+- InvestorRoute=ready platform=Windows route=spawn>hangar-contact>damage-demo>solo-order>solo-return launch=scripts/unity/run_windows_demo.ps1 evidence=command-report+screenshots+sidecars
+- DamageProof=damage-demo screenshot=analysis-output/pc-controlled-demo-visual-evidence/captures/damage-demo.png sidecar=analysis-output/pc-controlled-demo-visual-evidence/captures/damage-demo.json log=analysis-output/pc-controlled-demo-visual-evidence/captures/damage-demo.log callout=section-loss+cockpit-ejection+wreck-salvage+repair-line repairCost=9288
+- LandscapePhoneProof=mobileLandscapeOnly=True orientation=landscape firstPhoneVersion=horizontal-only portraitSupport=False
+- ProxyParsing=source=proxyIdentity+materialLanguage+propIdentity sidecarFallback=investorProxyVisuals splitSidecarRecapturePending=True publicSafe=proxy-only
+
 | Step | Preset | What to show | Evidence point |
 | --- | --- | --- | --- |
 | 1 | `spawn` | Fixed RTS camera, readable first map, squad status rail, sparse battle HUD | Map and UI are visible without player box-select controls. |

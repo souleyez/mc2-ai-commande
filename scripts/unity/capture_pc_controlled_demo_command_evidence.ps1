@@ -390,12 +390,22 @@ $soloOrderRow = Find-EvidenceRow -Items $evidenceRows -Preset "solo-order"
 $soloReturnRow = Find-EvidenceRow -Items $evidenceRows -Preset "solo-return"
 $damageRepairCost = if ($null -eq $damageRow) { "" } else { Extract-SummaryToken -Summary ([string]$damageRow.debriefRewardSummary) -Name "repairCost" }
 $damageUnits = if ($null -eq $damageRow) { "" } else { Extract-SummaryToken -Summary ([string]$damageRow.debriefRewardSummary) -Name "damagedPlayerUnits" }
+$damageScreenshot = if ($null -eq $damageRow) { "analysis-output/pc-controlled-demo-visual-evidence/captures/damage-demo.png" } else { [string]$damageRow.screenshot }
+$damageSidecar = if ($null -eq $damageRow) { "analysis-output/pc-controlled-demo-visual-evidence/captures/damage-demo.json" } else { [string]$damageRow.sidecar }
+$damageLog = if ($null -eq $damageRow) { "analysis-output/pc-controlled-demo-visual-evidence/captures/damage-demo.log" } else { [string]$damageRow.log }
 [void]$markdownLines.Add("## Executive Summary")
 [void]$markdownLines.Add("")
 [void]$markdownLines.Add("- InvestorDemoSummary=ready presets=$($evidenceRows.Count) resolution=${Width}x${Height} sparseHud=True mobileLandscapeOnly=True publicSafe=proxy-only")
 [void]$markdownLines.Add("- DamageInvestorCallout=section-loss+cockpit-ejection+wreck-salvage+repair-line preset=damage-demo damagedPlayerUnits=$damageUnits repairCost=$damageRepairCost")
 [void]$markdownLines.Add("- ProxyVisualIdentity=mech-silhouette+vehicle-hull+infantry-fireteam+tree-canopy+building-roof+hardprop-stripe roleReadable=True collision=unchanged pathing=unchanged")
 [void]$markdownLines.Add("- FastInvestorEvidenceGate=check_pc_controlled_demo_investor_evidence_package_fixes.ps1 source-only+report-only noUnityLaunch=True")
+[void]$markdownLines.Add("")
+[void]$markdownLines.Add("## Investor Route Summary")
+[void]$markdownLines.Add("")
+[void]$markdownLines.Add("- InvestorRoute=ready platform=Windows route=spawn>hangar-contact>damage-demo>solo-order>solo-return launch=scripts/unity/run_windows_demo.ps1 evidence=command-report+screenshots+sidecars")
+[void]$markdownLines.Add("- DamageProof=damage-demo screenshot=$damageScreenshot sidecar=$damageSidecar log=$damageLog callout=section-loss+cockpit-ejection+wreck-salvage+repair-line repairCost=$damageRepairCost")
+[void]$markdownLines.Add("- LandscapePhoneProof=mobileLandscapeOnly=True orientation=landscape firstPhoneVersion=horizontal-only portraitSupport=False")
+[void]$markdownLines.Add("- ProxyParsing=source=proxyIdentity+materialLanguage+propIdentity sidecarFallback=investorProxyVisuals splitSidecarRecapturePending=True publicSafe=proxy-only")
 [void]$markdownLines.Add("")
 [void]$markdownLines.Add("## Preset Highlights")
 [void]$markdownLines.Add("")
