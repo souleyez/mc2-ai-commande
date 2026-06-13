@@ -37,7 +37,7 @@ Purpose: a short Windows-local route for showing the current playable command de
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts\unity\capture_pc_controlled_demo_command_evidence.ps1 -RepoRoot . -PlanOnly
-powershell -ExecutionPolicy Bypass -File scripts\unity\check_pc_controlled_demo_investor_readiness_fixes.ps1 -RepoRoot .
+powershell -ExecutionPolicy Bypass -File scripts\unity\check_pc_controlled_demo_investor_route_evidence_refresh.ps1 -RepoRoot .
 ```
 
-Expected route gate: `PC controlled-demo investor readiness fixes check OK.`
+Expected route gate: `PC controlled-demo investor route evidence refresh check OK.`
