@@ -79,3 +79,5 @@ powershell -ExecutionPolicy Bypass -File scripts\unity\check_pc_controlled_demo_
 
 Expected route gate: `PC controlled-demo investor route evidence refresh check OK.`
 Expected audit-fixes gate: `PC controlled-demo investor route evidence audit fixes check OK.`
+
+F55 implementation note: `F55 refresh PC controlled-demo investor route evidence after F53 audit fixes` is complete. Evidence gate: `scripts/unity/check_pc_controlled_demo_investor_route_evidence_audit_fix_refresh_audit_fix_refresh_audit_fix_refresh.ps1` -> `PC controlled-demo investor route evidence audit fix refresh audit fix refresh audit fix refresh check OK`; formal next task: `F56 audit post-F55 PC controlled-demo investor route evidence refresh`. Mobile phones remain first-version landscape-only as the horizontal phone build; portrait is not a first-slice support target.

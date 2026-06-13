@@ -52,9 +52,11 @@ $windowsBuildFreshnessScript = Join-Path $RepoRoot "scripts\unity\check_windows_
 $routeAuditFixesReportPath = Join-Path $RepoRoot "analysis-output\pc-controlled-demo-investor-route-evidence-audit-fixes\pc-controlled-demo-investor-route-evidence-audit-fixes.json"
 $routeAuditFixRefreshAuditReportPath = Join-Path $RepoRoot "analysis-output\pc-controlled-demo-investor-route-evidence-audit-fix-refresh-audit\pc-controlled-demo-investor-route-evidence-audit-fix-refresh-audit.json"
 $routeAuditFixRefreshAuditFixesReportPath = Join-Path $RepoRoot "analysis-output\pc-controlled-demo-investor-route-evidence-audit-fix-refresh-audit-fixes\pc-controlled-demo-investor-route-evidence-audit-fix-refresh-audit-fixes.json"
+$routeAuditFixRefreshAuditFixRefreshAuditReportPath = Join-Path $RepoRoot "analysis-output\pc-controlled-demo-investor-route-evidence-audit-fix-refresh-audit-fix-refresh-audit\pc-controlled-demo-investor-route-evidence-audit-fix-refresh-audit-fix-refresh-audit.json"
+$routeAuditFixRefreshAuditFixRefreshAuditFixesReportPath = Join-Path $RepoRoot "analysis-output\pc-controlled-demo-investor-route-evidence-audit-fix-refresh-audit-fix-refresh-audit-fixes\pc-controlled-demo-investor-route-evidence-audit-fix-refresh-audit-fix-refresh-audit-fixes.json"
 $requiredPresets = @("spawn", "hangar-contact", "damage-demo", "solo-order", "solo-return")
-$completedTaskName = "F52 refresh PC controlled-demo investor route evidence after F50 audit fixes"
-$nextFormalTaskName = "F53 audit post-F52 PC controlled-demo investor route evidence refresh"
+$completedTaskName = "F55 refresh PC controlled-demo investor route evidence after F53 audit fixes"
+$nextFormalTaskName = "F56 audit post-F55 PC controlled-demo investor route evidence refresh"
 $routeAuditFixClosure = @(
     "RouteAuditFixRefresh=ready source=analysis-output/pc-controlled-demo-investor-route-evidence-audit-fixes/pc-controlled-demo-investor-route-evidence-audit-fixes.json completed=F49 next=F50 noUnityLaunch=True mobile=landscape-only",
     "RouteAuditFixClosure=F48-doc-visibility status=closed surfaces=investor-route+playable-evidence+handoff",
@@ -64,6 +66,11 @@ $routeAuditFixRefreshAuditClosure = @(
     "RouteAuditFixRefreshAuditRefresh=ready source=analysis-output/pc-controlled-demo-investor-route-evidence-audit-fix-refresh-audit-fixes/pc-controlled-demo-investor-route-evidence-audit-fix-refresh-audit-fixes.json completed=F52 next=F53 noUnityLaunch=True mobile=landscape-only",
     "RouteAuditFixRefreshAuditClosure=F51-doc-gate-visibility status=closed surfaces=plan+evidence+handoff+gate",
     "RouteAuditFixRefreshAuditClosure=next-refresh-contract status=closed sourceAudit=analysis-output/pc-controlled-demo-investor-route-evidence-audit-fix-refresh-audit/pc-controlled-demo-investor-route-evidence-audit-fix-refresh-audit.json sourceFixes=analysis-output/pc-controlled-demo-investor-route-evidence-audit-fix-refresh-audit-fixes/pc-controlled-demo-investor-route-evidence-audit-fix-refresh-audit-fixes.json"
+)
+$routeAuditFixRefreshAuditFixRefreshAuditClosure = @(
+    "RouteAuditFixRefreshAuditFixRefreshAuditRefresh=ready source=analysis-output/pc-controlled-demo-investor-route-evidence-audit-fix-refresh-audit-fix-refresh-audit-fixes/pc-controlled-demo-investor-route-evidence-audit-fix-refresh-audit-fix-refresh-audit-fixes.json completed=F55 next=F56 noUnityLaunch=True mobile=landscape-only",
+    "RouteAuditFixRefreshAuditFixRefreshAuditClosure=F54-doc-gate-visibility status=closed surfaces=plan+evidence+handoff+gate",
+    "RouteAuditFixRefreshAuditFixRefreshAuditClosure=next-refresh-contract status=closed sourceAudit=analysis-output/pc-controlled-demo-investor-route-evidence-audit-fix-refresh-audit-fix-refresh-audit/pc-controlled-demo-investor-route-evidence-audit-fix-refresh-audit-fix-refresh-audit.json sourceFixes=analysis-output/pc-controlled-demo-investor-route-evidence-audit-fix-refresh-audit-fix-refresh-audit-fixes/pc-controlled-demo-investor-route-evidence-audit-fix-refresh-audit-fix-refresh-audit-fixes.json"
 )
 $rows = New-Object System.Collections.Generic.List[object]
 
@@ -355,6 +362,8 @@ if ((Get-OptionalLastExitCode) -ne 0) {
 Require-File -Path $routeAuditFixesReportPath -Label "PC investor route evidence audit fixes report"
 Require-File -Path $routeAuditFixRefreshAuditReportPath -Label "PC investor route evidence audit fix refresh audit report"
 Require-File -Path $routeAuditFixRefreshAuditFixesReportPath -Label "PC investor route evidence audit fix refresh audit fixes report"
+Require-File -Path $routeAuditFixRefreshAuditFixRefreshAuditReportPath -Label "PC investor route evidence audit fix refresh audit fix refresh audit report"
+Require-File -Path $routeAuditFixRefreshAuditFixRefreshAuditFixesReportPath -Label "PC investor route evidence audit fix refresh audit fix refresh audit fixes report"
 Require-File -Path $visualEvidenceReportPath -Label "PC visual evidence report"
 $visualReport = Get-Content -LiteralPath $visualEvidenceReportPath -Raw -Encoding UTF8 | ConvertFrom-Json
 if ([string]$visualReport.result -ne "pass") {
@@ -394,6 +403,28 @@ if ([string]$routeAuditFixRefreshAuditFixesReport.nextFormalTask -ne "F52 refres
     throw "PC investor route evidence audit fix refresh audit fixes report has unexpected next task: $($routeAuditFixRefreshAuditFixesReport.nextFormalTask)"
 }
 
+$routeAuditFixRefreshAuditFixRefreshAuditReport = Get-Content -LiteralPath $routeAuditFixRefreshAuditFixRefreshAuditReportPath -Raw -Encoding UTF8 | ConvertFrom-Json
+if ([string]$routeAuditFixRefreshAuditFixRefreshAuditReport.result -ne "pass-with-followups") {
+    throw "PC investor route evidence audit fix refresh audit fix refresh audit report did not pass with followups: $routeAuditFixRefreshAuditFixRefreshAuditReportPath"
+}
+if ([string]$routeAuditFixRefreshAuditFixRefreshAuditReport.completedTask -ne "F53 audit post-F52 PC controlled-demo investor route evidence refresh") {
+    throw "PC investor route evidence audit fix refresh audit fix refresh audit report has unexpected completed task: $($routeAuditFixRefreshAuditFixRefreshAuditReport.completedTask)"
+}
+if ([string]$routeAuditFixRefreshAuditFixRefreshAuditReport.nextFormalTask -ne "F54 implement post-F53 PC controlled-demo investor route evidence refresh audit fixes") {
+    throw "PC investor route evidence audit fix refresh audit fix refresh audit report has unexpected next task: $($routeAuditFixRefreshAuditFixRefreshAuditReport.nextFormalTask)"
+}
+
+$routeAuditFixRefreshAuditFixRefreshAuditFixesReport = Get-Content -LiteralPath $routeAuditFixRefreshAuditFixRefreshAuditFixesReportPath -Raw -Encoding UTF8 | ConvertFrom-Json
+if ([string]$routeAuditFixRefreshAuditFixRefreshAuditFixesReport.result -ne "pass") {
+    throw "PC investor route evidence audit fix refresh audit fix refresh audit fixes report did not pass: $routeAuditFixRefreshAuditFixRefreshAuditFixesReportPath"
+}
+if ([string]$routeAuditFixRefreshAuditFixRefreshAuditFixesReport.completedTask -ne "F54 implement post-F53 PC controlled-demo investor route evidence refresh audit fixes") {
+    throw "PC investor route evidence audit fix refresh audit fix refresh audit fixes report has unexpected completed task: $($routeAuditFixRefreshAuditFixRefreshAuditFixesReport.completedTask)"
+}
+if ([string]$routeAuditFixRefreshAuditFixRefreshAuditFixesReport.nextFormalTask -ne "F55 refresh PC controlled-demo investor route evidence after F53 audit fixes") {
+    throw "PC investor route evidence audit fix refresh audit fix refresh audit fixes report has unexpected next task: $($routeAuditFixRefreshAuditFixRefreshAuditFixesReport.nextFormalTask)"
+}
+
 Assert-SourceMarkers
 
 foreach ($preset in $requiredPresets) {
@@ -420,8 +451,11 @@ $report = [pscustomobject]@{
     sourceRouteAuditFixesReport = Convert-ToRepoRelativePath -Path $routeAuditFixesReportPath
     sourceRouteAuditFixRefreshAuditReport = Convert-ToRepoRelativePath -Path $routeAuditFixRefreshAuditReportPath
     sourceRouteAuditFixRefreshAuditFixesReport = Convert-ToRepoRelativePath -Path $routeAuditFixRefreshAuditFixesReportPath
+    sourceRouteAuditFixRefreshAuditFixRefreshAuditReport = Convert-ToRepoRelativePath -Path $routeAuditFixRefreshAuditFixRefreshAuditReportPath
+    sourceRouteAuditFixRefreshAuditFixRefreshAuditFixesReport = Convert-ToRepoRelativePath -Path $routeAuditFixRefreshAuditFixRefreshAuditFixesReportPath
     routeAuditFixClosure = $routeAuditFixClosure
     routeAuditFixRefreshAuditClosure = $routeAuditFixRefreshAuditClosure
+    routeAuditFixRefreshAuditFixRefreshAuditClosure = $routeAuditFixRefreshAuditFixRefreshAuditClosure
     captureDir = Convert-ToRepoRelativePath -Path $captureDir
     evidence = $evidenceRows
 }
@@ -439,6 +473,8 @@ $markdownLines = New-Object System.Collections.Generic.List[string]
 [void]$markdownLines.Add("Source route audit fixes report: `"$(Convert-ToRepoRelativePath -Path $routeAuditFixesReportPath)`"")
 [void]$markdownLines.Add("Source route audit fix refresh audit report: `"$(Convert-ToRepoRelativePath -Path $routeAuditFixRefreshAuditReportPath)`"")
 [void]$markdownLines.Add("Source route audit fix refresh audit fixes report: `"$(Convert-ToRepoRelativePath -Path $routeAuditFixRefreshAuditFixesReportPath)`"")
+[void]$markdownLines.Add("Source route audit fix refresh audit fix refresh audit report: `"$(Convert-ToRepoRelativePath -Path $routeAuditFixRefreshAuditFixRefreshAuditReportPath)`"")
+[void]$markdownLines.Add("Source route audit fix refresh audit fix refresh audit fixes report: `"$(Convert-ToRepoRelativePath -Path $routeAuditFixRefreshAuditFixRefreshAuditFixesReportPath)`"")
 [void]$markdownLines.Add("Capture directory: `"$(Convert-ToRepoRelativePath -Path $captureDir)`"")
 [void]$markdownLines.Add("")
 $damageRow = Find-EvidenceRow -Items $evidenceRows -Preset "damage-demo"
@@ -473,6 +509,12 @@ foreach ($closure in $routeAuditFixClosure) {
 [void]$markdownLines.Add("## Route Audit Fix Refresh Audit Closure")
 [void]$markdownLines.Add("")
 foreach ($closure in $routeAuditFixRefreshAuditClosure) {
+    [void]$markdownLines.Add("- $closure")
+}
+[void]$markdownLines.Add("")
+[void]$markdownLines.Add("## Route Audit Fix Refresh Audit Fix Refresh Audit Closure")
+[void]$markdownLines.Add("")
+foreach ($closure in $routeAuditFixRefreshAuditFixRefreshAuditClosure) {
     [void]$markdownLines.Add("- $closure")
 }
 [void]$markdownLines.Add("")
