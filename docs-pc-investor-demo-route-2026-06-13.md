@@ -33,11 +33,25 @@ Purpose: a short Windows-local route for showing the current playable command de
 - AI should enter first as a planning/deputy layer, not as a per-frame combat brain. Latency stays outside the moment-to-moment battle loop.
 - Current proxy visuals are development-safe stand-ins. They are meant to prove framing, scale, command readability, and damage story before the final asset pack lands.
 
+## Route Audit Findings
+
+- RouteAudit=pass-with-followups source=analysis-output/pc-controlled-demo-investor-route-evidence-refresh-audit/pc-controlled-demo-investor-route-evidence-refresh-audit.json
+- RouteAuditFinding=route-evidence-envelope status=pass detail=F46 route evidence is complete, 1280x720, five required presets, with screenshot/sidecar/log links.
+- RouteAuditFinding=presentation-route status=pass detail=Investor route names Windows route, demo launcher, command report, screenshots and sidecars.
+- RouteAuditFinding=damage-proof status=pass detail=damage-demo exposes screenshot, sidecar, log, repair cost, section loss, cockpit ejection and wreck salvage.
+- RouteAuditFinding=mobile-landscape-proof status=pass detail=first phone version remains landscape-only and horizontal.
+- RouteAuditFinding=public-safe-proxy-boundary status=pass detail=proxy visuals remain public-safe stand-ins; BattleCore collision, pathing and combat remain unchanged.
+- RouteAuditFollowUp=P1 area=audit-fixes next=F48-doc-visibility
+- RouteAuditFollowUp=P2 area=gate-runtime next=keep-route-gates-focused
+- RouteAuditFix=F48 visibility=investor-route+playable-evidence+handoff noUnityLaunch=True mobile=landscape-only next=F49-route-refresh
+
 ## Current Evidence Commands
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts\unity\capture_pc_controlled_demo_command_evidence.ps1 -RepoRoot . -PlanOnly
 powershell -ExecutionPolicy Bypass -File scripts\unity\check_pc_controlled_demo_investor_route_evidence_refresh.ps1 -RepoRoot .
+powershell -ExecutionPolicy Bypass -File scripts\unity\check_pc_controlled_demo_investor_route_evidence_audit_fixes.ps1 -RepoRoot .
 ```
 
 Expected route gate: `PC controlled-demo investor route evidence refresh check OK.`
+Expected audit-fixes gate: `PC controlled-demo investor route evidence audit fixes check OK.`
