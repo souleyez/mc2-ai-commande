@@ -41,6 +41,7 @@ namespace MC2Demo.Presentation
         private const string CapturePresetHangarContact = "hangar-contact";
         private const string CapturePresetNorthPatrol = "north-patrol";
         private const string CapturePresetDamageDemo = "damage-demo";
+        private const string CapturePresetSoloOrder = "solo-order";
         private const string CapturePresetMechLab = "mechlab";
         private const int OccupancyLandingReviewMarkerCount = 16;
         private const float OcclusionFadeUpdateSpeed = 8f;
@@ -242,6 +243,9 @@ namespace MC2Demo.Presentation
             public string damageReadability;
             public string battleHud;
             public string mobileTouch;
+            public string commandReadability;
+            public string commandCuePalette;
+            public string commanderFollow;
             public VisualCaptureCameraState camera;
             public VisualCaptureReferenceState referenceAssets;
         }
@@ -6798,6 +6802,9 @@ namespace MC2Demo.Presentation
                 case CapturePresetDamageDemo:
                     RunStartupDamageDemoCapturePrelude();
                     break;
+                case CapturePresetSoloOrder:
+                    RunStartupSoloOrderCapturePrelude();
+                    break;
                 case CapturePresetMechLab:
                     RunStartupMechLabCapturePrelude();
                     break;
@@ -6845,6 +6852,13 @@ namespace MC2Demo.Presentation
             ForceStartupDamageDemoSections();
             cameraZoomScale = Mathf.Clamp(Mathf.Max(cameraZoomScale, 1.16f), cameraZoomMin, cameraZoomMax);
             ApplyCameraProjection();
+        }
+
+        private void RunStartupSoloOrderCapturePrelude()
+        {
+            AdvanceStartupSimulation(0.25f);
+            RunStartupCommanderCommand("unit unit-2 move 3136 -1700");
+            AdvanceStartupSimulation(1.25f);
         }
 
         private void RunStartupMechLabCapturePrelude()
@@ -7145,6 +7159,9 @@ namespace MC2Demo.Presentation
                 debriefReward = BuildCaptureDebriefRewardSummary(),
                 postReceiptInventoryRefresh = BuildCapturePostReceiptInventoryRefreshSummary(),
                 mobileTouch = BuildCaptureMobileTouchSummary(),
+                commandReadability = BuildCaptureCommandReadabilitySummary(),
+                commandCuePalette = CommandCuePaletteSummary(),
+                commanderFollow = BuildCaptureCommanderFollowSummary(),
                 camera = BuildCaptureCameraState(),
                 referenceAssets = new VisualCaptureReferenceState
                 {
@@ -7725,6 +7742,15 @@ namespace MC2Demo.Presentation
                 : value.ToString("0.#", CultureInfo.InvariantCulture);
         }
 
+        private static string FormatCaptureVector(Vector3 value)
+        {
+            return value.x.ToString("0.#", CultureInfo.InvariantCulture)
+                + ","
+                + value.y.ToString("0.#", CultureInfo.InvariantCulture)
+                + ","
+                + value.z.ToString("0.#", CultureInfo.InvariantCulture);
+        }
+
         private string BuildCaptureDamageStorySummary()
         {
             if (mission == null)
@@ -7894,7 +7920,7 @@ namespace MC2Demo.Presentation
                 + " weaponShapes beam+arc+tracer+shock"
                 + " hitCues direction+severity+muzzle"
                 + " sectionConsequences arms-firepower legs-mobility cockpit-ejection wreck-salvage"
-                + " cuePalette=target-hot-red damage-amber pilot-cyan"
+                + " cuePalette=command-blue target-red damage-amber hostile-magenta pilot-cyan"
                 + " hud=section-bars+short-labels+sparse"
                 + " story="
                 + (story.StartsWith("DamageStory=", StringComparison.Ordinal)
@@ -7908,6 +7934,53 @@ namespace MC2Demo.Presentation
                 + sectionCues
                 + " "
                 + sectionStatus;
+        }
+
+        private string BuildCaptureCommandReadabilitySummary()
+        {
+            int detached = CountDetachedPlayerUnits();
+            int jumping = CountJumpingPlayerUnits();
+            return "CommandReadability=all+single+jet+focus+commander-follow+formation"
+                + " default=all-squad"
+                + " noDragBox=yes"
+                + " solo="
+                + detached.ToString(CultureInfo.InvariantCulture)
+                + " jumping="
+                + jumping.ToString(CultureInfo.InvariantCulture)
+                + " maxSquad=6"
+                + " formation=move-320+attack-340"
+                + " statusRows=select-unit+detached-border"
+                + " cues="
+                + CommandCueSummary()
+                + "+"
+                + SoloOrderCueSummary()
+                + "+"
+                + SoloReturnCueSummary()
+                + " "
+                + CommandCuePaletteSummary()
+                + " "
+                + BuildCaptureCommanderFollowSummary();
+        }
+
+        private static string CommandCuePaletteSummary()
+        {
+            return "CommandCuePalette=command-blue+target-red+damage-amber+hostile-magenta";
+        }
+
+        private string BuildCaptureCommanderFollowSummary()
+        {
+            UnitState commander = FirstPlayerUnit();
+            string unitId = commander == null ? "none" : commander.Id;
+            int sortedIndex = PlayerUnitSortIndex(commander);
+            return "CommanderFollow=unit-1+first-sort+fixed-view"
+                + " unit="
+                + unitId
+                + " sortedIndex="
+                + sortedIndex.ToString(CultureInfo.InvariantCulture)
+                + " followOffset="
+                + FormatCaptureVector(cameraFollowWorldOffset)
+                + " compositionOffset="
+                + FormatCaptureVector(cameraCompositionWorldOffset);
         }
 
         private string BuildCaptureMechLabSummary()
@@ -10214,7 +10287,7 @@ namespace MC2Demo.Presentation
             Color color = isJump
                 ? new Color(0.44f, 0.92f, 1f, 0.72f)
                 : isSingleUnitCommand
-                    ? new Color(1f, 0.64f, 0.18f, 0.72f)
+                    ? new Color(0.28f, 0.90f, 1f, 0.72f)
                     : new Color(0.22f, 0.82f, 1f, 0.68f);
             float duration = isJump ? 0.72f : 0.58f;
             CreateImpactDisc("Command Move Pulse", center, new Color(color.r, color.g, color.b, 0.34f), duration, 0.26f, isJump ? 1.30f : 1.05f, 0.024f);
@@ -10232,8 +10305,8 @@ namespace MC2Demo.Presentation
             Vector3 center = GroundMarkerPosition(missionPoint, 0.18f);
             float scale = Mathf.Clamp(radius / 120f, 0.85f, 2.25f);
             Color color = isSingleUnitCommand
-                ? new Color(1f, 0.42f, 0.12f, 0.76f)
-                : new Color(1f, 0.62f, 0.16f, 0.72f);
+                ? new Color(0.30f, 0.92f, 1f, 0.78f)
+                : new Color(0.18f, 0.72f, 1f, 0.74f);
             CreateImpactDisc("Command Attack Pulse", center, new Color(color.r, color.g, color.b, 0.34f), 0.64f, 0.32f * scale, 1.25f * scale, 0.030f);
             CreateBeam(center + Vector3.up * 0.08f, center + Vector3.up * Mathf.Clamp(0.95f * scale, 0.85f, 1.85f), new Color(color.r, color.g, color.b, 0.56f), 0.54f, 0.032f);
             CreateImpact(center + Vector3.up * 0.18f, new Color(color.r, color.g, color.b, 0.48f), false, 0.42f * scale);
@@ -10248,8 +10321,8 @@ namespace MC2Demo.Presentation
             }
 
             Color color = commandKind == CommanderCommandKind.Move || commandKind == CommanderCommandKind.Jump
-                ? new Color(1f, 0.72f, 0.20f, 0.62f)
-                : new Color(1f, 0.34f, 0.12f, 0.66f);
+                ? new Color(0.24f, 0.86f, 1f, 0.62f)
+                : new Color(0.30f, 0.92f, 1f, 0.66f);
             Vector3 center = GroundMarkerPosition(unit.MissionPosition, 0.15f);
             CreateImpactDisc("Command Single Pulse", center, new Color(color.r, color.g, color.b, 0.30f), 0.48f, 0.22f, 0.86f, 0.022f);
             CreateBeam(center + Vector3.up * 0.05f, center + Vector3.up * 0.70f, new Color(color.r, color.g, color.b, 0.48f), 0.38f, 0.020f);
@@ -12614,8 +12687,8 @@ namespace MC2Demo.Presentation
         private void CreateTargetLockCue(Vector3 targetPoint, bool commanded)
         {
             Color color = commanded
-                ? new Color(1f, 0.62f, 0.16f, 0.58f)
-                : new Color(0.30f, 0.92f, 1f, 0.50f);
+                ? new Color(0.20f, 0.82f, 1f, 0.58f)
+                : new Color(1f, 0.20f, 0.14f, 0.50f);
             float scale = commanded ? 1.08f : 0.88f;
             Vector3 center = targetPoint + Vector3.up * 0.18f;
             CreateImpactDisc(
@@ -12916,10 +12989,10 @@ namespace MC2Demo.Presentation
             float pulseSpeed = isFire ? 5.8f : isContact ? 4.4f : 3.0f;
             float pulse = 0.96f + Mathf.Sin(Time.time * pulseSpeed) * (isFire ? 0.10f : 0.055f);
             Color color = isFire
-                ? new Color(1f, 0.16f, 0.06f, 0.32f)
+                ? new Color(1f, 0.06f, 0.34f, 0.34f)
                 : isContact
-                    ? new Color(1f, 0.48f, 0.10f, 0.27f)
-                    : new Color(1f, 0.72f, 0.22f, 0.20f);
+                    ? new Color(0.96f, 0.18f, 0.66f, 0.28f)
+                    : new Color(0.64f, 0.30f, 1f, 0.22f);
             if (hostilePressureMarker != null)
             {
                 float scale = Mathf.Lerp(1.28f, 2.18f, pressureScale) * pulse;
@@ -15264,6 +15337,27 @@ namespace MC2Demo.Presentation
             }
 
             return null;
+        }
+
+        private int PlayerUnitSortIndex(UnitState target)
+        {
+            if (mission == null || target == null)
+            {
+                return 0;
+            }
+
+            int index = 1;
+            foreach (UnitState unit in mission.PlayerUnits())
+            {
+                if (string.Equals(unit.Id, target.Id, StringComparison.OrdinalIgnoreCase))
+                {
+                    return index;
+                }
+
+                index++;
+            }
+
+            return 0;
         }
 
         private bool HasRecentCombatEvent()

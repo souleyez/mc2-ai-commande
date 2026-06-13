@@ -186,6 +186,7 @@ $pcControlledDemoVisualReadabilityAuditScript = Resolve-RepoPath -RelativePath "
 $pcControlledDemoVisualReadabilityFixesScript = Resolve-RepoPath -RelativePath "scripts\unity\check_pc_controlled_demo_visual_readability_fixes.ps1"
 $pcControlledDemoVisualEvidenceScript = Resolve-RepoPath -RelativePath "scripts\unity\capture_pc_controlled_demo_visual_evidence.ps1"
 $pcControlledDemoCommandReadabilityAuditScript = Resolve-RepoPath -RelativePath "scripts\unity\audit_pc_controlled_demo_command_readability_formation.ps1"
+$pcControlledDemoCommandReadabilityFixesScript = Resolve-RepoPath -RelativePath "scripts\unity\check_pc_controlled_demo_command_readability_fixes.ps1"
 $serverBackedReceiptSlicePlanScript = Resolve-RepoPath -RelativePath "scripts\unity\check_server_backed_receipt_slice_plan.ps1"
 $serverBackedReceiptEvidenceScript = Resolve-RepoPath -RelativePath "scripts\unity\capture_server_backed_receipt_evidence.ps1"
 $postReceiptInventoryRefreshBoundaryScript = Resolve-RepoPath -RelativePath "scripts\unity\check_post_receipt_inventory_refresh_boundary.ps1"
@@ -526,6 +527,12 @@ Invoke-GateStep `
     -ScriptPath $pcControlledDemoCommandReadabilityAuditScript `
     -Arguments @("-RepoRoot", $RepoRoot, "-PlanOnly") `
     -RequiredMarkers @("PC controlled-demo command readability formation audit plan OK.")
+
+Invoke-GateStep `
+    -Name "PC controlled-demo command readability fixes plan gate" `
+    -ScriptPath $pcControlledDemoCommandReadabilityFixesScript `
+    -Arguments @("-RepoRoot", $RepoRoot, "-PlanOnly") `
+    -RequiredMarkers @("PC controlled-demo command readability fixes plan OK.")
 
 Invoke-GateStep `
     -Name "Server-backed receipt slice plan gate" `

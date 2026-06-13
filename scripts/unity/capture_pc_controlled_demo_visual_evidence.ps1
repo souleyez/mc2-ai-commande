@@ -1,7 +1,7 @@
 param(
     [string]$RepoRoot = "",
     [string]$OutputDir = "",
-    [string[]]$Presets = @("spawn", "hangar-contact", "damage-demo"),
+    [string[]]$Presets = @("spawn", "hangar-contact", "damage-demo", "solo-order"),
     [int]$Width = 1280,
     [int]$Height = 720,
     [int]$CaptureTimeoutSeconds = 75,
@@ -38,7 +38,7 @@ $fixesReportMarkdownPath = Join-Path $OutputDir "pc-controlled-demo-visual-reada
 $reportJsonPath = Join-Path $OutputDir "pc-controlled-demo-visual-evidence.json"
 $reportMarkdownPath = Join-Path $OutputDir "pc-controlled-demo-visual-evidence.md"
 $fixesScript = Join-Path $RepoRoot "scripts\unity\check_pc_controlled_demo_visual_readability_fixes.ps1"
-$requiredPresets = @("spawn", "hangar-contact", "damage-demo")
+$requiredPresets = @("spawn", "hangar-contact", "damage-demo", "solo-order")
 
 function Normalize-CapturePreset {
     param([string]$Preset)
@@ -159,8 +159,21 @@ function Test-SidecarEvidence {
 
     if ($Preset -eq "damage-demo") {
         $damage = [string]$Sidecar.damageReadability
-        Require-Text -Text $damage -Needle "cuePalette=target-hot-red damage-amber pilot-cyan" -Label "$Preset damageReadability"
+        Require-Text -Text $damage -Needle "cuePalette=command-blue target-red damage-amber hostile-magenta pilot-cyan" -Label "$Preset damageReadability"
         Require-Text -Text $damage -Needle "Cockpit=breach+ejection-pod+chute+landing+arc+distress+escape-column+route" -Label "$Preset damageReadability"
+    }
+
+    if ($Preset -eq "solo-order") {
+        $command = [string]$Sidecar.commandReadability
+        Require-Text -Text $command -Needle "CommandReadability=all+single+jet+focus+commander-follow+formation" -Label "$Preset commandReadability"
+        Require-Text -Text $command -Needle "solo=1" -Label "$Preset commandReadability"
+        Require-Text -Text $command -Needle "SoloOrder=ring+beacon" -Label "$Preset commandReadability"
+        Require-Text -Text $command -Needle "SoloReturn=ring+beacon" -Label "$Preset commandReadability"
+        Require-Text -Text $command -Needle "CommandCuePalette=command-blue+target-red+damage-amber+hostile-magenta" -Label "$Preset commandReadability"
+        $commander = [string]$Sidecar.commanderFollow
+        Require-Text -Text $commander -Needle "CommanderFollow=unit-1+first-sort+fixed-view" -Label "$Preset commanderFollow"
+        Require-Text -Text $commander -Needle "unit=unit-1" -Label "$Preset commanderFollow"
+        Require-Text -Text $commander -Needle "sortedIndex=1" -Label "$Preset commanderFollow"
     }
 
     return [pscustomobject]@{

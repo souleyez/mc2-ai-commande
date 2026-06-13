@@ -84,6 +84,7 @@ analysis-output/pc-controlled-demo-visual-readability-audit/
 analysis-output/pc-controlled-demo-visual-readability-fixes/
 analysis-output/pc-controlled-demo-visual-evidence/
 analysis-output/pc-controlled-demo-command-readability-audit/
+analysis-output/pc-controlled-demo-command-readability-fixes/
 analysis-output/server-backed-receipt-evidence/
 analysis-output/post-receipt-refresh-evidence/
 analysis-output/unity-demo-contract/

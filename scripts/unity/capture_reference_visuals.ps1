@@ -197,6 +197,9 @@ function Test-CaptureSidecar {
     elseif ($ExpectedPreset -eq "damage-demo") {
         Test-DamageDemoCaptureSidecar -Sidecar $sidecar -Path $Path
     }
+    elseif ($ExpectedPreset -eq "solo-order") {
+        Test-SoloOrderCaptureSidecar -Sidecar $sidecar -Path $Path
+    }
     elseif ($ExpectedPreset -eq "hangar-contact") {
         Test-HangarContactCaptureSidecar -Sidecar $sidecar -Path $Path
     }
@@ -721,6 +724,45 @@ function Test-DamageDemoCaptureSidecar {
     )) {
         if ($readability -notmatch $pattern) {
             throw "Damage demo readability summary did not prove '$pattern': $Path -> $readability"
+        }
+    }
+}
+
+function Test-SoloOrderCaptureSidecar {
+    param(
+        [object]$Sidecar,
+        [string]$Path
+    )
+
+    if ($Sidecar.flowScreen -ne "Battle") {
+        throw "Solo-order capture did not stay in battle flow: $Path -> $($Sidecar.flowScreen)"
+    }
+
+    $command = [string]$Sidecar.commandReadability
+    foreach ($fragment in @(
+        "CommandReadability=all+single+jet+focus+commander-follow+formation",
+        "solo=1",
+        "statusRows=select-unit+detached-border",
+        "SoloOrder=ring+beacon",
+        "SoloReturn=ring+beacon",
+        "CommandCuePalette=command-blue+target-red+damage-amber+hostile-magenta",
+        "CommanderFollow=unit-1+first-sort+fixed-view"
+    )) {
+        if ($command -notlike "*$fragment*") {
+            throw "Solo-order command readability summary missing '$fragment': $Path -> $command"
+        }
+    }
+
+    $commander = [string]$Sidecar.commanderFollow
+    foreach ($fragment in @(
+        "CommanderFollow=unit-1+first-sort+fixed-view",
+        "unit=unit-1",
+        "sortedIndex=1",
+        "followOffset=",
+        "compositionOffset="
+    )) {
+        if ($commander -notlike "*$fragment*") {
+            throw "Solo-order commander follow summary missing '$fragment': $Path -> $commander"
         }
     }
 }

@@ -121,7 +121,8 @@ $requiredPlanMarkers = @(
     "F30 implement PC controlled-demo visual readability fixes",
     "F31 refresh PC controlled-demo visual evidence after readability fixes",
     "F32 audit PC controlled-demo command readability and formation feel",
-    "F33 implement PC controlled-demo command readability and formation fixes"
+    "F33 implement PC controlled-demo command readability and formation fixes",
+    "F34 refresh PC controlled-demo command evidence after readability fixes"
 )
 
 $docsToCheck = @(
@@ -193,7 +194,8 @@ Assert-Contains -Text $mobilePlan -Needle "F29 audit PC controlled-demo visual r
 Assert-Contains -Text $mobilePlan -Needle "F30 implement PC controlled-demo visual readability fixes" -Label "mobile completed platform task"
 Assert-Contains -Text $mobilePlan -Needle "F31 refresh PC controlled-demo visual evidence after readability fixes" -Label "mobile completed platform task"
 Assert-Contains -Text $mobilePlan -Needle "F32 audit PC controlled-demo command readability and formation feel" -Label "mobile completed platform task"
-Assert-Contains -Text $mobilePlan -Needle "F33 implement PC controlled-demo command readability and formation fixes" -Label "mobile next task"
+Assert-Contains -Text $mobilePlan -Needle "F33 implement PC controlled-demo command readability and formation fixes" -Label "mobile completed platform task"
+Assert-Contains -Text $mobilePlan -Needle "F34 refresh PC controlled-demo command evidence after readability fixes" -Label "mobile next task"
 Assert-Contains -Text $mobilePlan -Needle "first phone version is landscape-only" -Label "mobile orientation decision"
 Assert-Contains -Text $mobilePlan -Needle "horizontal phone game" -Label "mobile horizontal phone version decision"
 
@@ -229,11 +231,12 @@ Assert-Contains -Text $detailedPlan -Needle '| F29 | Done | `Audit PC controlled
 Assert-Contains -Text $detailedPlan -Needle '| F30 | Done | `Implement PC controlled-demo visual readability fixes` |' -Label "detailed queue F30"
 Assert-Contains -Text $detailedPlan -Needle '| F31 | Done | `Refresh PC controlled-demo visual evidence after readability fixes` |' -Label "detailed queue F31"
 Assert-Contains -Text $detailedPlan -Needle '| F32 | Done | `Audit PC controlled-demo command readability and formation feel` |' -Label "detailed queue F32"
-Assert-Contains -Text $detailedPlan -Needle '| F33 | Next | `Implement PC controlled-demo command readability and formation fixes` |' -Label "detailed queue F33"
+Assert-Contains -Text $detailedPlan -Needle '| F33 | Done | `Implement PC controlled-demo command readability and formation fixes` |' -Label "detailed queue F33"
+Assert-Contains -Text $detailedPlan -Needle '| F34 | Next | `Refresh PC controlled-demo command evidence after readability fixes` |' -Label "detailed queue F34"
 
 $handoff = Read-RequiredText -RelativePath "docs-machine-handoff-plan-2026-06-07.md"
-Assert-Contains -Text $handoff -Needle 'Current formal next development task after handoff: `F33 implement PC controlled-demo command readability and formation fixes`' -Label "handoff next task"
-Assert-Contains -Text $handoff -Needle 'Next planned work: `F33 implement PC controlled-demo command readability and formation fixes`' -Label "handoff next planned work"
+Assert-Contains -Text $handoff -Needle 'Current formal next development task after handoff: `F34 refresh PC controlled-demo command evidence after readability fixes`' -Label "handoff next task"
+Assert-Contains -Text $handoff -Needle 'Next planned work: `F34 refresh PC controlled-demo command evidence after readability fixes`' -Label "handoff next planned work"
 
 $currentGate = Read-RequiredText -RelativePath "scripts\unity\check_current_plan_gate.ps1"
 Assert-Contains -Text $currentGate -Needle 'CommandFileSmoke: True' -Label "current gate script marker"
@@ -275,6 +278,8 @@ Assert-Contains -Text $currentGate -Needle 'capture_pc_controlled_demo_visual_ev
 Assert-Contains -Text $currentGate -Needle 'PC controlled-demo visual evidence refresh plan OK.' -Label "current gate PC controlled-demo visual evidence marker"
 Assert-Contains -Text $currentGate -Needle 'audit_pc_controlled_demo_command_readability_formation.ps1' -Label "current gate PC controlled-demo command readability audit script marker"
 Assert-Contains -Text $currentGate -Needle 'PC controlled-demo command readability formation audit plan OK.' -Label "current gate PC controlled-demo command readability audit marker"
+Assert-Contains -Text $currentGate -Needle 'check_pc_controlled_demo_command_readability_fixes.ps1' -Label "current gate PC controlled-demo command readability fixes script marker"
+Assert-Contains -Text $currentGate -Needle 'PC controlled-demo command readability fixes plan OK.' -Label "current gate PC controlled-demo command readability fixes marker"
 Assert-Contains -Text $currentGate -Needle 'Server-backed receipt slice plan check OK.' -Label "current gate server-backed receipt slice marker"
 Assert-Contains -Text $currentGate -Needle 'Server-backed receipt evidence capture OK.' -Label "current gate server-backed receipt evidence marker"
 Assert-Contains -Text $currentGate -Needle 'Post-receipt inventory refresh boundary check OK.' -Label "current gate post-receipt inventory refresh marker"
@@ -325,7 +330,10 @@ Assert-Contains -Text $handoffScript -Needle 'PC controlled-demo visual evidence
 Assert-Contains -Text $handoffScript -Needle 'F32 audit PC controlled-demo command readability and formation feel' -Label "handoff script F32 completed task marker"
 Assert-Contains -Text $handoffScript -Needle 'audit_pc_controlled_demo_command_readability_formation.ps1' -Label "handoff script F32 command readability audit script marker"
 Assert-Contains -Text $handoffScript -Needle 'PC controlled-demo command readability formation audit OK' -Label "handoff script F32 command readability audit marker"
-Assert-Contains -Text $handoffScript -Needle 'F33 implement PC controlled-demo command readability and formation fixes' -Label "handoff script F33 next task marker"
+Assert-Contains -Text $handoffScript -Needle 'F33 implement PC controlled-demo command readability and formation fixes' -Label "handoff script F33 completed task marker"
+Assert-Contains -Text $handoffScript -Needle 'check_pc_controlled_demo_command_readability_fixes.ps1' -Label "handoff script F33 command readability fixes script marker"
+Assert-Contains -Text $handoffScript -Needle 'PC controlled-demo command readability fixes check OK' -Label "handoff script F33 command readability fixes marker"
+Assert-Contains -Text $handoffScript -Needle 'F34 refresh PC controlled-demo command evidence after readability fixes' -Label "handoff script F34 next task marker"
 Assert-Contains -Text $handoffScript -Needle 'Server-backed receipt slice plan check OK' -Label "handoff script server-backed receipt slice marker"
 Assert-Contains -Text $handoffScript -Needle 'Server-backed receipt evidence capture OK' -Label "handoff script server-backed receipt evidence marker"
 Assert-Contains -Text $handoffScript -Needle 'Post-receipt inventory refresh boundary check OK' -Label "handoff script post-receipt inventory refresh marker"

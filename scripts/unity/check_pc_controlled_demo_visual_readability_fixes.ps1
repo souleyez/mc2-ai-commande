@@ -157,7 +157,7 @@ function Test-F30Sidecar {
 
     if ($Preset -eq "damage-demo") {
         $damage = [string]$Sidecar.damageReadability
-        Require-Text -Text $damage -Needle "cuePalette=target-hot-red damage-amber pilot-cyan" -Label "$Preset damageReadability"
+        Require-Text -Text $damage -Needle "cuePalette=command-blue target-red damage-amber hostile-magenta pilot-cyan" -Label "$Preset damageReadability"
         Require-Text -Text $damage -Needle "sectionConsequences arms-firepower legs-mobility cockpit-ejection wreck-salvage" -Label "$Preset damageReadability"
         Require-Text -Text $damage -Needle "Cockpit=breach+ejection-pod+chute+landing+arc+distress+escape-column+route" -Label "$Preset damageReadability"
     }

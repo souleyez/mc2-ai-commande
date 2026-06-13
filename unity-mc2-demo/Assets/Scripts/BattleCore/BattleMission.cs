@@ -8,8 +8,8 @@ namespace MC2Demo.BattleCore
     public sealed class BattleMission
     {
         private const float CriticalSectionSummaryRatio = 0.35f;
-        private const float SquadMoveFormationSpacing = 240f;
-        private const float SquadAttackFormationSpacing = 260f;
+        private const float SquadMoveFormationSpacing = 320f;
+        private const float SquadAttackFormationSpacing = 340f;
         private const float SquadAttackUnitStandOff = 120f;
         private const float SquadAttackStructureStandOffPadding = 100f;
         private const int EnemyAttackFormationSlots = 32;
