@@ -49,8 +49,8 @@ $reportMarkdownPath = Join-Path $OutputDir "pc-controlled-demo-command-evidence.
 $visualEvidenceScript = Join-Path $RepoRoot "scripts\unity\capture_pc_controlled_demo_visual_evidence.ps1"
 $windowsBuildFreshnessScript = Join-Path $RepoRoot "scripts\unity\check_windows_demo_build_freshness.ps1"
 $requiredPresets = @("spawn", "hangar-contact", "damage-demo", "solo-order", "solo-return")
-$completedTaskName = "F37 refresh PC controlled-demo playable-flow evidence after polish fixes"
-$nextFormalTaskName = "F38 audit post-F37 PC controlled-demo investor readiness"
+$completedTaskName = "F40 refresh PC controlled-demo investor-readiness evidence after fixes"
+$nextFormalTaskName = "F41 audit post-F40 PC controlled-demo investor evidence package"
 $rows = New-Object System.Collections.Generic.List[object]
 
 function Resolve-RepoPath {
@@ -209,6 +209,19 @@ function Test-Sidecar {
         Require-Text -Text $debriefReward -Needle "cockpitEjection=ready" -Label "$Preset debriefReward"
     }
 
+    $investorProxyVisuals = Read-OptionalSidecarString -Sidecar $Sidecar -Name "investorProxyVisuals"
+    foreach ($marker in @(
+        "InvestorProxyVisuals=active",
+        "unitFallbackProxy=mech-silhouette+vehicle-hull+infantry-fireteam",
+        "propFallbackProxy=tree-canopy+building-roof+hardprop-stripe",
+        "collision=unchanged",
+        "pathing=unchanged",
+        "publicSafe=proxy-only",
+        "mobileLandscapeOnly=True"
+    )) {
+        Require-Text -Text $investorProxyVisuals -Needle $marker -Label "$Preset investorProxyVisuals"
+    }
+
     return [pscustomobject]@{
         preset = $Preset
         screenshot = Convert-ToRepoRelativePath -Path (Join-Path $captureDir "$Preset.png")
@@ -221,7 +234,7 @@ function Test-Sidecar {
         battleHud = Read-OptionalSidecarString -Sidecar $Sidecar -Name "battleHud"
         playableFlowPolish = Read-OptionalSidecarString -Sidecar $Sidecar -Name "playableFlowPolish"
         debriefRewardSummary = Read-FirstAvailableSidecarString -Sidecar $Sidecar -Names @("debriefRewardSummary", "debriefReward")
-        investorProxyVisuals = Read-OptionalSidecarString -Sidecar $Sidecar -Name "investorProxyVisuals"
+        investorProxyVisuals = $investorProxyVisuals
         status = Read-OptionalSidecarString -Sidecar $Sidecar -Name "status"
     }
 }
@@ -313,14 +326,16 @@ $markdownLines = New-Object System.Collections.Generic.List[string]
 [void]$markdownLines.Add("Source visual report: `"$(Convert-ToRepoRelativePath -Path $visualEvidenceReportPath)`"")
 [void]$markdownLines.Add("Capture directory: `"$(Convert-ToRepoRelativePath -Path $captureDir)`"")
 [void]$markdownLines.Add("")
-[void]$markdownLines.Add("| Preset | Active hostiles | Visible hostiles | Flow summary | Debrief summary | Screenshot |")
-[void]$markdownLines.Add("| --- | ---: | ---: | --- | --- | --- |")
+[void]$markdownLines.Add("| Preset | Active hostiles | Visible hostiles | Flow summary | Debrief summary | Investor proxy | Screenshot |")
+[void]$markdownLines.Add("| --- | ---: | ---: | --- | --- | --- | --- |")
 foreach ($item in $rows) {
     $flowSummary = if ([string]::IsNullOrWhiteSpace($item.playableFlowPolish)) { $item.commandReadability } else { $item.playableFlowPolish }
     $flowSummary = ($flowSummary -replace "\|", "/")
     $debriefSummary = if ([string]::IsNullOrWhiteSpace($item.debriefRewardSummary)) { "n/a" } else { $item.debriefRewardSummary }
     $debriefSummary = ($debriefSummary -replace "\|", "/")
-    [void]$markdownLines.Add(("| {0} | {1} | {2} | {3} | {4} | `{5}` |" -f $item.preset, $item.activeHostiles, $item.visibleHostiles, $flowSummary, $debriefSummary, $item.screenshot))
+    $investorSummary = if ([string]::IsNullOrWhiteSpace($item.investorProxyVisuals)) { "n/a" } else { $item.investorProxyVisuals }
+    $investorSummary = ($investorSummary -replace "\|", "/")
+    [void]$markdownLines.Add(("| {0} | {1} | {2} | {3} | {4} | {5} | `{6}` |" -f $item.preset, $item.activeHostiles, $item.visibleHostiles, $flowSummary, $debriefSummary, $investorSummary, $item.screenshot))
 }
 
 $markdownLines | Set-Content -LiteralPath $reportMarkdownPath -Encoding UTF8

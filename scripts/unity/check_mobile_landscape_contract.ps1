@@ -55,6 +55,17 @@ function Assert-FileContains {
     }
 }
 
+function New-UnicodeMarker {
+    param([int[]]$Codepoints)
+
+    return -join ($Codepoints | ForEach-Object { [char]$_ })
+}
+
+$markerReadmePhoneLandscapeGame = New-UnicodeMarker -Codepoints @(0x624B, 0x673A, 0x7AEF, 0x7B2C, 0x4E00, 0x7248, 0x56FA, 0x5B9A, 0x6309, 0x6A2A, 0x7248, 0x624B, 0x673A, 0x6E38, 0x620F)
+$markerPhoneLandscape = New-UnicodeMarker -Codepoints @(0x624B, 0x673A, 0x7AEF, 0x6A2A, 0x7248)
+$markerMasterPhoneLandscape = New-UnicodeMarker -Codepoints @(0x624B, 0x673A, 0x7B2C, 0x4E00, 0x7248, 0x5C31, 0x662F, 0x624B, 0x673A, 0x7AEF, 0x6A2A, 0x7248)
+$markerDetailedPhoneLandscape = New-UnicodeMarker -Codepoints @(0x7B2C, 0x4E00, 0x7248, 0x624B, 0x673A, 0x7AEF, 0x5C31, 0x662F, 0x624B, 0x673A, 0x7AEF, 0x6A2A, 0x7248)
+
 Assert-FileContains -RelativePath "unity-mc2-demo\ProjectSettings\ProjectSettings.asset" -Markers @(
     "defaultScreenOrientation: 3",
     "defaultScreenWidth: 1920",
@@ -107,6 +118,7 @@ Assert-FileContains -RelativePath "scripts\unity\check_android_smoke_summary.ps1
 
 Assert-FileContains -RelativePath "README.md" -Markers @(
     "G4 Touch UI pass",
+    $markerReadmePhoneLandscapeGame,
     "horizontal phone game",
     "2400x1080",
     "check_mobile_landscape_contract.ps1",
@@ -115,6 +127,7 @@ Assert-FileContains -RelativePath "README.md" -Markers @(
 
 Assert-FileContains -RelativePath "BUILD-MOBILE.md" -Markers @(
     "the first phone version is landscape-only",
+    $markerPhoneLandscape,
     "horizontal phone game version",
     "Portrait layout is not a supported first-version target",
     "check_mobile_landscape_contract.ps1",
@@ -123,12 +136,14 @@ Assert-FileContains -RelativePath "BUILD-MOBILE.md" -Markers @(
 
 Assert-FileContains -RelativePath "docs-mobile-first-plan-2026-06-10.md" -Markers @(
     "The first phone version is landscape-only",
+    $markerPhoneLandscape,
     "horizontal phone game build",
     "layout is not a supported first-version target",
     "screenshot orientation OK landscape"
 )
 
 Assert-FileContains -RelativePath "docs-ai-rts-commander-current-master-plan-2026-06-07.md" -Markers @(
+    $markerMasterPhoneLandscape,
     "Mobile phones remain landscape-only for the first playable target",
     "horizontal phone game",
     "portrait UI is not part of the first version",
@@ -136,6 +151,7 @@ Assert-FileContains -RelativePath "docs-ai-rts-commander-current-master-plan-202
 )
 
 Assert-FileContains -RelativePath "docs-ai-rts-commander-current-detailed-plan-2026-06-07.md" -Markers @(
+    $markerDetailedPhoneLandscape,
     "horizontal phone game",
     "G4 Touch UI pass",
     "G5 Mobile performance budget",
