@@ -283,7 +283,7 @@ G3WhenReady: True
 NoInstallOrLaunchUntilDeviceReady: True
 ```
 
-Current wait-state checkpoint: `PC1-PC83`.
+Current wait-state checkpoint: `PC1-PC84`.
 Completed mobile gates: `Pass Android G3 device smoke`, the landscape
 `G4 Touch UI pass`, `G5 Mobile performance budget`, and
 `G6 iOS feasibility gate`. `F2 map authoring contract` is also complete.
@@ -889,3 +889,10 @@ F82 implementation note: `F82 refresh PC controlled-demo investor route evidence
 - F83RouteEvidenceAuditFollowUp=P2 area=next-refresh-contract next=F85-consume-F83-audit-report
 - F83RouteEvidenceAuditFollowUp=P2 area=path-budget next=F84-keep-new-F-artifacts-short
 F83 implementation note: `F83 audit post-F82 PC controlled-demo investor route evidence refresh` is complete. Evidence gate: `scripts/unity/audit_f83_pc_route_evidence_refresh.ps1` -> `F83 PC route evidence refresh audit OK.`; formal next task: `F84 implement post-F83 PC controlled-demo investor route evidence refresh audit fixes`. Mobile phones remain first-version landscape-only as the horizontal phone build; portrait is not a first-slice support target.
+- F84RouteEvidenceAuditFixes=pass source=analysis-output/f84-pc-route-audit-fixes/report.json completed=F84 next=F85 noUnityLaunch=True mobile=landscape-only
+- F84RouteEvidenceAuditClosure=F84-doc-gate-visibility status=closed surfaces=plan+evidence+handoff+gate sourceAudit=analysis-output/f83-pc-route-evidence-refresh-audit/report.json
+- F84RouteEvidenceAuditClosure=next-refresh-contract status=closed sourceAudit=analysis-output/f83-pc-route-evidence-refresh-audit/report.json sourceFixes=analysis-output/f84-pc-route-audit-fixes/report.json nextRefresh=F85-consume-F83-audit-report
+- F84RouteEvidenceAuditClosure=path-budget status=closed script=scripts/unity/check_f84_pc_route_audit_fixes.ps1 output=analysis-output/f84-pc-route-audit-fixes/
+- F84RouteEvidenceAuditClosure=mobile-landscape status=preserved firstPhoneVersion=landscape-only portraitSupport=False
+- F84RouteEvidenceAuditClosure=phone-horizontal status=preserved firstPhoneVersion=horizontal-only portraitSupport=False
+F84 implementation note: `F84 implement post-F83 PC controlled-demo investor route evidence refresh audit fixes` is complete. Evidence gate: `scripts/unity/check_f84_pc_route_audit_fixes.ps1` -> `F84 PC route audit fixes check OK.`; formal next task: `F85 refresh PC controlled-demo investor route evidence after F83 audit fixes`. Mobile phones remain first-version landscape-only as the horizontal phone build; portrait is not a first-slice support target.
