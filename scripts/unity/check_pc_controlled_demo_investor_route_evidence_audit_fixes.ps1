@@ -151,8 +151,8 @@ Assert-All -Text $playableEvidence -Label "playable investor evidence F48 audit 
 Assert-All -Text $handoff -Label "handoff F48 audit visibility" -Needles $routeAuditMarkers
 
 Assert-All -Text $handoff -Label "handoff F48/F49 task state" -Needles @(
-    'Current formal next development task after handoff: `F49 refresh PC controlled-demo investor route evidence after audit fixes`',
-    'Next planned work: `F49 refresh PC controlled-demo investor route evidence after audit fixes`',
+    'Current formal next development task after handoff: `F50 audit post-F49 PC controlled-demo investor route evidence refresh`',
+    'Next planned work: `F50 audit post-F49 PC controlled-demo investor route evidence refresh`',
     "F48 implement post-F47 PC controlled-demo investor route evidence audit fixes",
     "check_pc_controlled_demo_investor_route_evidence_audit_fixes.ps1",
     "PC controlled-demo investor route evidence audit fixes check OK"

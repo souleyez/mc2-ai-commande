@@ -49,9 +49,15 @@ $reportJsonPath = Join-Path $OutputDir "pc-controlled-demo-command-evidence.json
 $reportMarkdownPath = Join-Path $OutputDir "pc-controlled-demo-command-evidence.md"
 $visualEvidenceScript = Join-Path $RepoRoot "scripts\unity\capture_pc_controlled_demo_visual_evidence.ps1"
 $windowsBuildFreshnessScript = Join-Path $RepoRoot "scripts\unity\check_windows_demo_build_freshness.ps1"
+$routeAuditFixesReportPath = Join-Path $RepoRoot "analysis-output\pc-controlled-demo-investor-route-evidence-audit-fixes\pc-controlled-demo-investor-route-evidence-audit-fixes.json"
 $requiredPresets = @("spawn", "hangar-contact", "damage-demo", "solo-order", "solo-return")
-$completedTaskName = "F46 refresh PC controlled-demo investor route evidence after polish fixes"
-$nextFormalTaskName = "F47 audit post-F46 PC controlled-demo investor route evidence refresh"
+$completedTaskName = "F49 refresh PC controlled-demo investor route evidence after audit fixes"
+$nextFormalTaskName = "F50 audit post-F49 PC controlled-demo investor route evidence refresh"
+$routeAuditFixClosure = @(
+    "RouteAuditFixRefresh=ready source=analysis-output/pc-controlled-demo-investor-route-evidence-audit-fixes/pc-controlled-demo-investor-route-evidence-audit-fixes.json completed=F49 next=F50 noUnityLaunch=True mobile=landscape-only",
+    "RouteAuditFixClosure=F48-doc-visibility status=closed surfaces=investor-route+playable-evidence+handoff",
+    "RouteAuditFixClosure=gate-runtime status=route-gates-focused aggregateGate=not-required"
+)
 $rows = New-Object System.Collections.Generic.List[object]
 
 function Resolve-RepoPath {
@@ -339,10 +345,22 @@ if ((Get-OptionalLastExitCode) -ne 0) {
     throw "PC controlled-demo visual evidence refresh failed before command evidence report."
 }
 
+Require-File -Path $routeAuditFixesReportPath -Label "PC investor route evidence audit fixes report"
 Require-File -Path $visualEvidenceReportPath -Label "PC visual evidence report"
 $visualReport = Get-Content -LiteralPath $visualEvidenceReportPath -Raw -Encoding UTF8 | ConvertFrom-Json
 if ([string]$visualReport.result -ne "pass") {
     throw "PC visual evidence report did not pass: $visualEvidenceReportPath"
+}
+
+$routeAuditFixesReport = Get-Content -LiteralPath $routeAuditFixesReportPath -Raw -Encoding UTF8 | ConvertFrom-Json
+if ([string]$routeAuditFixesReport.result -ne "pass") {
+    throw "PC investor route evidence audit fixes report did not pass: $routeAuditFixesReportPath"
+}
+if ([string]$routeAuditFixesReport.completedTask -ne "F48 implement post-F47 PC controlled-demo investor route evidence audit fixes") {
+    throw "PC investor route evidence audit fixes report has unexpected completed task: $($routeAuditFixesReport.completedTask)"
+}
+if ([string]$routeAuditFixesReport.nextFormalTask -ne "F49 refresh PC controlled-demo investor route evidence after audit fixes") {
+    throw "PC investor route evidence audit fixes report has unexpected next task: $($routeAuditFixesReport.nextFormalTask)"
 }
 
 Assert-SourceMarkers
@@ -368,6 +386,8 @@ $report = [pscustomobject]@{
     width = $Width
     height = $Height
     sourceVisualEvidenceReport = Convert-ToRepoRelativePath -Path $visualEvidenceReportPath
+    sourceRouteAuditFixesReport = Convert-ToRepoRelativePath -Path $routeAuditFixesReportPath
+    routeAuditFixClosure = $routeAuditFixClosure
     captureDir = Convert-ToRepoRelativePath -Path $captureDir
     evidence = $evidenceRows
 }
@@ -382,6 +402,7 @@ $markdownLines = New-Object System.Collections.Generic.List[string]
 [void]$markdownLines.Add("Next formal task: ``$nextFormalTaskName``")
 [void]$markdownLines.Add("")
 [void]$markdownLines.Add("Source visual report: `"$(Convert-ToRepoRelativePath -Path $visualEvidenceReportPath)`"")
+[void]$markdownLines.Add("Source route audit fixes report: `"$(Convert-ToRepoRelativePath -Path $routeAuditFixesReportPath)`"")
 [void]$markdownLines.Add("Capture directory: `"$(Convert-ToRepoRelativePath -Path $captureDir)`"")
 [void]$markdownLines.Add("")
 $damageRow = Find-EvidenceRow -Items $evidenceRows -Preset "damage-demo"
@@ -406,6 +427,12 @@ $damageLog = if ($null -eq $damageRow) { "analysis-output/pc-controlled-demo-vis
 [void]$markdownLines.Add("- DamageProof=damage-demo screenshot=$damageScreenshot sidecar=$damageSidecar log=$damageLog callout=section-loss+cockpit-ejection+wreck-salvage+repair-line repairCost=$damageRepairCost")
 [void]$markdownLines.Add("- LandscapePhoneProof=mobileLandscapeOnly=True orientation=landscape firstPhoneVersion=horizontal-only portraitSupport=False")
 [void]$markdownLines.Add("- ProxyParsing=source=proxyIdentity+materialLanguage+propIdentity sidecarFallback=investorProxyVisuals splitSidecarRecapturePending=True publicSafe=proxy-only")
+[void]$markdownLines.Add("")
+[void]$markdownLines.Add("## Route Audit Fix Closure")
+[void]$markdownLines.Add("")
+foreach ($closure in $routeAuditFixClosure) {
+    [void]$markdownLines.Add("- $closure")
+}
 [void]$markdownLines.Add("")
 [void]$markdownLines.Add("## Preset Highlights")
 [void]$markdownLines.Add("")
