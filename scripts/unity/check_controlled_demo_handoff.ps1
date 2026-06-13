@@ -344,6 +344,7 @@ Assert-FileContains -RelativePath "README.md" -Markers @(
     "check_pc_controlled_demo_playable_flow_polish_fixes.ps1",
     "PC controlled-demo playable flow polish fixes check OK",
     "F37 refresh PC controlled-demo playable-flow evidence after polish fixes",
+    "F38 audit post-F37 PC controlled-demo investor readiness",
     "Add Android WPD-only device diagnosis",
     "Add Android ADB setup guidance",
     "Add Android ADB driver package probe",
@@ -553,6 +554,7 @@ Assert-FileContains -RelativePath "BUILD-WIN.md" -Markers @(
     "check_pc_controlled_demo_playable_flow_polish_fixes.ps1",
     "PC controlled-demo playable flow polish fixes check OK",
     "F37 refresh PC controlled-demo playable-flow evidence after polish fixes",
+    "F38 audit post-F37 PC controlled-demo investor readiness",
     "Controlled demo readiness preflight OK"
 )
 
@@ -702,6 +704,7 @@ Assert-FileContains -RelativePath "BUILD-MOBILE.md" -Markers @(
     "check_pc_controlled_demo_playable_flow_polish_fixes.ps1",
     "PC controlled-demo playable flow polish fixes check OK",
     "F37 refresh PC controlled-demo playable-flow evidence after polish fixes",
+    "F38 audit post-F37 PC controlled-demo investor readiness",
     "first phone version is landscape-only",
     "check_android_smoke_plan_consistency.ps1",
     "Android smoke plan/preflight consistency check OK",
@@ -1288,6 +1291,7 @@ Assert-FileContains -RelativePath "docs-machine-handoff-plan-2026-06-07.md" -Mar
     "check_pc_controlled_demo_playable_flow_polish_fixes.ps1",
     "PC controlled-demo playable flow polish fixes check OK",
     "F37 refresh PC controlled-demo playable-flow evidence after polish fixes",
+    "F38 audit post-F37 PC controlled-demo investor readiness",
     "first phone version is landscape-only",
     "android-device-smoke.png",
     "ScreenshotCapture: True",

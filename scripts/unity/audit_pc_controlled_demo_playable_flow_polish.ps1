@@ -403,11 +403,17 @@ if ([string]$commandReport.result -ne "pass") {
     throw "F34 command evidence report must pass before F35 audit: $commandEvidenceReportPath"
 }
 
-if ([string]$commandReport.completedTask -ne "F34 refresh PC controlled-demo command evidence after readability fixes") {
+if (@(
+    "F34 refresh PC controlled-demo command evidence after readability fixes",
+    "F37 refresh PC controlled-demo playable-flow evidence after polish fixes"
+) -notcontains [string]$commandReport.completedTask) {
     throw "F34 command evidence completedTask mismatch: $($commandReport.completedTask)"
 }
 
-if ([string]$commandReport.nextFormalTask -ne "F35 audit post-F34 PC controlled-demo playable flow polish") {
+if (@(
+    "F35 audit post-F34 PC controlled-demo playable flow polish",
+    "F38 audit post-F37 PC controlled-demo investor readiness"
+) -notcontains [string]$commandReport.nextFormalTask) {
     throw "F34 command evidence nextFormalTask mismatch: $($commandReport.nextFormalTask)"
 }
 

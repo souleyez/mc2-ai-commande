@@ -49,6 +49,8 @@ $reportMarkdownPath = Join-Path $OutputDir "pc-controlled-demo-command-evidence.
 $visualEvidenceScript = Join-Path $RepoRoot "scripts\unity\capture_pc_controlled_demo_visual_evidence.ps1"
 $windowsBuildFreshnessScript = Join-Path $RepoRoot "scripts\unity\check_windows_demo_build_freshness.ps1"
 $requiredPresets = @("spawn", "hangar-contact", "damage-demo", "solo-order", "solo-return")
+$completedTaskName = "F37 refresh PC controlled-demo playable-flow evidence after polish fixes"
+$nextFormalTaskName = "F38 audit post-F37 PC controlled-demo investor readiness"
 $rows = New-Object System.Collections.Generic.List[object]
 
 function Resolve-RepoPath {
@@ -88,6 +90,20 @@ function Require-Text {
     if ([string]::IsNullOrWhiteSpace($Text) -or -not $Text.Contains($Needle)) {
         throw "$Label missing '$Needle': $Text"
     }
+}
+
+function Read-OptionalSidecarString {
+    param(
+        [object]$Sidecar,
+        [string]$Name
+    )
+
+    $property = $Sidecar.PSObject.Properties[$Name]
+    if ($null -eq $property -or $null -eq $property.Value) {
+        return ""
+    }
+
+    return [string]$property.Value
 }
 
 function Read-RequiredText {
@@ -182,6 +198,10 @@ function Test-Sidecar {
         visibleHostiles = [int]$Sidecar.visibleHostileCount
         commandReadability = $command
         commanderFollow = $commander
+        battleHud = Read-OptionalSidecarString -Sidecar $Sidecar -Name "battleHud"
+        playableFlowPolish = Read-OptionalSidecarString -Sidecar $Sidecar -Name "playableFlowPolish"
+        debriefRewardSummary = Read-OptionalSidecarString -Sidecar $Sidecar -Name "debriefRewardSummary"
+        status = Read-OptionalSidecarString -Sidecar $Sidecar -Name "status"
     }
 }
 
@@ -251,8 +271,8 @@ $report = [pscustomobject]@{
     schema = "PCControlledDemoCommandEvidenceRefresh"
     result = "pass"
     timestampUtc = (Get-Date).ToUniversalTime().ToString("o")
-    completedTask = "F34 refresh PC controlled-demo command evidence after readability fixes"
-    nextFormalTask = "F35 audit post-F34 PC controlled-demo playable flow polish"
+    completedTask = $completedTaskName
+    nextFormalTask = $nextFormalTaskName
     width = $Width
     height = $Height
     sourceVisualEvidenceReport = Convert-ToRepoRelativePath -Path $visualEvidenceReportPath
@@ -266,16 +286,18 @@ $markdownLines = New-Object System.Collections.Generic.List[string]
 [void]$markdownLines.Add("")
 [void]$markdownLines.Add("Result: pass")
 [void]$markdownLines.Add("")
-[void]$markdownLines.Add('Completed task: `F34 refresh PC controlled-demo command evidence after readability fixes`')
-[void]$markdownLines.Add('Next formal task: `F35 audit post-F34 PC controlled-demo playable flow polish`')
+[void]$markdownLines.Add("Completed task: ``$completedTaskName``")
+[void]$markdownLines.Add("Next formal task: ``$nextFormalTaskName``")
 [void]$markdownLines.Add("")
 [void]$markdownLines.Add("Source visual report: `"$(Convert-ToRepoRelativePath -Path $visualEvidenceReportPath)`"")
 [void]$markdownLines.Add("Capture directory: `"$(Convert-ToRepoRelativePath -Path $captureDir)`"")
 [void]$markdownLines.Add("")
-[void]$markdownLines.Add("| Preset | Active hostiles | Visible hostiles | Screenshot |")
-[void]$markdownLines.Add("| --- | ---: | ---: | --- |")
+[void]$markdownLines.Add("| Preset | Active hostiles | Visible hostiles | Flow summary | Screenshot |")
+[void]$markdownLines.Add("| --- | ---: | ---: | --- | --- |")
 foreach ($item in $rows) {
-    [void]$markdownLines.Add(("| {0} | {1} | {2} | `{3}` |" -f $item.preset, $item.activeHostiles, $item.visibleHostiles, $item.screenshot))
+    $flowSummary = if ([string]::IsNullOrWhiteSpace($item.playableFlowPolish)) { $item.commandReadability } else { $item.playableFlowPolish }
+    $flowSummary = ($flowSummary -replace "\|", "/")
+    [void]$markdownLines.Add(("| {0} | {1} | {2} | {3} | `{4}` |" -f $item.preset, $item.activeHostiles, $item.visibleHostiles, $flowSummary, $item.screenshot))
 }
 
 $markdownLines | Set-Content -LiteralPath $reportMarkdownPath -Encoding UTF8

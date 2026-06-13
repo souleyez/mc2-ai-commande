@@ -125,7 +125,8 @@ $requiredPlanMarkers = @(
     "F34 refresh PC controlled-demo command evidence after readability fixes",
     "F35 audit post-F34 PC controlled-demo playable flow polish",
     "F36 implement post-F34 PC controlled-demo playable flow polish fixes",
-    "F37 refresh PC controlled-demo playable-flow evidence after polish fixes"
+    "F37 refresh PC controlled-demo playable-flow evidence after polish fixes",
+    "F38 audit post-F37 PC controlled-demo investor readiness"
 )
 
 $docsToCheck = @(
@@ -201,7 +202,8 @@ Assert-Contains -Text $mobilePlan -Needle "F33 implement PC controlled-demo comm
 Assert-Contains -Text $mobilePlan -Needle "F34 refresh PC controlled-demo command evidence after readability fixes" -Label "mobile completed platform task"
 Assert-Contains -Text $mobilePlan -Needle "F35 audit post-F34 PC controlled-demo playable flow polish" -Label "mobile completed platform task"
 Assert-Contains -Text $mobilePlan -Needle "F36 implement post-F34 PC controlled-demo playable flow polish fixes" -Label "mobile completed platform task"
-Assert-Contains -Text $mobilePlan -Needle "F37 refresh PC controlled-demo playable-flow evidence after polish fixes" -Label "mobile next task"
+Assert-Contains -Text $mobilePlan -Needle "F37 refresh PC controlled-demo playable-flow evidence after polish fixes" -Label "mobile completed platform task"
+Assert-Contains -Text $mobilePlan -Needle "F38 audit post-F37 PC controlled-demo investor readiness" -Label "mobile next task"
 Assert-Contains -Text $mobilePlan -Needle "first phone version is landscape-only" -Label "mobile orientation decision"
 Assert-Contains -Text $mobilePlan -Needle "horizontal phone game" -Label "mobile horizontal phone version decision"
 
@@ -241,11 +243,12 @@ Assert-Contains -Text $detailedPlan -Needle '| F33 | Done | `Implement PC contro
 Assert-Contains -Text $detailedPlan -Needle '| F34 | Done | `Refresh PC controlled-demo command evidence after readability fixes` |' -Label "detailed queue F34"
 Assert-Contains -Text $detailedPlan -Needle '| F35 | Done | `Audit post-F34 PC controlled-demo playable flow polish` |' -Label "detailed queue F35"
 Assert-Contains -Text $detailedPlan -Needle '| F36 | Done | `Implement post-F34 PC controlled-demo playable flow polish fixes` |' -Label "detailed queue F36"
-Assert-Contains -Text $detailedPlan -Needle '| F37 | Next | `Refresh PC controlled-demo playable-flow evidence after polish fixes` |' -Label "detailed queue F37"
+Assert-Contains -Text $detailedPlan -Needle '| F37 | Done | `Refresh PC controlled-demo playable-flow evidence after polish fixes` |' -Label "detailed queue F37"
+Assert-Contains -Text $detailedPlan -Needle '| F38 | Next | `Audit post-F37 PC controlled-demo investor readiness` |' -Label "detailed queue F38"
 
 $handoff = Read-RequiredText -RelativePath "docs-machine-handoff-plan-2026-06-07.md"
-Assert-Contains -Text $handoff -Needle 'Current formal next development task after handoff: `F37 refresh PC controlled-demo playable-flow evidence after polish fixes`' -Label "handoff next task"
-Assert-Contains -Text $handoff -Needle 'Next planned work: `F37 refresh PC controlled-demo playable-flow evidence after polish fixes`' -Label "handoff next planned work"
+Assert-Contains -Text $handoff -Needle 'Current formal next development task after handoff: `F38 audit post-F37 PC controlled-demo investor readiness`' -Label "handoff next task"
+Assert-Contains -Text $handoff -Needle 'Next planned work: `F38 audit post-F37 PC controlled-demo investor readiness`' -Label "handoff next planned work"
 
 $currentGate = Read-RequiredText -RelativePath "scripts\unity\check_current_plan_gate.ps1"
 Assert-Contains -Text $currentGate -Needle 'CommandFileSmoke: True' -Label "current gate script marker"
@@ -357,7 +360,8 @@ Assert-Contains -Text $handoffScript -Needle 'PC controlled-demo playable flow p
 Assert-Contains -Text $handoffScript -Needle 'F36 implement post-F34 PC controlled-demo playable flow polish fixes' -Label "handoff script F36 completed task marker"
 Assert-Contains -Text $handoffScript -Needle 'check_pc_controlled_demo_playable_flow_polish_fixes.ps1' -Label "handoff script F36 playable flow fixes script marker"
 Assert-Contains -Text $handoffScript -Needle 'PC controlled-demo playable flow polish fixes check OK' -Label "handoff script F36 playable flow fixes marker"
-Assert-Contains -Text $handoffScript -Needle 'F37 refresh PC controlled-demo playable-flow evidence after polish fixes' -Label "handoff script F37 next task marker"
+Assert-Contains -Text $handoffScript -Needle 'F37 refresh PC controlled-demo playable-flow evidence after polish fixes' -Label "handoff script F37 completed task marker"
+Assert-Contains -Text $handoffScript -Needle 'F38 audit post-F37 PC controlled-demo investor readiness' -Label "handoff script F38 next task marker"
 Assert-Contains -Text $handoffScript -Needle 'Server-backed receipt slice plan check OK' -Label "handoff script server-backed receipt slice marker"
 Assert-Contains -Text $handoffScript -Needle 'Server-backed receipt evidence capture OK' -Label "handoff script server-backed receipt evidence marker"
 Assert-Contains -Text $handoffScript -Needle 'Post-receipt inventory refresh boundary check OK' -Label "handoff script post-receipt inventory refresh marker"
