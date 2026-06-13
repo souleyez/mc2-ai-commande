@@ -158,6 +158,7 @@ Assert-ScriptExists -RelativePath "scripts\unity\audit_pc_controlled_demo_invest
 Assert-ScriptExists -RelativePath "scripts\unity\audit_pc_controlled_demo_investor_evidence_package.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_pc_controlled_demo_investor_evidence_package_fixes.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_pc_controlled_demo_investor_evidence_refresh.ps1"
+Assert-ScriptExists -RelativePath "scripts\unity\audit_pc_controlled_demo_investor_evidence_refresh.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_server_backed_receipt_slice_plan.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\capture_server_backed_receipt_evidence.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_post_receipt_inventory_refresh_boundary.ps1"
@@ -367,6 +368,9 @@ Assert-FileContains -RelativePath "README.md" -Markers @(
     "check_pc_controlled_demo_investor_evidence_refresh.ps1",
     "PC controlled-demo investor evidence refresh check OK",
     "F44 audit post-F43 PC controlled-demo investor evidence refresh",
+    "audit_pc_controlled_demo_investor_evidence_refresh.ps1",
+    "PC controlled-demo investor evidence refresh audit OK",
+    "F45 implement post-F44 PC controlled-demo investor evidence polish fixes",
     "Add Android WPD-only device diagnosis",
     "Add Android ADB setup guidance",
     "Add Android ADB driver package probe",
@@ -595,6 +599,9 @@ Assert-FileContains -RelativePath "BUILD-WIN.md" -Markers @(
     "check_pc_controlled_demo_investor_evidence_refresh.ps1",
     "PC controlled-demo investor evidence refresh check OK",
     "F44 audit post-F43 PC controlled-demo investor evidence refresh",
+    "audit_pc_controlled_demo_investor_evidence_refresh.ps1",
+    "PC controlled-demo investor evidence refresh audit OK",
+    "F45 implement post-F44 PC controlled-demo investor evidence polish fixes",
     "Controlled demo readiness preflight OK"
 )
 
@@ -763,6 +770,9 @@ Assert-FileContains -RelativePath "BUILD-MOBILE.md" -Markers @(
     "check_pc_controlled_demo_investor_evidence_refresh.ps1",
     "PC controlled-demo investor evidence refresh check OK",
     "F44 audit post-F43 PC controlled-demo investor evidence refresh",
+    "audit_pc_controlled_demo_investor_evidence_refresh.ps1",
+    "PC controlled-demo investor evidence refresh audit OK",
+    "F45 implement post-F44 PC controlled-demo investor evidence polish fixes",
     "first phone version is landscape-only",
     "check_android_smoke_plan_consistency.ps1",
     "Android smoke plan/preflight consistency check OK",
@@ -1368,6 +1378,9 @@ Assert-FileContains -RelativePath "docs-machine-handoff-plan-2026-06-07.md" -Mar
     "check_pc_controlled_demo_investor_evidence_refresh.ps1",
     "PC controlled-demo investor evidence refresh check OK",
     "F44 audit post-F43 PC controlled-demo investor evidence refresh",
+    "audit_pc_controlled_demo_investor_evidence_refresh.ps1",
+    "PC controlled-demo investor evidence refresh audit OK",
+    "F45 implement post-F44 PC controlled-demo investor evidence polish fixes",
     "first phone version is landscape-only",
     "android-device-smoke.png",
     "ScreenshotCapture: True",
