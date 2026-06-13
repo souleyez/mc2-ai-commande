@@ -208,3 +208,18 @@ F69 implementation note: `F69 implement post-F68 PC controlled-demo investor rou
 - RouteAuditFixRefreshAuditFixRefreshAuditFixRefreshAuditFixRefreshAuditFixRefreshAuditFixRefreshAuditFixRefreshAuditClosure=next-refresh-contract status=closed sourceAudit=analysis-output/pc-controlled-demo-investor-route-evidence-audit-fix-refresh-audit-fix-refresh-audit-fix-refresh-audit-fix-refresh-audit-fix-refresh-audit-fix-refresh-audit-fix-refresh-audit/report.json sourceFixes=analysis-output/pc-controlled-demo-investor-route-evidence-audit-fix-refresh-audit-fix-refresh-audit-fix-refresh-audit-fix-refresh-audit-fix-refresh-audit-fix-refresh-audit-fix-refresh-audit-fixes/report.json
 
 F70 implementation note: `F70 refresh PC controlled-demo investor route evidence after F68 audit fixes` is complete. Evidence gate: `scripts/unity/check_f70_pc_route_evidence_refresh.ps1` -> `PC controlled-demo investor route evidence audit fix refresh audit fix refresh audit fix refresh audit fix refresh audit fix refresh audit fix refresh audit fix refresh audit fix refresh check OK`; formal next task: `F71 audit post-F70 PC controlled-demo investor route evidence refresh`. Mobile phones remain first-version landscape-only as the horizontal phone build; portrait is not a first-slice support target.
+
+## F71 PC Route Evidence Refresh Audit
+
+- F71RouteEvidenceAudit=pass-with-followups source=analysis-output/f71-pc-route-evidence-audit/report.json completed=F71 next=F72 noUnityLaunch=True mobile=landscape-only
+- F71RouteEvidenceAuditFinding=F70-traceability status=pass detail=F70 consumes F68 audit and F69 fixes
+- F71RouteEvidenceAuditFinding=route-proof-clarity status=pass detail=spawn>hangar-contact>damage-demo>solo-order>solo-return
+- F71RouteEvidenceAuditFinding=damage-ejection-proof status=pass detail=section-loss+cockpit-ejection+wreck-salvage+repair-line
+- F71RouteEvidenceAuditFinding=mobile-landscape-proof status=pass detail=first phone version remains landscape-only
+- F71RouteEvidenceAuditFinding=public-safe-proxy-boundary status=pass detail=proxy-only visuals with unchanged collision/pathing
+- F71RouteEvidenceAuditFinding=windows-path-budget status=pass detail=F70 script and output moved to short paths
+- F71RouteEvidenceAuditFollowUp=P1 area=audit-visibility next=F72-doc-gate-visibility
+- F71RouteEvidenceAuditFollowUp=P2 area=next-refresh-contract next=F73-consume-F71-audit-report
+- F71RouteEvidenceAuditFollowUp=P2 area=path-budget next=F72-keep-new-F-artifacts-short
+
+F71 implementation note: `F71 audit post-F70 PC controlled-demo investor route evidence refresh` is complete. Evidence gate: `scripts/unity/audit_f71_pc_route_evidence_refresh.ps1` -> `F71 PC route evidence refresh audit OK.`; formal next task: `F72 implement post-F71 PC controlled-demo investor route evidence refresh audit fixes`. Mobile phones remain first-version landscape-only as the horizontal phone build; portrait is not a first-slice support target.
