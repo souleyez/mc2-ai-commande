@@ -283,7 +283,7 @@ G3WhenReady: True
 NoInstallOrLaunchUntilDeviceReady: True
 ```
 
-Current wait-state checkpoint: `PC1-PC71`.
+Current wait-state checkpoint: `PC1-PC72`.
 Completed mobile gates: `Pass Android G3 device smoke`, the landscape
 `G4 Touch UI pass`, `G5 Mobile performance budget`, and
 `G6 iOS feasibility gate`. `F2 map authoring contract` is also complete.
@@ -768,3 +768,12 @@ F70 implementation note: `F70 refresh PC controlled-demo investor route evidence
 - F71RouteEvidenceAuditFollowUp=P2 area=path-budget next=F72-keep-new-F-artifacts-short
 
 F71 implementation note: `F71 audit post-F70 PC controlled-demo investor route evidence refresh` is complete. Evidence gate: `scripts/unity/audit_f71_pc_route_evidence_refresh.ps1` -> `F71 PC route evidence refresh audit OK.`; formal next task: `F72 implement post-F71 PC controlled-demo investor route evidence refresh audit fixes`. Mobile phones remain first-version landscape-only as the horizontal phone build; portrait is not a first-slice support target.
+## F72 PC Route Evidence Audit Fixes
+
+- F72RouteEvidenceAuditFixes=pass source=analysis-output/f72-pc-route-audit-fixes/report.json completed=F72 next=F73 noUnityLaunch=True mobile=landscape-only
+- F72RouteEvidenceAuditClosure=F72-doc-gate-visibility status=closed surfaces=plan+evidence+handoff+gate sourceAudit=analysis-output/f71-pc-route-evidence-audit/report.json
+- F72RouteEvidenceAuditClosure=next-refresh-contract status=closed sourceAudit=analysis-output/f71-pc-route-evidence-audit/report.json sourceFixes=analysis-output/f72-pc-route-audit-fixes/report.json nextRefresh=F73-consume-F71-audit-report
+- F72RouteEvidenceAuditClosure=path-budget status=closed script=scripts/unity/check_f72_pc_route_audit_fixes.ps1 output=analysis-output/f72-pc-route-audit-fixes/
+- F72RouteEvidenceAuditClosure=mobile-landscape status=preserved firstPhoneVersion=landscape-only portraitSupport=False
+
+F72 implementation note: `F72 implement post-F71 PC controlled-demo investor route evidence refresh audit fixes` is complete. Evidence gate: `scripts/unity/check_f72_pc_route_audit_fixes.ps1` -> `F72 PC route audit fixes check OK.`; formal next task: `F73 refresh PC controlled-demo investor route evidence after F71 audit fixes`. Mobile phones remain first-version landscape-only as the horizontal phone build; portrait is not a first-slice support target.
