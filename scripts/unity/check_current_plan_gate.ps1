@@ -193,6 +193,7 @@ $pcControlledDemoPlayableFlowFixesScript = Resolve-RepoPath -RelativePath "scrip
 $pcControlledDemoInvestorReadinessAuditScript = Resolve-RepoPath -RelativePath "scripts\unity\audit_pc_controlled_demo_investor_readiness.ps1"
 $pcControlledDemoInvestorReadinessFixesScript = Resolve-RepoPath -RelativePath "scripts\unity\check_pc_controlled_demo_investor_readiness_fixes.ps1"
 $pcControlledDemoInvestorEvidencePackageAuditScript = Resolve-RepoPath -RelativePath "scripts\unity\audit_pc_controlled_demo_investor_evidence_package.ps1"
+$pcControlledDemoInvestorEvidencePackageFixesScript = Resolve-RepoPath -RelativePath "scripts\unity\check_pc_controlled_demo_investor_evidence_package_fixes.ps1"
 $serverBackedReceiptSlicePlanScript = Resolve-RepoPath -RelativePath "scripts\unity\check_server_backed_receipt_slice_plan.ps1"
 $serverBackedReceiptEvidenceScript = Resolve-RepoPath -RelativePath "scripts\unity\capture_server_backed_receipt_evidence.ps1"
 $postReceiptInventoryRefreshBoundaryScript = Resolve-RepoPath -RelativePath "scripts\unity\check_post_receipt_inventory_refresh_boundary.ps1"
@@ -575,6 +576,12 @@ Invoke-GateStep `
     -ScriptPath $pcControlledDemoInvestorEvidencePackageAuditScript `
     -Arguments @("-RepoRoot", $RepoRoot, "-PlanOnly") `
     -RequiredMarkers @("PC controlled-demo investor evidence package audit plan OK.")
+
+Invoke-GateStep `
+    -Name "PC controlled-demo investor evidence package fixes plan gate" `
+    -ScriptPath $pcControlledDemoInvestorEvidencePackageFixesScript `
+    -Arguments @("-RepoRoot", $RepoRoot, "-PlanOnly") `
+    -RequiredMarkers @("PC controlled-demo investor evidence package fixes plan OK.")
 
 Invoke-GateStep `
     -Name "Server-backed receipt slice plan gate" `

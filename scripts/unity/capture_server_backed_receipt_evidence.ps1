@@ -207,8 +207,8 @@ Require-Text -Text $masterPlanText -Needle '| 95 | Done | `Plan post-receipt inv
 Require-Text -Text $detailedPlanText -Needle '| F16 | Done | `Implement server-backed receipt evidence gate` |' -Label "detailed F16 done"
 Require-Text -Text $detailedPlanText -Needle '| F17 | Done | `Plan post-receipt inventory refresh boundary` |' -Label "detailed F17 done"
 Require-Text -Text $mobilePlanText -Needle "first phone version is landscape-only" -Label "mobile landscape invariant"
-Require-Text -Text $handoffText -Needle 'Current formal next development task after handoff: `F42 implement post-F41 PC controlled-demo investor evidence package fixes`' -Label "handoff next task"
-Require-Text -Text $handoffText -Needle 'Next planned work: `F42 implement post-F41 PC controlled-demo investor evidence package fixes`' -Label "handoff next planned work"
+Require-Text -Text $handoffText -Needle 'Current formal next development task after handoff: `F43 refresh PC controlled-demo investor evidence package after fixes`' -Label "handoff next task"
+Require-Text -Text $handoffText -Needle 'Next planned work: `F43 refresh PC controlled-demo investor evidence package after fixes`' -Label "handoff next planned work"
 Require-Text -Text $currentGateText -Needle "capture_server_backed_receipt_evidence.ps1" -Label "current gate receipt evidence script"
 Require-Text -Text $currentGateText -Needle "Server-backed receipt evidence capture OK." -Label "current gate receipt evidence marker"
 

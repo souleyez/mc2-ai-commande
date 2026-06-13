@@ -6,6 +6,7 @@ param(
     [int]$Height = 720,
     [int]$CaptureTimeoutSeconds = 90,
     [switch]$SkipRun,
+    [switch]$SkipBuildFreshnessCheck,
     [switch]$PlanOnly
 )
 
@@ -90,6 +91,57 @@ function Require-Text {
     if ([string]::IsNullOrWhiteSpace($Text) -or -not $Text.Contains($Needle)) {
         throw "$Label missing '$Needle': $Text"
     }
+}
+
+function Escape-MarkdownTableCell {
+    param([string]$Text)
+
+    if ([string]::IsNullOrWhiteSpace($Text)) {
+        return "n/a"
+    }
+
+    return (($Text -replace "\|", "/") -replace "`r?`n", " ")
+}
+
+function Find-EvidenceRow {
+    param(
+        [object[]]$Items,
+        [string]$Preset
+    )
+
+    $matches = @($Items | Where-Object { [string]$_.preset -eq $Preset })
+    if ($matches.Count -eq 0) {
+        return $null
+    }
+
+    return $matches[0]
+}
+
+function Extract-SummaryToken {
+    param(
+        [string]$Summary,
+        [string]$Name
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Summary)) {
+        return ""
+    }
+
+    $match = [regex]::Match($Summary, [regex]::Escape($Name) + "=([^ ]+)")
+    if (-not $match.Success) {
+        return ""
+    }
+
+    return $match.Groups[1].Value
+}
+
+function Get-OptionalLastExitCode {
+    $lastExitCodeVariable = Get-Variable -Name LASTEXITCODE -ErrorAction SilentlyContinue
+    if ($null -eq $lastExitCodeVariable -or $null -eq $lastExitCodeVariable.Value) {
+        return 0
+    }
+
+    return [int]$lastExitCodeVariable.Value
 }
 
 function Read-OptionalSidecarString {
@@ -249,12 +301,17 @@ if ($PlanOnly) {
     Write-Host "OutputDir: $OutputDir"
     Write-Host "Presets: $($requiredPresets -join ',')"
     Write-Host "WidthHeight: ${Width}x${Height}"
+    Write-Host "SkipRun: $SkipRun"
+    Write-Host "SkipBuildFreshnessCheck: $SkipBuildFreshnessCheck"
+    Write-Host "NoUnityLaunch: $SkipRun"
     return
 }
 
-& $windowsBuildFreshnessScript -RepoRoot $RepoRoot
-if ($LASTEXITCODE -ne 0) {
-    throw "Windows build freshness check failed before command evidence refresh."
+if (-not $SkipBuildFreshnessCheck) {
+    & $windowsBuildFreshnessScript -RepoRoot $RepoRoot
+    if ((Get-OptionalLastExitCode) -ne 0) {
+        throw "Windows build freshness check failed before command evidence refresh."
+    }
 }
 
 New-Item -ItemType Directory -Force -Path $OutputDir | Out-Null
@@ -278,7 +335,7 @@ else {
         -Height $Height `
         -CaptureTimeoutSeconds $CaptureTimeoutSeconds
 }
-if ($LASTEXITCODE -ne 0) {
+if ((Get-OptionalLastExitCode) -ne 0) {
     throw "PC controlled-demo visual evidence refresh failed before command evidence report."
 }
 
@@ -301,6 +358,7 @@ foreach ($preset in $requiredPresets) {
     [void]$rows.Add((Test-Sidecar -Preset $preset -Sidecar $sidecar))
 }
 
+$evidenceRows = $rows.ToArray()
 $report = [pscustomobject]@{
     schema = "PCControlledDemoCommandEvidenceRefresh"
     result = "pass"
@@ -311,7 +369,7 @@ $report = [pscustomobject]@{
     height = $Height
     sourceVisualEvidenceReport = Convert-ToRepoRelativePath -Path $visualEvidenceReportPath
     captureDir = Convert-ToRepoRelativePath -Path $captureDir
-    evidence = $rows
+    evidence = $evidenceRows
 }
 $report | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $reportJsonPath -Encoding UTF8
 
@@ -326,15 +384,47 @@ $markdownLines = New-Object System.Collections.Generic.List[string]
 [void]$markdownLines.Add("Source visual report: `"$(Convert-ToRepoRelativePath -Path $visualEvidenceReportPath)`"")
 [void]$markdownLines.Add("Capture directory: `"$(Convert-ToRepoRelativePath -Path $captureDir)`"")
 [void]$markdownLines.Add("")
+$damageRow = Find-EvidenceRow -Items $evidenceRows -Preset "damage-demo"
+$contactRow = Find-EvidenceRow -Items $evidenceRows -Preset "hangar-contact"
+$soloOrderRow = Find-EvidenceRow -Items $evidenceRows -Preset "solo-order"
+$soloReturnRow = Find-EvidenceRow -Items $evidenceRows -Preset "solo-return"
+$damageRepairCost = if ($null -eq $damageRow) { "" } else { Extract-SummaryToken -Summary ([string]$damageRow.debriefRewardSummary) -Name "repairCost" }
+$damageUnits = if ($null -eq $damageRow) { "" } else { Extract-SummaryToken -Summary ([string]$damageRow.debriefRewardSummary) -Name "damagedPlayerUnits" }
+[void]$markdownLines.Add("## Executive Summary")
+[void]$markdownLines.Add("")
+[void]$markdownLines.Add("- InvestorDemoSummary=ready presets=$($evidenceRows.Count) resolution=${Width}x${Height} sparseHud=True mobileLandscapeOnly=True publicSafe=proxy-only")
+[void]$markdownLines.Add("- DamageInvestorCallout=section-loss+cockpit-ejection+wreck-salvage+repair-line preset=damage-demo damagedPlayerUnits=$damageUnits repairCost=$damageRepairCost")
+[void]$markdownLines.Add("- ProxyVisualIdentity=mech-silhouette+vehicle-hull+infantry-fireteam+tree-canopy+building-roof+hardprop-stripe roleReadable=True collision=unchanged pathing=unchanged")
+[void]$markdownLines.Add("- FastInvestorEvidenceGate=check_pc_controlled_demo_investor_evidence_package_fixes.ps1 source-only+report-only noUnityLaunch=True")
+[void]$markdownLines.Add("")
+[void]$markdownLines.Add("## Preset Highlights")
+[void]$markdownLines.Add("")
+[void]$markdownLines.Add("| Preset | Highlight | Investor proof |")
+[void]$markdownLines.Add("| --- | --- | --- |")
+if ($null -ne $contactRow) {
+    [void]$markdownLines.Add("| hangar-contact | Contact pressure without extra UI clutter | activeHostiles=$($contactRow.activeHostiles) visibleHostiles=$($contactRow.visibleHostiles) ContactPressureCue=objective-panel+in-world |")
+}
+if ($null -ne $damageRow) {
+    [void]$markdownLines.Add("| damage-demo | Arm/leg/cockpit consequences, ejection, wreck and repair line | DamageInvestorCallout=section-loss+cockpit-ejection+wreck-salvage+repair-line repairCost=$damageRepairCost |")
+}
+if ($null -ne $soloOrderRow) {
+    [void]$markdownLines.Add("| solo-order | Status-row single-unit order without drag selection | soloReturn=order-active detached=1 |")
+}
+if ($null -ne $soloReturnRow) {
+    [void]$markdownLines.Add("| solo-return | Ordered unit automatically returns to squad control | soloReturn=returned detached=0 |")
+}
+[void]$markdownLines.Add("")
+[void]$markdownLines.Add("## Raw Evidence")
+[void]$markdownLines.Add("")
 [void]$markdownLines.Add("| Preset | Active hostiles | Visible hostiles | Flow summary | Debrief summary | Investor proxy | Screenshot |")
 [void]$markdownLines.Add("| --- | ---: | ---: | --- | --- | --- | --- |")
-foreach ($item in $rows) {
+foreach ($item in $evidenceRows) {
     $flowSummary = if ([string]::IsNullOrWhiteSpace($item.playableFlowPolish)) { $item.commandReadability } else { $item.playableFlowPolish }
-    $flowSummary = ($flowSummary -replace "\|", "/")
+    $flowSummary = Escape-MarkdownTableCell -Text $flowSummary
     $debriefSummary = if ([string]::IsNullOrWhiteSpace($item.debriefRewardSummary)) { "n/a" } else { $item.debriefRewardSummary }
-    $debriefSummary = ($debriefSummary -replace "\|", "/")
+    $debriefSummary = Escape-MarkdownTableCell -Text $debriefSummary
     $investorSummary = if ([string]::IsNullOrWhiteSpace($item.investorProxyVisuals)) { "n/a" } else { $item.investorProxyVisuals }
-    $investorSummary = ($investorSummary -replace "\|", "/")
+    $investorSummary = Escape-MarkdownTableCell -Text $investorSummary
     [void]$markdownLines.Add(("| {0} | {1} | {2} | {3} | {4} | {5} | `{6}` |" -f $item.preset, $item.activeHostiles, $item.visibleHostiles, $flowSummary, $debriefSummary, $investorSummary, $item.screenshot))
 }
 

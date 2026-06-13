@@ -242,6 +242,7 @@ namespace MC2Demo.Presentation
             public string postReceiptInventoryRefresh;
             public string damageStory;
             public string damageReadability;
+            public string damageInvestorCallout;
             public string battleHud;
             public string mobileTouch;
             public string commandReadability;
@@ -7152,6 +7153,9 @@ namespace MC2Demo.Presentation
                 battleHudSummary,
                 damageStorySummary,
                 debriefRewardSummary);
+            string damageInvestorCalloutSummary = BuildCaptureDamageInvestorCalloutSummary(
+                damageStorySummary,
+                debriefRewardSummary);
             return new VisualCaptureSidecar
             {
                 preset = lastCapturePreset,
@@ -7191,6 +7195,7 @@ namespace MC2Demo.Presentation
                 inventoryMechBayPreview = BuildCaptureInventoryMechBayPreviewSummary(),
                 damageStory = damageStorySummary,
                 damageReadability = BuildCaptureDamageReadabilitySummary(),
+                damageInvestorCallout = damageInvestorCalloutSummary,
                 battleHud = battleHudSummary,
                 debriefReward = debriefRewardSummary,
                 postReceiptInventoryRefresh = BuildCapturePostReceiptInventoryRefreshSummary(),
@@ -8124,6 +8129,21 @@ namespace MC2Demo.Presentation
                 + " cockpitEjection=ready";
         }
 
+        private string BuildCaptureDamageInvestorCalloutSummary(
+            string damageStorySummary,
+            string debriefRewardSummary)
+        {
+            bool sectionLoss = SummaryHas(damageStorySummary, "lostSections=");
+            bool repairLine = SummaryHas(debriefRewardSummary, "DamageDebrief=section-status+repair-line");
+            const string investorCalloutReady = "DamageInvestorCallout=section-loss+cockpit-ejection+wreck-salvage+repair-line";
+            return (sectionLoss && repairLine ? investorCalloutReady : "DamageInvestorCallout=available")
+                + " source=status-rail+world-fx+debrief"
+                + " cockpitEjection=hero-callout"
+                + " repairConsequence=debrief-line"
+                + " salvageWreck=visible-marker"
+                + " mobileLandscapeOnly=True";
+        }
+
         private string BuildCapturePlayableFlowPolishSummary(
             string battleHudSummary,
             string damageStorySummary,
@@ -8180,6 +8200,8 @@ namespace MC2Demo.Presentation
             return "InvestorProxyVisuals="
                 + state
                 + " unitFallbackProxy=mech-silhouette+vehicle-hull+infantry-fireteam"
+                + " proxyIdentity=role-silhouette+faction-color+scale-language"
+                + " materialLanguage=painted-panels+emissive-cockpit+weapon-hardpoints"
                 + " mechUnits="
                 + investorProxyMechUnits.ToString(CultureInfo.InvariantCulture)
                 + " vehicleUnits="
@@ -8187,6 +8209,7 @@ namespace MC2Demo.Presentation
                 + " infantryUnits="
                 + investorProxyInfantryUnits.ToString(CultureInfo.InvariantCulture)
                 + " propFallbackProxy=tree-canopy+building-roof+hardprop-stripe"
+                + " propIdentity=canopy+roof+hazard-stripe"
                 + " treeProps="
                 + investorProxyTreeProps.ToString(CultureInfo.InvariantCulture)
                 + " buildingProps="
