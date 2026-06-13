@@ -228,6 +228,7 @@ $f73PcRouteEvidenceRefreshScript = Resolve-RepoPath -RelativePath "scripts\unity
 $f74PcRouteEvidenceRefreshAuditScript = Resolve-RepoPath -RelativePath "scripts\unity\audit_f74_pc_route_evidence_refresh.ps1"
 $f75PcRouteAuditFixesScript = Resolve-RepoPath -RelativePath "scripts\unity\check_f75_pc_route_audit_fixes.ps1"
 $f76PcRouteEvidenceRefreshScript = Resolve-RepoPath -RelativePath "scripts\unity\check_f76_pc_route_evidence_refresh.ps1"
+$f77PcRouteEvidenceRefreshAuditScript = Resolve-RepoPath -RelativePath "scripts\unity\audit_f77_pc_route_evidence_refresh.ps1"
 $serverBackedReceiptSlicePlanScript = Resolve-RepoPath -RelativePath "scripts\unity\check_server_backed_receipt_slice_plan.ps1"
 $serverBackedReceiptEvidenceScript = Resolve-RepoPath -RelativePath "scripts\unity\capture_server_backed_receipt_evidence.ps1"
 $postReceiptInventoryRefreshBoundaryScript = Resolve-RepoPath -RelativePath "scripts\unity\check_post_receipt_inventory_refresh_boundary.ps1"
@@ -820,6 +821,12 @@ Invoke-GateStep `
     -ScriptPath $f76PcRouteEvidenceRefreshScript `
     -Arguments @("-RepoRoot", $RepoRoot, "-PlanOnly") `
     -RequiredMarkers @("F76 PC route evidence refresh plan OK.")
+
+Invoke-GateStep `
+    -Name "F77 PC route evidence refresh audit plan gate" `
+    -ScriptPath $f77PcRouteEvidenceRefreshAuditScript `
+    -Arguments @("-RepoRoot", $RepoRoot, "-PlanOnly") `
+    -RequiredMarkers @("F77 PC route evidence refresh audit plan OK.")
 
 Invoke-GateStep `
     -Name "Server-backed receipt slice plan gate" `
