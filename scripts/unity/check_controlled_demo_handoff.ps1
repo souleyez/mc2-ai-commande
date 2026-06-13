@@ -150,6 +150,9 @@ Assert-ScriptExists -RelativePath "scripts\unity\audit_pc_controlled_demo_visual
 Assert-ScriptExists -RelativePath "scripts\unity\check_pc_controlled_demo_visual_readability_fixes.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\capture_pc_controlled_demo_visual_evidence.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\audit_pc_controlled_demo_command_readability_formation.ps1"
+Assert-ScriptExists -RelativePath "scripts\unity\check_pc_controlled_demo_command_readability_fixes.ps1"
+Assert-ScriptExists -RelativePath "scripts\unity\capture_pc_controlled_demo_command_evidence.ps1"
+Assert-ScriptExists -RelativePath "scripts\unity\audit_pc_controlled_demo_playable_flow_polish.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_server_backed_receipt_slice_plan.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\capture_server_backed_receipt_evidence.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_post_receipt_inventory_refresh_boundary.ps1"
@@ -334,6 +337,9 @@ Assert-FileContains -RelativePath "README.md" -Markers @(
     "capture_pc_controlled_demo_command_evidence.ps1",
     "PC controlled-demo command evidence refresh OK",
     "F35 audit post-F34 PC controlled-demo playable flow polish",
+    "audit_pc_controlled_demo_playable_flow_polish.ps1",
+    "PC controlled-demo playable flow polish audit OK",
+    "F36 implement post-F34 PC controlled-demo playable flow polish fixes",
     "Add Android WPD-only device diagnosis",
     "Add Android ADB setup guidance",
     "Add Android ADB driver package probe",
@@ -537,6 +543,9 @@ Assert-FileContains -RelativePath "BUILD-WIN.md" -Markers @(
     "capture_pc_controlled_demo_command_evidence.ps1",
     "PC controlled-demo command evidence refresh OK",
     "F35 audit post-F34 PC controlled-demo playable flow polish",
+    "audit_pc_controlled_demo_playable_flow_polish.ps1",
+    "PC controlled-demo playable flow polish audit OK",
+    "F36 implement post-F34 PC controlled-demo playable flow polish fixes",
     "Controlled demo readiness preflight OK"
 )
 
@@ -680,6 +689,9 @@ Assert-FileContains -RelativePath "BUILD-MOBILE.md" -Markers @(
     "capture_pc_controlled_demo_command_evidence.ps1",
     "PC controlled-demo command evidence refresh OK",
     "F35 audit post-F34 PC controlled-demo playable flow polish",
+    "audit_pc_controlled_demo_playable_flow_polish.ps1",
+    "PC controlled-demo playable flow polish audit OK",
+    "F36 implement post-F34 PC controlled-demo playable flow polish fixes",
     "first phone version is landscape-only",
     "check_android_smoke_plan_consistency.ps1",
     "Android smoke plan/preflight consistency check OK",
@@ -1260,6 +1272,9 @@ Assert-FileContains -RelativePath "docs-machine-handoff-plan-2026-06-07.md" -Mar
     "capture_pc_controlled_demo_command_evidence.ps1",
     "PC controlled-demo command evidence refresh OK",
     "F35 audit post-F34 PC controlled-demo playable flow polish",
+    "audit_pc_controlled_demo_playable_flow_polish.ps1",
+    "PC controlled-demo playable flow polish audit OK",
+    "F36 implement post-F34 PC controlled-demo playable flow polish fixes",
     "first phone version is landscape-only",
     "android-device-smoke.png",
     "ScreenshotCapture: True",

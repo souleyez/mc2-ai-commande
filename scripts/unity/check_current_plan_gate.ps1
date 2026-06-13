@@ -188,6 +188,7 @@ $pcControlledDemoVisualEvidenceScript = Resolve-RepoPath -RelativePath "scripts\
 $pcControlledDemoCommandReadabilityAuditScript = Resolve-RepoPath -RelativePath "scripts\unity\audit_pc_controlled_demo_command_readability_formation.ps1"
 $pcControlledDemoCommandReadabilityFixesScript = Resolve-RepoPath -RelativePath "scripts\unity\check_pc_controlled_demo_command_readability_fixes.ps1"
 $pcControlledDemoCommandEvidenceScript = Resolve-RepoPath -RelativePath "scripts\unity\capture_pc_controlled_demo_command_evidence.ps1"
+$pcControlledDemoPlayableFlowAuditScript = Resolve-RepoPath -RelativePath "scripts\unity\audit_pc_controlled_demo_playable_flow_polish.ps1"
 $serverBackedReceiptSlicePlanScript = Resolve-RepoPath -RelativePath "scripts\unity\check_server_backed_receipt_slice_plan.ps1"
 $serverBackedReceiptEvidenceScript = Resolve-RepoPath -RelativePath "scripts\unity\capture_server_backed_receipt_evidence.ps1"
 $postReceiptInventoryRefreshBoundaryScript = Resolve-RepoPath -RelativePath "scripts\unity\check_post_receipt_inventory_refresh_boundary.ps1"
@@ -540,6 +541,12 @@ Invoke-GateStep `
     -ScriptPath $pcControlledDemoCommandEvidenceScript `
     -Arguments @("-RepoRoot", $RepoRoot, "-PlanOnly") `
     -RequiredMarkers @("PC controlled-demo command evidence refresh plan OK.")
+
+Invoke-GateStep `
+    -Name "PC controlled-demo playable flow polish audit plan gate" `
+    -ScriptPath $pcControlledDemoPlayableFlowAuditScript `
+    -Arguments @("-RepoRoot", $RepoRoot, "-PlanOnly") `
+    -RequiredMarkers @("PC controlled-demo playable flow polish audit plan OK.")
 
 Invoke-GateStep `
     -Name "Server-backed receipt slice plan gate" `

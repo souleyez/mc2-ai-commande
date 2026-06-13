@@ -384,8 +384,8 @@ Require-Text -Text $mobilePlan -Needle "F20 refresh Android landscape build/smok
 Require-Text -Text $mobilePlan -Needle "F23 capture landscape MechLab touch evidence" -Label "mobile completed task"
 Require-Text -Text $mobilePlan -Needle "F24 capture Android MechLab touch evidence" -Label "mobile next task"
 Require-Text -Text $mobilePlan -Needle "first phone version is landscape-only" -Label "mobile landscape invariant"
-Require-Text -Text $handoff -Needle 'Current formal next development task after handoff: `F35 audit post-F34 PC controlled-demo playable flow polish`' -Label "handoff next task"
-Require-Text -Text $handoff -Needle 'Next planned work: `F35 audit post-F34 PC controlled-demo playable flow polish`' -Label "handoff next planned work"
+Require-Text -Text $handoff -Needle 'Current formal next development task after handoff: `F36 implement post-F34 PC controlled-demo playable flow polish fixes`' -Label "handoff next task"
+Require-Text -Text $handoff -Needle 'Next planned work: `F36 implement post-F34 PC controlled-demo playable flow polish fixes`' -Label "handoff next planned work"
 
 if ($failures.Count -eq 0) {
     $serverStarted = $false
