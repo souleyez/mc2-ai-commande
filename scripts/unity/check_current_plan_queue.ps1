@@ -81,7 +81,7 @@ function Assert-DoesNotContain {
 }
 
 $requiredPlanMarkers = @(
-    "PC1-PC67",
+    "PC1-PC68",
     "Add Android ADB driver package probe",
     "WpdOnlyAndroidProbe: True",
     "AdbSetupHint: True",
@@ -261,7 +261,8 @@ Assert-Contains -Text $mobilePlan -Needle "F64 refresh PC controlled-demo invest
 Assert-Contains -Text $mobilePlan -Needle "F65 audit post-F64 PC controlled-demo investor route evidence refresh" -Label "mobile completed platform task"
 Assert-Contains -Text $mobilePlan -Needle "F66 implement post-F65 PC controlled-demo investor route evidence refresh audit fixes" -Label "mobile completed platform task"
 Assert-Contains -Text $mobilePlan -Needle "F67 refresh PC controlled-demo investor route evidence after F65 audit fixes" -Label "mobile completed platform task"
-Assert-Contains -Text $mobilePlan -Needle "F68 audit post-F67 PC controlled-demo investor route evidence refresh" -Label "mobile next task"
+Assert-Contains -Text $mobilePlan -Needle "F68 audit post-F67 PC controlled-demo investor route evidence refresh" -Label "mobile completed platform task"
+Assert-Contains -Text $mobilePlan -Needle "F69 implement post-F68 PC controlled-demo investor route evidence refresh audit fixes" -Label "mobile next task"
 Assert-Contains -Text $mobilePlan -Needle "first phone version is landscape-only" -Label "mobile orientation decision"
 Assert-Contains -Text $mobilePlan -Needle "horizontal phone game" -Label "mobile horizontal phone version decision"
 
@@ -332,11 +333,12 @@ Assert-Contains -Text $detailedPlan -Needle '| F64 | Done | `Refresh PC controll
 Assert-Contains -Text $detailedPlan -Needle '| F65 | Done | `Audit post-F64 PC controlled-demo investor route evidence refresh` |' -Label "detailed queue F65"
 Assert-Contains -Text $detailedPlan -Needle '| F66 | Done | `Implement post-F65 PC controlled-demo investor route evidence refresh audit fixes` |' -Label "detailed queue F66"
 Assert-Contains -Text $detailedPlan -Needle '| F67 | Done | `Refresh PC controlled-demo investor route evidence after F65 audit fixes` |' -Label "detailed queue F67"
-Assert-Contains -Text $detailedPlan -Needle '| F68 | Next | `Audit post-F67 PC controlled-demo investor route evidence refresh` |' -Label "detailed queue F68"
+Assert-Contains -Text $detailedPlan -Needle '| F68 | Done | `Audit post-F67 PC controlled-demo investor route evidence refresh` |' -Label "detailed queue F68"
+Assert-Contains -Text $detailedPlan -Needle '| F69 | Next | `Implement post-F68 PC controlled-demo investor route evidence refresh audit fixes` |' -Label "detailed queue F69"
 
 $handoff = Read-RequiredText -RelativePath "docs-machine-handoff-plan-2026-06-07.md"
-Assert-Contains -Text $handoff -Needle 'Current formal next development task after handoff: `F68 audit post-F67 PC controlled-demo investor route evidence refresh`' -Label "handoff next task"
-Assert-Contains -Text $handoff -Needle 'Next planned work: `F68 audit post-F67 PC controlled-demo investor route evidence refresh`' -Label "handoff next planned work"
+Assert-Contains -Text $handoff -Needle 'Current formal next development task after handoff: `F69 implement post-F68 PC controlled-demo investor route evidence refresh audit fixes`' -Label "handoff next task"
+Assert-Contains -Text $handoff -Needle 'Next planned work: `F69 implement post-F68 PC controlled-demo investor route evidence refresh audit fixes`' -Label "handoff next planned work"
 
 $currentGate = Read-RequiredText -RelativePath "scripts\unity\check_current_plan_gate.ps1"
 Assert-Contains -Text $currentGate -Needle 'CommandFileSmoke: True' -Label "current gate script marker"
@@ -567,7 +569,10 @@ Assert-Contains -Text $handoffScript -Needle 'PC controlled-demo investor route 
 Assert-Contains -Text $handoffScript -Needle 'F67 refresh PC controlled-demo investor route evidence after F65 audit fixes' -Label "handoff script F67 completed task marker"
 Assert-Contains -Text $handoffScript -Needle 'check_pc_controlled_demo_investor_route_evidence_audit_fix_refresh_audit_fix_refresh_audit_fix_refresh_audit_fix_refresh_audit_fix_refresh_audit_fix_refresh_audit_fix_refresh.ps1' -Label "handoff script F67 investor route evidence audit fix refresh audit fix refresh audit fix refresh audit fix refresh audit fix refresh audit fix refresh audit fix refresh script marker"
 Assert-Contains -Text $handoffScript -Needle 'PC controlled-demo investor route evidence audit fix refresh audit fix refresh audit fix refresh audit fix refresh audit fix refresh audit fix refresh audit fix refresh check OK' -Label "handoff script F67 investor route evidence audit fix refresh audit fix refresh audit fix refresh audit fix refresh audit fix refresh audit fix refresh audit fix refresh marker"
-Assert-Contains -Text $handoffScript -Needle 'F68 audit post-F67 PC controlled-demo investor route evidence refresh' -Label "handoff script F68 next task marker"
+Assert-Contains -Text $handoffScript -Needle 'F68 audit post-F67 PC controlled-demo investor route evidence refresh' -Label "handoff script F68 completed task marker"
+Assert-Contains -Text $handoffScript -Needle 'audit_pc_controlled_demo_investor_route_evidence_audit_fix_refresh_audit_fix_refresh_audit_fix_refresh_audit_fix_refresh_audit_fix_refresh_audit_fix_refresh_audit_fix_refresh_audit.ps1' -Label "handoff script F68 investor route evidence audit fix refresh audit fix refresh audit fix refresh audit fix refresh audit fix refresh audit fix refresh audit fix refresh audit script marker"
+Assert-Contains -Text $handoffScript -Needle 'PC controlled-demo investor route evidence audit fix refresh audit fix refresh audit fix refresh audit fix refresh audit fix refresh audit fix refresh audit fix refresh audit OK' -Label "handoff script F68 investor route evidence audit fix refresh audit fix refresh audit fix refresh audit fix refresh audit fix refresh audit fix refresh audit fix refresh audit marker"
+Assert-Contains -Text $handoffScript -Needle 'F69 implement post-F68 PC controlled-demo investor route evidence refresh audit fixes' -Label "handoff script F69 next task marker"
 Assert-Contains -Text $handoffScript -Needle 'Server-backed receipt slice plan check OK' -Label "handoff script server-backed receipt slice marker"
 Assert-Contains -Text $handoffScript -Needle 'Server-backed receipt evidence capture OK' -Label "handoff script server-backed receipt evidence marker"
 Assert-Contains -Text $handoffScript -Needle 'Post-receipt inventory refresh boundary check OK' -Label "handoff script post-receipt inventory refresh marker"
