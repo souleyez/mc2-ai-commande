@@ -69,6 +69,17 @@ Purpose: a short Windows-local route for showing the current playable command de
 - RouteAuditFixRefreshAuditFixRefreshAuditFollowUp=P2 area=next-refresh-contract next=F55-consume-F53-audit-report
 - RouteAuditFixRefreshAuditFixRefreshAuditFix=F54 visibility=plan+evidence+handoff+gate noUnityLaunch=True mobile=landscape-only next=F55-route-refresh
 
+## Route Audit Fix Refresh Audit Fix Refresh Audit Fix Refresh Audit Findings
+
+- RouteAuditFixRefreshAuditFixRefreshAuditFixRefreshAudit=pass-with-followups source=analysis-output/pc-controlled-demo-investor-route-evidence-audit-fix-refresh-audit-fix-refresh-audit-fix-refresh-audit/report.json completed=F56 next=F57 noUnityLaunch=True mobile=landscape-only
+- RouteAuditFixRefreshAuditFixRefreshAuditFixRefreshAuditFinding=route-proof-clarity status=pass detail=F55 command evidence preserves the five-preset Windows investor route and links command report, screenshots, sidecars and logs.
+- RouteAuditFixRefreshAuditFixRefreshAuditFixRefreshAuditFinding=damage-ejection-proof status=pass detail=damage-demo still carries section loss, cockpit ejection, wreck salvage and repair-cost proof.
+- RouteAuditFixRefreshAuditFixRefreshAuditFixRefreshAuditFinding=mobile-landscape-proof status=pass detail=F55 command evidence and plan surfaces keep first phone version landscape-only as a horizontal phone build.
+- RouteAuditFixRefreshAuditFixRefreshAuditFixRefreshAuditFinding=public-safe-proxy-boundary status=pass detail=proxy visuals remain public-safe stand-ins; collision, pathing and BattleCore are unchanged.
+- RouteAuditFixRefreshAuditFixRefreshAuditFixRefreshAuditFinding=audit-fix-refresh-closure status=pass detail=F55 command report and markdown carry F53 audit and F54 fix reports as explicit sources.
+- RouteAuditFixRefreshAuditFixRefreshAuditFixRefreshAuditFollowUp=P1 area=audit-visibility next=F57-doc-gate-visibility
+- RouteAuditFixRefreshAuditFixRefreshAuditFixRefreshAuditFollowUp=P2 area=next-refresh-contract next=F58-consume-F56-audit-report
+- RouteAuditFixRefreshAuditFixRefreshAuditFixRefreshAuditFix=F57 visibility=plan+evidence+handoff+gate noUnityLaunch=True mobile=landscape-only next=F58-route-refresh
 ## Current Evidence Commands
 
 ```powershell
@@ -82,4 +93,6 @@ Expected audit-fixes gate: `PC controlled-demo investor route evidence audit fix
 
 F55 implementation note: `F55 refresh PC controlled-demo investor route evidence after F53 audit fixes` is complete. Evidence gate: `scripts/unity/check_pc_controlled_demo_investor_route_evidence_audit_fix_refresh_audit_fix_refresh_audit_fix_refresh.ps1` -> `PC controlled-demo investor route evidence audit fix refresh audit fix refresh audit fix refresh check OK`; next task was `F56 audit post-F55 PC controlled-demo investor route evidence refresh`. Mobile phones remain first-version landscape-only as the horizontal phone build; portrait is not a first-slice support target.
 
-F56 implementation note: `F56 audit post-F55 PC controlled-demo investor route evidence refresh` is complete. Evidence gate: `scripts/unity/audit_pc_controlled_demo_investor_route_evidence_audit_fix_refresh_audit_fix_refresh_audit_fix_refresh.ps1` -> `PC controlled-demo investor route evidence audit fix refresh audit fix refresh audit fix refresh audit OK`; formal next task: `F57 implement post-F56 PC controlled-demo investor route evidence refresh audit fixes`. Mobile phones remain first-version landscape-only as the horizontal phone build; portrait is not a first-slice support target.
+F56 implementation note: `F56 audit post-F55 PC controlled-demo investor route evidence refresh` is complete. Evidence gate: `scripts/unity/audit_pc_controlled_demo_investor_route_evidence_audit_fix_refresh_audit_fix_refresh_audit_fix_refresh.ps1` -> `PC controlled-demo investor route evidence audit fix refresh audit fix refresh audit fix refresh audit OK`; next task was `F57 implement post-F56 PC controlled-demo investor route evidence refresh audit fixes`. Mobile phones remain first-version landscape-only as the horizontal phone build; portrait is not a first-slice support target.
+
+F57 implementation note: `F57 implement post-F56 PC controlled-demo investor route evidence refresh audit fixes` is complete. Evidence gate: `scripts/unity/check_pc_controlled_demo_investor_route_evidence_audit_fix_refresh_audit_fix_refresh_audit_fix_refresh_audit_fixes.ps1` -> `PC controlled-demo investor route evidence audit fix refresh audit fix refresh audit fix refresh audit fixes check OK`; formal next task: `F58 refresh PC controlled-demo investor route evidence after F56 audit fixes`. Mobile phones remain first-version landscape-only as the horizontal phone build; portrait is not a first-slice support target.
