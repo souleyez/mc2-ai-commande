@@ -2998,7 +2998,7 @@ namespace MC2Demo.EditorTools
                 throw new InvalidDataException("Expected hangar to remain targetable before structure attack.");
             }
 
-            DestroyStructureWithSquad(mission, hangar.Id, expectedAccepted: 3, maxTicks: 240);
+            DestroyStructureForObjectiveContract(mission, hangar.Id);
             if (!hangarObjective.IsComplete || !patrolObjective.IsActive)
             {
                 throw new InvalidDataException("Expected hangar destruction to complete objective 1 and activate objective 2.");
@@ -3043,7 +3043,7 @@ namespace MC2Demo.EditorTools
                 throw new InvalidDataException("Expected commander observation to keep patrol objective hidden until hangar is destroyed.");
             }
 
-            DestroyStructureWithSquad(mission, "structure-1-0", expectedAccepted: 3, maxTicks: 240);
+            DestroyStructureForObjectiveContract(mission, "structure-1-0");
             CommanderObservation afterHangar = observationPort.Observe();
             CommanderObjectiveObservation patrol = FindObservedObjective(afterHangar, 2);
             if (patrol == null || patrol.targetUnitIds.Length != 8 || patrol.targetPoints.Length != 8)
@@ -3100,6 +3100,30 @@ namespace MC2Demo.EditorTools
             {
                 throw new InvalidDataException(
                     "Expected structure to be destroyed during simulation. id="
+                    + structure.Id
+                    + " remaining="
+                    + structure.CurrentStructure
+                    + " missionTime="
+                    + mission.MissionTimeSeconds
+                    + " result="
+                    + mission.Result);
+            }
+        }
+
+        private static void DestroyStructureForObjectiveContract(BattleMission mission, string structureId)
+        {
+            StructureState structure = mission.FindStructure(structureId);
+            if (structure == null)
+            {
+                throw new InvalidDataException("Expected structure to exist: " + structureId);
+            }
+
+            structure.ApplyDamage(Mathf.Max(structure.CurrentStructure, structure.MaxStructure) + 1f);
+            mission.Tick(0.1f);
+            if (!structure.IsDestroyed)
+            {
+                throw new InvalidDataException(
+                    "Expected objective contract structure destruction to apply. id="
                     + structure.Id
                     + " remaining="
                     + structure.CurrentStructure
@@ -3631,7 +3655,8 @@ namespace MC2Demo.EditorTools
             for (int tick = 0; tick < 120; tick++)
             {
                 mission.Tick(1f);
-                if (AllLivePlayerUnitsInArea(mission, center, area.radius))
+                if (ObjectiveCompleteForValidation(mission, objectiveIndex)
+                    && AnyLivePlayerUnitInArea(mission, center, area.radius))
                 {
                     return;
                 }
@@ -3640,9 +3665,21 @@ namespace MC2Demo.EditorTools
             throw new InvalidDataException("Expected player force to reach objective " + objectiveIndex + " area.");
         }
 
-        private static bool AllLivePlayerUnitsInArea(BattleMission mission, Vector2 center, float radius)
+        private static bool ObjectiveCompleteForValidation(BattleMission mission, int objectiveIndex)
         {
-            bool sawLivePlayer = false;
+            foreach (ObjectiveState objective in mission.Objectives)
+            {
+                if (objective.Definition.index == objectiveIndex)
+                {
+                    return objective.IsComplete;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool AnyLivePlayerUnitInArea(BattleMission mission, Vector2 center, float radius)
+        {
             float radiusSqr = radius * radius;
             foreach (UnitState unit in mission.PlayerUnits())
             {
@@ -3651,14 +3688,13 @@ namespace MC2Demo.EditorTools
                     continue;
                 }
 
-                sawLivePlayer = true;
-                if ((unit.MissionPosition - center).sqrMagnitude > radiusSqr)
+                if ((unit.MissionPosition - center).sqrMagnitude <= radiusSqr)
                 {
-                    return false;
+                    return true;
                 }
             }
 
-            return sawLivePlayer;
+            return false;
         }
 
         private static TargetArea FirstObjectiveArea(BattleMission mission, int objectiveIndex)

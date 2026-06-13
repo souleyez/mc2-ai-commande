@@ -1,0 +1,269 @@
+param(
+    [string]$RepoRoot = "",
+    [string]$EvidenceDir = "",
+    [string]$OutputDir = "",
+    [int]$Width = 1280,
+    [int]$Height = 720,
+    [int]$CaptureTimeoutSeconds = 90,
+    [switch]$SkipRun,
+    [switch]$PlanOnly
+)
+
+Set-StrictMode -Version Latest
+$ErrorActionPreference = "Stop"
+
+if ([string]::IsNullOrWhiteSpace($RepoRoot)) {
+    $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
+}
+else {
+    $RepoRoot = (Resolve-Path -LiteralPath $RepoRoot).Path
+}
+
+if ([string]::IsNullOrWhiteSpace($EvidenceDir)) {
+    $EvidenceDir = Join-Path $RepoRoot "analysis-output\pc-controlled-demo-visual-evidence"
+}
+elseif (-not [System.IO.Path]::IsPathRooted($EvidenceDir)) {
+    $EvidenceDir = Join-Path $RepoRoot $EvidenceDir
+}
+
+if ([string]::IsNullOrWhiteSpace($OutputDir)) {
+    $OutputDir = Join-Path $RepoRoot "analysis-output\pc-controlled-demo-command-evidence"
+}
+elseif (-not [System.IO.Path]::IsPathRooted($OutputDir)) {
+    $OutputDir = Join-Path $RepoRoot $OutputDir
+}
+
+$repoFullPath = [System.IO.Path]::GetFullPath($RepoRoot).TrimEnd("\", "/")
+$EvidenceDir = [System.IO.Path]::GetFullPath($EvidenceDir)
+$OutputDir = [System.IO.Path]::GetFullPath($OutputDir)
+foreach ($candidate in @($EvidenceDir, $OutputDir)) {
+    if (-not $candidate.StartsWith($repoFullPath, [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "Path must stay inside RepoRoot: $candidate"
+    }
+}
+
+$captureDir = Join-Path $EvidenceDir "captures"
+$visualEvidenceReportPath = Join-Path $EvidenceDir "pc-controlled-demo-visual-evidence.json"
+$reportJsonPath = Join-Path $OutputDir "pc-controlled-demo-command-evidence.json"
+$reportMarkdownPath = Join-Path $OutputDir "pc-controlled-demo-command-evidence.md"
+$visualEvidenceScript = Join-Path $RepoRoot "scripts\unity\capture_pc_controlled_demo_visual_evidence.ps1"
+$windowsBuildFreshnessScript = Join-Path $RepoRoot "scripts\unity\check_windows_demo_build_freshness.ps1"
+$requiredPresets = @("spawn", "hangar-contact", "damage-demo", "solo-order")
+$rows = New-Object System.Collections.Generic.List[object]
+
+function Resolve-RepoPath {
+    param([string]$RelativePath)
+    return Join-Path $RepoRoot ($RelativePath -replace "/", "\")
+}
+
+function Convert-ToRepoRelativePath {
+    param([string]$Path)
+
+    $fullPath = [System.IO.Path]::GetFullPath($Path)
+    if ($fullPath.StartsWith($repoFullPath, [System.StringComparison]::OrdinalIgnoreCase)) {
+        return ($fullPath.Substring($repoFullPath.Length).TrimStart("\", "/") -replace "\\", "/")
+    }
+
+    return $fullPath
+}
+
+function Require-File {
+    param(
+        [string]$Path,
+        [string]$Label
+    )
+
+    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
+        throw "Missing $Label`: $Path"
+    }
+}
+
+function Require-Text {
+    param(
+        [string]$Text,
+        [string]$Needle,
+        [string]$Label
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Text) -or -not $Text.Contains($Needle)) {
+        throw "$Label missing '$Needle': $Text"
+    }
+}
+
+function Read-RequiredText {
+    param([string]$RelativePath)
+
+    $path = Resolve-RepoPath -RelativePath $RelativePath
+    Require-File -Path $path -Label $RelativePath
+    return Get-Content -LiteralPath $path -Raw -Encoding UTF8
+}
+
+function Assert-SourceMarkers {
+    $mission = Read-RequiredText -RelativePath "unity-mc2-demo\Assets\Scripts\BattleCore\BattleMission.cs"
+    Require-Text -Text $mission -Needle "SquadMoveFormationSpacing = 320f" -Label "BattleMission move formation"
+    Require-Text -Text $mission -Needle "SquadAttackFormationSpacing = 340f" -Label "BattleMission attack formation"
+
+    $bootstrap = Read-RequiredText -RelativePath "unity-mc2-demo\Assets\Scripts\Presentation\Mc2DemoBootstrap.cs"
+    foreach ($marker in @(
+        'CapturePresetSoloOrder = "solo-order"',
+        "CommandReadability=all+single+jet+focus+commander-follow+formation",
+        "CommandCuePalette=command-blue+target-red+damage-amber+hostile-magenta",
+        "CommanderFollow=unit-1+first-sort+fixed-view",
+        "formation=move-320+attack-340"
+    )) {
+        Require-Text -Text $bootstrap -Needle $marker -Label "Mc2DemoBootstrap command evidence source"
+    }
+}
+
+function Test-Sidecar {
+    param(
+        [string]$Preset,
+        [object]$Sidecar
+    )
+
+    if ([string]$Sidecar.flowScreen -ne "Battle") {
+        throw "$Preset expected Battle flow, got $($Sidecar.flowScreen)"
+    }
+
+    if ([int]$Sidecar.screenWidth -ne $Width -or [int]$Sidecar.screenHeight -ne $Height) {
+        throw "$Preset expected ${Width}x${Height}, got $($Sidecar.screenWidth)x$($Sidecar.screenHeight)"
+    }
+
+    $command = [string]$Sidecar.commandReadability
+    Require-Text -Text $command -Needle "CommandReadability=all+single+jet+focus+commander-follow+formation" -Label "$Preset commandReadability"
+    Require-Text -Text $command -Needle "formation=move-320+attack-340" -Label "$Preset commandReadability"
+    Require-Text -Text $command -Needle "CommandCuePalette=command-blue+target-red+damage-amber+hostile-magenta" -Label "$Preset commandReadability"
+
+    $commander = [string]$Sidecar.commanderFollow
+    Require-Text -Text $commander -Needle "CommanderFollow=unit-1+first-sort+fixed-view" -Label "$Preset commanderFollow"
+    Require-Text -Text $commander -Needle "unit=unit-1" -Label "$Preset commanderFollow"
+    Require-Text -Text $commander -Needle "sortedIndex=1" -Label "$Preset commanderFollow"
+
+    if ($Preset -eq "solo-order") {
+        Require-Text -Text $command -Needle "solo=1" -Label "$Preset commandReadability"
+        Require-Text -Text $command -Needle "SoloOrder=ring+beacon" -Label "$Preset commandReadability"
+        Require-Text -Text $command -Needle "SoloReturn=ring+beacon" -Label "$Preset commandReadability"
+        if ([int]$Sidecar.activeHostileCount -ne 0) {
+            throw "solo-order should remain a command-isolation capture without active hostiles: $($Sidecar.activeHostileCount)"
+        }
+    }
+
+    if ($Preset -eq "hangar-contact" -or $Preset -eq "damage-demo") {
+        if ([int]$Sidecar.activeHostileCount -le 0 -or [int]$Sidecar.visibleHostileCount -le 0) {
+            throw "$Preset expected active and visible hostile contact."
+        }
+    }
+
+    if ($Preset -eq "damage-demo") {
+        Require-Text -Text ([string]$Sidecar.damageReadability) -Needle "cuePalette=command-blue target-red damage-amber hostile-magenta pilot-cyan" -Label "$Preset damageReadability"
+    }
+
+    return [pscustomobject]@{
+        preset = $Preset
+        screenshot = Convert-ToRepoRelativePath -Path (Join-Path $captureDir "$Preset.png")
+        sidecar = Convert-ToRepoRelativePath -Path (Join-Path $captureDir "$Preset.json")
+        log = Convert-ToRepoRelativePath -Path (Join-Path $captureDir "$Preset.log")
+        activeHostiles = [int]$Sidecar.activeHostileCount
+        visibleHostiles = [int]$Sidecar.visibleHostileCount
+        commandReadability = $command
+        commanderFollow = $commander
+    }
+}
+
+Require-File -Path $visualEvidenceScript -Label "PC visual evidence script"
+Require-File -Path $windowsBuildFreshnessScript -Label "Windows build freshness script"
+
+if ($PlanOnly) {
+    Write-Host "PC controlled-demo command evidence refresh plan OK."
+    Write-Host "Repo: $RepoRoot"
+    Write-Host "EvidenceDir: $EvidenceDir"
+    Write-Host "OutputDir: $OutputDir"
+    Write-Host "Presets: $($requiredPresets -join ',')"
+    Write-Host "WidthHeight: ${Width}x${Height}"
+    return
+}
+
+& $windowsBuildFreshnessScript -RepoRoot $RepoRoot
+if ($LASTEXITCODE -ne 0) {
+    throw "Windows build freshness check failed before command evidence refresh."
+}
+
+New-Item -ItemType Directory -Force -Path $OutputDir | Out-Null
+
+if ($SkipRun) {
+    & $visualEvidenceScript `
+        -RepoRoot $RepoRoot `
+        -OutputDir $EvidenceDir `
+        -Presets $requiredPresets `
+        -Width $Width `
+        -Height $Height `
+        -CaptureTimeoutSeconds $CaptureTimeoutSeconds `
+        -SkipRun
+}
+else {
+    & $visualEvidenceScript `
+        -RepoRoot $RepoRoot `
+        -OutputDir $EvidenceDir `
+        -Presets $requiredPresets `
+        -Width $Width `
+        -Height $Height `
+        -CaptureTimeoutSeconds $CaptureTimeoutSeconds
+}
+if ($LASTEXITCODE -ne 0) {
+    throw "PC controlled-demo visual evidence refresh failed before command evidence report."
+}
+
+Require-File -Path $visualEvidenceReportPath -Label "PC visual evidence report"
+$visualReport = Get-Content -LiteralPath $visualEvidenceReportPath -Raw -Encoding UTF8 | ConvertFrom-Json
+if ([string]$visualReport.result -ne "pass") {
+    throw "PC visual evidence report did not pass: $visualEvidenceReportPath"
+}
+
+Assert-SourceMarkers
+
+foreach ($preset in $requiredPresets) {
+    $pngPath = Join-Path $captureDir "$preset.png"
+    $jsonPath = Join-Path $captureDir "$preset.json"
+    $logPath = Join-Path $captureDir "$preset.log"
+    Require-File -Path $pngPath -Label "$preset screenshot"
+    Require-File -Path $jsonPath -Label "$preset sidecar"
+    Require-File -Path $logPath -Label "$preset log"
+    $sidecar = Get-Content -LiteralPath $jsonPath -Raw -Encoding UTF8 | ConvertFrom-Json
+    [void]$rows.Add((Test-Sidecar -Preset $preset -Sidecar $sidecar))
+}
+
+$report = [pscustomobject]@{
+    schema = "PCControlledDemoCommandEvidenceRefresh"
+    result = "pass"
+    timestampUtc = (Get-Date).ToUniversalTime().ToString("o")
+    completedTask = "F34 refresh PC controlled-demo command evidence after readability fixes"
+    nextFormalTask = "F35 audit post-F34 PC controlled-demo playable flow polish"
+    width = $Width
+    height = $Height
+    sourceVisualEvidenceReport = Convert-ToRepoRelativePath -Path $visualEvidenceReportPath
+    captureDir = Convert-ToRepoRelativePath -Path $captureDir
+    evidence = $rows
+}
+$report | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $reportJsonPath -Encoding UTF8
+
+$markdownLines = New-Object System.Collections.Generic.List[string]
+[void]$markdownLines.Add("# PC Controlled Demo Command Evidence Refresh")
+[void]$markdownLines.Add("")
+[void]$markdownLines.Add("Result: pass")
+[void]$markdownLines.Add("")
+[void]$markdownLines.Add('Completed task: `F34 refresh PC controlled-demo command evidence after readability fixes`')
+[void]$markdownLines.Add('Next formal task: `F35 audit post-F34 PC controlled-demo playable flow polish`')
+[void]$markdownLines.Add("")
+[void]$markdownLines.Add("Source visual report: `"$(Convert-ToRepoRelativePath -Path $visualEvidenceReportPath)`"")
+[void]$markdownLines.Add("Capture directory: `"$(Convert-ToRepoRelativePath -Path $captureDir)`"")
+[void]$markdownLines.Add("")
+[void]$markdownLines.Add("| Preset | Active hostiles | Visible hostiles | Screenshot |")
+[void]$markdownLines.Add("| --- | ---: | ---: | --- |")
+foreach ($item in $rows) {
+    [void]$markdownLines.Add(("| {0} | {1} | {2} | `{3}` |" -f $item.preset, $item.activeHostiles, $item.visibleHostiles, $item.screenshot))
+}
+
+$markdownLines | Set-Content -LiteralPath $reportMarkdownPath -Encoding UTF8
+
+Write-Host "PC controlled-demo command evidence refresh OK."
+Write-Host "Report: $reportJsonPath"

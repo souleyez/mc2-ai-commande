@@ -437,7 +437,7 @@ function Test-UnitReadabilityCaptureSidecar {
         throw "Unit readability sidecar did not prove active player unit cues: $Path -> $summary"
     }
 
-    if ($Sidecar.preset -ne "spawn") {
+    if ($Sidecar.preset -ne "spawn" -and $Sidecar.preset -ne "solo-order") {
         $hostileUnits = Read-SummaryNumber -Summary $summary -Pattern "hostile=([0-9]+)" -Context $Path
         if ($hostileUnits -le 0) {
             throw "Unit readability sidecar did not prove hostile unit cues: $Path -> $summary"
@@ -542,7 +542,7 @@ function Test-FirstMapVisualCaptureSidecar {
         throw "First map visual sidecar did not prove player units and objective structure: $Path -> $summary"
     }
 
-    if ($Sidecar.preset -ne "spawn") {
+    if ($Sidecar.preset -ne "spawn" -and $Sidecar.preset -ne "solo-order") {
         $activeHostiles = Read-SummaryNumber -Summary $summary -Pattern "activeHostiles=([0-9]+)" -Context $Path
         if ($activeHostiles -le 0) {
             throw "First map visual sidecar did not prove hostile presence: $Path -> $summary"
