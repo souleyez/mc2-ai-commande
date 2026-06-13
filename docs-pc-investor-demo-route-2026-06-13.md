@@ -303,3 +303,17 @@ F78 implementation note: `F78 implement post-F77 PC controlled-demo investor rou
 - F79RouteEvidenceRefreshClosure=mobile-landscape status=preserved firstPhoneVersion=landscape-only portraitSupport=False
 
 F79 implementation note: `F79 refresh PC controlled-demo investor route evidence after F77 audit fixes` is complete. Evidence gate: `scripts/unity/check_f79_pc_route_evidence_refresh.ps1` -> `F79 PC route evidence refresh check OK.`; formal next task: `F80 audit post-F79 PC controlled-demo investor route evidence refresh`. Mobile phones remain first-version landscape-only as the horizontal phone build; portrait is not a first-slice support target.
+
+- F80RouteEvidenceAudit=pass-with-followups source=analysis-output/f80-pc-route-evidence-refresh-audit/report.json completed=F80 next=F81 noUnityLaunch=True mobile=landscape-only
+- F80RouteEvidenceAuditFinding=F79-traceability status=pass detail=F79 consumes F77 audit and F78 fixes
+- F80RouteEvidenceAuditFinding=route-proof-clarity status=pass detail=spawn>hangar-contact>damage-demo>solo-order>solo-return
+- F80RouteEvidenceAuditFinding=damage-ejection-proof status=pass detail=section-loss+cockpit-ejection+wreck-salvage+repair-line
+- F80RouteEvidenceAuditFinding=mobile-landscape-proof status=pass detail=first phone version remains landscape-only
+- F80RouteEvidenceAuditFinding=phone-horizontal-product-decision status=pass detail=phone-first-version-horizontal-only; portrait out of first slice
+- F80RouteEvidenceAuditFinding=public-safe-proxy-boundary status=pass detail=proxy-only visuals with unchanged collision/pathing
+- F80RouteEvidenceAuditFinding=windows-path-budget status=pass detail=F79 and F80 script/output paths stay short
+- F80RouteEvidenceAuditFollowUp=P1 area=audit-visibility next=F81-doc-gate-visibility
+- F80RouteEvidenceAuditFollowUp=P2 area=next-refresh-contract next=F82-consume-F80-audit-report
+- F80RouteEvidenceAuditFollowUp=P2 area=path-budget next=F81-keep-new-F-artifacts-short
+
+F80 implementation note: `F80 audit post-F79 PC controlled-demo investor route evidence refresh` is complete. Evidence gate: `scripts/unity/audit_f80_pc_route_evidence_refresh.ps1` -> `F80 PC route evidence refresh audit OK.`; formal next task: `F81 implement post-F80 PC controlled-demo investor route evidence refresh audit fixes`. Mobile phones remain first-version landscape-only as the horizontal phone build; portrait is not a first-slice support target.
