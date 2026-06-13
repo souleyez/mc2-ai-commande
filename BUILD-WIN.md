@@ -283,7 +283,7 @@ Check the current plan queue consistency without launching Unity:
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_current_plan_queue.ps1
 ```
 
-This confirms the current PC/mobile package is sealed through `PC1-PC77`, that
+This confirms the current PC/mobile package is sealed through `PC1-PC78`, that
 `Pass Android G3 device smoke`, the landscape `G4 Touch UI pass`,
 `G5 Mobile performance budget`, `G6 iOS feasibility gate`,
 `F2 map authoring contract`, `F3 web ranking contract`, and
@@ -312,7 +312,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\unity\check_androi
 This reads `adb devices -l` and reports no-device, unauthorized, offline,
 multiple-device or ready states without installing or launching the APK.
 
-Current wait-state checkpoint: `PC1-PC77`.
+Current wait-state checkpoint: `PC1-PC78`.
 
 Check the mobile landscape contract without launching Unity or the APK:
 
@@ -972,3 +972,13 @@ F76 implementation note: `F76 refresh PC controlled-demo investor route evidence
 - F77RouteEvidenceAuditFollowUp=P2 area=path-budget next=F78-keep-new-F-artifacts-short
 
 F77 implementation note: `F77 audit post-F76 PC controlled-demo investor route evidence refresh` is complete. Evidence gate: `scripts/unity/audit_f77_pc_route_evidence_refresh.ps1` -> `F77 PC route evidence refresh audit OK.`; formal next task: `F78 implement post-F77 PC controlled-demo investor route evidence refresh audit fixes`. Mobile phones remain first-version landscape-only as the horizontal phone build; portrait is not a first-slice support target.
+
+## F78 PC Route Evidence Audit Fixes
+
+- F78RouteEvidenceAuditFixes=pass source=analysis-output/f78-pc-route-audit-fixes/report.json completed=F78 next=F79 noUnityLaunch=True mobile=landscape-only
+- F78RouteEvidenceAuditClosure=F78-doc-gate-visibility status=closed surfaces=plan+evidence+handoff+gate sourceAudit=analysis-output/f77-pc-route-evidence-refresh-audit/report.json
+- F78RouteEvidenceAuditClosure=next-refresh-contract status=closed sourceAudit=analysis-output/f77-pc-route-evidence-refresh-audit/report.json sourceFixes=analysis-output/f78-pc-route-audit-fixes/report.json nextRefresh=F79-consume-F77-audit-report
+- F78RouteEvidenceAuditClosure=path-budget status=closed script=scripts/unity/check_f78_pc_route_audit_fixes.ps1 output=analysis-output/f78-pc-route-audit-fixes/
+- F78RouteEvidenceAuditClosure=mobile-landscape status=preserved firstPhoneVersion=landscape-only portraitSupport=False
+
+F78 implementation note: `F78 implement post-F77 PC controlled-demo investor route evidence refresh audit fixes` is complete. Evidence gate: `scripts/unity/check_f78_pc_route_audit_fixes.ps1` -> `F78 PC route audit fixes check OK.`; formal next task: `F79 refresh PC controlled-demo investor route evidence after F77 audit fixes`. Mobile phones remain first-version landscape-only as the horizontal phone build; portrait is not a first-slice support target.
