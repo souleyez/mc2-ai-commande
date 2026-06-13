@@ -248,6 +248,7 @@ namespace MC2Demo.Presentation
             public string commandCuePalette;
             public string commanderFollow;
             public string playableFlowPolish;
+            public string investorProxyVisuals;
             public VisualCaptureCameraState camera;
             public VisualCaptureReferenceState referenceAssets;
         }
@@ -440,8 +441,15 @@ namespace MC2Demo.Presentation
         private string lastReferencePropSummary = "ReferenceProps=not attempted";
         private string lastReferenceStructureSummary = "ReferenceStructures=not attempted";
         private string lastReferenceScaleSummary = "ReferenceScale=not attempted";
+        private string lastInvestorProxyVisualSummary = "InvestorProxyVisuals=not attempted";
         private string lastOcclusionFadeSummary = "OcclusionFade=not attempted";
         private string lastOccupancyPlaceholderSummary = "OccupancyPlaceholders=disabled";
+        private int investorProxyMechUnits;
+        private int investorProxyVehicleUnits;
+        private int investorProxyInfantryUnits;
+        private int investorProxyTreeProps;
+        private int investorProxyBuildingProps;
+        private int investorProxySmallProps;
         private Vector2 loadoutScroll;
         private Vector2 mechLabBayScroll;
         private int selectedMechLabBayPage;
@@ -652,6 +660,7 @@ namespace MC2Demo.Presentation
             ReferenceObjMeshLibrary.ResetScaleAudit();
             ReferencePropLibrary.ResetScaleAudit();
             lastReferenceScaleSummary = "ReferenceScale=collecting";
+            ResetInvestorProxyVisualCounters();
             CreateGround();
             CreateLights();
             CreateCamera();
@@ -662,6 +671,7 @@ namespace MC2Demo.Presentation
             lastReferenceScaleSummary = ReferenceObjMeshLibrary.ScaleAuditSummary()
                 + "; "
                 + ReferencePropLibrary.ScaleAuditSummary();
+            lastInvestorProxyVisualSummary = BuildCaptureInvestorProxyVisualSummary();
             CreateMarkers();
             CreateForests();
             CreateObjectiveAreas();
@@ -7189,6 +7199,7 @@ namespace MC2Demo.Presentation
                 commandCuePalette = CommandCuePaletteSummary(),
                 commanderFollow = BuildCaptureCommanderFollowSummary(),
                 playableFlowPolish = playableFlowPolishSummary,
+                investorProxyVisuals = BuildCaptureInvestorProxyVisualSummary(),
                 camera = BuildCaptureCameraState(),
                 referenceAssets = new VisualCaptureReferenceState
                 {
@@ -8148,6 +8159,42 @@ namespace MC2Demo.Presentation
                 + " evidence=unified-playable-flow"
                 + " mobileLandscapeOnly=True"
                 + " orientation=landscape";
+        }
+
+        private void ResetInvestorProxyVisualCounters()
+        {
+            investorProxyMechUnits = 0;
+            investorProxyVehicleUnits = 0;
+            investorProxyInfantryUnits = 0;
+            investorProxyTreeProps = 0;
+            investorProxyBuildingProps = 0;
+            investorProxySmallProps = 0;
+            lastInvestorProxyVisualSummary = "InvestorProxyVisuals=collecting";
+        }
+
+        private string BuildCaptureInvestorProxyVisualSummary()
+        {
+            int unitProxyCount = investorProxyMechUnits + investorProxyVehicleUnits + investorProxyInfantryUnits;
+            int propProxyCount = investorProxyTreeProps + investorProxyBuildingProps + investorProxySmallProps;
+            string state = unitProxyCount > 0 || propProxyCount > 0 ? "active" : "not-needed";
+            return "InvestorProxyVisuals="
+                + state
+                + " unitFallbackProxy=mech-silhouette+vehicle-hull+infantry-fireteam"
+                + " mechUnits="
+                + investorProxyMechUnits.ToString(CultureInfo.InvariantCulture)
+                + " vehicleUnits="
+                + investorProxyVehicleUnits.ToString(CultureInfo.InvariantCulture)
+                + " infantryUnits="
+                + investorProxyInfantryUnits.ToString(CultureInfo.InvariantCulture)
+                + " propFallbackProxy=tree-canopy+building-roof+hardprop-stripe"
+                + " treeProps="
+                + investorProxyTreeProps.ToString(CultureInfo.InvariantCulture)
+                + " buildingProps="
+                + investorProxyBuildingProps.ToString(CultureInfo.InvariantCulture)
+                + " smallProps="
+                + investorProxySmallProps.ToString(CultureInfo.InvariantCulture)
+                + " collision=unchanged pathing=unchanged BattleCore=unchanged publicSafe=proxy-only"
+                + " mobileLandscapeOnly=True";
         }
 
         private string BuildPlayableContactPressureCueSummary()
@@ -10928,6 +10975,7 @@ namespace MC2Demo.Presentation
                     unitObject,
                     unit.Id,
                     unit.IsPlayerUnit ? new Color(0.1f, 0.65f, 0.86f) : new Color(0.74f, 0.20f, 0.18f));
+                ApplyInvestorUnitProxyVisual(unit, unitObject);
 
                 DemoUnitView view = unitObject.AddComponent<DemoUnitView>();
                 view.Bind(unit);
@@ -10959,6 +11007,57 @@ namespace MC2Demo.Presentation
             }
 
             return new Vector3(1.0f, 0.58f, 1.0f);
+        }
+
+        private void ApplyInvestorUnitProxyVisual(UnitState unit, GameObject root)
+        {
+            if (unit == null || root == null)
+            {
+                return;
+            }
+
+            Color accent = unit.IsPlayerUnit ? new Color(0.42f, 0.95f, 1f, 0.95f) : new Color(1f, 0.34f, 0.28f, 0.95f);
+            string category = ReferenceObjMeshLibrary.UnitVisualCategoryFor(unit.UnitType);
+            if (string.Equals(category, "infantry", StringComparison.OrdinalIgnoreCase))
+            {
+                CreateInvestorProxyChild(root.transform, PrimitiveType.Capsule, "Infantry Fireteam A", new Vector3(-0.32f, 0.02f, -0.18f), Vector3.zero, new Vector3(0.18f, 0.78f, 0.18f), accent);
+                CreateInvestorProxyChild(root.transform, PrimitiveType.Capsule, "Infantry Fireteam B", new Vector3(0.24f, 0.02f, 0.20f), Vector3.zero, new Vector3(0.16f, 0.68f, 0.16f), accent);
+                CreateInvestorProxyChild(root.transform, PrimitiveType.Cube, "Infantry Squad Bar", new Vector3(0f, 0.46f, 0f), Vector3.zero, new Vector3(0.86f, 0.08f, 0.12f), accent);
+                investorProxyInfantryUnits++;
+                return;
+            }
+
+            if (unit.IsPlayerUnit || string.Equals(category, "mech", StringComparison.OrdinalIgnoreCase) || ReferenceObjMeshLibrary.IsTallReferenceUnit(unit.UnitType))
+            {
+                CreateInvestorProxyChild(root.transform, PrimitiveType.Cube, "Mech Torso Proxy", new Vector3(0f, 0.40f, 0f), Vector3.zero, new Vector3(0.72f, 0.70f, 0.52f), accent);
+                CreateInvestorProxyChild(root.transform, PrimitiveType.Cube, "Mech Shoulder Proxy", new Vector3(0f, 0.74f, 0f), Vector3.zero, new Vector3(1.18f, 0.18f, 0.46f), accent);
+                CreateInvestorProxyChild(root.transform, PrimitiveType.Sphere, "Mech Cockpit Proxy", new Vector3(0f, 0.98f, 0.16f), Vector3.zero, new Vector3(0.28f, 0.22f, 0.22f), new Color(0.74f, 0.96f, 1f, 0.92f));
+                investorProxyMechUnits++;
+                return;
+            }
+
+            CreateInvestorProxyChild(root.transform, PrimitiveType.Cube, "Vehicle Hull Proxy", new Vector3(0f, 0.20f, 0f), Vector3.zero, new Vector3(1.18f, 0.38f, 0.78f), accent);
+            CreateInvestorProxyChild(root.transform, PrimitiveType.Cube, "Vehicle Turret Proxy", new Vector3(0f, 0.50f, 0.06f), Vector3.zero, new Vector3(0.54f, 0.22f, 0.36f), accent);
+            CreateInvestorProxyChild(root.transform, PrimitiveType.Cube, "Vehicle Barrel Proxy", new Vector3(0f, 0.52f, 0.48f), Vector3.zero, new Vector3(0.14f, 0.10f, 0.72f), accent);
+            investorProxyVehicleUnits++;
+        }
+
+        private GameObject CreateInvestorProxyChild(
+            Transform parent,
+            PrimitiveType primitive,
+            string childName,
+            Vector3 localPosition,
+            Vector3 localEuler,
+            Vector3 localScale,
+            Color color)
+        {
+            GameObject child = DemoPrimitiveVisualFactory.Create(primitive, childName);
+            child.transform.SetParent(parent, false);
+            child.transform.localPosition = localPosition;
+            child.transform.localRotation = Quaternion.Euler(localEuler);
+            child.transform.localScale = localScale;
+            AssignMaterial(child, "InvestorProxy" + childName.Replace(" ", ""), color);
+            return child;
         }
 
         private static Vector3 PlayerPresentationOffset(int index)
@@ -11287,6 +11386,7 @@ namespace MC2Demo.Presentation
                 else
                 {
                     fallbackProps++;
+                    ApplyInvestorTerrainProxyVisual(terrainObject, prop);
                 }
 
                 RegisterOcclusionFade(prop, "terrain-object " + prop.name, OcclusionKindForTerrainObject(terrainObject));
@@ -11425,6 +11525,36 @@ namespace MC2Demo.Presentation
             }
 
             return new Vector3(0.45f, 0.35f, 0.45f);
+        }
+
+        private void ApplyInvestorTerrainProxyVisual(TerrainObjectSpawn terrainObject, GameObject root)
+        {
+            if (terrainObject == null || root == null)
+            {
+                return;
+            }
+
+            string category = ReferencePropLibrary.TerrainVisualCategoryFor(terrainObject);
+            if (string.Equals(terrainObject.objectClass, "TREE", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(category, "tree", StringComparison.OrdinalIgnoreCase))
+            {
+                CreateInvestorProxyChild(root.transform, PrimitiveType.Cylinder, "Tree Trunk Proxy", new Vector3(0f, -0.10f, 0f), Vector3.zero, new Vector3(0.18f, 0.78f, 0.18f), new Color(0.30f, 0.20f, 0.10f, 0.92f));
+                CreateInvestorProxyChild(root.transform, PrimitiveType.Sphere, "Tree Canopy Proxy", new Vector3(0f, 0.48f, 0f), Vector3.zero, new Vector3(0.82f, 0.56f, 0.82f), new Color(0.13f, 0.38f, 0.17f, 0.82f));
+                investorProxyTreeProps++;
+                return;
+            }
+
+            if (string.Equals(terrainObject.objectClass, "BUILDING", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(category, "structure", StringComparison.OrdinalIgnoreCase))
+            {
+                CreateInvestorProxyChild(root.transform, PrimitiveType.Cube, "Building Roof Proxy", new Vector3(0f, 0.56f, 0f), Vector3.zero, new Vector3(1.06f, 0.16f, 1.06f), new Color(0.72f, 0.64f, 0.48f, 0.88f));
+                CreateInvestorProxyChild(root.transform, PrimitiveType.Cube, "Building Door Proxy", new Vector3(0f, -0.12f, 0.52f), Vector3.zero, new Vector3(0.30f, 0.54f, 0.08f), new Color(0.12f, 0.18f, 0.20f, 0.92f));
+                investorProxyBuildingProps++;
+                return;
+            }
+
+            CreateInvestorProxyChild(root.transform, PrimitiveType.Cube, "Hard Prop Stripe Proxy", new Vector3(0f, 0.24f, 0f), Vector3.zero, new Vector3(0.98f, 0.12f, 0.20f), new Color(0.96f, 0.76f, 0.22f, 0.88f));
+            investorProxySmallProps++;
         }
 
         private static string TerrainMaterialName(TerrainObjectSpawn terrainObject)

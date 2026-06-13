@@ -106,6 +106,22 @@ function Read-OptionalSidecarString {
     return [string]$property.Value
 }
 
+function Read-FirstAvailableSidecarString {
+    param(
+        [object]$Sidecar,
+        [string[]]$Names
+    )
+
+    foreach ($name in $Names) {
+        $value = Read-OptionalSidecarString -Sidecar $Sidecar -Name $name
+        if (-not [string]::IsNullOrWhiteSpace($value)) {
+            return $value
+        }
+    }
+
+    return ""
+}
+
 function Read-RequiredText {
     param([string]$RelativePath)
 
@@ -187,6 +203,10 @@ function Test-Sidecar {
 
     if ($Preset -eq "damage-demo") {
         Require-Text -Text ([string]$Sidecar.damageReadability) -Needle "cuePalette=command-blue target-red damage-amber hostile-magenta pilot-cyan" -Label "$Preset damageReadability"
+        $debriefReward = Read-FirstAvailableSidecarString -Sidecar $Sidecar -Names @("debriefRewardSummary", "debriefReward")
+        Require-Text -Text $debriefReward -Needle "DamageDebrief=section-status+repair-line" -Label "$Preset debriefReward"
+        Require-Text -Text $debriefReward -Needle "damageConsequenceLine=" -Label "$Preset debriefReward"
+        Require-Text -Text $debriefReward -Needle "cockpitEjection=ready" -Label "$Preset debriefReward"
     }
 
     return [pscustomobject]@{
@@ -200,7 +220,8 @@ function Test-Sidecar {
         commanderFollow = $commander
         battleHud = Read-OptionalSidecarString -Sidecar $Sidecar -Name "battleHud"
         playableFlowPolish = Read-OptionalSidecarString -Sidecar $Sidecar -Name "playableFlowPolish"
-        debriefRewardSummary = Read-OptionalSidecarString -Sidecar $Sidecar -Name "debriefRewardSummary"
+        debriefRewardSummary = Read-FirstAvailableSidecarString -Sidecar $Sidecar -Names @("debriefRewardSummary", "debriefReward")
+        investorProxyVisuals = Read-OptionalSidecarString -Sidecar $Sidecar -Name "investorProxyVisuals"
         status = Read-OptionalSidecarString -Sidecar $Sidecar -Name "status"
     }
 }
@@ -292,12 +313,14 @@ $markdownLines = New-Object System.Collections.Generic.List[string]
 [void]$markdownLines.Add("Source visual report: `"$(Convert-ToRepoRelativePath -Path $visualEvidenceReportPath)`"")
 [void]$markdownLines.Add("Capture directory: `"$(Convert-ToRepoRelativePath -Path $captureDir)`"")
 [void]$markdownLines.Add("")
-[void]$markdownLines.Add("| Preset | Active hostiles | Visible hostiles | Flow summary | Screenshot |")
-[void]$markdownLines.Add("| --- | ---: | ---: | --- | --- |")
+[void]$markdownLines.Add("| Preset | Active hostiles | Visible hostiles | Flow summary | Debrief summary | Screenshot |")
+[void]$markdownLines.Add("| --- | ---: | ---: | --- | --- | --- |")
 foreach ($item in $rows) {
     $flowSummary = if ([string]::IsNullOrWhiteSpace($item.playableFlowPolish)) { $item.commandReadability } else { $item.playableFlowPolish }
     $flowSummary = ($flowSummary -replace "\|", "/")
-    [void]$markdownLines.Add(("| {0} | {1} | {2} | {3} | `{4}` |" -f $item.preset, $item.activeHostiles, $item.visibleHostiles, $flowSummary, $item.screenshot))
+    $debriefSummary = if ([string]::IsNullOrWhiteSpace($item.debriefRewardSummary)) { "n/a" } else { $item.debriefRewardSummary }
+    $debriefSummary = ($debriefSummary -replace "\|", "/")
+    [void]$markdownLines.Add(("| {0} | {1} | {2} | {3} | {4} | `{5}` |" -f $item.preset, $item.activeHostiles, $item.visibleHostiles, $flowSummary, $debriefSummary, $item.screenshot))
 }
 
 $markdownLines | Set-Content -LiteralPath $reportMarkdownPath -Encoding UTF8
