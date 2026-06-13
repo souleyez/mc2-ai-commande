@@ -70,9 +70,11 @@ $f74RouteEvidenceAuditReportPath = Join-Path $RepoRoot "analysis-output\f74-pc-r
 $f75RouteAuditFixesReportPath = Join-Path $RepoRoot "analysis-output\f75-pc-route-audit-fixes\report.json"
 $f77RouteEvidenceAuditReportPath = Join-Path $RepoRoot "analysis-output\f77-pc-route-evidence-refresh-audit\report.json"
 $f78RouteAuditFixesReportPath = Join-Path $RepoRoot "analysis-output\f78-pc-route-audit-fixes\report.json"
+$f80RouteEvidenceAuditReportPath = Join-Path $RepoRoot "analysis-output\f80-pc-route-evidence-refresh-audit\report.json"
+$f81RouteAuditFixesReportPath = Join-Path $RepoRoot "analysis-output\f81-pc-route-audit-fixes\report.json"
 $requiredPresets = @("spawn", "hangar-contact", "damage-demo", "solo-order", "solo-return")
-$completedTaskName = "F79 refresh PC controlled-demo investor route evidence after F77 audit fixes"
-$nextFormalTaskName = "F80 audit post-F79 PC controlled-demo investor route evidence refresh"
+$completedTaskName = "F82 refresh PC controlled-demo investor route evidence after F80 audit fixes"
+$nextFormalTaskName = "F83 audit post-F82 PC controlled-demo investor route evidence refresh"
 $routeAuditFixClosure = @(
     "RouteAuditFixRefresh=ready source=analysis-output/pc-controlled-demo-investor-route-evidence-audit-fixes/pc-controlled-demo-investor-route-evidence-audit-fixes.json completed=F49 next=F50 noUnityLaunch=True mobile=landscape-only",
     "RouteAuditFixClosure=F48-doc-visibility status=closed surfaces=investor-route+playable-evidence+handoff",
@@ -130,6 +132,13 @@ $f78RouteEvidenceAuditClosure = @(
     "F79RouteEvidenceRefreshSource=audit sourceAudit=analysis-output/f77-pc-route-evidence-refresh-audit/report.json sourceFixes=analysis-output/f78-pc-route-audit-fixes/report.json",
     "F79RouteEvidenceRefreshClosure=route-proof-preserved route=spawn>hangar-contact>damage-demo>solo-order>solo-return damage=section-loss+cockpit-ejection+wreck-salvage+repair-line publicSafe=proxy-only",
     "F79RouteEvidenceRefreshClosure=mobile-landscape status=preserved firstPhoneVersion=landscape-only portraitSupport=False"
+)
+$f81RouteEvidenceAuditClosure = @(
+    "F82RouteEvidenceRefresh=ready source=analysis-output/f81-pc-route-audit-fixes/report.json completed=F82 next=F83 noUnityLaunch=True mobile=landscape-only",
+    "F82RouteEvidenceRefreshSource=audit sourceAudit=analysis-output/f80-pc-route-evidence-refresh-audit/report.json sourceFixes=analysis-output/f81-pc-route-audit-fixes/report.json",
+    "F82RouteEvidenceRefreshClosure=route-proof-preserved route=spawn>hangar-contact>damage-demo>solo-order>solo-return damage=section-loss+cockpit-ejection+wreck-salvage+repair-line publicSafe=proxy-only",
+    "F82RouteEvidenceRefreshClosure=mobile-landscape status=preserved firstPhoneVersion=landscape-only portraitSupport=False",
+    "F82RouteEvidenceRefreshClosure=phone-horizontal status=preserved firstPhoneVersion=horizontal-only portraitSupport=False"
 )
 $rows = New-Object System.Collections.Generic.List[object]
 
@@ -439,6 +448,8 @@ Require-File -Path $f74RouteEvidenceAuditReportPath -Label "F74 PC route evidenc
 Require-File -Path $f75RouteAuditFixesReportPath -Label "F75 PC route audit fixes report"
 Require-File -Path $f77RouteEvidenceAuditReportPath -Label "F77 PC route evidence refresh audit report"
 Require-File -Path $f78RouteAuditFixesReportPath -Label "F78 PC route audit fixes report"
+Require-File -Path $f80RouteEvidenceAuditReportPath -Label "F80 PC route evidence refresh audit report"
+Require-File -Path $f81RouteAuditFixesReportPath -Label "F81 PC route audit fixes report"
 Require-File -Path $visualEvidenceReportPath -Label "PC visual evidence report"
 $visualReport = Get-Content -LiteralPath $visualEvidenceReportPath -Raw -Encoding UTF8 | ConvertFrom-Json
 if ([string]$visualReport.result -ne "pass") {
@@ -676,6 +687,28 @@ if ([string]$f78RouteAuditFixesReport.nextFormalTask -ne "F79 refresh PC control
     throw "F78 PC route audit fixes report has unexpected next task: $($f78RouteAuditFixesReport.nextFormalTask)"
 }
 
+$f80RouteEvidenceAuditReport = Get-Content -LiteralPath $f80RouteEvidenceAuditReportPath -Raw -Encoding UTF8 | ConvertFrom-Json
+if ([string]$f80RouteEvidenceAuditReport.result -ne "pass-with-followups") {
+    throw "F80 PC route evidence refresh audit report did not pass with followups: $f80RouteEvidenceAuditReportPath"
+}
+if ([string]$f80RouteEvidenceAuditReport.completedTask -ne "F80 audit post-F79 PC controlled-demo investor route evidence refresh") {
+    throw "F80 PC route evidence refresh audit report has unexpected completed task: $($f80RouteEvidenceAuditReport.completedTask)"
+}
+if ([string]$f80RouteEvidenceAuditReport.nextFormalTask -ne "F81 implement post-F80 PC controlled-demo investor route evidence refresh audit fixes") {
+    throw "F80 PC route evidence refresh audit report has unexpected next task: $($f80RouteEvidenceAuditReport.nextFormalTask)"
+}
+
+$f81RouteAuditFixesReport = Get-Content -LiteralPath $f81RouteAuditFixesReportPath -Raw -Encoding UTF8 | ConvertFrom-Json
+if ([string]$f81RouteAuditFixesReport.result -ne "pass") {
+    throw "F81 PC route audit fixes report did not pass: $f81RouteAuditFixesReportPath"
+}
+if ([string]$f81RouteAuditFixesReport.completedTask -ne "F81 implement post-F80 PC controlled-demo investor route evidence refresh audit fixes") {
+    throw "F81 PC route audit fixes report has unexpected completed task: $($f81RouteAuditFixesReport.completedTask)"
+}
+if ([string]$f81RouteAuditFixesReport.nextFormalTask -ne "F82 refresh PC controlled-demo investor route evidence after F80 audit fixes") {
+    throw "F81 PC route audit fixes report has unexpected next task: $($f81RouteAuditFixesReport.nextFormalTask)"
+}
+
 Assert-SourceMarkers
 
 foreach ($preset in $requiredPresets) {
@@ -720,6 +753,8 @@ $report = [pscustomobject]@{
     sourceF75RouteAuditFixesReport = Convert-ToRepoRelativePath -Path $f75RouteAuditFixesReportPath
     sourceF77RouteEvidenceAuditReport = Convert-ToRepoRelativePath -Path $f77RouteEvidenceAuditReportPath
     sourceF78RouteAuditFixesReport = Convert-ToRepoRelativePath -Path $f78RouteAuditFixesReportPath
+    sourceF80RouteEvidenceAuditReport = Convert-ToRepoRelativePath -Path $f80RouteEvidenceAuditReportPath
+    sourceF81RouteAuditFixesReport = Convert-ToRepoRelativePath -Path $f81RouteAuditFixesReportPath
     routeAuditFixClosure = $routeAuditFixClosure
     routeAuditFixRefreshAuditClosure = $routeAuditFixRefreshAuditClosure
     routeAuditFixRefreshAuditFixRefreshAuditClosure = $routeAuditFixRefreshAuditFixRefreshAuditClosure
@@ -731,6 +766,7 @@ $report = [pscustomobject]@{
     f72RouteEvidenceAuditClosure = $f72RouteEvidenceAuditClosure
     f75RouteEvidenceAuditClosure = $f75RouteEvidenceAuditClosure
     f78RouteEvidenceAuditClosure = $f78RouteEvidenceAuditClosure
+    f81RouteEvidenceAuditClosure = $f81RouteEvidenceAuditClosure
     captureDir = Convert-ToRepoRelativePath -Path $captureDir
     evidence = $evidenceRows
 }
@@ -766,6 +802,8 @@ $markdownLines = New-Object System.Collections.Generic.List[string]
 [void]$markdownLines.Add("Source F75 route audit fixes report: `"$(Convert-ToRepoRelativePath -Path $f75RouteAuditFixesReportPath)`"")
 [void]$markdownLines.Add("Source F77 route evidence audit report: `"$(Convert-ToRepoRelativePath -Path $f77RouteEvidenceAuditReportPath)`"")
 [void]$markdownLines.Add("Source F78 route audit fixes report: `"$(Convert-ToRepoRelativePath -Path $f78RouteAuditFixesReportPath)`"")
+[void]$markdownLines.Add("Source F80 route evidence audit report: `"$(Convert-ToRepoRelativePath -Path $f80RouteEvidenceAuditReportPath)`"")
+[void]$markdownLines.Add("Source F81 route audit fixes report: `"$(Convert-ToRepoRelativePath -Path $f81RouteAuditFixesReportPath)`"")
 [void]$markdownLines.Add("Capture directory: `"$(Convert-ToRepoRelativePath -Path $captureDir)`"")
 [void]$markdownLines.Add("")
 $damageRow = Find-EvidenceRow -Items $evidenceRows -Preset "damage-demo"
@@ -854,6 +892,12 @@ foreach ($closure in $f75RouteEvidenceAuditClosure) {
 [void]$markdownLines.Add("## F78 Route Evidence Audit Closure")
 [void]$markdownLines.Add("")
 foreach ($closure in $f78RouteEvidenceAuditClosure) {
+    [void]$markdownLines.Add("- $closure")
+}
+[void]$markdownLines.Add("")
+[void]$markdownLines.Add("## F81 Route Evidence Audit Closure")
+[void]$markdownLines.Add("")
+foreach ($closure in $f81RouteEvidenceAuditClosure) {
     [void]$markdownLines.Add("- $closure")
 }
 [void]$markdownLines.Add("")

@@ -72,7 +72,7 @@ plan/preflight consistency check, Android G3 readiness check and Android G3 devi
 
 The PC optimization waiting period is over; its evidence remains valid history
 for controlled demos. The current PC/mobile work is
-sealed through PC1-PC81, including the PC core playable contract check, mobile
+sealed through PC1-PC82, including the PC core playable contract check, mobile
 command model preflight, battle HUD sparse contract check, demo source hygiene
 check, AI deputy contract check, Windows demo build freshness check, controlled
 demo evidence freshness check, controlled demo capture log freshness check,
@@ -847,3 +847,4 @@ F78 implementation note: `F78 implement post-F77 PC controlled-demo investor rou
 F79 implementation note: `F79 refresh PC controlled-demo investor route evidence after F77 audit fixes` is complete. Evidence gate: `scripts/unity/check_f79_pc_route_evidence_refresh.ps1` -> `F79 PC route evidence refresh check OK.`; formal next task: `F80 audit post-F79 PC controlled-demo investor route evidence refresh`. Mobile phones remain first-version landscape-only as the horizontal phone build; portrait is not a first-slice support target.
 F80 implementation note: `F80 audit post-F79 PC controlled-demo investor route evidence refresh` is complete. Evidence gate: `scripts/unity/audit_f80_pc_route_evidence_refresh.ps1` -> `F80 PC route evidence refresh audit OK.`; formal next task: `F81 implement post-F80 PC controlled-demo investor route evidence refresh audit fixes`. Mobile phones remain first-version landscape-only as the horizontal phone build; portrait is not a first-slice support target.
 F81 implementation note: `F81 implement post-F80 PC controlled-demo investor route evidence refresh audit fixes` is complete. Evidence gate: `scripts/unity/check_f81_pc_route_audit_fixes.ps1` -> `F81 PC route audit fixes check OK.`; formal next task: `F82 refresh PC controlled-demo investor route evidence after F80 audit fixes`. Mobile phones remain first-version landscape-only as the horizontal phone build; portrait is not a first-slice support target.
+F82 implementation note: `F82 refresh PC controlled-demo investor route evidence after F80 audit fixes` is complete. Evidence gate: `scripts/unity/check_f82_pc_route_evidence_refresh.ps1` -> `F82 PC route evidence refresh check OK.`; formal next task: `F83 audit post-F82 PC controlled-demo investor route evidence refresh`. Mobile phones remain first-version landscape-only as the horizontal phone build; portrait is not a first-slice support target.

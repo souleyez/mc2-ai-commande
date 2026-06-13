@@ -25,7 +25,7 @@ As of this handoff plan:
 - Previous project remote: `git@github.com:souleyez/mc2-ai-commander-demo.git` now redirects to the current repository.
 - Upstream source remote kept for history: `origin https://github.com/alariq/mc2.git`
 - Current branch state after the latest controlled demo checkpoint: `master...ai-origin/master`
-- Latest sealed PC/mobile wait-state checkpoint: `PC1-PC81`
+- Latest sealed PC/mobile wait-state checkpoint: `PC1-PC82`
 - Last completed PC/mobile checkpoint: landscape `G4 Touch UI pass`
 - Previous mobile checkpoint retained in the gate chain: `Pass Android G3 device smoke`
 - Previous mobile checkpoint retained in the gate chain: `G5 Mobile performance budget`
@@ -73,7 +73,7 @@ As of this handoff plan:
 - Previous PC checkpoint retained in the gate chain: `Add Android APK identity check`
 - Previous PC checkpoint retained in the gate chain: `Add Android APK freshness check`
 - Previous PC checkpoint retained in the gate chain: `Add controlled demo capture log freshness check`
-- Current formal next development task after handoff: `F82 refresh PC controlled-demo investor route evidence after F80 audit fixes`
+- Current formal next development task after handoff: `F83 audit post-F82 PC controlled-demo investor route evidence refresh`
 - Mobile orientation decision retained for handoff: first phone version is landscape-only: 手机端横版 / horizontal phone game; portrait is not a first-slice support target.
 
 ## Route Audit Findings
@@ -660,7 +660,7 @@ Current plan queue consistency check OK
 
 This verifies README, BUILD-WIN, master/detailed/PC/mobile/evidence/handoff docs
 and helper scripts agree that the current PC/mobile package is sealed through
-the PC1-PC81 checkpoint, that `Pass Android G3 device smoke`, the landscape
+the PC1-PC82 checkpoint, that `Pass Android G3 device smoke`, the landscape
 `G4 Touch UI pass`, `G5 Mobile performance budget`, `G6 iOS feasibility gate`
 `F2 map authoring contract`, `F3 web ranking contract`,
 `F4 creator economy boundary`, `F5 server implementation boundary`,
@@ -1058,7 +1058,7 @@ documentation.
 - Read: `docs-ai-rts-commander-current-master-plan-2026-06-07.md`
 - Read: `docs-ai-rts-commander-current-detailed-plan-2026-06-07.md`
 - Read: `docs-mobile-first-plan-2026-06-10.md`
-- Next planned work: `F82 refresh PC controlled-demo investor route evidence after F80 audit fixes`
+- Next planned work: `F83 audit post-F82 PC controlled-demo investor route evidence refresh`
 
 **Step 1: Confirm current next task**
 
@@ -1369,3 +1369,10 @@ F80 implementation note: `F80 audit post-F79 PC controlled-demo investor route e
 - F81RouteEvidenceAuditClosure=mobile-landscape status=preserved firstPhoneVersion=landscape-only portraitSupport=False
 - F81RouteEvidenceAuditClosure=phone-horizontal status=preserved firstPhoneVersion=horizontal-only portraitSupport=False
 F81 implementation note: `F81 implement post-F80 PC controlled-demo investor route evidence refresh audit fixes` is complete. Evidence gate: `scripts/unity/check_f81_pc_route_audit_fixes.ps1` -> `F81 PC route audit fixes check OK.`; formal next task: `F82 refresh PC controlled-demo investor route evidence after F80 audit fixes`. Mobile phones remain first-version landscape-only as the horizontal phone build; portrait is not a first-slice support target.
+
+- F82RouteEvidenceRefresh=ready source=analysis-output/f81-pc-route-audit-fixes/report.json completed=F82 next=F83 noUnityLaunch=True mobile=landscape-only
+- F82RouteEvidenceRefreshSource=audit sourceAudit=analysis-output/f80-pc-route-evidence-refresh-audit/report.json sourceFixes=analysis-output/f81-pc-route-audit-fixes/report.json
+- F82RouteEvidenceRefreshClosure=route-proof-preserved route=spawn>hangar-contact>damage-demo>solo-order>solo-return damage=section-loss+cockpit-ejection+wreck-salvage+repair-line publicSafe=proxy-only
+- F82RouteEvidenceRefreshClosure=mobile-landscape status=preserved firstPhoneVersion=landscape-only portraitSupport=False
+- F82RouteEvidenceRefreshClosure=phone-horizontal status=preserved firstPhoneVersion=horizontal-only portraitSupport=False
+F82 implementation note: `F82 refresh PC controlled-demo investor route evidence after F80 audit fixes` is complete. Evidence gate: `scripts/unity/check_f82_pc_route_evidence_refresh.ps1` -> `F82 PC route evidence refresh check OK.`; formal next task: `F83 audit post-F82 PC controlled-demo investor route evidence refresh`. Mobile phones remain first-version landscape-only as the horizontal phone build; portrait is not a first-slice support target.

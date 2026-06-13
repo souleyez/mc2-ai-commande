@@ -325,3 +325,10 @@ F80 implementation note: `F80 audit post-F79 PC controlled-demo investor route e
 - F81RouteEvidenceAuditClosure=mobile-landscape status=preserved firstPhoneVersion=landscape-only portraitSupport=False
 - F81RouteEvidenceAuditClosure=phone-horizontal status=preserved firstPhoneVersion=horizontal-only portraitSupport=False
 F81 implementation note: `F81 implement post-F80 PC controlled-demo investor route evidence refresh audit fixes` is complete. Evidence gate: `scripts/unity/check_f81_pc_route_audit_fixes.ps1` -> `F81 PC route audit fixes check OK.`; formal next task: `F82 refresh PC controlled-demo investor route evidence after F80 audit fixes`. Mobile phones remain first-version landscape-only as the horizontal phone build; portrait is not a first-slice support target.
+
+- F82RouteEvidenceRefresh=ready source=analysis-output/f81-pc-route-audit-fixes/report.json completed=F82 next=F83 noUnityLaunch=True mobile=landscape-only
+- F82RouteEvidenceRefreshSource=audit sourceAudit=analysis-output/f80-pc-route-evidence-refresh-audit/report.json sourceFixes=analysis-output/f81-pc-route-audit-fixes/report.json
+- F82RouteEvidenceRefreshClosure=route-proof-preserved route=spawn>hangar-contact>damage-demo>solo-order>solo-return damage=section-loss+cockpit-ejection+wreck-salvage+repair-line publicSafe=proxy-only
+- F82RouteEvidenceRefreshClosure=mobile-landscape status=preserved firstPhoneVersion=landscape-only portraitSupport=False
+- F82RouteEvidenceRefreshClosure=phone-horizontal status=preserved firstPhoneVersion=horizontal-only portraitSupport=False
+F82 implementation note: `F82 refresh PC controlled-demo investor route evidence after F80 audit fixes` is complete. Evidence gate: `scripts/unity/check_f82_pc_route_evidence_refresh.ps1` -> `F82 PC route evidence refresh check OK.`; formal next task: `F83 audit post-F82 PC controlled-demo investor route evidence refresh`. Mobile phones remain first-version landscape-only as the horizontal phone build; portrait is not a first-slice support target.
