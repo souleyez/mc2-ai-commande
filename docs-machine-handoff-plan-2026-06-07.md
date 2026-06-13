@@ -25,7 +25,7 @@ As of this handoff plan:
 - Previous project remote: `git@github.com:souleyez/mc2-ai-commander-demo.git` now redirects to the current repository.
 - Upstream source remote kept for history: `origin https://github.com/alariq/mc2.git`
 - Current branch state after the latest controlled demo checkpoint: `master...ai-origin/master`
-- Latest sealed PC/mobile wait-state checkpoint: `PC1-PC61`
+- Latest sealed PC/mobile wait-state checkpoint: `PC1-PC62`
 - Last completed PC/mobile checkpoint: landscape `G4 Touch UI pass`
 - Previous mobile checkpoint retained in the gate chain: `Pass Android G3 device smoke`
 - Previous mobile checkpoint retained in the gate chain: `G5 Mobile performance budget`
@@ -73,7 +73,7 @@ As of this handoff plan:
 - Previous PC checkpoint retained in the gate chain: `Add Android APK identity check`
 - Previous PC checkpoint retained in the gate chain: `Add Android APK freshness check`
 - Previous PC checkpoint retained in the gate chain: `Add controlled demo capture log freshness check`
-- Current formal next development task after handoff: `F62 audit post-F61 PC controlled-demo investor route evidence refresh`
+- Current formal next development task after handoff: `F63 implement post-F62 PC controlled-demo investor route evidence refresh audit fixes`
 - Mobile orientation decision retained for handoff: first phone version is landscape-only: 手机端横版 / horizontal phone game; portrait is not a first-slice support target.
 
 ## Route Audit Findings
@@ -660,7 +660,7 @@ Current plan queue consistency check OK
 
 This verifies README, BUILD-WIN, master/detailed/PC/mobile/evidence/handoff docs
 and helper scripts agree that the current PC/mobile package is sealed through
-the PC1-PC61 checkpoint, that `Pass Android G3 device smoke`, the landscape
+the PC1-PC62 checkpoint, that `Pass Android G3 device smoke`, the landscape
 `G4 Touch UI pass`, `G5 Mobile performance budget`, `G6 iOS feasibility gate`
 `F2 map authoring contract`, `F3 web ranking contract`,
 `F4 creator economy boundary`, `F5 server implementation boundary`,
@@ -1058,7 +1058,7 @@ documentation.
 - Read: `docs-ai-rts-commander-current-master-plan-2026-06-07.md`
 - Read: `docs-ai-rts-commander-current-detailed-plan-2026-06-07.md`
 - Read: `docs-mobile-first-plan-2026-06-10.md`
-- Next planned work: `F62 audit post-F61 PC controlled-demo investor route evidence refresh`
+- Next planned work: `F63 implement post-F62 PC controlled-demo investor route evidence refresh audit fixes`
 
 **Step 1: Confirm current next task**
 
@@ -1153,6 +1153,16 @@ F55 implementation note: `F55 refresh PC controlled-demo investor route evidence
 - RouteAuditFixRefreshAuditFixRefreshAuditFixRefreshAuditFixRefreshAuditRefresh=ready source=analysis-output/pc-controlled-demo-investor-route-evidence-audit-fix-refresh-audit-fix-refresh-audit-fix-refresh-audit-fix-refresh-audit-fixes/report.json completed=F61 next=F62 noUnityLaunch=True mobile=landscape-only
 - RouteAuditFixRefreshAuditFixRefreshAuditFixRefreshAuditFixRefreshAuditClosure=F60-doc-gate-visibility status=closed surfaces=plan+evidence+handoff+gate
 - RouteAuditFixRefreshAuditFixRefreshAuditFixRefreshAuditFixRefreshAuditClosure=next-refresh-contract status=closed sourceAudit=analysis-output/pc-controlled-demo-investor-route-evidence-audit-fix-refresh-audit-fix-refresh-audit-fix-refresh-audit-fix-refresh-audit/report.json sourceFixes=analysis-output/pc-controlled-demo-investor-route-evidence-audit-fix-refresh-audit-fix-refresh-audit-fix-refresh-audit-fix-refresh-audit-fixes/report.json
+## Route Audit Fix Refresh Audit Fix Refresh Audit Fix Refresh Audit Fix Refresh Audit Fix Refresh Audit Findings
+
+- RouteAuditFixRefreshAuditFixRefreshAuditFixRefreshAuditFixRefreshAuditFixRefreshAudit=pass-with-followups source=analysis-output/pc-controlled-demo-investor-route-evidence-audit-fix-refresh-audit-fix-refresh-audit-fix-refresh-audit-fix-refresh-audit-fix-refresh-audit/report.json completed=F62 next=F63 noUnityLaunch=True mobile=landscape-only
+- RouteAuditFixRefreshAuditFixRefreshAuditFixRefreshAuditFixRefreshAuditFixRefreshAuditFinding=route-proof-clarity status=pass detail=F61 command evidence keeps the five-preset Windows investor route and links command report, screenshots, sidecars and logs.
+- RouteAuditFixRefreshAuditFixRefreshAuditFixRefreshAuditFixRefreshAuditFixRefreshAuditFinding=damage-ejection-proof status=pass detail=damage-demo still carries section loss, cockpit ejection, wreck salvage and repair-cost proof after the F61 refresh.
+- RouteAuditFixRefreshAuditFixRefreshAuditFixRefreshAuditFixRefreshAuditFixRefreshAuditFinding=mobile-landscape-proof status=pass detail=F61 command evidence and plan surfaces keep first phone version landscape-only as a horizontal phone build.
+- RouteAuditFixRefreshAuditFixRefreshAuditFixRefreshAuditFixRefreshAuditFixRefreshAuditFinding=public-safe-proxy-boundary status=pass detail=proxy visuals remain public-safe stand-ins; collision, pathing and BattleCore are unchanged.
+- RouteAuditFixRefreshAuditFixRefreshAuditFixRefreshAuditFixRefreshAuditFixRefreshAuditFinding=audit-fix-refresh-closure status=pass detail=F61 command report and markdown carry F59 audit and F60 fix reports as explicit sources.
+- RouteAuditFixRefreshAuditFixRefreshAuditFixRefreshAuditFixRefreshAuditFixRefreshAuditFollowUp=P1 area=audit-visibility next=F63-doc-gate-visibility
+- RouteAuditFixRefreshAuditFixRefreshAuditFixRefreshAuditFixRefreshAuditFixRefreshAuditFollowUp=P2 area=next-refresh-contract next=F64-consume-F62-audit-report
 F56 implementation note: `F56 audit post-F55 PC controlled-demo investor route evidence refresh` is complete. Evidence gate: `scripts/unity/audit_pc_controlled_demo_investor_route_evidence_audit_fix_refresh_audit_fix_refresh_audit_fix_refresh.ps1` -> `PC controlled-demo investor route evidence audit fix refresh audit fix refresh audit fix refresh audit OK`; next task was `F57 implement post-F56 PC controlled-demo investor route evidence refresh audit fixes`. Mobile phones remain first-version landscape-only as the horizontal phone build; portrait is not a first-slice support target.
 
 F57 implementation note: `F57 implement post-F56 PC controlled-demo investor route evidence refresh audit fixes` is complete. Evidence gate: `scripts/unity/check_pc_controlled_demo_investor_route_evidence_audit_fix_refresh_audit_fix_refresh_audit_fix_refresh_audit_fixes.ps1` -> `PC controlled-demo investor route evidence audit fix refresh audit fix refresh audit fix refresh audit fixes check OK`; next task was `F58 refresh PC controlled-demo investor route evidence after F56 audit fixes`. Mobile phones remain first-version landscape-only as the horizontal phone build; portrait is not a first-slice support target.
@@ -1163,4 +1173,6 @@ F59 implementation note: `F59 audit post-F58 PC controlled-demo investor route e
 
 F60 implementation note: `F60 implement post-F59 PC controlled-demo investor route evidence refresh audit fixes` is complete. Evidence gate: `scripts/unity/check_pc_controlled_demo_investor_route_evidence_audit_fix_refresh_audit_fix_refresh_audit_fix_refresh_audit_fix_refresh_audit_fixes.ps1` -> `PC controlled-demo investor route evidence audit fix refresh audit fix refresh audit fix refresh audit fix refresh audit fixes check OK`; next task was `F61 refresh PC controlled-demo investor route evidence after F59 audit fixes`. Mobile phones remain first-version landscape-only as the horizontal phone build; portrait is not a first-slice support target.
 
-F61 implementation note: `F61 refresh PC controlled-demo investor route evidence after F59 audit fixes` is complete. Evidence gate: `scripts/unity/check_pc_controlled_demo_investor_route_evidence_audit_fix_refresh_audit_fix_refresh_audit_fix_refresh_audit_fix_refresh_audit_fix_refresh.ps1` -> `PC controlled-demo investor route evidence audit fix refresh audit fix refresh audit fix refresh audit fix refresh audit fix refresh check OK`; formal next task: `F62 audit post-F61 PC controlled-demo investor route evidence refresh`. Mobile phones remain first-version landscape-only as the horizontal phone build; portrait is not a first-slice support target.
+F61 implementation note: `F61 refresh PC controlled-demo investor route evidence after F59 audit fixes` is complete. Evidence gate: `scripts/unity/check_pc_controlled_demo_investor_route_evidence_audit_fix_refresh_audit_fix_refresh_audit_fix_refresh_audit_fix_refresh_audit_fix_refresh.ps1` -> `PC controlled-demo investor route evidence audit fix refresh audit fix refresh audit fix refresh audit fix refresh audit fix refresh check OK`; next task was `F62 audit post-F61 PC controlled-demo investor route evidence refresh`. Mobile phones remain first-version landscape-only as the horizontal phone build; portrait is not a first-slice support target.
+
+F62 implementation note: `F62 audit post-F61 PC controlled-demo investor route evidence refresh` is complete. Evidence gate: `scripts/unity/audit_pc_controlled_demo_investor_route_evidence_audit_fix_refresh_audit_fix_refresh_audit_fix_refresh_audit_fix_refresh_audit_fix_refresh_audit.ps1` -> `PC controlled-demo investor route evidence audit fix refresh audit fix refresh audit fix refresh audit fix refresh audit fix refresh audit OK`; formal next task: `F63 implement post-F62 PC controlled-demo investor route evidence refresh audit fixes`. Mobile phones remain first-version landscape-only as the horizontal phone build; portrait is not a first-slice support target.
