@@ -166,6 +166,7 @@ Assert-ScriptExists -RelativePath "scripts\unity\check_pc_controlled_demo_invest
 Assert-ScriptExists -RelativePath "scripts\unity\check_pc_controlled_demo_investor_route_evidence_audit_fix_refresh.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\audit_pc_controlled_demo_investor_route_evidence_audit_fix_refresh.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_pc_controlled_demo_investor_route_evidence_audit_fix_refresh_audit_fixes.ps1"
+Assert-ScriptExists -RelativePath "scripts\unity\check_pc_controlled_demo_investor_route_evidence_audit_fix_refresh_audit_fix_refresh.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_server_backed_receipt_slice_plan.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\capture_server_backed_receipt_evidence.ps1"
 Assert-ScriptExists -RelativePath "scripts\unity\check_post_receipt_inventory_refresh_boundary.ps1"
@@ -399,6 +400,9 @@ Assert-FileContains -RelativePath "README.md" -Markers @(
     "check_pc_controlled_demo_investor_route_evidence_audit_fix_refresh_audit_fixes.ps1",
     "PC controlled-demo investor route evidence audit fix refresh audit fixes check OK",
     "F52 refresh PC controlled-demo investor route evidence after F50 audit fixes",
+    "check_pc_controlled_demo_investor_route_evidence_audit_fix_refresh_audit_fix_refresh.ps1",
+    "PC controlled-demo investor route evidence audit fix refresh audit fix refresh check OK",
+    "F53 audit post-F52 PC controlled-demo investor route evidence refresh",
     "Add Android WPD-only device diagnosis",
     "Add Android ADB setup guidance",
     "Add Android ADB driver package probe",
@@ -651,6 +655,9 @@ Assert-FileContains -RelativePath "BUILD-WIN.md" -Markers @(
     "check_pc_controlled_demo_investor_route_evidence_audit_fix_refresh_audit_fixes.ps1",
     "PC controlled-demo investor route evidence audit fix refresh audit fixes check OK",
     "F52 refresh PC controlled-demo investor route evidence after F50 audit fixes",
+    "check_pc_controlled_demo_investor_route_evidence_audit_fix_refresh_audit_fix_refresh.ps1",
+    "PC controlled-demo investor route evidence audit fix refresh audit fix refresh check OK",
+    "F53 audit post-F52 PC controlled-demo investor route evidence refresh",
     "Controlled demo readiness preflight OK"
 )
 
@@ -843,6 +850,9 @@ Assert-FileContains -RelativePath "BUILD-MOBILE.md" -Markers @(
     "check_pc_controlled_demo_investor_route_evidence_audit_fix_refresh_audit_fixes.ps1",
     "PC controlled-demo investor route evidence audit fix refresh audit fixes check OK",
     "F52 refresh PC controlled-demo investor route evidence after F50 audit fixes",
+    "check_pc_controlled_demo_investor_route_evidence_audit_fix_refresh_audit_fix_refresh.ps1",
+    "PC controlled-demo investor route evidence audit fix refresh audit fix refresh check OK",
+    "F53 audit post-F52 PC controlled-demo investor route evidence refresh",
     "first phone version is landscape-only",
     "check_android_smoke_plan_consistency.ps1",
     "Android smoke plan/preflight consistency check OK",
@@ -1472,6 +1482,9 @@ Assert-FileContains -RelativePath "docs-machine-handoff-plan-2026-06-07.md" -Mar
     "check_pc_controlled_demo_investor_route_evidence_audit_fix_refresh_audit_fixes.ps1",
     "PC controlled-demo investor route evidence audit fix refresh audit fixes check OK",
     "F52 refresh PC controlled-demo investor route evidence after F50 audit fixes",
+    "check_pc_controlled_demo_investor_route_evidence_audit_fix_refresh_audit_fix_refresh.ps1",
+    "PC controlled-demo investor route evidence audit fix refresh audit fix refresh check OK",
+    "F53 audit post-F52 PC controlled-demo investor route evidence refresh",
     "first phone version is landscape-only",
     "android-device-smoke.png",
     "ScreenshotCapture: True",
